@@ -1,6 +1,6 @@
 <div align="center">
 
-# ⚡ Flow CSS
+# ⚡ EaseMotion CSS
 
 **Human-readable. Animation-first. Zero dependencies.**
 
@@ -8,18 +8,18 @@ Designed and curated by **Saptarshi Sadhu**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff.svg)](./LICENSE)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-22c55e.svg)](./CONTRIBUTING.md)
-[![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/flow-css?style=flat&color=6c63ff)](https://github.com/SAPTARSHI-coder/flow-css/stargazers)
+[![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/easemotion-css?style=flat&color=6c63ff)](https://github.com/SAPTARSHI-coder/easemotion-css/stargazers)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa.svg)](https://github.com/SAPTARSHI-coder)
 
 </div>
 
 ---
 
-Flow CSS is a curated, animation-first CSS framework where class names read like plain English. No memorizing shorthand. No build steps. Just write HTML and it works.
+EaseMotion CSS is a curated, animation-first CSS framework where class names read like plain English. No memorizing shorthand. No build steps. Just write HTML and it works.
 
 ```html
-<div class="flow-center flow-fade-in">
-  <button class="flow-btn flow-btn-primary flow-hover-grow">Get Started</button>
+<div class="ease-center ease-fade-in">
+  <button class="ease-btn ease-btn-primary ease-hover-grow">Get Started</button>
 </div>
 ```
 
@@ -27,7 +27,7 @@ Flow CSS is a curated, animation-first CSS framework where class names read like
 
 ## 👤 Maintainer
 
-Flow CSS is designed, curated, and actively maintained by:
+EaseMotion CSS is designed, curated, and actively maintained by:
 
 **Saptarshi Sadhu** · [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
 
@@ -40,7 +40,7 @@ This is a controlled framework — all contributions are reviewed and standardiz
 **Option 1 — Single import (recommended)**
 
 ```html
-<link rel="stylesheet" href="flow.css" />
+<link rel="stylesheet" href="easemotion.css" />
 ```
 
 **Option 2 — Import only what you need**
@@ -65,14 +65,14 @@ No build step. No Node. No npm. Open your HTML file and it works.
 
 ## 🧠 Philosophy
 
-Flow CSS is not just a CSS library — it is a design language.
+EaseMotion CSS is not just a CSS library — it is a design language.
 
-Most frameworks force a trade-off between readability and speed. Flow CSS argues you should not have to choose.
+Most frameworks force a trade-off between readability and speed. EaseMotion CSS argues you should not have to choose.
 
-| | Vanilla CSS | Tailwind | **Flow CSS** |
+| | Vanilla CSS | Tailwind | **EaseMotion CSS** |
 |---|---|---|---|
 | Setup | Write from scratch | Build step + config | **Link one file** |
-| Readability | High | Low (`px-4 flex gap-x-2`) | **High** (`flow-center`) |
+| Readability | High | Low (`px-4 flex gap-x-2`) | **High** (`ease-center`) |
 | Animations | Manual | Minimal | **First-class** |
 | Quality control | You | You | **Curated by maintainer** |
 
@@ -80,13 +80,13 @@ Most frameworks force a trade-off between readability and speed. Flow CSS argues
 
 ```html
 <!-- Center this -->
-<div class="flow-center">
+<div class="ease-center">
 
 <!-- Fade this in -->
-<h1 class="flow-fade-in">
+<h1 class="ease-fade-in">
 
 <!-- Make it grow on hover -->
-<button class="flow-hover-grow">
+<button class="ease-hover-grow">
 ```
 
 No documentation lookup required. The class name **is** the documentation.
@@ -102,24 +102,24 @@ No documentation lookup required. The class name **is** the documentation.
 
 ---
 
-## ⚙️ How Flow CSS Works
+## ⚙️ How EaseMotion CSS Works
 
-Flow CSS uses a structured pipeline from raw idea to released class:
+EaseMotion CSS uses a structured pipeline from raw idea to released class:
 
 ```
 1. Contributors submit raw HTML + CSS
          ↓
 2. Maintainer reviews and evaluates fit
          ↓
-3. Code is converted into Flow CSS format
-   (flow-* naming, CSS variables, comments)
+3. Code is converted into EaseMotion CSS format
+   (ease-* naming, CSS variables, comments)
          ↓
 4. Integrated into core/ or components/
          ↓
 5. Released and documented
 ```
 
-Every class in the framework has passed through this process. The curation is what makes Flow CSS consistent.
+Every class in the framework has passed through this process. The curation is what makes EaseMotion CSS consistent.
 
 ---
 
@@ -129,15 +129,15 @@ Every class in the framework has passed through this process. The curation is wh
 
 ```html
 <!-- Center — the most-used utility -->
-<div class="flow-center">Centered</div>
+<div class="ease-center">Centered</div>
 
 <!-- Responsive auto-fit grid -->
-<div class="flow-grid flow-grid-auto flow-gap-6">
+<div class="ease-grid ease-grid-auto ease-gap-6">
   <div>Card 1</div><div>Card 2</div><div>Card 3</div>
 </div>
 
 <!-- Flex row: space between -->
-<div class="flow-flex flow-justify-between flow-items-center flow-padding-4">
+<div class="ease-flex ease-justify-between ease-items-center ease-padding-4">
   <span>Left</span><span>Right</span>
 </div>
 ```
@@ -146,47 +146,47 @@ Every class in the framework has passed through this process. The curation is wh
 
 ```html
 <!-- Entrance (fires on load) -->
-<h1 class="flow-fade-in">Hello</h1>
-<p  class="flow-slide-up flow-delay-200">Subtitle</p>
+<h1 class="ease-fade-in">Hello</h1>
+<p  class="ease-slide-up ease-delay-200">Subtitle</p>
 
 <!-- Staggered sequence -->
-<div class="flow-slide-up flow-delay-100">First</div>
-<div class="flow-slide-up flow-delay-200">Second</div>
-<div class="flow-slide-up flow-delay-300">Third</div>
+<div class="ease-slide-up ease-delay-100">First</div>
+<div class="ease-slide-up ease-delay-200">Second</div>
+<div class="ease-slide-up ease-delay-300">Third</div>
 
 <!-- Hover effects -->
-<button class="flow-hover-grow">Grows on hover</button>
-<div    class="flow-hover-glow">Glows on hover</div>
-<div    class="flow-hover-shimmer">Shimmer sweep</div>
-<div    class="flow-card-lift">Lifts on hover</div>
+<button class="ease-hover-grow">Grows on hover</button>
+<div    class="ease-hover-glow">Glows on hover</div>
+<div    class="ease-hover-shimmer">Shimmer sweep</div>
+<div    class="ease-card-lift">Lifts on hover</div>
 ```
 
 ### Buttons
 
 ```html
-<button class="flow-btn flow-btn-primary">Primary</button>
-<button class="flow-btn flow-btn-success">Success</button>
-<button class="flow-btn flow-btn-danger">Danger</button>
-<button class="flow-btn flow-btn-outline">Outline</button>
+<button class="ease-btn ease-btn-primary">Primary</button>
+<button class="ease-btn ease-btn-success">Success</button>
+<button class="ease-btn ease-btn-danger">Danger</button>
+<button class="ease-btn ease-btn-outline">Outline</button>
 
 <!-- With hover animation -->
-<button class="flow-btn flow-btn-primary flow-btn-hover">Animated</button>
+<button class="ease-btn ease-btn-primary ease-btn-hover">Animated</button>
 
 <!-- Sizes + pill -->
-<button class="flow-btn flow-btn-primary flow-btn-sm">Small</button>
-<button class="flow-btn flow-btn-primary flow-btn-lg flow-btn-pill">Large Pill</button>
+<button class="ease-btn ease-btn-primary ease-btn-sm">Small</button>
+<button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill">Large Pill</button>
 ```
 
 ### Cards
 
 ```html
-<div class="flow-card flow-card-shadow flow-card-hover">
-  <div class="flow-card-header">
-    <h3 class="flow-card-title">Title</h3>
+<div class="ease-card ease-card-shadow ease-card-hover">
+  <div class="ease-card-header">
+    <h3 class="ease-card-title">Title</h3>
   </div>
-  <div class="flow-card-body"><p>Content</p></div>
-  <div class="flow-card-footer">
-    <button class="flow-btn flow-btn-primary flow-btn-sm">Action</button>
+  <div class="ease-card-body"><p>Content</p></div>
+  <div class="ease-card-footer">
+    <button class="ease-btn ease-btn-primary ease-btn-sm">Action</button>
   </div>
 </div>
 ```
@@ -199,9 +199,9 @@ Override any CSS variable to theme the entire framework in one block:
 
 ```css
 :root {
-  --flow-color-primary: #f97316;   /* orange */
-  --flow-speed-medium:  500ms;     /* slower */
-  --flow-radius-md:     1rem;      /* rounder */
+  --ease-color-primary: #f97316;   /* orange */
+  --ease-speed-medium:  500ms;     /* slower */
+  --ease-radius-md:     1rem;      /* rounder */
 }
 ```
 
@@ -210,8 +210,8 @@ Override any CSS variable to theme the entire framework in one block:
 ## 📂 File Structure
 
 ```
-flow-css/
-├── flow.css                    ← SINGLE IMPORT ENTRY POINT
+easemotion-css/
+├── easemotion.css                    ← SINGLE IMPORT ENTRY POINT
 │
 ├── core/                       ← MAINTAINER-ONLY
 │   ├── variables.css           ← design tokens
@@ -226,9 +226,9 @@ flow-css/
 ├── submissions/                ← CONTRIBUTOR AREA
 │   ├── README.md               ← submission workflow
 │   └── examples/
-│       ├── hover-grow/         ← [INTEGRATED] → flow-hover-grow
-│       ├── hover-shimmer/      ← [INTEGRATED] → flow-hover-shimmer
-│       ├── card-lift/          ← [INTEGRATED] → flow-card-lift
+│       ├── hover-grow/         ← [INTEGRATED] → ease-hover-grow
+│       ├── hover-shimmer/      ← [INTEGRATED] → ease-hover-shimmer
+│       ├── card-lift/          ← [INTEGRATED] → ease-card-lift
 │       └── button-glow/        ← pending review
 │
 ├── examples/demo.html          ← live showcase
@@ -262,14 +262,14 @@ flow-css/
 
 ## ⚠️ Contribution Policy
 
-Flow CSS is a **curated, maintainer-reviewed framework**. It is not an open-edit project.
+EaseMotion CSS is a **curated, maintainer-reviewed framework**. It is not an open-edit project.
 
 ### What contributors do
 
 ```
 ✅ Add a folder to submissions/examples/your-feature/
 ✅ Include: demo.html, style.css, README.md
-✅ Use any class naming — no flow- prefix required
+✅ Use any class naming — no ease- prefix required
 ✅ One feature per PR
 ```
 
@@ -284,8 +284,8 @@ Flow CSS is a **curated, maintainer-reviewed framework**. It is not an open-edit
 ### How submissions become framework classes
 
 ```
-Your raw CSS     →     Maintainer standardizes     →     flow-* class ships
-.hover-grow           flow-hover-grow                    core/animations.css
+Your raw CSS     →     Maintainer standardizes     →     ease-* class ships
+.hover-grow           ease-hover-grow                    core/animations.css
 ```
 
 ### 🌟 Why contribute?

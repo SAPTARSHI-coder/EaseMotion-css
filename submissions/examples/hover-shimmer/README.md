@@ -9,7 +9,7 @@ Adds a sweeping light-shimmer effect that animates across a card on hover, creat
 ```
 
 **Why is it useful?**  
-Cards are the most common UI element in Flow CSS. A shimmer hover adds motion feedback without relying on heavy JavaScript libraries, and it fits the animation-first philosophy of Flow CSS.
+Cards are the most common UI element in EaseMotion CSS. A shimmer hover adds motion feedback without relying on heavy JavaScript libraries, and it fits the animation-first philosophy of EaseMotion CSS.
 
 ---
 

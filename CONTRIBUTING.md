@@ -1,23 +1,23 @@
-# Contributing to Flow CSS
+# Contributing to EaseMotion CSS
 
-Thank you for your interest in improving Flow CSS.
+Thank you for your interest in improving EaseMotion CSS.
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
-Flow CSS is designed and curated by **Saptarshi Sadhu**. All contributions are reviewed, standardized, and approved by the maintainer before becoming part of the framework.
+EaseMotion CSS is designed and curated by **Saptarshi Sadhu**. All contributions are reviewed, standardized, and approved by the maintainer before becoming part of the framework.
 
 ---
 
 ## The Contribution Model
 
-Flow CSS is **curated**. Contributors do not directly modify the framework source. Instead:
+EaseMotion CSS is **curated**. Contributors do not directly modify the framework source. Instead:
 
 ```
 Contributor                          Maintainer
 ─────────────────────────────────    ─────────────────────────────────────
 Submits a raw HTML + CSS demo        Reviews the submission
-inside submissions/examples/         Decides if it fits Flow CSS
-                                     Standardizes class naming to flow-*
+inside submissions/examples/         Decides if it fits EaseMotion CSS
+                                     Standardizes class naming to ease-*
                                      Optimizes the CSS
                                      Integrates into core/ or components/
                                      Merges the PR
@@ -49,7 +49,7 @@ A self-contained HTML demo. Must work by opening directly in a browser with no s
 
 ### `style.css` (required)
 
-Your raw CSS. Write it however you like — no need to follow the `flow-` naming convention. The maintainer handles all renaming and standardization.
+Your raw CSS. Write it however you like — no need to follow the `ease-` naming convention. The maintainer handles all renaming and standardization.
 
 ### `README.md` (required)
 
@@ -57,7 +57,7 @@ Answer these three questions:
 
 1. **What does this do?** — one sentence.
 2. **How is it used?** — show the HTML class usage.
-3. **Why is it useful?** — explain how it fits Flow CSS's philosophy.
+3. **Why is it useful?** — explain how it fits EaseMotion CSS's philosophy.
 
 ---
 
@@ -66,9 +66,9 @@ Answer these three questions:
 | Who | Rule |
 |-----|------|
 | **Contributors** | Use any class name that makes sense to you |
-| **Maintainer** | Renames everything to follow `flow-kebab-case` convention |
+| **Maintainer** | Renames everything to follow `ease-kebab-case` convention |
 
-You do not need to worry about the `flow-` prefix. Do not try to pre-standardize — just write clear, readable CSS.
+You do not need to worry about the `ease-` prefix. Do not try to pre-standardize — just write clear, readable CSS.
 
 ---
 
@@ -99,7 +99,7 @@ These rules are enforced at PR review. Violations result in immediate close with
 
 ## Opening an Issue First
 
-For any non-trivial feature, **open a GitHub issue before coding**. Use the Feature Request template. This lets you confirm the idea fits Flow CSS before investing time in the code.
+For any non-trivial feature, **open a GitHub issue before coding**. Use the Feature Request template. This lets you confirm the idea fits EaseMotion CSS before investing time in the code.
 
 Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
@@ -125,18 +125,18 @@ Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ## 🔒 Maintainer Control
 
-Flow CSS follows a curated contribution model. The final authority on all decisions rests with the maintainer.
+EaseMotion CSS follows a curated contribution model. The final authority on all decisions rests with the maintainer.
 
 **All contributions are:**
 
-- **Reviewed** — every submission is evaluated for fit with the Flow CSS philosophy
-- **Renamed** — classes are standardized to the `flow-*` naming convention
+- **Reviewed** — every submission is evaluated for fit with the EaseMotion CSS philosophy
+- **Renamed** — classes are standardized to the `ease-*` naming convention
 - **Standardized** — hard-coded values are replaced with CSS custom properties
 - **Approved** — nothing enters the framework without explicit maintainer acceptance
 
 **Final authority: Saptarshi Sadhu**
 
-This is not a democratic framework. The maintainer makes the final call on what enters Flow CSS, how it is named, and when it ships. This is by design — consistency and quality require a single, accountable decision-maker.
+This is not a democratic framework. The maintainer makes the final call on what enters EaseMotion CSS, how it is named, and when it ships. This is by design — consistency and quality require a single, accountable decision-maker.
 
 ```
 Pull requests modifying core/ or components/ directly

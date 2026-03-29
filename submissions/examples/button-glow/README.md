@@ -11,7 +11,7 @@ Adds a color-matched outer glow (`box-shadow`) on button hover. Each color varia
 ```
 
 **Why is it useful?**  
-Glow effects on buttons are visually striking and provide strong hover feedback, especially on dark backgrounds. Unlike a simple `box-shadow`, a color-matched glow feels intentional and premium. This pairs naturally with Flow CSS's existing button system — a single class (`flow-hover-glow`) could activate this without needing per-color variants.
+Glow effects on buttons are visually striking and provide strong hover feedback, especially on dark backgrounds. Unlike a simple `box-shadow`, a color-matched glow feels intentional and premium. This pairs naturally with EaseMotion CSS's existing button system — a single class (`ease-hover-glow`) could activate this without needing per-color variants.
 
 ---
 
