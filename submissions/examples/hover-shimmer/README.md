@@ -17,8 +17,10 @@ Cards are the most common UI element in EaseMotion CSS. A shimmer hover adds mot
 1. Include the CSS file in your project:
 ```html
 <link rel="stylesheet" href="style.css">
+
 2.Apply the class to your element:
 <div class="hover-shimmer">Hover me</div>
+
 This component adds a subtle shimmer animation on hover and is best suited
 for buttons, cards, or call-to-action elements.
 
