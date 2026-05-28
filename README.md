@@ -24,7 +24,12 @@ EaseMotion CSS is a curated, animation-first CSS framework where class names rea
 ```
 
 ---
+⚡ Build beautiful animated interfaces using readable CSS classes.
 
+No build step. No configuration.
+Just link a file and start building.
+
+---
 ## 👤 Maintainer
 
 EaseMotion CSS is designed, curated, and actively maintained by:
