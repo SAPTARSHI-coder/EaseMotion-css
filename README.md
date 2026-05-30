@@ -159,12 +159,22 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
 
+### Magnetic Hover Effect
+
+Creates a subtle magnetic-style interaction by slightly lifting and scaling the element on hover.
+
+```html
+<div class="ease-hover-magnetic">
+  Hover me
+</div>
+```
+
 <!-- Hover effects -->
 <button class="ease-hover-grow">Grows on hover</button>
 <div    class="ease-hover-glow">Glows on hover</div>
 <div    class="ease-hover-shimmer">Shimmer sweep</div>
+<div    class="ease-hover-magnetic">Magnetic hover effect</div>
 <div    class="ease-card-lift">Lifts on hover</div>
-```
 
 ### Buttons
 
