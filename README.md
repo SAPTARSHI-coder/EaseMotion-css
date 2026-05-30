@@ -7,9 +7,23 @@
 Designed and curated by **Saptarshi Sadhu**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/easemotion-css.svg?color=6c63ff)](https://www.npmjs.com/package/easemotion-css)
+[![jsDelivr hits](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-22c55e.svg)](./CONTRIBUTING.md)
 [![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/easemotion-css?style=flat&color=6c63ff)](https://github.com/SAPTARSHI-coder/easemotion-css/stargazers)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa.svg)](https://github.com/SAPTARSHI-coder)
+
+---
+
+### **🚀 One line. That's all you need.**
+
+**`https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css`**
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+```
+
+> Copy it. Paste it. Ship it. No npm. No build step. No config.
 
 </div>
 
@@ -42,29 +56,41 @@ This is a controlled framework — all contributions are reviewed and standardiz
 
 ## 🚀 Quick Start
 
-**Option 1 — Single import (recommended)**
+**Option 1 — CDN (fastest, zero setup)**
 
 ```html
-<link rel="stylesheet" href="easemotion.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
 ```
 
-**Option 2 — Import only what you need**
+That's it. Works anywhere, zero installation.
+
+**Option 2 — npm**
+
+```bash
+npm install easemotion-css
+```
+
+```html
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+```
+
+**Option 3 — Import only what you need**
 
 ```html
 <!-- Core: always required, load in this order -->
-<link rel="stylesheet" href="core/variables.css" />
-<link rel="stylesheet" href="core/base.css" />
-<link rel="stylesheet" href="core/animations.css" />
-<link rel="stylesheet" href="core/utilities.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
 
 <!-- Components: add only what you use -->
-<link rel="stylesheet" href="components/buttons.css" />
-<link rel="stylesheet" href="components/cards.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/buttons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css" />
 ```
 
 > ⚠️ **`variables.css` must always load first.** Every other file depends on the CSS custom properties it defines.
 
-No build step. No Node. No npm. Open your HTML file and it works.
+No build step. No Node. No configuration. Open your HTML file and it works.
 
 ---
 

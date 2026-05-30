@@ -40,7 +40,7 @@
 <!-- Show the class usage in HTML -->
 ```
 
-**Why does it fit Flow CSS?**
+**Why does it fit EaseMotion CSS?**
 
 <!-- Explain how this fits the human-readable, animation-first philosophy -->
 
