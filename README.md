@@ -467,17 +467,56 @@ Your raw CSS  →  Maintainer standardizes  →  ease-* class ships
 
 ---
 
-## 🏆 Top Contributors
+## 🏆 Contributors
 
-These contributors have had their submissions accepted and integrated into the framework:
+Everyone who has opened a PR, filed an issue, left a review, or contributed an idea — thank you. This table grows with every merged contribution.
 
-| Rank | Contributor | Merged PRs | Area |
-|------|-------------|:----------:|------|
-| 🥇 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | **7** | Animations, hover effects |
-| 🥈 | [@shresthbhargava](https://github.com/shresthbhargava) | **5** | Components, utilities |
-| 🥉 | *Your name here* | — | [Submit your first PR →](./CONTRIBUTING.md) |
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/saurabhhhcodes">
+        <img src="https://github.com/saurabhhhcodes.png" width="72px" style="border-radius:50%" alt="saurabhhhcodes"/><br/>
+        <sub><b>saurabhhhcodes</b></sub>
+      </a><br/>
+      <sub>7 PRs merged</sub><br/>
+      <sub>Animations · Hover effects</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/shresthbhargava">
+        <img src="https://github.com/shresthbhargava.png" width="72px" style="border-radius:50%" alt="shresthbhargava"/><br/>
+        <sub><b>shresthbhargava</b></sub>
+      </a><br/>
+      <sub>5 PRs merged</sub><br/>
+      <sub>Components · Utilities</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/AnanyaTiwari850">
+        <img src="https://github.com/AnanyaTiwari850.png" width="72px" style="border-radius:50%" alt="AnanyaTiwari850"/><br/>
+        <sub><b>AnanyaTiwari850</b></sub>
+      </a><br/>
+      <sub>Active contributor</sub><br/>
+      <sub>Issues · Feature ideas</sub>
+    </td>
+    <td align="center">
+      <a href="https://github.com/smriti-nyx">
+        <img src="https://github.com/smriti-nyx.png" width="72px" style="border-radius:50%" alt="smriti-nyx"/><br/>
+        <sub><b>smriti-nyx</b></sub>
+      </a><br/>
+      <sub>Active contributor</sub><br/>
+      <sub>Issues · Feature ideas</sub>
+    </td>
+    <td align="center">
+      <a href="./CONTRIBUTING.md">
+        <img src="https://via.placeholder.com/72/6c63ff/ffffff?text=%3F" width="72px" style="border-radius:50%" alt="You"/><br/>
+        <sub><b>You?</b></sub>
+      </a><br/>
+      <sub>Submit a PR</sub><br/>
+      <sub>Join the list →</sub>
+    </td>
+  </tr>
+</table>
 
-> Rankings update with each merged PR. Every contributor is credited in [CHANGELOG.md](./CHANGELOG.md) permanently.
+> 📌 Rankings update with every merged PR. Your avatar appears here automatically once your contribution is accepted. Full history in [CHANGELOG.md](./CHANGELOG.md).
 
 ---
 
