@@ -507,7 +507,7 @@ Everyone who has opened a PR, filed an issue, left a review, or contributed an i
     </td>
     <td align="center">
       <a href="./CONTRIBUTING.md">
-        <img src="https://via.placeholder.com/72/6c63ff/ffffff?text=%3F" width="72px" style="border-radius:50%" alt="You"/><br/>
+        <img src="https://img.shields.io/badge/%3F-Join%20Us-6c63ff?style=flat-square&labelColor=1a1830" width="72px" alt="You"/><br/>
         <sub><b>You?</b></sub>
       </a><br/>
       <sub>Submit a PR</sub><br/>
