@@ -1,9 +1,10 @@
 ---
-name: 🐛 Bug Report
+name: "\U0001F41B Bug Report"
 about: Report a broken class, unexpected visual glitch, or broken animation
 title: "[BUG] "
 labels: bug
 assignees: SAPTARSHI-coder
+
 ---
 
 ## 🐛 What's broken?
