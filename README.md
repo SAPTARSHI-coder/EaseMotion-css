@@ -154,24 +154,111 @@ Every class in the framework has passed through this process. The curation is wh
 
 ---
 
-## 📦 Usage Examples
+## 📦 CDN, Installation & Usage
 
-### Layout
+### ⚡ CDN — Zero setup, copy and go
 
 ```html
-<!-- Center — the most-used utility -->
-<div class="ease-center">Centered</div>
+<!-- Full framework — recommended for most projects -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+```
 
-<!-- Responsive auto-fit grid -->
-<div class="ease-grid ease-grid-auto ease-gap-6">
-  <div>Card 1</div><div>Card 2</div><div>Card 3</div>
-</div>
+> Powered by jsDelivr — globally cached, always fast, no account needed.
 
-<!-- Flex row: space between -->
-<div class="ease-flex ease-justify-between ease-items-center ease-padding-4">
-  <span>Left</span><span>Right</span>
+### 📦 npm Install
+
+```bash
+npm install easemotion-css
+```
+
+Then in your HTML:
+
+```html
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+```
+
+Or in CSS / PostCSS:
+
+```css
+@import "easemotion-css/easemotion.css";
+```
+
+### 🧩 Import Only What You Need
+
+```html
+<!-- Core (always required, load in this order) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
+
+<!-- Components — add only what you use -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/buttons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css" />
+```
+
+> ⚠️ `variables.css` **must always load first** — every other file depends on the CSS tokens it defines.
+
+---
+
+## 💡 Usage Tips
+
+### Stack classes freely
+
+```html
+<!-- Combine layout + animation + hover in one element -->
+<div class="ease-center ease-fade-in ease-hover-lift">
+  <button class="ease-btn ease-btn-primary ease-btn-pill ease-btn-hover">
+    Click me
+  </button>
 </div>
 ```
+
+### Stagger entrance animations
+
+```html
+<!-- Each item enters 100ms after the previous -->
+<div class="ease-slide-up ease-delay-100">First</div>
+<div class="ease-slide-up ease-delay-200">Second</div>
+<div class="ease-slide-up ease-delay-300">Third</div>
+```
+
+### Theme the whole framework in one block
+
+```css
+:root {
+  --ease-color-primary: #f97316;   /* swap to orange */
+  --ease-speed-medium:  500ms;     /* slow everything down */
+  --ease-radius-md:     1rem;      /* rounder corners */
+}
+```
+
+### Responsive grid, no media queries needed
+
+```html
+<!-- Auto-fits as many columns as the screen allows -->
+<div class="ease-grid ease-grid-auto ease-gap-6">
+  <div class="ease-card">Card 1</div>
+  <div class="ease-card">Card 2</div>
+  <div class="ease-card">Card 3</div>
+</div>
+```
+
+### Build a hero in 5 lines
+
+```html
+<section class="ease-center ease-padding-16">
+  <h1 class="ease-fade-in">Build faster.</h1>
+  <p class="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
+  <button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-hover-grow ease-delay-300">
+    Get Started →
+  </button>
+</section>
+```
+
+---
+
+## 📦 More Examples
 
 ### Animations
 
@@ -179,11 +266,6 @@ Every class in the framework has passed through this process. The curation is wh
 <!-- Entrance (fires on load) -->
 <h1 class="ease-fade-in">Hello</h1>
 <p  class="ease-slide-up ease-delay-200">Subtitle</p>
-
-<!-- Staggered sequence -->
-<div class="ease-slide-up ease-delay-100">First</div>
-<div class="ease-slide-up ease-delay-200">Second</div>
-<div class="ease-slide-up ease-delay-300">Third</div>
 
 <!-- Hover effects -->
 <button class="ease-hover-grow">Grows on hover</button>
@@ -211,15 +293,22 @@ Every class in the framework has passed through this process. The curation is wh
 ### Cards
 
 ```html
+<!-- Hover card with shadow -->
 <div class="ease-card ease-card-shadow ease-card-hover">
   <div class="ease-card-header">
     <h3 class="ease-card-title">Title</h3>
   </div>
-  <div class="ease-card-body"><p>Content</p></div>
+  <div class="ease-card-body"><p>Content goes here.</p></div>
   <div class="ease-card-footer">
     <button class="ease-btn ease-btn-primary ease-btn-sm">Action</button>
   </div>
 </div>
+
+<!-- Glassmorphism card -->
+<div class="ease-card ease-card-glass">Glass effect</div>
+
+<!-- Accent border card -->
+<div class="ease-card ease-card-accent">Highlighted</div>
 ```
 
 ---
@@ -330,6 +419,20 @@ See [submissions/README.md](./submissions/README.md) for the full workflow.
 
 ---
 
+## 🏆 Top Contributors
+
+These contributors have had their submissions accepted into the framework:
+
+| Rank | Contributor | Merged PRs |
+|------|-------------|------------|
+| 🥇 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 7 |
+| 🥈 | [@shresthbhargava](https://github.com/shresthbhargava) | 5 |
+| 🥉 | *(your next merged PR earns you a spot here!)* | — |
+
+> Rankings update with each merged PR. Your submission folder stays in the repo permanently as a contribution record.
+
+---
+
 ## 🌐 Official Maintainer
 
 **Saptarshi Sadhu**  
@@ -345,6 +448,36 @@ MIT © 2026 Saptarshi Sadhu — see [LICENSE](./LICENSE).
 
 ---
 
+## 🙌 All Contributors
+
+A huge thank you to everyone who has contributed to EaseMotion CSS. Every submission — no matter how small — makes this framework better for everyone.
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  To add yourself: open a PR, get it merged, done.       ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+
+| Contributor | Contributions |
+|-------------|---------------|
+| [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 7 merged PRs — animations, hover effects |
+| [@shresthbhargava](https://github.com/shresthbhargava) | 5 merged PRs — components, utilities |
+| [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | Issue discussions, feature ideas |
+| [@smriti-nyx](https://github.com/smriti-nyx) | Issue discussions, feature ideas |
+| *You?* | [Submit your first PR →](./CONTRIBUTING.md) |
+
+> Your name appears here permanently once your PR is merged. It's a small thing that means a lot.
+
+---
+
 <div align="center">
-Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first
+
+**Thank you for building EaseMotion CSS with me.** 💜
+
+Every star, every PR, every issue — it all adds up.
+
+*— Saptarshi Sadhu · [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)*
+
+---
+
+Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first &nbsp;·&nbsp; Community-driven
+
 </div>
