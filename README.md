@@ -515,9 +515,9 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 107 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 108 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
-| 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 9 |
+| 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 10 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
 | 5 | [@bhavyabhardwaj001](https://github.com/bhavyabhardwaj001) | 6 |
 | 6 | [@AgnusSerena](https://github.com/AgnusSerena) | 4 |
