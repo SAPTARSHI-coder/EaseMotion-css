@@ -515,34 +515,35 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 104 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 105 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
 | 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 9 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
 | 5 | [@bhavyabhardwaj001](https://github.com/bhavyabhardwaj001) | 6 |
-| 6 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
-| 7 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
-| 8 | [@JoyceHanan](https://github.com/JoyceHanan) | 3 |
-| 9 | [@hiitarun1](https://github.com/hiitarun1) | 3 |
-| 10 | [@Aditisingh0102](https://github.com/Aditisingh0102) | 2 |
-| 11 | [@AgnusSerena](https://github.com/AgnusSerena) | 2 |
-| 12 | [@dishamaurya081-create](https://github.com/dishamaurya081-create) | 2 |
-| 13 | [@Jeet-Srivastava](https://github.com/Jeet-Srivastava) | 2 |
-| 14 | [@mohamedfahim18](https://github.com/mohamedfahim18) | 2 |
-| 15 | [@Premshaw23](https://github.com/Premshaw23) | 2 |
-| 16 | [@SaiRishithaK](https://github.com/SaiRishithaK) | 2 |
-| 17 | [@adittya-code](https://github.com/adittya-code) | 2 |
-| 18 | [@lokeshkumar69](https://github.com/lokeshkumar69) | 2 |
-| 19 | [@Anshu2607-iiitr](https://github.com/Anshu2607-iiitr) | 1 |
-| 20 | [@AyushPrad2907](https://github.com/AyushPrad2907) | 1 |
-| 21 | [@maheshbhojane1](https://github.com/maheshbhojane1) | 1 |
-| 22 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
-| 23 | [@Rashi1404](https://github.com/Rashi1404) | 1 |
-| 24 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
-| 25 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
-| 26 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
-| 27 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
-| 28 | [@rachika08](https://github.com/rachika08) | 1 |
+| 6 | [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | 3 |
+| 7 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
+| 8 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
+| 9 | [@JoyceHanan](https://github.com/JoyceHanan) | 3 |
+| 10 | [@hiitarun1](https://github.com/hiitarun1) | 3 |
+| 11 | [@Aditisingh0102](https://github.com/Aditisingh0102) | 2 |
+| 12 | [@AgnusSerena](https://github.com/AgnusSerena) | 2 |
+| 13 | [@dishamaurya081-create](https://github.com/dishamaurya081-create) | 2 |
+| 14 | [@Jeet-Srivastava](https://github.com/Jeet-Srivastava) | 2 |
+| 15 | [@mohamedfahim18](https://github.com/mohamedfahim18) | 2 |
+| 16 | [@Premshaw23](https://github.com/Premshaw23) | 2 |
+| 17 | [@SaiRishithaK](https://github.com/SaiRishithaK) | 2 |
+| 18 | [@adittya-code](https://github.com/adittya-code) | 2 |
+| 19 | [@lokeshkumar69](https://github.com/lokeshkumar69) | 2 |
+| 20 | [@Anshu2607-iiitr](https://github.com/Anshu2607-iiitr) | 1 |
+| 21 | [@AyushPrad2907](https://github.com/AyushPrad2907) | 1 |
+| 22 | [@maheshbhojane1](https://github.com/maheshbhojane1) | 1 |
+| 23 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
+| 24 | [@Rashi1404](https://github.com/Rashi1404) | 1 |
+| 25 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
+| 26 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
+| 27 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
+| 28 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
+| 29 | [@rachika08](https://github.com/rachika08) | 1 |
 <!-- CONTRIBUTORS-TABLE-END -->
 
 > Your name appears here automatically once your PR is merged. See full credits in [CHANGELOG.md](./CHANGELOG.md).
