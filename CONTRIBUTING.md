@@ -105,6 +105,28 @@ Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ---
 
+## 🕑 Issue Cooldown Rule
+
+**Maximum 2 active assigned issues per contributor at any time.**
+
+This rule exists to keep assignments fair and ensure active contributors can always pick up work.
+
+### What this means
+
+```
+✅ You have 0–1 active assignments → request a new issue freely
+✅ You have 2 active assignments  → finish or unassign one first
+❌ You have 2+ active assignments → new assignment requests will be declined
+```
+
+### Inactivity
+
+If an assigned issue has **no progress for 5 days**, the maintainer will unassign it and open it for others.
+
+> This rule is enforced by the maintainer. It is not personal — it keeps the project healthy for everyone.
+
+---
+
 ## Pull Request Process
 
 1. **Fork** this repository
@@ -123,27 +145,47 @@ Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ---
 
-## 🔒 Maintainer Control
+## 🔒 Core Protection Philosophy
 
-EaseMotion CSS follows a curated contribution model. The final authority on all decisions rests with the maintainer.
-
-**All contributions are:**
-
-- **Reviewed** — every submission is evaluated for fit with the EaseMotion CSS philosophy
-- **Renamed** — classes are standardized to the `ease-*` naming convention
-- **Standardized** — hard-coded values are replaced with CSS custom properties
-- **Approved** — nothing enters the framework without explicit maintainer acceptance
-
-**Final authority: Saptarshi Sadhu**
-
-This is not a democratic framework. The maintainer makes the final call on what enters EaseMotion CSS, how it is named, and when it ships. This is by design — consistency and quality require a single, accountable decision-maker.
+EaseMotion CSS follows a strict **submission-first** pipeline. No PR should ever modify `core/` or `components/` directly.
 
 ```
-Pull requests modifying core/ or components/ directly
-will be closed without review, regardless of quality.
+PR submitted
+    ↓
+submissions/examples/ (contributor writes raw CSS here)
+    ↓
+Maintainer tests it
+    ↓
+Maintainer standardizes to ease-* naming
+    ↓
+Maintainer promotes to core/ or components/
+    ↓
+PR merged
 ```
 
-If you disagree with a decision, open an issue to discuss it. PRs are not the place for debate.
+This ensures:
+- **Every class is framework-quality** before it ships
+- **Naming stays consistent** across the entire API
+- **No regressions** from unreviewed direct edits
+
+PRs that touch `core/` or `components/` will be closed immediately, regardless of quality.
+
+---
+
+## 🏷️ Labels System
+
+The maintainer uses the following labels to communicate submission status:
+
+| Label | Meaning |
+|-------|---------|
+| `curated` | Submission accepted into the framework |
+| `maintainer-approved` | Reviewed and approved, pending integration |
+| `featured` | Exceptional submission — will be showcased in docs |
+| `good first issue` | Great starting point for new contributors |
+| `animation` | Hover effects, entrance animations, keyframes |
+| `component` | New UI components |
+| `enhancement` | Improvements to existing classes |
+| `documentation` | README, docs, submission guide updates |
 
 ---
 
