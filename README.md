@@ -38,6 +38,27 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 ---
 
+## ⭐ Support the Project
+
+If EaseMotion CSS saves you time or helps your learning journey, please consider supporting it.
+
+Most people simply forget. This is your reminder. 😊
+
+<div align="center">
+
+| Action | Why it matters |
+|--------|----------------|
+| [⭐ **Star the repo**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers) | Helps more developers discover the project |
+| [🍴 **Fork and contribute**](./CONTRIBUTING.md) | Your idea could become a real framework class |
+| [🐞 **Report an issue**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) | Bugs you catch make it better for everyone |
+| [💡 **Suggest a feature**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) | Good ideas ship faster than you think |
+
+</div>
+
+> Stars cost nothing and mean everything to an independent open-source project. If this saved you even 10 minutes, it's worth a click.
+
+---
+
 ## 📊 Project Statistics
 
 <div align="center">
@@ -201,6 +222,7 @@ Every class in the framework has passed through this process. The curation is wh
 <h3 class="ease-slide-in-left">Slide from left</h3>
 <h4 class="ease-zoom-in">Zoom in</h4>
 <h5 class="ease-flip">3D flip</h5>
+<h5>class="ease-contract-image-entrance">Contract image entrance</h5>
 
 <!-- Staggered sequence — each item 100ms after previous -->
 <div class="ease-slide-up ease-delay-100">First</div>
