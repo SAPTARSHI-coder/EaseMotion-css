@@ -8,4 +8,4 @@ Smoothly scales an element down to 95% of its original size when hovered.
 <button class="hover-scale-down">Click Me</button>
 ```
 **Why is it useful?**
-This provides immediate, satisfying visual feedback for interactive elements like toggle states, active buttons, or clickable cards. It serves as the perfect complement to the existing ease-hover-grow utility.
+Scale-down motion is a familiar pattern for toggle states, active buttons, and clickable cards to simulate a physical press. This fits EaseMotion CSS because it is a small, dependency-free, transform-based animation that provides immediate tactile feedback, making it easy for the maintainer to standardize into a configurable utility.
