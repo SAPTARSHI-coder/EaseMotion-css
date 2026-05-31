@@ -222,6 +222,7 @@ Every class in the framework has passed through this process. The curation is wh
 <h3 class="ease-slide-in-left">Slide from left</h3>
 <h4 class="ease-zoom-in">Zoom in</h4>
 <h5 class="ease-flip">3D flip</h5>
+<h5>class="ease-contract-image-entrance">Contract image entrance</h5>
 
 <!-- Staggered sequence — each item 100ms after previous -->
 <div class="ease-slide-up ease-delay-100">First</div>
@@ -245,6 +246,7 @@ Every class in the framework has passed through this process. The curation is wh
 <a      class="ease-hover-underline">Animated underline</a>
 ```
 
+Applies a quick squish animation during hover, focus, and active interactions.
 ### Layout Utilities
 
 ```html
@@ -277,6 +279,9 @@ Every class in the framework has passed through this process. The curation is wh
 
 <!-- With hover animation -->
 <button class="ease-btn ease-btn-primary ease-btn-hover">Animated</button>
+
+<!-- With squish button -->
+<button class="ease-btn ease-btn-primary ease-squish-button">Squish Me</button>
 
 <!-- Sizes + shapes -->
 <button class="ease-btn ease-btn-primary ease-btn-sm">Small</button>
