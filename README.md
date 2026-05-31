@@ -515,12 +515,12 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 106 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 107 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
 | 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 9 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
 | 5 | [@bhavyabhardwaj001](https://github.com/bhavyabhardwaj001) | 6 |
-| 6 | [@AgnusSerena](https://github.com/AgnusSerena) | 3 |
+| 6 | [@AgnusSerena](https://github.com/AgnusSerena) | 4 |
 | 7 | [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | 3 |
 | 8 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
 | 9 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
