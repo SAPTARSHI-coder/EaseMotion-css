@@ -245,6 +245,7 @@ Every class in the framework has passed through this process. The curation is wh
 <div    class="ease-hover-lift">Lifts with shadow</div>
 <div    class="ease-hover-shimmer">Shimmer sweep effect</div>
 <a      class="ease-hover-underline">Animated underline</a>
+<span   class="ease-hover-bounce-text">Bounce!</span>
 ```
 
 Applies a quick squish animation during hover, focus, and active interactions.
