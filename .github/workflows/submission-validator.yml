@@ -1,0 +1,139 @@
+name: PR Submission Validator
+
+on:
+  pull_request:
+    paths:
+      - 'submissions/examples/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate:
+    name: Validate Examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Validate Submissions
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // 1. Get the list of changed files in this PR
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            // 2. Identify unique folders modified under submissions/examples/
+            const exampleFolders = new Set();
+            for (const file of files) {
+              if (file.filename.startsWith('submissions/examples/')) {
+                const parts = file.filename.split('/');
+                if (parts.length >= 3) {
+                  // submissions/examples/feature-name
+                  exampleFolders.add(`${parts[0]}/${parts[1]}/${parts[2]}`);
+                }
+              }
+            }
+
+            if (exampleFolders.size === 0) {
+              console.log('No files modified inside submissions/examples/ folders.');
+              return;
+            }
+
+            // 3. Verify each folder contains the required files
+            const requiredFiles = ['demo.html', 'style.css', 'README.md'];
+            const failures = [];
+
+            for (const folder of exampleFolders) {
+              const missing = [];
+              for (const reqFile of requiredFiles) {
+                const filePath = path.join(process.env.GITHUB_WORKSPACE, folder, reqFile);
+                if (!fs.existsSync(filePath)) {
+                  missing.push(reqFile);
+                }
+              }
+              if (missing.length > 0) {
+                failures.push({ folder, missing });
+              }
+            }
+
+            // 4. Handle failures by commenting and failing the step
+            if (failures.length > 0) {
+              let commentBody = `### ⚠️ Submission Validation Failed\n\n`;
+              commentBody += `Thank you for your pull request! However, the validation check failed because some required files are missing. Under our **[Contributing Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md)**, every submission folder must contain exactly **three files**: \`demo.html\`, \`style.css\`, and \`README.md\`.\n\n`;
+              
+              for (const fail of failures) {
+                commentBody += `#### 📁 Folder: \`${fail.folder}\`\n`;
+                commentBody += `Missing required files:\n`;
+                for (const file of fail.missing) {
+                  commentBody += `- ❌ \`${file}\`\n`;
+                }
+                commentBody += `\n`;
+              }
+              
+              commentBody += `Please add the missing files to this branch and push the updates. The validator will automatically re-run!`;
+
+              // Find if there is an existing bot comment from a previous run to avoid spamming
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+              });
+
+              const botComment = comments.find(comment => 
+                comment.user.type === 'Bot' && 
+                comment.body.includes('Submission Validation Failed')
+              );
+
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: commentBody
+                });
+                console.log('Updated existing failure comment.');
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  body: commentBody
+                });
+                console.log('Posted new failure comment.');
+              }
+
+              core.setFailed('PR is missing required submission files.');
+            } else {
+              console.log('All submissions validated successfully!');
+              
+              // If it passed, but there was a previous failure comment, we can edit it to show success
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+              });
+
+              const botComment = comments.find(comment => 
+                comment.user.type === 'Bot' && 
+                (comment.body.includes('Submission Validation Failed') || comment.body.includes('Submission Validation Passed'))
+              );
+
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: `### ✅ Submission Validation Passed\n\nAll required files (\`demo.html\`, \`style.css\`, and \`README.md\`) are now present. Thank you!`
+                });
+                console.log('Updated previous comment to show success.');
+              }
+            }
