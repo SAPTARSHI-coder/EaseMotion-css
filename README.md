@@ -515,7 +515,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 108 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 109 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
 | 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 10 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
@@ -534,16 +534,16 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 | 17 | [@SaiRishithaK](https://github.com/SaiRishithaK) | 2 |
 | 18 | [@adittya-code](https://github.com/adittya-code) | 2 |
 | 19 | [@lokeshkumar69](https://github.com/lokeshkumar69) | 2 |
-| 20 | [@Anshu2607-iiitr](https://github.com/Anshu2607-iiitr) | 1 |
-| 21 | [@AyushPrad2907](https://github.com/AyushPrad2907) | 1 |
-| 22 | [@maheshbhojane1](https://github.com/maheshbhojane1) | 1 |
-| 23 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
-| 24 | [@Rashi1404](https://github.com/Rashi1404) | 1 |
-| 25 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
-| 26 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
-| 27 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
-| 28 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
-| 29 | [@rachika08](https://github.com/rachika08) | 1 |
+| 20 | [@rishikareddy771](https://github.com/rishikareddy771) | 2 |
+| 21 | [@Anshu2607-iiitr](https://github.com/Anshu2607-iiitr) | 1 |
+| 22 | [@AyushPrad2907](https://github.com/AyushPrad2907) | 1 |
+| 23 | [@maheshbhojane1](https://github.com/maheshbhojane1) | 1 |
+| 24 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
+| 25 | [@Rashi1404](https://github.com/Rashi1404) | 1 |
+| 26 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
+| 27 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
+| 28 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
+| 29 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
 <!-- CONTRIBUTORS-TABLE-END -->
 
 > Your name appears here automatically once your PR is merged. See full credits in [CHANGELOG.md](./CHANGELOG.md).
