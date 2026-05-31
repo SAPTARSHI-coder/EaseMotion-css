@@ -515,7 +515,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 100 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 101 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
 | 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 8 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
@@ -539,8 +539,9 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 | 22 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
 | 23 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
 | 24 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
-| 25 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
-| 26 | [@rachika08](https://github.com/rachika08) | 1 |
+| 25 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
+| 26 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
+| 27 | [@rachika08](https://github.com/rachika08) | 1 |
 <!-- CONTRIBUTORS-TABLE-END -->
 
 > Your name appears here automatically once your PR is merged. See full credits in [CHANGELOG.md](./CHANGELOG.md).
