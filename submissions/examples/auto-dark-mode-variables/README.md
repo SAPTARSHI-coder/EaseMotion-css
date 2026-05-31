@@ -9,6 +9,9 @@ Adds a raw HTML and CSS demo showing how EaseMotion tokens can support automatic
 - Keeps all colors centralized in `:root` variables
 - Includes a responsive card preview with adaptive background, text, border, shadow, and accent tokens
 
+## Why it fits EaseMotion CSS
+This feature keeps theme behavior lightweight, reusable, and dependency-free. It complements EaseMotion CSS by making motion-focused UI surfaces automatically adapt to the user's preferred color scheme without extra JavaScript or framework setup.
+
 ## Usage
 Define the default light palette in `:root`, then override only the token values inside the dark color-scheme media query:
 
