@@ -1,18 +1,24 @@
-# [Animation Name]
+# [Your Feature Name]
 
-## What it does
-Brief description of the animation effect.
+## What does this do?
+[One sentence: describe what your animation/effect does.]
 
-## Demo link
-Open `demo.html` directly in browser — no server needed.
+## How is it used?
+Add the class to any HTML element:
 
-## Tech stack
-Pure CSS — no JavaScript.
+    <div class="your-class-name">Your content here</div>
 
-## Usage
-```html
-<div class="ease-[your-class]">Element</div>
-```
+## Why is it useful?
+[Explain how this fits EaseMotion CSS — what problem does it solve?
+What kind of UI element or interaction is it designed for?]
 
-## Contribution steps
-See [CONTRIBUTING.md](../../../CONTRIBUTING.md)
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
