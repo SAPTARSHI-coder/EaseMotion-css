@@ -510,53 +510,6 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 </div>
 
-<!-- CONTRIBUTORS-TABLE-START -->
-> 📌 Top contributors — auto-updated by GitHub Actions on every merge to main.
-
-| # | Contributor | Contributions |
-|---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 110 |
-| 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
-| 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 10 |
-| 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
-| 5 | [@bhavyabhardwaj001](https://github.com/bhavyabhardwaj001) | 6 |
-| 6 | [@AgnusSerena](https://github.com/AgnusSerena) | 4 |
-| 7 | [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | 3 |
-| 8 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
-| 9 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
-| 10 | [@JoyceHanan](https://github.com/JoyceHanan) | 3 |
-| 11 | [@hiitarun1](https://github.com/hiitarun1) | 3 |
-| 12 | [@Aditisingh0102](https://github.com/Aditisingh0102) | 2 |
-| 13 | [@AyushPrad2907](https://github.com/AyushPrad2907) | 2 |
-| 14 | [@dishamaurya081-create](https://github.com/dishamaurya081-create) | 2 |
-| 15 | [@Jeet-Srivastava](https://github.com/Jeet-Srivastava) | 2 |
-| 16 | [@mohamedfahim18](https://github.com/mohamedfahim18) | 2 |
-| 17 | [@Premshaw23](https://github.com/Premshaw23) | 2 |
-| 18 | [@SaiRishithaK](https://github.com/SaiRishithaK) | 2 |
-| 19 | [@adittya-code](https://github.com/adittya-code) | 2 |
-| 20 | [@lokeshkumar69](https://github.com/lokeshkumar69) | 2 |
-| 21 | [@rishikareddy771](https://github.com/rishikareddy771) | 2 |
-| 22 | [@Anshu2607-iiitr](https://github.com/Anshu2607-iiitr) | 1 |
-| 23 | [@maheshbhojane1](https://github.com/maheshbhojane1) | 1 |
-| 24 | [@Pr241singh](https://github.com/Pr241singh) | 1 |
-| 25 | [@Rashi1404](https://github.com/Rashi1404) | 1 |
-| 26 | [@RaviCoderWallah](https://github.com/RaviCoderWallah) | 1 |
-| 27 | [@sinchana-aiml](https://github.com/sinchana-aiml) | 1 |
-| 28 | [@kejriwalkaushal04](https://github.com/kejriwalkaushal04) | 1 |
-| 29 | [@khushboo-khatoon](https://github.com/khushboo-khatoon) | 1 |
-<!-- CONTRIBUTORS-TABLE-END -->
-
-> Your name appears here automatically once your PR is merged. See full credits in [CHANGELOG.md](./CHANGELOG.md).
-
----
-
-## 📈 Star History
-
-<div align="center">
-
-[![Star History Chart](https://starchart.cc/SAPTARSHI-coder/EaseMotion-css.svg)](https://starchart.cc/SAPTARSHI-coder/EaseMotion-css)
-
-</div>
 
 ---
 
