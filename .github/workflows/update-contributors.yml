@@ -2,10 +2,10 @@ name: Update Contributors
 
 on:
   push:
-    branches: [main]          # fires on every merge to main (most reliable)
+    branches: [main]
   schedule:
-    - cron: "0 0 * * 0"      # every Sunday at midnight UTC
-  workflow_dispatch:           # manual trigger from GitHub UI
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
 
 jobs:
   update-contributors:
@@ -19,60 +19,93 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Fetch contributors from GitHub API
+      - name: Fetch all contributors (paginated)
         run: |
-          curl -s \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/contributors?per_page=30" \
-            > /tmp/contributors.json
-          echo "Fetched contributors:"
-          cat /tmp/contributors.json | python3 -c "
-          import json, sys
-          data = json.load(sys.stdin)
-          for c in data:
-              print(c.get('login',''), c.get('contributions', 0), c.get('type',''))
-          "
+          # Fetch all pages until empty — handles repos with >100 contributors too
+          page=1
+          all_contributors="[]"
+
+          while true; do
+            response=$(curl -s \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/contributors?per_page=100&page=${page}&anon=false")
+
+            count=$(echo "$response" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo 0)
+
+            if [ "$count" -eq "0" ]; then
+              break
+            fi
+
+            # Merge into all_contributors
+            all_contributors=$(echo "$all_contributors $response" | python3 -c "
+          import sys, json
+          parts = sys.stdin.read().split(']')[:-1]
+          combined = []
+          for p in parts:
+              p = p.strip().lstrip('[').strip()
+              if p:
+                  combined.extend(json.loads('[' + p + ']'))
+          print(json.dumps(combined))
+          ")
+
+            page=$((page + 1))
+            echo "Fetched page ${page}, total so far: $(echo "$all_contributors" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")"
+          done
+
+          echo "$all_contributors" > /tmp/contributors.json
+          echo "Total contributors fetched: $(echo "$all_contributors" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))")"
 
       - name: Update README contributors table
         run: |
           cat > /tmp/update_contributors.py << 'PYEOF'
-          import json, re
+import json, re
 
-          with open('/tmp/contributors.json') as f:
-              data = json.load(f)
+with open('/tmp/contributors.json') as f:
+    data = json.load(f)
 
-          humans = [c for c in data if c.get('type') != 'Bot' and '[bot]' not in c.get('login','').lower()]
+# Filter out bots
+humans = [
+    c for c in data
+    if c.get('type') != 'Bot'
+    and '[bot]' not in c.get('login', '').lower()
+    and 'github-actions' not in c.get('login', '').lower()
+]
 
-          lines = [
-              '<!-- CONTRIBUTORS-TABLE-START -->',
-              '> 📌 Top contributors — auto-updated by GitHub Actions on every merge to main.',
-              '',
-              '| # | Contributor | Contributions |',
-              '|---|-------------|:-------------:|',
-          ]
-          for i, c in enumerate(humans, 1):
-              lines.append(f"| {i} | [@{c['login']}](https://github.com/{c['login']}) | {c['contributions']} |")
-          lines.append('<!-- CONTRIBUTORS-TABLE-END -->')
+print(f"Human contributors: {len(humans)}")
 
-          new_block = '\n'.join(lines)
+lines = [
+    '<!-- CONTRIBUTORS-TABLE-START -->',
+    '> 📌 Top contributors — auto-updated by GitHub Actions on every merge to main.',
+    '',
+    '| # | Contributor | Contributions |',
+    '|---|-------------|:-------------:|',
+]
+for i, c in enumerate(humans, 1):
+    lines.append(f"| {i} | [@{c['login']}](https://github.com/{c['login']}) | {c['contributions']} |")
+lines.append('<!-- CONTRIBUTORS-TABLE-END -->')
 
-          with open('README.md', 'r', encoding='utf-8') as f:
-              content = f.read()
+new_block = '\n'.join(lines)
 
-          pattern = re.compile(r'<!-- CONTRIBUTORS-TABLE-START -->.*?<!-- CONTRIBUTORS-TABLE-END -->', re.DOTALL)
+with open('README.md', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-          if not pattern.search(content):
-              print('ERROR: Markers not found in README.md')
-              exit(1)
+pattern = re.compile(
+    r'<!-- CONTRIBUTORS-TABLE-START -->.*?<!-- CONTRIBUTORS-TABLE-END -->',
+    re.DOTALL
+)
 
-          updated = pattern.sub(new_block, content)
+if not pattern.search(content):
+    print('ERROR: Markers not found in README.md')
+    exit(1)
 
-          with open('README.md', 'w', encoding='utf-8') as f:
-              f.write(updated)
+updated = pattern.sub(new_block, content)
 
-          print(f'Done. {len(humans)} contributors written to table.')
-          PYEOF
+with open('README.md', 'w', encoding='utf-8') as f:
+    f.write(updated)
+
+print(f'Done. {len(humans)} contributors written.')
+PYEOF
           python3 /tmp/update_contributors.py
 
       - name: Commit and push if changed

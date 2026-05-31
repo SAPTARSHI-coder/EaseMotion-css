@@ -550,7 +550,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 <div align="center">
 
-[![Star History Chart](https://api.star-history.com/svg?repos=SAPTARSHI-coder/EaseMotion-css&type=Date)](https://star-history.com/#SAPTARSHI-coder/EaseMotion-css&Date)
+[![Star History Chart](https://starchart.cc/SAPTARSHI-coder/EaseMotion-css.svg)](https://starchart.cc/SAPTARSHI-coder/EaseMotion-css)
 
 </div>
 
