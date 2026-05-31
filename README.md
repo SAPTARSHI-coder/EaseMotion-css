@@ -240,6 +240,7 @@ Every class in the framework has passed through this process. The curation is wh
 
 ```html
 <button class="ease-hover-grow">Scales up on hover</button>
+<div    class="ease-hover-morph-card">Morph</div>
 <div    class="ease-hover-glow">Primary color glow</div>
 <div    class="ease-hover-lift">Lifts with shadow</div>
 <div    class="ease-hover-shimmer">Shimmer sweep effect</div>
