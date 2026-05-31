@@ -2,8 +2,9 @@
 name: Feature Request
 about: Propose a new utility, animation, or component for Flow CSS
 title: "[FEATURE] Your feature name here"
-labels: submission, needs-review
+labels: ''
 assignees: ''
+
 ---
 
 ## Feature Name
