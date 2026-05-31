@@ -515,18 +515,18 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea — thi
 
 | # | Contributor | Contributions |
 |---|-------------|:-------------:|
-| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 105 |
+| 1 | [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) | 106 |
 | 2 | [@shresthbhargava](https://github.com/shresthbhargava) | 18 |
 | 3 | [@Muditapandey26](https://github.com/Muditapandey26) | 9 |
 | 4 | [@saurabhhhcodes](https://github.com/saurabhhhcodes) | 6 |
 | 5 | [@bhavyabhardwaj001](https://github.com/bhavyabhardwaj001) | 6 |
-| 6 | [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | 3 |
-| 7 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
-| 8 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
-| 9 | [@JoyceHanan](https://github.com/JoyceHanan) | 3 |
-| 10 | [@hiitarun1](https://github.com/hiitarun1) | 3 |
-| 11 | [@Aditisingh0102](https://github.com/Aditisingh0102) | 2 |
-| 12 | [@AgnusSerena](https://github.com/AgnusSerena) | 2 |
+| 6 | [@AgnusSerena](https://github.com/AgnusSerena) | 3 |
+| 7 | [@AnanyaTiwari850](https://github.com/AnanyaTiwari850) | 3 |
+| 8 | [@Xploit-Ghost](https://github.com/Xploit-Ghost) | 3 |
+| 9 | [@sdeepika-2606](https://github.com/sdeepika-2606) | 3 |
+| 10 | [@JoyceHanan](https://github.com/JoyceHanan) | 3 |
+| 11 | [@hiitarun1](https://github.com/hiitarun1) | 3 |
+| 12 | [@Aditisingh0102](https://github.com/Aditisingh0102) | 2 |
 | 13 | [@dishamaurya081-create](https://github.com/dishamaurya081-create) | 2 |
 | 14 | [@Jeet-Srivastava](https://github.com/Jeet-Srivastava) | 2 |
 | 15 | [@mohamedfahim18](https://github.com/mohamedfahim18) | 2 |
