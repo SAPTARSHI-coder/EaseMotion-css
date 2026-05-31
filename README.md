@@ -224,6 +224,7 @@ Every class in the framework has passed through this process. The curation is wh
 <a      class="ease-hover-underline">Animated underline</a>
 ```
 
+Applies a quick squish animation during hover, focus, and active interactions.
 ### Layout Utilities
 
 ```html
@@ -256,6 +257,9 @@ Every class in the framework has passed through this process. The curation is wh
 
 <!-- With hover animation -->
 <button class="ease-btn ease-btn-primary ease-btn-hover">Animated</button>
+
+<!-- With squish button -->
+<button class="ease-btn ease-btn-primary ease-squish-button">Squish Me</button>
 
 <!-- Sizes + shapes -->
 <button class="ease-btn ease-btn-primary ease-btn-sm">Small</button>
