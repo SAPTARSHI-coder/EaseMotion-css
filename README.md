@@ -234,6 +234,9 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-pulse">Pulsing</div>
 <div class="ease-rotate">Rotating</div>
 <div class="ease-ping">Ping</div>
+
+<!-- Exit animation -->
+<div class="ease-expand-border-exit"></div>
 ```
 
 ### Hover Effects
