@@ -209,7 +209,6 @@ Every class in the framework has passed through this process. The curation is wh
 
 <!-- Looping animations -->
 <div class="ease-bounce">Bouncing</div>
-<div class="ease-bounce-icon">⭐ Bouncing Icon</div>
 <div class="ease-pulse">Pulsing</div>
 <div class="ease-rotate">Rotating</div>
 <div class="ease-ping">Ping</div>
