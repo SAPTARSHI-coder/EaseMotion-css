@@ -272,6 +272,19 @@ Applies a quick squish animation during hover, focus, and active interactions.
 </div>
 ```
 
+### Hover Animation Examples
+
+Common hover-triggered animation examples are available for:
+
+- Buttons
+- Cards
+- Images
+
+Example showcase:
+
+- hover-animation-showcase
+- hover-sweep
+
 ### Buttons
 
 ```html
