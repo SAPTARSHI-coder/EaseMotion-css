@@ -31,7 +31,7 @@ A shimmer pseudo-element shifts its gradient origin to match the active quadrant
 
 ## File Structure
 
-```
+```text
 submissions/examples/parallax-tilt-effect/
 ├── demo.html      — Standalone demo with two portfolio cards
 ├── style.css      — All styles; no dependencies except two Google Fonts
@@ -71,7 +71,7 @@ submissions/examples/parallax-tilt-effect/
 ### Key Rules
 
 | Class | Role |
-|---|---|
+| --- | --- |
 | `.em-tilt-wrapper` | Sets `perspective` — the vanishing point container |
 | `.em-tilt-card` | Outer shell; `transform-style: preserve-3d` |
 | `.em-tilt-quadrant--{tl,tr,bl,br}` | Invisible hover triggers, each covers 50 × 50% of card |
@@ -163,7 +163,7 @@ Override the surface and text tokens:
 ## Browser Support
 
 | Browser | Version | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Chrome / Edge | 80+ | Full support |
 | Firefox | 72+ | Full support |
 | Safari | 14+ | Full support (`preserve-3d` requires no `overflow: hidden` on parent — handled) |
@@ -198,4 +198,4 @@ On viewport widths below 480px the effect is removed and the card displays as a 
 
 ## License
 
-Submitted under the same license as the EaseMotion CSS repository.
+Submitted under the same license as the EaseMotion CSS repository.
