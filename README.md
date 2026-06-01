@@ -354,6 +354,26 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 
 ---
 
+## FAQ
+
+### How does EaseMotion CSS differ from Tailwind?
+
+Tailwind is a utility-first framework built around short atomic class names and usually fits best in a build-driven workflow. EaseMotion CSS focuses on human-readable class names like `ease-center` and `ease-fade-in`, treats animation as a first-class feature, and is designed to work immediately by linking a stylesheet.
+
+### Can I use it with React/Vue?
+
+Yes. EaseMotion CSS works with React, Vue, plain HTML, or any framework that renders standard `class` attributes. You can install it from npm, import the stylesheet, and use the classes directly in your components.
+
+### How do I submit a new component?
+
+Open or claim an issue first for non-trivial ideas, then add your raw demo inside `submissions/examples/your-feature-name/` with `demo.html`, `style.css`, and `README.md`. The maintainer reviews it, standardizes naming, and integrates it into the framework if it fits the project.
+
+### Does it work without a build step?
+
+Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
+
+---
+
 ## 📂 File Structure
 
 ```
