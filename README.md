@@ -32,7 +32,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 ```
 
-**[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
+**[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
 
 </div>
 
@@ -399,7 +399,8 @@ easemotion-css/
 │       ├── card-lift/          ← [INTEGRATED] → ease-card-lift
 │       └── button-glow/        ← pending review
 │
-├── examples/demo.html          ← interactive live showcase
+├── examples/demo.html          ← source interactive showcase
+├── docs/demo.html              ← deployed live demo page
 ├── docs/index.html             ← full documentation site
 │
 ├── .github/
