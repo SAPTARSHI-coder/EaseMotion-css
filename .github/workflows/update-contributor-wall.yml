@@ -1,0 +1,99 @@
+name: Update Contributor Wall
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *"   # daily at 2am UTC
+  workflow_dispatch:
+
+jobs:
+  update-wall:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch all contributors and build wall
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Fetch all pages, merge into one JSON array, filter bots
+          gh api "repos/${{ github.repository }}/contributors?per_page=100" \
+            --paginate \
+            | jq -s 'add | map(select(.type != "Bot" and (.login | ascii_downcase | test("bot") | not)))' \
+            > /tmp/contributors.json
+
+          echo "Total contributors: $(jq length /tmp/contributors.json)"
+
+          # Write the Python build script
+          cat > /tmp/build_wall.py << 'EOF'
+import json, re
+
+with open('/tmp/contributors.json') as f:
+    contributors = json.load(f)
+
+# Build avatar grid rows — 12 per row
+cols = 12
+rows_html = []
+for i in range(0, len(contributors), cols):
+    row = contributors[i:i+cols]
+    cells = ''
+    for c in row:
+        login = c['login']
+        count = c['contributions']
+        cells += (
+            f'<td align="center">'
+            f'<a href="https://github.com/{login}">'
+            f'<img src="https://avatars.githubusercontent.com/{login}?s=64" '
+            f'width="48" height="48" alt="{login}" style="border-radius:50%"/>'
+            f'<br/><sub><b>{login}</b></sub><br/>'
+            f'<sub>{count} commits</sub>'
+            f'</a></td>'
+        )
+    rows_html.append(f'<tr>{cells}</tr>')
+
+total = len(contributors)
+table = (
+    '<!-- CONTRIBUTOR-WALL-START -->\n'
+    f'<div align="center">\n\n'
+    f'### {total} Contributors\n\n'
+    '<table>\n'
+    + '\n'.join(rows_html)
+    + '\n</table>\n\n'
+    f'*Auto-updated daily · [View all on GitHub](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*\n\n'
+    '</div>\n'
+    '<!-- CONTRIBUTOR-WALL-END -->'
+)
+
+with open('README.md', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+pattern = re.compile(
+    r'<!-- CONTRIBUTOR-WALL-START -->.*?<!-- CONTRIBUTOR-WALL-END -->',
+    re.DOTALL
+)
+
+if not pattern.search(content):
+    print('ERROR: Markers not found in README.md')
+    exit(1)
+
+updated = pattern.sub(table, content)
+
+with open('README.md', 'w', encoding='utf-8') as f:
+    f.write(updated)
+
+print(f'Wall built: {total} contributors across {len(rows_html)} rows.')
+EOF
+          python3 /tmp/build_wall.py
+
+      - name: Commit if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update contributor wall — ${{ github.run_number }} [skip ci]"
+          file_pattern: README.md
