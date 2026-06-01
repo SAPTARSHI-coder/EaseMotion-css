@@ -1,60 +1,17 @@
 # Shake Image Utility
 
-## 📌 Overview
+## 1. What does this do?
 
-The **Shake Image Utility** is a simple CSS animation that adds a subtle horizontal shake effect to images on hover. It enhances user interaction by providing visual feedback and drawing attention to elements.
+Adds a smooth horizontal shake animation to elements when hovered, creating a subtle attention-grabbing effect.
 
----
-
-## ✨ Features
-
-* Pure CSS implementation (no JavaScript required)
-* Smooth and lightweight animation
-* Uses `transform` for better performance
-* Easy to reuse and apply to any image
-
----
-
-## 🚀 Usage
-
-Apply the `shake-img` class to any image:
+## 2. How is it used?
 
 ```html
-<img src="image.png" class="shake-img" alt="example">
+<img src="image.png" class="shake-img" alt="example image" />
 ```
 
----
+You can apply the `shake-img` class to any image or HTML element to enable the hover animation.
 
-## 🎨 Animation Details
+## 3. Why is it useful?
 
-* Uses `@keyframes` for shake effect
-* Animates with `translateX()` for smooth movement
-* Triggered on hover
-* Uses `ease-in-out` timing for natural motion
-
----
-
-## 📂 Files Included
-
-* `demo.html` → Demonstrates the animation
-* `style.css` → Contains the animation and styles
-* `README.md` → Documentation and usage guide
-
----
-
-## 💡 Why Use This?
-
-* Improves UI interaction
-* Highlights important elements
-* Adds a modern and engaging feel to web interfaces
-
----
-
-## ⚙️ Compatibility
-
-Works across modern browsers including:
-
-* Chrome
-* Firefox
-* Safari
-* Edge
+This utility fits EaseMotion CSS’s philosophy by providing a lightweight, reusable animation that enhances user interaction without adding complexity. It allows developers to quickly introduce engaging micro-interactions using only a single class and pure CSS, keeping code simple, performant, and easy to maintain.
