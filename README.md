@@ -270,6 +270,15 @@ Applies a quick squish animation during hover, focus, and active interactions.
   <div class="ease-card">Card 2</div>
   <div class="ease-card">Card 3</div>
 </div>
+
+<!-- Grid placement utilities -->
+<div class="ease-grid ease-grid-cols-4 ease-place-center ease-gap-4">
+  <div class="ease-col-span-2">Centered span 2</div>
+  <div class="ease-col-span-1">Span 1</div>
+  <div class="ease-col-span-1">Span 1</div>
+</div>
+<div class="ease-grid ease-grid-cols-3 ease-place-start ease-gap-4">Start</div>
+<div class="ease-grid ease-grid-cols-3 ease-place-end ease-gap-4">End</div>
 ```
 
 ### Buttons
