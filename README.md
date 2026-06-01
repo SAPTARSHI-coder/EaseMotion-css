@@ -29,7 +29,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 ### 🚀 One line. That's all you need.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 ```
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
@@ -66,7 +66,7 @@ Most people simply forget. This is your reminder. 😊
 | Metric | Value |
 |--------|-------|
 | 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css) |
+| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
 | ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
 | 🎨 **Components** | Buttons (6 variants), Cards (12 variants) |
 | 🔑 **Design Tokens** | 60+ CSS custom properties |
@@ -120,7 +120,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 </head>
 <body>
   <div class="ease-center ease-fade-in">
@@ -141,13 +141,13 @@ npm install easemotion-css
 Then in your HTML:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
 ```
 
 Or in CSS / PostCSS / Sass:
 
 ```css
-@import "easemotion-css/easemotion.css";
+@import "easemotion-css/easemotion.min.css";
 ```
 
 ### Option 3 — Granular imports *(pick only what you need)*
@@ -354,11 +354,32 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 
 ---
 
+## FAQ
+
+### How does EaseMotion CSS differ from Tailwind?
+
+Tailwind is a utility-first framework built around short atomic class names and usually fits best in a build-driven workflow. EaseMotion CSS focuses on human-readable class names like `ease-center` and `ease-fade-in`, treats animation as a first-class feature, and is designed to work immediately by linking a stylesheet.
+
+### Can I use it with React/Vue?
+
+Yes. EaseMotion CSS works with React, Vue, plain HTML, or any framework that renders standard `class` attributes. You can install it from npm, import the stylesheet, and use the classes directly in your components.
+
+### How do I submit a new component?
+
+Open or claim an issue first for non-trivial ideas, then add your raw demo inside `submissions/examples/your-feature-name/` with `demo.html`, `style.css`, and `README.md`. The maintainer reviews it, standardizes naming, and integrates it into the framework if it fits the project.
+
+### Does it work without a build step?
+
+Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
+
+---
+
 ## 📂 File Structure
 
 ```
 easemotion-css/
-├── easemotion.css              ← SINGLE IMPORT ENTRY POINT
+├── easemotion.css              ← readable source entry point
+├── easemotion.min.css          ← bundled production build
 │
 ├── core/                       ← MAINTAINER-ONLY
 │   ├── variables.css           ← 60+ design tokens
