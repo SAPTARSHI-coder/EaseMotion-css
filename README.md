@@ -29,7 +29,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 ### 🚀 One line. That's all you need.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 ```
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
@@ -66,7 +66,7 @@ Most people simply forget. This is your reminder. 😊
 | Metric | Value |
 |--------|-------|
 | 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css) |
+| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
 | ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
 | 🎨 **Components** | Buttons (6 variants), Cards (12 variants) |
 | 🔑 **Design Tokens** | 60+ CSS custom properties |
@@ -120,7 +120,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 </head>
 <body>
   <div class="ease-center ease-fade-in">
@@ -141,13 +141,13 @@ npm install easemotion-css
 Then in your HTML:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
 ```
 
 Or in CSS / PostCSS / Sass:
 
 ```css
-@import "easemotion-css/easemotion.css";
+@import "easemotion-css/easemotion.min.css";
 ```
 
 ### Option 3 — Granular imports *(pick only what you need)*
@@ -358,7 +358,8 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 
 ```
 easemotion-css/
-├── easemotion.css              ← SINGLE IMPORT ENTRY POINT
+├── easemotion.css              ← readable source entry point
+├── easemotion.min.css          ← bundled production build
 │
 ├── core/                       ← MAINTAINER-ONLY
 │   ├── variables.css           ← 60+ design tokens
