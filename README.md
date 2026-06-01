@@ -79,6 +79,23 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
+## 🌐 Browser Compatibility
+
+EaseMotion CSS is built for modern evergreen browsers. The table below reflects the key CSS features used across the framework, demo pages, and component examples.
+
+<div align="center">
+
+| Browser | `backdrop-filter` | `aspect-ratio` | CSS variables | Animations |
+|---------|-------------------|----------------|---------------|------------|
+| Chrome  | Supported | Supported | Supported | Supported |
+| Firefox | Supported | Supported | Supported | Supported |
+| Safari  | Supported with `-webkit-backdrop-filter` fallback | Supported | Supported | Supported |
+| Edge    | Supported | Supported | Supported | Supported |
+
+</div>
+
+---
+
 ## ✨ What is EaseMotion CSS?
 
 EaseMotion CSS is a curated, animation-first CSS framework where **class names read like plain English**. No memorizing shorthand. No build steps. No configuration. Just write HTML and it works.
