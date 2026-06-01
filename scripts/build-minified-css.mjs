@@ -8,8 +8,7 @@ const rootDir = path.resolve(__dirname, "..");
 const entryFile = path.join(rootDir, "easemotion.css");
 const outputFile = path.join(rootDir, "easemotion.min.css");
 
-const localImportPattern =
-  /@import\s+(?:url\(\s*)?["']([^"']+)["']\s*\)?\s*;/g;
+const localImportPattern = /@import\s+(?:url\(\s*)?["']([^"']+)["']\s*\)?\s*;/g;
 function removeCSSComments(source) {
   let result = "";
   let i = 0;
@@ -74,9 +73,7 @@ async function bundleCss(filePath, state) {
       path.relative(rootDir, item),
     );
 
-    throw new Error(
-      `Circular CSS import detected: ${chain.join(" -> ")}`,
-    );
+    throw new Error(`Circular CSS import detected: ${chain.join(" -> ")}`);
   }
 
   state.stack.add(normalizedPath);
@@ -85,16 +82,19 @@ async function bundleCss(filePath, state) {
   const sourceWithoutComments = removeCSSComments(source);
   const directory = path.dirname(normalizedPath);
 
-  const bundled = sourceWithoutComments.replace(localImportPattern, (fullMatch, importPath) => {
-    if (/^(?:https?:)?\/\//i.test(importPath)) {
-      state.externalImports.add(fullMatch.trim());
-      return "";
-    }
+  const bundled = sourceWithoutComments.replace(
+    localImportPattern,
+    (fullMatch, importPath) => {
+      if (/^(?:https?:)?\/\//i.test(importPath)) {
+        state.externalImports.add(fullMatch.trim());
+        return "";
+      }
 
-    const resolvedImport = path.resolve(directory, importPath);
-    state.localImports.push(resolvedImport);
-    return `__EASEMOTION_IMPORT__${resolvedImport}__`;
-  });
+      const resolvedImport = path.resolve(directory, importPath);
+      state.localImports.push(resolvedImport);
+      return `__EASEMOTION_IMPORT__${resolvedImport}__`;
+    },
+  );
 
   const chunks = [];
   let lastIndex = 0;
@@ -108,12 +108,13 @@ async function bundleCss(filePath, state) {
   }
 
   chunks.push(bundled.slice(lastIndex));
-  const resolvedChunks = await Promise.all(chunks);
-
-  state.pathStack.pop();
-  state.stack.delete(normalizedPath);
-
-  return resolvedChunks.join("\n");
+  try {
+    const resolvedChunks = await Promise.all(chunks);
+    return resolvedChunks.join("\n");
+  } finally {
+    state.pathStack.pop();
+    state.stack.delete(normalizedPath);
+  }
 }
 
 function minifyCss(css) {
