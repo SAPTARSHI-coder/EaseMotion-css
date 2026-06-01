@@ -2,110 +2,117 @@
 
 ## Supported Versions
 
-EaseMotion CSS is a **pure CSS framework** with zero JavaScript and zero dependencies. The following versions are currently supported with security updates:
+EaseMotion CSS is a CSS-only framework. Security fixes are provided for the latest published release line only.
 
 | Version | Supported |
 |---------|-----------|
-| 1.0.x (latest) | ✅ Active |
-| < 1.0.0 | ❌ No longer supported |
-
----
-
-## Scope
-
-EaseMotion CSS ships as plain `.css` files only — no JavaScript, no build scripts, no server-side code, no npm scripts that execute at install time.
-
-The primary security concern for a CSS framework is:
-
-| Concern | Applies? | Notes |
-|---------|----------|-------|
-| CSS injection via class names | ⚠️ Possible | See below |
-| XSS via CSS `content:` values | ⚠️ Possible | See below |
-| Malicious `@import` in published files | ✅ Audited | All imports are local-only |
-| Supply chain / dependency attack | ✅ Low risk | Zero `npm` runtime dependencies |
-| CDN tampering | ✅ Low risk | Use SRI hashes for production (see below) |
+| Latest `1.x` release | Yes |
+| Older releases | No |
+| Unreleased forks or local modifications | Best effort only |
 
 ---
 
 ## Reporting a Vulnerability
 
-**Do not open a public GitHub issue for security vulnerabilities.**
+Please report suspected vulnerabilities responsibly and privately.
 
-If you discover a security issue — including but not limited to:
-- A malicious payload in a published npm version
-- A CSS injection vector introduced via a contribution
-- A supply chain issue with the jsDelivr CDN distribution
-- A `content:` property that could be exploited in certain browser contexts
+Do not open a public GitHub issue, discussion, or pull request for a security report.
 
-Please report it privately by **emailing the maintainer directly:**
+Preferred reporting channel:
 
-> 📧 Report to: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder) via GitHub's [private vulnerability reporting](https://github.com/SAPTARSHI-coder/EaseMotion-css/security/advisories/new)
+- GitHub private vulnerability reporting: <https://github.com/SAPTARSHI-coder/EaseMotion-css/security/advisories/new>
 
-### What to include in your report
+Maintainer profile for coordination if needed:
 
-```
-1. Description of the vulnerability
+- <https://github.com/SAPTARSHI-coder>
+
+### What to include
+
+Please include as much of the following as you can:
+
+1. A clear description of the issue
 2. Steps to reproduce it
-3. Affected version(s)
-4. Potential impact
-5. Suggested fix (optional but appreciated)
-```
+3. Affected version, tag, CDN URL, or commit
+4. Expected impact
+5. Any suggested remediation or mitigation
 
-### What to expect
+### Response expectations
 
 | Timeline | Action |
 |----------|--------|
-| **Within 48 hours** | Acknowledgement of your report |
-| **Within 7 days** | Initial assessment and severity classification |
-| **Within 30 days** | Patch released (for confirmed vulnerabilities) |
-| **After patch** | Public disclosure with credit to reporter |
+| Within 72 hours | Initial acknowledgement |
+| Within 7 days | Triage and severity assessment |
+| As soon as practical | Fix, mitigation, or follow-up questions |
+| After a fix ships | Coordinated public disclosure when appropriate |
 
 ---
 
-## CSS-Specific Security Notes
+## Scope
 
-### CSS Injection
+EaseMotion CSS ships as static CSS assets, including:
 
-If your application dynamically constructs EaseMotion CSS class names from user input, sanitize that input first. Example of **unsafe** usage:
+- `easemotion.css` as the readable source entry point
+- `easemotion.min.css` as the production bundle
+
+The project does not ship application JavaScript, backend code, or runtime package dependencies.
+
+Areas most relevant to security review:
+
+| Concern | Applies? | Notes |
+|---------|----------|-------|
+| CSS injection via dynamically built class names | Possible | Consumer-side misuse risk |
+| Dangerous `content:` usage patterns | Possible | Context-dependent |
+| Malicious remote imports in distributed CSS | Audited against | Published assets should not contain remote CSS imports beyond explicit font imports |
+| Supply-chain dependency attacks | Lower risk | No runtime dependencies |
+| CDN tampering | Possible | Use pinned versions and SRI where possible |
+
+---
+
+## CSS-Specific Guidance
+
+### Avoid dynamic class-name injection
+
+Do not construct EaseMotion class names directly from raw user input.
 
 ```js
-// ❌ UNSAFE — never build class names from raw user input
+// Unsafe
 element.className = `ease-${userInput}`;
 ```
 
+Use an allowlist instead:
+
 ```js
-// ✅ SAFE — use an allowlist of valid class names
-const allowed = ['ease-fade-in', 'ease-slide-up', 'ease-btn-primary'];
+// Safer
+const allowed = ["ease-fade-in", "ease-slide-up", "ease-btn-primary"];
 if (allowed.includes(userClass)) {
   element.className = userClass;
 }
 ```
 
-### Subresource Integrity (SRI) for CDN
+### Use pinned CDN URLs and SRI
 
-For production applications loading EaseMotion CSS via CDN, use Subresource Integrity to protect against CDN tampering:
+For production CDN usage, prefer pinned versions and an integrity hash:
 
 ```html
-<!-- Generate your SRI hash at: https://www.srihash.org/ -->
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.min.css"
   integrity="sha384-<YOUR_HASH_HERE>"
   crossorigin="anonymous"
 />
 ```
 
-> You can generate the correct SRI hash for any jsDelivr URL at [srihash.org](https://www.srihash.org/) or using:
-> ```bash
-> curl -s https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css | openssl dgst -sha384 -binary | openssl base64 -A
-> ```
+You can generate an SRI hash for a specific release artifact with:
 
-### `@import` Safety
+```bash
+curl -s https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.min.css | openssl dgst -sha384 -binary | openssl base64 -A
+```
 
-All `@import` statements in `easemotion.css` are **local relative imports only**. They never load from external URLs:
+### Import safety
+
+The readable source entry file uses local relative imports for framework modules:
 
 ```css
-/* ✅ What we ship — all local */
 @import "./core/variables.css";
 @import "./core/base.css";
 @import "./core/animations.css";
@@ -114,24 +121,18 @@ All `@import` statements in `easemotion.css` are **local relative imports only**
 @import "./components/cards.css";
 ```
 
-No version of EaseMotion CSS has ever or will ever include remote `@import` URLs in the distributed files.
+Any unexpected remote import, obfuscated payload, or suspicious distributed CSS should be reported privately.
 
 ---
 
 ## Contribution Security
 
-All contributions follow a **maintainer-reviewed pipeline** — no code is merged into `core/` or `components/` without explicit review by the maintainer. This significantly reduces supply chain risk from malicious PRs.
+All framework changes are maintainer-reviewed before release. That review process helps reduce the chance of malicious CSS, unsafe distributed assets, or accidental supply-chain regressions.
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full contribution policy.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the broader contribution policy.
 
 ---
 
 ## Acknowledgements
 
-Responsible disclosure is appreciated and rewarded with:
-- Public credit in the security advisory
-- A mention in [CHANGELOG.md](./CHANGELOG.md) for the release that patches the issue
-
----
-
-*Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder) · MIT License*
+Responsible disclosure is appreciated. When appropriate, reporters may be credited in the related advisory or release notes after a fix is available.
