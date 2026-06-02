@@ -235,9 +235,19 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-rotate">Rotating</div>
 <div class="ease-ping">Ping</div>
 
+You can customize the iteration count of looping animations:
+
+```css
+:root {
+  --ease-animation-iterations: 3;
+}
+```
+
+By default, the value is `infinite`, preserving existing behavior.
+
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
-```
+
 
 ### Hover Effects
 
