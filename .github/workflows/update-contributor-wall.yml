@@ -1,0 +1,39 @@
+name: Update Contributor Wall
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-wall:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch all contributors
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/contributors?per_page=100" \
+            --paginate \
+            | jq -s 'add | map(select(.type != "Bot" and (.login | ascii_downcase | test("bot") | not)))' \
+            > /tmp/contributors.json
+          echo "Contributors fetched: $(jq length /tmp/contributors.json)"
+
+      - name: Build contributor wall
+        run: python3 scripts/build-contributor-wall.py
+
+      - name: Commit if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update contributor wall [skip ci]"
+          file_pattern: README.md

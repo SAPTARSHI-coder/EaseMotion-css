@@ -15,13 +15,17 @@ async function bundleCss(filePath, state) {
   const normalizedPath = path.normalize(filePath);
 
   if (state.stack.has(normalizedPath)) {
-    const chain = [...state.stack, normalizedPath].map((item) =>
+    const chain = [...state.pathStack, normalizedPath].map((item) =>
       path.relative(rootDir, item),
     );
-    throw new Error(`Circular CSS import detected: ${chain.join(" -> ")}`);
+
+    throw new Error(
+      `Circular CSS import detected: ${chain.join(" -> ")}`,
+    );
   }
 
   state.stack.add(normalizedPath);
+  state.pathStack.push(normalizedPath);
   const source = await readFile(normalizedPath, "utf8");
   const sourceWithoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "");
   const directory = path.dirname(normalizedPath);
@@ -51,7 +55,9 @@ async function bundleCss(filePath, state) {
   chunks.push(bundled.slice(lastIndex));
   const resolvedChunks = await Promise.all(chunks);
 
+  state.pathStack.pop();
   state.stack.delete(normalizedPath);
+
   return resolvedChunks.join("\n");
 }
 
@@ -72,6 +78,7 @@ async function build() {
     externalImports: new Set(),
     localImports: [],
     stack: new Set(),
+    pathStack: [],
   };
 
   const bundledCss = await bundleCss(entryFile, state);
