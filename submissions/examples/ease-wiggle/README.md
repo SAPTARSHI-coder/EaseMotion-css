@@ -1,66 +1,39 @@
-\## ease-wiggle
+## ease-wiggle
 
+**What does this do?**
+A fast, playful one-shot wiggle animation that swings an element naturally from the top — grabs attention without signaling an error.
 
-
-\*\*What does this do?\*\*
-
-A fast, playful one-shot wiggle animation that fires once and stops —
-
-designed to grab attention without feeling like an error or alert.
-
-
-
-\*\*How is it used?\*\*
-
-Add the class `ease-wiggle` to any element:
-
-
+**How is it used?**
+Add the class `wiggle` to any element:
 
 ```html
-
-<div class="ease-wiggle">🔔</div>
-
-<button class="ease-wiggle">Try for Free</button>
-
+<div class="wiggle">🔔</div>
+<button class="wiggle">Try for Free</button>
 ```
 
+Customize with CSS variables:
 
+```css
+.my-element {
+  --wiggle-angle: 10deg;
+  --wiggle-duration: 1s;
+}
+```
 
-To replay on demand (e.g. on click), remove and re-add the class:
-
-
+To replay on demand (e.g. on click):
 
 ```js
-
-function wiggle(el) {
-
-&#x20; el.classList.remove('ease-wiggle');
-
-&#x20; void el.offsetWidth; // force reflow
-
-&#x20; el.classList.add('ease-wiggle');
-
+function replayWiggle(el) {
+  el.classList.remove('wiggle');
+  void el.offsetWidth;
+  el.classList.add('wiggle');
 }
-
 ```
 
+**Why is it useful?**
+EaseMotion CSS already has `ease-shake` for errors — `wiggle` fills the gap for delight and playfulness. Uses `transform-origin: top center` so elements swing like a hanging object, not a flat shake. Supports `prefers-reduced-motion` for accessibility.
 
-
-\*\*Why is it useful?\*\*
-
-Unlike `ease-shake` which signals errors, `ease-wiggle` conveys
-
-delight and playfulness. Perfect for:
-
-\- 🔔 Notification bells with unread badges
-
-\- ✨ Call-to-action buttons on landing pages
-
-\- 📭 Empty state illustrations to prompt user action
-
-
-
-The animation uses `transform-origin: top center` so it swings
-
-naturally like a hanging object — more realistic than a flat shake.
-
+Perfect for:
+- 🔔 Notification bells with unread badges
+- ✨ Call-to-action buttons on landing pages
+- 📭 Empty state illustrations to prompt user action
