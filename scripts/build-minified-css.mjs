@@ -67,6 +67,9 @@ function removeCSSComments(source) {
 }
 async function bundleCss(filePath, state) {
   const normalizedPath = path.normalize(filePath);
+  if (state.cache.has(normalizedPath)) {
+    return state.cache.get(normalizedPath);
+  }
 
   if (state.stack.has(normalizedPath)) {
     const cycleStart = state.pathStack.indexOf(normalizedPath);
@@ -118,13 +121,16 @@ async function bundleCss(filePath, state) {
   }
 
   chunks.push(bundled.slice(lastIndex));
-  try {
-    const resolvedChunks = await Promise.all(chunks);
-    return resolvedChunks.join("\n");
-  } finally {
-    state.pathStack.pop();
-    state.stack.delete(normalizedPath);
-  }
+    try {
+      const resolvedChunks = await Promise.all(chunks);
+      const result = resolvedChunks.join("\n");
+
+      state.cache.set(normalizedPath, result);
+      return result;
+    } finally {
+      state.stack.delete(normalizedPath);
+      state.pathStack.pop();
+    }
 }
 
 function minifyCss(css) {
@@ -144,6 +150,7 @@ async function build() {
     localImports: [],
     stack: new Set(),
     pathStack: [],
+    cache: new Map(),
   };
 
   const bundledCss = await bundleCss(entryFile, state);
