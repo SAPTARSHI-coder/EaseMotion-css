@@ -13,6 +13,9 @@ const localImportPattern =
 
 async function bundleCss(filePath, state) {
   const normalizedPath = path.normalize(filePath);
+  if (state.cache.has(normalizedPath)) {
+    return state.cache.get(normalizedPath);
+  }
 
   if (state.stack.has(normalizedPath)) {
     const chain = [...state.stack, normalizedPath].map((item) =>
@@ -49,10 +52,16 @@ async function bundleCss(filePath, state) {
   }
 
   chunks.push(bundled.slice(lastIndex));
-  const resolvedChunks = await Promise.all(chunks);
+    try {
+      const resolvedChunks = await Promise.all(chunks);
+      const result = resolvedChunks.join("\n");
 
-  state.stack.delete(normalizedPath);
-  return resolvedChunks.join("\n");
+      state.cache.set(normalizedPath, result);
+
+      return result;
+    } finally {
+      state.stack.delete(normalizedPath);
+    }
 }
 
 function minifyCss(css) {
@@ -72,6 +81,7 @@ async function build() {
     externalImports: new Set(),
     localImports: [],
     stack: new Set(),
+    cache: new Map(),
   };
 
   const bundledCss = await bundleCss(entryFile, state);
