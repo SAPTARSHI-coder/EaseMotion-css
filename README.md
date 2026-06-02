@@ -34,6 +34,20 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
 
+### Animation Iterations
+
+Looping animations in EaseMotion CSS (for example: `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and the `.ease-typewriter-loop`) now respect a global CSS custom property: `--ease-animation-iterations`.
+
+The default remains `infinite` so existing behavior is unchanged. To run looping animations a fixed number of times, override the variable in your project:
+
+```css
+:root {
+  --ease-animation-iterations: 3;
+}
+```
+
+This will apply the iteration count to all looping animation utilities by default.
+
 </div>
 
 ---
