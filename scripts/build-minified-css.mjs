@@ -69,15 +69,25 @@ async function bundleCss(filePath, state) {
   const normalizedPath = path.normalize(filePath);
 
   if (state.stack.has(normalizedPath)) {
-    const chain = [...state.pathStack, normalizedPath].map((item) =>
-      path.relative(rootDir, item),
-    );
+    const cycleStart = state.pathStack.indexOf(normalizedPath);
 
-    throw new Error(`Circular CSS import detected: ${chain.join(" -> ")}`);
+    const chain = [
+      ...state.pathStack.slice(cycleStart),
+      normalizedPath,
+    ].map((item) => path.relative(rootDir, item));
+
+    throw new Error(
+      `Circular CSS import detected while processing "${path.relative(
+        rootDir,
+        normalizedPath,
+      )}": ${chain.join(" -> ")}`
+    );
   }
 
   state.stack.add(normalizedPath);
   state.pathStack.push(normalizedPath);
+  
+
   const source = await readFile(normalizedPath, "utf8");
   const sourceWithoutComments = removeCSSComments(source);
   const directory = path.dirname(normalizedPath);
