@@ -1,7 +1,7 @@
 name: CSS Size Benchmark
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - 'core/**'
       - 'components/**'
@@ -17,7 +17,7 @@ jobs:
     name: Benchmark CSS Size
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository (Target Branch)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -26,6 +26,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
 
       - name: Create Measurement Script
         run: |
@@ -40,19 +44,22 @@ jobs:
           console.log(`${fileBuffer.length},${zlib.gzipSync(fileBuffer).length},${zlib.brotliCompressSync(fileBuffer).length}`);
           EOF
 
+      - name: Fetch PR Branch
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+
       - name: Measure PR Branch
         run: |
+          git checkout pr-branch -- core components easemotion.css || true
           npm run build || true
           SIZES=$(node measure.mjs)
           echo "PR_RAW=$(echo $SIZES | cut -d',' -f1)" >> $GITHUB_ENV
           echo "PR_GZIP=$(echo $SIZES | cut -d',' -f2)" >> $GITHUB_ENV
           echo "PR_BROTLI=$(echo $SIZES | cut -d',' -f3)" >> $GITHUB_ENV
 
-      - name: Checkout Base Branch
-        run: git checkout ${{ github.event.pull_request.base.sha }}
-
       - name: Measure Base Branch
         run: |
+          git checkout HEAD -- core components easemotion.css || true
           npm run build || true
           SIZES=$(node measure.mjs)
           echo "MAIN_RAW=$(echo $SIZES | cut -d',' -f1)" >> $GITHUB_ENV
