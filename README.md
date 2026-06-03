@@ -238,6 +238,22 @@ Or in CSS / PostCSS / Sass:
 
 ---
 
+## 🌐 Browser Compatibility
+
+EaseMotion CSS is compatible with all modern browsers that support CSS3 animations and custom properties.
+
+| Browser | Minimum Version | Status |
+|---------|-----------------|--------|
+| Chrome  | 49+ | ✅ Fully Supported |
+| Firefox | 31+ | ✅ Fully Supported |
+| Safari  | 9.1+ | ✅ Fully Supported |
+| Edge    | 15+ | ✅ Fully Supported |
+| Opera   | 36+ | ✅ Fully Supported |
+
+**Note:** EaseMotion CSS relies on CSS3 custom properties (`--var`) and CSS animations. Older browsers (IE 11 and below) are not supported.
+
+---
+
 ## 🧠 Philosophy
 
 EaseMotion CSS is not just a CSS library — it is a design language.
