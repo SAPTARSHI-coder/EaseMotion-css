@@ -44,6 +44,9 @@ Create sequential animations by adding delay to children:
 ```html
 <!-- DON'T: ease-slide-up and ease-slide-down cancel each other -->
 <div class="ease-slide-up ease-slide-down">Broken!</div>
+
+<!-- DON'T: ease-slide-left and ease-slide-right cancel each other -->
+<div class="ease-slide-left ease-slide-right">Broken!</div>
 ```
 
 ### ✅ Pick one direction

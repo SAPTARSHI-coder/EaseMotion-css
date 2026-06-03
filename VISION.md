@@ -96,3 +96,58 @@ These principles will never be violated, regardless of contributor demand:
 EaseMotion CSS is a personal project built with long-term intent. The curated model exists not to gatekeep, but to ensure that every release reflects a cohesive, deliberate design language — not a crowdsourced collection of random styles.
 
 GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
+ ## Short-Term Roadmap (Next 3 Months)
+
+### Month 1
+
+* Expand core utility classes
+* Improve documentation coverage
+* Add more real-world examples
+* Improve contributor onboarding
+
+### Month 2
+
+* Introduce additional form-related components
+* Expand animation utilities
+* Improve accessibility testing and validation
+* Increase automated quality checks
+
+### Month 3
+
+* Refine component library consistency
+* Improve CDN and package distribution experience
+* Expand documentation website content
+* Prepare for larger community contributions
+
+---
+
+## Scope Boundaries (What Will NOT Be Added)
+
+To preserve the project's philosophy, EaseMotion CSS intentionally avoids:
+
+* Abbreviated utility naming conventions
+* Mandatory build steps or compilation requirements
+* JavaScript-dependent core functionality
+* Large plugin ecosystems that increase complexity
+* Multiple competing naming styles
+* Features that reduce readability in favor of shorter syntax
+
+These boundaries help maintain a simple, human-readable design language.
+
+---
+
+## Community Vision
+
+EaseMotion CSS aims to grow through thoughtful community collaboration.
+
+Contributors are encouraged to:
+
+* Propose new utility classes
+* Share examples and use cases
+* Improve documentation
+* Report bugs and accessibility concerns
+* Suggest improvements aligned with project philosophy
+
+The goal is not to become the largest CSS framework, but to become one of the most approachable and readable frameworks for developers of all experience levels.
+
+Community contributions will continue to be reviewed and curated to ensure consistency, quality, and alignment with the EaseMotion vision.
