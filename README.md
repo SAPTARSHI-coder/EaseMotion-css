@@ -219,7 +219,22 @@ Or in CSS / PostCSS / Sass:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css" />
 ```
 
-> ⚠️ **`variables.css` must always load first.** Every other module depends on the CSS custom properties it defines.
+### Option 4 — Modular animation imports *(load only what you need)*
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/variables.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/fade.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/slide.css" />
+<!-- Add only the animation categories you need -->
+```
+
+### Full bundle
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/all.css" />
+```
+
+> ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
 
 ---
 
