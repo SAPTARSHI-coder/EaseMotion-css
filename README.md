@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/docs/assets/banner.svg" alt="EaseMotion CSS" width="100%" />
 
@@ -29,10 +29,24 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 ### 🚀 One line. That's all you need.
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 ```
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
+
+### Animation Iterations
+
+Looping animations in EaseMotion CSS (for example: `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and the `.ease-typewriter-loop`) now respect a global CSS custom property: `--ease-animation-iterations`.
+
+The default remains `infinite` so existing behavior is unchanged. To run looping animations a fixed number of times, override the variable in your project:
+
+```css
+:root {
+  --ease-animation-iterations: 3;
+}
+```
+
+This will apply the iteration count to all looping animation utilities by default.
 
 </div>
 
@@ -66,9 +80,9 @@ Most people simply forget. This is your reminder. 😊
 | Metric | Value |
 |--------|-------|
 | 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css) |
+| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
 | ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
-| 🎨 **Components** | Buttons (6 variants), Cards (12 variants) |
+| 🎨 **Components** | Buttons (6 variants), Cards (13 variants) |
 | 🔑 **Design Tokens** | 60+ CSS custom properties |
 | ⚖️ **Bundle Size** | ~15 kB (unpacked: ~62 kB) |
 | 📜 **License** | MIT |
@@ -120,7 +134,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 <!DOCTYPE html>
 <html>
 <head>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
 </head>
 <body>
   <div class="ease-center ease-fade-in">
@@ -132,6 +146,30 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 
 > Powered by jsDelivr — globally cached, always fast, no account needed. The CDN link is live the moment you paste it.
 
+## Alternative CDN Providers
+
+EaseMotion CSS can also be loaded using alternative CDN providers.
+
+### jsDelivr (recommended)
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+```
+
+### unpkg
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/easemotion-css/easemotion.min.css" />
+```
+
+### GitHub Raw CDN
+
+```html
+<link rel="stylesheet" href="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/easemotion.min.css" />
+```
+
+> jsDelivr is recommended for production usage because it provides global caching and better reliability.
+
 ### Option 2 — npm
 
 ```bash
@@ -141,13 +179,13 @@ npm install easemotion-css
 Then in your HTML:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
 ```
 
 Or in CSS / PostCSS / Sass:
 
 ```css
-@import "easemotion-css/easemotion.css";
+@import "easemotion-css/easemotion.min.css";
 ```
 
 ### Option 3 — Granular imports *(pick only what you need)*
@@ -272,6 +310,19 @@ Applies a quick squish animation during hover, focus, and active interactions.
 </div>
 ```
 
+### Hover Animation Examples
+
+Common hover-triggered animation examples are available for:
+
+- Buttons
+- Cards
+- Images
+
+Example showcase:
+
+- hover-animation-showcase
+- hover-sweep
+
 ### Buttons
 
 ```html
@@ -309,6 +360,9 @@ Applies a quick squish animation during hover, focus, and active interactions.
 
 <!-- Glassmorphism -->
 <div class="ease-card ease-card-glass">Glass card</div>
+
+<!-- Neumorphic -->
+<div class="ease-card ease-card-neumorphic">Soft UI card</div>
 
 <!-- Accent border -->
 <div class="ease-card ease-card-accent">Highlighted card</div>
@@ -354,11 +408,32 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 
 ---
 
+## FAQ
+
+### How does EaseMotion CSS differ from Tailwind?
+
+Tailwind is a utility-first framework built around short atomic class names and usually fits best in a build-driven workflow. EaseMotion CSS focuses on human-readable class names like `ease-center` and `ease-fade-in`, treats animation as a first-class feature, and is designed to work immediately by linking a stylesheet.
+
+### Can I use it with React/Vue?
+
+Yes. EaseMotion CSS works with React, Vue, plain HTML, or any framework that renders standard `class` attributes. You can install it from npm, import the stylesheet, and use the classes directly in your components.
+
+### How do I submit a new component?
+
+Open or claim an issue first for non-trivial ideas, then add your raw demo inside `submissions/examples/your-feature-name/` with `demo.html`, `style.css`, and `README.md`. The maintainer reviews it, standardizes naming, and integrates it into the framework if it fits the project.
+
+### Does it work without a build step?
+
+Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
+
+---
+
 ## 📂 File Structure
 
 ```
 easemotion-css/
-├── easemotion.css              ← SINGLE IMPORT ENTRY POINT
+├── easemotion.css              ← readable source entry point
+├── easemotion.min.css          ← bundled production build
 │
 ├── core/                       ← MAINTAINER-ONLY
 │   ├── variables.css           ← 60+ design tokens
@@ -368,7 +443,7 @@ easemotion-css/
 │
 ├── components/                 ← MAINTAINER-ONLY
 │   ├── buttons.css             ← 6 variants, 4 sizes, pill, icon
-│   └── cards.css               ← 12 card variants
+│   └── cards.css               ← 13 card variants
 │
 ├── submissions/                ← CONTRIBUTOR AREA
 │   ├── README.md               ← full submission workflow
@@ -495,23 +570,33 @@ Your raw CSS  →  Maintainer standardizes  →  ease-* class ships
 </div>
 
 > ⭐ **If EaseMotion CSS saves you time, consider starring the repo.** It helps more developers discover the project and motivates continued development.
-
 ---
 
 ## 🏆 Contributors
 
-Everyone who has submitted a PR, opened an issue, or contributed an idea — this wall is for you. **It updates automatically** every time a new contributor appears on GitHub.
+Everyone who has submitted a PR, opened an issue, or contributed an idea. This wall **regenerates automatically** on every push to main.
 
+<!-- CONTRIBUTOR-WALL-START -->
 <div align="center">
 
-<a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=SAPTARSHI-coder/EaseMotion-css&max=96&columns=12" alt="EaseMotion CSS Contributors" />
-</a>
+### 105 Contributors
 
-*Auto-generated by [contrib.rocks](https://contrib.rocks) · Updates nightly from GitHub*
+<table>
+<tr><td align="center"><a href="https://github.com/SAPTARSHI-coder"><img src="https://avatars.githubusercontent.com/SAPTARSHI-coder?s=64" width="52" height="52" alt="SAPTARSHI-coder" style="border-radius:50%;margin:4px"/><br/><sub><b>SAPTARSHI-coder</b></sub><br/><sub>507 commits</sub></a></td><td align="center"><a href="https://github.com/shresthbhargava"><img src="https://avatars.githubusercontent.com/shresthbhargava?s=64" width="52" height="52" alt="shresthbhargava" style="border-radius:50%;margin:4px"/><br/><sub><b>shresthbhargava</b></sub><br/><sub>41 commits</sub></a></td><td align="center"><a href="https://github.com/Muditapandey26"><img src="https://avatars.githubusercontent.com/Muditapandey26?s=64" width="52" height="52" alt="Muditapandey26" style="border-radius:50%;margin:4px"/><br/><sub><b>Muditapandey26</b></sub><br/><sub>19 commits</sub></a></td><td align="center"><a href="https://github.com/Shreeya1207"><img src="https://avatars.githubusercontent.com/Shreeya1207?s=64" width="52" height="52" alt="Shreeya1207" style="border-radius:50%;margin:4px"/><br/><sub><b>Shreeya1207</b></sub><br/><sub>19 commits</sub></a></td><td align="center"><a href="https://github.com/Nicks-19"><img src="https://avatars.githubusercontent.com/Nicks-19?s=64" width="52" height="52" alt="Nicks-19" style="border-radius:50%;margin:4px"/><br/><sub><b>Nicks-19</b></sub><br/><sub>17 commits</sub></a></td><td align="center"><a href="https://github.com/KRITIKA-l"><img src="https://avatars.githubusercontent.com/KRITIKA-l?s=64" width="52" height="52" alt="KRITIKA-l" style="border-radius:50%;margin:4px"/><br/><sub><b>KRITIKA-l</b></sub><br/><sub>14 commits</sub></a></td><td align="center"><a href="https://github.com/bhavyabhardwaj001"><img src="https://avatars.githubusercontent.com/bhavyabhardwaj001?s=64" width="52" height="52" alt="bhavyabhardwaj001" style="border-radius:50%;margin:4px"/><br/><sub><b>bhavyabhardwaj001</b></sub><br/><sub>12 commits</sub></a></td><td align="center"><a href="https://github.com/AnanyaTiwari850"><img src="https://avatars.githubusercontent.com/AnanyaTiwari850?s=64" width="52" height="52" alt="AnanyaTiwari850" style="border-radius:50%;margin:4px"/><br/><sub><b>AnanyaTiwari850</b></sub><br/><sub>11 commits</sub></a></td><td align="center"><a href="https://github.com/Krish-Mishra"><img src="https://avatars.githubusercontent.com/Krish-Mishra?s=64" width="52" height="52" alt="Krish-Mishra" style="border-radius:50%;margin:4px"/><br/><sub><b>Krish-Mishra</b></sub><br/><sub>9 commits</sub></a></td><td align="center"><a href="https://github.com/kunal-9090"><img src="https://avatars.githubusercontent.com/kunal-9090?s=64" width="52" height="52" alt="kunal-9090" style="border-radius:50%;margin:4px"/><br/><sub><b>kunal-9090</b></sub><br/><sub>9 commits</sub></a></td><td align="center"><a href="https://github.com/Premshaw23"><img src="https://avatars.githubusercontent.com/Premshaw23?s=64" width="52" height="52" alt="Premshaw23" style="border-radius:50%;margin:4px"/><br/><sub><b>Premshaw23</b></sub><br/><sub>8 commits</sub></a></td><td align="center"><a href="https://github.com/Rakshita006"><img src="https://avatars.githubusercontent.com/Rakshita006?s=64" width="52" height="52" alt="Rakshita006" style="border-radius:50%;margin:4px"/><br/><sub><b>Rakshita006</b></sub><br/><sub>7 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/saurabhhhcodes"><img src="https://avatars.githubusercontent.com/saurabhhhcodes?s=64" width="52" height="52" alt="saurabhhhcodes" style="border-radius:50%;margin:4px"/><br/><sub><b>saurabhhhcodes</b></sub><br/><sub>7 commits</sub></a></td><td align="center"><a href="https://github.com/hiitarun1"><img src="https://avatars.githubusercontent.com/hiitarun1?s=64" width="52" height="52" alt="hiitarun1" style="border-radius:50%;margin:4px"/><br/><sub><b>hiitarun1</b></sub><br/><sub>7 commits</sub></a></td><td align="center"><a href="https://github.com/Dhruva5vora"><img src="https://avatars.githubusercontent.com/Dhruva5vora?s=64" width="52" height="52" alt="Dhruva5vora" style="border-radius:50%;margin:4px"/><br/><sub><b>Dhruva5vora</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/Abhay-1704"><img src="https://avatars.githubusercontent.com/Abhay-1704?s=64" width="52" height="52" alt="Abhay-1704" style="border-radius:50%;margin:4px"/><br/><sub><b>Abhay-1704</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/zairahussain27"><img src="https://avatars.githubusercontent.com/zairahussain27?s=64" width="52" height="52" alt="zairahussain27" style="border-radius:50%;margin:4px"/><br/><sub><b>zairahussain27</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/TEJASWANIANIMIREDDY"><img src="https://avatars.githubusercontent.com/TEJASWANIANIMIREDDY?s=64" width="52" height="52" alt="TEJASWANIANIMIREDDY" style="border-radius:50%;margin:4px"/><br/><sub><b>TEJASWANIANIMIREDDY</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/nyxsky404"><img src="https://avatars.githubusercontent.com/nyxsky404?s=64" width="52" height="52" alt="nyxsky404" style="border-radius:50%;margin:4px"/><br/><sub><b>nyxsky404</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/Pr241singh"><img src="https://avatars.githubusercontent.com/Pr241singh?s=64" width="52" height="52" alt="Pr241singh" style="border-radius:50%;margin:4px"/><br/><sub><b>Pr241singh</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/AyushPrad2907"><img src="https://avatars.githubusercontent.com/AyushPrad2907?s=64" width="52" height="52" alt="AyushPrad2907" style="border-radius:50%;margin:4px"/><br/><sub><b>AyushPrad2907</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/adyamohanka"><img src="https://avatars.githubusercontent.com/adyamohanka?s=64" width="52" height="52" alt="adyamohanka" style="border-radius:50%;margin:4px"/><br/><sub><b>adyamohanka</b></sub><br/><sub>6 commits</sub></a></td><td align="center"><a href="https://github.com/Xploit-Ghost"><img src="https://avatars.githubusercontent.com/Xploit-Ghost?s=64" width="52" height="52" alt="Xploit-Ghost" style="border-radius:50%;margin:4px"/><br/><sub><b>Xploit-Ghost</b></sub><br/><sub>5 commits</sub></a></td><td align="center"><a href="https://github.com/Ishika-1110"><img src="https://avatars.githubusercontent.com/Ishika-1110?s=64" width="52" height="52" alt="Ishika-1110" style="border-radius:50%;margin:4px"/><br/><sub><b>Ishika-1110</b></sub><br/><sub>5 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/panditshubham766-dotcom"><img src="https://avatars.githubusercontent.com/panditshubham766-dotcom?s=64" width="52" height="52" alt="panditshubham766-dotcom" style="border-radius:50%;margin:4px"/><br/><sub><b>panditshubham766-dotcom</b></sub><br/><sub>5 commits</sub></a></td><td align="center"><a href="https://github.com/boss477"><img src="https://avatars.githubusercontent.com/boss477?s=64" width="52" height="52" alt="boss477" style="border-radius:50%;margin:4px"/><br/><sub><b>boss477</b></sub><br/><sub>5 commits</sub></a></td><td align="center"><a href="https://github.com/codedbydollys10"><img src="https://avatars.githubusercontent.com/codedbydollys10?s=64" width="52" height="52" alt="codedbydollys10" style="border-radius:50%;margin:4px"/><br/><sub><b>codedbydollys10</b></sub><br/><sub>5 commits</sub></a></td><td align="center"><a href="https://github.com/mohamedfahim18"><img src="https://avatars.githubusercontent.com/mohamedfahim18?s=64" width="52" height="52" alt="mohamedfahim18" style="border-radius:50%;margin:4px"/><br/><sub><b>mohamedfahim18</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/kshah123919"><img src="https://avatars.githubusercontent.com/kshah123919?s=64" width="52" height="52" alt="kshah123919" style="border-radius:50%;margin:4px"/><br/><sub><b>kshah123919</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/rishikareddy771"><img src="https://avatars.githubusercontent.com/rishikareddy771?s=64" width="52" height="52" alt="rishikareddy771" style="border-radius:50%;margin:4px"/><br/><sub><b>rishikareddy771</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/pari-dubey1"><img src="https://avatars.githubusercontent.com/pari-dubey1?s=64" width="52" height="52" alt="pari-dubey1" style="border-radius:50%;margin:4px"/><br/><sub><b>pari-dubey1</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/Luffy-456"><img src="https://avatars.githubusercontent.com/Luffy-456?s=64" width="52" height="52" alt="Luffy-456" style="border-radius:50%;margin:4px"/><br/><sub><b>Luffy-456</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/JoyceHanan"><img src="https://avatars.githubusercontent.com/JoyceHanan?s=64" width="52" height="52" alt="JoyceHanan" style="border-radius:50%;margin:4px"/><br/><sub><b>JoyceHanan</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/bh462007"><img src="https://avatars.githubusercontent.com/bh462007?s=64" width="52" height="52" alt="bh462007" style="border-radius:50%;margin:4px"/><br/><sub><b>bh462007</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/alishaalmeida10"><img src="https://avatars.githubusercontent.com/alishaalmeida10?s=64" width="52" height="52" alt="alishaalmeida10" style="border-radius:50%;margin:4px"/><br/><sub><b>alishaalmeida10</b></sub><br/><sub>4 commits</sub></a></td><td align="center"><a href="https://github.com/AgnusSerena"><img src="https://avatars.githubusercontent.com/AgnusSerena?s=64" width="52" height="52" alt="AgnusSerena" style="border-radius:50%;margin:4px"/><br/><sub><b>AgnusSerena</b></sub><br/><sub>4 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/MajBlaze"><img src="https://avatars.githubusercontent.com/MajBlaze?s=64" width="52" height="52" alt="MajBlaze" style="border-radius:50%;margin:4px"/><br/><sub><b>MajBlaze</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Siddhi-Kapoor"><img src="https://avatars.githubusercontent.com/Siddhi-Kapoor?s=64" width="52" height="52" alt="Siddhi-Kapoor" style="border-radius:50%;margin:4px"/><br/><sub><b>Siddhi-Kapoor</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/unnatipandey19"><img src="https://avatars.githubusercontent.com/unnatipandey19?s=64" width="52" height="52" alt="unnatipandey19" style="border-radius:50%;margin:4px"/><br/><sub><b>unnatipandey19</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/lokeshkumar69"><img src="https://avatars.githubusercontent.com/lokeshkumar69?s=64" width="52" height="52" alt="lokeshkumar69" style="border-radius:50%;margin:4px"/><br/><sub><b>lokeshkumar69</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/ritikamahato924"><img src="https://avatars.githubusercontent.com/ritikamahato924?s=64" width="52" height="52" alt="ritikamahato924" style="border-radius:50%;margin:4px"/><br/><sub><b>ritikamahato924</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Rashi1404"><img src="https://avatars.githubusercontent.com/Rashi1404?s=64" width="52" height="52" alt="Rashi1404" style="border-radius:50%;margin:4px"/><br/><sub><b>Rashi1404</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Muskan-S123"><img src="https://avatars.githubusercontent.com/Muskan-S123?s=64" width="52" height="52" alt="Muskan-S123" style="border-radius:50%;margin:4px"/><br/><sub><b>Muskan-S123</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Man1ac-1773"><img src="https://avatars.githubusercontent.com/Man1ac-1773?s=64" width="52" height="52" alt="Man1ac-1773" style="border-radius:50%;margin:4px"/><br/><sub><b>Man1ac-1773</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/dishamaurya081-create"><img src="https://avatars.githubusercontent.com/dishamaurya081-create?s=64" width="52" height="52" alt="dishamaurya081-create" style="border-radius:50%;margin:4px"/><br/><sub><b>dishamaurya081-create</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/sdeepika-2606"><img src="https://avatars.githubusercontent.com/sdeepika-2606?s=64" width="52" height="52" alt="sdeepika-2606" style="border-radius:50%;margin:4px"/><br/><sub><b>sdeepika-2606</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Anshu2607-iiitr"><img src="https://avatars.githubusercontent.com/Anshu2607-iiitr?s=64" width="52" height="52" alt="Anshu2607-iiitr" style="border-radius:50%;margin:4px"/><br/><sub><b>Anshu2607-iiitr</b></sub><br/><sub>3 commits</sub></a></td><td align="center"><a href="https://github.com/Ankitjsr-dev05"><img src="https://avatars.githubusercontent.com/Ankitjsr-dev05?s=64" width="52" height="52" alt="Ankitjsr-dev05" style="border-radius:50%;margin:4px"/><br/><sub><b>Ankitjsr-dev05</b></sub><br/><sub>3 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/tejasch2006-ux"><img src="https://avatars.githubusercontent.com/tejasch2006-ux?s=64" width="52" height="52" alt="tejasch2006-ux" style="border-radius:50%;margin:4px"/><br/><sub><b>tejasch2006-ux</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/shivanisreejith1"><img src="https://avatars.githubusercontent.com/shivanisreejith1?s=64" width="52" height="52" alt="shivanisreejith1" style="border-radius:50%;margin:4px"/><br/><sub><b>shivanisreejith1</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/riddhimagupta2"><img src="https://avatars.githubusercontent.com/riddhimagupta2?s=64" width="52" height="52" alt="riddhimagupta2" style="border-radius:50%;margin:4px"/><br/><sub><b>riddhimagupta2</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/bhaktisp15"><img src="https://avatars.githubusercontent.com/bhaktisp15?s=64" width="52" height="52" alt="bhaktisp15" style="border-radius:50%;margin:4px"/><br/><sub><b>bhaktisp15</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/adittya-code"><img src="https://avatars.githubusercontent.com/adittya-code?s=64" width="52" height="52" alt="adittya-code" style="border-radius:50%;margin:4px"/><br/><sub><b>adittya-code</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/SRSoham"><img src="https://avatars.githubusercontent.com/SRSoham?s=64" width="52" height="52" alt="SRSoham" style="border-radius:50%;margin:4px"/><br/><sub><b>SRSoham</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/siri-004"><img src="https://avatars.githubusercontent.com/siri-004?s=64" width="52" height="52" alt="siri-004" style="border-radius:50%;margin:4px"/><br/><sub><b>siri-004</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/sinchana-aiml"><img src="https://avatars.githubusercontent.com/sinchana-aiml?s=64" width="52" height="52" alt="sinchana-aiml" style="border-radius:50%;margin:4px"/><br/><sub><b>sinchana-aiml</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/SaiRishithaK"><img src="https://avatars.githubusercontent.com/SaiRishithaK?s=64" width="52" height="52" alt="SaiRishithaK" style="border-radius:50%;margin:4px"/><br/><sub><b>SaiRishithaK</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Aditisingh0102"><img src="https://avatars.githubusercontent.com/Aditisingh0102?s=64" width="52" height="52" alt="Aditisingh0102" style="border-radius:50%;margin:4px"/><br/><sub><b>Aditisingh0102</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Akshu121796"><img src="https://avatars.githubusercontent.com/Akshu121796?s=64" width="52" height="52" alt="Akshu121796" style="border-radius:50%;margin:4px"/><br/><sub><b>Akshu121796</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Ankitkr16"><img src="https://avatars.githubusercontent.com/Ankitkr16?s=64" width="52" height="52" alt="Ankitkr16" style="border-radius:50%;margin:4px"/><br/><sub><b>Ankitkr16</b></sub><br/><sub>2 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/AnushKamble"><img src="https://avatars.githubusercontent.com/AnushKamble?s=64" width="52" height="52" alt="AnushKamble" style="border-radius:50%;margin:4px"/><br/><sub><b>AnushKamble</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Apurva-Lakhe"><img src="https://avatars.githubusercontent.com/Apurva-Lakhe?s=64" width="52" height="52" alt="Apurva-Lakhe" style="border-radius:50%;margin:4px"/><br/><sub><b>Apurva-Lakhe</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/aasheeshhh"><img src="https://avatars.githubusercontent.com/aasheeshhh?s=64" width="52" height="52" alt="aasheeshhh" style="border-radius:50%;margin:4px"/><br/><sub><b>aasheeshhh</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/dhruv-jani-0808"><img src="https://avatars.githubusercontent.com/dhruv-jani-0808?s=64" width="52" height="52" alt="dhruv-jani-0808" style="border-radius:50%;margin:4px"/><br/><sub><b>dhruv-jani-0808</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Jeet-Srivastava"><img src="https://avatars.githubusercontent.com/Jeet-Srivastava?s=64" width="52" height="52" alt="Jeet-Srivastava" style="border-radius:50%;margin:4px"/><br/><sub><b>Jeet-Srivastava</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/kas2804"><img src="https://avatars.githubusercontent.com/kas2804?s=64" width="52" height="52" alt="kas2804" style="border-radius:50%;margin:4px"/><br/><sub><b>kas2804</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Lehana02"><img src="https://avatars.githubusercontent.com/Lehana02?s=64" width="52" height="52" alt="Lehana02" style="border-radius:50%;margin:4px"/><br/><sub><b>Lehana02</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/Paawangarg1084"><img src="https://avatars.githubusercontent.com/Paawangarg1084?s=64" width="52" height="52" alt="Paawangarg1084" style="border-radius:50%;margin:4px"/><br/><sub><b>Paawangarg1084</b></sub><br/><sub>2 commits</sub></a></td><td align="center"><a href="https://github.com/ANUSHREE-123-S"><img src="https://avatars.githubusercontent.com/ANUSHREE-123-S?s=64" width="52" height="52" alt="ANUSHREE-123-S" style="border-radius:50%;margin:4px"/><br/><sub><b>ANUSHREE-123-S</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/swapnil2737"><img src="https://avatars.githubusercontent.com/swapnil2737?s=64" width="52" height="52" alt="swapnil2737" style="border-radius:50%;margin:4px"/><br/><sub><b>swapnil2737</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Vishvadharman"><img src="https://avatars.githubusercontent.com/Vishvadharman?s=64" width="52" height="52" alt="Vishvadharman" style="border-radius:50%;margin:4px"/><br/><sub><b>Vishvadharman</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/aditip01-cloud"><img src="https://avatars.githubusercontent.com/aditip01-cloud?s=64" width="52" height="52" alt="aditip01-cloud" style="border-radius:50%;margin:4px"/><br/><sub><b>aditip01-cloud</b></sub><br/><sub>1 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/ambikabains"><img src="https://avatars.githubusercontent.com/ambikabains?s=64" width="52" height="52" alt="ambikabains" style="border-radius:50%;margin:4px"/><br/><sub><b>ambikabains</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/AbhijeetKushwaha1213"><img src="https://avatars.githubusercontent.com/AbhijeetKushwaha1213?s=64" width="52" height="52" alt="AbhijeetKushwaha1213" style="border-radius:50%;margin:4px"/><br/><sub><b>AbhijeetKushwaha1213</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/dk132006"><img src="https://avatars.githubusercontent.com/dk132006?s=64" width="52" height="52" alt="dk132006" style="border-radius:50%;margin:4px"/><br/><sub><b>dk132006</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/edepraneethasri"><img src="https://avatars.githubusercontent.com/edepraneethasri?s=64" width="52" height="52" alt="edepraneethasri" style="border-radius:50%;margin:4px"/><br/><sub><b>edepraneethasri</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/FazilPRaphi"><img src="https://avatars.githubusercontent.com/FazilPRaphi?s=64" width="52" height="52" alt="FazilPRaphi" style="border-radius:50%;margin:4px"/><br/><sub><b>FazilPRaphi</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/hari2k7"><img src="https://avatars.githubusercontent.com/hari2k7?s=64" width="52" height="52" alt="hari2k7" style="border-radius:50%;margin:4px"/><br/><sub><b>hari2k7</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/kejriwalkaushal04"><img src="https://avatars.githubusercontent.com/kejriwalkaushal04?s=64" width="52" height="52" alt="kejriwalkaushal04" style="border-radius:50%;margin:4px"/><br/><sub><b>kejriwalkaushal04</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/khushboo-khatoon"><img src="https://avatars.githubusercontent.com/khushboo-khatoon?s=64" width="52" height="52" alt="khushboo-khatoon" style="border-radius:50%;margin:4px"/><br/><sub><b>khushboo-khatoon</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/kunalSingh026"><img src="https://avatars.githubusercontent.com/kunalSingh026?s=64" width="52" height="52" alt="kunalSingh026" style="border-radius:50%;margin:4px"/><br/><sub><b>kunalSingh026</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/tamoghnodeb"><img src="https://avatars.githubusercontent.com/tamoghnodeb?s=64" width="52" height="52" alt="tamoghnodeb" style="border-radius:50%;margin:4px"/><br/><sub><b>tamoghnodeb</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/prithivika2007"><img src="https://avatars.githubusercontent.com/prithivika2007?s=64" width="52" height="52" alt="prithivika2007" style="border-radius:50%;margin:4px"/><br/><sub><b>prithivika2007</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/rachika08"><img src="https://avatars.githubusercontent.com/rachika08?s=64" width="52" height="52" alt="rachika08" style="border-radius:50%;margin:4px"/><br/><sub><b>rachika08</b></sub><br/><sub>1 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/saibhumi146"><img src="https://avatars.githubusercontent.com/saibhumi146?s=64" width="52" height="52" alt="saibhumi146" style="border-radius:50%;margin:4px"/><br/><sub><b>saibhumi146</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/sarveshwarikumari05"><img src="https://avatars.githubusercontent.com/sarveshwarikumari05?s=64" width="52" height="52" alt="sarveshwarikumari05" style="border-radius:50%;margin:4px"/><br/><sub><b>sarveshwarikumari05</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/surajbharsakle07"><img src="https://avatars.githubusercontent.com/surajbharsakle07?s=64" width="52" height="52" alt="surajbharsakle07" style="border-radius:50%;margin:4px"/><br/><sub><b>surajbharsakle07</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/alisha-khan6"><img src="https://avatars.githubusercontent.com/alisha-khan6?s=64" width="52" height="52" alt="alisha-khan6" style="border-radius:50%;margin:4px"/><br/><sub><b>alisha-khan6</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Aryan-Agarwal-creator"><img src="https://avatars.githubusercontent.com/Aryan-Agarwal-creator?s=64" width="52" height="52" alt="Aryan-Agarwal-creator" style="border-radius:50%;margin:4px"/><br/><sub><b>Aryan-Agarwal-creator</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/bhavyajain0810"><img src="https://avatars.githubusercontent.com/bhavyajain0810?s=64" width="52" height="52" alt="bhavyajain0810" style="border-radius:50%;margin:4px"/><br/><sub><b>bhavyajain0810</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/bhavyapandiya29"><img src="https://avatars.githubusercontent.com/bhavyapandiya29?s=64" width="52" height="52" alt="bhavyapandiya29" style="border-radius:50%;margin:4px"/><br/><sub><b>bhavyapandiya29</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Dippp10-ally"><img src="https://avatars.githubusercontent.com/Dippp10-ally?s=64" width="52" height="52" alt="Dippp10-ally" style="border-radius:50%;margin:4px"/><br/><sub><b>Dippp10-ally</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/HarmiBhikadiya"><img src="https://avatars.githubusercontent.com/HarmiBhikadiya?s=64" width="52" height="52" alt="HarmiBhikadiya" style="border-radius:50%;margin:4px"/><br/><sub><b>HarmiBhikadiya</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/hematejaswi-30"><img src="https://avatars.githubusercontent.com/hematejaswi-30?s=64" width="52" height="52" alt="hematejaswi-30" style="border-radius:50%;margin:4px"/><br/><sub><b>hematejaswi-30</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/ishita526"><img src="https://avatars.githubusercontent.com/ishita526?s=64" width="52" height="52" alt="ishita526" style="border-radius:50%;margin:4px"/><br/><sub><b>ishita526</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Juhi4433"><img src="https://avatars.githubusercontent.com/Juhi4433?s=64" width="52" height="52" alt="Juhi4433" style="border-radius:50%;margin:4px"/><br/><sub><b>Juhi4433</b></sub><br/><sub>1 commits</sub></a></td></tr>
+<tr><td align="center"><a href="https://github.com/Krithikakannan"><img src="https://avatars.githubusercontent.com/Krithikakannan?s=64" width="52" height="52" alt="Krithikakannan" style="border-radius:50%;margin:4px"/><br/><sub><b>Krithikakannan</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/maheshbhojane1"><img src="https://avatars.githubusercontent.com/maheshbhojane1?s=64" width="52" height="52" alt="maheshbhojane1" style="border-radius:50%;margin:4px"/><br/><sub><b>maheshbhojane1</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/EchoOfCode"><img src="https://avatars.githubusercontent.com/EchoOfCode?s=64" width="52" height="52" alt="EchoOfCode" style="border-radius:50%;margin:4px"/><br/><sub><b>EchoOfCode</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/NirmalSingh-09"><img src="https://avatars.githubusercontent.com/NirmalSingh-09?s=64" width="52" height="52" alt="NirmalSingh-09" style="border-radius:50%;margin:4px"/><br/><sub><b>NirmalSingh-09</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Parthasarathyjeeva27"><img src="https://avatars.githubusercontent.com/Parthasarathyjeeva27?s=64" width="52" height="52" alt="Parthasarathyjeeva27" style="border-radius:50%;margin:4px"/><br/><sub><b>Parthasarathyjeeva27</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Priti-1001"><img src="https://avatars.githubusercontent.com/Priti-1001?s=64" width="52" height="52" alt="Priti-1001" style="border-radius:50%;margin:4px"/><br/><sub><b>Priti-1001</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/RaviCoderWallah"><img src="https://avatars.githubusercontent.com/RaviCoderWallah?s=64" width="52" height="52" alt="RaviCoderWallah" style="border-radius:50%;margin:4px"/><br/><sub><b>RaviCoderWallah</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/saksham0777"><img src="https://avatars.githubusercontent.com/saksham0777?s=64" width="52" height="52" alt="saksham0777" style="border-radius:50%;margin:4px"/><br/><sub><b>saksham0777</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/SathvikaSingoti"><img src="https://avatars.githubusercontent.com/SathvikaSingoti?s=64" width="52" height="52" alt="SathvikaSingoti" style="border-radius:50%;margin:4px"/><br/><sub><b>SathvikaSingoti</b></sub><br/><sub>1 commits</sub></a></td></tr>
+</table>
+
+*Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
 
 </div>
-
+<!-- CONTRIBUTOR-WALL-END -->
 
 ---
 
@@ -564,3 +649,32 @@ Every star, every PR, every issue — it all adds up.
 Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first &nbsp;·&nbsp; Community-driven
 
 </div>
+
+/**
+## ✨ README Improvement Notes
+
+### 📌 Formatting Enhancements Needed
+- Improve heading hierarchy for better readability
+- Ensure consistent spacing between sections
+- Use proper Markdown formatting for code blocks and lists
+- Align all installation and usage steps properly
+
+### 🚀 Suggested Structure Upgrade
+- Introduction
+- Features
+- Tech Stack
+- Installation
+- Usage
+- Project Structure
+- Contribution Guidelines
+- License
+
+### 🛠️ Documentation Improvements
+- Add badges (optional): build, license, contributors
+- Add screenshots for better UI understanding
+- Standardize code blocks for commands
+
+### 🎯 Goal
+Improve onboarding experience for new contributors and users by making README more structured, readable, and professional.
+*/
+
