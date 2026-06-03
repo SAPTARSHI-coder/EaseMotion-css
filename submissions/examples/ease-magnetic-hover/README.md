@@ -1,29 +1,24 @@
 # ease-magnetic-hover
 
-A smooth magnetic hover effect where elements subtly pull towards the cursor on hover. Pure CSS, no JavaScript required.
+Smooth magnetic hover effect where elements pull towards cursor on hover. Pure CSS.
 
-## 📁 Files
+## Files
 
-| File | Description |
-|------|-------------|
-| 📄 [demo.html](./demo.html) | Interactive demo with cards, buttons, and icons |
-| 🎨 [style.css](./style.css) | Magnetic hover effect styles |
-| 📖 [README.md](./README.md) | Documentation |
+- [demo.html](./demo.html) - Interactive demo
+- [style.css](./style.css) - Component styles
+- [README.md](./README.md) - Documentation
 
-## 🎯 Classes Available
+## Classes
 
-| Class | Effect | Best For |
-|-------|--------|----------|
-| `ease-magnetic` | Medium pull (scale 1.05, translateY -4px) | Default - most elements |
-| `ease-magnetic-light` | Light pull (scale 1.02, translateY -2px) | Subtle interactions |
-| `ease-magnetic-strong` | Strong pull (scale 1.10, translateY -6px) | Dramatic effects |
+| Class | Effect |
+|-------|--------|
+| `ease-magnetic` | Medium pull (scale 1.05) |
+| `ease-magnetic-light` | Light pull (scale 1.02) |
+| `ease-magnetic-strong` | Strong pull (scale 1.10) |
 
-## 🚀 Usage
-
-### Basic Usage
+## Usage
 
 ```html
-<!-- Add the class to any element -->
-<div class="ease-magnetic">
-    Hover to feel the pull
-</div>
+<div class="ease-magnetic">Hover to feel the pull</div>
+<div class="ease-magnetic-light">Light pull</div>
+<div class="ease-magnetic-strong">Strong pull</div>
