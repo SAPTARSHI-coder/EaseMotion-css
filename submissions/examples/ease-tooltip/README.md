@@ -1,23 +1,62 @@
-# Tooltip Component (#250)
+# ease-tooltip
 
-### What does this do?
-Adds a performant, zero-JavaScript `ease-tooltip` component to the framework. It extracts text from a `data-tooltip` HTML attribute and beautifully renders it as a floating bubble with an arrow pointer using CSS pseudo-elements (`::after` and `::before`).
+Animated, accessible tooltips built with **100% pure CSS** — no JavaScript. Implements [Issue #627](https://github.com/EaseMotion/EaseMotion-css/issues/627).
 
-### How is it used?
-Apply the `.ease-tooltip` class and a `data-tooltip` attribute to any container element (like a button or a span).
+## What it does
+
+Wrap any focusable or hoverable control in an `.ease-tooltip` container. Tooltip text comes from `data-tooltip`. The label is rendered with `::after` (bubble) and `::before` (arrow), both absolutely positioned pseudo-elements.
+
+On `:hover` and `:focus-within`, the tooltip **fades in** (`opacity: 0` → `1`) and **slides 4px** into place over **150ms** with `ease` timing — matching EaseMotion’s native motion pattern (fade + subtle directional slide).
+
+## Usage
 
 ```html
-<button class="ease-btn ease-tooltip ease-tooltip-top" data-tooltip="Save your changes">
-  Save
-</button>
+<!-- Top (default) -->
+<span class="ease-tooltip" data-tooltip="Save your work">
+  <button type="button" class="ease-btn ease-btn-primary">Save</button>
+</span>
+
+<!-- Explicit position -->
+<span class="ease-tooltip" data-tooltip="More options" data-position="bottom">
+  <button type="button" class="ease-btn ease-btn-primary">Menu</button>
+</span>
 ```
 
-**Position Variants:**
-- `.ease-tooltip-top` (or omit entirely, top is default)
-- `.ease-tooltip-bottom`
-- `.ease-tooltip-left`
-- `.ease-tooltip-right`
+### Attributes
 
-### Why is it useful?
-1. **Zero JS Overhead:** Because it utilizes HTML attributes and `content: attr()`, there is absolutely no JavaScript required to mount, position, or unmount the tooltip. This makes it incredibly lightweight and performant.
-2. **Accessible by Default:** It respects `prefers-reduced-motion` flawlessly. Normally the tooltips have a smooth slide-in effect, but when reduced motion is enabled, the `transform` animation is stripped out while the `opacity` fade is preserved to prevent motion sickness.
+| Attribute | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `data-tooltip` | any string | — | Text shown in the bubble (`content: attr(data-tooltip)`) |
+| `data-position` | `top`, `bottom`, `left`, `right` | `top` | Placement relative to the trigger |
+
+### Position behavior
+
+| Position | Motion on show |
+|----------|----------------|
+| `top` (default) | Fades in, slides **up** 4px |
+| `bottom` | Fades in, slides **down** 4px |
+| `left` | Fades in, slides **left** 4px |
+| `right` | Fades in, slides **right** 4px |
+
+## Accessibility
+
+- **Keyboard:** Tooltips appear when focus moves inside the wrapper (`:focus-within`), so tabbing to a nested `<button>` or `<a>` reveals the label.
+- **Reduced motion:** Under `prefers-reduced-motion: reduce`, only opacity is animated; slide transforms are disabled.
+
+## Files
+
+| File | Purpose |
+|------|---------|
+| `style.css` | Component styles (copy into your bundle or link directly) |
+| `demo.html` | Live preview of all four positions + default |
+| `README.md` | This guide |
+
+## Preview
+
+Open `demo.html` in a browser. No build step or server required.
+
+## Tech stack
+
+- HTML5 (`data-*` attributes)
+- CSS3 (`::before`, `::after`, `transition`, `attr()`)
+- Zero JavaScript
