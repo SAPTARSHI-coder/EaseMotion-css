@@ -1,4 +1,4 @@
-# Submissions
+﻿# Submissions
 
 **This is the only place where community contributions belong.**
 
@@ -18,6 +18,27 @@ submissions/examples/your-feature-name/
 ```
 
 All three files are required. Missing any one of them will result in the PR being asked to revise.
+
+---
+
+## Step-by-Step Workflow
+
+1. Pick one approved issue or one small effect idea.
+2. Create a kebab-case folder name that describes the idea clearly.
+3. Add only these three files inside that folder: `demo.html`, `style.css`, and `README.md`.
+4. Open `demo.html` directly in your browser and make sure the effect works without a local server.
+5. Check that your demo uses local `style.css` only. Do not add CDN links, framework imports, remote fonts, or build-tool output.
+6. Keep the PR focused on the new submission folder. Do not edit `core/`, `components/`, `docs/`, or unrelated examples.
+7. In the PR body, link the issue and briefly explain how the demo should be reviewed.
+
+Example path:
+
+```text
+submissions/examples/focus-ring-button/
+├── demo.html
+├── style.css
+└── README.md
+```
 
 ---
 
@@ -45,6 +66,27 @@ Answer exactly three questions:
 2. How is it used?        (show the HTML class applied to an element)
 3. Why is it useful?      (how does it fit EaseMotion CSS's philosophy?)
 ```
+
+---
+
+## What Makes a Good Submission
+
+- The effect is easy to understand within a few seconds.
+- The HTML is small, semantic, and readable.
+- The CSS is scoped to the demo and does not rely on global framework files.
+- Class names describe behavior clearly, even if the maintainer later renames them.
+- The demo shows default, hover, focus, or reduced-motion behavior when relevant.
+- The README explains the value of the idea instead of repeating the code line by line.
+
+## What Gets Rejected
+
+- Missing one of the three required files.
+- Editing framework source such as `core/`, `components/`, or existing examples.
+- Submitting generated build output, minified code, screenshots, or large binary files.
+- Using external libraries, CDN scripts, remote fonts, or framework-specific markup.
+- Combining multiple unrelated effects in one PR.
+- Copying another contributor's pending submission.
+- Using `ease-` class names as if the utility is already part of the framework.
 
 ---
 
@@ -92,6 +134,45 @@ The submission in `submissions/examples/hover-grow/` was reviewed and integrated
 | Hard-coded `cubic-bezier(...)` | `var(--ease-ease-bounce)` |
 
 The class now lives in `core/animations.css` tagged `[INTEGRATED]`.
+
+---
+
+## Well-Structured Submission Example
+
+```html
+<!-- submissions/examples/focus-ring-button/demo.html -->
+<link rel="stylesheet" href="./style.css">
+
+<button class="focus-ring-button">
+  Save changes
+</button>
+```
+
+```css
+/* submissions/examples/focus-ring-button/style.css */
+.focus-ring-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.2rem;
+  background: #6c63ff;
+  color: white;
+}
+
+.focus-ring-button:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 4px;
+}
+```
+
+```markdown
+# Focus Ring Button
+
+1. What does this do? Adds a clear keyboard focus ring to a button.
+2. How is it used? Apply `.focus-ring-button` to a button element.
+3. Why is it useful? It improves keyboard navigation while staying readable.
+```
+
+This is enough for review: one small behavior, one local stylesheet, and one short explanation.
 
 ---
 
