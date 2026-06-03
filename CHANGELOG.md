@@ -35,7 +35,7 @@ EaseMotion CSS v1.0.0 is the first public release of the framework. This version
   - Entrance: `ease-fade-in`, `ease-fade-out`, `ease-slide-up`, `ease-slide-down`, `ease-slide-in-left`, `ease-slide-in-right`, `ease-zoom-in`, `ease-flip`
   - Looping: `ease-bounce`, `ease-rotate`, `ease-pulse`, `ease-ping`, `ease-shake`
   - Hover: `ease-hover-grow`, `ease-hover-shrink`, `ease-hover-glow`, `ease-hover-lift`, `ease-hover-underline`
-  - Stagger delays: `ease-delay-75`, `ease-delay-100`, `ease-delay-150`, `ease-delay-200`, `ease-delay-300`, `ease-delay-500`, `ease-delay-700`
+  - Stagger delays: `ease-delay-75`, `ease-delay-100`, `ease-delay-150`, `ease-delay-200`, `ease-delay-300`, `ease-delay-400`, `ease-delay-500`, `ease-delay-600`, `ease-delay-700`, `ease-delay-800`, `ease-delay-1000`
   - Duration overrides: `ease-duration-fast/medium/slow`
   - `prefers-reduced-motion` support
 
