@@ -146,6 +146,30 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 
 > Powered by jsDelivr — globally cached, always fast, no account needed. The CDN link is live the moment you paste it.
 
+## Alternative CDN Providers
+
+EaseMotion CSS can also be loaded using alternative CDN providers.
+
+### jsDelivr (recommended)
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+```
+
+### unpkg
+
+```html
+<link rel="stylesheet" href="https://unpkg.com/easemotion-css/easemotion.min.css" />
+```
+
+### GitHub Raw CDN
+
+```html
+<link rel="stylesheet" href="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/easemotion.min.css" />
+```
+
+> jsDelivr is recommended for production usage because it provides global caching and better reliability.
+
 ### Option 2 — npm
 
 ```bash
@@ -285,6 +309,19 @@ Applies a quick squish animation during hover, focus, and active interactions.
   <div class="ease-card">Card 3</div>
 </div>
 ```
+
+### Hover Animation Examples
+
+Common hover-triggered animation examples are available for:
+
+- Buttons
+- Cards
+- Images
+
+Example showcase:
+
+- hover-animation-showcase
+- hover-sweep
 
 ### Buttons
 
