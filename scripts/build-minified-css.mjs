@@ -145,6 +145,7 @@ function minifyCss(css) {
 }
 
 async function build() {
+  const checkOnly = process.argv.includes("--check");
   const state = {
     externalImports: new Set(),
     localImports: [],
@@ -156,9 +157,20 @@ async function build() {
   const bundledCss = await bundleCss(entryFile, state);
   const externalImportsBlock = [...state.externalImports].join("");
   const minifiedCss = minifyCss(`${externalImportsBlock}\n${bundledCss}`);
+  const outputContent = `${minifiedCss}\n`;
 
-  await mkdir(path.dirname(outputFile), { recursive: true });
-  await writeFile(outputFile, `${minifiedCss}\n`, "utf8");
+  if (checkOnly) {
+    const currentContent = await readFile(outputFile, "utf8").catch(() => "");
+
+    if (currentContent !== outputContent) {
+      throw new Error(
+        `${path.relative(rootDir, outputFile)} is stale. Run \`npm run build\` and commit the regenerated bundle.`,
+      );
+    }
+  } else {
+    await mkdir(path.dirname(outputFile), { recursive: true });
+    await writeFile(outputFile, outputContent, "utf8");
+  }
 
   const summary = {
     entry: path.relative(rootDir, entryFile),
@@ -166,6 +178,7 @@ async function build() {
     importsInlined: state.localImports.length,
     externalImports: state.externalImports.size,
     bytes: Buffer.byteLength(minifiedCss, "utf8"),
+    checkOnly,
   };
 
   console.log(JSON.stringify(summary, null, 2));
