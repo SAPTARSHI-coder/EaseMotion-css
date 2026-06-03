@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Entrance animations `ease-slide-left` and `ease-slide-right` — horizontal siblings of `ease-slide-up` / `ease-slide-down`, completing the directional slide set (24px offset, fade-in, conflict guards via `:not()`)
+
+---
+
 ## [v1.0.0] — 2026-03-29
 
 ### 🎉 Initial Public Release

@@ -236,7 +236,9 @@ Every class in the framework has passed through this process. The curation is wh
 <!-- Entrance animations (fire on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
-<h3 class="ease-slide-in-left">Slide from left</h3>
+<h3 class="ease-slide-left">Slide left</h3>
+<h4 class="ease-slide-right">Slide right</h4>
+<h5 class="ease-slide-in-left">Slide from left</h5>
 <h4 class="ease-zoom-in">Zoom in</h4>
 <h5 class="ease-flip">3D flip</h5>
 <h5>class="ease-contract-image-entrance">Contract image entrance</h5>
