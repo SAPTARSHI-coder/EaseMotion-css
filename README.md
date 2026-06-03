@@ -446,7 +446,18 @@ Open or claim an issue first for non-trivial ideas, then add your raw demo insid
 Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
 
 ---
+## 🌐 Browser Compatibility
 
+EaseMotion CSS is designed to work with modern evergreen browsers and relies on widely supported CSS features such as CSS Variables, Flexbox, CSS Grid, Transforms, Transitions, and Keyframe Animations.
+
+| Browser | Supported Versions |
+|----------|-------------------|
+| Chrome | Latest stable version |
+| Firefox | Latest stable version |
+| Safari | Latest stable version |
+| Edge | Latest stable version |
+
+> Internet Explorer (IE 11 and earlier) is not supported.
 ## 📂 File Structure
 
 ```
