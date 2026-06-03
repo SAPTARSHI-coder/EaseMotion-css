@@ -1,29 +1,26 @@
-# Terminal Prompt Login Form
+# Terminal Prompt Login
 
-## What does this do?
+A terminal-inspired login form component featuring:
 
-Provides a terminal-inspired login form with command-line styling, status dots, monospace typography, prompt-based labels, and a blinking terminal caret animation.
+- Terminal window header
+- Monospace typography
+- Prompt-style labels
+- Blinking caret animation
+- Dark developer-focused aesthetic
+- Accessible reduced-motion support
 
-## How is it used?
+## Files
 
-```html
-<form class="lf-term">
-  <div class="lf-term-bar">
-    <span class="lf-term-dot r"></span>
-    <span class="lf-term-dot y"></span>
-    <span class="lf-term-dot g"></span>
-    <span class="lf-term-title">~/login</span>
-  </div>
+- demo.html
+- style.css
 
-  <div class="lf-term-body">
-    <div class="lf-term-line">
-      <span class="lf-term-prompt">user:</span>
-      <input type="email" placeholder="you@example.com">
-    </div>
-  </div>
-</form>
-```
+## Usage
 
-## Why is it useful?
+Include the HTML structure and style.css in your project.
 
-This component recreates a terminal-style authentication experience suitable for developer portfolios, SaaS dashboards, documentation websites, and technical landing pages. It follows EaseMotion CSS principles by providing a reusable, animation-friendly, and human-readable UI pattern.
+## Features
+
+- Pure CSS
+- Responsive layout
+- Lightweight
+- No JavaScript required
