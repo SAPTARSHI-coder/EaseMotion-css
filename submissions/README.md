@@ -1,4 +1,4 @@
-# Submissions
+﻿# Submissions
 
 **This is the only place where community contributions belong.**
 
