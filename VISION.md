@@ -96,6 +96,88 @@ These principles will never be violated, regardless of contributor demand:
 EaseMotion CSS is a personal project built with long-term intent. The curated model exists not to gatekeep, but to ensure that every release reflects a cohesive, deliberate design language — not a crowdsourced collection of random styles.
 
 GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
+
+---
+
+# 🗺️ Roadmap
+
+## 🚀 Short-Term Roadmap (Next 3 Months)
+
+### v1.1 Goals
+- Form components (inputs, checkboxes, toggles)
+- Better responsive utilities
+- Additional hover animations
+- Improved accessibility defaults
+- Expanded documentation examples
+
+### v1.2 Goals
+- Modal and tooltip components
+- Navigation utilities
+- CSS-only accordion and tabs
+- More card variants
+- Animation performance optimizations
+
+### Developer Experience
+- Better onboarding documentation
+- More live demos and examples
+- Expanded contribution guides
+- CDN usage improvements
+
+---
+
+# 🌌 Long-Term Vision
+
+EaseMotion CSS aims to become a fully human-readable CSS framework focused on animation, clarity, and zero-config development.
+
+Long-term goals include:
+
+- A complete animation-first design ecosystem
+- Extensive utility and component libraries
+- Framework integrations for React, Vue, and Astro
+- Advanced theming support
+- Scroll-triggered and interaction-aware animations
+- Educational resources for beginner developers
+- Community-curated animation collections
+
+The project will continue prioritizing simplicity, readability, and accessibility over excessive abstraction.
+
+---
+
+# 🚫 What EaseMotion CSS Will NOT Become
+
+To maintain clarity and consistency, EaseMotion CSS intentionally avoids certain directions.
+
+The framework will NOT:
+
+- Become a utility overload framework
+- Require mandatory build tooling
+- Use unreadable shorthand class names
+- Depend on JavaScript for core styling
+- Sacrifice readability for micro-optimization
+- Introduce unnecessary configuration complexity
+
+EaseMotion CSS is designed to remain approachable for beginners while still being powerful for advanced developers.
+
+---
+
+# 🤝 Community Vision
+
+EaseMotion CSS is designed as a community-driven but maintainer-curated project.
+
+The goal is to create an ecosystem where:
+- Beginners can contribute raw CSS ideas
+- Contributors learn real-world design system thinking
+- Community experiments evolve into polished framework features
+- Documentation stays approachable and beginner-friendly
+
+Community contributions will continue shaping the framework roadmap while maintaining consistent quality standards through maintainer review.
+
+Future community initiatives may include:
+- Contributor showcases
+- Community animation collections
+- Learning resources
+- Design challenges
+- Open roadmap discussions
  ## Short-Term Roadmap (Next 3 Months)
 
 ### Month 1
