@@ -1,4 +1,4 @@
-# Contributing to EaseMotion CSS
+﻿# Contributing to EaseMotion CSS
 
 Thank you for your interest in improving EaseMotion CSS.
 
