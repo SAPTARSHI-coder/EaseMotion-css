@@ -93,6 +93,23 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
+## 🌐 Browser Compatibility
+
+EaseMotion CSS is built for modern evergreen browsers. The table below reflects the key CSS features used across the framework, demo pages, and component examples.
+
+<div align="center">
+
+| Browser | `backdrop-filter` | `aspect-ratio` | CSS variables | Animations |
+|---------|-------------------|----------------|---------------|------------|
+| Chrome  | Supported | Supported | Supported | Supported |
+| Firefox | Supported | Supported | Supported | Supported |
+| Safari  | Supported with `-webkit-backdrop-filter` fallback | Supported | Supported | Supported |
+| Edge    | Supported | Supported | Supported | Supported |
+
+</div>
+
+---
+
 ## ✨ What is EaseMotion CSS?
 
 EaseMotion CSS is a curated, animation-first CSS framework where **class names read like plain English**. No memorizing shorthand. No build steps. No configuration. Just write HTML and it works.
@@ -257,7 +274,9 @@ Every class in the framework has passed through this process. The curation is wh
 <!-- Entrance animations (fire on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
-<h3 class="ease-slide-in-left">Slide from left</h3>
+<h3 class="ease-slide-left">Slide left</h3>
+<h4 class="ease-slide-right">Slide right</h4>
+<h5 class="ease-slide-in-left">Slide from left</h5>
 <h4 class="ease-zoom-in">Zoom in</h4>
 <h5 class="ease-flip">3D flip</h5>
 <h5>class="ease-contract-image-entrance">Contract image entrance</h5>
