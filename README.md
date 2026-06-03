@@ -82,7 +82,7 @@ Most people simply forget. This is your reminder. 😊
 | 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
 | 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
 | ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
-| 🎨 **Components** | Buttons (6 variants), Cards (12 variants) |
+| 🎨 **Components** | Buttons (6 variants), Cards (13 variants) |
 | 🔑 **Design Tokens** | 60+ CSS custom properties |
 | ⚖️ **Bundle Size** | ~15 kB (unpacked: ~62 kB) |
 | 📜 **License** | MIT |
@@ -361,6 +361,9 @@ Example showcase:
 <!-- Glassmorphism -->
 <div class="ease-card ease-card-glass">Glass card</div>
 
+<!-- Neumorphic -->
+<div class="ease-card ease-card-neumorphic">Soft UI card</div>
+
 <!-- Accent border -->
 <div class="ease-card ease-card-accent">Highlighted card</div>
 ```
@@ -440,7 +443,7 @@ easemotion-css/
 │
 ├── components/                 ← MAINTAINER-ONLY
 │   ├── buttons.css             ← 6 variants, 4 sizes, pill, icon
-│   └── cards.css               ← 12 card variants
+│   └── cards.css               ← 13 card variants
 │
 ├── submissions/                ← CONTRIBUTOR AREA
 │   ├── README.md               ← full submission workflow
