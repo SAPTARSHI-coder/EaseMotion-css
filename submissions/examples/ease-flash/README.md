@@ -1,42 +1,39 @@
-# Ease Flash
+# ease-flash
 
-Rapid opacity flashing animation utility for alerts, warnings, and notifications.
+Rapid visibility flicker animation that mimics a camera flash or warning strobe.
 
 ## Features
 
-✅ Rapid visibility toggle  
-✅ Fast 0.8s timing  
-✅ One-shot by default  
-✅ `--ease-flash-count` support  
-✅ Infinite variant available  
-✅ Reduced motion accessibility support
+- Opacity sequence: `1 → 0 → 1 → 0 → 1`
+- Fast animation (`0.8s`)
+- One-shot by default
+- Customizable repetition count with `--ease-flash-count`
+- Suitable for alerts and notifications
 
 ## Usage
 
 ```html
-<div class="ease-flash"></div>
+<div class="ease-flash">
+    Alert Message
+</div>
 ```
 
-## Flash Count
+## Customization
 
 ```css
-:root{
-  --ease-flash-count:2;
+:root {
+    --ease-flash-count: 3;
 }
 ```
 
-## Variants
+The above repeats the flash cycle three times.
 
-- `.ease-flash` → one-shot flash
-- `.ease-flash-infinite` → continuous flashing
+## Animation Timeline
 
-## Accessibility
-
-Includes `prefers-reduced-motion` support to respect user motion preferences.
-
-## Included Demo Examples
-
-- Warning Alert
-- Notification Badge
-- Status Indicator
-- Emergency Button
+```text
+0%    opacity: 1
+25%   opacity: 0
+50%   opacity: 1
+75%   opacity: 0
+100%  opacity: 1
+```
