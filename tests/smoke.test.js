@@ -1,0 +1,41 @@
+import { describe, it, expect, beforeAll } from 'vitest';
+import { JSDOM } from 'jsdom';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+describe('EaseMotion-css Smoke Tests', () => {
+  let dom;
+  let document;
+  let css;
+
+  beforeAll(() => {
+    const coreDir = resolve(__dirname, '../core');
+    const variables = readFileSync(resolve(coreDir, 'variables.css'), 'utf8');
+    const base = readFileSync(resolve(coreDir, 'base.css'), 'utf8');
+    const animations = readFileSync(resolve(coreDir, 'animations.css'), 'utf8');
+    const utilities = readFileSync(resolve(coreDir, 'utilities.css'), 'utf8');
+    
+    css = variables + base + animations + utilities;
+    dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+    document = dom.window.document;
+    
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+  });
+
+  it('should have basic core classes defined', () => {
+    expect(css).toContain('.ease-fade-in');
+    expect(css).toContain('.ease-slide-up');
+    expect(css).toContain(':root');
+  });
+
+  it('should apply base variables', () => {
+    const styleTag = document.querySelector('style');
+    expect(styleTag.textContent).toContain('--ease-speed-medium');
+  });
+
+  it('should handle prefers-reduced-motion', () => {
+    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+  });
+});
