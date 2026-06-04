@@ -25,7 +25,6 @@ describe('EaseMotion-css Smoke Tests', () => {
   });
 
   it('should have basic core classes defined', () => {
-    // Check for some common classes in the combined CSS content
     expect(css).toContain('.ease-fade-in');
     expect(css).toContain('.ease-slide-up');
     expect(css).toContain(':root');
