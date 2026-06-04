@@ -488,6 +488,22 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 }
 ```
 
+### Override framework styles with `@layer`
+
+EaseMotion wraps all its CSS behind `@layer` cascade layers. Your own styles always win — even if the framework loads *after* your stylesheet:
+
+```css
+/* Your custom overrides — always takes priority */
+@layer easemotion.components {
+  .ease-btn-primary {
+    background: var(--ease-color-orange);
+    border-radius: 2rem;
+  }
+}
+```
+
+No `!important` needed.
+
 ---
 
 ## FAQ
