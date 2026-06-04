@@ -98,18 +98,21 @@ Most people simply forget. This is your reminder. 😊
 
 ## 🌐 Browser Compatibility
 
-EaseMotion CSS is built for modern evergreen browsers. The table below reflects the key CSS features used across the framework, demo pages, and component examples.
+EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
 <div align="center">
 
-| Browser | `backdrop-filter` | `aspect-ratio` | CSS variables | Animations |
-|---------|-------------------|----------------|---------------|------------|
-| Chrome  | Supported | Supported | Supported | Supported |
-| Firefox | Supported | Supported | Supported | Supported |
-| Safari  | Supported with `-webkit-backdrop-filter` fallback | Supported | Supported | Supported |
-| Edge    | Supported | Supported | Supported | Supported |
+| Browser | Minimum Version | `backdrop-filter` | `aspect-ratio` | CSS variables | Animations | Notes |
+|---------|-----------------|-------------------|----------------|---------------|------------|-------|
+| Chrome  | 49+ | Supported | Supported | Supported | Supported | |
+| Firefox | 31+ | Supported | Supported | Supported | Supported | |
+| Safari  | 9.1+ | Supported with `-webkit-backdrop-filter` fallback | Supported | Supported | Supported | Supported | |
+| Edge    | 15+ | Supported | Supported | Supported | Supported | |
+| Opera   | 36+ | Supported | Supported | Supported | Supported | |
 
 </div>
+
+> Internet Explorer (IE 11 and earlier) is not supported.
 
 ---
 
@@ -247,23 +250,6 @@ Or in CSS / PostCSS / Sass:
 
 > ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
 
----
-
-## 🌐 Browser Compatibility
-
-EaseMotion CSS is compatible with all modern browsers that support CSS3 animations and custom properties.
-
-| Browser | Minimum Version | Status |
-|---------|-----------------|--------|
-| Chrome  | 49+ | ✅ Fully Supported |
-| Firefox | 31+ | ✅ Fully Supported |
-| Safari  | 9.1+ | ✅ Fully Supported |
-| Edge    | 15+ | ✅ Fully Supported |
-| Opera   | 36+ | ✅ Fully Supported |
-
-**Note:** EaseMotion CSS relies on CSS3 custom properties (`--var`) and CSS animations. Older browsers (IE 11 and below) are not supported.
-
----
 
 ## 🧠 Philosophy
 
@@ -536,18 +522,6 @@ Open or claim an issue first for non-trivial ideas, then add your raw demo insid
 Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
 
 ---
-## 🌐 Browser Compatibility
-
-EaseMotion CSS is designed to work with modern evergreen browsers and relies on widely supported CSS features such as CSS Variables, Flexbox, CSS Grid, Transforms, Transitions, and Keyframe Animations.
-
-| Browser | Supported Versions |
-|----------|-------------------|
-| Chrome | Latest stable version |
-| Firefox | Latest stable version |
-| Safari | Latest stable version |
-| Edge | Latest stable version |
-
-> Internet Explorer (IE 11 and earlier) is not supported.
 ## 📂 File Structure
 
 ```
