@@ -261,7 +261,7 @@ Applies a quick squish animation during hover, focus, and active interactions.
 <!-- Flexbox -->
 <div class="ease-flex ease-justify-between ease-items-center ease-gap-4">
   <span>Left</span>
-  <span>Right</span>
+  <span class="ease-self-end">Right</span>
 </div>
 
 <!-- Responsive auto-fit grid (no media queries needed) -->
