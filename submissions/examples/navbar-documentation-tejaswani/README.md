@@ -2,12 +2,12 @@
 
 ## What does this do?
 
-Provides a responsive navbar example for EaseMotion CSS.
+Provides multiple navbar examples for EaseMotion CSS users.
 
 ## How is it used?
 
-Open demo.html in a browser.
+Open demo.html and view different navbar layouts.
 
 ## Why is it useful?
 
-Helps developers build navigation bars using EaseMotion CSS components and utilities.
+It helps developers quickly build responsive and animated navigation bars while learning EaseMotion CSS utilities.
