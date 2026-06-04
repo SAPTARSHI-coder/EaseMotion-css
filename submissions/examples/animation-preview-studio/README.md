@@ -1,65 +1,17 @@
-# Animation Preview Studio
+# Interactive Animation Preview Studio 🎬
 
-An interactive playground for exploring and testing EaseMotion CSS animations.
+An internal documentation environment enabling real-time browser-based testing, loop calibration, parameter tweaking, and quick code class exportation for standard EaseMotion configurations.
 
-## Features
+## Configurable Layout Parameters
 
-- Live Animation Preview
-- Animation Selector
-- Duration Control
-- Delay Control
-- Iteration Count Control
-- Play Animation
-- Pause Animation
-- Reset Animation
-- Copy Animation Class
-- Animation Description Panel
-- Responsive Design
-- EaseMotion-inspired Dark Theme
+- **Dynamic Class Switching**: Intercepts active layout classes using hardware-driven keyframes safely (`fade-in`, `slide-up`, `bounce`, `pulse`).
+- **Granular Slider Pipelines**: Updates animation runtime properties (`duration`, `delay`, `iteration-counts`) down to 100ms precision limits.
+- **Dynamic CSS Repaint Injector**: Uses forced reflow overrides (`void element.offsetWidth`) to handle play/pause loop resets on demand without affecting standard DOM hierarchies.
+- **Snippet Export Pipeline**: One-click asynchronous writing tool captures exact inline style string tokens for production deployment.
 
-## Available Animations
+## Sandbox Integration Pattern
 
-- Fade In
-- Fade Out
-- Slide Up
-- Slide Down
-- Bounce
-- Pulse
-- Rotate
-- Zoom In
-
-## Usage
-
-1. Select an animation.
-2. Adjust duration, delay, and iteration count.
-3. Click Play.
-4. Observe the animation.
-5. Copy the animation class if needed.
-
-## Why It Fits EaseMotion CSS
-
-EaseMotion CSS focuses on making animations intuitive and easy to use.
-
-The Animation Preview Studio:
-
-- Demonstrates animation utilities visually
-- Improves discoverability
-- Encourages experimentation
-- Reduces implementation guesswork
-- Enhances documentation interactivity
-
-## Browser Support
-
-- Chrome
-- Edge
-- Firefox
-- Safari
-
-## Future Enhancements
-
-- Search Animations
-- Animation Categories
-- Progress Bar
-- Custom Easing Selector
-- Export Animation Snippet
-- Multiple Preview Shapes
+```html
+<div class="preview-target em-slide-up" style="animation-duration: 1.5s; animation-delay: 0.2s;">
+  EaseMotion Anchor Node
+</div>
