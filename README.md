@@ -403,6 +403,24 @@ Applies a quick squish animation during hover, focus, and active interactions.
 <div class="ease-grid ease-grid-cols-3 ease-place-end ease-gap-4">End</div>
 ```
 
+### Align Self Utilities
+
+```html
+<div class="ease-flex">
+  <div class="ease-self-start">Start</div>
+  <div class="ease-self-center">Center</div>
+  <div class="ease-self-end">End</div>
+  <div class="ease-self-stretch">Stretch</div>
+</div>
+```
+
+#### Available Classes
+
+- `.ease-self-start` → `align-self: flex-start`
+- `.ease-self-center` → `align-self: center`
+- `.ease-self-end` → `align-self: flex-end`
+- `.ease-self-stretch` → `align-self: stretch`
+
 ### Hover Animation Examples
 
 Common hover-triggered animation examples are available for:
