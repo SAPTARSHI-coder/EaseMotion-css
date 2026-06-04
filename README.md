@@ -24,6 +24,27 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 <br/>
 
+## 📑 Table of Contents
+
+- [Support the Project](#support-the-project)
+- [Project Statistics](#project-statistics)
+- [Browser Compatibility](#browser-compatibility)
+- [What is EaseMotion CSS?](#what-is-easemotion-css)
+- [Why EaseMotion CSS?](#why-easemotion-css)
+- [Quick Start](#quick-start)
+- [Philosophy](#philosophy)
+- [Usage & Examples](#usage--examples)
+- [Customization](#customization)
+- [FAQ](#faq)
+- [File Structure](#file-structure)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Community](#community)
+- [Contributors](#contributors)
+- [Maintainer](#maintainer)
+- [Changelog](#changelog)
+- [License](#license)
+
 ---
 
 ### 🚀 Quick Start
