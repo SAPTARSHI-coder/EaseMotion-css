@@ -403,6 +403,24 @@ Applies a quick squish animation during hover, focus, and active interactions.
 <div class="ease-grid ease-grid-cols-3 ease-place-end ease-gap-4">End</div>
 ```
 
+### Align Self Utilities
+
+```html
+<div class="ease-flex">
+  <div class="ease-self-start">Start</div>
+  <div class="ease-self-center">Center</div>
+  <div class="ease-self-end">End</div>
+  <div class="ease-self-stretch">Stretch</div>
+</div>
+```
+
+#### Available Classes
+
+- `.ease-self-start` → `align-self: flex-start`
+- `.ease-self-center` → `align-self: center`
+- `.ease-self-end` → `align-self: flex-end`
+- `.ease-self-stretch` → `align-self: stretch`
+
 ### Hover Animation Examples
 
 Common hover-triggered animation examples are available for:
@@ -459,6 +477,39 @@ Example showcase:
 
 <!-- Accent border -->
 <div class="ease-card ease-card-accent">Highlighted card</div>
+```
+
+### Navigation
+
+```html
+<nav class="ease-navbar-glass" aria-label="Primary navigation">
+  <div class="ease-navbar-brand">EaseMotion</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Home</a>
+    <a class="ease-navbar-item" href="#">Features</a>
+    <a class="ease-navbar-item" href="#">Contact</a>
+  </div>
+</nav>
+```
+
+```html
+<nav class="ease-navbar-glass ease-navbar-glass-sticky" aria-label="Sticky navigation">
+  <div class="ease-navbar-brand">Sticky Nav</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Overview</a>
+    <a class="ease-navbar-item" href="#">Docs</a>
+  </div>
+</nav>
+```
+
+```html
+<nav class="ease-navbar-glass ease-navbar-glass-blur" aria-label="Blurred navbar">
+  <div class="ease-navbar-brand">Deep Blur</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Product</a>
+    <a class="ease-navbar-item" href="#">Support</a>
+  </div>
+</nav>
 ```
 
 ### Build a Hero Section in 5 Lines

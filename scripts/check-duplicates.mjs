@@ -8,7 +8,7 @@ const rootDir = path.resolve(__dirname, "..");
 const baselinePath = path.join(__dirname, "duplicate-baseline.json");
 
 const dirs = ["core", "components"];
-const classPattern = /^\.([a-zA-Z0-9_-]+)\s*\{/;
+const classPattern = /^\s*\.([a-zA-Z0-9_-]+)(?::[a-z-]+)?(?:\s*,\s*\.[a-zA-Z0-9_-]+)*\s*\{/;
 const keyframePattern = /@keyframes\s+(\S+)/;
 
 async function readBaseline() {
@@ -49,14 +49,22 @@ async function findDuplicates() {
 
         const cm = line.match(classPattern);
         if (cm) {
-          if (!classes[cm[1]]) classes[cm[1]] = [];
-          classes[cm[1]].push(`${dir}/${entry.name}:${i + 1}`);
+          const className = cm[1];
+          if (!classes[className]) classes[className] = [];
+          const fileLoc = `${dir}/${entry.name}`;
+          if (!classes[className].some(loc => loc.startsWith(fileLoc + ":"))) {
+            classes[className].push(`${dir}/${entry.name}:${i + 1}`);
+          }
         }
 
         const km = line.match(keyframePattern);
         if (km) {
-          if (!keyframes[km[1]]) keyframes[km[1]] = [];
-          keyframes[km[1]].push(`${dir}/${entry.name}:${i + 1}`);
+          const keyframeName = km[1];
+          if (!keyframes[keyframeName]) keyframes[keyframeName] = [];
+          const fileLoc = `${dir}/${entry.name}`;
+          if (!keyframes[keyframeName].some(loc => loc.startsWith(fileLoc + ":"))) {
+            keyframes[keyframeName].push(`${dir}/${entry.name}:${i + 1}`);
+          }
         }
       }
     }
