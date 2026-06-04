@@ -461,6 +461,39 @@ Example showcase:
 <div class="ease-card ease-card-accent">Highlighted card</div>
 ```
 
+### Navigation
+
+```html
+<nav class="ease-navbar-glass" aria-label="Primary navigation">
+  <div class="ease-navbar-brand">EaseMotion</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Home</a>
+    <a class="ease-navbar-item" href="#">Features</a>
+    <a class="ease-navbar-item" href="#">Contact</a>
+  </div>
+</nav>
+```
+
+```html
+<nav class="ease-navbar-glass ease-navbar-glass-sticky" aria-label="Sticky navigation">
+  <div class="ease-navbar-brand">Sticky Nav</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Overview</a>
+    <a class="ease-navbar-item" href="#">Docs</a>
+  </div>
+</nav>
+```
+
+```html
+<nav class="ease-navbar-glass ease-navbar-glass-blur" aria-label="Blurred navbar">
+  <div class="ease-navbar-brand">Deep Blur</div>
+  <div class="ease-navbar-menu">
+    <a class="ease-navbar-item" href="#">Product</a>
+    <a class="ease-navbar-item" href="#">Support</a>
+  </div>
+</nav>
+```
+
 ### Build a Hero Section in 5 Lines
 
 ```html
