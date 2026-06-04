@@ -38,9 +38,12 @@ for (const item of manifest.files ?? []) {
 }
 
 const unexpected = files.filter(
-  (file) =>
-    !allowed.has(file) &&
-    !allowedDirectories.some((directory) => file.startsWith(directory)),
+  (file) => {
+    if (allowed.has(file)) return false;
+    if (allowedDirectories.some((directory) => file.startsWith(directory))) return false;
+    if (/^(README|LICENSE|CHANGELOG)\b/i.test(file)) return false;
+    return true;
+  }
 );
 
 if (unexpected.length > 0) {
