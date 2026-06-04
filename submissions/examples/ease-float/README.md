@@ -1,26 +1,17 @@
-# Float Animation
+# Ease Float Animation
 
 ## What does this do?
 
-Creates a continuous, gentle floating motion that smoothly moves elements up and down using CSS animations.
+Creates a subtle floating effect using a continuous up-and-down motion.
 
 ## How is it used?
 
 ```html
-<div class="float-animation">
-  Floating Content
+<div class="float-card">
+  Floating Card
 </div>
-```
-
-Optional customization:
-
-```css
-:root {
-  --ease-float-distance: 8px;
-  --ease-float-speed: 3s;
-}
 ```
 
 ## Why is it useful?
 
-Floating animations help draw subtle attention to icons, cards, illustrations, and call-to-action elements without being distracting. The animation is lightweight, reusable, and aligns with EaseMotion CSS's animation-first philosophy.
+It helps draw attention to cards, icons, CTAs, and other important UI elements without being distracting.
