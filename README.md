@@ -238,6 +238,24 @@ Every class in the framework has passed through this process. The curation is wh
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
 ```
+### Animation Playback Utilities
+
+```html
+<div class="ease-bounce motion-infinite">
+  Infinite Bounce
+</div>
+
+<div class="ease-rotate hover-pause">
+  Hover to Pause
+</div>
+```
+
+#### Available Classes
+
+- `.motion-infinite` → Runs animation infinitely
+- `.motion-pause` → Pauses animation
+- `.motion-running` → Resumes/runs animation
+- `.hover-pause` → Pauses animation on hover
 
 ### Hover Effects
 
