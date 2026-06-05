@@ -27,3 +27,9 @@ This component provides a reusable solution with subtle motion, clear active-sta
 The component aligns with EaseMotion CSS by offering a human-readable, composable, animation-focused building block that can be easily standardized into framework utilities and components.
 
 ---
+
+Submitted by: @hiitarun1
+
+Date: 2026-06-06
+
+Status: **Pending review**
