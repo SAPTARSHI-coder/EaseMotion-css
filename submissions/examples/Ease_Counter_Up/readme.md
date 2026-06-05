@@ -1,6 +1,21 @@
 # Float Label Input
 
-> Animated floating label for form inputs — pure CSS, no JavaScript required.
+> Lightweight floating labels for form fields using modern CSS. Accessible, customizable, and dependency-free.
+
+---
+
+## ✨ Features
+
+- Pure CSS implementation
+- No JavaScript required
+- Smooth animated floating labels
+- Accessible semantic labels
+- Customizable with CSS variables
+- Supports `input` and `textarea`
+- Error state styling via `:invalid`
+- Autofill-friendly
+- Mobile-friendly
+- Lightweight and dependency-free
 
 ---
 
@@ -8,7 +23,9 @@
 
 Creates an animated floating label for form inputs. The label initially appears inside the input field as a placeholder substitute and smoothly transitions above the field when the input gains focus or contains a value.
 
-The effect is achieved entirely with CSS using `:focus` and `:placeholder-shown` pseudo-classes. No JavaScript. No dependencies.
+The effect is achieved entirely with CSS using `:focus` and `:placeholder-shown` pseudo-classes.
+
+No JavaScript. No dependencies.
 
 ---
 
@@ -18,7 +35,7 @@ The effect is achieved entirely with CSS using `:focus` and `:placeholder-shown`
 |---|---|---|
 | Default (empty, unfocused) | Inside the field | Acts as a visible placeholder |
 | Focused (empty) | Above the field | Floats up, scales down, changes color |
-| Filled (has value) | Above the field | Stays floated even when unfocused |
+| Filled (has value) | Above the field | Remains floated after blur |
 | Invalid | Above the field | Border and label turn red |
 
 ---
@@ -37,7 +54,17 @@ Or paste the relevant `.float-field` rules directly into your existing styleshee
 
 ## Usage
 
-Wrap each input and its label in a `.float-field` container. The input must have `placeholder=" "` (a single space) — this is what `:placeholder-shown` uses to detect an empty field.
+Wrap each input and its label in a `.float-field` container.
+
+The input must include:
+
+```html
+placeholder=" "
+```
+
+(a single space)
+
+This allows `:placeholder-shown` to detect whether the field is empty.
 
 ```html
 <div class="float-field">
@@ -51,13 +78,27 @@ Wrap each input and its label in a `.float-field` container. The input must have
 </div>
 ```
 
-The label must come **after** the input in the DOM so the CSS sibling selector (`input:focus + label`, `input:not(:placeholder-shown) + label`) can target it.
+### Important
+
+The label must come **after** the input element:
+
+```html
+<input ...>
+<label ...></label>
+```
+
+This is required for the sibling selectors:
+
+```css
+input:focus + label
+input:not(:placeholder-shown) + label
+```
 
 ---
 
 ## Examples
 
-### Login form
+### Login Form
 
 ```html
 <form>
@@ -75,7 +116,7 @@ The label must come **after** the input in the DOM so the CSS sibling selector (
 </form>
 ```
 
-### Registration form
+### Registration Form
 
 ```html
 <form>
@@ -101,11 +142,16 @@ The label must come **after** the input in the DOM so the CSS sibling selector (
 </form>
 ```
 
-### Textarea variant
+### Textarea Variant
 
 ```html
 <div class="float-field float-field--textarea">
-  <textarea id="message" placeholder=" " rows="4"></textarea>
+  <textarea
+    id="message"
+    placeholder=" "
+    rows="4"
+  ></textarea>
+
   <label for="message">Your message</label>
 </div>
 ```
@@ -114,66 +160,94 @@ The label must come **after** the input in the DOM so the CSS sibling selector (
 
 ## How it works
 
-The trick relies on three CSS rules:
+The component relies on three CSS rules:
+
+### 1. Label starts inside the field
 
 ```css
-/* 1 — default: label sits inside the field */
 .float-field label {
   position: absolute;
   top: 1rem;
   left: 0.875rem;
   font-size: 1rem;
-  color: var(--label-color-default);
   pointer-events: none;
-  transition: top 0.2s ease, font-size 0.2s ease, color 0.2s ease;
 }
+```
 
-/* 2 — float up on focus */
+### 2. Float label on focus
+
+```css
 .float-field input:focus + label {
   top: -0.6rem;
   font-size: 0.75rem;
-  color: var(--label-color-active);
 }
+```
 
-/* 3 — stay floated when input has a value (placeholder not shown) */
+### 3. Keep label floated when filled
+
+```css
 .float-field input:not(:placeholder-shown) + label {
   top: -0.6rem;
   font-size: 0.75rem;
 }
 ```
 
-The `placeholder=" "` (single space) on the input is the key — it gives `:placeholder-shown` something to detect, making the "empty" and "filled" states distinguishable with pure CSS.
+The `placeholder=" "` value is the key that makes `:placeholder-shown` work as an "empty state" detector.
 
 ---
 
-## CSS custom properties
+## CSS Custom Properties
 
-All visual tokens are overridable via CSS custom properties:
+All visual tokens can be customized.
 
 ```css
 :root {
-  --float-label-color:        #9ca3af;  /* default label color */
-  --float-label-active-color: #6366f1;  /* label color on focus */
-  --float-label-error-color:  #ef4444;  /* label color on :invalid */
-  --float-input-border:       #e5e7eb;  /* default border */
-  --float-input-focus-border: #6366f1;  /* border on focus */
-  --float-input-error-border: #ef4444;  /* border on :invalid */
+  --float-label-color:        #9ca3af;
+  --float-label-active-color: #6366f1;
+  --float-label-error-color:  #ef4444;
+
+  --float-input-border:       #e5e7eb;
+  --float-input-focus-border: #6366f1;
+  --float-input-error-border: #ef4444;
+
   --float-transition:         0.2s ease;
 }
 ```
 
-Override them at the `:root` level for global changes, or scope them to a specific form:
+---
+
+## 🎨 Customization Examples
+
+### Success Theme
 
 ```css
-.my-form {
+.success-form {
   --float-label-active-color: #10b981;
   --float-input-focus-border: #10b981;
 }
 ```
 
+### Warning Theme
+
+```css
+.warning-form {
+  --float-label-active-color: #f59e0b;
+  --float-input-focus-border: #f59e0b;
+}
+```
+
+### Error Theme
+
+```css
+.error-form {
+  --float-label-active-color: #ef4444;
+  --float-input-focus-border: #ef4444;
+}
+```
+
 ---
 
-## Supported input types
+## Supported Input Types
 
 | Type | Supported | Notes |
 |---|---|---|
@@ -184,24 +258,57 @@ Override them at the `:root` level for global changes, or scope them to a specif
 | `number` | Yes | Full support |
 | `search` | Yes | Full support |
 | `url` | Yes | Full support |
-| `date` | Partial | Label stays floated by default to avoid overlap with date picker UI |
-| `textarea` | Yes | Use `.float-field--textarea` modifier |
+| `date` | Partial | May require additional styling |
+| `textarea` | Yes | Use textarea modifier |
 | `select` | No | Use a custom select component |
-| `checkbox` / `radio` | No | Not applicable |
+| `checkbox` | No | Not applicable |
+| `radio` | No | Not applicable |
 
 ---
 
-## Accessibility
+## ♿ Accessibility
 
-- Labels are real `<label>` elements linked to inputs via `for`/`id` — fully readable by screen readers.
-- The `placeholder=" "` space is visually invisible and does not interfere with assistive technology.
-- Focus states are preserved and visible.
-- Color changes on focus/error do not rely solely on color — border width and position also change.
-- Compatible with browser autofill: autofilled inputs trigger `:not(:placeholder-shown)`, keeping the label floated.
+This component follows common accessibility best practices:
+
+- Uses real `<label>` elements
+- Fully compatible with screen readers
+- Supports keyboard navigation
+- Maintains visible focus states
+- Works with browser autofill
+- Does not rely solely on placeholder text
+- Preserves native validation behavior
+
+For best accessibility, ensure every input has a unique `id` and matching `for` attribute.
 
 ---
 
-## Browser support
+## 📱 Mobile Support
+
+The component is responsive by default and works across:
+
+- Mobile devices
+- Tablets
+- Desktop browsers
+
+The floating animation remains touch-friendly and does not interfere with virtual keyboards.
+
+---
+
+## ⚠️ Limitations
+
+This component intentionally avoids JavaScript.
+
+As a result:
+
+- Requires `placeholder=" "` on inputs
+- Native `<select>` elements are not supported
+- Date inputs may require browser-specific styling
+- Internet Explorer 11 is unsupported
+- Relies on `:placeholder-shown`
+
+---
+
+## Browser Support
 
 | Browser | Support |
 |---|---|
@@ -209,39 +316,81 @@ Override them at the `:root` level for global changes, or scope them to a specif
 | Firefox 51+ | Full |
 | Safari 9+ | Full |
 | Edge 79+ | Full |
-| IE 11 | Not supported — `:placeholder-shown` is unsupported |
+| IE 11 | Not supported |
 
-For IE 11 fallback, add the `.is-filled` class via JavaScript and target it alongside `:not(:placeholder-shown)`.
+For IE 11 fallback, add an `.is-filled` class via JavaScript and target it alongside `:not(:placeholder-shown)`.
 
 ---
 
 ## Why use this over placeholder-only forms?
 
-Plain `placeholder` text disappears the moment a user starts typing, giving them no way to verify what a field was asking for. Floating labels solve this by keeping the field purpose visible at all times — before, during, and after input. This significantly reduces errors in longer forms.
+Traditional placeholders disappear as soon as users begin typing.
 
-Compared to always-visible labels stacked above fields, floating labels save vertical space, making forms feel lighter and less intimidating — particularly on mobile.
+This makes it difficult to remember what information a field was requesting.
+
+Floating labels solve this by keeping the field purpose visible at all times:
+
+- Before input
+- During input
+- After input
+
+Compared to permanently visible labels, floating labels also reduce visual clutter and save vertical space, particularly on mobile devices.
+
+---
+
+## 📂 Project Structure
+
+```text
+float-label/
+├── float-label.css
+├── README.md
+└── examples/
+    ├── login-form.html
+    ├── registration-form.html
+    └── textarea-demo.html
+```
+
+---
+
+## 🛠️ Roadmap
+
+Future enhancements under consideration:
+
+- Floating labels for custom select components
+- Material-style outlined variant
+- Compact size modifier
+- Dark mode examples
+- Additional animation presets
 
 ---
 
 ## Contributing
 
 1. Fork the repository
-2. Create a branch: `git checkout -b feature/float-label-improvement`
-3. Make your changes and add a demo in `examples/`
-4. Submit a pull request with a description of what changed and why
+2. Create a branch
 
-Please follow the existing code style and ensure your changes work in all supported browsers listed above.
+```bash
+git checkout -b feature/float-label-improvement
+```
+
+3. Make your changes
+4. Add or update examples if needed
+5. Submit a pull request describing what changed and why
+
+Please follow the existing code style and ensure changes work across all supported browsers.
 
 ---
 
 ## Changelog
 
 ### 1.0.0 — 2026-06-03
+
 - Initial release
-- Support for `text`, `email`, `password`, `tel`, `number`, `url`, `search`, `textarea`
-- CSS custom property tokens for full theming
-- `:invalid` state styling
+- Support for `text`, `email`, `password`, `tel`, `number`, `url`, `search`, and `textarea`
+- CSS custom property theming
+- `:invalid` error states
 - Autofill compatibility
+- Mobile-friendly behavior
 
 ---
 
