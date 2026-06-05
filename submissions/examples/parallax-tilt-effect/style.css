@@ -1,0 +1,857 @@
+/* ============================================================
+   PARALLAX TILT EFFECT — EaseMotion CSS Submission
+   Animation: 3D Parallax Card Tilt
+   Author: EaseMotion Submission
+   Description: Pure CSS 3D tilt illusion using hover zones
+                and perspective transforms. No JavaScript.
+   ============================================================ */
+
+/* ——————————————————————————————————————
+   0. GOOGLE FONTS IMPORT
+   Using "Cormorant Garamond" (editorial display) +
+   "DM Mono" (code/tag labels) for a luxury-editorial feel
+   —————————————————————————————————————— */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400&display=swap');
+
+/* ——————————————————————————————————————
+   1. DESIGN TOKENS — CSS Custom Properties
+   —————————————————————————————————————— */
+:root {
+  /* Color palette: deep obsidian + amber gold + chalk white */
+  --bg:            #0a0a0c;
+  --surface:       #111115;
+  --card-bg:       #16161c;
+  --card-border:   rgba(255, 195, 80, 0.18);
+  --card-glow:     rgba(255, 185, 50, 0.30);
+
+  --gold:          #ffc350;
+  --gold-dim:      #c89040;
+  --gold-glow:     rgba(255, 195, 80, 0.55);
+  --white:         #f2ede4;
+  --white-dim:     rgba(242, 237, 228, 0.55);
+  --white-faint:   rgba(242, 237, 228, 0.10);
+
+  --tag-bg:        rgba(255, 195, 80, 0.08);
+  --tag-border:    rgba(255, 195, 80, 0.25);
+  --stat-line:     rgba(255, 195, 80, 0.15);
+
+  /* Shadows & depth */
+  --shadow-rest:
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    0 1px 4px  rgba(0, 0, 0, 0.4);
+  --shadow-hover:
+    0 28px 60px rgba(0, 0, 0, 0.75),
+    0  8px 24px rgba(0, 0, 0, 0.55),
+    0  0  40px rgba(255, 185, 50, 0.18);
+
+  /* Tilt easing */
+  --tilt-dur: 0.45s;
+  --tilt-ease: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* Typography */
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-mono:    'DM Mono', 'Courier New', monospace;
+}
+
+/* ——————————————————————————————————————
+   2. RESET & BASE
+   —————————————————————————————————————— */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--bg);
+  /* Subtle grain texture via SVG data-URI background */
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  font-family: var(--font-mono);
+  color: var(--white);
+  gap: 2.5rem;
+}
+
+/* ——————————————————————————————————————
+   3. PAGE HEADER
+   —————————————————————————————————————— */
+.page-header {
+  text-align: center;
+}
+
+.page-header__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.75;
+  margin-bottom: 0.75rem;
+}
+
+.page-header__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-weight: 300;
+  color: var(--white);
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+}
+
+.page-header__title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.page-header__sub {
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--white-dim);
+  letter-spacing: 0.12em;
+}
+
+/* ——————————————————————————————————————
+   4. TILT WRAPPER — The 3D Stage
+   
+   The CSS-only tilt trick uses a 9-zone hover grid
+   overlaid on top of the card. Each zone triggers a
+   :hover that applies a corresponding rotateX/rotateY
+   transform on the card beneath it.
+
+   Layout of the 9 zones (like a numpad):
+     [7][8][9]
+     [4][5][6]
+     [1][2][3]
+   —————————————————————————————————————— */
+
+/* Outer stage: sets up 3D perspective context */
+.tilt-stage {
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  /* Enough room around the card for the glow to breathe */
+  padding: 2rem;
+}
+
+/* Inner wrapper: the element that actually rotates */
+.tilt-card-wrapper {
+  position: relative;
+  display: inline-block;
+  /* preserve-3d so child layers can translateZ */
+  transform-style: preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg);
+  transition:
+    transform    var(--tilt-dur) var(--tilt-ease),
+    box-shadow   var(--tilt-dur) var(--tilt-ease),
+    filter       var(--tilt-dur) var(--tilt-ease);
+  filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5));
+}
+
+/* ——————————————————————————————————————
+   5. HOVER ZONE GRID — 3×3 invisible overlay
+
+   Zones sit ABOVE all card content (z-index: 10)
+   and are fully transparent. When hovered, they
+   push sibling .tilt-card via the general sibling
+   combinator (~). 
+
+   NOTE: The zones must appear BEFORE .tilt-card
+   in the HTML so the ~ combinator works.
+   —————————————————————————————————————— */
+.tilt-zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows:    repeat(3, 1fr);
+  z-index: 10;   /* above card content */
+  border-radius: inherit;
+}
+
+/* Each zone is invisible but intercepts pointer events */
+.tilt-zone {
+  cursor: default;
+  border-radius: inherit;
+}
+
+/*
+  When a zone is hovered, we rotate the card wrapper.
+  Zones are named by row (t=top, m=mid, b=bottom)
+  and column (l=left, c=center, r=right).
+
+  rotateX: positive = top tilts away (bottom toward viewer)
+           negative = top tilts toward viewer
+  rotateY: positive = right tilts toward viewer
+           negative = left tilts toward viewer
+
+  We target the card via: .tilt-zone:hover ~ .tilt-card
+  BUT since .tilt-zones and .tilt-card are siblings inside
+  .tilt-card-wrapper, we use the pattern:
+    .tilt-zone-XY:hover ~ .tilt-card { transform: ... }
+*/
+
+/* ── Top row ── */
+.tilt-zone--tl:hover ~ .tilt-card { transform: rotateX(14deg) rotateY(-12deg); }
+.tilt-zone--tc:hover ~ .tilt-card { transform: rotateX(15deg) rotateY(0deg);   }
+.tilt-zone--tr:hover ~ .tilt-card { transform: rotateX(14deg) rotateY(12deg);  }
+
+/* ── Middle row ── */
+.tilt-zone--ml:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(-15deg); }
+.tilt-zone--mc:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(0deg);   }
+.tilt-zone--mr:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(15deg);  }
+
+/* ── Bottom row ── */
+.tilt-zone--bl:hover ~ .tilt-card { transform: rotateX(-14deg) rotateY(-12deg);}
+.tilt-zone--bc:hover ~ .tilt-card { transform: rotateX(-15deg) rotateY(0deg);  }
+.tilt-zone--br:hover ~ .tilt-card { transform: rotateX(-14deg) rotateY(12deg); }
+
+/* ——————————————————————————————————————
+   6. SHADOW ELEVATION on any tilt-zone hover
+   We need a single rule; since any zone can be hovered,
+   we apply elevation to the wrapper when any child zone
+   is hovered using :has() (widely supported in 2024+).
+   —————————————————————————————————————— */
+.tilt-card-wrapper:has(.tilt-zone:hover) {
+  filter: drop-shadow(0 24px 48px rgba(0,0,0,0.70))
+          drop-shadow(0  0  32px rgba(255,185,50,0.15));
+}
+
+/* ——————————————————————————————————————
+   7. THE CARD — Main visual element
+   —————————————————————————————————————— */
+.tilt-card {
+  position: relative;
+  width: clamp(300px, 88vw, 400px);
+  background: var(--card-bg);
+  border-radius: 16px;
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  /* 3D layer inheritance */
+  transform-style: preserve-3d;
+  transition:
+    transform   var(--tilt-dur) var(--tilt-ease),
+    border-color var(--tilt-dur) var(--tilt-ease);
+}
+
+/* Border glow brightens on hover */
+.tilt-card-wrapper:has(.tilt-zone:hover) .tilt-card {
+  border-color: rgba(255, 195, 80, 0.42);
+}
+
+/* ——————————————————————————————————————
+   8. LIGHTING LAYER — Pseudo-element shimmer
+   A radial gradient overlay that simulates
+   a light source catching the tilted surface.
+   Transitions opacity to fade in on hover.
+   —————————————————————————————————————— */
+.tilt-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Warm highlight from top-left */
+  background: radial-gradient(
+    ellipse 80% 60% at 20% 15%,
+    rgba(255, 220, 140, 0.10) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--tilt-dur) var(--tilt-ease);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .tilt-card::before {
+  opacity: 1;
+}
+
+/* ——————————————————————————————————————
+   9. SHIMMER SWEEP — Second pseudo-element
+   A diagonal shine that sweeps across on hover.
+   Uses background-position animation trick.
+   —————————————————————————————————————— */
+.tilt-card::after {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 215, 120, 0.06) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .tilt-card::after {
+  transform: translateX(200%);
+}
+
+/* ——————————————————————————————————————
+   10. CARD IMAGE SECTION — Depth Layer 1
+   translateZ pushes it "forward" in 3D space
+   —————————————————————————————————————— */
+.card__image-wrap {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  transform: translateZ(0px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+  z-index: 1;
+}
+
+/* Image lifts slightly on tilt hover */
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__image-wrap {
+  transform: translateZ(12px);
+}
+
+/* Decorative image placeholder with gradient */
+.card__image {
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(
+      135deg,
+      #1a1420 0%,
+      #0e1a2e 40%,
+      #1a1208 100%
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Abstract decorative circles in the image area */
+.card__image-deco {
+  position: absolute;
+  inset: 0;
+}
+
+.card__image-deco::before {
+  content: '';
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 195, 80, 0.15);
+  top: -40px;
+  right: -30px;
+}
+
+.card__image-deco::after {
+  content: '';
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 195, 80, 0.10);
+  bottom: 10px;
+  left: 20px;
+}
+
+/* Central icon / logo mark */
+.card__image-mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card__image-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--gold) 0%, #e8920a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(255, 185, 50, 0.35);
+  font-size: 1.4rem;
+  /* CSS-only icon using borders */
+}
+
+/* CSS geometric icon — four squares arranged in a grid */
+.card__image-icon::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 22px;
+  background:
+    linear-gradient(#0a0a0c 0 0) top    left  / 9px 9px,
+    linear-gradient(#0a0a0c 0 0) top    right / 9px 9px,
+    linear-gradient(#0a0a0c 0 0) bottom left  / 9px 9px,
+    linear-gradient(#0a0a0c 0 0) bottom right / 9px 9px;
+  background-repeat: no-repeat;
+}
+
+.card__image-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 195, 80, 0.7);
+}
+
+/* Version badge in top-right of image */
+.card__badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 195, 80, 0.12);
+  border: 1px solid rgba(255, 195, 80, 0.30);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  backdrop-filter: blur(6px);
+  transform: translateZ(20px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__badge {
+  transform: translateZ(32px);
+}
+
+/* Image bottom gradient fade */
+.card__image-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  pointer-events: none;
+}
+
+/* ——————————————————————————————————————
+   11. CARD BODY — Main content area
+   —————————————————————————————————————— */
+.card__body {
+  padding: 1.4rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* ── Project title area ── */
+.card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  transform: translateZ(0px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__meta {
+  transform: translateZ(8px);
+}
+
+.card__category {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.75;
+}
+
+.card__title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--white);
+  letter-spacing: 0.01em;
+}
+
+.card__title span {
+  color: var(--gold);
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ── Description ── */
+.card__description {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: var(--white-dim);
+  transform: translateZ(0px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__description {
+  transform: translateZ(4px);
+}
+
+/* ── Technology tags ── */
+.card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  transform: translateZ(0px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__tags {
+  transform: translateZ(10px);
+}
+
+.card__tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--gold-dim);
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* ── Divider line ── */
+.card__divider {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--stat-line) 20%,
+    var(--stat-line) 80%,
+    transparent
+  );
+}
+
+/* ── Statistics row ── */
+.card__stats {
+  display: flex;
+  justify-content: space-between;
+  transform: translateZ(0px);
+  transition: transform var(--tilt-dur) var(--tilt-ease);
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__stats {
+  transform: translateZ(6px);
+}
+
+.card__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.card__stat-value {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1;
+}
+
+.card__stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--white-dim);
+}
+
+/* ── CTA Button ── */
+.card__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 195, 80, 0.12) 0%,
+    rgba(255, 150, 30, 0.08) 100%
+  );
+  border: 1px solid rgba(255, 195, 80, 0.35);
+  border-radius: 8px;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  /* CTA floats highest in the 3D stack */
+  transform: translateZ(0px);
+  transition:
+    transform      var(--tilt-dur) var(--tilt-ease),
+    background     0.25s ease,
+    border-color   0.25s ease,
+    box-shadow     0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__cta {
+  transform: translateZ(24px);
+  box-shadow: 0 0 20px rgba(255, 185, 50, 0.18);
+}
+
+/* CTA shimmer on hover (independent of tilt) */
+.card__cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 100, 0.12) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.card__cta:hover::before {
+  transform: translateX(100%);
+}
+
+.card__cta:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 195, 80, 0.22) 0%,
+    rgba(255, 150, 30, 0.15) 100%
+  );
+  border-color: rgba(255, 195, 80, 0.6);
+  box-shadow: 0 0 28px rgba(255, 185, 50, 0.25);
+}
+
+/* Arrow icon inside CTA — CSS only */
+.card__cta-arrow {
+  display: inline-block;
+  width: 14px;
+  height: 1px;
+  background: var(--gold);
+  position: relative;
+  flex-shrink: 0;
+  transition: width 0.25s ease;
+}
+
+.card__cta-arrow::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 6px;
+  height: 6px;
+  border-top: 1px solid var(--gold);
+  border-right: 1px solid var(--gold);
+  transform: rotate(45deg);
+}
+
+.card__cta:hover .card__cta-arrow {
+  width: 20px;
+}
+
+/* ——————————————————————————————————————
+   12. CORNER ACCENTS — Decorative corners
+   Tiny gold L-shapes on the card corners
+   to reinforce the premium feel.
+   —————————————————————————————————————— */
+.card__corner {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--tilt-dur) ease;
+}
+
+.tilt-card-wrapper:has(.tilt-zone:hover) .card__corner {
+  opacity: 1;
+}
+
+.card__corner--tl {
+  top: 10px;
+  left: 10px;
+  border-top: 1px solid var(--gold);
+  border-left: 1px solid var(--gold);
+  transform: translateZ(28px);
+}
+
+.card__corner--tr {
+  top: 10px;
+  right: 10px;
+  border-top: 1px solid var(--gold);
+  border-right: 1px solid var(--gold);
+  transform: translateZ(28px);
+}
+
+.card__corner--bl {
+  bottom: 10px;
+  left: 10px;
+  border-bottom: 1px solid var(--gold);
+  border-left: 1px solid var(--gold);
+  transform: translateZ(28px);
+}
+
+.card__corner--br {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 1px solid var(--gold);
+  border-right: 1px solid var(--gold);
+  transform: translateZ(28px);
+}
+
+/* ——————————————————————————————————————
+   13. INSTRUCTION LABEL below card
+   —————————————————————————————————————— */
+.tilt-hint {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 195, 80, 0.35);
+}
+
+/* Blinking cursor animation for hint */
+.tilt-hint__cursor {
+  display: inline-block;
+  width: 6px;
+  height: 9px;
+  background: rgba(255, 195, 80, 0.35);
+  margin-left: 4px;
+  vertical-align: middle;
+  animation: blink 1.1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ——————————————————————————————————————
+   14. AMBIENT BACKGROUND GLOW
+   A soft radial halo behind the card
+   —————————————————————————————————————— */
+.tilt-stage::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 185, 50, 0.05) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tilt-stage:has(.tilt-zone:hover)::before {
+  opacity: 1;
+}
+
+/* ——————————————————————————————————————
+   15. RESPONSIVE ADJUSTMENTS
+   —————————————————————————————————————— */
+@media (max-width: 480px) {
+  body {
+    padding: 2rem 1rem;
+  }
+
+  .tilt-stage {
+    padding: 1rem;
+    /* Reduce tilt intensity on small screens
+       where hover zones are harder to control */
+    perspective: 600px;
+  }
+
+  .card__title {
+    font-size: 1.35rem;
+  }
+
+  .card__stat-value {
+    font-size: 1.2rem;
+  }
+
+  /* Halve all tilt angles on mobile */
+  .tilt-zone--tl:hover ~ .tilt-card { transform: rotateX(7deg)  rotateY(-6deg);  }
+  .tilt-zone--tc:hover ~ .tilt-card { transform: rotateX(8deg)  rotateY(0deg);   }
+  .tilt-zone--tr:hover ~ .tilt-card { transform: rotateX(7deg)  rotateY(6deg);   }
+  .tilt-zone--ml:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(-8deg);  }
+  .tilt-zone--mc:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(0deg);   }
+  .tilt-zone--mr:hover ~ .tilt-card { transform: rotateX(0deg)  rotateY(8deg);   }
+  .tilt-zone--bl:hover ~ .tilt-card { transform: rotateX(-7deg) rotateY(-6deg);  }
+  .tilt-zone--bc:hover ~ .tilt-card { transform: rotateX(-8deg) rotateY(0deg);   }
+  .tilt-zone--br:hover ~ .tilt-card { transform: rotateX(-7deg) rotateY(6deg);   }
+}
+
+/* ——————————————————————————————————————
+   16. REDUCED MOTION — Accessibility
+   Respects user's system preference.
+   Keeps the visual without motion.
+   —————————————————————————————————————— */
+@media (prefers-reduced-motion: reduce) {
+  .tilt-card-wrapper,
+  .tilt-card,
+  .card__image-wrap,
+  .card__badge,
+  .card__meta,
+  .card__description,
+  .card__tags,
+  .card__stats,
+  .card__cta,
+  .tilt-card::before,
+  .tilt-card::after {
+    transition: none !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .tilt-zone--tl:hover ~ .tilt-card,
+  .tilt-zone--tc:hover ~ .tilt-card,
+  .tilt-zone--tr:hover ~ .tilt-card,
+  .tilt-zone--ml:hover ~ .tilt-card,
+  .tilt-zone--mc:hover ~ .tilt-card,
+  .tilt-zone--mr:hover ~ .tilt-card,
+  .tilt-zone--bl:hover ~ .tilt-card,
+  .tilt-zone--bc:hover ~ .tilt-card,
+  .tilt-zone--br:hover ~ .tilt-card {
+    transform: none !important;
+  }
+
+  .tilt-hint__cursor {
+    animation: none;
+    opacity: 0.35;
+  }
+}
