@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/docs/assets/banner.svg" alt="EaseMotion CSS" width="100%" />
 
@@ -21,6 +21,19 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
+
+<br/>
+
+> [!IMPORTANT]
+> **Temporary Contribution Guidelines & Freeze Notice**
+> 
+> Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
+> 
+> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> 
+> This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
+> 
+> Core contribution access may reopen once the framework structure and validation systems are fully stabilized.
 
 <br/>
 
