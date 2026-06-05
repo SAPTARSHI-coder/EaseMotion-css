@@ -38,4 +38,18 @@ describe('EaseMotion-css Smoke Tests', () => {
   it('should handle prefers-reduced-motion', () => {
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   });
+
+  it('should not have duplicate @keyframes definitions', () => {
+    const keyframeCounts = {};
+    const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
+    let match;
+    while ((match = keyframeRegex.exec(css)) !== null) {
+      const name = match[1];
+      keyframeCounts[name] = (keyframeCounts[name] || 0) + 1;
+    }
+    const duplicates = Object.entries(keyframeCounts)
+      .filter(([, count]) => count > 1)
+      .map(([name]) => name);
+    expect(duplicates).toEqual([]);
+  });
 });
