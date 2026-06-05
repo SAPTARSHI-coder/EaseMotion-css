@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Student Job Board — live search and multi-filter controls built with vanilla JS.">
+  <title>Job Board Search & Filters | EaseMotion CSS</title>
+  <link rel="stylesheet" href="../easemotion.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="jb-demo">
+
+    <div class="jb-header">
+      <h1>Job Board</h1>
+      <p>Search and filter approved job listings by title, company, branch, CGPA, and skills.</p>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="jb-controls">
+      <div class="jb-search-wrap">
+        <span class="jb-search-icon">🔍</span>
+        <input type="text" class="jb-search" id="search-input" placeholder="Search by title or company..." autocomplete="off">
+      </div>
+
+      <select class="jb-select" id="branch-filter">
+        <option value="">All Branches</option>
+        <option value="CSE">CSE</option>
+        <option value="ECE">ECE</option>
+        <option value="IT">IT</option>
+        <option value="EEE">EEE</option>
+        <option value="ME">ME</option>
+      </select>
+
+      <select class="jb-select" id="cgpa-filter">
+        <option value="">Min CGPA</option>
+        <option value="9">9.0+</option>
+        <option value="8">8.0+</option>
+        <option value="7">7.0+</option>
+        <option value="6">6.0+</option>
+      </select>
+    </div>
+
+    <!-- Skill chips -->
+    <div class="jb-chips" id="skill-chips">
+      <span class="jb-chip" data-skill="React">React <span class="jb-chip-count">(4)</span></span>
+      <span class="jb-chip" data-skill="Python">Python <span class="jb-chip-count">(5)</span></span>
+      <span class="jb-chip" data-skill="Java">Java <span class="jb-chip-count">(3)</span></span>
+      <span class="jb-chip" data-skill="Node.js">Node.js <span class="jb-chip-count">(3)</span></span>
+      <span class="jb-chip" data-skill="C++">C++ <span class="jb-chip-count">(2)</span></span>
+      <span class="jb-chip" data-skill="AWS">AWS <span class="jb-chip-count">(2)</span></span>
+      <span class="jb-chip" data-skill="SQL">SQL <span class="jb-chip-count">(2)</span></span>
+      <span class="jb-chip" data-skill="TypeScript">TypeScript <span class="jb-chip-count">(2)</span></span>
+    </div>
+
+    <!-- Result count -->
+    <div class="jb-result-count" id="result-count">
+      Showing <strong id="visible-count">0</strong> of <strong id="total-count">0</strong> jobs
+    </div>
+
+    <!-- Job list -->
+    <div class="jb-list" id="job-list">
+      <!-- Injected by JS -->
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Mock job data ─────────────────────────────────────────
+      var jobs = [
+        { title: 'Software Engineer Intern', company: 'Google', branch: 'CSE', cgpa: 8, skills: ['Python', 'C++', 'SQL'], desc: 'Work on large-scale distributed systems and help build the next generation of Google products.' },
+        { title: 'Full Stack Developer', company: 'Microsoft', branch: 'CSE', cgpa: 7, skills: ['React', 'Node.js', 'TypeScript', 'Azure'], desc: 'Build and maintain cross-platform applications used by millions of customers worldwide.' },
+        { title: 'Data Science Intern', company: 'Amazon', branch: 'CSE', cgpa: 8, skills: ['Python', 'SQL', 'AWS'], desc: 'Analyze large datasets to derive actionable insights for business decision-making.' },
+        { title: 'Embedded Systems Engineer', company: 'Texas Instruments', branch: 'ECE', cgpa: 7, skills: ['C++', 'Embedded', 'Linux'], desc: 'Design and optimize firmware for next-generation semiconductor solutions.' },
+        { title: 'Frontend Developer', company: 'Flipkart', branch: 'IT', cgpa: 7, skills: ['React', 'JavaScript', 'CSS'], desc: 'Craft intuitive, high-performance user interfaces for India\'s largest e-commerce platform.' },
+        { title: 'Backend Developer', company: 'Uber', branch: 'CSE', cgpa: 8, skills: ['Node.js', 'Python', 'Go', 'PostgreSQL'], desc: 'Design scalable microservices that power real-time ride-hailing and delivery logistics.' },
+        { title: 'ML Engineer', company: 'Google DeepMind', branch: 'CSE', cgpa: 9, skills: ['Python', 'TensorFlow', 'PyTorch'], desc: 'Research and implement cutting-edge machine learning models for AI applications.' },
+        { title: 'Hardware Design Intern', company: 'Intel', branch: 'EEE', cgpa: 8, skills: ['Verilog', 'MATLAB', 'Python'], desc: 'Contribute to the design and verification of next-generation processor architectures.' },
+        { title: 'DevOps Intern', company: 'Netflix', branch: 'CSE', cgpa: 7, skills: ['AWS', 'Docker', 'Python', 'Linux'], desc: 'Build and maintain cloud infrastructure that streams content to over 200 million subscribers.' },
+        { title: 'Systems Analyst', company: 'Goldman Sachs', branch: 'IT', cgpa: 7, skills: ['Java', 'SQL', 'Spring'], desc: 'Design and maintain high-frequency trading systems and financial data platforms.' },
+        { title: 'Product Management Intern', company: 'Adobe', branch: 'CSE', cgpa: 8, skills: ['JavaScript', 'React', 'TypeScript'], desc: 'Drive product strategy and execution for Adobe\'s creative cloud suite of applications.' },
+        { title: 'Mechanical Design Intern', company: 'Tesla', branch: 'ME', cgpa: 7, skills: ['AutoCAD', 'SolidWorks'], desc: 'Assist in the design and prototyping of next-generation electric vehicle components.' }
+      ];
+
+      var skillCounts = {};
+
+      function computeSkillCounts() {
+        skillCounts = {};
+        jobs.forEach(function (job) {
+          job.skills.forEach(function (s) {
+            skillCounts[s] = (skillCounts[s] || 0) + 1;
+          });
+        });
+      }
+      computeSkillCounts();
+
+      // ── State ─────────────────────────────────────────────────
+      var activeSkills = [];
+
+      // ── DOM refs ──────────────────────────────────────────────
+      var list = document.getElementById('job-list');
+      var searchInput = document.getElementById('search-input');
+      var branchFilter = document.getElementById('branch-filter');
+      var cgpaFilter = document.getElementById('cgpa-filter');
+      var visibleCount = document.getElementById('visible-count');
+      var totalCount = document.getElementById('total-count');
+      var resultCount = document.getElementById('result-count');
+
+      // ── Render ────────────────────────────────────────────────
+      function render() {
+        var query = searchInput.value.trim().toLowerCase();
+        var branch = branchFilter.value;
+        var minCgpa = cgpaFilter.value ? parseFloat(cgpaFilter.value) : 0;
+
+        var filtered = jobs.filter(function (job) {
+          // Search filter
+          if (query) {
+            var matchesSearch = job.title.toLowerCase().includes(query) ||
+                                job.company.toLowerCase().includes(query);
+            if (!matchesSearch) return false;
+          }
+
+          // Branch filter
+          if (branch && job.branch !== branch) return false;
+
+          // CGPA filter
+          if (minCgpa && job.cgpa < minCgpa) return false;
+
+          // Skills filter
+          if (activeSkills.length > 0) {
+            var hasSkill = activeSkills.some(function (s) {
+              return job.skills.indexOf(s) !== -1;
+            });
+            if (!hasSkill) return false;
+          }
+
+          return true;
+        });
+
+        visibleCount.textContent = filtered.length;
+        totalCount.textContent = jobs.length;
+
+        if (filtered.length === 0) {
+          list.innerHTML =
+            '<div class="jb-empty">' +
+              '<div class="jb-empty-icon">🔎</div>' +
+              '<p>No jobs match your filters.</p>' +
+              '<p class="jb-empty-hint">Try adjusting your search terms or clearing some filters.</p>' +
+            '</div>';
+          return;
+        }
+
+        var html = '';
+        filtered.forEach(function (job) {
+          var branchBadge = 'badge-' + job.branch.toLowerCase();
+          var skillsHtml = job.skills.map(function (s) {
+            return '<span class="jb-card-skill">' + s + '</span>';
+          }).join('');
+
+          html +=
+            '<div class="jb-card">' +
+              '<div class="jb-card-top">' +
+                '<div>' +
+                  '<h3 class="jb-card-title">' + job.title + '</h3>' +
+                  '<p class="jb-card-company">' + job.company + '</p>' +
+                '</div>' +
+                '<span class="jb-card-badge ' + branchBadge + '">' + job.branch + '</span>' +
+              '</div>' +
+              '<div class="jb-card-meta">' +
+                '<span>🎓 CGPA ≥ ' + job.cgpa + '.0</span>' +
+              '</div>' +
+              '<div class="jb-card-skills">' + skillsHtml + '</div>' +
+              '<p class="jb-card-desc">' + job.desc + '</p>' +
+            '</div>';
+        });
+        list.innerHTML = html;
+      }
+
+      // ── Debounce helper ───────────────────────────────────────
+      function debounce(fn, ms) {
+        var timer;
+        return function () {
+          clearTimeout(timer);
+          timer = setTimeout(fn, ms);
+        };
+      }
+
+      // ── Event listeners ───────────────────────────────────────
+      searchInput.addEventListener('input', debounce(render, 200));
+      branchFilter.addEventListener('change', render);
+      cgpaFilter.addEventListener('change', render);
+
+      // Skill chips
+      document.querySelectorAll('.jb-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var skill = chip.getAttribute('data-skill');
+          var idx = activeSkills.indexOf(skill);
+          if (idx === -1) {
+            activeSkills.push(skill);
+            chip.classList.add('active');
+          } else {
+            activeSkills.splice(idx, 1);
+            chip.classList.remove('active');
+          }
+          render();
+        });
+      });
+
+      // ── Init ──────────────────────────────────────────────────
+      render();
+
+    })();
+  </script>
+
+</body>
+</html>
