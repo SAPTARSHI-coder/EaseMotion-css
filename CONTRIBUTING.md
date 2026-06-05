@@ -1,6 +1,18 @@
-﻿# Contributing to EaseMotion CSS
+# Contributing to EaseMotion CSS
+
+> [!IMPORTANT]
+> **Temporary Contribution Guidelines & Freeze Notice**
+> 
+> Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
+> 
+> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> 
+> This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
+> 
+> Core contribution access may reopen once the framework structure and validation systems are fully stabilized.
 
 Thank you for your interest in improving EaseMotion CSS.
+
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
