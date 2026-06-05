@@ -1,160 +1,90 @@
-# Pure CSS Sliding Glassmorphic Tabs (`ease-tabs`)
+# EaseMotion — `ease-tabs`
 
-A pure HTML and CSS tab component designed with a state-of-the-art glassmorphic aesthetic. The component is fully functional without requiring any JavaScript, utilizing radio inputs and CSS sibling selectors for active state tracking and tab-switching animation.
-
----
-
-## Feature Overview
-
-The Sliding Glassmorphic Tabs (`ease-tabs`) component is a lightweight, responsive navigation element suitable for modern dashboard panels, settings dialogs, or workspace headers. It implements high-fidelity frosted glass rendering (`backdrop-filter`) with custom fluid sliding transitions (`cubic-bezier`), bringing premium operating system style layouts directly to native web interfaces.
+A CSS-only tab switcher with animated active indicator. Uses hidden radio inputs for state management — no JavaScript required.
 
 ---
 
 ## Features
 
-- **Pure CSS logic**: No JavaScript overhead. Handles inputs, selection, transitions, and panels entirely with native CSS features.
-- **Glassmorphism Theme**: Employs frosted glass backdrop filters, thin translucent high-contrast borders, and soft shadows that blend with active backgrounds.
-- **Sliding Glider (Pill) Animation**: Uses CSS transformations with specialized cubic-bezier curves for fluid transitions when moving between tabs.
-- **Accessible & SEO-Friendly**: Retains hidden native radio inputs to support screen reader configurations and standard keyboard arrow navigation.
-- **Responsive Layout**: Adapts layout, padding, font-scale, and icon bounds for mobile viewports using media queries.
-- **Micro-interactions**: Subtle active scaling and unique accent color schemes for icons based on selection state.
+- **Pure CSS** — radio inputs + `:checked` sibling selectors drive tab switching
+- **3 variants** — underline (default), pills, bordered
+- **Animated panel** — fade + slide transition on panel content
+- **Uses design tokens** — references `--ease-color-*`, `--ease-space-*`, `--ease-speed-*` from `core/variables.css`
+- **Dark mode** — automatic via `prefers-color-scheme: dark`
+- **Reduced motion** — disables transitions when `prefers-reduced-motion: reduce`
 
 ---
 
-## Folder Structure
+## Usage
 
-```text
-submissions/examples/ease-tabs/
-├── demo.html        # Interactive component structure & showcase layout
-├── style.css        # Core glassmorphic rules, positioning, transitions & animations
-└── README.md        # Comprehensive implementation & reference documentation
-```
-
----
-
-## Usage Instructions
-
-To include the sliding glassmorphic tabs component in your project:
-
-1. Copy the markup in the **HTML Example** below into your body file.
-2. Link the core `style.css` (or adapt the rules into your design tokens file).
-3. Ensure parent containers have descriptive background images or colorful linear gradients to showcase the backdrop blur effect.
-
----
-
-## HTML Example
+### HTML structure
 
 ```html
-<div class="ease-tabs-container">
-  
-  <!-- Visually Hidden inputs for selection logic -->
-  <input type="radio" id="tab-dashboard" name="ease-tabs" class="ease-tab-input" checked>
-  <input type="radio" id="tab-analytics" name="ease-tabs" class="ease-tab-input">
-  <input type="radio" id="tab-settings" name="ease-tabs" class="ease-tab-input">
+<div class="ease-tabs">
+  <div class="ease-tabs-nav">
+    <input type="radio" id="tab-1" name="my-tabs" class="ease-tabs-input" checked>
+    <label for="tab-1" class="ease-tabs-label">Tab 1</label>
 
-  <!-- Accessible Tab Navigation list -->
-  <nav class="ease-tabs-nav" role="tablist" aria-label="Settings configuration">
-    
-    <label for="tab-dashboard" class="ease-tab-label label-dashboard" role="tab">
-      <span>Dashboard</span>
-    </label>
-    
-    <label for="tab-analytics" class="ease-tab-label label-analytics" role="tab">
-      <span>Analytics</span>
-    </label>
-    
-    <label for="tab-settings" class="ease-tab-label label-settings" role="tab">
-      <span>Settings</span>
-    </label>
+    <input type="radio" id="tab-2" name="my-tabs" class="ease-tabs-input">
+    <label for="tab-2" class="ease-tabs-label">Tab 2</label>
 
-    <!-- Animated Glass Slider -->
-    <div class="ease-tab-glider" aria-hidden="true"></div>
-
-  </nav>
-
-  <!-- Content Panels -->
-  <div class="ease-tabs-content">
-    <article id="panel-dashboard" class="ease-tab-panel panel-dashboard" role="tabpanel">
-      <!-- Content for Dashboard goes here -->
-    </article>
-    
-    <article id="panel-analytics" class="ease-tab-panel panel-analytics" role="tabpanel">
-      <!-- Content for Analytics goes here -->
-    </article>
-    
-    <article id="panel-settings" class="ease-tab-panel panel-settings" role="tabpanel">
-      <!-- Content for Settings goes here -->
-    </article>
+    <input type="radio" id="tab-3" name="my-tabs" class="ease-tabs-input">
+    <label for="tab-3" class="ease-tabs-label">Tab 3</label>
   </div>
 
+  <div class="ease-tabs-panel" data-tab="1">
+    <!-- Tab 1 content -->
+  </div>
+  <div class="ease-tabs-panel" data-tab="2">
+    <!-- Tab 2 content -->
+  </div>
+  <div class="ease-tabs-panel" data-tab="3">
+    <!-- Tab 3 content -->
+  </div>
 </div>
 ```
 
----
+### Variants
 
-## CSS Highlights
+```html
+<!-- Underline (default) -->
+<div class="ease-tabs">...</div>
 
-### Dynamic Glider Scaling
-The glider width and translation matrix are mathematically calculated to remain fluid regardless of container resizing:
+<!-- Pills -->
+<div class="ease-tabs ease-tabs-pills">...</div>
 
-```css
-.ease-tab-glider {
-  position: absolute;
-  top: 6px;
-  bottom: 6px;
-  left: 6px;
-  width: calc((100% - 20px) / 3); /* Accounts for paddings and margins */
-  transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* Sibling selection positions glider */
-#tab-dashboard:checked ~ .ease-tabs-nav .ease-tab-glider {
-  transform: translateX(0);
-}
-#tab-analytics:checked ~ .ease-tabs-nav .ease-tab-glider {
-  transform: translateX(calc(100% + 4px)); /* 100% glider width + 4px flex gap */
-}
-#tab-settings:checked ~ .ease-tabs-nav .ease-tab-glider {
-  transform: translateX(calc(200% + 8px)); /* 200% glider width + 8px flex gaps */
-}
-```
-
-### Frosted Backdrop Layout
-Provides the characteristic glassmorphic light diffusion and crisp borders:
-
-```css
-.ease-tabs-nav {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
-    0 4px 30px rgba(0, 0, 0, 0.3),
-    inset 0 1px 1px rgba(255, 255, 255, 0.05);
-}
+<!-- Bordered -->
+<div class="ease-tabs ease-tabs-bordered">...</div>
 ```
 
 ---
 
-## Browser Support
+## How it works
 
-| Browser | Supported | Features Utilized |
-| :--- | :--- | :--- |
-| **Google Chrome** | Yes (76+) | Backdrop blur, flexbox, transforms |
-| **Mozilla Firefox** | Yes (70+) | Backdrop blur, flexbox, transforms |
-| **Apple Safari** | Yes (13+) | `-webkit-backdrop-filter` prefixes |
-| **Microsoft Edge** | Yes (79+) | Backdrop blur, flexbox, transforms |
-
----
-
-## Screenshots
-
-*Place screenshot assets or live mockups illustrating the dark-theme layout with sliding interactions here.*
+1. Radio inputs are visually hidden via `clip: rect(0,0,0,0)` — keyboard accessible
+2. `<label>` elements target each radio via `for` — clicking the label checks the radio
+3. `:checked + .ease-tabs-label` styles the active tab (border-bottom / background / border)
+4. `:checked ~ .ease-tabs-panel[data-tab="N"]` reveals the matching panel with a fade-in animation
+5. All radio inputs in the same `name` group share state — only one can be `:checked` at a time
 
 ---
 
-## Contribution Notes
+## Why does it fit EaseMotion CSS?
 
-- **Naming Convention**: Classes are structured with the `ease-*` suffix for simple, self-contained integration.
-- **Styling Standards**: Custom style overrides should avoid hardcoded device dimensions. Use fluid values like percentages, `em`/`rem` scopes, and flex bounds.
-- **Zero JavaScript Rule**: Any upgrades to this structure must respect pure HTML+CSS architecture, utilizing native pseudo-classes and selectors.
+Tabs are an essential UI pattern for organising content — documentation pages, settings panels, profile sections, and dashboards all benefit from tabbed navigation. The roadmap in VISION.md explicitly lists tabs as a planned feature. This component aligns with the framework's animation-first philosophy and uses existing design tokens for seamless integration.
+
+---
+
+## Files
+
+1. **`style.css`** — component CSS with all 3 variants
+2. **`demo.html`** — interactive demo showing all variants
+3. **`README.md`** — documentation and usage examples
+
+---
+
+## Notes
+
+- The `data-tab` attribute on panels must match the tab index (1-based). This maps to the Nth radio input's `:checked` state via the `#tab-N` selector.
+- For more than 4 tabs, add additional `#tab-N:checked ~ .ease-tabs-panel[data-tab="N"]` rules.
+- All behaviour is CSS-only — no JavaScript required for tab switching or panel visibility.
