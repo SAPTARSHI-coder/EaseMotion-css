@@ -15,6 +15,7 @@ const requiredFiles = [
   "easemotion.min.css",
   "core/",
   "components/",
+  "easemotion/",
   "README.md",
   "LICENSE",
   "CHANGELOG.md",
