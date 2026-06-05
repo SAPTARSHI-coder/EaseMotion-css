@@ -12,9 +12,7 @@ A smooth contract-style hover animation for text components.
 ## Usage
 
 ```html
-<h1 class="ease-contract-text-hover">
-  Hover Over Me
-</h1>
+<h1 class="ease-contract-text-hover">Hover Over Me</h1>
 ```
 
 ## Animation Details

@@ -22,31 +22,29 @@ The interaction relies on CSS gradients, transforms, and lightweight JavaScript 
 
 ## Features
 
-* Real-time cursor tracking
-* Fluid ambient spotlight effect
-* Dynamic border glow
-* Glassmorphism styling
-* Responsive grid layout
-* Lightweight implementation
-* Easy customization through CSS variables
-* Suitable for dashboards, profile cards, feature grids, and asset directories
+- Real-time cursor tracking
+- Fluid ambient spotlight effect
+- Dynamic border glow
+- Glassmorphism styling
+- Responsive grid layout
+- Lightweight implementation
+- Easy customization through CSS variables
+- Suitable for dashboards, profile cards, feature grids, and asset directories
 
 ## Directory Tree Manifest
 
-* `demo.html` — Standalone demonstration interface.
-* `style.css` — Core styling and animation definitions.
-* `README.md` — Feature documentation.
+- `demo.html` — Standalone demonstration interface.
+- `style.css` — Core styling and animation definitions.
+- `README.md` — Feature documentation.
 
 ## Usage
 
 ```html
 <div class="ease-ambient-glow-grid">
-
   <div class="ease-glow-card">
     <h3>Card Title</h3>
     <p>Card description.</p>
   </div>
-
 </div>
 ```
 
@@ -56,19 +54,19 @@ The glow automatically follows the cursor when hovering over individual cards.
 
 Modern browsers supporting:
 
-* CSS Custom Properties
-* CSS Radial Gradients
-* Backdrop Filter
-* Flexbox/Grid Layout
-* ES6 JavaScript
+- CSS Custom Properties
+- CSS Radial Gradients
+- Backdrop Filter
+- Flexbox/Grid Layout
+- ES6 JavaScript
 
 ## Why It Fits EaseMotion CSS
 
-* Human-readable class names
-* Animation-first interaction design
-* Lightweight and reusable
-* Easy to compose with existing layouts
-* Modern motion-focused user experience
+- Human-readable class names
+- Animation-first interaction design
+- Lightweight and reusable
+- Easy to compose with existing layouts
+- Modern motion-focused user experience
 
 ## By
 

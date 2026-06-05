@@ -4,20 +4,20 @@ A lightweight demonstration of reusable easing design tokens for animations and 
 
 ## Features
 
-* Pure CSS implementation
-* Reusable easing variables
-* Consistent motion behavior
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Reusable easing variables
+- Consistent motion behavior
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Available Variables
 
-| Variable | Value |
-|----------|--------|
-| `--ease-easing-default` | `cubic-bezier(0.4, 0, 0.2, 1)` |
-| `--ease-easing-bounce` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
-| `--ease-easing-sharp` | `cubic-bezier(0.4, 0, 0.6, 1)` |
+| Variable                | Value                               |
+| ----------------------- | ----------------------------------- |
+| `--ease-easing-default` | `cubic-bezier(0.4, 0, 0.2, 1)`      |
+| `--ease-easing-bounce`  | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| `--ease-easing-sharp`   | `cubic-bezier(0.4, 0, 0.6, 1)`      |
 
 ## Usage
 
@@ -39,6 +39,7 @@ Centralized easing variables create consistent animation behavior across a proje
 
 ---
 
-**Submitted by:** @Muditapandey26  
-**Date:** 2026-05-31  
+**Submitted by:** @Muditapandey26
+**Date:** 2026-05-31
 **Status:** Ready for review
+```

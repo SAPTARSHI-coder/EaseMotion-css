@@ -4,8 +4,8 @@
 Reveals text character-by-character with a blinking cursor using pure CSS keyframes and `steps()`. No JavaScript required.
 
 **How is it used?**
-```html
 
+```html
 <h1 class="ease-typewriter">Hello, EaseMotion!</h1>
 
 <h1 class="ease-typewriter" style="--ease-typewriter-chars: 30">

@@ -64,8 +64,8 @@ It is especially useful for beginner-friendly repositories, hackathons, open-sou
 
 ## Tech Stack
 
-* GitHub Actions
-* JavaScript (Node.js)
+- GitHub Actions
+- JavaScript (Node.js)
 
 ## Supported Commands
 
@@ -83,6 +83,6 @@ It is especially useful for beginner-friendly repositories, hackathons, open-sou
 
 ## Contribution Notes
 
-* Built using GitHub Actions and JavaScript.
-* Designed to be easily extended with additional commands.
-* Supports configurable assignment limits and maintainer-controlled issue claiming policies.
+- Built using GitHub Actions and JavaScript.
+- Designed to be easily extended with additional commands.
+- Supports configurable assignment limits and maintainer-controlled issue claiming policies.

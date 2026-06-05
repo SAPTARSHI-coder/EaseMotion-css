@@ -3,11 +3,10 @@
 **What does this do?**  
 Adds a hover effect where the element background bounces in as a soft, elastic color layer behind the content.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
-<button class="bounce-bg-button">
-  Save changes
-</button>
+<button class="bounce-bg-button">Save changes</button>
 
 <article class="bounce-bg-tile">
   <h2>Live crop insight</h2>

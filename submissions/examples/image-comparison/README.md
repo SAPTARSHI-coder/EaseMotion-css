@@ -4,27 +4,41 @@ A before/after image comparison slider with a draggable vertical handle. Users c
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-image-comparison` | Container (`role="slider"`, keyboard-focusable) |
-| `ease-image-comparison-after` | Full "after" image |
-| `ease-image-comparison-before` | Clipped "before" wrapper |
-| `ease-image-comparison-handle` | Draggable divider (line + circular grip) |
-| `ease-image-comparison-label` | Shared label style |
-| `ease-image-comparison-label--before` | "Before" label (bottom-left) |
-| `ease-image-comparison-label--after` | "After" label (bottom-right) |
+| Class                                 | Description                                     |
+| ------------------------------------- | ----------------------------------------------- |
+| `ease-image-comparison`               | Container (`role="slider"`, keyboard-focusable) |
+| `ease-image-comparison-after`         | Full "after" image                              |
+| `ease-image-comparison-before`        | Clipped "before" wrapper                        |
+| `ease-image-comparison-handle`        | Draggable divider (line + circular grip)        |
+| `ease-image-comparison-label`         | Shared label style                              |
+| `ease-image-comparison-label--before` | "Before" label (bottom-left)                    |
+| `ease-image-comparison-label--after`  | "After" label (bottom-right)                    |
 
 ## Usage
 
 ```html
-<div class="ease-image-comparison" role="slider" aria-valuenow="50" tabindex="0">
-  <img class="ease-image-comparison-after" src="after.jpg" alt="After" draggable="false" />
+<div
+  class="ease-image-comparison"
+  role="slider"
+  aria-valuenow="50"
+  tabindex="0"
+>
+  <img
+    class="ease-image-comparison-after"
+    src="after.jpg"
+    alt="After"
+    draggable="false"
+  />
   <div class="ease-image-comparison-before">
     <img src="before.jpg" alt="Before" draggable="false" />
   </div>
   <div class="ease-image-comparison-handle" tabindex="-1"></div>
-  <span class="ease-image-comparison-label ease-image-comparison-label--before">Before</span>
-  <span class="ease-image-comparison-label ease-image-comparison-label--after">After</span>
+  <span class="ease-image-comparison-label ease-image-comparison-label--before"
+    >Before</span
+  >
+  <span class="ease-image-comparison-label ease-image-comparison-label--after"
+    >After</span
+  >
 </div>
 ```
 

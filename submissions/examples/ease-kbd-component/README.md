@@ -11,6 +11,7 @@
 The **Modern Keyboard Shortcut (KBD) Component** provides a range of highly styled keycap tokens and layouts for displaying keyboard shortcut commands. It uses semantic HTML `<kbd>` elements to create visually distinct physical keys.
 
 ### Core Visual Capabilities:
+
 - **3D Beveled Keycaps (Classic)** — uses layers of solid box shadows and linear gradients to simulate a realistic mechanical keyboard key with depth and height.
 - **Notion-style Flat Outlines** — modern clean outlines with minimal backgrounds for highly responsive codebases and clean interfaces.
 - **Command-Palette Glows** — neon tinted outlines and glow properties, ideal for search bar indicators or command menus.

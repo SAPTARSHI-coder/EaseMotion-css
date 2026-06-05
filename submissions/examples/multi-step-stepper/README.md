@@ -6,9 +6,9 @@ Uses radio inputs + `:checked` + sibling selectors for state management.
 ## Usage
 
 ```html
-<input type="radio" name="stepper" id="s1" checked/>
-<input type="radio" name="stepper" id="s2"/>
-<input type="radio" name="stepper" id="s3"/>
+<input type="radio" name="stepper" id="s1" checked />
+<input type="radio" name="stepper" id="s2" />
+<input type="radio" name="stepper" id="s3" />
 
 <div class="ease-stepper">
   <div class="ease-stepper__step" data-step="1">

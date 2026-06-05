@@ -7,9 +7,7 @@ Adds a hover interaction where an element slightly grows and receives a stronger
 ## How is it used?
 
 ```html
-<div class="hover-shadow-grow">
-  Hover over me
-</div>
+<div class="hover-shadow-grow">Hover over me</div>
 ```
 
 ## Why is it useful?

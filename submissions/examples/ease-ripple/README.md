@@ -3,10 +3,14 @@
 **What does this do?**  
 Adds a pure CSS click ripple that expands and fades inside a button without JavaScript.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <button class="ripple-button">Save changes</button>
-<button class="ripple-button ripple-pill" style="--ease-ripple-color: rgba(255,255,255,0.5)">
+<button
+  class="ripple-button ripple-pill"
+  style="--ease-ripple-color: rgba(255,255,255,0.5)"
+>
   Continue
 </button>
 ```

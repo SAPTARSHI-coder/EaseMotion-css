@@ -4,16 +4,16 @@ A CSS-only masonry (waterfall / Pinterest-style) layout using the `column-count`
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-masonry-grid` | Grid container (default 3 columns) |
-| `ease-masonry-grid--cols-2` | 2 columns |
-| `ease-masonry-grid--cols-3` | 3 columns |
-| `ease-masonry-grid--cols-4` | 4 columns |
-| `ease-masonry-item` | Individual grid item |
-| `ease-masonry-item-body` | Text content area inside an item |
-| `ease-masonry-item--wide` | Visual hint for spanning 2 columns (CSS Grid only) |
-| `ease-masonry-item--tall` | Visual hint for spanning 2 rows (CSS Grid only) |
+| Class                       | Description                                        |
+| --------------------------- | -------------------------------------------------- |
+| `ease-masonry-grid`         | Grid container (default 3 columns)                 |
+| `ease-masonry-grid--cols-2` | 2 columns                                          |
+| `ease-masonry-grid--cols-3` | 3 columns                                          |
+| `ease-masonry-grid--cols-4` | 4 columns                                          |
+| `ease-masonry-item`         | Individual grid item                               |
+| `ease-masonry-item-body`    | Text content area inside an item                   |
+| `ease-masonry-item--wide`   | Visual hint for spanning 2 columns (CSS Grid only) |
+| `ease-masonry-item--tall`   | Visual hint for spanning 2 rows (CSS Grid only)    |
 
 ## Usage
 

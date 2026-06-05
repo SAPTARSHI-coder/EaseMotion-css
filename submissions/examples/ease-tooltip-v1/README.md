@@ -1,6 +1,7 @@
 # ease-tooltip
 
 <<<<<<< HEAD
+
 ## What does this do?
 
 A CSS-only animated tooltip component that appears on hover and keyboard focus — no JavaScript required. The bubble fades in and slides 4px into position using `opacity` + `transform` transitions, consistent with EaseMotion's existing motion language.
@@ -48,20 +49,32 @@ Override `--tooltip-bg` for contextual meaning:
 ```
 
 ```css
-.tooltip-success { --tooltip-bg: var(--ease-color-success-dark, #15803d); }
-.tooltip-danger  { --tooltip-bg: var(--ease-color-danger-dark,  #b91c1c); }
-.tooltip-warning { --tooltip-bg: var(--ease-color-warning-dark, #b45309); }
-.tooltip-info    { --tooltip-bg: #0369a1; }
+.tooltip-success {
+  --tooltip-bg: var(--ease-color-success-dark, #15803d);
+}
+.tooltip-danger {
+  --tooltip-bg: var(--ease-color-danger-dark, #b91c1c);
+}
+.tooltip-warning {
+  --tooltip-bg: var(--ease-color-warning-dark, #b45309);
+}
+.tooltip-info {
+  --tooltip-bg: #0369a1;
+}
 ```
 
 ### Custom speed or offset
 
 ```css
 /* Slower tooltip on a specific element */
-.my-element { --tooltip-speed: var(--ease-speed-medium); }
+.my-element {
+  --tooltip-speed: var(--ease-speed-medium);
+}
 
 /* More breathing room between trigger and bubble */
-.my-element { --tooltip-offset: 12px; }
+.my-element {
+  --tooltip-offset: 12px;
+}
 ```
 
 ## Why is it useful?
@@ -80,14 +93,14 @@ This submission accelerates that milestone with a zero-JS implementation:
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--tooltip-bg` | `var(--ease-color-neutral-900)` | Bubble background color |
-| `--tooltip-color` | `var(--ease-color-neutral-50)` | Bubble text color |
-| `--tooltip-speed` | `var(--ease-speed-fast)` | Transition duration |
-| `--tooltip-offset` | `8px` | Gap between trigger and bubble |
-| `--tooltip-radius` | `var(--ease-radius-sm)` | Bubble border radius |
-| `--tooltip-max-width` | `220px` | Maximum bubble width |
+| Property              | Default                         | Description                    |
+| --------------------- | ------------------------------- | ------------------------------ |
+| `--tooltip-bg`        | `var(--ease-color-neutral-900)` | Bubble background color        |
+| `--tooltip-color`     | `var(--ease-color-neutral-50)`  | Bubble text color              |
+| `--tooltip-speed`     | `var(--ease-speed-fast)`        | Transition duration            |
+| `--tooltip-offset`    | `8px`                           | Gap between trigger and bubble |
+| `--tooltip-radius`    | `var(--ease-radius-sm)`         | Bubble border radius           |
+| `--tooltip-max-width` | `220px`                         | Maximum bubble width           |
 
 ## Tech Stack
 
@@ -102,9 +115,8 @@ Open `demo.html` directly in your browser to see all variants.
 
 - Class names used: `.tooltip`, `.tooltip-top`, `.tooltip-bottom`, `.tooltip-left`, `.tooltip-right`
 - Maintainer will rename to `ease-tooltip`, `ease-tooltip-bottom`, etc. before merging
-- No changes made to `core/`, `components/`, or any existing files
-=======
-Animated, accessible tooltips built with **100% pure CSS** — no JavaScript. Implements [Issue #627](https://github.com/EaseMotion/EaseMotion-css/issues/627).
+- # No changes made to `core/`, `components/`, or any existing files
+  Animated, accessible tooltips built with **100% pure CSS** — no JavaScript. Implements [Issue #627](https://github.com/EaseMotion/EaseMotion-css/issues/627).
 
 ## What it does
 
@@ -128,19 +140,19 @@ On `:hover` and `:focus-within`, the tooltip **fades in** (`opacity: 0` → `1`)
 
 ### Attributes
 
-| Attribute | Values | Default | Description |
-|-----------|--------|---------|-------------|
-| `data-tooltip` | any string | — | Text shown in the bubble (`content: attr(data-tooltip)`) |
-| `data-position` | `top`, `bottom`, `left`, `right` | `top` | Placement relative to the trigger |
+| Attribute       | Values                           | Default | Description                                              |
+| --------------- | -------------------------------- | ------- | -------------------------------------------------------- |
+| `data-tooltip`  | any string                       | —       | Text shown in the bubble (`content: attr(data-tooltip)`) |
+| `data-position` | `top`, `bottom`, `left`, `right` | `top`   | Placement relative to the trigger                        |
 
 ### Position behavior
 
-| Position | Motion on show |
-|----------|----------------|
-| `top` (default) | Fades in, slides **up** 4px |
-| `bottom` | Fades in, slides **down** 4px |
-| `left` | Fades in, slides **left** 4px |
-| `right` | Fades in, slides **right** 4px |
+| Position        | Motion on show                 |
+| --------------- | ------------------------------ |
+| `top` (default) | Fades in, slides **up** 4px    |
+| `bottom`        | Fades in, slides **down** 4px  |
+| `left`          | Fades in, slides **left** 4px  |
+| `right`         | Fades in, slides **right** 4px |
 
 ## Accessibility
 
@@ -149,11 +161,11 @@ On `:hover` and `:focus-within`, the tooltip **fades in** (`opacity: 0` → `1`)
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                   |
+| ----------- | --------------------------------------------------------- |
 | `style.css` | Component styles (copy into your bundle or link directly) |
-| `demo.html` | Live preview of all four positions + default |
-| `README.md` | This guide |
+| `demo.html` | Live preview of all four positions + default              |
+| `README.md` | This guide                                                |
 
 ## Preview
 
@@ -164,4 +176,4 @@ Open `demo.html` in a browser. No build step or server required.
 - HTML5 (`data-*` attributes)
 - CSS3 (`::before`, `::after`, `transition`, `attr()`)
 - Zero JavaScript
->>>>>>> upstream/main
+  > > > > > > > upstream/main

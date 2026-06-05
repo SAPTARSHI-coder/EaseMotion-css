@@ -4,22 +4,22 @@ A developer-focused commit history timeline inspired by GitHub, GitLab, and Line
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-commit-timeline` | Container with vertical connector line |
-| `ease-commit` | Individual commit entry |
-| `ease-commit-dot` | Colored dot on the timeline |
-| `ease-commit-dot--feat` | Feature commit (purple) |
-| `ease-commit-dot--fix` | Bugfix commit (red) |
-| `ease-commit-dot--docs` | Documentation commit (blue) |
-| `ease-commit-dot--refactor` | Refactor commit (green) |
-| `ease-commit-dot--chore` | Chore commit (amber) |
-| `ease-commit-content` | Card with title and meta |
-| `ease-commit-title` | Commit message heading |
-| `ease-commit-meta` | Hash, author, and time row |
-| `ease-commit-hash` | Short hash monospace badge |
-| `ease-commit-author` | Author name |
-| `ease-commit-time` | Relative timestamp |
+| Class                       | Description                            |
+| --------------------------- | -------------------------------------- |
+| `ease-commit-timeline`      | Container with vertical connector line |
+| `ease-commit`               | Individual commit entry                |
+| `ease-commit-dot`           | Colored dot on the timeline            |
+| `ease-commit-dot--feat`     | Feature commit (purple)                |
+| `ease-commit-dot--fix`      | Bugfix commit (red)                    |
+| `ease-commit-dot--docs`     | Documentation commit (blue)            |
+| `ease-commit-dot--refactor` | Refactor commit (green)                |
+| `ease-commit-dot--chore`    | Chore commit (amber)                   |
+| `ease-commit-content`       | Card with title and meta               |
+| `ease-commit-title`         | Commit message heading                 |
+| `ease-commit-meta`          | Hash, author, and time row             |
+| `ease-commit-hash`          | Short hash monospace badge             |
+| `ease-commit-author`        | Author name                            |
+| `ease-commit-time`          | Relative timestamp                     |
 
 ## Usage
 

@@ -29,7 +29,10 @@ spaces and punctuation. `"Hello, EaseMotion!"` = 18 characters.
 ### No cursor
 
 ```html
-<h2 class="ease-typewriter ease-typewriter-no-cursor" style="--ease-typewriter-steps: 13;">
+<h2
+  class="ease-typewriter ease-typewriter-no-cursor"
+  style="--ease-typewriter-steps: 13;"
+>
   Build faster.
 </h2>
 ```
@@ -37,13 +40,16 @@ spaces and punctuation. `"Hello, EaseMotion!"` = 18 characters.
 ### Cursor color variants
 
 ```html
-<h2 class="ease-typewriter ease-typewriter-cursor-primary" style="--ease-typewriter-steps: 26;">
+<h2
+  class="ease-typewriter ease-typewriter-cursor-primary"
+  style="--ease-typewriter-steps: 26;"
+>
   Powered by core CSS variables.
 </h2>
 ```
 
-| Class | Token used |
-|---|---|
+| Class                            | Token used             |
+| -------------------------------- | ---------------------- |
 | `ease-typewriter-cursor-primary` | `--ease-color-primary` |
 | `ease-typewriter-cursor-success` | `--ease-color-success` |
 | `ease-typewriter-cursor-danger`  | `--ease-color-danger`  |
@@ -53,12 +59,22 @@ spaces and punctuation. `"Hello, EaseMotion!"` = 18 characters.
 
 ```html
 <h3 class="ease-typewriter" style="--ease-typewriter-steps: 9;">Line one.</h3>
-<h3 class="ease-typewriter ease-typewriter-delay-600" style="--ease-typewriter-steps: 9;">Line two.</h3>
-<h3 class="ease-typewriter ease-typewriter-delay-1200" style="--ease-typewriter-steps: 10;">Line three.</h3>
+<h3
+  class="ease-typewriter ease-typewriter-delay-600"
+  style="--ease-typewriter-steps: 9;"
+>
+  Line two.
+</h3>
+<h3
+  class="ease-typewriter ease-typewriter-delay-1200"
+  style="--ease-typewriter-steps: 10;"
+>
+  Line three.
+</h3>
 ```
 
-| Class | Delay |
-|---|---|
+| Class                        | Delay  |
+| ---------------------------- | ------ |
 | `ease-typewriter-delay-300`  | 300ms  |
 | `ease-typewriter-delay-600`  | 600ms  |
 | `ease-typewriter-delay-900`  | 900ms  |
@@ -67,7 +83,10 @@ spaces and punctuation. `"Hello, EaseMotion!"` = 18 characters.
 ### Speed variants
 
 ```html
-<h2 class="ease-typewriter ease-typewriter-fast" style="--ease-typewriter-steps: 18;">
+<h2
+  class="ease-typewriter ease-typewriter-fast"
+  style="--ease-typewriter-steps: 18;"
+>
   Hello, EaseMotion!
 </h2>
 ```
@@ -97,11 +116,11 @@ itself from other typewriter submissions by:
 ## Browser Support
 
 | Browser | Supported |
-|---|---|
-| Chrome  | ✅ |
-| Firefox | ✅ |
-| Edge    | ✅ |
-| Safari  | ✅ |
+| ------- | --------- |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Edge    | ✅        |
+| Safari  | ✅        |
 
 ---
 

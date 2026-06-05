@@ -7,6 +7,5 @@ Draws border lines around an element when hovered.
 ## Usage
 
 ```html
-<div class="ease-hover-border-draw">
-  Hover Me
-</div>
+<div class="ease-hover-border-draw">Hover Me</div>
+```

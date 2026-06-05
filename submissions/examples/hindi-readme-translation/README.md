@@ -53,11 +53,11 @@ The four demo hover effects in the live preview strip also serve as a practical 
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Self-contained bilingual showcase page |
+| File        | Purpose                                        |
+| ----------- | ---------------------------------------------- |
+| `demo.html` | Self-contained bilingual showcase page         |
 | `style.css` | Bilingual layout + four CSS-only hover effects |
-| `README.md` | This file |
+| `README.md` | This file                                      |
 
 ---
 

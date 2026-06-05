@@ -3,7 +3,8 @@
 **What does this do?**  
 Creates a CSS-only accordion that expands to its natural content height without a `max-height` timing hack.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <input class="accordion-toggle" id="faq-1" type="checkbox" />
 <label class="accordion-trigger" for="faq-1">How does it animate?</label>

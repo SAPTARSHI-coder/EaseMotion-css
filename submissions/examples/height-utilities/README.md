@@ -4,19 +4,19 @@ A lightweight collection of CSS height utility classes that provide quick and re
 
 ## Features
 
-* Pure CSS implementation
-* Human-readable utility classes
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Human-readable utility classes
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Available Classes
 
-| Class | Effect |
-| ------- | ------- |
-| `ease-h-full` | Sets height to 100% |
-| `ease-h-screen` | Sets height to 100vh |
-| `ease-h-auto` | Sets height to auto |
+| Class               | Effect                       |
+| ------------------- | ---------------------------- |
+| `ease-h-full`       | Sets height to 100%          |
+| `ease-h-screen`     | Sets height to 100vh         |
+| `ease-h-auto`       | Sets height to auto          |
 | `ease-min-h-screen` | Sets minimum height to 100vh |
 
 ## Usage
@@ -30,14 +30,15 @@ A lightweight collection of CSS height utility classes that provide quick and re
 
 <main class="ease-min-h-screen"></main>
 ```
+
 ## Browser Support
 
-| Browser | Supported |
-| :--- | :---: |
-| **Chrome** | ✅ |
-| **Firefox** | ✅ |
-| **Safari** | ✅ |
-| **Edge** | ✅ |
+| Browser     | Supported |
+| :---------- | :-------: |
+| **Chrome**  |    ✅     |
+| **Firefox** |    ✅     |
+| **Safari**  |    ✅     |
+| **Edge**    |    ✅     |
 
 ## Why is it Useful?
 

@@ -9,7 +9,7 @@ A meditative breathing guide animation that slowly expands and contracts, popula
 ```
 
 ```css
-@import 'style.css';
+@import "style.css";
 ```
 
 ## Acceptance Criteria

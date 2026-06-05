@@ -15,6 +15,7 @@ This directory contains the standardized changelog format for EaseMotion CSS. It
 3. **Reformatted reference** — How the existing v1.0.0 entry should look
 
 The goal is to ensure every release maintains:
+
 - Clear, scannable organization (Added / Changed / Fixed / Deprecated)
 - Consistent formatting and terminology
 - Easy migration guidance for breaking changes
@@ -24,12 +25,12 @@ The goal is to ensure every release maintains:
 
 ## File Reference
 
-| File | Purpose | Audience |
-|------|---------|----------|
-| `CHANGELOG_STANDARD.md` | **Complete format specification** — Rules, version numbering, section guidelines | Maintainers, contributors |
-| `CHANGELOG_TEMPLATE.md` | **Copy-paste templates & examples** — 4 real-world release examples + quick checklist | Maintainers, PR reviewers |
-| `CHANGELOG_REFORMATTED_EXAMPLE.md` | **Reference implementation** — Shows how existing v1.0.0 entry reformatted | Maintainers |
-| `README.md` | **This file** — Overview and implementation guide | Everyone |
+| File                               | Purpose                                                                               | Audience                  |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ------------------------- |
+| `CHANGELOG_STANDARD.md`            | **Complete format specification** — Rules, version numbering, section guidelines      | Maintainers, contributors |
+| `CHANGELOG_TEMPLATE.md`            | **Copy-paste templates & examples** — 4 real-world release examples + quick checklist | Maintainers, PR reviewers |
+| `CHANGELOG_REFORMATTED_EXAMPLE.md` | **Reference implementation** — Shows how existing v1.0.0 entry reformatted            | Maintainers               |
+| `README.md`                        | **This file** — Overview and implementation guide                                     | Everyone                  |
 
 ---
 
@@ -70,12 +71,15 @@ Add this to your PR description:
 ## Changelog Entry Proposal
 
 ### ✨ Added
+
 - `.ease-new-class` — Brief description
 
 ### 🔄 Changed
+
 - Updated existing feature for clarity
 
 ### 🐛 Fixed
+
 - Bug fix description
 
 ---
@@ -91,15 +95,19 @@ Add this to your PR description:
 ## [v#.#.#] — YYYY-MM-DD
 
 ### ✨ Added
+
 - New features and utilities
 
 ### 🔄 Changed
+
 - Updates to existing functionality
 
 ### 🐛 Fixed
+
 - Bug fixes
 
 ### ⚠️ Deprecated
+
 - Features being phased out
 ```
 
@@ -109,30 +117,34 @@ Add this to your PR description:
 
 ### Version Numbering
 
-| Change | Version | Example |
-|--------|---------|---------|
-| Breaking changes | Major | v1.0.0 → v2.0.0 |
-| New features | Minor | v1.0.0 → v1.1.0 |
-| Bug fixes | Patch | v1.0.0 → v1.0.1 |
+| Change           | Version | Example         |
+| ---------------- | ------- | --------------- |
+| Breaking changes | Major   | v1.0.0 → v2.0.0 |
+| New features     | Minor   | v1.0.0 → v1.1.0 |
+| Bug fixes        | Patch   | v1.0.0 → v1.0.1 |
 
 ### Entry Formatting
 
 **Utility/Class:** Include the name and brief description
+
 ```markdown
 - `.ease-tracking-tight` — Condensed letter spacing (-0.025em)
 ```
 
 **Feature:** Include purpose and scope
+
 ```markdown
 - New theme system supporting light/dark mode via CSS variable overrides
 ```
 
 **Bug Fix:** Describe the problem and solution
+
 ```markdown
 - Fixed `.ease-hover-lift` shadow clipping on iOS Safari
 ```
 
 **Deprecation:** Include replacement and timeline
+
 ```markdown
 - `.ease-old-class` — Use `.ease-new-class` instead (removal: v2.0.0)
 ```
@@ -140,6 +152,7 @@ Add this to your PR description:
 ### Formatting Rules
 
 ✅ **DO:**
+
 - Use backticks for class names: `` `.ease-btn` ``
 - Use backticks for file paths: `` `core/variables.css` ``
 - Group related items under category headers
@@ -147,6 +160,7 @@ Add this to your PR description:
 - Provide migration paths for breaking changes
 
 ❌ **DON'T:**
+
 - Mix formatted and unformatted text
 - Forget dates
 - Use abbreviations without explanation
@@ -158,17 +172,20 @@ Add this to your PR description:
 ## Integration Path
 
 ### Phase 1: Establish Standard (This PR)
+
 - ✅ Create `CHANGELOG_STANDARD.md` (format specification)
 - ✅ Create `CHANGELOG_TEMPLATE.md` (templates & examples)
 - ✅ Create `CHANGELOG_REFORMATTED_EXAMPLE.md` (reference implementation)
 - ✅ Create `README.md` (this file)
 
 ### Phase 2: Update Main CHANGELOG (Next PR)
+
 - Reformat existing v1.0.0 entry per `CHANGELOG_REFORMATTED_EXAMPLE.md`
 - Add this standard to `CONTRIBUTING.md` as requirement
 - Update PR template to request changelog entries
 
 ### Phase 3: Enforce Going Forward
+
 - All PRs must include proposed changelog entry (per template)
 - All releases must follow standard format
 - Maintainers review changelog entries before merge
@@ -183,12 +200,14 @@ Add this to your PR description:
 ### ✨ Added
 
 #### Typography Utilities
+
 - `.ease-tracking-tight` — Condensed letter spacing (-0.025em)
 - `.ease-tracking-normal` — Default letter spacing (0em)
 - `.ease-tracking-wide` — Wide letter spacing (0.05em)
 - `.ease-tracking-widest` — Extra wide letter spacing (0.1em)
 
 #### Documentation
+
 - `docs/css-variable-theming.md` — Complete guide to theme customization
 - `docs/typography-guide.md` — Best practices for text styling
 
@@ -212,15 +231,19 @@ Add this to your PR description:
 ## Real-World Examples
 
 ### Patch Release (Bug fixes only)
+
 See `CHANGELOG_TEMPLATE.md` → Example 2
 
 ### Minor Release (New features)
+
 See `CHANGELOG_TEMPLATE.md` → Example 1
 
 ### Major Release (Breaking changes)
+
 See `CHANGELOG_TEMPLATE.md` → Example 3
 
 ### Contribution Proposal Format
+
 See `CHANGELOG_TEMPLATE.md` → Example 4
 
 ---
@@ -236,7 +259,7 @@ Pre-release:
   ☐ Verify version number follows Semantic Versioning
   ☐ Collect all PRs/commits since last release
   ☐ Categorize into Added / Changed / Fixed / Deprecated
-  
+
 Changelog:
   ☐ Create new entry at top of CHANGELOG.md
   ☐ Add version: [v#.#.#]
@@ -246,13 +269,13 @@ Changelog:
   ☐ Include migration paths for breaking changes
   ☐ Specify removal timeline for deprecations
   ☐ Link to related PRs/issues where helpful
-  
+
 Quality:
   ☐ Proofread for typos
   ☐ Verify all class names/paths are in backticks
   ☐ Confirm entries are concise and descriptive
   ☐ Check dates and version numbers
-  
+
 Documentation:
   ☐ Update `docs/` if API changed
   ☐ Update examples if needed
@@ -286,7 +309,6 @@ A: Yes, especially helpful for complex changes: `Fixed X issue ([#123](url))`
 
 1. **`CHANGELOG.md`** (project root)
    - Reformat v1.0.0 entry per `CHANGELOG_REFORMATTED_EXAMPLE.md`
-   
 2. **`CONTRIBUTING.md`**
    - Add section: "Changelog Entries"
    - Link to this standard

@@ -22,8 +22,8 @@ A retro terminal-style status card that resembles a classic command-line window 
 
 ```html
 <div class="card-term">
-  <div class="card-term-bar"> … </div>
-  <div class="card-term-body"> … </div>
+  <div class="card-term-bar">…</div>
+  <div class="card-term-body">…</div>
 </div>
 ```
 

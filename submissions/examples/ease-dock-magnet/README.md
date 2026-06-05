@@ -11,16 +11,21 @@ This utility leverages CSS proximity selectors and transform matrices to dynamic
 - **Secondary Adjacent Sibling Blocks:** Scale subtly to `scale(1.1)` to produce an organic layout warp across the navbar structure.
 
 ## File Contents
+
 - `demo.html`: The glassmorphic preview implementation layout dashboard.
 - `style.css`: The independent, composable utility selectors rule sheets.
 
 ## Integration Setup
+
 To use this effect in your layout designs, plug the core structural class hooks onto your list elements:
+
 ```html
 <ul class="ease-dock-magnet">
   <li class="ease-magnet-item">...</li>
   <li class="ease-magnet-item">...</li>
 </ul>
 ```
+
 ## By
+
 Pari Dubey

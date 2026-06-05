@@ -15,7 +15,9 @@ A lightweight, pure CSS animation utility designed for the EaseMotion CSS librar
 - **Rule Compliance:** Avoids the prohibited `ease-` prefix within the CSS to prevent framework naming collisions, leaving final prefixing to the project maintainers.
 
 ## 🚀 How to Use
+
 ```html
 <div class="floating-utility">
-    <!-- Your floating content here -->
+  <!-- Your floating content here -->
 </div>
+```

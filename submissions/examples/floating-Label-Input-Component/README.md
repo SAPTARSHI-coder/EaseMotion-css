@@ -7,16 +7,9 @@ Creates an animated floating label for form inputs. The label initially appears 
 
 ```html
 <div class="float-field">
-  <input
-    type="text"
-    id="name"
-    placeholder=" "
-    required
-  >
+  <input type="text" id="name" placeholder=" " required />
 
-  <label for="name">
-    Full Name
-  </label>
+  <label for="name"> Full Name </label>
 </div>
 ```
 

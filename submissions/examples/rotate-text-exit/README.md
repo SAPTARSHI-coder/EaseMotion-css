@@ -4,36 +4,34 @@ A lightweight CSS utility that creates a rotating exit effect for text elements.
 
 ## Features
 
-* Pure CSS implementation
-* Smooth rotate exit animation
-* Fade-out and scale-down effect
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Smooth rotate exit animation
+- Fade-out and scale-down effect
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Usage
 
 ```html
-<h1 class="ease-rotate-text-exit">
-  Goodbye, EaseMotion!
-</h1>
+<h1 class="ease-rotate-text-exit">Goodbye, EaseMotion!</h1>
 ```
 
 ## Behavior
 
-* Text rotates during exit
-* Gradually fades out
-* Slightly scales down for a smoother transition
-* Uses easing for natural motion
+- Text rotates during exit
+- Gradually fades out
+- Slightly scales down for a smoother transition
+- Uses easing for natural motion
 
 ## Browser Support
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Safari  | ✅         |
-| Edge    | ✅         |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

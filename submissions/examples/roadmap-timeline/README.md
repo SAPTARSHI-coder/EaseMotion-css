@@ -4,16 +4,16 @@ A modern roadmap timeline component for showcasing project milestones, completed
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-roadmap` | Vertical timeline container with connecting line |
-| `ease-roadmap-item` | Individual milestone item with staggered reveal |
-| `ease-roadmap-dot` | Circular status indicator dot |
-| `ease-roadmap-content` | Content card with title, description, and date |
-| `ease-roadmap-date` | Optional date label |
-| `ease-roadmap-item-completed` | Green dot and border for finished milestones |
-| `ease-roadmap-item-active` | Purple dot with pulse animation for in-progress milestones |
-| `ease-roadmap-item-planned` | Default outlined dot for future milestones |
+| Class                         | Description                                                |
+| ----------------------------- | ---------------------------------------------------------- |
+| `ease-roadmap`                | Vertical timeline container with connecting line           |
+| `ease-roadmap-item`           | Individual milestone item with staggered reveal            |
+| `ease-roadmap-dot`            | Circular status indicator dot                              |
+| `ease-roadmap-content`        | Content card with title, description, and date             |
+| `ease-roadmap-date`           | Optional date label                                        |
+| `ease-roadmap-item-completed` | Green dot and border for finished milestones               |
+| `ease-roadmap-item-active`    | Purple dot with pulse animation for in-progress milestones |
+| `ease-roadmap-item-planned`   | Default outlined dot for future milestones                 |
 
 ## Usage
 

@@ -15,8 +15,8 @@ CSS utility classes for applying common filter effects.
 ## Usage
 
 ```html
-<img src="image.jpg" class="ease-blur">
-<img src="image.jpg" class="ease-sepia">
+<img src="image.jpg" class="ease-blur" />
+<img src="image.jpg" class="ease-sepia" />
 ```
 
 ## Demo

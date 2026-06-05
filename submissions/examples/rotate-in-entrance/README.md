@@ -5,10 +5,9 @@ Provides a dynamic entrance animation where an element fades in, scales up, and 
 
 **How is it used?**
 Apply the class to any element you want to animate when the page loads (or when dynamically inserted):
+
 ```html
-<div class="rotate-in-entrance">
-    I am spinning into view!
-</div>
+<div class="rotate-in-entrance">I am spinning into view!</div>
 ```
 
 **Why is it useful?**

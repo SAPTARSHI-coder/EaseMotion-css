@@ -28,7 +28,8 @@ Wrap each letter in a `<span>`. Use `.split-space` for word spaces. Add a varian
 <h1 class="ease-split-text ease-split-text-slide">
   <span>B</span><span>u</span><span>i</span><span>l</span><span>d</span>
   <span class="ease-split-space"> </span>
-  <span>f</span><span>a</span><span>s</span><span>t</span><span>e</span><span>r</span>
+  <span>f</span><span>a</span><span>s</span><span>t</span><span>e</span
+  ><span>r</span>
 </h1>
 ```
 
@@ -51,18 +52,20 @@ Wrap each letter in a `<span>`. Use `.split-space` for word spaces. Add a varian
 ### Custom rise distance (slide variant)
 
 ```html
-<h1 class="ease-split-text ease-split-text-slide" style="--split-rise: 28px;">...</h1>
+<h1 class="ease-split-text ease-split-text-slide" style="--split-rise: 28px;">
+  ...
+</h1>
 ```
 
 ## Why does it fit EaseMotion CSS?
 
 EaseMotion CSS animates elements at block level (`staggered-reveal`, `staggered-fade-entrance`) and text at string level (`ease-typewriter`). **Per-character animation is the missing layer** — and this submission fills it:
 
-| Effect | Unit animated | Technique | Per-letter? |
-|---|---|---|---|
-| `ease-typewriter` | Entire string | `width: 0ch → Nch` clipping | ✕ No |
-| `staggered-reveal` | Block elements | `nth-child` delay on divs/lis | ✕ No |
-| `ease-split-text` | Each letter | `nth-child` delay on inline spans | ✓ Yes |
+| Effect             | Unit animated  | Technique                         | Per-letter? |
+| ------------------ | -------------- | --------------------------------- | ----------- |
+| `ease-typewriter`  | Entire string  | `width: 0ch → Nch` clipping       | ✕ No        |
+| `staggered-reveal` | Block elements | `nth-child` delay on divs/lis     | ✕ No        |
+| `ease-split-text`  | Each letter    | `nth-child` delay on inline spans | ✓ Yes       |
 
 The implementation follows EaseMotion's core philosophy:
 
@@ -73,23 +76,23 @@ The implementation follows EaseMotion's core philosophy:
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--split-delay-step` | `40ms` | Stagger gap between each letter |
-| `--split-duration` | `400ms` | Animation duration per letter |
-| `--split-rise` | `16px` | translateY travel for slide variant |
-| `--split-ease` | `var(--ease-ease-out)` | Easing function |
+| Property             | Default                | Description                         |
+| -------------------- | ---------------------- | ----------------------------------- |
+| `--split-delay-step` | `40ms`                 | Stagger gap between each letter     |
+| `--split-duration`   | `400ms`                | Animation duration per letter       |
+| `--split-rise`       | `16px`                 | translateY travel for slide variant |
+| `--split-ease`       | `var(--ease-ease-out)` | Easing function                     |
 
 ## Classes Reference
 
-| Class | Description |
-|---|---|
-| `ease-split-text` | Base class — fade-only entrance |
-| `ease-split-text-slide` | Slide-up variant |
-| `ease-split-text-blur` | Fade + blur variant |
-| `ease-split-text-fast` | 25ms stagger step |
-| `ease-split-text-slow` | 70ms stagger step |
-| `ease-split-space` | Word space preserver |
+| Class                   | Description                     |
+| ----------------------- | ------------------------------- |
+| `ease-split-text`       | Base class — fade-only entrance |
+| `ease-split-text-slide` | Slide-up variant                |
+| `ease-split-text-blur`  | Fade + blur variant             |
+| `ease-split-text-fast`  | 25ms stagger step               |
+| `ease-split-text-slow`  | 70ms stagger step               |
+| `ease-split-space`      | Word space preserver            |
 
 ## Tech Stack
 

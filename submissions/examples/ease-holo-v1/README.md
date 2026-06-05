@@ -12,29 +12,28 @@ Iridescent rainbow shimmer like holographic foil that activates on hover.
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
+| Class       | Description                      |
+| ----------- | -------------------------------- |
 | `ease-holo` | Holographic foil effect on hover |
 
 ## Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-holo-intensity` | 1 | Controls effect intensity (0.5 to 1.5) |
+| Variable                | Default | Description                            |
+| ----------------------- | ------- | -------------------------------------- |
+| `--ease-holo-intensity` | 1       | Controls effect intensity (0.5 to 1.5) |
 
 ## Usage
 
 ```html
 <!-- Basic usage -->
-<div class="ease-holo">
-    Holographic content
-</div>
+<div class="ease-holo">Holographic content</div>
 
 <!-- Custom intensity -->
 <div class="ease-holo" style="--ease-holo-intensity: 1.5;">
-    High intensity effect
+  High intensity effect
 </div>
 
 <!-- On any element -->
 <button class="ease-holo">Holo Button</button>
-<img class="ease-holo" src="image.jpg" alt="Holo">
+<img class="ease-holo" src="image.jpg" alt="Holo" />
+```

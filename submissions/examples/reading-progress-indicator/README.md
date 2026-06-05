@@ -15,19 +15,40 @@ This submission adds a responsive reading progress indicator for long-form conte
 ### Standard indicator
 
 ```html
-<div class="ease-reading-progress" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div
+  class="ease-reading-progress"
+  role="progressbar"
+  aria-label="Reading progress"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"
+></div>
 ```
 
 ### Thin variant
 
 ```html
-<div class="ease-reading-progress ease-reading-progress-thin" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div
+  class="ease-reading-progress ease-reading-progress-thin"
+  role="progressbar"
+  aria-label="Reading progress"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"
+></div>
 ```
 
 ### Gradient variant
 
 ```html
-<div class="ease-reading-progress ease-reading-progress-gradient" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<div
+  class="ease-reading-progress ease-reading-progress-gradient"
+  role="progressbar"
+  aria-label="Reading progress"
+  aria-valuemin="0"
+  aria-valuemax="100"
+  aria-valuenow="0"
+></div>
 ```
 
 ## Customization options

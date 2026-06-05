@@ -4,10 +4,10 @@
 
 EaseMotion CSS is a **pure CSS framework** with zero JavaScript and zero dependencies. The following versions are currently supported with security updates:
 
-| Version | Supported |
-|---------|-----------|
-| 1.0.x (latest) | ✅ Active |
-| < 1.0.0 | ❌ No longer supported |
+| Version        | Supported              |
+| -------------- | ---------------------- |
+| 1.0.x (latest) | ✅ Active              |
+| < 1.0.0        | ❌ No longer supported |
 
 ---
 
@@ -17,13 +17,13 @@ EaseMotion CSS ships as plain `.css` files only — no JavaScript, no build scri
 
 The primary security concern for a CSS framework is:
 
-| Concern | Applies? | Notes |
-|---------|----------|-------|
-| CSS injection via class names | ⚠️ Possible | See below |
-| XSS via CSS `content:` values | ⚠️ Possible | See below |
-| Malicious `@import` in published files | ✅ Audited | All imports are local-only |
-| Supply chain / dependency attack | ✅ Low risk | Zero `npm` runtime dependencies |
-| CDN tampering | ✅ Low risk | Use SRI hashes for production (see below) |
+| Concern                                | Applies?    | Notes                                     |
+| -------------------------------------- | ----------- | ----------------------------------------- |
+| CSS injection via class names          | ⚠️ Possible | See below                                 |
+| XSS via CSS `content:` values          | ⚠️ Possible | See below                                 |
+| Malicious `@import` in published files | ✅ Audited  | All imports are local-only                |
+| Supply chain / dependency attack       | ✅ Low risk | Zero `npm` runtime dependencies           |
+| CDN tampering                          | ✅ Low risk | Use SRI hashes for production (see below) |
 
 ---
 
@@ -32,6 +32,7 @@ The primary security concern for a CSS framework is:
 **Do not open a public GitHub issue for security vulnerabilities.**
 
 If you discover a security issue — including but not limited to:
+
 - A malicious payload in a published npm version
 - A CSS injection vector introduced via a contribution
 - A supply chain issue with the jsDelivr CDN distribution
@@ -53,12 +54,12 @@ Please report it privately by **emailing the maintainer directly:**
 
 ### What to expect
 
-| Timeline | Action |
-|----------|--------|
-| **Within 48 hours** | Acknowledgement of your report |
-| **Within 7 days** | Initial assessment and severity classification |
-| **Within 30 days** | Patch released (for confirmed vulnerabilities) |
-| **After patch** | Public disclosure with credit to reporter |
+| Timeline            | Action                                         |
+| ------------------- | ---------------------------------------------- |
+| **Within 48 hours** | Acknowledgement of your report                 |
+| **Within 7 days**   | Initial assessment and severity classification |
+| **Within 30 days**  | Patch released (for confirmed vulnerabilities) |
+| **After patch**     | Public disclosure with credit to reporter      |
 
 ---
 
@@ -75,7 +76,7 @@ element.className = `ease-${userInput}`;
 
 ```js
 // ✅ SAFE — use an allowlist of valid class names
-const allowed = ['ease-fade-in', 'ease-slide-up', 'ease-btn-primary'];
+const allowed = ["ease-fade-in", "ease-slide-up", "ease-btn-primary"];
 if (allowed.includes(userClass)) {
   element.className = userClass;
 }
@@ -96,6 +97,7 @@ For production applications loading EaseMotion CSS via CDN, use Subresource Inte
 ```
 
 > You can generate the correct SRI hash for any jsDelivr URL at [srihash.org](https://www.srihash.org/) or using:
+>
 > ```bash
 > curl -s https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css | openssl dgst -sha384 -binary | openssl base64 -A
 > ```
@@ -129,9 +131,10 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full contribution policy.
 ## Acknowledgements
 
 Responsible disclosure is appreciated and rewarded with:
+
 - Public credit in the security advisory
 - A mention in [CHANGELOG.md](./CHANGELOG.md) for the release that patches the issue
 
 ---
 
-*Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder) · MIT License*
+_Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder) · MIT License_

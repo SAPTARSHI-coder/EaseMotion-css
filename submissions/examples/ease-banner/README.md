@@ -23,19 +23,17 @@ Dismissible version using the checkbox + label pattern.
 ## Usage
 
 ```html
-<div class="ease-banner">
-    Welcome to EaseMotion CSS!
-</div>
+<div class="ease-banner">Welcome to EaseMotion CSS!</div>
 ```
 
 ### Dismissible Variant
 
 ```html
-<input type="checkbox" id="dismiss-banner" hidden>
+<input type="checkbox" id="dismiss-banner" hidden />
 
 <div class="ease-banner ease-banner-dismissible">
-    Banner Content
-    <label for="dismiss-banner">&times;</label>
+  Banner Content
+  <label for="dismiss-banner">&times;</label>
 </div>
 ```
 

@@ -12,6 +12,7 @@ Use this template when creating new changelog entries for EaseMotion CSS release
 ### ✨ Added
 
 #### Category Name
+
 - New feature or utility
 - Another new item
 
@@ -38,16 +39,19 @@ Use this template when creating new changelog entries for EaseMotion CSS release
 ### ✨ Added
 
 #### Typography Utilities
+
 - `.ease-tracking-tight` — Condensed letter spacing (-0.025em)
 - `.ease-tracking-normal` — Default letter spacing (0em)
 - `.ease-tracking-wide` — Wide letter spacing (0.05em)
 - `.ease-tracking-widest` — Extra wide letter spacing (0.1em)
 
 #### Documentation
+
 - `docs/css-variable-theming.md` — Complete guide to theming via CSS variables
 - `docs/typography-guide.md` — Best practices for text styling
 
 #### Theme System
+
 - Support for light/dark mode switching with CSS variable overrides
 - Theme tokens for custom branding
 
@@ -121,16 +125,18 @@ When submitting a PR, add this to your description:
 ### Proposed Entry:
 
 #### ✨ Added
+
 - `.ease-text-stroke` utility for text outline effects
 - Support for stroke width, color, and transparency via CSS variables
 
 **Files changed:**
+
 - `components/text-effects.css`
 - `docs/text-effects-guide.md`
 
 ---
 
-*Maintainer will finalize this entry in the CHANGELOG.md for the next release.*
+_Maintainer will finalize this entry in the CHANGELOG.md for the next release._
 ```
 
 ---

@@ -10,12 +10,12 @@
 
 The **Toast Notification Component** displays non-blocking feedback messages at the edge of the screen. It includes four semantic variants:
 
-| Variant | Class | Use case |
-|---|---|---|
-| Success | `.ease-toast--success` | Confirmed actions (saved, published, purchased) |
-| Error | `.ease-toast--error` | Failures (broken builds, permission denied, payment declined) |
-| Warning | `.ease-toast--warning` | Near-limit states (storage full, session expiring) |
-| Info | `.ease-toast--info` | Neutral updates (new version, scheduled maintenance) |
+| Variant | Class                  | Use case                                                      |
+| ------- | ---------------------- | ------------------------------------------------------------- |
+| Success | `.ease-toast--success` | Confirmed actions (saved, published, purchased)               |
+| Error   | `.ease-toast--error`   | Failures (broken builds, permission denied, payment declined) |
+| Warning | `.ease-toast--warning` | Near-limit states (storage full, session expiring)            |
+| Info    | `.ease-toast--info`    | Neutral updates (new version, scheduled maintenance)          |
 
 ### Visual features
 
@@ -35,16 +35,25 @@ The **Toast Notification Component** displays non-blocking feedback messages at 
 ### Minimal Toast
 
 ```html
-<div class="ease-toast ease-toast--success" role="status" aria-live="polite" aria-atomic="true">
+<div
+  class="ease-toast ease-toast--success"
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+>
   <div class="ease-toast-icon" aria-hidden="true">✅</div>
 
   <div class="ease-toast-body">
     <div class="ease-toast-title-text">Payment successful</div>
-    <div class="ease-toast-message">Your receipt has been sent to your inbox.</div>
+    <div class="ease-toast-message">
+      Your receipt has been sent to your inbox.
+    </div>
     <span class="ease-toast-time">Just now</span>
   </div>
 
-  <div class="ease-toast-close" role="button" aria-label="Dismiss" tabindex="0">✕</div>
+  <div class="ease-toast-close" role="button" aria-label="Dismiss" tabindex="0">
+    ✕
+  </div>
   <div class="ease-toast-progress" aria-hidden="true"></div>
 </div>
 ```
@@ -76,23 +85,23 @@ Add `.ease-toast--compact` alongside the variant class:
 
 ### Class Reference
 
-| Class | Role |
-|---|---|
-| `.ease-toast-container` | Fixed-position outer wrapper — stacks toasts bottom-right |
-| `.ease-toast-stack` | Inline demo column wrapper (`flex-direction: column`) |
-| `.ease-toast` | Individual toast card |
-| `.ease-toast--success` | Green accent variant |
-| `.ease-toast--error` | Red accent variant |
-| `.ease-toast--warning` | Amber accent variant |
-| `.ease-toast--info` | Sky-blue accent variant |
-| `.ease-toast--compact` | Single-line height modifier |
-| `.ease-toast-icon` | Tinted icon square with pulse ring |
-| `.ease-toast-body` | Text content wrapper |
-| `.ease-toast-title-text` | Bold notification title |
-| `.ease-toast-message` | Supporting description |
-| `.ease-toast-time` | Monospace timestamp |
-| `.ease-toast-close` | `×` dismiss button |
-| `.ease-toast-progress` | Auto-timeout progress bar |
+| Class                    | Role                                                      |
+| ------------------------ | --------------------------------------------------------- |
+| `.ease-toast-container`  | Fixed-position outer wrapper — stacks toasts bottom-right |
+| `.ease-toast-stack`      | Inline demo column wrapper (`flex-direction: column`)     |
+| `.ease-toast`            | Individual toast card                                     |
+| `.ease-toast--success`   | Green accent variant                                      |
+| `.ease-toast--error`     | Red accent variant                                        |
+| `.ease-toast--warning`   | Amber accent variant                                      |
+| `.ease-toast--info`      | Sky-blue accent variant                                   |
+| `.ease-toast--compact`   | Single-line height modifier                               |
+| `.ease-toast-icon`       | Tinted icon square with pulse ring                        |
+| `.ease-toast-body`       | Text content wrapper                                      |
+| `.ease-toast-title-text` | Bold notification title                                   |
+| `.ease-toast-message`    | Supporting description                                    |
+| `.ease-toast-time`       | Monospace timestamp                                       |
+| `.ease-toast-close`      | `×` dismiss button                                        |
+| `.ease-toast-progress`   | Auto-timeout progress bar                                 |
 
 ---
 

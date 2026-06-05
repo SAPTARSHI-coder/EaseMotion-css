@@ -3,7 +3,8 @@
 1. **What does this do?**  
    Adds a horizontal card layout idea that places media, content, and actions in a compact side-by-side card.
 
-2. **How is it used?**  
+2. **How is it used?**
+
    ```html
    <article class="horizontal-card">
      <div class="card-media"></div>

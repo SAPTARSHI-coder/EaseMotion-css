@@ -11,6 +11,7 @@
 The **Morph Shape Animation** gallery showcases highly fluid, hardware-accelerated shape transformations built purely in HTML and CSS. By manipulating the browser's native **8-value `border-radius`** coordinate property (`border-radius: top-left top-right bottom-right bottom-left / top-left-y top-right-y bottom-right-y bottom-left-y;`) inside a CSS `@keyframes` cycle, standard rectangular elements morph seamlessly into organic liquid shapes or distinct geometric forms without Jagged edges or canvas rendering overhead.
 
 ### The Morphing Shape Studio showcases three distinct visual categories:
+
 1. **The Organic Liquid Blob (`.ease-morph-blob`):** A continuous, water-like fluid morphing shape that cycles endlessly through 4 custom asymmetric border configurations. Perfect for backdrop ambient glow spots or decorative graphic frames.
 2. **The Geometric Shifter (`.ease-morph-shifter`):** A structural morphing component that transitions cleanly through five distinct geometric shapes (Squircle → Circle → Organic Leaf → Arch Dome → Droplet Shield). It uses keyframe percentage ranges to pause the animation on each shape, giving the viewer time to parse each clean state.
 3. **The Elastic Hover Card (`.ease-morph-elastic`):** An input-triggered interactive button that morphs dynamically when hovered, focused, or pressed. It couples shape deforming with a custom spring timing curve `cubic-bezier(0.175, 0.885, 0.32, 1.25)` to create a highly tactile, physical rebound effect.
@@ -60,27 +61,60 @@ The fluid and geometric animations leverage custom `@keyframes` to transition sh
 ```css
 /* Shape 1: Liquid Blob Keyframes */
 @keyframes morph-blob {
-  0%   { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  25%  { border-radius: 53% 47% 43% 57% / 51% 39% 61% 49%; }
-  50%  { border-radius: 30% 70% 70% 30% / 50% 60% 40% 50%; }
-  75%  { border-radius: 70% 30% 52% 48% / 37% 40% 60% 63%; }
-  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  0% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  25% {
+    border-radius: 53% 47% 43% 57% / 51% 39% 61% 49%;
+  }
+  50% {
+    border-radius: 30% 70% 70% 30% / 50% 60% 40% 50%;
+  }
+  75% {
+    border-radius: 70% 30% 52% 48% / 37% 40% 60% 63%;
+  }
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
 }
 
 /* Shape 2: Geometric Shifter Keyframes (with 15% pauses per shape) */
 @keyframes morph-shift {
   /* Soft Squircle Pause */
-  0%, 15%   { border-radius: 25% 25% 25% 25%; transform: rotate(0deg); }
+  0%,
+  15% {
+    border-radius: 25% 25% 25% 25%;
+    transform: rotate(0deg);
+  }
   /* Perfect Circle Pause */
-  25%, 35%  { border-radius: 50%; transform: rotate(45deg); }
+  25%,
+  35% {
+    border-radius: 50%;
+    transform: rotate(45deg);
+  }
   /* Organic Leaf Pause */
-  45%, 55%  { border-radius: 0% 100% 0% 100%; transform: rotate(90deg); }
+  45%,
+  55% {
+    border-radius: 0% 100% 0% 100%;
+    transform: rotate(90deg);
+  }
   /* Arch Dome Pause */
-  65%, 75%  { border-radius: 50% 50% 0 0; transform: rotate(180deg); }
+  65%,
+  75% {
+    border-radius: 50% 50% 0 0;
+    transform: rotate(180deg);
+  }
   /* Droplet Shield Pause */
-  85%, 95%  { border-radius: 50% 50% 50% 0; transform: rotate(270deg); }
+  85%,
+  95% {
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(270deg);
+  }
   /* Loop Return */
-  100%      { border-radius: 25% 25% 25% 25%; transform: rotate(360deg); }
+  100% {
+    border-radius: 25% 25% 25% 25%;
+    transform: rotate(360deg);
+  }
 }
 ```
 
@@ -88,7 +122,7 @@ The fluid and geometric animations leverage custom `@keyframes` to transition sh
 
 ## 3. Why is it useful?
 
-Geometric structural transitions and organic morphing effects make digital interfaces feel responsive, fluid, and alive. 
+Geometric structural transitions and organic morphing effects make digital interfaces feel responsive, fluid, and alive.
 
 ### Key Benefits:
 

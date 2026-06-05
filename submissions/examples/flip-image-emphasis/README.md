@@ -5,8 +5,5 @@ A lightweight hover animation that applies a subtle 3D flip and scale effect to 
 ## Usage
 
 ```html
-<img
-  src="image.jpg"
-  class="flip-image-emphasis"
-  alt="Demo"
-/>
+<img src="image.jpg" class="flip-image-emphasis" alt="Demo" />
+```

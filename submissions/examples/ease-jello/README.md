@@ -11,10 +11,9 @@
 
 ## Classes
 
-| Class | Behavior |
-|---|---|
-| `.ease-jello` | Plays the wobble immediately when the class is added. |
-| `.ease-jello-hover` | Plays the same wobble on hover or keyboard focus. |
+| Class               | Behavior                                              |
+| ------------------- | ----------------------------------------------------- |
+| `.ease-jello`       | Plays the wobble immediately when the class is added. |
+| `.ease-jello-hover` | Plays the same wobble on hover or keyboard focus.     |
 
 The keyframes use skew transforms instead of horizontal translation, making this distinct from shake animations. It is suited for buttons, badges, chips, and small interactive elements.
-

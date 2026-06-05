@@ -4,6 +4,7 @@
 A seamless horizontal ticker loops duplicated content with a constant-speed CSS transform.
 
 **How is it used?**
+
 ```html
 <div class="marquee-frame" style="--ease-marquee-speed: 22s;">
   <div class="marquee-track">

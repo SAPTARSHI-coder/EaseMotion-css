@@ -29,9 +29,17 @@ Use the component inside `submissions/examples/animated-counter-component/` and 
 ### Example markup
 
 ```html
-<div class="ease-counter ease-counter-fast" data-target="1260" data-suffix="K" aria-label="1,260 thousand views">
+<div
+  class="ease-counter ease-counter-fast"
+  data-target="1260"
+  data-suffix="K"
+  aria-label="1,260 thousand views"
+>
   <div class="ease-counter-inner">
-    <p class="ease-counter-value"><span class="ease-counter-value-number">0</span><span class="ease-counter-suffix">K</span></p>
+    <p class="ease-counter-value">
+      <span class="ease-counter-value-number">0</span
+      ><span class="ease-counter-suffix">K</span>
+    </p>
     <p class="ease-counter-meta">Fast animated stat for landing pages.</p>
   </div>
 </div>
@@ -41,12 +49,12 @@ Use the component inside `submissions/examples/animated-counter-component/` and 
 
 ## Available Classes
 
-| Class | Description |
-| --- | --- |
-| `ease-counter` | Base counter card container with responsive layout and theming. |
-| `ease-counter-fast` | Faster count-up duration for quick metric reveals. |
-| `ease-counter-slow` | Slower count-up duration for emphasis and dramatic reveals. |
-| `ease-counter-bounce` | Adds a bounce entrance animation to the number value. |
+| Class                 | Description                                                     |
+| --------------------- | --------------------------------------------------------------- |
+| `ease-counter`        | Base counter card container with responsive layout and theming. |
+| `ease-counter-fast`   | Faster count-up duration for quick metric reveals.              |
+| `ease-counter-slow`   | Slower count-up duration for emphasis and dramatic reveals.     |
+| `ease-counter-bounce` | Adds a bounce entrance animation to the number value.           |
 
 ---
 

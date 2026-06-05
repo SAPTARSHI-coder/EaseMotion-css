@@ -4,36 +4,34 @@ A lightweight CSS utility that creates an expanding effect for buttons during us
 
 ## Features
 
-* Pure CSS implementation
-* Smooth expand animation using keyframes
-* Supports hover, focus, and active states
-* Lightweight and reusable
-* Cross-browser compatible (Chrome, Firefox, Safari, Edge)
-* No JavaScript required
+- Pure CSS implementation
+- Smooth expand animation using keyframes
+- Supports hover, focus, and active states
+- Lightweight and reusable
+- Cross-browser compatible (Chrome, Firefox, Safari, Edge)
+- No JavaScript required
 
 ## Usage
 
 ```html
-<button class="ease-expand-btn">
-  Hover Me
-</button>
+<button class="ease-expand-btn">Hover Me</button>
 ```
 
 ## Behavior
 
-* Smoothly expands when hovered
-* Supports keyboard accessibility through focus state
-* Provides responsive interaction feedback
-* Uses CSS easing for natural motion
+- Smoothly expands when hovered
+- Supports keyboard accessibility through focus state
+- Provides responsive interaction feedback
+- Uses CSS easing for natural motion
 
 ## Browser Support
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Safari  | ✅         |
-| Edge    | ✅         |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

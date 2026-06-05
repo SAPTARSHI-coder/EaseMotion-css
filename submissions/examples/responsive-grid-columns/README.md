@@ -3,7 +3,8 @@
 1. **What does this do?**  
    Adds responsive grid column utility ideas for quickly switching layouts from one column to two, three, or four columns.
 
-2. **How is it used?**  
+2. **How is it used?**
+
    ```html
    <div class="grid-cols-3 grid-collapse-mobile">
      <article>Card one</article>

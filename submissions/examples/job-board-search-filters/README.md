@@ -26,12 +26,12 @@ The result count updates live as filters change.
 
 ## Filter logic
 
-| Filter | Behavior |
-|---|---|
-| `search` (text) | Case-insensitive match against `title` or `company` |
-| `branch` (select) | Exact match against job's branch field |
-| `minCgpa` (select) | Jobs with CGPA ≥ selected value |
-| `skills` (chips) | Jobs containing at least one selected skill |
+| Filter             | Behavior                                            |
+| ------------------ | --------------------------------------------------- |
+| `search` (text)    | Case-insensitive match against `title` or `company` |
+| `branch` (select)  | Exact match against job's branch field              |
+| `minCgpa` (select) | Jobs with CGPA ≥ selected value                     |
+| `skills` (chips)   | Jobs containing at least one selected skill         |
 
 ## CSS concepts used
 

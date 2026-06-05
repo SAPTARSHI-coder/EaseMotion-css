@@ -63,10 +63,10 @@ Answer these three questions:
 
 ## Naming Rules
 
-| Who | Rule |
-|-----|------|
-| **Contributors** | Use any class name that makes sense to you |
-| **Maintainer** | Renames everything to follow `ease-kebab-case` convention |
+| Who              | Rule                                                      |
+| ---------------- | --------------------------------------------------------- |
+| **Contributors** | Use any class name that makes sense to you                |
+| **Maintainer**   | Renames everything to follow `ease-kebab-case` convention |
 
 You do not need to worry about the `ease-` prefix. Do not try to pre-standardize — just write clear, readable CSS.
 
@@ -164,6 +164,7 @@ PR merged
 ```
 
 This ensures:
+
 - **Every class is framework-quality** before it ships
 - **Naming stays consistent** across the entire API
 - **No regressions** from unreviewed direct edits
@@ -176,16 +177,16 @@ PRs that touch `core/` or `components/` will be closed immediately, regardless o
 
 The maintainer uses the following labels to communicate submission status:
 
-| Label | Meaning |
-|-------|---------|
-| `curated` | Submission accepted into the framework |
-| `maintainer-approved` | Reviewed and approved, pending integration |
-| `featured` | Exceptional submission — will be showcased in docs |
-| `good first issue` | Great starting point for new contributors |
-| `animation` | Hover effects, entrance animations, keyframes |
-| `component` | New UI components |
-| `enhancement` | Improvements to existing classes |
-| `documentation` | README, docs, submission guide updates |
+| Label                 | Meaning                                            |
+| --------------------- | -------------------------------------------------- |
+| `curated`             | Submission accepted into the framework             |
+| `maintainer-approved` | Reviewed and approved, pending integration         |
+| `featured`            | Exceptional submission — will be showcased in docs |
+| `good first issue`    | Great starting point for new contributors          |
+| `animation`           | Hover effects, entrance animations, keyframes      |
+| `component`           | New UI components                                  |
+| `enhancement`         | Improvements to existing classes                   |
+| `documentation`       | README, docs, submission guide updates             |
 
 ---
 
@@ -211,4 +212,3 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 **Saptarshi Sadhu**  
 GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
-

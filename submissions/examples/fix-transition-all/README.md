@@ -8,16 +8,16 @@ Audits all `ease-hover-*` classes in `core/animations.css` and ensures no `trans
 
 After a full audit of `core/animations.css`, `core/base.css`, `components/buttons.css`, and `components/cards.css`, **no instances of `transition: all` were found in the framework core**. All hover classes already use specific property transitions:
 
-| Class | Transition Properties |
-|-------|----------------------|
-| `.ease-hover-grow` | `transform` |
-| `.ease-hover-shrink` | `transform` |
-| `.ease-hover-glow` | `box-shadow` |
-| `.ease-hover-lift` | `transform, box-shadow` |
-| `.ease-hover-underline::after` | `width` |
-| `.ease-card-lift` | `transform, box-shadow` |
-| `.ease-hover-shimmer::before` | `left` |
-| `.ease-hover-morph-card` | `border-radius, transform` |
+| Class                          | Transition Properties      |
+| ------------------------------ | -------------------------- |
+| `.ease-hover-grow`             | `transform`                |
+| `.ease-hover-shrink`           | `transform`                |
+| `.ease-hover-glow`             | `box-shadow`               |
+| `.ease-hover-lift`             | `transform, box-shadow`    |
+| `.ease-hover-underline::after` | `width`                    |
+| `.ease-card-lift`              | `transform, box-shadow`    |
+| `.ease-hover-shimmer::before`  | `left`                     |
+| `.ease-hover-morph-card`       | `border-radius, transform` |
 
 ## Submissions with `transition: all` (for maintainer reference)
 

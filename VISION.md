@@ -24,12 +24,12 @@ EaseMotion CSS is built around a single belief: **if you can say it in English, 
 ```html
 <!-- You want to center something — just say it -->
 <div class="ease-center">
-
-<!-- You want it to fade in — say it -->
-<div class="ease-fade-in">
-
-<!-- You want it to grow on hover — say it -->
-<button class="ease-hover-grow">
+  <!-- You want it to fade in — say it -->
+  <div class="ease-fade-in">
+    <!-- You want it to grow on hover — say it -->
+    <button class="ease-hover-grow"></button>
+  </div>
+</div>
 ```
 
 No documentation lookup needed. The class name is the documentation.
@@ -53,6 +53,7 @@ Community Ideas
 ```
 
 Every class that enters EaseMotion CSS has been:
+
 - Reviewed for fit with the philosophy
 - Renamed to follow `ease-kebab-case` convention
 - Optimized to use CSS custom properties
@@ -64,16 +65,16 @@ This is what separates EaseMotion CSS from a collection of snippets. The curatio
 
 ## Long-Term Goals
 
-| Goal | Status |
-|------|--------|
-| Human-readable core utilities | ✅ v1.0 |
-| Animation-first motion library | ✅ v1.0 |
-| Curated contribution pipeline | ✅ v1.0 |
-| Component library (buttons, cards) | ✅ v1.0 |
-| Form components | 🔜 Planned |
-| Dark mode tokens | 🔜 Planned |
-| CDN distribution | 🔜 Planned |
-| npm package | 🔜 Planned |
+| Goal                               | Status     |
+| ---------------------------------- | ---------- |
+| Human-readable core utilities      | ✅ v1.0    |
+| Animation-first motion library     | ✅ v1.0    |
+| Curated contribution pipeline      | ✅ v1.0    |
+| Component library (buttons, cards) | ✅ v1.0    |
+| Form components                    | 🔜 Planned |
+| Dark mode tokens                   | 🔜 Planned |
+| CDN distribution                   | 🔜 Planned |
+| npm package                        | 🔜 Planned |
 
 ---
 
@@ -104,6 +105,7 @@ GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
 ## 🚀 Short-Term Roadmap (Next 3 Months)
 
 ### v1.1 Goals
+
 - Form components (inputs, checkboxes, toggles)
 - Better responsive utilities
 - Additional hover animations
@@ -111,6 +113,7 @@ GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
 - Expanded documentation examples
 
 ### v1.2 Goals
+
 - Modal and tooltip components
 - Navigation utilities
 - CSS-only accordion and tabs
@@ -118,6 +121,7 @@ GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
 - Animation performance optimizations
 
 ### Developer Experience
+
 - Better onboarding documentation
 - More live demos and examples
 - Expanded contribution guides
@@ -165,6 +169,7 @@ EaseMotion CSS is designed to remain approachable for beginners while still bein
 EaseMotion CSS is designed as a community-driven but maintainer-curated project.
 
 The goal is to create an ecosystem where:
+
 - Beginners can contribute raw CSS ideas
 - Contributors learn real-world design system thinking
 - Community experiments evolve into polished framework features
@@ -173,33 +178,35 @@ The goal is to create an ecosystem where:
 Community contributions will continue shaping the framework roadmap while maintaining consistent quality standards through maintainer review.
 
 Future community initiatives may include:
+
 - Contributor showcases
 - Community animation collections
 - Learning resources
 - Design challenges
 - Open roadmap discussions
- ## Short-Term Roadmap (Next 3 Months)
+
+## Short-Term Roadmap (Next 3 Months)
 
 ### Month 1
 
-* Expand core utility classes
-* Improve documentation coverage
-* Add more real-world examples
-* Improve contributor onboarding
+- Expand core utility classes
+- Improve documentation coverage
+- Add more real-world examples
+- Improve contributor onboarding
 
 ### Month 2
 
-* Introduce additional form-related components
-* Expand animation utilities
-* Improve accessibility testing and validation
-* Increase automated quality checks
+- Introduce additional form-related components
+- Expand animation utilities
+- Improve accessibility testing and validation
+- Increase automated quality checks
 
 ### Month 3
 
-* Refine component library consistency
-* Improve CDN and package distribution experience
-* Expand documentation website content
-* Prepare for larger community contributions
+- Refine component library consistency
+- Improve CDN and package distribution experience
+- Expand documentation website content
+- Prepare for larger community contributions
 
 ---
 
@@ -207,12 +214,12 @@ Future community initiatives may include:
 
 To preserve the project's philosophy, EaseMotion CSS intentionally avoids:
 
-* Abbreviated utility naming conventions
-* Mandatory build steps or compilation requirements
-* JavaScript-dependent core functionality
-* Large plugin ecosystems that increase complexity
-* Multiple competing naming styles
-* Features that reduce readability in favor of shorter syntax
+- Abbreviated utility naming conventions
+- Mandatory build steps or compilation requirements
+- JavaScript-dependent core functionality
+- Large plugin ecosystems that increase complexity
+- Multiple competing naming styles
+- Features that reduce readability in favor of shorter syntax
 
 These boundaries help maintain a simple, human-readable design language.
 
@@ -224,11 +231,11 @@ EaseMotion CSS aims to grow through thoughtful community collaboration.
 
 Contributors are encouraged to:
 
-* Propose new utility classes
-* Share examples and use cases
-* Improve documentation
-* Report bugs and accessibility concerns
-* Suggest improvements aligned with project philosophy
+- Propose new utility classes
+- Share examples and use cases
+- Improve documentation
+- Report bugs and accessibility concerns
+- Suggest improvements aligned with project philosophy
 
 The goal is not to become the largest CSS framework, but to become one of the most approachable and readable frameworks for developers of all experience levels.
 

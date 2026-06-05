@@ -5,6 +5,7 @@ A lightweight pure CSS flip background animation utility for interactive UI elem
 ---
 
 ## ✨ Features
+
 - Pure CSS animation
 - Smooth flip effect
 - Lightweight and reusable
@@ -15,6 +16,5 @@ A lightweight pure CSS flip background animation utility for interactive UI elem
 ## 🚀 Usage
 
 ```html
-<div class="flip-card">
-  Hover Me
-</div>
+<div class="flip-card">Hover Me</div>
+```

@@ -8,9 +8,7 @@ Creates an interactive 3D card tilt effect that responds to cursor movement. The
 
 ```html
 <div class="tilt-container">
-  <div class="tilt-card">
-    Content
-  </div>
+  <div class="tilt-card">Content</div>
 </div>
 ```
 

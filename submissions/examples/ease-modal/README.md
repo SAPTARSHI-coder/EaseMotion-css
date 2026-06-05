@@ -1,6 +1,7 @@
 # Modal Component (#251)
 
 ### What does this do?
+
 Adds a pristine, highly-performant zero-JavaScript `ease-modal` component to the framework. It handles open states, close states, and backdrop-click-to-close entirely natively using the browser's URL hash and the CSS `:target` pseudo-class.
 
 ### How is it used?
@@ -24,4 +25,5 @@ Adds a pristine, highly-performant zero-JavaScript `ease-modal` component to the
 ```
 
 ### Why is it useful?
+
 Modals are typically one of the most JS-heavy components in UI libraries, requiring event listeners for backdrop clicks, escape keys, and close buttons. This CSS-only implementation drastically reduces bundle size and JS execution time. It also features a gorgeous hardware-accelerated slide-and-scale entrance animation that gracefully falls back to a pure opacity fade when `prefers-reduced-motion` is active.

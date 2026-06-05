@@ -1,7 +1,7 @@
 # Flip Card 3D
 
 **Category:** Animation · 3D Transform  
-**Contributor submission for:** [EaseMotion CSS](https://github.com/Kalrix/EaseMotion) — GSSoC  
+**Contributor submission for:** [EaseMotion CSS](https://github.com/Kalrix/EaseMotion) — GSSoC
 
 ---
 
@@ -45,7 +45,6 @@ submissions/examples/flip-card-3d/
 ```html
 <div class="flip-card" tabindex="0">
   <div class="flip-card__inner">
-
     <div class="flip-card__front">
       <!-- Front content -->
     </div>
@@ -53,7 +52,6 @@ submissions/examples/flip-card-3d/
     <div class="flip-card__back">
       <!-- Back content -->
     </div>
-
   </div>
 </div>
 ```
@@ -108,14 +106,14 @@ The core mechanism relies on three CSS properties working together:
 
 All key values are controlled via CSS custom properties at the top of `style.css`:
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `--card-w` | `300px` | Card width |
-| `--card-h` | `380px` | Card height |
-| `--card-radius` | `20px` | Corner rounding |
-| `--flip-duration` | `0.65s` | Animation speed |
-| `--flip-ease` | `cubic-bezier(0.4,0.2,0.2,1)` | Easing curve |
-| `--teal` / `--amber` / `--indigo` | see file | Accent colors |
+| Variable                          | Default                       | Purpose         |
+| --------------------------------- | ----------------------------- | --------------- |
+| `--card-w`                        | `300px`                       | Card width      |
+| `--card-h`                        | `380px`                       | Card height     |
+| `--card-radius`                   | `20px`                        | Corner rounding |
+| `--flip-duration`                 | `0.65s`                       | Animation speed |
+| `--flip-ease`                     | `cubic-bezier(0.4,0.2,0.2,1)` | Easing curve    |
+| `--teal` / `--amber` / `--indigo` | see file                      | Accent colors   |
 
 ### Flip on click instead of hover
 
@@ -144,13 +142,13 @@ Wrap the flip trigger in a checked checkbox or a `:target` selector for a click-
 
 ## Browser Support
 
-| Browser | Support |
-|---|---|
+| Browser           | Support |
+| ----------------- | ------- |
 | Chrome / Edge 79+ | ✅ Full |
-| Firefox 72+ | ✅ Full |
-| Safari 14+ | ✅ Full |
-| iOS Safari 14+ | ✅ Full |
-| Opera 66+ | ✅ Full |
+| Firefox 72+       | ✅ Full |
+| Safari 14+        | ✅ Full |
+| iOS Safari 14+    | ✅ Full |
+| Opera 66+         | ✅ Full |
 
 > `perspective`, `transform-style: preserve-3d`, and `backface-visibility` have broad support in all modern browsers. No prefixes are required for current targets, though `-webkit-backface-visibility` is included for older Safari compatibility.
 
@@ -166,7 +164,7 @@ Flip cards are a versatile UI pattern that appear across:
 - **Dashboard tiles** — summary stat on front, breakdown chart on back
 - **Onboarding flows** — teaser on front, expanded detail on back
 
-The 3D flip earns attention without being distracting. It rewards curiosity and communicates that there is *more* to discover — making it more engaging than a plain expand/collapse.
+The 3D flip earns attention without being distracting. It rewards curiosity and communicates that there is _more_ to discover — making it more engaging than a plain expand/collapse.
 
 ---
 
@@ -191,4 +189,4 @@ Each card uses a distinct accent color, matching top-strip gradient, and a theme
 
 ---
 
-*Submitted as part of GSSoC contribution to EaseMotion CSS.*
+_Submitted as part of GSSoC contribution to EaseMotion CSS._

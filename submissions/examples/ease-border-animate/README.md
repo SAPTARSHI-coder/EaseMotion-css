@@ -15,9 +15,7 @@ A smooth rotating border animation created with `conic-gradient` and pseudo-elem
 Add the utility class:
 
 ```html
-<div class="ease-border-animate">
-    Content Here
-</div>
+<div class="ease-border-animate">Content Here</div>
 ```
 
 ## Example

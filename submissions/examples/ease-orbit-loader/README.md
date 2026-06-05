@@ -24,34 +24,33 @@ Different ring sizes, opacities, and animation speeds create a cinematic depth i
 
 Built-in utility modifiers allow developers to customize orbit behavior:
 
-* `.ease-orbit-fast`
-* `.ease-orbit-slow`
-* `.ease-orbit-reverse`
-* `.ease-orbit-multi`
-* `.ease-orbit-glow`
+- `.ease-orbit-fast`
+- `.ease-orbit-slow`
+- `.ease-orbit-reverse`
+- `.ease-orbit-multi`
+- `.ease-orbit-glow`
 
 ## Features
 
-* Multi-ring orbital animation
-* Counter-rotating motion layers
-* Pulsing central core
-* Glowing energy particles
-* GPU-accelerated transforms
-* Utility-based customization
-* Dashboard and AI-inspired aesthetic
-* Responsive standalone implementation
+- Multi-ring orbital animation
+- Counter-rotating motion layers
+- Pulsing central core
+- Glowing energy particles
+- GPU-accelerated transforms
+- Utility-based customization
+- Dashboard and AI-inspired aesthetic
+- Responsive standalone implementation
 
 ## Directory Tree Manifest
 
-* `demo.html` — Standalone demonstration interface.
-* `style.css` — Orbital animation system and utility classes.
-* `README.md` — Feature documentation.
+- `demo.html` — Standalone demonstration interface.
+- `style.css` — Orbital animation system and utility classes.
+- `README.md` — Feature documentation.
 
 ## Usage
 
 ```html
 <div class="ease-orbit-loader ease-orbit-multi">
-
   <div class="ease-orbit-core">
     <span>AI</span>
   </div>
@@ -63,7 +62,6 @@ Built-in utility modifiers allow developers to customize orbit behavior:
   <div class="ease-orbit-ring middle ease-orbit-reverse">
     <div class="orbit-node"></div>
   </div>
-
 </div>
 ```
 
@@ -71,11 +69,11 @@ Built-in utility modifiers allow developers to customize orbit behavior:
 
 Modern browsers supporting:
 
-* CSS Transforms
-* CSS Animations
-* CSS Variables
-* Flexbox
-* Conic Gradients
+- CSS Transforms
+- CSS Animations
+- CSS Variables
+- Flexbox
+- Conic Gradients
 
 ## Why It Fits EaseMotion CSS
 

@@ -18,9 +18,9 @@ Display utility classes for commonly used CSS display properties.
 
 ```html
 <div class="ease-flex">
-    <div>Item 1</div>
-    <div>Item 2</div>
-    <div>Item 3</div>
+  <div>Item 1</div>
+  <div>Item 2</div>
+  <div>Item 3</div>
 </div>
 ```
 
@@ -28,9 +28,9 @@ Display utility classes for commonly used CSS display properties.
 
 ```html
 <div class="ease-grid">
-    <div>A</div>
-    <div>B</div>
-    <div>C</div>
+  <div>A</div>
+  <div>B</div>
+  <div>C</div>
 </div>
 ```
 
@@ -45,5 +45,3 @@ Display utility classes for commonly used CSS display properties.
 1. Utility classes only define display behavior.
 2. Demo-specific styling is separated from utility definitions.
 3. Includes examples for all supported display utilities.
-
-

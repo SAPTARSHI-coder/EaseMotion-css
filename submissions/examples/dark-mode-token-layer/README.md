@@ -45,19 +45,19 @@ This fits EaseMotion CSS because it keeps theming readable, composable, dependen
 
 ## Features
 
-* Uses CSS custom properties for reusable design tokens
-* Supports automatic dark mode through `prefers-color-scheme`
-* Supports manual overrides with `data-theme="light"` and `data-theme="dark"`
-* Keeps backgrounds, text, borders, buttons, hover states, and focus states theme-safe
-* Provides accessible contrast between foreground and background colors
-* Requires no build step and no external dependency
+- Uses CSS custom properties for reusable design tokens
+- Supports automatic dark mode through `prefers-color-scheme`
+- Supports manual overrides with `data-theme="light"` and `data-theme="dark"`
+- Keeps backgrounds, text, borders, buttons, hover states, and focus states theme-safe
+- Provides accessible contrast between foreground and background colors
+- Requires no build step and no external dependency
 
 ## Tech Stack
 
-* HTML
-* CSS only
-* No external frameworks
-* No build tools
+- HTML
+- CSS only
+- No external frameworks
+- No build tools
 
 ## Preview
 
@@ -70,6 +70,6 @@ Open `demo.html` directly in the browser to preview:
 
 ## Contribution Notes
 
-* This submission only adds files inside `submissions/examples/dark-mode-token-layer/`
-* No changes are made to `core/`, `components/`, `docs/`, or root examples
-* Class names are intentionally simple and readable; the maintainer can standardize naming later
+- This submission only adds files inside `submissions/examples/dark-mode-token-layer/`
+- No changes are made to `core/`, `components/`, `docs/`, or root examples
+- Class names are intentionally simple and readable; the maintainer can standardize naming later

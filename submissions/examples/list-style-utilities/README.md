@@ -4,21 +4,21 @@ A lightweight collection of CSS utility classes for controlling list markers and
 
 ## Features
 
-* Pure CSS implementation
-* Human-readable utility classes
-* Supports list style type and position
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Human-readable utility classes
+- Supports list style type and position
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Available Classes
 
-| Class | Effect |
-| ------- | ------- |
-| `ease-list-none` | Removes list markers |
-| `ease-list-disc` | Uses disc markers |
-| `ease-list-decimal` | Uses decimal numbering |
-| `ease-list-inside` | Places markers inside content flow |
+| Class               | Effect                              |
+| ------------------- | ----------------------------------- |
+| `ease-list-none`    | Removes list markers                |
+| `ease-list-disc`    | Uses disc markers                   |
+| `ease-list-decimal` | Uses decimal numbering              |
+| `ease-list-inside`  | Places markers inside content flow  |
 | `ease-list-outside` | Places markers outside content flow |
 
 ## Usage
@@ -41,10 +41,10 @@ A lightweight collection of CSS utility classes for controlling list markers and
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome | ✅ |
-| Firefox | ✅ |
-| Safari | ✅ |
-| Edge | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

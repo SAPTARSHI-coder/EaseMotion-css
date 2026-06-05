@@ -10,14 +10,14 @@ This component is ideal for portfolios, landing pages, creative websites, and in
 
 ## Features
 
-* Smooth cursor follower animation
-* Hover scaling effect
-* Glow effect
-* Multiple color variants
-* Multiple size variants
-* Lightweight and customizable
-* Responsive design
-* Easy integration
+- Smooth cursor follower animation
+- Hover scaling effect
+- Glow effect
+- Multiple color variants
+- Multiple size variants
+- Lightweight and customizable
+- Responsive design
+- Easy integration
 
 ---
 
@@ -43,7 +43,7 @@ custom-cursor-effect/
 ### CSS
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ### JavaScript
@@ -56,16 +56,16 @@ The cursor follows the mouse position and reacts to hover events on interactive 
 
 ### Size Variants
 
-* Small Cursor
-* Medium Cursor
-* Large Cursor
+- Small Cursor
+- Medium Cursor
+- Large Cursor
 
 ### Color Variants
 
-* Primary
-* Success
-* Danger
-* Warning
+- Primary
+- Success
+- Danger
+- Warning
 
 ---
 
@@ -101,10 +101,10 @@ Modify the following CSS variables:
 
 ## Browser Support
 
-* Google Chrome
-* Mozilla Firefox
-* Microsoft Edge
-* Safari
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
+- Safari
 
 ---
 

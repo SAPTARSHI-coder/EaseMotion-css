@@ -4,16 +4,16 @@ A compact dashboard widget for displaying developer and project metrics such as 
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-dev-stats` | Grid container for stat cards |
-| `ease-stat-card` | Individual stat card with entrance animation and hover lift |
-| `ease-stat-value` | Numeric value with subtle glow pulse |
-| `ease-stat-label` | Descriptive label for the metric |
-| `ease-stat-card-primary` | Primary (purple) color variant |
-| `ease-stat-card-success` | Success (green) color variant |
-| `ease-stat-card-info` | Info (blue) color variant |
-| `ease-stat-card-warning` | Warning (amber) color variant |
+| Class                    | Description                                                 |
+| ------------------------ | ----------------------------------------------------------- |
+| `ease-dev-stats`         | Grid container for stat cards                               |
+| `ease-stat-card`         | Individual stat card with entrance animation and hover lift |
+| `ease-stat-value`        | Numeric value with subtle glow pulse                        |
+| `ease-stat-label`        | Descriptive label for the metric                            |
+| `ease-stat-card-primary` | Primary (purple) color variant                              |
+| `ease-stat-card-success` | Success (green) color variant                               |
+| `ease-stat-card-info`    | Info (blue) color variant                                   |
+| `ease-stat-card-warning` | Warning (amber) color variant                               |
 
 ## Usage
 

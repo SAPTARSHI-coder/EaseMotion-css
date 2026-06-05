@@ -7,7 +7,6 @@ Creates a horizontal row of social media icon links with platform-specific hover
 
 ```html
 <div class="social-links">
-
   <a href="#" class="social-link github">
     <i class="fab fa-github"></i>
   </a>
@@ -19,7 +18,6 @@ Creates a horizontal row of social media icon links with platform-specific hover
   <a href="#" class="social-link twitter">
     <i class="fab fa-x-twitter"></i>
   </a>
-
 </div>
 ```
 

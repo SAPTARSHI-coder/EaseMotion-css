@@ -11,8 +11,10 @@ The system stacks column lanes on a perspective viewport container to enable mul
 - **Inspection Dampening:** Uses standard hover triggers to pause the animation loops (`animation-play-state: paused`) for focal user inspections.
 
 ## Manifest Details
+
 - `demo.html`: The standalone visual testing grounds interface.
 - `style.css`: Composed native CSS animation styles rules.
 
 ## By
+
 Pari Dubey

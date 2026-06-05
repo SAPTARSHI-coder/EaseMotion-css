@@ -23,10 +23,10 @@ A premium editorial-style testimonials section inspired by luxury magazines and 
 
 ```html
 <section class="tm-obs">
-  <header class="tm-obs-header"> … </header>
+  <header class="tm-obs-header">…</header>
   <div class="tm-obs-grid">
-    <article class="tm-obs-card tm-obs-card--featured"> … </article>
-    <article class="tm-obs-card"> … </article>
+    <article class="tm-obs-card tm-obs-card--featured">…</article>
+    <article class="tm-obs-card">…</article>
   </div>
 </section>
 ```

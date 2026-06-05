@@ -32,14 +32,14 @@ Movement is handled through `transform: translateX()` and hardware-accelerated t
 
 ## Features
 
-* Single persistent tooltip element
-* Dynamic width adaptation based on content
-* Magnetic snapping behavior
-* Smooth spring animations
-* Contextual tooltip messages
-* Responsive layout support
-* Lightweight implementation
-* Easy customization through CSS variables
+- Single persistent tooltip element
+- Dynamic width adaptation based on content
+- Magnetic snapping behavior
+- Smooth spring animations
+- Contextual tooltip messages
+- Responsive layout support
+- Lightweight implementation
+- Easy customization through CSS variables
 
 ## Usage
 
@@ -54,10 +54,10 @@ Hover over any navigation item to:
 
 Modern browsers supporting:
 
-* CSS Custom Properties
-* CSS Transforms
-* Flexbox
-* ES6 JavaScript
+- CSS Custom Properties
+- CSS Transforms
+- Flexbox
+- ES6 JavaScript
 
 ## By
 

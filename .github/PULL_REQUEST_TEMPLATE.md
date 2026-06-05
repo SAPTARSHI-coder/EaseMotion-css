@@ -57,7 +57,7 @@
 - [ ] Chrome
 - [ ] Firefox
 - [ ] Edge
-- [ ] Safari *(optional but appreciated)*
+- [ ] Safari _(optional but appreciated)_
 
 ---
 

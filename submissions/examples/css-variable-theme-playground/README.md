@@ -8,11 +8,11 @@ Users can modify core design tokens such as colors and instantly preview the cha
 
 ## Features
 
-* Live CSS variable editing
-* Instant visual preview
-* Before and after comparison
-* Generated CSS override code
-* Copy-paste ready theme configuration
+- Live CSS variable editing
+- Instant visual preview
+- Before and after comparison
+- Generated CSS override code
+- Copy-paste ready theme configuration
 
 ## Why is it useful?
 
@@ -20,10 +20,10 @@ While the existing documentation explains how CSS variables work, this playgroun
 
 ## Variables Demonstrated
 
-* --ease-color-primary
-* --ease-color-bg
-* --ease-color-surface
-* --ease-color-text
+- --ease-color-primary
+- --ease-color-bg
+- --ease-color-surface
+- --ease-color-text
 
 ## Usage
 
@@ -35,9 +35,9 @@ The generated CSS block can be copied directly into a project to apply the same 
 
 ## Tech Stack
 
-* HTML
-* CSS
-* JavaScript
+- HTML
+- CSS
+- JavaScript
 
 ## Preview
 

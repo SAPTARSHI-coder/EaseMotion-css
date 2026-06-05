@@ -12,6 +12,10 @@ An internal documentation environment enabling real-time browser-based testing, 
 ## Sandbox Integration Pattern
 
 ```html
-<div class="preview-target em-slide-up" style="animation-duration: 1.5s; animation-delay: 0.2s;">
+<div
+  class="preview-target em-slide-up"
+  style="animation-duration: 1.5s; animation-delay: 0.2s;"
+>
   EaseMotion Anchor Node
 </div>
+```

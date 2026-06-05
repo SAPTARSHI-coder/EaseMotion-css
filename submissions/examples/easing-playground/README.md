@@ -13,17 +13,18 @@ Interactive playground to preview and compare CSS easing animations in real time
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Full interactive playground |
+| File        | Purpose                                                |
+| ----------- | ------------------------------------------------------ |
+| `demo.html` | Full interactive playground                            |
 | `style.css` | All styles (dark theme, controls, track, canvas, grid) |
-| `README.md` | This file |
+| `README.md` | This file                                              |
 
 ## Usage
 
 Open `demo.html` directly in a browser. No build step needed.
 
 ## Suggested EaseMotion CSS Class
+
 ease-playground
 
 ## Preview

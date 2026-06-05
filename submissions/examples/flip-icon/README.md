@@ -18,3 +18,4 @@ Hover over the icons to see the flip animation.
 
 ```html
 <span class="flip-icon">⭐</span>
+```

@@ -3,7 +3,8 @@
 1. **What does this do?**  
    Adds a compact card variant idea for dense lists, dashboards, and small content previews.
 
-2. **How is it used?**  
+2. **How is it used?**
+
    ```html
    <article class="compact-card">
      <h3>Card title</h3>

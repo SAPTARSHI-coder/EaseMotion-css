@@ -12,8 +12,10 @@ The component achieves high-fidelity spatial motion entirely through native hard
    - **On Hover Focus Exit:** The transition variables safely invert. Sibling cards immediately slide inward to reassemble the center stack, while the main core card holds its elevated height profile for `100ms` before setting down cleanly on top of the pile, eliminating reverse z-index Z-fighting glitches.
 
 ## Directory Tree Manifest
+
 - `demo.html`: Independent, self-contained interactive visual preview stage.
 - `style.css`: Composed high-performance CSS transformation rules sheets.
 
 ## By
+
 Pari Dubey

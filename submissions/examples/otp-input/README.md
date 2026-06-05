@@ -4,20 +4,26 @@ A row of 6 individual digit input boxes for entering one-time passwords or verif
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-otp-input` | Flex container for the digit boxes |
-| `ease-otp-box` | Individual digit input |
-| `ease-otp-box--active` | Currently focused box |
-| `ease-otp-box--filled` | Box with a digit entered |
-| `ease-otp-input--error` | Error state (red shake on all boxes) |
-| `ease-otp-input--success` | Success state (staggered green pop) |
+| Class                     | Description                          |
+| ------------------------- | ------------------------------------ |
+| `ease-otp-input`          | Flex container for the digit boxes   |
+| `ease-otp-box`            | Individual digit input               |
+| `ease-otp-box--active`    | Currently focused box                |
+| `ease-otp-box--filled`    | Box with a digit entered             |
+| `ease-otp-input--error`   | Error state (red shake on all boxes) |
+| `ease-otp-input--success` | Success state (staggered green pop)  |
 
 ## Usage
 
 ```html
 <div class="ease-otp-input" data-ease-otp-length="6">
-  <input class="ease-otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" />
+  <input
+    class="ease-otp-box"
+    type="text"
+    inputmode="numeric"
+    maxlength="1"
+    autocomplete="one-time-code"
+  />
   <!-- repeat for 6 boxes -->
 </div>
 ```

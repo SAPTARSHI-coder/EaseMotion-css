@@ -3,7 +3,8 @@
 **What does this do?**  
 Creates a tactile, 3D button click reaction by physically translating the button downward on `:active` while shrinking the corresponding bottom-border offset shadow.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <!-- 2px click depth -->
 <button class="depth-btn depth-sm">Small Press</button>

@@ -12,11 +12,11 @@ Instead of repeating transition values across multiple components:
 
 ```css
 .button {
-    transition: all .3s cubic-bezier(.4,0,.2,1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card {
-    transition: all .3s cubic-bezier(.4,0,.2,1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 ```
 
@@ -24,14 +24,12 @@ Use shared design tokens:
 
 ```css
 :root {
-    --ease-speed-medium: 0.3s;
-    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-speed-medium: 0.3s;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .component {
-    transition:
-        all var(--ease-speed-medium)
-        var(--ease-standard);
+  transition: all var(--ease-speed-medium) var(--ease-standard);
 }
 ```
 
@@ -43,21 +41,21 @@ This approach helps frameworks remain scalable as more animations and components
 
 Benefits include:
 
-* Reduced duplication
-* Easier maintenance
-* Consistent animation behavior
-* Cleaner architecture
-* Better preparation for future SCSS mixin adoption
-* Simpler framework expansion
+- Reduced duplication
+- Easier maintenance
+- Consistent animation behavior
+- Cleaner architecture
+- Better preparation for future SCSS mixin adoption
+- Simpler framework expansion
 
 ---
 
 ## Demonstrated Components
 
-* Button
-* Card
-* Badge
-* Modal Preview
+- Button
+- Card
+- Badge
+- Modal Preview
 
 All components reuse the same centralized transition tokens instead of repeating hardcoded values.
 
@@ -68,7 +66,7 @@ All components reuse the same centralized transition tokens instead of repeating
 Repeated declarations:
 
 ```css
-transition: all .3s cubic-bezier(.4,0,.2,1);
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 ```
 
 ↓

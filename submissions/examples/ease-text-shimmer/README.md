@@ -45,9 +45,7 @@ To implement the gradient text shimmer in your interface:
 
 ```html
 <!-- Showcase Shimmer Header -->
-<h1 class="ease-text-shimmer">
-  Next-Gen Design Interfaces
-</h1>
+<h1 class="ease-text-shimmer">Next-Gen Design Interfaces</h1>
 ```
 
 ---
@@ -55,12 +53,13 @@ To implement the gradient text shimmer in your interface:
 ## CSS Highlights
 
 ### Custom Properties & Gradient Clipping
+
 Exposes customizable design variables with full vendor prefix clipping rules:
 
 ```css
 .ease-text-shimmer {
-  --shimmer-color-1: #3b82f6;       /* Start/End primary tone */
-  --shimmer-color-2: #8b5cf6;       /* Mid color tone */
+  --shimmer-color-1: #3b82f6; /* Start/End primary tone */
+  --shimmer-color-2: #8b5cf6; /* Mid color tone */
   --shimmer-color-highlight: #ffffff; /* High contrast shine color */
   --shimmer-duration: 4.5s;
 
@@ -74,18 +73,19 @@ Exposes customizable design variables with full vendor prefix clipping rules:
     var(--shimmer-color-1) 100%
   );
   background-size: 200% auto;
-  
+
   color: transparent;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
+
   animation: easeShimmer var(--shimmer-duration) linear infinite;
   will-change: background-position;
 }
 ```
 
 ### Seamless Shimmer Loop Keyframes
+
 Shifts the double-width gradient by exactly 200% width to create a continuous, gapless sweep animation:
 
 ```css
@@ -109,18 +109,18 @@ EaseMotion CSS focuses on lightweight, performant, and visual-first CSS enhancem
 
 ## Browser Support
 
-| Browser | Supported | Key Features |
-| :--- | :--- | :--- |
-| **Google Chrome** | Yes (76+) | `background-clip: text`, `will-change` |
+| Browser             | Supported | Key Features                           |
+| :------------------ | :-------- | :------------------------------------- |
+| **Google Chrome**   | Yes (76+) | `background-clip: text`, `will-change` |
 | **Mozilla Firefox** | Yes (70+) | `background-clip: text`, `will-change` |
-| **Apple Safari** | Yes (13+) | `-webkit-background-clip` prefix |
-| **Microsoft Edge** | Yes (79+) | `background-clip: text`, `will-change` |
+| **Apple Safari**    | Yes (13+) | `-webkit-background-clip` prefix       |
+| **Microsoft Edge**  | Yes (79+) | `background-clip: text`, `will-change` |
 
 ---
 
 ## Screenshots
 
-*Place screenshot assets or live mockups illustrating the light-sweep typography on dark sections here.*
+_Place screenshot assets or live mockups illustrating the light-sweep typography on dark sections here._
 
 ---
 

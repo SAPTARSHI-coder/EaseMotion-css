@@ -7,9 +7,7 @@ Creates a staggered fade-in effect where elements appear one after another using
 ## How is it used?
 
 ```html
-<div class="fade-item" style="animation-delay: 0.2s;">
-  Content
-</div>
+<div class="fade-item" style="animation-delay: 0.2s;">Content</div>
 ```
 
 ## Why is it useful?

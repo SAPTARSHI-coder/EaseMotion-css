@@ -4,21 +4,21 @@ A fixed-position toast notification system with slide-in/slide-out animations, 4
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-toast-container` | Fixed container for stacking toasts |
-| `ease-toast-container--top-left` | Top-left position |
-| `ease-toast-container--bottom-right` | Bottom-right position |
-| `ease-toast-container--bottom-left` | Bottom-left position |
-| `ease-toast` | Individual toast notification |
-| `ease-toast--success` | Green accent (success) |
-| `ease-toast--danger` | Red accent (error/danger) |
-| `ease-toast--warning` | Amber accent (warning) |
-| `ease-toast--info` | Blue accent (info) |
-| `ease-toast-icon` | Icon circle |
-| `ease-toast-msg` | Notification message |
-| `ease-toast-close` | Dismiss button |
-| `ease-toast--exit` | Exit animation state (added via JS) |
+| Class                                | Description                         |
+| ------------------------------------ | ----------------------------------- |
+| `ease-toast-container`               | Fixed container for stacking toasts |
+| `ease-toast-container--top-left`     | Top-left position                   |
+| `ease-toast-container--bottom-right` | Bottom-right position               |
+| `ease-toast-container--bottom-left`  | Bottom-left position                |
+| `ease-toast`                         | Individual toast notification       |
+| `ease-toast--success`                | Green accent (success)              |
+| `ease-toast--danger`                 | Red accent (error/danger)           |
+| `ease-toast--warning`                | Amber accent (warning)              |
+| `ease-toast--info`                   | Blue accent (info)                  |
+| `ease-toast-icon`                    | Icon circle                         |
+| `ease-toast-msg`                     | Notification message                |
+| `ease-toast-close`                   | Dismiss button                      |
+| `ease-toast--exit`                   | Exit animation state (added via JS) |
 
 ## Usage
 

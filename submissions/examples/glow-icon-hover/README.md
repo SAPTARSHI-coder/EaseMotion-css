@@ -4,12 +4,12 @@ A lightweight CSS utility that creates a glowing hover effect for icons. The ani
 
 ## Features
 
-* Pure CSS implementation
-* Smooth glow animation on hover
-* Subtle scale effect for emphasis
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Smooth glow animation on hover
+- Subtle scale effect for emphasis
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Usage
 
@@ -19,19 +19,19 @@ A lightweight CSS utility that creates a glowing hover effect for icons. The ani
 
 ## Behavior
 
-* Soft glow appears on hover
-* Icon slightly enlarges for emphasis
-* Smooth easing animation
-* Returns to its original state when hover ends
+- Soft glow appears on hover
+- Icon slightly enlarges for emphasis
+- Smooth easing animation
+- Returns to its original state when hover ends
 
 ## Browser Support
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Safari  | ✅         |
-| Edge    | ✅         |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

@@ -3,7 +3,8 @@
 **What does this do?**  
 Adds a color-matched outer glow (`box-shadow`) on button hover. Each color variant emits a glow in its own brand color, reinforcing the button's semantic meaning.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <button class="glow-btn glow-btn-purple">Primary Action</button>
 <button class="glow-btn glow-btn-green">Success</button>

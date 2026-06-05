@@ -3,6 +3,7 @@
 A pure CSS floating label input component inspired by Material Design.
 
 ## ✨ Features
+
 - Label starts inside the input field
 - Smoothly floats above on focus
 - Stays floated when input has value
@@ -18,3 +19,4 @@ A pure CSS floating label input component inspired by Material Design.
   <input type="text" id="name" placeholder=" " />
   <label for="name">Your Name</label>
 </div>
+```

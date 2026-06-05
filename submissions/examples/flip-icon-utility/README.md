@@ -4,6 +4,7 @@
 Creates a smooth 180-degree X-axis flip animation for icon components and small UI elements. Ideal for toggle buttons, expand/collapse indicators, settings icons, and any interactive element where direction feedback matters.
 
 **How is it used?**
+
 ```html
 <!-- Entrance flip (plays on load) -->
 <span class="flip-icon-x">⚙️</span>

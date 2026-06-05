@@ -5,7 +5,7 @@ async function handleUnclaim({ github, context }) {
   const commenter = context.payload.comment.user.login;
   const issueState = context.payload.issue.state;
 
-  if (issueState === 'closed') {
+  if (issueState === "closed") {
     await github.rest.issues.createComment({
       owner,
       repo,
@@ -15,7 +15,9 @@ async function handleUnclaim({ github, context }) {
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
+  const currentAssignees = context.payload.issue.assignees.map((a) =>
+    a.login.toLowerCase()
+  );
 
   if (!currentAssignees.includes(commenter.toLowerCase())) {
     await github.rest.issues.createComment({

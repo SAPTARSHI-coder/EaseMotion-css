@@ -17,7 +17,7 @@ A pure CSS implementation of custom-styled checkboxes and radio buttons that rep
 
 ```html
 <label class="ease-check-row">
-  <input type="checkbox" class="ease-check-input" checked>
+  <input type="checkbox" class="ease-check-input" checked />
   <span class="ease-check-box">
     <svg class="ease-check-icon checkmark" viewBox="0 0 24 24">
       <polyline points="20 6 9 17 4 12"></polyline>
@@ -31,7 +31,7 @@ A pure CSS implementation of custom-styled checkboxes and radio buttons that rep
 
 ```html
 <label class="ease-check-row" data-type="radio">
-  <input type="radio" name="group-name" class="ease-check-input" checked>
+  <input type="radio" name="group-name" class="ease-check-input" checked />
   <span class="ease-check-box">
     <span class="ease-check-icon dot"></span>
   </span>
@@ -40,11 +40,12 @@ A pure CSS implementation of custom-styled checkboxes and radio buttons that rep
 ```
 
 ### Disabled state
+
 Add `disabled` to the input and `aria-disabled="true"` to the label:
 
 ```html
 <label class="ease-check-row" aria-disabled="true">
-  <input type="checkbox" class="ease-check-input" disabled>
+  <input type="checkbox" class="ease-check-input" disabled />
   <!-- ... box and icon ... -->
   <span>Disabled Label</span>
 </label>
@@ -63,12 +64,11 @@ Modify these CSS variables in your project to match your brand:
 ```
 
 ## Browser Support
-- Works in all modern browsers (Chrome, Firefox, Safari, Edge). 
+
+- Works in all modern browsers (Chrome, Firefox, Safari, Edge).
 - Uses standard CSS features (Variables, Flexbox, SVG).
 - Gracefully degrades in older browsers (inputs remain functional, styling may revert to default).
 
-
 ## Why This Matters
+
 Forms are the backbone of web applications. Providing a high-quality, dependency-free styling solution for basic inputs removes a major pain point for developers using EaseMotion, ensuring forms look as good as the rest of the UI without writing custom CSS for every project.
-
-

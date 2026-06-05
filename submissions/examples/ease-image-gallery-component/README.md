@@ -27,25 +27,27 @@ The **Modern Image Gallery Component** renders a fully responsive image grid usi
 
 ```html
 <section class="ease-gallery" aria-label="Gallery items">
-
   <!-- Standard card -->
-  <figure class="ease-gallery-item"
+  <figure
+    class="ease-gallery-item"
     role="img"
     aria-label="Aurora Horizon — 3D Art"
-    style="--art-gradient: linear-gradient(135deg, #042830 0%, #0891b2 70%, #67e8f9 100%);">
-
+    style="--art-gradient: linear-gradient(135deg, #042830 0%, #0891b2 70%, #67e8f9 100%);"
+  >
     <div class="ease-gallery-art"></div>
     <div class="ease-gallery-badge" aria-hidden="true">🎨</div>
     <div class="ease-gallery-overlay" aria-hidden="true"></div>
 
     <figcaption class="ease-gallery-caption">
-      <span class="ease-gallery-chip"
-        style="--chip-color:#06b6d4; --chip-rgb:6,182,212;">3D Art</span>
+      <span
+        class="ease-gallery-chip"
+        style="--chip-color:#06b6d4; --chip-rgb:6,182,212;"
+        >3D Art</span
+      >
       <div class="ease-gallery-name">Aurora Horizon</div>
       <div class="ease-gallery-meta">Rendered with Blender 4.0</div>
     </figcaption>
   </figure>
-
 </section>
 ```
 
@@ -54,9 +56,7 @@ The **Modern Image Gallery Component** renders a fully responsive image grid usi
 Add the modifier class `ease-gallery-item--featured` to the first item:
 
 ```html
-<figure class="ease-gallery-item ease-gallery-item--featured" ...>
-  ...
-</figure>
+<figure class="ease-gallery-item ease-gallery-item--featured" ...>...</figure>
 ```
 
 ### Using a Real Image
@@ -65,39 +65,47 @@ Replace the `ease-gallery-art` div with an actual image and set `object-fit`:
 
 ```html
 <figure class="ease-gallery-item" ...>
-  <img class="ease-gallery-art"
+  <img
+    class="ease-gallery-art"
     src="photo.jpg"
     alt="Descriptive alt text"
-    style="object-fit: cover; width: 100%; height: 100%;" />
+    style="object-fit: cover; width: 100%; height: 100%;"
+  />
   ...
 </figure>
 ```
 
 ### Class Reference
 
-| Class | Role |
-|---|---|
-| `.ease-gallery` | Outer `<section>` — CSS Grid container |
-| `.ease-gallery-item` | One `<figure>` card — overflow-hidden, staggered animation |
-| `.ease-gallery-item--featured` | Modifier — `grid-column: span 2; grid-row: span 2` |
-| `.ease-gallery-art` | Full-bleed art/image block — scales on hover |
-| `.ease-gallery-overlay` | Dark gradient fade-in overlay |
-| `.ease-gallery-caption` | `<figcaption>` — slides up on hover |
-| `.ease-gallery-chip` | Category tag — uses `--chip-color` / `--chip-rgb` custom props |
-| `.ease-gallery-name` | Card title |
-| `.ease-gallery-meta` | Card subtitle / metadata |
-| `.ease-gallery-badge` | Corner emoji badge — rotates in on hover |
+| Class                          | Role                                                           |
+| ------------------------------ | -------------------------------------------------------------- |
+| `.ease-gallery`                | Outer `<section>` — CSS Grid container                         |
+| `.ease-gallery-item`           | One `<figure>` card — overflow-hidden, staggered animation     |
+| `.ease-gallery-item--featured` | Modifier — `grid-column: span 2; grid-row: span 2`             |
+| `.ease-gallery-art`            | Full-bleed art/image block — scales on hover                   |
+| `.ease-gallery-overlay`        | Dark gradient fade-in overlay                                  |
+| `.ease-gallery-caption`        | `<figcaption>` — slides up on hover                            |
+| `.ease-gallery-chip`           | Category tag — uses `--chip-color` / `--chip-rgb` custom props |
+| `.ease-gallery-name`           | Card title                                                     |
+| `.ease-gallery-meta`           | Card subtitle / metadata                                       |
+| `.ease-gallery-badge`          | Corner emoji badge — rotates in on hover                       |
 
 ### Per-card Theming
 
 Set `--art-gradient` on `.ease-gallery-item` and `--chip-color` / `--chip-rgb` on `.ease-gallery-chip` inline:
 
 ```html
-<figure class="ease-gallery-item"
-  style="--art-gradient: linear-gradient(135deg, #6c4ac5 0%, #a78bfa 100%);">
+<figure
+  class="ease-gallery-item"
+  style="--art-gradient: linear-gradient(135deg, #6c4ac5 0%, #a78bfa 100%);"
+>
   ...
-  <span class="ease-gallery-chip"
-    style="--chip-color:#a78bfa; --chip-rgb:167,139,250;">Branding</span>
+  <span
+    class="ease-gallery-chip"
+    style="--chip-color:#a78bfa; --chip-rgb:167,139,250;"
+    >Branding</span
+  >
+</figure>
 ```
 
 ---

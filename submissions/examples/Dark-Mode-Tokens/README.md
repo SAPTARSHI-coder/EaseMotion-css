@@ -11,8 +11,8 @@ Adds automatic dark mode to the entire EaseMotion CSS framework by overriding th
 Simply include `style.css` after `variables.css`. Dark mode activates automatically when the user's OS is set to dark.
 
 ```html
-<link rel="stylesheet" href="../../../core/variables.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="../../../core/variables.css" />
+<link rel="stylesheet" href="style.css" />
 
 <!-- Every existing component just works — no extra classes needed -->
 <div class="ease-card">This card adapts automatically.</div>
@@ -23,13 +23,13 @@ Simply include `style.css` after `variables.css`. Dark mode activates automatica
 
 ```js
 // Force dark
-document.body.classList.add('dark-mode');
+document.body.classList.add("dark-mode");
 
 // Force light (overrides system dark preference)
-document.body.classList.add('light-mode');
+document.body.classList.add("light-mode");
 
 // Return to system auto
-document.body.classList.remove('dark-mode', 'light-mode');
+document.body.classList.remove("dark-mode", "light-mode");
 ```
 
 ## 3. Why is it useful?

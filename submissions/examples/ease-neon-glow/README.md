@@ -7,9 +7,7 @@ Adds a pulsing neon glow animation around an element.
 ## How is it used?
 
 ```html
-<div class="neon-glow">
-  Neon content
-</div>
+<div class="neon-glow">Neon content</div>
 ```
 
 ## Why is it useful?

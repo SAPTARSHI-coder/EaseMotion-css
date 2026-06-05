@@ -9,6 +9,7 @@ A lightweight, theme-aware badge component system for status labels, tags, count
 This submission adds a simple, composable CSS badge system powered by the .ease-badge core class and a set of color and layout modifiers.
 
 The current implementation includes:
+
 - neutral, success, warning, danger, primary, secondary, and info badges
 - responsive demo layouts for status labels, notifications, product tags, feature chips, and mobile previews
 - dark mode-aware demo styling
@@ -51,15 +52,15 @@ Copy `style.css` into the framework payload or import it as a standalone compone
 
 ## Class reference
 
-| Class                    | Description                               |
-|--------------------------|-------------------------------------------|
-| `ease-badge`             | Core badge base style                     |
-| `ease-badge-success`     | Success badge                              |
-| `ease-badge-warning`     | Warning badge                              |
-| `ease-badge-danger`      | Danger badge                               |
-| `ease-badge-primary`     | Primary badge                              |
-| `ease-badge-secondary`   | Secondary badge                            |
-| `ease-badge-info`        | Informational badge                        |
+| Class                  | Description           |
+| ---------------------- | --------------------- |
+| `ease-badge`           | Core badge base style |
+| `ease-badge-success`   | Success badge         |
+| `ease-badge-warning`   | Warning badge         |
+| `ease-badge-danger`    | Danger badge          |
+| `ease-badge-primary`   | Primary badge         |
+| `ease-badge-secondary` | Secondary badge       |
+| `ease-badge-info`      | Informational badge   |
 
 ---
 
@@ -76,7 +77,7 @@ Copy `style.css` into the framework payload or import it as a standalone compone
 ## Files
 
 | File        | Purpose                                      |
-|-------------|----------------------------------------------|
-| `demo.html` | Example page showing the badge component      |
-| `style.css` | Badge component styles and demo page styling  |
-| `README.md` | Component documentation and usage guide       |
+| ----------- | -------------------------------------------- |
+| `demo.html` | Example page showing the badge component     |
+| `style.css` | Badge component styles and demo page styling |
+| `README.md` | Component documentation and usage guide      |

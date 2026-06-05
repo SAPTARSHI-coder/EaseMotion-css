@@ -29,6 +29,7 @@ expand-text-hover/
 ## 🚀 Demo Preview
 
 Hover over the text to see:
+
 - Text scaling effect
 - Smooth transition
 - Expanding letters
@@ -52,7 +53,9 @@ Add the class to any text element:
   display: inline-block;
   font-size: 3rem;
   font-weight: bold;
-  transition: transform 0.3s ease, letter-spacing 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    letter-spacing 0.3s ease;
   cursor: pointer;
 }
 
@@ -75,6 +78,7 @@ Add the class to any text element:
 ## 🌐 Browser Compatibility
 
 Tested and works on:
+
 - Chrome
 - Firefox
 - Edge

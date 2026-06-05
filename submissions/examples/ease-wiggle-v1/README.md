@@ -24,9 +24,9 @@ To replay on demand (e.g. on click):
 
 ```js
 function replayWiggle(el) {
-  el.classList.remove('wiggle');
+  el.classList.remove("wiggle");
   void el.offsetWidth;
-  el.classList.add('wiggle');
+  el.classList.add("wiggle");
 }
 ```
 
@@ -34,6 +34,7 @@ function replayWiggle(el) {
 EaseMotion CSS already has `ease-shake` for errors — `wiggle` fills the gap for delight and playfulness. Uses `transform-origin: top center` so elements swing like a hanging object, not a flat shake. Supports `prefers-reduced-motion` for accessibility.
 
 Perfect for:
+
 - 🔔 Notification bells with unread badges
 - ✨ Call-to-action buttons on landing pages
 - 📭 Empty state illustrations to prompt user action

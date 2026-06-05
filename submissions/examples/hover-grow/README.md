@@ -3,7 +3,8 @@
 **What does this do?**  
 Scales an element up slightly on hover using an elastic cubic-bezier curve, creating a satisfying "bounce-grow" feedback effect.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <div class="hover-grow-card">...</div>
 <button class="hover-grow-btn">Click me</button>

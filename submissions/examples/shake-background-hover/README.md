@@ -5,9 +5,7 @@ A lightweight hover utility that creates a subtle shake effect on background ele
 ## Usage
 
 ```html
-<div class="ease-shake-background-hover">
-  Hover Me
-</div>
+<div class="ease-shake-background-hover">Hover Me</div>
 ```
 
 ## Features

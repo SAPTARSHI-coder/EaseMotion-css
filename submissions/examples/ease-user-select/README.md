@@ -1,10 +1,12 @@
 # ease-user-select Utilities
 
 ## What does it do?
+
 Controls text selection behavior on elements using the CSS
 `user-select` property with full cross-browser support.
 
 ## How is it used?
+
 ```html
 <!-- Prevent selection (buttons, UI elements) -->
 <button class="ease-select-none">Click Me</button>
@@ -20,13 +22,16 @@ Controls text selection behavior on elements using the CSS
 ```
 
 ## Classes
+
 - `.ease-select-none` — prevent text selection
 - `.ease-select-all` — select all on click
 - `.ease-select-text` — normal text selection
 - `.ease-select-auto` — browser default behavior
 
 ## Tech Stack
+
 - CSS only, no JavaScript
 
 ## Preview
+
 Open `demo.html` directly in browser.

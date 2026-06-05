@@ -4,8 +4,13 @@
 Creates a CSS-only card that flips 180 degrees around the Y-axis with perspective depth, hidden backfaces, and no layout shift.
 
 **How is it used?**
+
 ```html
-<article class="flip-card" tabindex="0" style="--ease-flip-duration: 760ms; --ease-flip-perspective: 980px;">
+<article
+  class="flip-card"
+  tabindex="0"
+  style="--ease-flip-duration: 760ms; --ease-flip-perspective: 980px;"
+>
   <div class="flip-card-inner">
     <div class="flip-face flip-front">Front content</div>
     <div class="flip-face flip-back">Back content</div>

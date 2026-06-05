@@ -4,16 +4,16 @@ Alert and notification banner component with success, danger, warning, and info 
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-alert` | Base alert (animated entrance) |
-| `ease-alert-success` | Green success variant |
-| `ease-alert-danger` | Red danger/error variant |
-| `ease-alert-warning` | Amber warning variant |
-| `ease-alert-info` | Purple info variant |
+| Class                    | Description                     |
+| ------------------------ | ------------------------------- |
+| `ease-alert`             | Base alert (animated entrance)  |
+| `ease-alert-success`     | Green success variant           |
+| `ease-alert-danger`      | Red danger/error variant        |
+| `ease-alert-warning`     | Amber warning variant           |
+| `ease-alert-info`        | Purple info variant             |
 | `ease-alert-dismissible` | Adds padding for dismiss button |
-| `ease-alert-icon` | Icon slot |
-| `ease-alert-dismiss` | Close button |
+| `ease-alert-icon`        | Icon slot                       |
+| `ease-alert-dismiss`     | Close button                    |
 
 ## Usage
 

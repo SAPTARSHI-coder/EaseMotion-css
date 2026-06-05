@@ -4,12 +4,12 @@ A lightweight demonstration of using `--ease-color-primary` as a centralized des
 
 ## Features
 
-* Pure CSS implementation
-* Single source of truth for primary color styling
-* Easy theme customization
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Single source of truth for primary color styling
+- Easy theme customization
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Usage
 
@@ -20,26 +20,24 @@ A lightweight demonstration of using `--ease-color-primary` as a centralized des
 ```
 
 ```html
-<button class="ease-btn-primary">
-  Primary Button
-</button>
+<button class="ease-btn-primary">Primary Button</button>
 ```
 
 ## Behavior
 
-* Primary buttons use the token
-* Primary text uses the token
-* Primary borders use the token
-* Changing one variable updates all dependent elements
+- Primary buttons use the token
+- Primary text uses the token
+- Primary borders use the token
+- Changing one variable updates all dependent elements
 
 ## Browser Support
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Safari  | ✅         |
-| Edge    | ✅         |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

@@ -30,9 +30,9 @@ The animation is one-shot — remove and re-add the class to replay:
 
 ```js
 function triggerTada(el) {
-  el.classList.remove('ease-tada');
+  el.classList.remove("ease-tada");
   void el.offsetWidth; // force reflow
-  el.classList.add('ease-tada');
+  el.classList.add("ease-tada");
 }
 ```
 
@@ -40,11 +40,11 @@ function triggerTada(el) {
 
 EaseMotion CSS has `ease-bounce` (translateY only) and `ease-shake` (translateX only). Neither combines scale + rotation. `ease-tada` fills this gap with a distinct, high-energy animation that cannot be replicated by combining existing classes:
 
-| Class | Transform axes | Use case |
-|---|---|---|
-| `ease-bounce` | translateY only | Loading, playful elements |
-| `ease-shake` | translateX only | Error states, rejection |
-| `ease-tada` | scale + rotate combined | Success, attention, celebration |
+| Class         | Transform axes          | Use case                        |
+| ------------- | ----------------------- | ------------------------------- |
+| `ease-bounce` | translateY only         | Loading, playful elements       |
+| `ease-shake`  | translateX only         | Error states, rejection         |
+| `ease-tada`   | scale + rotate combined | Success, attention, celebration |
 
 The implementation follows EaseMotion's core philosophy:
 
@@ -66,22 +66,22 @@ The implementation follows EaseMotion's core philosophy:
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-tada-duration` | `1s` | Total animation duration |
-| `--tada-rotate` | `3deg` | Peak rotation angle |
-| `--tada-scale-in` | `0.9` | Initial compress amount |
-| `--tada-scale-out` | `1.1` | Expanded wobble size |
+| Property               | Default | Description              |
+| ---------------------- | ------- | ------------------------ |
+| `--ease-tada-duration` | `1s`    | Total animation duration |
+| `--tada-rotate`        | `3deg`  | Peak rotation angle      |
+| `--tada-scale-in`      | `0.9`   | Initial compress amount  |
+| `--tada-scale-out`     | `1.1`   | Expanded wobble size     |
 
 ## Classes Reference
 
-| Class | Description |
-|---|---|
-| `ease-tada` | One-shot on class add |
-| `ease-tada-hover` | Fires on `:hover` |
-| `ease-tada-loop` | Repeats with 2s pause between cycles |
-| `ease-tada-fast` | 0.6s duration preset |
-| `ease-tada-slow` | 1.4s duration preset |
+| Class             | Description                          |
+| ----------------- | ------------------------------------ |
+| `ease-tada`       | One-shot on class add                |
+| `ease-tada-hover` | Fires on `:hover`                    |
+| `ease-tada-loop`  | Repeats with 2s pause between cycles |
+| `ease-tada-fast`  | 0.6s duration preset                 |
+| `ease-tada-slow`  | 1.4s duration preset                 |
 
 ## Tech Stack
 

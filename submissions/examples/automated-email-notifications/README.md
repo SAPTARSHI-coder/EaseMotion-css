@@ -6,7 +6,7 @@ This submission demonstrates the design and interactive simulation of the **Auto
 
 ## 📋 Problem Statement
 
-When a training and placement officer (Admin) updates a student's recruitment status (e.g. shortlists, schedules an interview, or rejects), the student receives no real-time update. The student has to log in repeatedly and manually check the dashboard. 
+When a training and placement officer (Admin) updates a student's recruitment status (e.g. shortlists, schedules an interview, or rejects), the student receives no real-time update. The student has to log in repeatedly and manually check the dashboard.
 
 By integrating **Nodemailer** on the backend, the portal can dynamically dispatch SMTP-based HTML emails to keep students instantly notified of their application status updates.
 
@@ -15,6 +15,7 @@ By integrating **Nodemailer** on the backend, the portal can dynamically dispatc
 ## ⚡ Simulation Features
 
 To present this feature cleanly within a CSS/animations framework context, we built a self-contained interactive dashboard containing:
+
 1. **Placement Officer Panel (Admin View)**: A clean table of student candidates with live status badges. Buttons trigger status modifications and showcase loading states.
 2. **Student Email Inbox Simulator (Client View)**: A mock email client receiving push messages. Includes:
    - Real-time unread email count updates.
@@ -45,19 +46,25 @@ This example showcases how easily **EaseMotion CSS** handles dashboard layouts, 
 The underlying backend service (`backend/utils/emailService.js`) uses Nodemailer to configure an SMTP connection:
 
 ```javascript
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // Or custom SMTP details
+  service: "gmail", // Or custom SMTP details
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-export const sendStatusEmail = async (studentEmail, studentName, jobTitle, company, status) => {
-  const isShortlisted = status === 'shortlisted';
-  
+export const sendStatusEmail = async (
+  studentEmail,
+  studentName,
+  jobTitle,
+  company,
+  status
+) => {
+  const isShortlisted = status === "shortlisted";
+
   const mailOptions = {
     from: `"Placement Portal" <${process.env.EMAIL_USER}>`,
     to: studentEmail,
@@ -67,18 +74,20 @@ export const sendStatusEmail = async (studentEmail, studentName, jobTitle, compa
         <h2>Hello ${studentName},</h2>
         <p>There is an update on your application for <strong>${jobTitle}</strong> at <strong>${company}</strong>.</p>
         <div style="padding: 15px; margin: 15px 0; border-radius: 6px; font-weight: bold; text-align: center; font-size: 18px; 
-                    background-color: ${isShortlisted ? '#d1fae5' : '#fee2e2'}; 
-                    color: ${isShortlisted ? '#065f46' : '#991b1b'};">
+                    background-color: ${isShortlisted ? "#d1fae5" : "#fee2e2"}; 
+                    color: ${isShortlisted ? "#065f46" : "#991b1b"};">
           Status: ${status.toUpperCase()}
         </div>
-        ${isShortlisted 
-          ? '<p>Congratulations! Please check the dashboard regularly for your online test/interview links and details.</p>'
-          : '<p>Thank you for your effort. We encourage you to apply for other matching positions on the portal.</p>'}
+        ${
+          isShortlisted
+            ? "<p>Congratulations! Please check the dashboard regularly for your online test/interview links and details.</p>"
+            : "<p>Thank you for your effort. We encourage you to apply for other matching positions on the portal.</p>"
+        }
         <br/>
         <p>Best Regards,</p>
         <p><strong>Training & Placement Cell</strong></p>
       </div>
-    `
+    `,
   };
 
   return transporter.sendMail(mailOptions);

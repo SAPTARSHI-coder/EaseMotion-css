@@ -7,7 +7,10 @@ This component provides a floating text box that appears with a smooth slide-up 
 Add the `tooltip-container` class to any element and provide the tooltip text using the `data-tooltip` attribute.
 
 ```html
-<button class="tooltip-container" data-tooltip="Click here to save your changes">
+<button
+  class="tooltip-container"
+  data-tooltip="Click here to save your changes"
+>
   Save Changes
 </button>
 ```
