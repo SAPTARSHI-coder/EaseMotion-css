@@ -38,4 +38,28 @@ describe('EaseMotion-css Smoke Tests', () => {
   it('should handle prefers-reduced-motion', () => {
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   });
+
+  it('minified bundle should be valid and contain key classes', () => {
+    const bundle = readFileSync(resolve(__dirname, '../easemotion.min.css'), 'utf8');
+    expect(bundle).toContain('.ease-fade-in');
+    expect(bundle).toContain('.ease-btn');
+    expect(bundle).toContain('.ease-card');
+    expect(bundle).toContain('@keyframes ease-kf-zoom-in');
+    expect(bundle).toContain('prefers-reduced-motion:reduce');
+    expect(bundle.length).toBeGreaterThan(20000);
+  });
+
+  it('should not have duplicate @keyframes definitions', () => {
+    const keyframeCounts = {};
+    const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
+    let match;
+    while ((match = keyframeRegex.exec(css)) !== null) {
+      const name = match[1];
+      keyframeCounts[name] = (keyframeCounts[name] || 0) + 1;
+    }
+    const duplicates = Object.entries(keyframeCounts)
+      .filter(([, count]) => count > 1)
+      .map(([name]) => name);
+    expect(duplicates).toEqual([]);
+  });
 });
