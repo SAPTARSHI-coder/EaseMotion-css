@@ -112,6 +112,7 @@ jobs:
         if: steps.check-draft.outputs.isDraft != 'true' && (steps.check-files.outputs.hasSubmissions != 'true' || steps.rename-check.outputs.exitEarly != 'true')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
           PR_NUM=${{ github.event.pull_request.number }}
           
@@ -136,16 +137,26 @@ jobs:
               name=$(echo "$run" | jq -r '.name')
               status=$(echo "$run" | jq -r '.status')
               conclusion=$(echo "$run" | jq -r '.conclusion')
+              html_url=$(echo "$run" | jq -r '.html_url')
               
               # Exclude the current auto-merge workflow from checks verification
-              if [[ "$name" != "Auto-Merge Submissions" && "$name" != "auto-merge" && "$name" != "Evaluate and Auto-Merge" && "$name" != "Auto-Merge PRs" ]]; then
-                other_checks_exist=true
-                if [ "$status" != "completed" ]; then
-                  all_completed=false
-                fi
-                if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
-                  any_failed=true
-                fi
+              # We exclude by matching the current run ID in html_url or matching workflow/job names
+              if [[ "$html_url" == *"/runs/$CURRENT_RUN_ID"* || \
+                    "$name" == *"Auto-Merge"* || \
+                    "$name" == *"auto-merge"* || \
+                    "$name" == *"Evaluate and Auto-Merge"* ]]; then
+                echo "Excluding check run: $name (status: $status)"
+                continue
+              fi
+              
+              other_checks_exist=true
+              if [ "$status" != "completed" ]; then
+                all_completed=false
+                echo "Pending check: $name (status: $status)"
+              fi
+              if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
+                any_failed=true
+                echo "Failed check: $name (conclusion: $conclusion)"
               fi
             done < <(echo "$response" | jq -c '.check_runs[]')
             
