@@ -1,104 +1,97 @@
-# Modern Timeline Component
+# Ease Timeline Component
 
-**Category:** Components — Narrative & History  
-**Type:** Pure CSS (Zero JavaScript)  
-**Folder:** `submissions/examples/ease-timeline-component/`
+## What does this do?
+A modern, responsive **Timeline Component** designed to display chronological events, company histories, project roadmap milestones, and system activity logs. It supports vertical left-aligned lists, alternating center grids, horizontal scroll rows, compact activity feeds, themed indicators (including gradient support), and responsive collapse rules.
 
----
+## How is it used?
 
-## 1. What does this do?
+Include `style.css` in your project and structure your HTML following these classes:
 
-The **Modern Timeline Component** renders a responsive, animated vertical timeline. Items alternate left and right along a central spine, each anchored by a glowing colored dot marker. On page load, each card fades and slides upward in a staggered cascade. Hovering a card lifts it gently off the surface.
-
-### Core visual capabilities:
-- **Alternating card layout** — odd items appear left of the spine, even items right.
-- **Connector nubs** — each card has a small rotated square arrow pointing inward toward its dot.
-- **Animated dot rings** — a pulse ring expands outward from each dot on a staggered delay, creating an organic "heartbeat" feel.
-- **Staggered entrance** — six items animate in with `0.08s` incremental delays so the timeline cascades top-to-bottom on load.
-- **Hover card lift** — `translateY(-4px)` plus a brightened border glow on hover.
-- **Per-item accent palette** — each timeline entry sets `--dot-color` / `--dot-rgb` inline, so colors stay self-contained with zero class duplication.
-
----
-
-## 2. How is it used?
-
-### Minimal HTML Structure
-
+### 1. Default Vertical Timeline
+Declare an unordered list with `ease-timeline` and populate it with `ease-timeline-item` items:
 ```html
-<ol class="ease-timeline" aria-label="Milestone Timeline">
-
-  <!-- ODD item — card appears on the LEFT -->
-  <li class="ease-tl-item">
-    <article class="ease-tl-card"
-      style="--dot-color: #6366f1; --dot-rgb: 99, 102, 241;">
-      <div class="ease-tl-date">January 2024</div>
-      <h2 class="ease-tl-title-item">Product Launched</h2>
-      <p class="ease-tl-desc">We shipped v1.0 to 500 beta testers.</p>
-      <span class="ease-tl-chip"
-        style="--dot-color: #6366f1; --dot-rgb: 99, 102, 241;">Launch</span>
-    </article>
-
-    <div class="ease-tl-dot" aria-hidden="true">
-      <div class="ease-tl-dot__inner"
-        style="--dot-color: #6366f1; --dot-glow: rgba(99,102,241,0.3); --dot-delay: 0s;">
-        🚀
+<nav aria-label="Progress">
+  <ul class="ease-timeline">
+    <li class="ease-timeline-item ease-item-success">
+      <div class="ease-timeline-badge">1</div>
+      <div class="ease-timeline-content">
+        <span class="ease-timeline-date">Oct 15, 2025</span>
+        <h3 class="ease-timeline-title">Event Title</h3>
+        <p class="ease-timeline-desc">Details about this timeline milestone event.</p>
       </div>
-    </div>
-
-    <div class="ease-tl-blank"></div>
-  </li>
-
-  <!-- EVEN item — card appears on the RIGHT -->
-  <li class="ease-tl-item">
-    <div class="ease-tl-blank"></div>
-
-    <div class="ease-tl-dot" aria-hidden="true">
-      <div class="ease-tl-dot__inner"
-        style="--dot-color: #10b981; --dot-glow: rgba(16,185,129,0.3); --dot-delay: 0.5s;">
-        💰
-      </div>
-    </div>
-
-    <article class="ease-tl-card"
-      style="--dot-color: #10b981; --dot-rgb: 16, 185, 129;">
-      <div class="ease-tl-date">June 2024</div>
-      <h2 class="ease-tl-title-item">Series A Closed</h2>
-      <p class="ease-tl-desc">Raised $10M to scale engineering.</p>
-      <span class="ease-tl-chip"
-        style="--dot-color: #10b981; --dot-rgb: 16, 185, 129;">Fundraising</span>
-    </article>
-  </li>
-
-</ol>
+    </li>
+  </ul>
+</nav>
 ```
 
-### Key class reference
+### 2. Alternating Centered Timeline
+Add `.ease-timeline-alternating` to center-align the connector line and alternate items left and right:
+```html
+<ul class="ease-timeline ease-timeline-alternating">
+  <!-- Odd item (Left side) -->
+  <li class="ease-timeline-item ease-item-primary">...</li>
+  
+  <!-- Even item (Right side) -->
+  <li class="ease-timeline-item ease-item-success">...</li>
+</ul>
+```
 
-| Class | Role |
-|---|---|
-| `.ease-timeline` | Outer `<ol>` — draws the center spine with `::before` |
-| `.ease-tl-item` | One `<li>` row — 3-column grid for left / dot / right |
-| `.ease-tl-card` | The visible card — hover effect, connector nub |
-| `.ease-tl-dot` | Center column wrapper |
-| `.ease-tl-dot__inner` | Colored circle marker with pulse ring |
-| `.ease-tl-blank` | Empty spacer column on the opposite side from the card |
-| `.ease-tl-date` | Accent-colored date string |
-| `.ease-tl-title-item` | Card heading |
-| `.ease-tl-desc` | Body paragraph |
-| `.ease-tl-chip` | Category tag badge |
+### 3. Horizontal Roadmap
+Embed the list in an overflow scroll container and apply `.ease-timeline-horizontal`:
+```html
+<div class="timeline-wrapper-horizontal">
+  <ul class="ease-timeline ease-timeline-horizontal">
+    <li class="ease-timeline-item ease-item-success">
+      <div class="ease-timeline-badge">Q1</div>
+      <div class="ease-timeline-content">
+        <h3 class="ease-timeline-title">Research</h3>
+        <p class="ease-timeline-desc">Details...</p>
+      </div>
+    </li>
+  </ul>
+</div>
+```
 
----
+### 4. Activity Logs (Compact)
+Apply `.ease-timeline-activity` and insert circular avatars/icon badges:
+```html
+<ul class="ease-timeline ease-timeline-activity">
+  <li class="ease-timeline-item">
+    <img class="activity-avatar" src="user.jpg" alt="User Profile">
+    <div class="ease-timeline-content">
+      <div class="activity-header">
+        <strong>Jane Smith</strong>
+        <span class="activity-action">assigned task</span>
+        <span class="activity-time">5m ago</span>
+      </div>
+    </div>
+  </li>
+</ul>
+```
 
-## 3. Why is it useful?
+### 5. Color Theme Badges
+Available states for timeline nodes:
+- `.ease-item-primary` (Indigo border outline)
+- `.ease-item-success` (Emerald green outline)
+- `.ease-item-upcoming` (Muted gray background)
+- `.ease-item-gradient` (Purple-pink linear gradient fill)
 
-Timeline components appear across nearly every product website, SaaS onboarding portal, and engineering changelog. This implementation solves common pain points:
+## Features
 
-1. **Zero JavaScript** — No intersection-observer-based reveal scripts, no scroll listeners, no positional JS. The cascade uses CSS `animation-delay` on `nth-child` selectors, executing synchronously at parse time.
+- **Alternating Shifts**: Align items center-stage or collapse them leftward.
+- **Horizontal Scrollbars**: Roadmaps roll left-to-right with custom styling.
+- **Collapsible Center**: On smaller screens, the alternating layout adapts to left-aligned structures.
+- **Card Transformations**: Hovering over cards lifts them (`translateY`) and raises shadows (`box-shadow`).
+- **Activity Log Layouts**: Space is optimized for compact header lines, code tags, and links.
+- **Pure CSS**: Zero JS dependencies.
 
-2. **GPU-composited 60 FPS** — All animations use `transform` and `opacity` exclusively, keeping rendering in the compositor thread with no layout thrashing.
+## Tech Stack
+- HTML
+- CSS (Flexbox flow, absolute central alignment, custom properties, hover slide effects)
 
-3. **Self-contained per-item theming** — Inline CSS custom properties (`--dot-color`, `--dot-rgb`, `--dot-glow`) let each timeline entry carry its own accent color without modifier classes or specificity battles. Swap colors by changing three inline values.
+## Preview
+Open `demo.html` directly in your browser to inspect hover translations, check mobile width collapse transitions, and view horizontal scrolling roadmaps!
 
-4. **Responsive by default** — Below `720px` the layout collapses to a clean single-column stack with the spine shifted to the far left. No extra HTML required.
-
-5. **Accessibility** — Respects `prefers-reduced-motion` by disabling all animations and transitions; decorative dots and nubs carry `aria-hidden="true"`; the outer list uses `aria-label`; `<article>` and semantic heading hierarchy are preserved.
+## Contribution Notes
+- Class naming was handled by the contributor.
+- Maintainer will rename to ease-* convention before merging.
