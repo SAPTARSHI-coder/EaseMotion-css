@@ -22,7 +22,7 @@ describe('EaseMotion-css Smoke Tests', () => {
   }
 
   beforeAll(() => {
-    const rootDir = resolve(__dirname, '..');
+    const rootDir = resolve(__dirname, '../../..');
     const coreDir = join(rootDir, 'core');
     const componentsDir = join(rootDir, 'components');
     const easemotionDir = join(rootDir, 'easemotion');
