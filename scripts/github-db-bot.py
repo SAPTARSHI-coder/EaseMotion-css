@@ -113,9 +113,9 @@ async def process_item(session, item_url, thread_type):
     issue_number = item_data["number"]
     current_labels = [label["name"] for label in item_data.get("labels", [])]
 
-    # ONLY check issues that are NOT labeled
-    if current_labels:
-        print(f"⏭️  #{issue_number} ({thread_type}): Already has labels {current_labels}. Skipping.")
+    # ONLY check issues that have not been approved/processed by the bot
+    if "gssoc:approved" in current_labels:
+        print(f"⏭️  #{issue_number} ({thread_type}): Already approved/labeled. Skipping.")
         return
 
     is_open = item_data.get("state") == "open"
