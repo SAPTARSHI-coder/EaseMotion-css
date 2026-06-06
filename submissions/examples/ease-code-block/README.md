@@ -1,30 +1,51 @@
-# Ease Code Block 
+# ease-code-block
 
-A pre-styled, syntax-agnostic code block component featuring an animated, pure-CSS visual state copy button.
+Styled code blocks with syntax highlighting support and copy functionality.
 
-## What it does
-The `ease-code-block` component provides a clean, dark-themed container for displaying code snippets. It keeps the UI uncluttered by hiding the "Copy" utility button until the user hovers over the block. 
+## Files
 
-By leveraging the native `:focus` pseudo-class, the component swaps the button text to "Copied!" with a smooth `ease-fade-in` animation when clicked, requiring **zero JavaScript** for the visual interaction.
+| File | Description |
+|------|-------------|
+| 📄 [demo.html](./demo.html) | Interactive demo |
+| 🎨 [style.css](./style.css) | Code block styles |
+| 📖 [README.md](./README.md) | Documentation |
 
-## How to use it
-To implement this component, wrap your `<pre><code>` block in the wrapper. Ensure your button contains the two spans (`.ease-copy-idle` and `.ease-copy-active`) so the CSS can manage the text swap.
+## Classes
+
+| Class | Description |
+|-------|-------------|
+| `ease-code-block` | Base code block container |
+| `ease-code-block-lines` | With line numbers |
+| `ease-code-block-rounded` | Rounded corners |
+| `ease-code-block-dark` | Dark theme variant |
+
+## Structure
 
 ```html
-<div class="ease-code-wrapper">
-    <button class="ease-copy-btn" aria-label="Copy code">
-        <span class="ease-copy-idle">Copy</span>
-        <span class="ease-copy-active">Copied!</span>
-    </button>
-    <pre class="ease-code-block"><code>
-        /* Your code here */
-    </code></pre>
+<div class="ease-code-block">
+    <div class="code-header">
+        <span class="code-lang">HTML</span>
+        <button class="copy-btn">📋 Copy</button>
+    </div>
+    <pre><code>Your code here</code></pre>
 </div>
-```
 
-*Note: As browsers do not allow writing to the system clipboard via pure CSS, developers consuming this library should attach a standard JavaScript `navigator.clipboard.writeText()` listener to `.ease-copy-btn` to enable actual clipboard functionality.*
+### Usage
+<!-- Basic code block -->
+<div class="ease-code-block">
+    <div class="code-header">
+        <span class="code-lang">JavaScript</span>
+        <button class="copy-btn">📋 Copy</button>
+    </div>
+    <pre><code>console.log('Hello World');</code></pre>
+</div>
 
-## Why it fits EaseMotion CSS
-* **Zero JavaScript:** Stays true to the library's core philosophy by handling complex visual state changes (like swapping button text on click) entirely via CSS pseudo-classes.
-* **Documentation Ready:** Perfect for open-source libraries that need to display copy-pasteable snippets cleanly.
-* **Syntax-Theme Agnostic:** It styles the *container*, not the *tokens*. You can drop any syntax highlighter into the `<code>` tag without color clashes.
+<!-- With line numbers -->
+<div class="ease-code-block ease-code-block-lines">
+    <!-- same structure -->
+</div>
+
+<!-- Rounded variant -->
+<div class="ease-code-block ease-code-block-rounded">
+    <!-- same structure -->
+</div>
