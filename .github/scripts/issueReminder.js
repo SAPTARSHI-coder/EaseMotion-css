@@ -55,15 +55,6 @@ module.exports = async ({ github, context }) => {
   const assignees = context.payload.issue.assignees.map(a => a.login.toLowerCase());
   if (assignees.includes(commenter.toLowerCase())) return;
 
-  //Determine eligibility and format the message
-  const isOpenForAnyone = issueAuthor.toLowerCase() === 'saptarshi-coder';
-  const isAuthor = commenter.toLowerCase() === issueAuthor.toLowerCase();
-
-  let claimEligibilityNote = '';
-  if (!isOpenForAnyone && !isAuthor) {
-    claimEligibilityNote = `\n> ⚠️ **Note:** Only the issue author (@${issueAuthor}) can \`/claim\` this issue.`;
-  }
-
   const bodyLines = [
     `Hey @${commenter}! 👋 Thanks for your interest in contributing!`,
     ``,
@@ -71,7 +62,6 @@ module.exports = async ({ github, context }) => {
     ``,
     `## How to Claim an Issue`,
     `💬 Reply to this issue with exactly: \`/claim\``,
-    claimEligibilityNote,
     ``,
     `## 📋 Things to Remember`,
     `- You can hold a **maximum of 1 open issues** at a time.`,
