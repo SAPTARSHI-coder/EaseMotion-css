@@ -1,17 +1,38 @@
 # ease-rubber-band
 
-## What does this do?
-Applies an elastic scale animation to an element that overshoots and snaps back, like a rubber band.
+Rubber band stretch effect on click — element squashes and stretches like a rubber band.
 
-## How is it used?
+## Files
+
+| File | Description |
+|------|-------------|
+| 📄 [demo.html](./demo.html) | Interactive demo |
+| 🎨 [style.css](./style.css) | Rubber band styles |
+| 📖 [README.md](./README.md) | Documentation |
+
+## Classes
+
+| Class | Duration |
+|-------|----------|
+| `ease-rubber-band` | 0.4 seconds |
+| `ease-rubber-band-fast` | 0.25 seconds |
+| `ease-rubber-band-slow` | 0.6 seconds |
+
+## Animation Sequence
+
+1. **Stretch** - `scaleX(1.25)` + `scaleY(0.75)`
+2. **Reverse stretch** - `scaleX(0.75)` + `scaleY(1.25)`
+3. **Snap back** - `scaleX(1)` + `scaleY(1)`
+
+## Usage
 
 ```html
-<!-- Trigger once on load -->
-<button class="rubber-band">Click Me</button>
+<!-- Basic rubber band -->
+<div class="ease-rubber-band">Click me</div>
 
-<!-- Trigger on hover -->
-<span class="hover-rubber-band">🎯</span>
-```
+<!-- Different speeds -->
+<button class="ease-rubber-band-fast">Fast</button>
+<button class="ease-rubber-band-slow">Slow</button>
 
-## Why is it useful?
-Rubber band feedback is a natural, playful response to user interaction on buttons and icons. It fits EaseMotion CSS's philosophy of expressive, composable motion utilities that enhance interactivity without requiring JavaScript.
+<!-- On any element -->
+<img class="ease-rubber-band" src="icon.svg" alt="Icon">
