@@ -21,7 +21,7 @@ Click any section heading to expand or collapse its navigation links.
 ## Files
 
 - `demo.html` – Demo implementation
-- `demo.css` – Styling and animations
+- `style.css` – Styling and animations
 
 ## Inspiration
 
