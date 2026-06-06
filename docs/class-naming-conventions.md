@@ -66,6 +66,8 @@ Animation classes should follow:
 Examples:
 - `.ease-fade-in`
 - `.ease-slide-up`
+- `.ease-slide-left`
+- `.ease-slide-right`
 - `.ease-bounce`
 - `.ease-hover-lift`
 

@@ -29,6 +29,7 @@ All EaseMotion classes respect `prefers-reduced-motion` automatically
 since the global rule above is included at the bottom of `animations.css`:
 - `.ease-fade-in` / `.ease-fade-out`
 - `.ease-slide-up` / `.ease-slide-down`
+- `.ease-slide-left` / `.ease-slide-right`
 - `.ease-bounce`, `.ease-pulse`, `.ease-rotate`
 - `.ease-blur-to-focus`
 - All exit animations (`.ease-*-exit`)
