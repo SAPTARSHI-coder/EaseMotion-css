@@ -119,13 +119,53 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Setup and run build (in case they forgot to update easemotion.min.css)
+          # 1. Setup git configuration
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 2. Add upstream remote and fetch main branch
+          git remote add upstream "https://github.com/${{ github.repository }}.git" || true
+          git fetch upstream main
+          
+          # 3. Attempt to merge upstream/main to sync branch and handle conflicts
+          echo "Attempting to merge upstream/main into PR branch..."
+          if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
+            echo "Merge conflict detected. Analyzing conflicted files..."
+            
+            conflicted_files=$(git diff --name-only --diff-filter=U)
+            echo "Conflicted files: $conflicted_files"
+            
+            can_resolve=true
+            for file in $conflicted_files; do
+              if [ "$file" != "easemotion.min.css" ]; then
+                can_resolve=false
+                echo "Cannot auto-resolve conflict in source file: $file"
+              fi
+            done
+            
+            if [ "$can_resolve" = "true" ]; then
+              echo "Conflict is only in easemotion.min.css. Resolving automatically..."
+              git checkout --ours easemotion.min.css
+              npm ci
+              npm run build
+              git add easemotion.min.css
+              git commit -m "chore: resolve easemotion.min.css merge conflict"
+              echo "Conflict resolved and committed."
+            else
+              echo "PR has source code conflicts. Aborting merge."
+              git merge --abort
+              exit 1
+            fi
+          else
+            echo "Merged upstream/main successfully with no conflicts."
+          fi
+          
+          # 4. Setup and run build (to ensure the minified CSS bundle is fully compiled)
           echo "Rebuilding minified bundle..."
           npm ci
           npm run build
           
-          # 2. Check naming collisions (only if it has submissions)
-          git fetch origin main
+          # 5. Check naming collisions (only if it has submissions)
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           
@@ -137,11 +177,11 @@ jobs:
             
             for folder in $folders; do
               echo "Evaluating folder submissions/examples/$folder..."
-              if [ -n "$(git ls-tree -d origin/main "submissions/examples/$folder")" ]; then
+              if [ -n "$(git ls-tree -d upstream/main "submissions/examples/$folder")" ]; then
                 echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
                 
                 i=1
-                while [ -n "$(git ls-tree -d origin/main "submissions/examples/${folder}-v${i}")" ]; do
+                while [ -n "$(git ls-tree -d upstream/main "submissions/examples/${folder}-v${i}")" ]; do
                   i=$((i+1))
                 done
                 
@@ -154,20 +194,23 @@ jobs:
             done
           fi
           
-          # 3. Check if anything changed (renamed folders or updated easemotion.min.css)
+          # 6. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
+          # We check if local HEAD is ahead of the remote tracking branch or has unstaged changes
+          git diff --quiet origin/${{ steps.pr-metadata.outputs.headRef }} || push_needed=true
           stale_bundle=$(git status --porcelain easemotion.min.css)
           
-          if [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
-            echo "Changes detected (stale bundle or renamed folders). Committing and pushing back to PR..."
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
+            echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
             git add -A
-            git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
-            git push
+            # Commit only if there are unstaged changes
+            if ! git diff --quiet; then
+              git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
+            fi
+            git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
             echo "Pushed updates back to PR branch."
             echo "exitEarly=true" >> $GITHUB_OUTPUT
           else
-            echo "No stale bundle or naming conflicts detected."
+            echo "No changes, stale bundle, or naming conflicts detected."
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
