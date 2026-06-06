@@ -172,6 +172,6 @@ async function build() {
 }
 
 build().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error('Build failed:', error);
   process.exitCode = 1;
 });
