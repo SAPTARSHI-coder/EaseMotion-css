@@ -1,0 +1,175 @@
+name: Auto-Merge Submissions
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    name: Evaluate and Auto-Merge
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Query GitHub API securely to check modified files
+      - name: Get modified files
+        id: check-files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          echo "Checking files modified in PR #$PR_NUM..."
+          
+          # Retrieve the list of modified files in the PR
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+          
+          all_submissions=true
+          has_submissions=false
+          
+          for file in $files; do
+            if [[ "$file" =~ ^submissions/ ]]; then
+              has_submissions=true
+            else
+              all_submissions=false
+              echo "File modified outside submissions/: $file"
+            fi
+          done
+          
+          if [ "$has_submissions" = "true" ] && [ "$all_submissions" = "true" ]; then
+            echo "isValid=true" >> $GITHUB_OUTPUT
+            echo "PR strictly modifies files inside submissions/."
+          else
+            echo "isValid=false" >> $GITHUB_OUTPUT
+            echo "PR contains no submission files or modifies core files."
+          fi
+
+      # Step 2: Checkout the PR branch (only if the path check passed)
+      - name: Checkout PR Branch
+        if: steps.check-files.outputs.isValid == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # Step 3: Check folder name collisions and automatically rename
+      - name: Check collisions and rename
+        id: rename-check
+        if: steps.check-files.outputs.isValid == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git fetch origin main
+          
+          PR_NUM=${{ github.event.pull_request.number }}
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+          
+          # Extract unique example folder names from submissions/examples/
+          folders=$(echo "$files" | grep "^submissions/examples/" | cut -d'/' -f3 | sort -u)
+          
+          renamed_any=false
+          
+          for folder in $folders; do
+            echo "Evaluating folder submissions/examples/$folder..."
+            
+            # Check if folder already exists in origin/main
+            if git ls-tree -d origin/main "submissions/examples/$folder" &>/dev/null; then
+              echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
+              
+              i=1
+              while git ls-tree -d origin/main "submissions/examples/${folder}-v${i}" &>/dev/null; do
+                i=$((i+1))
+              done
+              
+              new_name="${folder}-v${i}"
+              echo "Renaming submissions/examples/$folder to submissions/examples/$new_name"
+              
+              git mv "submissions/examples/$folder" "submissions/examples/$new_name"
+              renamed_any=true
+            fi
+          done
+          
+          if [ "$renamed_any" = "true" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore: rename conflicting submission folder to avoid overwriting"
+            git push
+            echo "Pushed renamed folders back to PR branch."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+          else
+            echo "exitEarly=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 4: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
+      - name: Wait for checks to pass
+        if: steps.check-files.outputs.isValid == 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          
+          # Fetch latest head commit SHA of the PR
+          SHA=$(gh pr view $PR_NUM --json headRefOid --jq '.headRefOid')
+          echo "Polling status of checks for commit $SHA..."
+          
+          while true; do
+            # Fetch check runs for this commit
+            response=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs)
+            
+            total_count=$(echo "$response" | jq -r '.total_count')
+            
+            # Read status and conclusion for other check runs
+            all_completed=true
+            any_failed=false
+            other_checks_exist=false
+            
+            while read -r run; do
+              [ -z "$run" ] && continue
+              name=$(echo "$run" | jq -r '.name')
+              status=$(echo "$run" | jq -r '.status')
+              conclusion=$(echo "$run" | jq -r '.conclusion')
+              
+              # Exclude the current auto-merge workflow from checks verification
+              if [[ "$name" != "Auto-Merge Submissions" && "$name" != "auto-merge" && "$name" != "Evaluate and Auto-Merge" ]]; then
+                other_checks_exist=true
+                if [ "$status" != "completed" ]; then
+                  all_completed=false
+                fi
+                if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
+                  any_failed=true
+                fi
+              fi
+            done < <(echo "$response" | jq -c '.check_runs[]')
+            
+            if [ "$any_failed" = "true" ]; then
+              echo "One or more checks failed. Aborting merge."
+              exit 1
+            fi
+            
+            if [ "$all_completed" = "true" ] && [ "$other_checks_exist" = "true" ]; then
+              echo "All checks completed successfully."
+              break
+            fi
+            
+            if [ "$other_checks_exist" = "false" ]; then
+              echo "No other active checks found yet. Checking again..."
+            else
+              echo "Checks are still running. Waiting..."
+            fi
+            
+            sleep 20
+          done
+
+      # Step 5: Merge the PR securely via the GitHub API
+      - name: Merge PR
+        if: steps.check-files.outputs.isValid == 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          echo "Merging PR #$PR_NUM..."
+          gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge
+          echo "PR successfully merged."
