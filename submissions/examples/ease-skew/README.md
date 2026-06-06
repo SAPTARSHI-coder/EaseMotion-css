@@ -1,20 +1,19 @@
-# skew animation
+# Ease Skew
 
-## What does this do?
-This adds a skew animation that tilts an element slightly to create a dynamic slanted effect.
+## Description
 
+Ease Skew is a lightweight CSS utility that applies a skew transformation on hover and smoothly returns to its original state.
 
-## How is it used?
+## Features
 
-Apply the class directly to any HTML element:
+- Pure CSS
+- Smooth skew animation
+- Lightweight
+- No JavaScript required
+
+## Usage
 
 ```html
 <div class="ease-skew">
-  Skew Box
+  Hover Me
 </div>
-```
-
-## Why is it useful?
-It creates a subtle interaction effect where elements tilt instead of staying static.
-
-It is useful for buttons, cards, UI tiles and interactive components
