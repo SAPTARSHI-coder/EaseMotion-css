@@ -9,14 +9,6 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 REPO_NAME = "SAPTARSHI-coder/EaseMotion-css"
 MY_USERNAME = "SAPTARSHI-coder"
 
-# 🎯 CUSTOM RANGE SELECTION
-# Set these to control exactly which issues/PRs the bot will check and process.
-# Examples:
-#   To process everything: START_ISSUE = 1 and END_ISSUE = 99999
-#   To process a small test batch: START_ISSUE = 1300 and END_ISSUE = 1320
-START_ISSUE = 1670
-END_ISSUE = 99999
-
 # Single-worker pacing architecture to eliminate secondary limit bans
 NUM_WORKERS = 1         
 DELAY_BETWEEN_REQS = 1.5 
@@ -121,8 +113,9 @@ async def process_item(session, item_url, thread_type):
     issue_number = item_data["number"]
     current_labels = [label["name"] for label in item_data.get("labels", [])]
 
-    if "gssoc:invalid" in current_labels:
-        print(f"🔒 #{issue_number}: Marked invalid. Skipping to protect history.")
+    # ONLY check issues that are NOT labeled
+    if current_labels:
+        print(f"⏭️  #{issue_number} ({thread_type}): Already has labels {current_labels}. Skipping.")
         return
 
     is_open = item_data.get("state") == "open"
@@ -227,7 +220,7 @@ async def main():
         queue = asyncio.Queue()
         processed_urls = set()
 
-        print(f"🔍 Scanning history for items numbered between #{START_ISSUE} and #{END_ISSUE}...")
+        print("🔍 Scanning history for unlabeled issues and pull requests...")
 
         # 1. Fetch Pull Requests
         print("📥 Indexing all Pull Requests...")
@@ -235,31 +228,27 @@ async def main():
         prs_data = await fetch_all_paginated_items(session, all_prs_url)
         for pr in prs_data:
             url = pr["issue_url"]
-            num = pr["number"]
-            # Apply Range Rule Filter
-            if START_ISSUE <= num <= END_ISSUE and url not in processed_urls:
+            if url not in processed_urls:
                 processed_urls.add(url)
                 await queue.put((url, "PullRequest"))
 
         # 2. Fetch Issues
         print("📥 Indexing all Issues...")
         all_issues_url = f"https://api.github.com/repos/{REPO_NAME}/issues?state=all&per_page=100"
-        issues_data = await fetch_all_paginated_items(session, all_issues_url)
+        issues_data = await fetch_all_paginated_items(session, base_url=all_issues_url)
         for issue in issues_data:
             if "pull_request" not in issue:
                 url = issue["url"]
-                num = issue["number"]
-                # Apply Range Rule Filter
-                if START_ISSUE <= num <= END_ISSUE and url not in processed_urls:
+                if url not in processed_urls:
                     processed_urls.add(url)
                     await queue.put((url, "Issue"))
 
         total_items = queue.qsize()
         if total_items == 0:
-            print("✨ No repository elements found within the specified range configuration.")
+            print("✨ No repository elements found.")
             return
 
-        print(f"\n⚡ Executing Cleanup Pass + Dynamic Matrix Processing across {total_items} range items...")
+        print(f"\n⚡ Executing Cleanup Pass + Dynamic Matrix Processing across {total_items} items...")
         print("-" * 70)
 
         workers = []
