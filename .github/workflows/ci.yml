@@ -24,26 +24,6 @@ permissions:
   contents: read
 
 jobs:
-  release-validation:
-    name: Release Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Validate npm/CDN bundle
-        run: npm run release:check
-
   lint:
     name: Lint HTML & CSS
     runs-on: ubuntu-latest
@@ -65,6 +45,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      - name: Install Linting Packages
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: npm ci
 
       - name: Run HTMLHint on Changed HTML Files
         if: steps.changed-files.outputs.any_changed == 'true'
@@ -78,9 +63,9 @@ jobs:
             fi
           done
           if [ -n "$existing_html" ]; then
-            echo "Linting HTML files:"
-            echo "$existing_html"
-            npx -y htmlhint@1.0.0 $existing_html --config .github/workflows/htmlhint.config.json
+            echo "Linting HTML files: $existing_html"
+            # Fixed path tracking to read root directory specification config files
+            npx htmlhint $existing_html --config htmlhint.config.json
           else
             echo "No HTML files to lint."
           fi
@@ -97,9 +82,31 @@ jobs:
             fi
           done
           if [ -n "$existing_css" ]; then
-            echo "Linting CSS files:"
-            echo "$existing_css"
-            npx -y stylelint@17.12.0 $existing_css --config .github/workflows/stylelint.config.json --allow-empty-input
+            echo "Linting CSS files: $existing_css"
+            # Fixed path tracking to read root directory specification config files
+            npx stylelint $existing_css --config stylelint.config.json --allow-empty-input
           else
             echo "No CSS files to lint."
           fi
+
+  release-validation:
+    name: Release Validation
+    runs-on: ubuntu-latest
+    # Enforces linear step execution: checks syntax stability first before launching bundles tests
+    needs: lint
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Validate npm/CDN bundle
+        run: npm run release:check
