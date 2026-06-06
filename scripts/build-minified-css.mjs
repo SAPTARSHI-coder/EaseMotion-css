@@ -65,17 +65,17 @@ function removeCSSComments(source) {
 
   return result;
 }
-async function bundleCss(filePath, state) {
+async function bundleCss(filePath, state, stack = new Set(), pathStack = []) {
   const normalizedPath = path.normalize(filePath);
   if (state.cache.has(normalizedPath)) {
     return state.cache.get(normalizedPath);
   }
 
-  if (state.stack.has(normalizedPath)) {
-    const cycleStart = state.pathStack.indexOf(normalizedPath);
+  if (stack.has(normalizedPath)) {
+    const cycleStart = pathStack.indexOf(normalizedPath);
 
     const chain = [
-      ...state.pathStack.slice(cycleStart),
+      ...pathStack.slice(cycleStart),
       normalizedPath,
     ].map((item) => path.relative(rootDir, item));
 
@@ -87,9 +87,9 @@ async function bundleCss(filePath, state) {
     );
   }
 
-  state.stack.add(normalizedPath);
-  state.pathStack.push(normalizedPath);
-  
+  const nextStack = new Set(stack);
+  nextStack.add(normalizedPath);
+  const nextPathStack = [...pathStack, normalizedPath];
 
   const source = await readFile(normalizedPath, "utf8");
   const sourceWithoutComments = removeCSSComments(source);
@@ -104,6 +104,13 @@ async function bundleCss(filePath, state) {
       }
 
       const resolvedImport = path.resolve(directory, importPath);
+      
+      // Prevent path traversal
+      const relative = path.relative(rootDir, resolvedImport);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        throw new Error(`Security Violation: Cannot import ${resolvedImport} as it is outside the project root.`);
+      }
+      
       state.localImports.push(resolvedImport);
       return `__EASEMOTION_IMPORT__${resolvedImport}__`;
     },
@@ -116,21 +123,17 @@ async function bundleCss(filePath, state) {
 
   while ((match = placeholderPattern.exec(bundled)) !== null) {
     chunks.push(bundled.slice(lastIndex, match.index));
-    chunks.push(bundleCss(match[1], state));
+    chunks.push(bundleCss(match[1], state, nextStack, nextPathStack));
     lastIndex = placeholderPattern.lastIndex;
   }
 
   chunks.push(bundled.slice(lastIndex));
-    try {
-      const resolvedChunks = await Promise.all(chunks);
-      const result = resolvedChunks.join("\n");
+  
+  const resolvedChunks = await Promise.all(chunks);
+  const result = resolvedChunks.join("\n");
 
-      state.cache.set(normalizedPath, result);
-      return result;
-    } finally {
-      state.stack.delete(normalizedPath);
-      state.pathStack.pop();
-    }
+  state.cache.set(normalizedPath, result);
+  return result;
 }
 
 function minifyCss(css) {
@@ -148,8 +151,6 @@ async function build() {
   const state = {
     externalImports: new Set(),
     localImports: [],
-    stack: new Set(),
-    pathStack: [],
     cache: new Map(),
   };
 
