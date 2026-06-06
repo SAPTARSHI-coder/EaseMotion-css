@@ -11,6 +11,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
+[![Sponsor](https://img.shields.io/badge/Sponsor-💖-ea4aaa?style=flat-square)](https://github.com/sponsors/SAPTARSHI-coder)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=6c63ff)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
@@ -37,7 +38,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 <br/>
 
-## 📑 Table of Contents
+## Table of Contents 📑
 
 - [Support the Project](#support-the-project)
 - [Project Statistics](#project-statistics)
@@ -89,7 +90,7 @@ This will apply the iteration count to all looping animation utilities by defaul
 
 ---
 
-## ⭐ Support the Project
+## Support the Project ⭐
 
 If EaseMotion CSS saves you time or helps your learning journey, please consider supporting it.
 
@@ -99,6 +100,7 @@ Most people simply forget. This is your reminder. 😊
 
 | Action | Why it matters |
 |--------|----------------|
+| [💖 **Sponsor on GitHub**](https://github.com/sponsors/SAPTARSHI-coder) | Directly support the creator to keep the project active and stable |
 | [⭐ **Star the repo**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers) | Helps more developers discover the project |
 | [🍴 **Fork and contribute**](./CONTRIBUTING.md) | Your idea could become a real framework class |
 | [🐞 **Report an issue**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) | Bugs you catch make it better for everyone |
@@ -110,7 +112,7 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
-## 📊 Project Statistics
+## Project Statistics 📊
 
 <div align="center">
 
@@ -130,7 +132,7 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
-## 🌐 Browser Compatibility
+## Browser Compatibility 🌐
 
 EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
@@ -150,7 +152,7 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 ---
 
-## ✨ What is EaseMotion CSS?
+## What is EaseMotion CSS? ✨
 
 EaseMotion CSS is a curated, animation-first CSS framework where **class names read like plain English**. No memorizing shorthand. No build steps. No configuration. Just write HTML and it works.
 
@@ -169,7 +171,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 
 ---
 
-## 🆚 Why EaseMotion CSS?
+## Why EaseMotion CSS? 🆚
 
 | | Vanilla CSS | Tailwind CSS | **EaseMotion CSS** |
 |---|:---:|:---:|:---:|
@@ -183,7 +185,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 
 ---
 
-## ⚡ Quick Start
+## Quick Start ⚡
 
 ### Option 1 — CDN *(fastest, zero setup, recommended)*
 
@@ -285,7 +287,7 @@ Or in CSS / PostCSS / Sass:
 > ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
 
 
-## 🧠 Philosophy
+## Philosophy 🧠
 
 EaseMotion CSS is not just a CSS library — it is a design language.
 
@@ -328,7 +330,7 @@ Every class in the framework has passed through this process. The curation is wh
 
 ---
 
-## 💡 Usage & Examples
+## Usage & Examples 💡
 
 ### Animations
 
@@ -546,7 +548,7 @@ Example showcase:
 
 ---
 
-## ⚙️ Customization
+## Customization ⚙️
 
 Override any CSS custom property to theme the entire framework — no Sass, no PostCSS, just CSS:
 
@@ -607,7 +609,7 @@ Open or claim an issue first for non-trivial ideas, then add your raw demo insid
 Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
 
 ---
-## 📂 File Structure
+## File Structure 📂
 
 ```
 easemotion-css/
@@ -652,7 +654,7 @@ easemotion-css/
 
 ---
 
-## 🗺️ Roadmap
+## Roadmap 🗺️
 
 > Track progress and vote on features via [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues).
 
@@ -675,7 +677,7 @@ easemotion-css/
 
 ---
 
-## 🤝 Contributing
+## Contributing 🤝
 
 EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors submit raw ideas — the maintainer handles standardization, naming, and integration.
 
@@ -736,7 +738,7 @@ The project encourages creative variations and parallel implementations rather t
 
 ---
 
-## 🏷️ Issue Labels
+## Issue Labels 🏷️
 
 | Label | Used for |
 |-------|----------|
@@ -753,7 +755,7 @@ The project encourages creative variations and parallel implementations rather t
 
 ---
 
-## 💬 Community
+## Community 💬
 
 <div align="center">
 
@@ -772,7 +774,7 @@ The project encourages creative variations and parallel implementations rather t
 > ⭐ **If EaseMotion CSS saves you time, consider starring the repo.** It helps more developers discover the project and motivates continued development.
 ---
 
-## 🏆 Contributors
+## Contributors 🏆
 
 Everyone who has submitted a PR, opened an issue, or contributed an idea. This wall **regenerates automatically** on every push to main.
 
@@ -797,7 +799,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 
 ---
 
-## 👤 Maintainer
+## Maintainer 👤
 
 <div align="center">
 
@@ -813,7 +815,7 @@ EaseMotion CSS is designed, curated, and actively maintained by Saptarshi Sadhu.
 
 ---
 
-## 📜 Changelog
+## Changelog 📜
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
@@ -821,7 +823,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
 ---
 
-## ⚖️ License
+## License ⚖️
 
 **MIT © 2026 Saptarshi Sadhu** — see [LICENSE](./LICENSE) for details.
 
@@ -842,42 +844,10 @@ Every star, every PR, every issue — it all adds up.
 [![npm](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff)](https://www.npmjs.com/package/easemotion-css)
 [![Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=6c63ff)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
 [![License](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=flat-square&logo=github-sponsors)](https://github.com/sponsors/SAPTARSHI-coder)
 
 Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first &nbsp;·&nbsp; Community-driven
 
 </div>
-
-
-## Accessibility
-
-EaseMotion CSS supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion and reduce animation-related discomfort. When enabled at the operating system level, animations and transitions are minimized to provide a more accessible experience.
-=======
-/**
-## ✨ README Improvement Notes
-
-### 📌 Formatting Enhancements Needed
-- Improve heading hierarchy for better readability
-- Ensure consistent spacing between sections
-- Use proper Markdown formatting for code blocks and lists
-- Align all installation and usage steps properly
-
-### 🚀 Suggested Structure Upgrade
-- Introduction
-- Features
-- Tech Stack
-- Installation
-- Usage
-- Project Structure
-- Contribution Guidelines
-- License
-
-### 🛠️ Documentation Improvements
-- Add badges (optional): build, license, contributors
-- Add screenshots for better UI understanding
-- Standardize code blocks for commands
-
-### 🎯 Goal
-Improve onboarding experience for new contributors and users by making README more structured, readable, and professional.
-*/
 
 
