@@ -3,11 +3,13 @@ name: Auto-Merge PRs
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '*/30 * * * *' # Runs every 30 minutes to sweep and merge all open PRs
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'Pull Request number to evaluate and auto-merge'
-        required: true
+        description: 'PR number to merge (leave blank to sweep and merge ALL open PRs)'
+        required: false
         type: string
 
 permissions:
@@ -15,21 +17,50 @@ permissions:
   contents: write
 
 jobs:
-  auto-merge:
-    name: Evaluate and Auto-Merge
+  gather-prs:
+    name: Gather PRs to Process
     runs-on: ubuntu-latest
+    outputs:
+      prs: ${{ steps.list-prs.outputs.prs }}
     steps:
-      # Step 1: Resolve PR Metadata (from event or workflow dispatch inputs)
+      - name: List open PRs
+        id: list-prs
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          event_name="${{ github.event_name }}"
+          
+          if [ "$event_name" = "pull_request" ] || [ "$event_name" = "pull_request_target" ]; then
+            # Single PR from trigger
+            PR_LIST="[${{ github.event.pull_request.number }}]"
+          elif [ "$event_name" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.pr_number }}" ]; then
+            # Single PR from manual input
+            PR_LIST="[${{ github.event.inputs.pr_number }}]"
+          else
+            # Scheduled run or manual dispatch without input: fetch all open PR numbers
+            PR_LIST=$(gh pr list --state open --repo ${{ github.repository }} --json number --jq '[.[].number]')
+          fi
+          
+          echo "PRs to process: $PR_LIST"
+          echo "prs=$PR_LIST" >> $GITHUB_OUTPUT
+
+  auto-merge:
+    name: Auto-Merge PR #${{ matrix.pr }}
+    needs: gather-prs
+    runs-on: ubuntu-latest
+    if: needs.gather-prs.outputs.prs != '[]' && needs.gather-prs.outputs.prs != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.gather-prs.outputs.prs) }}
+    steps:
+      # Step 1: Resolve PR Metadata
       - name: Resolve PR Metadata
         id: pr-metadata
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
-          if [ -n "${{ github.event.inputs.pr_number }}" ]; then
-            PR_NUM=${{ github.event.inputs.pr_number }}
-          else
-            PR_NUM=${{ github.event.pull_request.number }}
-          fi
+          PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
           pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName)
