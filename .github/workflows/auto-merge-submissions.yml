@@ -102,9 +102,9 @@ jobs:
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
           echo "Has submission example changes: $has_submissions"
 
-      # Step 3: Checkout the PR branch (only if there are submissions to check for conflicts)
+      # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.check-files.outputs.hasSubmissions == 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true'
         uses: actions/checkout@v4
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
@@ -112,58 +112,69 @@ jobs:
           token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      # Step 4: Check folder name collisions and automatically rename
-      - name: Check collisions and rename
+      # Step 4: Resolve conflicts, compile bundle, and push updates
+      - name: Compile and Rename Conflicting Folders
         id: rename-check
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.check-files.outputs.hasSubmissions == 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
+          # 1. Setup and run build (in case they forgot to update easemotion.min.css)
+          echo "Rebuilding minified bundle..."
+          npm ci
+          npm run build
+          
+          # 2. Check naming collisions (only if it has submissions)
           git fetch origin main
-          
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
-          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-          
-          # Extract unique example folder names from submissions/examples/
-          folders=$(echo "$files" | grep "^submissions/examples/" | cut -d'/' -f3 | sort -u)
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           
           renamed_any=false
           
-          for folder in $folders; do
-            echo "Evaluating folder submissions/examples/$folder..."
+          if [ "$has_submissions" = "true" ]; then
+            files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+            folders=$(echo "$files" | grep "^submissions/examples/" | cut -d'/' -f3 | sort -u)
             
-            # Check if folder already exists in origin/main by checking if git ls-tree output is non-empty
-            if [ -n "$(git ls-tree -d origin/main "submissions/examples/$folder")" ]; then
-              echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
-              
-              i=1
-              while [ -n "$(git ls-tree -d origin/main "submissions/examples/${folder}-v${i}")" ]; do
-                i=$((i+1))
-              done
-              
-              new_name="${folder}-v${i}"
-              echo "Renaming submissions/examples/$folder to submissions/examples/$new_name"
-              
-              git mv "submissions/examples/$folder" "submissions/examples/$new_name"
-              renamed_any=true
-            fi
-          done
+            for folder in $folders; do
+              echo "Evaluating folder submissions/examples/$folder..."
+              if [ -n "$(git ls-tree -d origin/main "submissions/examples/$folder")" ]; then
+                echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
+                
+                i=1
+                while [ -n "$(git ls-tree -d origin/main "submissions/examples/${folder}-v${i}")" ]; do
+                  i=$((i+1))
+                done
+                
+                new_name="${folder}-v${i}"
+                echo "Renaming submissions/examples/$folder to submissions/examples/$new_name"
+                
+                git mv "submissions/examples/$folder" "submissions/examples/$new_name"
+                renamed_any=true
+              fi
+            done
+          fi
           
-          if [ "$renamed_any" = "true" ]; then
+          # 3. Check if anything changed (renamed folders or updated easemotion.min.css)
+          stale_bundle=$(git status --porcelain easemotion.min.css)
+          
+          if [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
+            echo "Changes detected (stale bundle or renamed folders). Committing and pushing back to PR..."
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore: rename conflicting submission folder to avoid overwriting"
+            git add -A
+            git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             git push
-            echo "Pushed renamed folders back to PR branch."
+            echo "Pushed updates back to PR branch."
             echo "exitEarly=true" >> $GITHUB_OUTPUT
           else
+            echo "No stale bundle or naming conflicts detected."
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
       # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
       - name: Wait for checks to pass
         id: wait-checks
-        if: steps.pr-metadata.outputs.isDraft != 'true' && (steps.check-files.outputs.hasSubmissions != 'true' || steps.rename-check.outputs.exitEarly != 'true')
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           CURRENT_RUN_ID: ${{ github.run_id }}
@@ -242,7 +253,7 @@ jobs:
 
       # Step 6: Merge the PR securely via the GitHub API
       - name: Merge PR
-        if: steps.pr-metadata.outputs.isDraft != 'true' && (steps.check-files.outputs.hasSubmissions != 'true' || steps.rename-check.outputs.exitEarly != 'true')
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
