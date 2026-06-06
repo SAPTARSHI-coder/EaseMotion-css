@@ -1,32 +1,47 @@
-# ease-swing (pendulum-style)
+# ease-swing
 
-## What does this do?
-Adds a pendulum-style swing effect where the element rotates from the top center. Includes both a one-time swing and a continuous swinging version.
+Pendulum swing animation anchored at the top center — element swings like a pendulum.
 
-## How is it used?
-Add one of the classes to an element:
+## Files
 
-`<div class="swing-once">One-Shot Swing</div>
+| File | Description |
+|------|-------------|
+| 📄 [demo.html](./demo.html) | Interactive demo |
+| 🎨 [style.css](./style.css) | Swing animation styles |
+| 📖 [README.md](./README.md) | Documentation |
 
-<div class="swing-loop">Continuous Swing</div>
+## Classes
 
-You can also change the swing angle using:
+| Class | Angle | Speed | Mode |
+|-------|-------|-------|------|
+| `ease-swing` | 15° | 2s | Continuous |
+| `ease-swing-small` | 5° | 2s | Continuous |
+| `ease-swing-large` | 25° | 2s | Continuous |
+| `ease-swing-fast` | 15° | 1s | Continuous |
+| `ease-swing-slow` | 15° | 4s | Continuous |
+| `ease-swing-hover` | 15° | 0.6s | One-shot (on hover) |
+| `ease-swing-custom` | Custom | 2s | Continuous |
 
-:root {
-  --ease-swing-angle: 15deg;
-}`
+## Variables
 
-## Why is it useful?
-This effect can be used for decorative elements, notifications, badges, icons, or any UI element that needs a bit of motion to attract attention. The one-shot version works well for interactions, while the continuous version can be used to keep focus on important content.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ease-swing-angle` | 15deg | Controls swing angle |
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+## Usage
 
-## Preview
+```html
+<!-- Basic swing (continuous) -->
+<div class="ease-swing">Swinging content</div>
 
-Open `demo.html` directly in your browser. Hover over **One-Shot Swing** to see the animation, while **Continuous Swing** runs continuously.
+<!-- Different angles -->
+<div class="ease-swing-small">5° swing</div>
+<div class="ease-swing-large">25° swing</div>
 
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+<!-- One-shot on hover -->
+<div class="ease-swing-hover">Swing on hover</div>
+
+<!-- Custom angle -->
+<div class="ease-swing-custom" style="--ease-swing-angle: 20deg;">
+    20° swing
+</div> 
