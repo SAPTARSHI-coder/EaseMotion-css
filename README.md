@@ -23,6 +23,8 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
 
+</div>
+
 <br/>
 
 > [!IMPORTANT]
@@ -85,8 +87,6 @@ The default remains `infinite` so existing behavior is unchanged. To run looping
 ```
 
 This will apply the iteration count to all looping animation utilities by default.
-
-</div>
 
 ---
 
