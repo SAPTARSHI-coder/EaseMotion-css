@@ -44,7 +44,8 @@ The header link now has a valid scroll target:
 ## Files
 
 - `demo.html` — documentation page with the navbar fix applied
-- `Readme.md` — this file
+- `style.css` — scroll-margin helper and notes on the CSS parse fix
+- `README.md` — this file
 
 ## Why is it useful?
 
