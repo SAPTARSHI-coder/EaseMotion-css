@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/docs/assets/banner.svg" alt="EaseMotion CSS" width="100%" />
 
-# ⚡ EaseMotion CSS
+# âš¡ EaseMotion CSS
 
 **Human-readable. Animation-first. Zero dependencies.**
 
@@ -11,7 +11,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
-[![Sponsor](https://img.shields.io/badge/Sponsor-💖-ea4aaa?style=flat-square)](https://github.com/sponsors/SAPTARSHI-coder)
+[![Sponsor](https://img.shields.io/badge/Sponsor-ðŸ’–-ea4aaa?style=flat-square)](https://github.com/sponsors/SAPTARSHI-coder)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=6c63ff)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
@@ -40,7 +40,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 <br/>
 
-## Table of Contents 📑
+## Table of Contents ðŸ“‘
 
 - [Support the Project](#support-the-project)
 - [Project Statistics](#project-statistics)
@@ -63,16 +63,42 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 ---
 
-### 🚀 Quick Start
+### ðŸš€ Quick Start
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
 ```
 
-**[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
+**[ðŸ“– Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) Â· [ðŸŽ® Live Demo](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) Â· [ðŸ“¦ npm](https://www.npmjs.com/package/easemotion-css) Â· [ðŸ¤ Contributing](./CONTRIBUTING.md)**
+
+> Use this unpinned URL for demos and local prototypes. Pin the version and add SRI for production deployments.
+
+### Production CDN *(pinned + SRI)*
+
+Use an exact package version in production. Pinning keeps the bytes stable, which is required for SRI.
+
+```html
+<!-- Main bundle -->
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css"
+      integrity="sha384-xUExGYFnwSuxeEORTQE82eZHv+EgvjrWupWjSHHUGjWhANzvkdzvTMRw7Ym1ijUf"
+      crossorigin="anonymous" />
+
+<!-- Core modules -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/core/variables.css" integrity="sha384-3GJF7Bv9wsNVeE43Vrd4E2MUh1ilbipOhJOy6EmPJ9TWL84G5FlCkU3jvbymJlEk" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/core/base.css" integrity="sha384-ah4lTn1lklElCjbpWEAE1Qjzy1bkB3zIJ76RVp59MyxiaB/xAljgBC7VjQiPzX8i" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/core/animations.css" integrity="sha384-mM9sNEJmuTZo9QNevmSCnLA/5M/voeBkQY8bIyrHwC+1jINb6gereaYLJccCnL0T" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/core/utilities.css" integrity="sha384-oSLNsc+qe+fjSNS9MWnyFFVwiqHw9pZBtOL5U301A60eT6oSZs3pdmj6/JfqaOsi" crossorigin="anonymous" />
+
+<!-- Components -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/components/buttons.css" integrity="sha384-H3n1qaWbqhOwxBW5WCkZxoaZfShiQpE3yv996q24klGDRQhdeTnVtHfGAXi/WNe/" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/components/cards.css" integrity="sha384-9Sd4J7781gi8dPWhVhEwZRZxVK66SyWoENXfI4G62aL4k/9pNiDEPj6zB9n9R09E" crossorigin="anonymous" />
+```
+
+> Regenerate the SHA-384 hash for each file whenever you publish a new package version. The hash must match the exact bytes served by the CDN.
 
 ### Animation Iterations
 
@@ -90,21 +116,21 @@ This will apply the iteration count to all looping animation utilities by defaul
 
 ---
 
-## Support the Project ⭐
+## Support the Project â­
 
 If EaseMotion CSS saves you time or helps your learning journey, please consider supporting it.
 
-Most people simply forget. This is your reminder. 😊
+Most people simply forget. This is your reminder. ðŸ˜Š
 
 <div align="center">
 
 | Action | Why it matters |
 |--------|----------------|
-| [💖 **Sponsor on GitHub**](https://github.com/sponsors/SAPTARSHI-coder) | Directly support the creator to keep the project active and stable |
-| [⭐ **Star the repo**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers) | Helps more developers discover the project |
-| [🍴 **Fork and contribute**](./CONTRIBUTING.md) | Your idea could become a real framework class |
-| [🐞 **Report an issue**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) | Bugs you catch make it better for everyone |
-| [💡 **Suggest a feature**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) | Good ideas ship faster than you think |
+| [ðŸ’– **Sponsor on GitHub**](https://github.com/sponsors/SAPTARSHI-coder) | Directly support the creator to keep the project active and stable |
+| [â­ **Star the repo**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers) | Helps more developers discover the project |
+| [ðŸ´ **Fork and contribute**](./CONTRIBUTING.md) | Your idea could become a real framework class |
+| [ðŸž **Report an issue**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) | Bugs you catch make it better for everyone |
+| [ðŸ’¡ **Suggest a feature**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) | Good ideas ship faster than you think |
 
 </div>
 
@@ -112,27 +138,27 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
-## Project Statistics 📊
+## Project Statistics ðŸ“Š
 
 <div align="center">
 
 | Metric | Value |
 |--------|-------|
-| 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
-| ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
-| 🎨 **Components** | Buttons (6 variants), Cards (13 variants) |
-| 🔑 **Design Tokens** | 60+ CSS custom properties |
-| ⚖️ **Bundle Size** | ~15 kB (unpacked: ~62 kB) |
-| 📜 **License** | MIT |
-| 🔧 **Build Step** | ❌ None required |
-| 🏗️ **Dependencies** | ❌ Zero |
+| ðŸ“¦ **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
+| ðŸŒ **CDN** | [cdn.jsdelivr.net/npm/easemotion-css@1.0.0](https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css) |
+| âš¡ **Classes** | 80+ utility classes, 20+ animation classes |
+| ðŸŽ¨ **Components** | Buttons (6 variants), Cards (13 variants) |
+| ðŸ”‘ **Design Tokens** | 60+ CSS custom properties |
+| âš–ï¸ **Bundle Size** | ~15 kB (unpacked: ~62 kB) |
+| ðŸ“œ **License** | MIT |
+| ðŸ”§ **Build Step** | âŒ None required |
+| ðŸ—ï¸ **Dependencies** | âŒ Zero |
 
 </div>
 
 ---
 
-## Browser Compatibility 🌐
+## Browser Compatibility ðŸŒ
 
 EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
@@ -152,7 +178,7 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 ---
 
-## What is EaseMotion CSS? ✨
+## What is EaseMotion CSS? âœ¨
 
 EaseMotion CSS is a curated, animation-first CSS framework where **class names read like plain English**. No memorizing shorthand. No build steps. No configuration. Just write HTML and it works.
 
@@ -162,32 +188,32 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
   <h1 class="ease-slide-up ease-delay-100">Build faster.</h1>
   <p class="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
   <button class="ease-btn ease-btn-primary ease-btn-pill ease-hover-grow ease-delay-300">
-    Get Started →
+    Get Started â†’
   </button>
 </div>
 ```
 
-> ⚡ Build beautiful animated interfaces using readable CSS classes. No build step. No configuration. Just link a file and start building.
+> âš¡ Build beautiful animated interfaces using readable CSS classes. No build step. No configuration. Just link a file and start building.
 
 ---
 
-## Why EaseMotion CSS? 🆚
+## Why EaseMotion CSS? ðŸ†š
 
 | | Vanilla CSS | Tailwind CSS | **EaseMotion CSS** |
 |---|:---:|:---:|:---:|
 | Setup | Write from scratch | Build step + config | **Link one file** |
-| Readability | ✅ High | ❌ Low (`px-4 flex gap-x-2`) | ✅ **High** (`ease-center`) |
-| Animations | ⚙️ Manual | 🔸 Minimal | ✅ **First-class** |
-| Zero config | ✅ | ❌ | ✅ |
-| Quality control | You | You | ✅ **Curated by maintainer** |
-| CDN ready | N/A | ❌ | ✅ **Yes** |
-| Learning curve | High | Medium | ✅ **Near zero** |
+| Readability | âœ… High | âŒ Low (`px-4 flex gap-x-2`) | âœ… **High** (`ease-center`) |
+| Animations | âš™ï¸ Manual | ðŸ”¸ Minimal | âœ… **First-class** |
+| Zero config | âœ… | âŒ | âœ… |
+| Quality control | You | You | âœ… **Curated by maintainer** |
+| CDN ready | N/A | âŒ | âœ… **Yes** |
+| Learning curve | High | Medium | âœ… **Near zero** |
 
 ---
 
-## Quick Start ⚡
+## Quick Start âš¡
 
-### Option 1 — CDN *(fastest, zero setup, recommended)*
+### Option 1 â€” CDN *(fastest, zero setup, recommended)*
 
 ```html
 <!DOCTYPE html>
@@ -196,7 +222,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
 </head>
 <body>
   <div class="ease-center ease-fade-in">
@@ -206,33 +232,33 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 </html>
 ```
 
-> Powered by jsDelivr — globally cached, always fast, no account needed. The CDN link is live the moment you paste it.
+> Powered by jsDelivr â€” globally cached, always fast, no account needed. The CDN link is live the moment you paste it.
 
 ## Alternative CDN Providers
 
 EaseMotion CSS can also be loaded using alternative CDN providers.
 
-### jsDelivr (recommended)
+### jsDelivr (demo-friendly)
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
 ```
 
 ### unpkg
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/easemotion-css/easemotion.css" />
 ```
 
 ### GitHub Raw CDN
 
 ```html
-<link rel="stylesheet" href="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/easemotion.min.css" />
+<link rel="stylesheet" href="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/easemotion.css" />
 ```
 
-> jsDelivr is recommended for production usage because it provides global caching and better reliability.
+> jsDelivr is the easiest CDN path for production too, but pin the package version and add SRI as shown above.
 
-### Option 2 — npm
+### Option 2 â€” npm
 
 ```bash
 npm install easemotion-css
@@ -241,35 +267,35 @@ npm install easemotion-css
 Then in your HTML:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
 ```
 
 Or in CSS / PostCSS / Sass:
 
 ```css
-@import "easemotion-css/easemotion.min.css";
+@import "easemotion-css/easemotion.css";
 ```
 
-### Option 3 — Granular imports *(pick only what you need)*
+### Option 3 â€” Granular imports *(pick only what you need)*
 
 ```html
-<!-- Font (optional — for Inter typography) -->
+<!-- Font (optional â€” for Inter typography) -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
-<!-- Core (always required — load in this exact order) -->
+<!-- Core (always required â€” load in this exact order) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
 
-<!-- Components — add only what you use -->
+<!-- Components â€” add only what you use -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/buttons.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css" />
 ```
 
-### Option 4 — Modular animation imports *(load only what you need)*
+### Option 4 â€” Modular animation imports *(load only what you need)*
 
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/variables.css" />
@@ -284,12 +310,12 @@ Or in CSS / PostCSS / Sass:
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/all.css" />
 ```
 
-> ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
+> âš ï¸ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
 
 
-## Philosophy 🧠
+## Philosophy ðŸ§ 
 
-EaseMotion CSS is not just a CSS library — it is a design language.
+EaseMotion CSS is not just a CSS library â€” it is a design language.
 
 > *"If you can say it in English, you should be able to write it as a class."*
 
@@ -308,21 +334,21 @@ No documentation lookup required. The class name **is** the documentation.
 |-----------|---------------|
 | **Human-readable** | Class names describe behavior in plain English |
 | **Animation-first** | Motion is a first-class citizen, not an afterthought |
-| **Composable** | Stack any classes freely — no specificity wars, ever |
+| **Composable** | Stack any classes freely â€” no specificity wars, ever |
 | **Curated** | Every single class is maintainer-reviewed before release |
 
 ### How the curation pipeline works
 
 ```
 1. Contributors submit raw HTML + CSS
-         ↓
+         â†“
 2. Maintainer reviews and evaluates fit
-         ↓
+         â†“
 3. Code is converted into EaseMotion CSS format
-   (ease-* naming · CSS variables · accessibility)
-         ↓
+   (ease-* naming Â· CSS variables Â· accessibility)
+         â†“
 4. Integrated into core/ or components/
-         ↓
+         â†“
 5. Released, documented, and credited
 ```
 
@@ -330,7 +356,7 @@ Every class in the framework has passed through this process. The curation is wh
 
 ---
 
-## Usage & Examples 💡
+## Usage & Examples ðŸ’¡
 
 ### Animations
 
@@ -345,7 +371,7 @@ Every class in the framework has passed through this process. The curation is wh
 <h5 class="ease-flip">3D flip</h5>
 <h5>class="ease-contract-image-entrance">Contract image entrance</h5>
 
-<!-- Staggered sequence — each item 100ms after previous -->
+<!-- Staggered sequence â€” each item 100ms after previous -->
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
@@ -438,10 +464,10 @@ Applies a quick squish animation during hover, focus, and active interactions.
 
 #### Available Classes
 
-- `.ease-self-start` → `align-self: flex-start`
-- `.ease-self-center` → `align-self: center`
-- `.ease-self-end` → `align-self: flex-end`
-- `.ease-self-stretch` → `align-self: stretch`
+- `.ease-self-start` â†’ `align-self: flex-start`
+- `.ease-self-center` â†’ `align-self: center`
+- `.ease-self-end` â†’ `align-self: flex-end`
+- `.ease-self-stretch` â†’ `align-self: stretch`
 
 ### Hover Animation Examples
 
@@ -541,16 +567,16 @@ Example showcase:
   <h1 class="ease-fade-in">Build faster.</h1>
   <p class="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
   <button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-hover-grow ease-delay-300">
-    Get Started →
+    Get Started â†’
   </button>
 </section>
 ```
 
 ---
 
-## Customization ⚙️
+## Customization âš™ï¸
 
-Override any CSS custom property to theme the entire framework — no Sass, no PostCSS, just CSS:
+Override any CSS custom property to theme the entire framework â€” no Sass, no PostCSS, just CSS:
 
 ```css
 :root {
@@ -574,10 +600,10 @@ Override any CSS custom property to theme the entire framework — no Sass, no P
 
 ### Override framework styles with `@layer`
 
-EaseMotion wraps all its CSS behind `@layer` cascade layers. Your own styles always win — even if the framework loads *after* your stylesheet:
+EaseMotion wraps all its CSS behind `@layer` cascade layers. Your own styles always win â€” even if the framework loads *after* your stylesheet:
 
 ```css
-/* Your custom overrides — always takes priority */
+/* Your custom overrides â€” always takes priority */
 @layer easemotion.components {
   .ease-btn-primary {
     background: var(--ease-color-orange);
@@ -609,114 +635,114 @@ Open or claim an issue first for non-trivial ideas, then add your raw demo insid
 Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link or local CSS files directly without configuring a bundler, compiler, or build pipeline.
 
 ---
-## File Structure 📂
+## File Structure ðŸ“‚
 
 ```
 easemotion-css/
-├── easemotion.css              ← readable source entry point
-├── easemotion.min.css          ← bundled production build
-│
-├── core/                       ← MAINTAINER-ONLY
-│   ├── variables.css           ← 60+ design tokens
-│   ├── base.css                ← reset + typography (Inter font)
-│   ├── animations.css          ← 20+ animation classes
-│   └── utilities.css           ← 80+ layout utilities
-│
-├── components/                 ← MAINTAINER-ONLY
-│   ├── buttons.css             ← 6 variants, 4 sizes, pill, icon
-│   └── cards.css               ← 13 card variants
-│
-├── submissions/                ← CONTRIBUTOR AREA
-│   ├── README.md               ← full submission workflow
-│   └── examples/
-│       ├── hover-grow/         ← [INTEGRATED] → ease-hover-grow
-│       ├── hover-shimmer/      ← [INTEGRATED] → ease-hover-shimmer
-│       ├── card-lift/          ← [INTEGRATED] → ease-card-lift
-│       └── button-glow/        ← pending review
-│
-├── examples/demo.html          ← source interactive showcase
-├── docs/demo.html              ← deployed live demo page
-├── docs/index.html             ← full documentation site
-│
-├── .github/
-│   ├── CODEOWNERS
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── feature_request.md
-│   │   └── bug_report.md
-│   └── PULL_REQUEST_TEMPLATE.md
-│
-├── VISION.md                   ← long-term project direction
-├── CHANGELOG.md                ← full release history
-├── CONTRIBUTING.md             ← contribution guide
-├── LICENSE                     ← MIT © 2026 Saptarshi Sadhu
-└── README.md
+â”œâ”€â”€ easemotion.css              â† readable source entry point
+â”œâ”€â”€ easemotion.min.css          â† bundled production build
+â”‚
+â”œâ”€â”€ core/                       â† MAINTAINER-ONLY
+â”‚   â”œâ”€â”€ variables.css           â† 60+ design tokens
+â”‚   â”œâ”€â”€ base.css                â† reset + typography (Inter font)
+â”‚   â”œâ”€â”€ animations.css          â† 20+ animation classes
+â”‚   â””â”€â”€ utilities.css           â† 80+ layout utilities
+â”‚
+â”œâ”€â”€ components/                 â† MAINTAINER-ONLY
+â”‚   â”œâ”€â”€ buttons.css             â† 6 variants, 4 sizes, pill, icon
+â”‚   â””â”€â”€ cards.css               â† 13 card variants
+â”‚
+â”œâ”€â”€ submissions/                â† CONTRIBUTOR AREA
+â”‚   â”œâ”€â”€ README.md               â† full submission workflow
+â”‚   â””â”€â”€ examples/
+â”‚       â”œâ”€â”€ hover-grow/         â† [INTEGRATED] â†’ ease-hover-grow
+â”‚       â”œâ”€â”€ hover-shimmer/      â† [INTEGRATED] â†’ ease-hover-shimmer
+â”‚       â”œâ”€â”€ card-lift/          â† [INTEGRATED] â†’ ease-card-lift
+â”‚       â””â”€â”€ button-glow/        â† pending review
+â”‚
+â”œâ”€â”€ examples/demo.html          â† source interactive showcase
+â”œâ”€â”€ docs/demo.html              â† deployed live demo page
+â”œâ”€â”€ docs/index.html             â† full documentation site
+â”‚
+â”œâ”€â”€ .github/
+â”‚   â”œâ”€â”€ CODEOWNERS
+â”‚   â”œâ”€â”€ ISSUE_TEMPLATE/
+â”‚   â”‚   â”œâ”€â”€ feature_request.md
+â”‚   â”‚   â””â”€â”€ bug_report.md
+â”‚   â””â”€â”€ PULL_REQUEST_TEMPLATE.md
+â”‚
+â”œâ”€â”€ VISION.md                   â† long-term project direction
+â”œâ”€â”€ CHANGELOG.md                â† full release history
+â”œâ”€â”€ CONTRIBUTING.md             â† contribution guide
+â”œâ”€â”€ LICENSE                     â† MIT Â© 2026 Saptarshi Sadhu
+â””â”€â”€ README.md
 ```
 
 ---
 
-## Roadmap 🗺️
+## Roadmap ðŸ—ºï¸
 
 > Track progress and vote on features via [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues).
 
 | Feature | Status |
 |---------|--------|
-| ✅ Human-readable core utilities (80+) | **Shipped — v1.0** |
-| ✅ Animation-first motion library (20+) | **Shipped — v1.0** |
-| ✅ Curated contribution pipeline | **Shipped — v1.0** |
-| ✅ Component library (buttons, cards) | **Shipped — v1.0** |
-| ✅ npm package + jsDelivr CDN | **Shipped — v1.0** |
-| ✅ Full documentation site | **Shipped — v1.0** |
-| 🔜 Form components (inputs, checkboxes, toggles) | **Planned — v1.1** |
-| 🔜 Dark mode token layer | **Planned — v1.1** |
-| 🔜 Modal & tooltip components | **Planned — v1.2** |
-| 🔜 Scroll-triggered animations (IntersectionObserver) | **Planned — v1.2** |
-| 🔜 Navigation components (navbar, sidebar) | **Planned — v1.3** |
-| 🔜 CSS-only accordion & tabs | **Planned — v1.3** |
-| 🔜 Badge, tag, avatar, progress bar | **Planned — v1.3** |
-| 🔜 Theming CLI (generate custom token file) | **Exploring** |
+| âœ… Human-readable core utilities (80+) | **Shipped â€” v1.0** |
+| âœ… Animation-first motion library (20+) | **Shipped â€” v1.0** |
+| âœ… Curated contribution pipeline | **Shipped â€” v1.0** |
+| âœ… Component library (buttons, cards) | **Shipped â€” v1.0** |
+| âœ… npm package + jsDelivr CDN | **Shipped â€” v1.0** |
+| âœ… Full documentation site | **Shipped â€” v1.0** |
+| ðŸ”œ Form components (inputs, checkboxes, toggles) | **Planned â€” v1.1** |
+| ðŸ”œ Dark mode token layer | **Planned â€” v1.1** |
+| ðŸ”œ Modal & tooltip components | **Planned â€” v1.2** |
+| ðŸ”œ Scroll-triggered animations (IntersectionObserver) | **Planned â€” v1.2** |
+| ðŸ”œ Navigation components (navbar, sidebar) | **Planned â€” v1.3** |
+| ðŸ”œ CSS-only accordion & tabs | **Planned â€” v1.3** |
+| ðŸ”œ Badge, tag, avatar, progress bar | **Planned â€” v1.3** |
+| ðŸ”œ Theming CLI (generate custom token file) | **Exploring** |
 
 ---
 
-## Contributing 🤝
+## Contributing ðŸ¤
 
-EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors submit raw ideas — the maintainer handles standardization, naming, and integration.
+EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors submit raw ideas â€” the maintainer handles standardization, naming, and integration.
 
-### ✅ What contributors do
-
-```
-✅ Add a folder to submissions/examples/your-feature/
-✅ Include: demo.html + style.css + README.md
-✅ Use any class naming — no ease- prefix required
-✅ One feature per PR
-```
-
-### ❌ What contributors do NOT do
+### âœ… What contributors do
 
 ```
-❌ Edit core/           → PR closed without review
-❌ Edit components/     → PR closed without review
-❌ Merge their own PRs  → Maintainer-only
-❌ Claim more than 2 active issues at once
+âœ… Add a folder to submissions/examples/your-feature/
+âœ… Include: demo.html + style.css + README.md
+âœ… Use any class naming â€” no ease- prefix required
+âœ… One feature per PR
+```
+
+### âŒ What contributors do NOT do
+
+```
+âŒ Edit core/           â†’ PR closed without review
+âŒ Edit components/     â†’ PR closed without review
+âŒ Merge their own PRs  â†’ Maintainer-only
+âŒ Claim more than 2 active issues at once
 ```
 
 ### The submission pipeline
 
 ```
-Your raw CSS  →  Maintainer standardizes  →  ease-* class ships
+Your raw CSS  â†’  Maintainer standardizes  â†’  ease-* class ships
 .hover-grow       ease-hover-grow              core/animations.css
 ```
 
-### 🌟 Why contribute?
+### ðŸŒŸ Why contribute?
 
-- **Beginner-friendly** — write raw CSS, no conventions to memorize
-- **Learn real system design** — see how raw ideas become a coherent API
-- **Your idea ships** — accepted submissions become real framework classes
-- **Credited in CHANGELOG** — your contribution is documented permanently
-- **Your name in the README** — see the contributor wall below
+- **Beginner-friendly** â€” write raw CSS, no conventions to memorize
+- **Learn real system design** â€” see how raw ideas become a coherent API
+- **Your idea ships** â€” accepted submissions become real framework classes
+- **Credited in CHANGELOG** â€” your contribution is documented permanently
+- **Your name in the README** â€” see the contributor wall below
 
-📖 Read the full guide → [CONTRIBUTING.md](./CONTRIBUTING.md)
+ðŸ“– Read the full guide â†’ [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-### 📢 Contribution Policy Update
+### ðŸ“¢ Contribution Policy Update
 
 All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
 
@@ -729,7 +755,7 @@ To avoid naming conflicts and overlapping components, contributors must append a
 
 This ensures:
 *   Unambiguous component naming,
-*   Preservation of every contributor’s work,
+*   Preservation of every contributorâ€™s work,
 *   Conflict-free merges,
 *   Easier maintenance and review workflow,
 *   Support for parallel implementations of similar ideas.
@@ -738,7 +764,7 @@ The project encourages creative variations and parallel implementations rather t
 
 ---
 
-## Issue Labels 🏷️
+## Issue Labels ðŸ·ï¸
 
 | Label | Used for |
 |-------|----------|
@@ -749,32 +775,32 @@ The project encourages creative variations and parallel implementations rather t
 | `documentation` | README, docs site, submission guide |
 | `curated` | Accepted into the framework |
 | `maintainer-approved` | Reviewed, pending integration |
-| `featured` | Exceptional submission — will be showcased |
+| `featured` | Exceptional submission â€” will be showcased |
 
 > **Issue Cooldown Rule:** Maximum **2 active assigned issues** per contributor. Issues with no progress for 5 days are unassigned and reopened.
 
 ---
 
-## Community 💬
+## Community ðŸ’¬
 
 <div align="center">
 
 | Platform | Link |
 |----------|------|
-| 🐛 **Bug Reports** | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) |
-| 💡 **Feature Requests** | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
-| 🔀 **Pull Requests** | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls) |
-| 📖 **Documentation** | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/) |
-| 📦 **npm Package** | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css) |
-| 🏆 **GSSoC 2026** | [GirlScript Summer of Code](https://gssoc.girlscript.tech/) |
+| ðŸ› **Bug Reports** | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) |
+| ðŸ’¡ **Feature Requests** | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
+| ðŸ”€ **Pull Requests** | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls) |
+| ðŸ“– **Documentation** | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/) |
+| ðŸ“¦ **npm Package** | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css) |
+| ðŸŒ **CDN** | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css) |
+| ðŸ† **GSSoC 2026** | [GirlScript Summer of Code](https://gssoc.girlscript.tech/) |
 
 </div>
 
-> ⭐ **If EaseMotion CSS saves you time, consider starring the repo.** It helps more developers discover the project and motivates continued development.
+> â­ **If EaseMotion CSS saves you time, consider starring the repo.** It helps more developers discover the project and motivates continued development.
 ---
 
-## Contributors 🏆
+## Contributors ðŸ†
 
 Everyone who has submitted a PR, opened an issue, or contributed an idea. This wall **regenerates automatically** on every push to main.
 
@@ -799,14 +825,14 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 <tr><td align="center"><a href="https://github.com/Malusnow"><img src="https://avatars.githubusercontent.com/Malusnow?s=64" width="52" height="52" alt="Malusnow" style="border-radius:50%;margin:4px"/><br/><sub><b>Malusnow</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/EchoOfCode"><img src="https://avatars.githubusercontent.com/EchoOfCode?s=64" width="52" height="52" alt="EchoOfCode" style="border-radius:50%;margin:4px"/><br/><sub><b>EchoOfCode</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Nish232003"><img src="https://avatars.githubusercontent.com/Nish232003?s=64" width="52" height="52" alt="Nish232003" style="border-radius:50%;margin:4px"/><br/><sub><b>Nish232003</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Parthasarathyjeeva27"><img src="https://avatars.githubusercontent.com/Parthasarathyjeeva27?s=64" width="52" height="52" alt="Parthasarathyjeeva27" style="border-radius:50%;margin:4px"/><br/><sub><b>Parthasarathyjeeva27</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/notlexius-glitch"><img src="https://avatars.githubusercontent.com/notlexius-glitch?s=64" width="52" height="52" alt="notlexius-glitch" style="border-radius:50%;margin:4px"/><br/><sub><b>notlexius-glitch</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Priti-1001"><img src="https://avatars.githubusercontent.com/Priti-1001?s=64" width="52" height="52" alt="Priti-1001" style="border-radius:50%;margin:4px"/><br/><sub><b>Priti-1001</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/RaviCoderWallah"><img src="https://avatars.githubusercontent.com/RaviCoderWallah?s=64" width="52" height="52" alt="RaviCoderWallah" style="border-radius:50%;margin:4px"/><br/><sub><b>RaviCoderWallah</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/saksham0777"><img src="https://avatars.githubusercontent.com/saksham0777?s=64" width="52" height="52" alt="saksham0777" style="border-radius:50%;margin:4px"/><br/><sub><b>saksham0777</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/SathvikaSingoti"><img src="https://avatars.githubusercontent.com/SathvikaSingoti?s=64" width="52" height="52" alt="SathvikaSingoti" style="border-radius:50%;margin:4px"/><br/><sub><b>SathvikaSingoti</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/shikha123-ops"><img src="https://avatars.githubusercontent.com/shikha123-ops?s=64" width="52" height="52" alt="shikha123-ops" style="border-radius:50%;margin:4px"/><br/><sub><b>shikha123-ops</b></sub><br/><sub>1 commits</sub></a></td></tr>
 </table>
 
-*Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
+*Auto-updated daily Â· [View all â†’](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
 
 </div>
 <!-- CONTRIBUTOR-WALL-END -->
 
 ---
 
-## Maintainer 👤
+## Maintainer ðŸ‘¤
 
 <div align="center">
 
@@ -822,17 +848,17 @@ EaseMotion CSS is designed, curated, and actively maintained by Saptarshi Sadhu.
 
 ---
 
-## Changelog 📜
+## Changelog ðŸ“œ
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
-**Latest: [v1.0.0](./CHANGELOG.md)** — Initial public release. 80+ utilities, 20+ animations, buttons, cards, full docs site, npm + CDN.
+**Latest: [v1.0.0](./CHANGELOG.md)** â€” Initial public release. 80+ utilities, 20+ animations, buttons, cards, full docs site, npm + CDN.
 
 ---
 
-## License ⚖️
+## License âš–ï¸
 
-**MIT © 2026 Saptarshi Sadhu** — see [LICENSE](./LICENSE) for details.
+**MIT Â© 2026 Saptarshi Sadhu** â€” see [LICENSE](./LICENSE) for details.
 
 You are free to use EaseMotion CSS in personal and commercial projects. Attribution appreciated but not required.
 
@@ -840,11 +866,11 @@ You are free to use EaseMotion CSS in personal and commercial projects. Attribut
 
 <div align="center">
 
-**Thank you for building EaseMotion CSS with me.** 💜
+**Thank you for building EaseMotion CSS with me.** ðŸ’œ
 
-Every star, every PR, every issue — it all adds up.
+Every star, every PR, every issue â€” it all adds up.
 
-*— Saptarshi Sadhu · [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)*
+*â€” Saptarshi Sadhu Â· [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)*
 
 <br/>
 
@@ -853,7 +879,7 @@ Every star, every PR, every issue — it all adds up.
 [![License](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=flat-square&logo=github-sponsors)](https://github.com/sponsors/SAPTARSHI-coder)
 
-Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first &nbsp;·&nbsp; Community-driven
+Built with care &nbsp;Â·&nbsp; Zero dependencies &nbsp;Â·&nbsp; Animation-first &nbsp;Â·&nbsp; Community-driven
 
 </div>
 
