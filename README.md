@@ -369,6 +369,23 @@ By default, the value is `infinite`, preserving existing behavior.
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
 
+### Scroll-Triggered Animations (Ease Reveal)
+
+To use `.ease-reveal` and have elements animate when scrolled into view, you must also include the `reveal.js` script in your HTML:
+
+```html
+<!-- Add this before closing </body> tag -->
+<script src="https://cdn.jsdelivr.net/npm/easemotion-css/core/reveal.js"></script>
+```
+
+Then simply add `.ease-reveal` along with an animation class:
+
+```html
+<div class="ease-reveal ease-slide-up">
+  This animates when scrolled into view!
+</div>
+```
+
 
 ### Hover Effects
 
