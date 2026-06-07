@@ -1,9 +1,9 @@
 name: PR Submission Validator
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
-      - 'submissions/examples/**'
+      - 'submissions/**'
 
 permissions:
   contents: read
@@ -14,126 +14,339 @@ jobs:
     name: Validate Examples
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository (Target Branch)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch and checkout PR Submissions
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+          git checkout pr-branch -- submissions || true
 
       - name: Validate Submissions
+        id: validate
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const path = require('path');
 
-            // 1. Get the list of changed files in this PR
+            // Get changed files in PR
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
             });
 
-            // 2. Identify unique folders modified under submissions/examples/
+            // Identify unique folders modified under submissions/examples/ or submissions/
             const exampleFolders = new Set();
+            const casingErrors = [];
+            const folderCaseMap = new Map();
+
             for (const file of files) {
-              if (file.filename.startsWith('submissions/examples/')) {
-                const parts = file.filename.split('/');
-                if (parts.length >= 3) {
-                  // submissions/examples/feature-name
-                  exampleFolders.add(`${parts[0]}/${parts[1]}/${parts[2]}`);
+              const filename = file.filename;
+              if (filename.startsWith('submissions/')) {
+                const parts = filename.split('/');
+                if (parts.length >= 2) {
+                  let folderPath;
+                  let folderName;
+                  let baseName;
+                  
+                  if (parts[1] === 'examples' && parts.length >= 3) {
+                    folderPath = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                    folderName = parts[2];
+                    if (parts.length === 4) {
+                      baseName = parts[3];
+                    }
+                  } else if (parts[1] !== 'examples') {
+                    folderPath = `${parts[0]}/${parts[1]}`;
+                    folderName = parts[1];
+                    if (parts.length === 3) {
+                      baseName = parts[2];
+                    }
+                  }
+                  
+                  if (folderPath) {
+                    const fullFolderPath = path.join(process.env.GITHUB_WORKSPACE || '', folderPath);
+                    if (fs.existsSync(fullFolderPath) && fs.statSync(fullFolderPath).isDirectory()) {
+                      exampleFolders.add(folderPath);
+                      
+                      const lowerFolder = folderName.toLowerCase();
+                      if (folderCaseMap.has(lowerFolder) && folderCaseMap.get(lowerFolder) !== folderName) {
+                        casingErrors.push(`Folder name collision detected: '${folderCaseMap.get(lowerFolder)}' and '${folderName}' differ only by letter casing.`);
+                      } else {
+                        folderCaseMap.set(lowerFolder, folderName);
+                      }
+                    }
+                  }
+                  
+                  if (baseName) {
+                    if (baseName.toLowerCase() === 'readme.md' && baseName !== 'README.md') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`README.md\` (case-sensitive).`);
+                    }
+                    if (baseName.toLowerCase() === 'style.css' && baseName !== 'style.css') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`style.css\` (all lowercase).`);
+                    }
+                    if (baseName.toLowerCase() === 'demo.html' && baseName !== 'demo.html') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`demo.html\` (all lowercase).`);
+                    }
+                  }
                 }
               }
             }
 
             if (exampleFolders.size === 0) {
-              console.log('No files modified inside submissions/examples/ folders.');
+              console.log('No files modified inside submissions/ folders.');
               return;
             }
 
-            // 3. Verify each folder contains the required files
-            const requiredFiles = ['demo.html', 'style.css', 'README.md'];
+            // Required files and their purposes
+            const requiredFiles = {
+              'demo.html': 'Interactive demo showcasing your feature',
+              'style.css': 'CSS styles for the demo',
+              'README.md': 'Documentation and usage guide'
+            };
+
             const failures = [];
+            const successes = [];
+
+            if (casingErrors.length > 0) {
+              failures.push({
+                folder: 'Casing Violations (Windows Compatibility)',
+                casingErrors,
+                missing: [],
+                present: []
+              });
+            }
 
             for (const folder of exampleFolders) {
               const missing = [];
-              for (const reqFile of requiredFiles) {
+              const present = [];
+              
+              for (const [reqFile, purpose] of Object.entries(requiredFiles)) {
                 const filePath = path.join(process.env.GITHUB_WORKSPACE, folder, reqFile);
                 if (!fs.existsSync(filePath)) {
-                  missing.push(reqFile);
+                  missing.push({ file: reqFile, purpose });
+                } else {
+                  present.push({ file: reqFile, purpose });
                 }
               }
+              
               if (missing.length > 0) {
-                failures.push({ folder, missing });
+                failures.push({ folder, missing, present });
+              } else {
+                successes.push({ folder, present });
               }
             }
 
-            // 4. Handle failures by commenting and failing the step
+            // Store results for later steps
+            core.setOutput('failures', JSON.stringify(failures));
+            core.setOutput('successes', JSON.stringify(successes));
+            core.setOutput('hasFailures', failures.length > 0);
+
             if (failures.length > 0) {
-              let commentBody = `### ⚠️ Submission Validation Failed\n\n`;
-              commentBody += `Thank you for your pull request! However, the validation check failed because some required files are missing. Under our **[Contributing Guidelines](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md)**, every submission folder must contain exactly **three files**: \`demo.html\`, \`style.css\`, and \`README.md\`.\n\n`;
-              
-              for (const fail of failures) {
-                commentBody += `#### 📁 Folder: \`${fail.folder}\`\n`;
-                commentBody += `Missing required files:\n`;
-                for (const file of fail.missing) {
-                  commentBody += `- ❌ \`${file}\`\n`;
-                }
-                commentBody += `\n`;
-              }
-              
-              commentBody += `Please add the missing files to this branch and push the updates. The validator will automatically re-run!`;
-
-              // Find if there is an existing bot comment from a previous run to avoid spamming
-              const { data: comments } = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-              });
-
-              const botComment = comments.find(comment => 
-                comment.user.type === 'Bot' && 
-                comment.body.includes('Submission Validation Failed')
-              );
-
-              if (botComment) {
-                await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: botComment.id,
-                  body: commentBody
-                });
-                console.log('Updated existing failure comment.');
-              } else {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.payload.pull_request.number,
-                  body: commentBody
-                });
-                console.log('Posted new failure comment.');
-              }
-
+              console.log(`❌ Validation failed for ${failures.length} folder(s)`);
               core.setFailed('PR is missing required submission files.');
             } else {
-              console.log('All submissions validated successfully!');
+              console.log(`✅ All ${successes.length} folder(s) validated successfully!`);
+            }
+
+      - name: Create/Update Failure Comment
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failures = JSON.parse(`${{ steps.validate.outputs.failures }}`);
+            
+            let commentBody = `## ❌ Submission Validation Failed\n\n`;
+            commentBody += `Thank you for your contribution! However, some required files are missing.\n\n`;
+            commentBody += `### 📋 Required Structure\n`;
+            commentBody += `\`\`\`\n`;
+            commentBody += `submissions/examples/your-feature-name/\n`;
+            commentBody += `├── demo.html     ← Interactive demo (required)\n`;
+            commentBody += `├── style.css     ← CSS styles (required)\n`;
+            commentBody += `└── README.md     ← Documentation (required)\n`;
+            commentBody += `\`\`\`\n\n`;
+            commentBody += `### 🔍 Issues Found:\n\n`;
+            
+            for (const fail of failures) {
+              if (fail.casingErrors && fail.casingErrors.length > 0) {
+                commentBody += `#### 🔠 Folder: \`${fail.folder}\`\n\n`;
+                commentBody += `**Case-sensitivity violations found:**\n`;
+                for (const err of fail.casingErrors) {
+                  commentBody += `- ❌ ${err}\n`;
+                }
+                commentBody += `\n---\n\n`;
+                continue;
+              }
+
+              commentBody += `#### 📁 Folder: \`${fail.folder}\`\n\n`;
               
-              // If it passed, but there was a previous failure comment, we can edit it to show success
-              const { data: comments } = await github.rest.issues.listComments({
+              if (fail.missing.length > 0) {
+                commentBody += `**Missing files:**\n`;
+                for (const missing of fail.missing) {
+                  commentBody += `- ❌ \`${missing.file}\` - ${missing.purpose}\n`;
+                }
+              }
+              
+              if (fail.present.length > 0) {
+                commentBody += `\n**Present files:**\n`;
+                for (const present of fail.present) {
+                  commentBody += `- ✅ \`${present.file}\`\n`;
+                }
+              }
+              commentBody += `\n---\n\n`;
+            }
+            
+            commentBody += `### 📝 How to Fix:\n`;
+            commentBody += `1. Add the missing files to your branch\n`;
+            commentBody += `2. Push the changes to this PR\n`;
+            commentBody += `3. The validator will automatically re-run\n\n`;
+            commentBody += `📖 See [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md) for guidelines.\n`;
+            
+            // Find existing bot comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Submission Validation Failed')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+              console.log('✅ Updated existing failure comment.');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+              console.log('✅ Created new failure comment.');
+            }
+
+      - name: Create/Update Success Comment
+        if: success() && steps.validate.outputs.hasFailures == 'false' && steps.validate.outputs.successes != '[]'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const successes = JSON.parse(`${{ steps.validate.outputs.successes }}`);
+            
+            let commentBody = `## ✅ Submission Validation Passed!\n\n`;
+            commentBody += `Great job! All required files are present.\n\n`;
+            
+            for (const success of successes) {
+              commentBody += `### 📁 Folder: \`${success.folder}\`\n`;
+              commentBody += `**Files found:**\n`;
+              for (const present of success.present) {
+                commentBody += `- ✅ \`${present.file}\`\n`;
+              }
+              commentBody += `\n`;
+            }
+            
+            commentBody += `### 🚀 Next Steps:\n`;
+            commentBody += `- The maintainer will review your PR\n`;
+            commentBody += `- Respond to any feedback if requested\n`;
+            commentBody += `- Once approved, your contribution will be merged!\n\n`;
+            commentBody += `Thank you for contributing to EaseMotion CSS! 🎉\n`;
+            
+            // Find existing bot comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              (comment.body.includes('Submission Validation Failed') || comment.body.includes('Submission Validation Passed'))
+            );
+            
+            if (botComment && botComment.body.includes('Submission Validation Failed')) {
+              // Update the old failure comment to show success
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+              console.log('✅ Updated existing failure comment to show success.');
+            } else if (!botComment) {
+              // Create new success comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+              console.log('✅ Created new success comment.');
+            } else {
+              console.log('Success comment already exists.');
+            }
+
+      - name: Add Label for Missing Files
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['needs-files', 'invalid-submission']
+              });
+              console.log('✅ Added labels: needs-files, invalid-submission');
+            } catch (error) {
+              console.log('⚠️ Could not add labels:', error.message);
+            }
+
+      - name: Remove Labels on Success
+        if: success() && steps.validate.outputs.hasFailures == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
               });
-
-              const botComment = comments.find(comment => 
-                comment.user.type === 'Bot' && 
-                (comment.body.includes('Submission Validation Failed') || comment.body.includes('Submission Validation Passed'))
-              );
-
-              if (botComment) {
-                await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: botComment.id,
-                  body: `### ✅ Submission Validation Passed\n\nAll required files (\`demo.html\`, \`style.css\`, and \`README.md\`) are now present. Thank you!`
-                });
-                console.log('Updated previous comment to show success.');
+              
+              const labelsToRemove = ['needs-files', 'invalid-submission'];
+              for (const label of labels) {
+                if (labelsToRemove.includes(label.name)) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.pull_request.number,
+                    name: label.name
+                  });
+                  console.log(`✅ Removed label: ${label.name}`);
+                }
               }
+            } catch (error) {
+              console.log('⚠️ Could not remove labels:', error.message);
             }
+
+      - name: Summary Output
+        run: |
+          echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.validate.outputs.hasFailures }}" == "true" ]; then
+            echo "❌ **Status:** Validation Failed" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the comments above for details." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Status:** Validation Passed" >> $GITHUB_STEP_SUMMARY
+            echo "All required files are present." >> $GITHUB_STEP_SUMMARY
+          fi
