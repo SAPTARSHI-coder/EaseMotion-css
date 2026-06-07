@@ -1,44 +1,84 @@
-# Ease Banner
+\# ease-banner
 
-A lightweight top-of-page announcement/banner component built with pure HTML and CSS.
 
-## Features
 
-- CSS-only implementation
-- Slide-down entrance animation
-- Responsive design
-- Dismissible variant
-- No JavaScript required
+Top-of-page banner/announcement component with slide-down entrance animation.
 
-## Components
 
-### ease-banner
 
-Basic announcement banner displayed at the top of the page.
+\## Classes
 
-### ease-banner-dismissible
 
-Dismissible version using the checkbox + label pattern.
 
-## Usage
+| Class | Description |
+
+|-------|-------------|
+
+| `ease-banner` | Base banner component |
+
+| `ease-banner-info` | Blue info banner |
+
+| `ease-banner-success` | Green success banner |
+
+| `ease-banner-warning` | Yellow warning banner |
+
+| `ease-banner-error` | Red error banner |
+
+| `ease-banner-dismissible` | Banner with close button |
+
+| `ease-banner-close` | Close button for dismissible banner |
+
+
+
+\## Features
+
+
+
+\- 🎯 Slide-down entrance animation
+
+\- 🎨 Multiple color variants (info, success, warning, error)
+
+\- ❌ Dismissible variant with close button
+
+\- 📱 Responsive design
+
+
+
+\## Usage
+
+
 
 ```html
+
+<!-- Basic banner -->
+
 <div class="ease-banner">
-    Welcome to EaseMotion CSS!
+
+&#x20;   <div class="ease-banner-content">
+
+&#x20;       <span>🎉</span>
+
+&#x20;       <p>Your message here</p>
+
+&#x20;   </div>
+
 </div>
-```
 
-### Dismissible Variant
 
-```html
-<input type="checkbox" id="dismiss-banner" hidden>
 
-<div class="ease-banner ease-banner-dismissible">
-    Banner Content
-    <label for="dismiss-banner">&times;</label>
+<!-- Dismissible banner -->
+
+<div class="ease-banner ease-banner-info">
+
+&#x20;   <div class="ease-banner-content">
+
+&#x20;       <span>ℹ️</span>
+
+&#x20;       <p>Info message</p>
+
+&#x20;   </div>
+
+&#x20;   <button class="ease-banner-close" onclick="this.parentElement.remove()">✕</button>
+
 </div>
-```
 
-## License
-
-MIT
