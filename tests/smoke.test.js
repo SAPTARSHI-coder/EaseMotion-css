@@ -39,6 +39,11 @@ describe('EaseMotion-css Smoke Tests', () => {
     expect(css).toContain(':root');
   });
 
+  it('should not use exclusion selectors for slide animations', () => {
+    expect(css).not.toContain('.ease-slide-up:not(.ease-slide-down)');
+    expect(css).not.toContain('.ease-slide-down:not(.ease-slide-up)');
+  });
+
   it('should apply base variables', () => {
     const styleTag = document.querySelector('style');
     expect(styleTag.textContent).toContain('--ease-speed-medium');
