@@ -350,6 +350,25 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
 
+### Duration Helpers
+
+```html
+<div class="ease-slide-up ease-duration-fast">
+  Fast Animation
+</div>
+
+<div class="ease-slide-up ease-duration-slow">
+  Slow Animation
+</div>
+```
+
+| Class | Duration |
+|---------|----------|
+| ease-duration-fast | 0.5s |
+| ease-duration-normal | 1s |
+| ease-duration-slow | 2s |
+| ease-duration-extra-slow | 3s |
+
 <!-- Looping animations -->
 <div class="ease-bounce">Bouncing</div>
 <div class="ease-pulse">Pulsing</div>
