@@ -25,14 +25,24 @@ async function handleClaim({ github, context }) {
 
 
   const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
-  if (currentAssignees.length > 0) {
-    if (currentAssignees.includes(commenter.toLowerCase())) {
-      await github.rest.issues.createComment({
-        owner, repo, issue_number: issueNumber,
-        body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
-      });
-      return;
-    }
+  const issueLabels = context.payload.issue.labels.map((l) => l.name.toLowerCase());
+  const issueTitle = (context.payload.issue.title || '').toLowerCase();
+  const issueBody = (context.payload.issue.body || '').toLowerCase();
+
+  const isSubmissionIssue = issueLabels.some(label => 
+    label.includes('submission') || 
+    label.includes('gssoc')
+  ) || issueTitle.includes('submission') || issueBody.includes('submission');
+
+  if (currentAssignees.includes(commenter.toLowerCase())) {
+    await github.rest.issues.createComment({
+      owner, repo, issue_number: issueNumber,
+      body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
+    });
+    return;
+  }
+
+  if (currentAssignees.length > 0 && !isSubmissionIssue) {
     const assigneeList = currentAssignees.map((a) => `@${a}`).join(', ');
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
