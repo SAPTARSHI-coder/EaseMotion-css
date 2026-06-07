@@ -23,19 +23,6 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  const issueAuthor = context.payload.issue.user.login;
-  
-  // can have multiple maintainers using comma ['a','b']
-  const MAINTAINERS = ['saptarshi-coder']; 
-  const isOpenedByMaintainer = MAINTAINERS.includes(issueAuthor.toLowerCase());
-
-  if (!isOpenedByMaintainer && commenter.toLowerCase() !== issueAuthor.toLowerCase()) {
-    await github.rest.issues.createComment({
-      owner, repo, issue_number: issueNumber,
-      body: `🛑 **Hold on!** Since this issue wasn't opened by a maintainer, only the original author (@${issueAuthor}) is eligible to claim it.`,
-    });
-    return;
-  }
 
   const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
   if (currentAssignees.length > 0) {
