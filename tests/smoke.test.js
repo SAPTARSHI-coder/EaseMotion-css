@@ -23,8 +23,13 @@ describe('EaseMotion-css Smoke Tests', () => {
     const navbar = readFileSync(resolve(componentsDir, 'navbar.css'), 'utf8');
     const scrollProgress = readFileSync(resolve(componentsDir, 'scroll-progress.css'), 'utf8');
     const sidebar = readFileSync(resolve(componentsDir, 'sidebar.css'), 'utf8');
+const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
+const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
+const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
+const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
+const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -90,7 +95,23 @@ describe('EaseMotion-css Smoke Tests', () => {
     expect(bundle).toContain('prefers-reduced-motion:reduce');
     expect(bundle.trim().length).toBeGreaterThan(100);
   });
-
+  
+  it('should have tabs, badges, loaders, tooltips, and modal classes defined', () => {
+    expect(css).toContain('.ease-tabs');
+    expect(css).toContain('.ease-tab-label');
+    expect(css).toContain('.ease-tab-panel');
+    expect(css).toContain('.ease-badge');
+    expect(css).toContain('.ease-badge-danger');
+    expect(css).toContain('.ease-badge-success');
+    expect(css).toContain('.ease-loader');
+    expect(css).toContain('.ease-loader-spin');
+    expect(css).toContain('.ease-loader-dots');
+    expect(css).toContain('.ease-tooltip');
+    expect(css).toContain('.ease-modal-overlay');
+    expect(css).toContain('.ease-modal');
+    expect(css).toContain('.ease-modal-header');
+  });
+  
   it('should not have duplicate @keyframes definitions', () => {
     const keyframeCounts = {};
     const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
