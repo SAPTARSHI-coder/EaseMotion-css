@@ -25,16 +25,6 @@ async function handleClaim({ github, context }) {
 
 
   const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
-<<<<<<< HEAD
-  if (currentAssignees.length > 0) {
-    if (currentAssignees.includes(commenter.toLowerCase())) {
-      await github.rest.issues.createComment({
-        owner, repo, issue_number: issueNumber,
-        body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
-      });
-      return;
-    }
-=======
   const issueLabels = context.payload.issue.labels.map((l) => l.name.toLowerCase());
   const issueTitle = (context.payload.issue.title || '').toLowerCase();
   const issueBody = (context.payload.issue.body || '').toLowerCase();
@@ -53,7 +43,6 @@ async function handleClaim({ github, context }) {
   }
 
   if (currentAssignees.length > 0 && !isSubmissionIssue) {
->>>>>>> 3da21299d8b2db0f7683beb1742d945c200efeb7
     const assigneeList = currentAssignees.map((a) => `@${a}`).join(', ');
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
