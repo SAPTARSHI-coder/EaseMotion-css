@@ -1,0 +1,131 @@
+name: CSS Size Benchmark
+
+on:
+  pull_request_target:
+    paths:
+      - 'core/**'
+      - 'components/**'
+      - 'easemotion/**'
+      - 'scripts/build-minified-css.mjs'
+      - 'easemotion.css'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  benchmark:
+    name: Benchmark CSS Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository (Target Branch)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Create Measurement Script
+        run: |
+          cat << 'EOF' > measure.mjs
+          import fs from 'fs';
+          import zlib from 'zlib';
+          if (!fs.existsSync('easemotion.min.css')) {
+            console.log('0,0,0');
+            process.exit(0);
+          }
+          const fileBuffer = fs.readFileSync('easemotion.min.css');
+          console.log(`${fileBuffer.length},${zlib.gzipSync(fileBuffer).length},${zlib.brotliCompressSync(fileBuffer).length}`);
+          EOF
+
+      - name: Fetch PR Branch
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+
+      - name: Measure PR Branch
+        run: |
+          git checkout pr-branch -- core components easemotion easemotion.css || true
+          npm run build || true
+          SIZES=$(node measure.mjs)
+          echo "PR_RAW=$(echo $SIZES | cut -d',' -f1)" >> $GITHUB_ENV
+          echo "PR_GZIP=$(echo $SIZES | cut -d',' -f2)" >> $GITHUB_ENV
+          echo "PR_BROTLI=$(echo $SIZES | cut -d',' -f3)" >> $GITHUB_ENV
+
+      - name: Measure Base Branch
+        run: |
+          git checkout HEAD -- core components easemotion easemotion.css || true
+          npm run build || true
+          SIZES=$(node measure.mjs)
+          echo "MAIN_RAW=$(echo $SIZES | cut -d',' -f1)" >> $GITHUB_ENV
+          echo "MAIN_GZIP=$(echo $SIZES | cut -d',' -f2)" >> $GITHUB_ENV
+          echo "MAIN_BROTLI=$(echo $SIZES | cut -d',' -f3)" >> $GITHUB_ENV
+
+      - name: Post Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const formatBytes = (bytes) => (bytes / 1024).toFixed(2) + ' KB';
+            const getDiff = (pr, main) => {
+              const diff = pr - main;
+              const sign = diff > 0 ? '+' : '';
+              return `${sign}${(diff / 1024).toFixed(2)} KB`;
+            };
+            const getIcon = (pr, main) => {
+              if (pr > main) return '📈';
+              if (pr < main) return '📉';
+              return '➖';
+            };
+
+            const prRaw = parseInt(process.env.PR_RAW) || 0;
+            const prGzip = parseInt(process.env.PR_GZIP) || 0;
+            const prBrotli = parseInt(process.env.PR_BROTLI) || 0;
+            
+            const mainRaw = parseInt(process.env.MAIN_RAW) || 0;
+            const mainGzip = parseInt(process.env.MAIN_GZIP) || 0;
+            const mainBrotli = parseInt(process.env.MAIN_BROTLI) || 0;
+
+            let body = `### 📊 CSS Bundle Size Benchmark\n\n`;
+            
+            if (prRaw === mainRaw && prGzip === mainGzip) {
+              body += `No change in CSS bundle size. ✨\n`;
+            } else {
+              body += `This PR changes the size of \`easemotion.min.css\`.\n\n`;
+              body += `| Metric | Base Branch | This PR | Difference |\n`;
+              body += `|---|---|---|---|\n`;
+              body += `| **Raw** | ${formatBytes(mainRaw)} | ${formatBytes(prRaw)} | ${getIcon(prRaw, mainRaw)} ${getDiff(prRaw, mainRaw)} |\n`;
+              body += `| **Gzip** | ${formatBytes(mainGzip)} | ${formatBytes(prGzip)} | ${getIcon(prGzip, mainGzip)} ${getDiff(prGzip, mainGzip)} |\n`;
+              body += `| **Brotli** | ${formatBytes(mainBrotli)} | ${formatBytes(prBrotli)} | ${getIcon(prBrotli, mainBrotli)} ${getDiff(prBrotli, mainBrotli)} |\n`;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('CSS Bundle Size Benchmark')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: body
+              });
+            }
