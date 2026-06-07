@@ -1,35 +1,62 @@
-# ease-feature-card
+\# ease-feature-card
 
-A reusable feature highlight card with icon, title, description, and hover animations.
 
-## Features
 
-- Icon slot
-- Heading slot
-- Description slot
-- Hover lift effect
-- Soft glow animation
-- Pure CSS
-- Great for landing pages and product showcases
+Feature highlight card with hover lift + glow animation. Perfect for product landing pages.
 
-## Usage
+
+
+\## Classes
+
+
+
+| Class | Description |
+
+|-------|-------------|
+
+| `ease-feature-card` | Base feature card component |
+
+| `ease-feature-icon` | Icon container |
+
+| `ease-feature-title` | Card title |
+
+| `ease-feature-description` | Card description |
+
+| `ease-feature-primary` | Primary color variant |
+
+| `ease-feature-success` | Success color variant |
+
+| `ease-feature-warning` | Warning color variant |
+
+
+
+\## Features
+
+
+
+\- ⭐ Hover lift effect (translateY)
+
+\- ✨ Hover glow effect (shadow + border)
+
+\- 🎨 Multiple color variants
+
+\- 📱 Responsive design
+
+
+
+\## Usage
+
+
 
 ```html
+
 <div class="ease-feature-card">
-    <div class="feature-icon">🚀</div>
-    <h3 class="feature-title">Fast Performance</h3>
-    <p class="feature-description">
-        Optimized animations and lightweight CSS utilities.
-    </p>
+
+&#x20;   <div class="ease-feature-icon">🚀</div>
+
+&#x20;   <h3 class="ease-feature-title">Feature Title</h3>
+
+&#x20;   <p class="ease-feature-description">Feature description here</p>
+
 </div>
-```
 
-## Why it fits EaseMotion CSS
-
-This component focuses on motion-first interactions with a subtle lift and glow effect while remaining simple, reusable, and framework-agnostic.
-
-## Files
-
-- `demo.html`
-- `style.css`
-- `README.md`
