@@ -94,18 +94,18 @@ jobs:
           has_submissions=false
           
           for file in $files; do
-            if [[ "$file" =~ ^submissions/examples/ ]]; then
+            if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
             fi
           done
           
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
-          echo "Has submission example changes: $has_submissions"
+          echo "Has submission changes: $has_submissions"
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
         if: steps.pr-metadata.outputs.isDraft != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
           ref: ${{ steps.pr-metadata.outputs.headRef }}
@@ -173,23 +173,54 @@ jobs:
           
           if [ "$has_submissions" = "true" ]; then
             files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-            folders=$(echo "$files" | grep "^submissions/examples/" | cut -d'/' -f3 | sort -u)
             
-            for folder in $folders; do
-              echo "Evaluating folder submissions/examples/$folder..."
-              if [ -n "$(git ls-tree -d upstream/main "submissions/examples/$folder")" ]; then
-                echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
+            # Extract unique component folders under submissions/examples/ or submissions/
+            folders=$(for file in $files; do
+              if [[ "$file" =~ ^submissions/examples/ ]]; then
+                echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/ ]]; then
+                echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+              fi
+            done | sort -u)
+            
+            for folder_path in $folders; do
+              echo "Evaluating folder $folder_path..."
+              
+              # GUARD 1: Skip if this folder no longer exists on disk.
+              # The PR files API lists files from ALL commits (including already-renamed ones).
+              # Only process folders that are actually present in the current checkout.
+              if [ ! -d "$folder_path" ]; then
+                echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
+                continue
+              fi
+              
+              # Extract parent directory and folder name
+              parent_dir=$(dirname "$folder_path")
+              folder_name=$(basename "$folder_path")
+              
+              # GUARD 2: Use exact-name matching against git ls-tree output to check existence in main.
+              # This prevents false positives from prefix-based path collisions.
+              folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
+              
+              if [ -n "$folder_in_main" ]; then
+                echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
                 
                 i=1
-                while [ -n "$(git ls-tree -d upstream/main "submissions/examples/${folder}-v${i}")" ]; do
+                while true; do
+                  candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                  if [ -z "$candidate_in_main" ]; then
+                    break
+                  fi
                   i=$((i+1))
                 done
                 
-                new_name="${folder}-v${i}"
-                echo "Renaming submissions/examples/$folder to submissions/examples/$new_name"
+                new_name="${folder_name}-v${i}"
+                echo "Renaming $folder_path to $parent_dir/$new_name"
                 
-                git mv "submissions/examples/$folder" "submissions/examples/$new_name"
+                git mv "$folder_path" "$parent_dir/$new_name"
                 renamed_any=true
+              else
+                echo "Folder $folder_path is safe — no name collision in main."
               fi
             done
           fi
@@ -202,8 +233,8 @@ jobs:
           if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
             echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
             git add -A
-            # Commit only if there are unstaged changes
-            if ! git diff --quiet; then
+            # Commit only if there are staged/unstaged changes
+            if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             fi
             git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
