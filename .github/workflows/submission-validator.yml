@@ -3,7 +3,7 @@ name: PR Submission Validator
 on:
   pull_request_target:
     paths:
-      - 'submissions/examples/**'
+      - 'submissions/**'
 
 permissions:
   contents: read
@@ -15,18 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository (Target Branch)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Fetch and checkout PR Submissions
         run: |
           git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
-          git checkout pr-branch -- submissions/examples || true
+          git checkout pr-branch -- submissions || true
 
       - name: Validate Submissions
         id: validate
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
@@ -39,36 +39,65 @@ jobs:
               pull_number: context.payload.pull_request.number,
             });
 
-            // Identify unique folders modified under submissions/examples/
+            // Identify unique folders modified under submissions/examples/ or submissions/
             const exampleFolders = new Set();
             const casingErrors = [];
+            const folderCaseMap = new Map();
 
             for (const file of files) {
               const filename = file.filename;
-              if (filename.startsWith('submissions/examples/')) {
+              if (filename.startsWith('submissions/')) {
                 const parts = filename.split('/');
-                if (parts.length >= 3) {
-                  exampleFolders.add(`${parts[0]}/${parts[1]}/${parts[2]}`);
-                }
-                
-                // File naming casing checks (prevent case clashes on Windows)
-                if (parts.length >= 4) {
-                  const baseName = parts[3];
-                  if (baseName.toLowerCase() === 'readme.md' && baseName !== 'README.md') {
-                    casingErrors.push(`File \`${filename}\` must be named exactly \`README.md\` (case-sensitive).`);
+                if (parts.length >= 2) {
+                  let folderPath;
+                  let folderName;
+                  let baseName;
+                  
+                  if (parts[1] === 'examples' && parts.length >= 3) {
+                    folderPath = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                    folderName = parts[2];
+                    if (parts.length === 4) {
+                      baseName = parts[3];
+                    }
+                  } else if (parts[1] !== 'examples') {
+                    folderPath = `${parts[0]}/${parts[1]}`;
+                    folderName = parts[1];
+                    if (parts.length === 3) {
+                      baseName = parts[2];
+                    }
                   }
-                  if (baseName.toLowerCase() === 'style.css' && baseName !== 'style.css') {
-                    casingErrors.push(`File \`${filename}\` must be named exactly \`style.css\` (all lowercase).`);
+                  
+                  if (folderPath) {
+                    const fullFolderPath = path.join(process.env.GITHUB_WORKSPACE || '', folderPath);
+                    if (fs.existsSync(fullFolderPath) && fs.statSync(fullFolderPath).isDirectory()) {
+                      exampleFolders.add(folderPath);
+                      
+                      const lowerFolder = folderName.toLowerCase();
+                      if (folderCaseMap.has(lowerFolder) && folderCaseMap.get(lowerFolder) !== folderName) {
+                        casingErrors.push(`Folder name collision detected: '${folderCaseMap.get(lowerFolder)}' and '${folderName}' differ only by letter casing.`);
+                      } else {
+                        folderCaseMap.set(lowerFolder, folderName);
+                      }
+                    }
                   }
-                  if (baseName.toLowerCase() === 'demo.html' && baseName !== 'demo.html') {
-                    casingErrors.push(`File \`${filename}\` must be named exactly \`demo.html\` (all lowercase).`);
+                  
+                  if (baseName) {
+                    if (baseName.toLowerCase() === 'readme.md' && baseName !== 'README.md') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`README.md\` (case-sensitive).`);
+                    }
+                    if (baseName.toLowerCase() === 'style.css' && baseName !== 'style.css') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`style.css\` (all lowercase).`);
+                    }
+                    if (baseName.toLowerCase() === 'demo.html' && baseName !== 'demo.html') {
+                      casingErrors.push(`File \`${filename}\` must be named exactly \`demo.html\` (all lowercase).`);
+                    }
                   }
                 }
               }
             }
 
             if (exampleFolders.size === 0) {
-              console.log('No files modified inside submissions/examples/ folders.');
+              console.log('No files modified inside submissions/ folders.');
               return;
             }
 
@@ -125,7 +154,7 @@ jobs:
 
       - name: Create/Update Failure Comment
         if: failure() && steps.validate.outputs.hasFailures == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const failures = JSON.parse(`${{ steps.validate.outputs.failures }}`);
@@ -208,7 +237,7 @@ jobs:
 
       - name: Create/Update Success Comment
         if: success() && steps.validate.outputs.hasFailures == 'false' && steps.validate.outputs.successes != '[]'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const successes = JSON.parse(`${{ steps.validate.outputs.successes }}`);
@@ -267,7 +296,7 @@ jobs:
 
       - name: Add Label for Missing Files
         if: failure() && steps.validate.outputs.hasFailures == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
@@ -284,7 +313,7 @@ jobs:
 
       - name: Remove Labels on Success
         if: success() && steps.validate.outputs.hasFailures == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             try {
