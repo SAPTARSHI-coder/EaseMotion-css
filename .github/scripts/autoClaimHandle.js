@@ -23,21 +23,9 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  const issueAuthor = context.payload.issue.user.login;
-  
-  // can have multiple maintainers using comma ['a','b']
-  const MAINTAINERS = ['saptarshi-coder']; 
-  const isOpenedByMaintainer = MAINTAINERS.includes(issueAuthor.toLowerCase());
-
-  if (!isOpenedByMaintainer && commenter.toLowerCase() !== issueAuthor.toLowerCase()) {
-    await github.rest.issues.createComment({
-      owner, repo, issue_number: issueNumber,
-      body: `🛑 **Hold on!** Since this issue wasn't opened by a maintainer, only the original author (@${issueAuthor}) is eligible to claim it.`,
-    });
-    return;
-  }
 
   const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
+<<<<<<< HEAD
   if (currentAssignees.length > 0) {
     if (currentAssignees.includes(commenter.toLowerCase())) {
       await github.rest.issues.createComment({
@@ -46,6 +34,26 @@ async function handleClaim({ github, context }) {
       });
       return;
     }
+=======
+  const issueLabels = context.payload.issue.labels.map((l) => l.name.toLowerCase());
+  const issueTitle = (context.payload.issue.title || '').toLowerCase();
+  const issueBody = (context.payload.issue.body || '').toLowerCase();
+
+  const isSubmissionIssue = issueLabels.some(label => 
+    label.includes('submission') || 
+    label.includes('gssoc')
+  ) || issueTitle.includes('submission') || issueBody.includes('submission');
+
+  if (currentAssignees.includes(commenter.toLowerCase())) {
+    await github.rest.issues.createComment({
+      owner, repo, issue_number: issueNumber,
+      body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
+    });
+    return;
+  }
+
+  if (currentAssignees.length > 0 && !isSubmissionIssue) {
+>>>>>>> 3da21299d8b2db0f7683beb1742d945c200efeb7
     const assigneeList = currentAssignees.map((a) => `@${a}`).join(', ');
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
