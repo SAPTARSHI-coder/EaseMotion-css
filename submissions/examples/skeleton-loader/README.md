@@ -1,45 +1,29 @@
-# Modern Shimmering Skeleton Loader States
+# Skeleton Loader — EaseMotion CSS Submission
 
-GPU-accelerated skeleton loading placeholders with shimmer animation and dark mode support. Provides reusable CSS classes for common loading patterns: text lines, avatars, cards, and blocks.
+## What This Is
+A shimmer skeleton loading placeholder for EaseMotion CSS.
+Replaces content while loading, improving perceived performance.
 
-## Features
-
-- **Shimmer animation** — `@keyframes ease-kf-shimmer` slides a gradient across the element
-- **Light & Dark mode** — automatically adapts via `@media (prefers-color-scheme: dark)`
-- **Sizing helpers** — `.skeleton-avatar` (with `-sm` / `-lg`), `.skeleton-line` (with `-sm` / `-lg`), `.skeleton-card` (with `-sm`), `.skeleton-block`
-- **GPU-accelerated** — animates `background-position` only
-- **Reduced motion** — respects `prefers-reduced-motion`
-- **Pure CSS** — no JavaScript required
+## Proposed Class Names
+| My class            | Suggested ease-* name     |
+|---------------------|---------------------------|
+| `.skeleton`         | `ease-skeleton`           |
+| `.skeleton-text`    | `ease-skeleton-text`      |
+| `.skeleton-circle`  | `ease-skeleton-circle`    |
+| `.skeleton-rect`    | `ease-skeleton-rect`      |
+| `.skeleton-btn`     | `ease-skeleton-btn`       |
 
 ## Usage
-
 ```html
-<!-- Avatar -->
-<div class="skeleton-shimmer skeleton-avatar"></div>
-
-<!-- Text lines -->
-<div class="skeleton-shimmer skeleton-line skeleton-line-lg"></div>
-<div class="skeleton-shimmer skeleton-line"></div>
-
-<!-- Card placeholder -->
-<div class="skeleton-shimmer skeleton-card"></div>
-
-<!-- Block / button -->
-<div class="skeleton-shimmer skeleton-block"></div>
+<div class="ease-skeleton ease-skeleton-text"></div>
+<div class="ease-skeleton ease-skeleton-circle"></div>
+<div class="ease-skeleton ease-skeleton-rect"></div>
 ```
 
-## Custom Gradient
+## Features
+- Pure CSS — no JavaScript, no dependencies
+- Smooth shimmer via @keyframes
+- Dark mode support
+- Composable variants
 
-Override the background to match your brand:
-
-```css
-.my-custom-skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--brand-rgb), 0.1) 25%,
-    rgba(var(--brand-rgb), 0.2) 37%,
-    rgba(var(--brand-rgb), 0.1) 63%
-  );
-  background-size: 400% 100%;
-}
-```
+Closes #[YOUR-ISSUE-NUMBER]
