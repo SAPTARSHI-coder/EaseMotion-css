@@ -60,6 +60,15 @@ describe('EaseMotion-css Smoke Tests', () => {
     expect(css).toContain('.ease-sidebar');
   });
 
+  it('should hide plain text in loading buttons and keep the spinner visible', () => {
+    expect(css).toContain('.ease-btn-loading');
+    expect(css).toContain('font-size: 0');
+    expect(css).toContain('.ease-btn-loading > *');
+    expect(css).toContain('visibility: hidden');
+    expect(css).toContain('.ease-btn-loading::after');
+    expect(css).toContain('border: 2px solid currentColor');
+  });
+
   it('minified bundle should be valid and contain key classes', () => {
     const bundle = readFileSync(resolve(__dirname, '../easemotion.min.css'), 'utf8');
     expect(bundle).toContain('.ease-fade-in');
