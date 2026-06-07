@@ -54,15 +54,22 @@ describe('EaseMotion-css Smoke Tests', () => {
   });
 
   it('should have component classes defined', () => {
-    expect(css).toContain('.ease-btn');
-    expect(css).toContain('.ease-btn-primary');
-    expect(css).toContain('.ease-card');
-    expect(css).toContain('.ease-chip');
-    expect(css).toContain('.ease-footer');
-    expect(css).toContain('.ease-masonry');
-    expect(css).toContain('.ease-navbar-glass');
-    expect(css).toContain('.ease-scroll-progress');
-    expect(css).toContain('.ease-sidebar');
+    const sheet = document.styleSheets[0];
+    const rules = [...sheet.cssRules];
+
+    const selectors = rules
+      .filter(rule => rule.selectorText)
+      .map(rule => rule.selectorText);
+
+    expect(selectors).toContain('.ease-btn');
+    expect(selectors).toContain('.ease-btn-primary');
+    expect(selectors).toContain('.ease-card');
+    expect(selectors).toContain('.ease-chip');
+    expect(selectors).toContain('.ease-footer');
+    expect(selectors).toContain('.ease-masonry');
+    expect(selectors).toContain('.ease-navbar-glass');
+    expect(selectors).toContain('.ease-scroll-progress');
+    expect(selectors).toContain('.ease-sidebar');
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
