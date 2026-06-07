@@ -2,7 +2,7 @@
   'use strict';
 
   var revealClass = 'ease-reveal';
-  var activeClass = 'active';
+  var activeClass = 'ease-reveal-active';
 
   function isCentered(el) {
     var rect = el.getBoundingClientRect();
