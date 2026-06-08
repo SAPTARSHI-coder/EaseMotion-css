@@ -349,6 +349,7 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
+```
 
 ### Duration Helpers
 
@@ -369,11 +370,13 @@ Every class in the framework has passed through this process. The curation is wh
 | ease-duration-slow | 2s |
 | ease-duration-extra-slow | 3s |
 
+```html
 <!-- Looping animations -->
 <div class="ease-bounce">Bouncing</div>
 <div class="ease-pulse">Pulsing</div>
 <div class="ease-rotate">Rotating</div>
 <div class="ease-ping">Ping</div>
+```
 
 You can customize the iteration count of looping animations:
 
@@ -385,8 +388,10 @@ You can customize the iteration count of looping animations:
 
 By default, the value is `infinite`, preserving existing behavior.
 
+```html
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
+```
 
 ### Scroll-Triggered Animations (Ease Reveal)
 
@@ -902,5 +907,3 @@ Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first 
 ## Accessibility
 
 EaseMotion CSS supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion and reduce animation-related discomfort. When enabled at the operating system level, animations and transitions are minimized to provide a more accessible experience.
-
-
