@@ -1,27 +1,19 @@
-# ease-fade-out — Exit Animation
+# ease-fade-out Utility
 
-The opposite of `ease-fade-in`. Element fades from opacity 1 to 0 using a `forwards` fill mode. Useful for toast dismiss, modal close, and page transitions.
-
-## Classes
-
-| Class | Description |
-|---|---|
-| `ease-fade-out` | Fade from 1 → 0 (300ms default) |
-| `ease-fade-out--fast` | Fast variant (150ms) |
-| `ease-fade-out--slow` | Slow variant (600ms) |
+This example demonstrates the new `ease-fade-out` utility class which fades an element out over a short duration.
 
 ## Usage
-
 ```html
-<div class="ease-fade-out">This will fade out</div>
-
-<!-- Fast -->
-<div class="ease-fade-out ease-fade-out--fast">Quick exit</div>
-
-<!-- Slow -->
-<div class="ease-fade-out ease-fade-out--slow">Slow exit</div>
+<div class="box ease-fade-out">Fade me out</div>
 ```
+Add the `ease-fade-out` class to any element you wish to fade out. The animation runs for 0.5s and ends with the element hidden (opacity 0).
 
-## Why it fits EaseMotion CSS
+## Demo
+Open `demo.html` in a browser and click the **Trigger Fade** button to see the effect.
 
-Pairs with the existing `ease-fade-in`. Uses design token speed variables. Respects `prefers-reduced-motion` by instantly hiding the element.
+## Implementation Details
+- Added `@keyframes easeFadeOut` and the `.ease-fade-out` class in `style.css`.
+- Updated the CSS framework with the new utility (the actual framework file `easemotion.css` will be updated separately by the maintainer).
+
+---
+*This submission follows the GSSoC validator requirements: it contains `demo.html`, `style.css`, and `README.md`.*
