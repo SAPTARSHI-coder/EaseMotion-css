@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # ease-fade-out Utility
 
 This example demonstrates the new `ease-fade-out` utility class which fades an element out over a short duration.
@@ -17,3 +18,21 @@ Open `demo.html` in a browser and click the **Trigger Fade** button to see the e
 
 ---
 *This submission follows the GSSoC validator requirements: it contains `demo.html`, `style.css`, and `README.md`.*
+=======
+# ease-fade-out utility
+
+Utility class that fades an element out over **0.5 s** using the `easeFadeOut` keyframes.
+
+## Usage
+```html
+<link rel="stylesheet" href="../../easemotion.css" />
+<link rel="stylesheet" href="style.css" />
+<div class="ease-fade-out">Fade‑out content</div>
+```
+
+## Demo
+Open `demo.html` to see the animation.
+
+---
+*Added for GSSoC 2026 issue #3002.*
+>>>>>>> Stashed changes
