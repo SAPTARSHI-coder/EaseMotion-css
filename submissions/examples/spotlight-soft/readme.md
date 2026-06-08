@@ -123,4 +123,4 @@ Works in all browsers that support CSS `mask-image` with `radial-gradient` — C
 ## Contributing
 
 Part of [EaseMotion CSS](https://github.com/your-org/easemotion-css) · GSSoC contribution  
-One utility per PR · Do not modify `core/` or `components/`
+One utility per PR · Do not modify `core/` or `components/` 
