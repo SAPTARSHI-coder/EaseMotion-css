@@ -172,10 +172,7 @@ If an assigned issue has **no progress for 5 days**, the maintainer will unassig
    - **Accept** — the maintainer integrates the code and merges the PR
    - **Close** — the idea doesn't fit; the issue will explain why
 
-> **Reminder: Only Saptarshi Sadhu merges pull requests.** 
- > **Note:** Tests are not run automatically on PRs. To run tests manually, 
-> use the `workflow_dispatch` trigger in GitHub Actions.
-
+> **Reminder: Only Saptarshi Sadhu merges pull requests.**  
 > Do not self-merge, even if you have repository write access.
 
 ---
