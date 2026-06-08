@@ -343,12 +343,31 @@ Every class in the framework has passed through this process. The curation is wh
 <h5 class="ease-slide-in-left">Slide from left</h5>
 <h4 class="ease-zoom-in">Zoom in</h4>
 <h5 class="ease-flip">3D flip</h5>
-<h5>class="ease-contract-image-entrance">Contract image entrance</h5>
+<h5 class="ease-contract-image-entrance">Contract image entrance</h5>
 
 <!-- Staggered sequence — each item 100ms after previous -->
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
+
+### Duration Helpers
+
+```html
+<div class="ease-slide-up ease-duration-fast">
+  Fast Animation
+</div>
+
+<div class="ease-slide-up ease-duration-slow">
+  Slow Animation
+</div>
+```
+
+| Class | Duration |
+|---------|----------|
+| ease-duration-fast | 0.5s |
+| ease-duration-normal | 1s |
+| ease-duration-slow | 2s |
+| ease-duration-extra-slow | 3s |
 
 <!-- Looping animations -->
 <div class="ease-bounce">Bouncing</div>
