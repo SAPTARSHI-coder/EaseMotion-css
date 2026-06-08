@@ -49,6 +49,26 @@ submissions/examples/your-feature-name/
 
 That is the only directory you should add or modify in your PR.
 
+### 📢 Contribution Policy Update
+
+All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+
+To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+
+**Example:**
+*   `ease-hover-sap`
+*   `ease-tabs-ak`
+*   `ease-card-pr`
+
+This ensures:
+*   Unambiguous component naming,
+*   Preservation of every contributor’s work,
+*   Conflict-free merges,
+*   Easier maintenance and review workflow,
+*   Support for parallel implementations of similar ideas.
+
+The project encourages creative variations and parallel implementations rather than overwriting existing contributor work.
+
 ---
 
 ## What to Submit
