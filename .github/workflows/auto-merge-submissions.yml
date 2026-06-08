@@ -1,0 +1,362 @@
+name: Auto-Merge PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '*/30 * * * *' # Runs every 30 minutes to sweep and merge all open PRs
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to merge (leave blank to sweep and merge ALL open PRs)'
+        required: false
+        type: string
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  gather-prs:
+    name: Gather PRs to Process
+    runs-on: ubuntu-latest
+    outputs:
+      prs: ${{ steps.list-prs.outputs.prs }}
+    steps:
+      - name: List open PRs
+        id: list-prs
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          event_name="${{ github.event_name }}"
+          
+          if [ "$event_name" = "pull_request" ] || [ "$event_name" = "pull_request_target" ]; then
+            # Single PR from trigger
+            PR_LIST="[${{ github.event.pull_request.number }}]"
+          elif [ "$event_name" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.pr_number }}" ]; then
+            # Single PR from manual input
+            PR_LIST="[${{ github.event.inputs.pr_number }}]"
+          else
+            # Scheduled run or manual dispatch without input: fetch all open PR numbers
+            PR_LIST=$(gh pr list --state open --limit 1000 --repo ${{ github.repository }} --json number --jq '[.[].number]')
+          fi
+          
+          echo "PRs to process: $PR_LIST"
+          echo "prs=$PR_LIST" >> $GITHUB_OUTPUT
+
+  auto-merge:
+    name: Auto-Merge PR #${{ matrix.pr }}
+    needs: gather-prs
+    runs-on: ubuntu-latest
+    if: needs.gather-prs.outputs.prs != '[]' && needs.gather-prs.outputs.prs != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.gather-prs.outputs.prs) }}
+    steps:
+      # Step 1: Resolve PR Metadata
+      - name: Resolve PR Metadata
+        id: pr-metadata
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ matrix.pr }}
+          
+          # Fetch PR details using GH CLI
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName)
+          is_draft=$(echo "$pr_data" | jq -r '.isDraft')
+          head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
+          head_ref=$(echo "$pr_data" | jq -r '.headRefName')
+          
+          echo "prNum=$PR_NUM" >> $GITHUB_OUTPUT
+          echo "isDraft=$is_draft" >> $GITHUB_OUTPUT
+          echo "headRepo=$head_repo" >> $GITHUB_OUTPUT
+          echo "headRef=$head_ref" >> $GITHUB_OUTPUT
+          
+          echo "PR Number: $PR_NUM"
+          echo "Is Draft: $is_draft"
+          echo "Head Repo: $head_repo"
+          echo "Head Ref: $head_ref"
+
+      # Step 2: Query GitHub API securely to check modified files
+      - name: Get modified files
+        id: check-files
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          echo "Checking files modified in PR #$PR_NUM..."
+          
+          # Retrieve the list of modified files in the PR
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+          
+          has_submissions=false
+          has_core_changes=false
+          
+          for file in $files; do
+            if [[ "$file" =~ ^submissions/ ]]; then
+              has_submissions=true
+            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" ]]; then
+              has_core_changes=true
+              echo "Core change detected: $file"
+            fi
+          done
+          
+          echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
+          echo "hasCoreChanges=$has_core_changes" >> $GITHUB_OUTPUT
+          echo "Has submission changes: $has_submissions"
+          echo "Has core changes: $has_core_changes"
+
+      # Step 2.5: Block Auto-Merge for Invalid Changes
+      - name: Block Auto-Merge for Invalid Changes
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        run: |
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
+          
+          if [ "$has_submissions" != "true" ]; then
+            echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
+            echo "Only pull requests introducing new submissions or examples can be auto-merged."
+            exit 1
+          fi
+          
+          if [ "$has_core_changes" = "true" ]; then
+            echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
+            echo "Core changes require manual review and approval by the repository owner."
+            exit 1
+          fi
+
+      # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
+      - name: Checkout PR Branch
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ steps.pr-metadata.outputs.headRepo }}
+          ref: ${{ steps.pr-metadata.outputs.headRef }}
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # Step 4: Resolve conflicts, compile bundle, and push updates
+      - name: Compile and Rename Conflicting Folders
+        id: rename-check
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Setup git configuration
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 2. Add upstream remote and fetch main branch
+          git remote add upstream "https://github.com/${{ github.repository }}.git" || true
+          git fetch upstream main
+          
+          # 3. Attempt to merge upstream/main to sync branch and handle conflicts
+          echo "Attempting to merge upstream/main into PR branch..."
+          if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
+            echo "Merge conflict detected. Analyzing conflicted files..."
+            
+            conflicted_files=$(git diff --name-only --diff-filter=U)
+            echo "Conflicted files: $conflicted_files"
+            
+            can_resolve=true
+            for file in $conflicted_files; do
+              if [ "$file" != "easemotion.min.css" ]; then
+                can_resolve=false
+                echo "Cannot auto-resolve conflict in source file: $file"
+              fi
+            done
+            
+            if [ "$can_resolve" = "true" ]; then
+              echo "Conflict is only in easemotion.min.css. Resolving automatically..."
+              git checkout --ours easemotion.min.css
+              npm ci
+              npm run build
+              git add easemotion.min.css
+              git commit -m "chore: resolve easemotion.min.css merge conflict"
+              echo "Conflict resolved and committed."
+            else
+              echo "PR has source code conflicts. Aborting merge."
+              git merge --abort
+              exit 1
+            fi
+          else
+            echo "Merged upstream/main successfully with no conflicts."
+          fi
+          
+          # 4. Setup and run build (to ensure the minified CSS bundle is fully compiled)
+          echo "Rebuilding minified bundle..."
+          npm ci
+          npm run build
+          
+          # 5. Check naming collisions (only if it has submissions)
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          
+          renamed_any=false
+          
+          if [ "$has_submissions" = "true" ]; then
+            files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+            
+            # Extract unique component folders under submissions/examples/ or submissions/
+            folders=$(for file in $files; do
+              if [[ "$file" =~ ^submissions/examples/ ]]; then
+                echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/ ]]; then
+                echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+              fi
+            done | sort -u)
+            
+            for folder_path in $folders; do
+              echo "Evaluating folder $folder_path..."
+              
+              # GUARD 1: Skip if this folder no longer exists on disk.
+              # The PR files API lists files from ALL commits (including already-renamed ones).
+              # Only process folders that are actually present in the current checkout.
+              if [ ! -d "$folder_path" ]; then
+                echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
+                continue
+              fi
+              
+              # Extract parent directory and folder name
+              parent_dir=$(dirname "$folder_path")
+              folder_name=$(basename "$folder_path")
+              
+              # GUARD 2: Use exact-name matching against git ls-tree output to check existence in main.
+              # This prevents false positives from prefix-based path collisions.
+              folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
+              
+              if [ -n "$folder_in_main" ]; then
+                echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
+                
+                i=1
+                while true; do
+                  candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                  if [ -z "$candidate_in_main" ]; then
+                    break
+                  fi
+                  i=$((i+1))
+                done
+                
+                new_name="${folder_name}-v${i}"
+                echo "Renaming $folder_path to $parent_dir/$new_name"
+                
+                git mv "$folder_path" "$parent_dir/$new_name"
+                renamed_any=true
+              else
+                echo "Folder $folder_path is safe — no name collision in main."
+              fi
+            done
+          fi
+          
+          # 6. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
+          # We check if local HEAD is ahead of the remote tracking branch or has unstaged changes
+          git diff --quiet origin/${{ steps.pr-metadata.outputs.headRef }} || push_needed=true
+          stale_bundle=$(git status --porcelain easemotion.min.css)
+          
+          if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
+            echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
+            git add -A
+            # Commit only if there are staged/unstaged changes
+            if ! git diff --cached --quiet || ! git diff --quiet; then
+              git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
+            fi
+            git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
+            echo "Pushed updates back to PR branch."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes, stale bundle, or naming conflicts detected."
+            echo "exitEarly=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
+      - name: Wait for checks to pass
+        id: wait-checks
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          
+          # Fetch latest head commit SHA of the PR
+          SHA=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json headRefOid --jq '.headRefOid')
+          echo "Polling status of checks for commit $SHA..."
+          
+          start_time=$(date +%s)
+          while true; do
+            # Fetch check runs for this commit
+            response=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs)
+            
+            total_count=$(echo "$response" | jq -r '.total_count')
+            
+            # Read status and conclusion for other check runs
+            all_completed=true
+            any_failed=false
+            other_checks_exist=false
+            
+            while read -r run; do
+              [ -z "$run" ] && continue
+              name=$(echo "$run" | jq -r '.name')
+              status=$(echo "$run" | jq -r '.status')
+              conclusion=$(echo "$run" | jq -r '.conclusion')
+              html_url=$(echo "$run" | jq -r '.html_url')
+              
+              # Exclude the current auto-merge workflow from checks verification
+              # We exclude by matching the current run ID in html_url or matching workflow/job names
+              if [[ "$html_url" == *"/runs/$CURRENT_RUN_ID"* || \
+                    "$name" == *"Auto-Merge"* || \
+                    "$name" == *"auto-merge"* || \
+                    "$name" == *"Evaluate and Auto-Merge"* ]]; then
+                echo "Excluding check run: $name (status: $status)"
+                continue
+              fi
+              
+              other_checks_exist=true
+              if [ "$status" != "completed" ]; then
+                all_completed=false
+                echo "Pending check: $name (status: $status)"
+              fi
+              if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
+                any_failed=true
+                echo "Failed check: $name (conclusion: $conclusion)"
+              fi
+            done < <(echo "$response" | jq -c '.check_runs[]')
+            
+            if [ "$any_failed" = "true" ]; then
+              echo "One or more checks failed. Aborting merge."
+              exit 1
+            fi
+            
+            if [ "$all_completed" = "true" ] && [ "$other_checks_exist" = "true" ]; then
+              echo "All checks completed successfully."
+              break
+            fi
+            
+            # If no other checks exist, check if we have waited more than 90 seconds
+            if [ "$other_checks_exist" = "false" ]; then
+              current_time=$(date +%s)
+              elapsed=$((current_time - start_time))
+              if [ $elapsed -gt 90 ]; then
+                echo "No other check runs detected after 90 seconds. Assuming no checks are required."
+                break
+              fi
+              echo "No other active checks found yet. Waiting to see if any are registered..."
+            else
+              echo "Checks are still running. Waiting..."
+            fi
+            
+            sleep 15
+          done
+
+      # Step 6: Merge the PR securely via the GitHub API
+      - name: Merge PR
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          echo "Merging PR #$PR_NUM..."
+          gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge
+          echo "PR successfully merged."
