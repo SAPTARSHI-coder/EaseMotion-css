@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Performance Profiler — EaseMotion CSS</title>
+  <meta name="description" content="A professional rendering-performance profiling dashboard. Stress-test animation layers, analyze FPS spikes, detect layout thrashing, and inspect VRAM telemetry.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="mpp-body">
+
+  <div class="mpp-container">
+    <!-- Header -->
+    <header class="mpp-header">
+      <span class="mpp-badge">Performance Infrastructure</span>
+      <h1 class="mpp-title">Motion Performance Profiler</h1>
+      <p class="mpp-subtitle">
+        Stress-test browser rendering pipelines. Contrast CPU Layout Reflows against GPU Composited layers, 
+        and visualise rendering bottlenecks on telemetry charts.
+      </p>
+    </header>
+
+    <!-- OS Media Pref Warning -->
+    <div id="mpp-a11y-banner" class="mpp-card" style="display: none; background: rgba(16, 185, 129, 0.08); border-color: var(--mpp-success); margin-bottom: 2rem;">
+      <span style="font-weight: 700; color: var(--mpp-success);">♿ OS Safeguard Active:</span> 
+      Your device preferences have <code>prefers-reduced-motion</code> enabled. Stress simulators are disabled to prevent sensory fatigue.
+    </div>
+
+    <!-- Main Grid -->
+    <div class="mpp-grid">
+      
+      <!-- Left Column: Configurator, Stats & FPS Timeline -->
+      <div class="mpp-col-left">
+        
+        <!-- Status & Stress Controls -->
+        <section class="mpp-card">
+          <div class="mpp-card-title">
+            <span>Simulator Sandbox</span>
+            <span class="mpp-text-muted" style="font-size: 0.75rem;">Engine Configurations</span>
+          </div>
+
+          <!-- Performance Status Banner -->
+          <div class="mpp-status-card mpp-status-excellent" id="perfStatus">
+            🟢 DIAGNOSTIC: EXCELLENT (60 FPS)
+          </div>
+
+          <!-- Configuration Controls -->
+          <div class="mpp-form-group">
+            <label class="mpp-form-label">Rendering Architecture</label>
+            <select class="mpp-select" id="mpp-method" onchange="updateEngineMethod(this.value)">
+              <option value="gpu">GPU-Composited Transitions (Transforms)</option>
+              <option value="reflow">CPU Layout Reflow (Absolute Top/Left)</option>
+            </select>
+          </div>
+
+          <!-- Node Count Slider -->
+          <div class="mpp-form-group">
+            <label class="mpp-form-label">
+              <span>Concurrent Node Stress Count</span>
+              <span class="mpp-range-val" id="valNodes">60</span>
+            </label>
+            <div class="mpp-range-wrapper">
+              <input type="range" class="mpp-range" id="mpp-nodes" min="5" max="200" step="5" value="60" oninput="updateNodeCount(this.value)">
+            </div>
+          </div>
+
+          <!-- Diagnostics Telemetry HUD -->
+          <div class="mpp-stats-grid">
+            <div class="mpp-stat-card">
+              <div class="mpp-stat-label">Active Nodes</div>
+              <div class="mpp-stat-val" id="statNodes">60</div>
+            </div>
+            <div class="mpp-stat-card">
+              <div class="mpp-stat-label">Avg Frame-rate</div>
+              <div class="mpp-stat-val" id="statFps">60.0</div>
+            </div>
+            <div class="mpp-stat-card">
+              <div class="mpp-stat-label">Forced Reflows</div>
+              <div class="mpp-stat-val" id="statReflows" style="color: var(--mpp-success);">NONE</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- FPS Live Plotter -->
+        <section class="mpp-card">
+          <div class="mpp-card-title">
+            <span>FPS Rendering Timeline</span>
+            <span class="mpp-text-muted" style="font-size: 0.75rem;">Dropped Frame Spikes Tracker</span>
+          </div>
+
+          <div class="mpp-canvas-container">
+            <canvas id="fpsCanvas" class="mpp-canvas" width="450" height="180"></canvas>
+            
+            <div class="mpp-canvas-legend">
+              <div class="mpp-legend-item">
+                <span class="mpp-legend-color" style="background-color: var(--mpp-fps-line);"></span>
+                <span>Frame rate (FPS)</span>
+              </div>
+              <div class="mpp-legend-item">
+                <span class="mpp-legend-color" style="background-color: var(--mpp-danger);"></span>
+                <span>Stutter Spikes (dropped frames > 16.6ms)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Right Column: Canvas, Memory & Exporters -->
+      <div class="mpp-col-right">
+        
+        <!-- Render Simulator Preview Screen -->
+        <section class="mpp-card">
+          <div class="mpp-card-title">
+            <span>Render Preview Canvas</span>
+            <span class="mpp-text-muted" style="font-size: 0.75rem;">Hardware Simulator View</span>
+          </div>
+
+          <!-- Stress particles container -->
+          <div class="mpp-simulator-box" id="simulatorFrame"></div>
+
+          <!-- Telemetry highlights checks -->
+          <div class="mpp-form-group" style="background: rgba(0,0,0,0.15); padding: 0.85rem; border-radius: 0.5rem; border: 1px solid var(--mpp-surface-border);">
+            <span class="mpp-form-label" style="margin-bottom: 0.5rem; color: var(--mpp-warning);">DevTools Telemetry Overlays</span>
+            
+            <label class="mpp-checkbox-label">
+              <input type="checkbox" class="mpp-checkbox" id="mpp-toggle-layer" onchange="toggleDevToolsFilters()">
+              <span>Show Composited Layer Borders (Green GPU outline)</span>
+            </label>
+            <label class="mpp-checkbox-label">
+              <input type="checkbox" class="mpp-checkbox" id="mpp-toggle-heatmap" onchange="toggleDevToolsFilters()">
+              <span>Show Paint Heatmaps (Thermal paint density)</span>
+            </label>
+          </div>
+
+          <!-- Simulation Actions buttons -->
+          <div style="display: flex; gap: 1rem; align-items: center; margin-top: 1.25rem;">
+            <button class="mpp-btn" onclick="triggerProfiler()">▶ Run Stress Test</button>
+            <button class="mpp-btn mpp-btn-secondary" onclick="resetProfiler()">Reset</button>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+              <span class="mpp-text-muted" style="font-size: 0.75rem; font-weight: 700;">Theme:</span>
+              <button class="mpp-theme-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- VRAM Memory Allocation Estimator -->
+        <section class="mpp-card">
+          <div class="mpp-card-title">
+            <span>Simulated VRAM Texture Allocation</span>
+            <span class="mpp-text-muted" style="font-size: 0.75rem;">GPU Cache Telemetry</span>
+          </div>
+
+          <div class="mpp-canvas-container">
+            <canvas id="vramCanvas" class="mpp-canvas" width="450" height="150"></canvas>
+            
+            <div class="mpp-canvas-legend">
+              <div class="mpp-legend-item">
+                <span class="mpp-legend-color" style="background-color: var(--mpp-vram-line);"></span>
+                <span>GPU Texture Cache (KB)</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Optimization Exporter HUD -->
+        <section class="mpp-card">
+          <div class="mpp-card-title">
+            <span>Optimization Exporter HUD</span>
+            <span class="mpp-text-muted" style="font-size: 0.75rem;">Performance-Safe Snippets</span>
+          </div>
+
+          <div class="mpp-code-container">
+            <button class="mpp-copy-btn" onclick="copyCode()">Copy CSS</button>
+            <pre class="mpp-code" id="codeOutput"></pre>
+          </div>
+        </section>
+
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- Profiler Scripting Engine -->
+  <script>
+    /* ── Local Telemetry Configurations ─────────────────── */
+    const state = {
+      method: 'gpu',       // 'gpu' vs 'reflow'
+      nodeCount: 60,
+      showBorders: false,
+      showHeatmap: false,
+      isProfiling: false,
+      lastFrameTime: null,
+      fpsHistory: Array(80).fill(60),
+      vramHistory: Array(80).fill(0),
+      nodes: []
+    };
+
+    /* ── Particle Nodes Stress Engine ───────────────────── */
+    const frame = document.getElementById('simulatorFrame');
+
+    function spawnNodes(count) {
+      // Clear previous nodes
+      frame.innerHTML = '';
+      state.nodes = [];
+
+      const frameWidth = frame.clientWidth || 450;
+      const frameHeight = frame.clientHeight || 250;
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'mpp-stress-node';
+        
+        // Custom visual modifiers classes
+        if (state.showBorders) el.classList.add('mpp-composited-border');
+        if (state.showHeatmap) el.classList.add('mpp-heatmap-node');
+
+        const x = Math.random() * (frameWidth - 20) + 5;
+        const y = Math.random() * (frameHeight - 20) + 5;
+        const vx = (Math.random() - 0.5) * 6;
+        const vy = (Math.random() - 0.5) * 6;
+
+        // Apply starting position
+        el.style.left = '0px';
+        el.style.top = '0px';
+        el.style.transform = `translate(${x}px, ${y}px)`;
+
+        frame.appendChild(el);
+        state.nodes.push({ el, x, y, vx, vy });
+      }
+
+      document.getElementById('statNodes').textContent = count;
+    }
+
+    function updateNodeCount(val) {
+      state.nodeCount = parseInt(val, 10);
+      document.getElementById('valNodes').textContent = val;
+      if (state.isProfiling) {
+        spawnNodes(state.nodeCount);
+      }
+    }
+
+    function updateEngineMethod(val) {
+      state.method = val;
+      
+      // Update warning diagnostics
+      const reflowHUD = document.getElementById('statReflows');
+      if (val === 'reflow') {
+        reflowHUD.textContent = 'ACTIVE';
+        reflowHUD.style.color = 'var(--mpp-danger)';
+      } else {
+        reflowHUD.textContent = 'NONE';
+        reflowHUD.style.color = 'var(--mpp-success)';
+      }
+
+      updateExporterCode();
+    }
+
+    /* ── DevTools Visual Filters Overlays ────────────────── */
+    function toggleDevToolsFilters() {
+      state.showBorders = document.getElementById('mpp-toggle-layer').checked;
+      state.showHeatmap = document.getElementById('mpp-toggle-heatmap').checked;
+
+      state.nodes.forEach(node => {
+        node.el.classList.remove('mpp-composited-border', 'mpp-heatmap-node');
+        if (state.showBorders) node.el.classList.add('mpp-composited-border');
+        if (state.showHeatmap) node.el.classList.add('mpp-heatmap-node');
+      });
+    }
+
+    /* ── Profiler Animation Telemetry Loop ───────────────── */
+    function triggerProfiler() {
+      // Accessibility safeguarding check
+      if (motionQuery.matches) return;
+
+      if (state.isProfiling) {
+        resetProfiler();
+      }
+
+      state.isProfiling = true;
+      state.lastFrameTime = performance.now();
+      
+      spawnNodes(state.nodeCount);
+      requestAnimationFrame(profilerLoop);
+    }
+
+    function resetProfiler() {
+      state.isProfiling = false;
+      frame.innerHTML = '';
+      state.nodes = [];
+      state.fpsHistory.fill(60);
+      state.vramHistory.fill(0);
+      drawTelemetryGraphs();
+      
+      document.getElementById('statNodes').textContent = '0';
+      document.getElementById('statFps').textContent = '60.0';
+      
+      const perfStatus = document.getElementById('perfStatus');
+      perfStatus.className = 'mpp-status-card mpp-status-excellent';
+      perfStatus.textContent = '🟢 DIAGNOSTIC: EXCELLENT (60 FPS)';
+    }
+
+    function profilerLoop(timestamp) {
+      if (!state.isProfiling) return;
+
+      // 1. Calculate FPS and dropped frames latency
+      const delta = timestamp - state.lastFrameTime;
+      state.lastFrameTime = timestamp;
+      
+      let currentFps = Math.round(1000 / delta);
+      // Clamp to realistic limits
+      currentFps = Math.max(5, Math.min(60, currentFps));
+
+      // Update HUDAvg display
+      state.fpsHistory.push(currentFps);
+      state.fpsHistory.shift();
+
+      let sum = 0;
+      state.fpsHistory.forEach(f => sum += f);
+      const avgFps = sum / state.fpsHistory.length;
+      document.getElementById('statFps').textContent = avgFps.toFixed(1);
+
+      // 2. Estimate VRAM texture footprint
+      // GPU compositing promoters cache layers. In reflow mode, no texture layers exist.
+      const texturePerNode = 0.576; // KB per RGBA 12x12 node
+      const activeVram = state.method === 'gpu' ? Math.round(state.nodeCount * texturePerNode) : 0;
+      state.vramHistory.push(activeVram);
+      state.vramHistory.shift();
+
+      // 3. Drive Diagnostic Assessment Banners
+      updateDiagnosticBanner(avgFps, currentFps);
+
+      // 4. Update Particle positions
+      const frameWidth = frame.clientWidth || 450;
+      const frameHeight = frame.clientHeight || 250;
+
+      // GPU translate vs CPU Forced Layout Thrash reflow
+      if (state.method === 'reflow') {
+        // Thrash loop: force browser layout recalculation per node
+        state.nodes.forEach((node, idx) => {
+          node.x += node.vx;
+          node.y += node.vy;
+
+          // Boundary collision
+          if (node.x <= 5 || node.x >= frameWidth - 18) node.vx *= -1;
+          if (node.y <= 5 || node.y >= frameHeight - 18) node.vy *= -1;
+
+          // Apply top/left changes
+          node.el.style.left = node.x + 'px';
+          node.el.style.top = node.y + 'px';
+          
+          // Trigger Forced Synchronous Layout (FSL) jank loop
+          // Reading offsetHeight force styles recalculation immediately!
+          if (idx % 2 === 0) {
+            const FSL_thrash = node.el.offsetHeight;
+          }
+        });
+      } else {
+        // GPU friendly translations
+        state.nodes.forEach(node => {
+          node.x += node.vx;
+          node.y += node.vy;
+
+          if (node.x <= 5 || node.x >= frameWidth - 18) node.vx *= -1;
+          if (node.y <= 5 || node.y >= frameHeight - 18) node.vy *= -1;
+
+          node.el.style.transform = `translate(${node.x}px, ${node.y}px)`;
+        });
+      }
+
+      // 5. Redraw canvases
+      drawTelemetryGraphs();
+
+      if (state.isProfiling) {
+        requestAnimationFrame(profilerLoop);
+      }
+    }
+
+    function updateDiagnosticBanner(avgFps, currentFps) {
+      const perfStatus = document.getElementById('perfStatus');
+      
+      perfStatus.className = 'mpp-status-card';
+
+      if (state.method === 'reflow' && state.nodeCount > 50) {
+        perfStatus.classList.add('mpp-status-critical');
+        perfStatus.textContent = `🚨 DIAGNOSTIC: CRITICAL REFOWS (${Math.round(avgFps)} FPS)`;
+      } else if (avgFps < 45) {
+        perfStatus.classList.add('mpp-status-critical');
+        perfStatus.textContent = `🚨 DIAGNOSTIC: POOR PERFORMANCE (${Math.round(avgFps)} FPS)`;
+      } else if (avgFps < 57) {
+        perfStatus.classList.add('mpp-status-fair');
+        perfStatus.textContent = `⚠️ DIAGNOSTIC: MODERATE STUTTER (${Math.round(avgFps)} FPS)`;
+      } else {
+        perfStatus.classList.add('mpp-status-excellent');
+        perfStatus.textContent = `🟢 DIAGNOSTIC: EXCELLENT (${Math.round(avgFps)} FPS)`;
+      }
+    }
+
+    /* ── Live Plotted Telemetry Graphs Canvases ───────────── */
+    const fpsCanvas = document.getElementById('fpsCanvas');
+    const fCtx = fpsCanvas.getContext('2d');
+
+    const vramCanvas = document.getElementById('vramCanvas');
+    const vCtx = vramCanvas.getContext('2d');
+
+    function drawTelemetryGraphs() {
+      // 1. Draw FPS Chart
+      fCtx.clearRect(0, 0, fpsCanvas.width, fpsCanvas.height);
+      const theme = document.body.getAttribute('data-theme') || 'dark';
+      const gridColor = theme === 'light' ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)';
+      
+      // Draw grid lines
+      fCtx.strokeStyle = gridColor;
+      fCtx.lineWidth = 1;
+      
+      // Horizontals (30, 45, 60 FPS)
+      for (let i = 1; i <= 3; i++) {
+        const cy = (fpsCanvas.height / 4) * i;
+        fCtx.beginPath();
+        fCtx.moveTo(0, cy);
+        fCtx.lineTo(fpsCanvas.width, cy);
+        fCtx.stroke();
+      }
+
+      // Plot FPS line
+      fCtx.strokeStyle = '#10b981';
+      fCtx.lineWidth = 2.5;
+      fCtx.beginPath();
+      
+      const widthStep = fpsCanvas.width / (state.fpsHistory.length - 1);
+      
+      state.fpsHistory.forEach((fps, idx) => {
+        // Map FPS 0-60 to y-coordinates 180-20px
+        const y = 160 - (fps / 60) * 130;
+        const x = idx * widthStep;
+        if (idx === 0) fCtx.moveTo(x, y);
+        else fCtx.lineTo(x, y);
+      });
+      fCtx.stroke();
+
+      // Plot dropped frame red spikes
+      state.fpsHistory.forEach((fps, idx) => {
+        if (fps < 50) { // dropped frames
+          const x = idx * widthStep;
+          fCtx.fillStyle = 'var(--mpp-danger)';
+          fCtx.beginPath();
+          fCtx.arc(x, 160 - (fps / 60) * 130, 4, 0, Math.PI * 2);
+          fCtx.fill();
+          
+          // Draw vertical red latency line
+          fCtx.strokeStyle = 'rgba(239, 68, 68, 0.25)';
+          fCtx.lineWidth = 1;
+          fCtx.beginPath();
+          fCtx.moveTo(x, 20);
+          fCtx.lineTo(x, 160);
+          fCtx.stroke();
+        }
+      });
+
+      // 2. Draw VRAM Chart
+      vCtx.clearRect(0, 0, vramCanvas.width, vramCanvas.height);
+      vCtx.strokeStyle = gridColor;
+      vCtx.lineWidth = 1;
+      
+      // Horizontals
+      for (let i = 1; i <= 2; i++) {
+        const cy = (vramCanvas.height / 3) * i;
+        vCtx.beginPath();
+        vCtx.moveTo(0, cy);
+        vCtx.lineTo(vramCanvas.width, cy);
+        vCtx.stroke();
+      }
+
+      // Plot VRAM line (Blue)
+      vCtx.strokeStyle = '#3b82f6';
+      vCtx.lineWidth = 2.5;
+      vCtx.beginPath();
+      
+      const vramWidthStep = vramCanvas.width / (state.vramHistory.length - 1);
+      state.vramHistory.forEach((vram, idx) => {
+        // Map VRAM 0-150KB to y-coordinates 140-20px
+        const maxVram = 150; // max scale KB
+        const y = 130 - (vram / maxVram) * 100;
+        const x = idx * vramWidthStep;
+        if (idx === 0) vCtx.moveTo(x, y);
+        else vCtx.lineTo(x, y);
+      });
+      vCtx.stroke();
+    }
+
+    /* ── Optimization CSS timing code exporter HUD ────────── */
+    function updateExporterCode() {
+      const output = document.getElementById('codeOutput');
+      if (!output) return;
+
+      if (state.method === 'gpu') {
+        output.textContent = `/* GPU-Accelerated Hardware Compositing Layer */
+.mpp-optimized-particle {
+  /* Promotes element to its own graphics layer (VRAM texture) */
+  will-change: transform, opacity;
+  
+  /* Prevent layout thrashing by using transform translations */
+  transform: translate3d(var(--particle-x), var(--particle-y), 0) scale(var(--particle-scale));
+  opacity: var(--particle-opacity);
+
+  /* Hardware hints preventing texture scaling blurring */
+  backface-visibility: hidden;
+  perspective: 1000px;
+  
+  /* Smooth animation interpolation using EaseMotion defaults */
+  transition: transform 600ms cubic-bezier(0.25, 0.8, 0.25, 1);
+}`;
+      } else {
+        output.textContent = `/* 🚨 WARNING: Layout Thrashing CPU Reflow Triggers */
+.mpp-unoptimized-particle {
+  position: absolute;
+  
+  /* Animating left/top properties forces browser layout cycles */
+  left: var(--particle-x);
+  top: var(--particle-y);
+  
+  /* Triggers style recalculations and reflow blocks on every frame */
+  width: var(--particle-width);
+  height: var(--particle-height);
+  
+  transition: left 600ms linear, top 600ms linear;
+}`;
+      }
+    }
+
+    function copyCode() {
+      const codeText = document.getElementById('codeOutput').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        const btn = document.querySelector('.mpp-copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = 'Copy CSS';
+        }, 1500);
+      });
+    }
+
+    /* ── Theme Toggler ────────────────────────────────────── */
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.getElementById('themeBtn');
+      const isLight = body.getAttribute('data-theme') === 'light';
+
+      if (isLight) {
+        body.removeAttribute('data-theme');
+        btn.textContent = '🌙';
+      } else {
+        body.setAttribute('data-theme', 'light');
+        btn.textContent = '☀️';
+      }
+
+      drawTelemetryGraphs();
+    }
+
+    /* ── Accessibility prefers-reduced-motion triggers ────── */
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    function handleMotionPreference(e) {
+      const banner = document.getElementById('mpp-a11y-banner');
+      if (e.matches) {
+        banner.style.display = 'block';
+        resetProfiler();
+      } else {
+        banner.style.display = 'none';
+      }
+    }
+
+    /* ── Initializations ──────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+      drawTelemetryGraphs();
+      updateExporterCode();
+
+      motionQuery.addEventListener('change', handleMotionPreference);
+      handleMotionPreference(motionQuery);
+    });
+  </script>
+</body>
+</html>
