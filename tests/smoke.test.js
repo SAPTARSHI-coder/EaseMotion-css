@@ -60,11 +60,20 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
 
   it('should have component classes defined', () => {
     const sheet = document.styleSheets[0];
-    const rules = [...sheet.cssRules];
+    
+    const getSelectors = (rules) => {
+      let selectors = [];
+      for (const rule of rules) {
+        if (rule.selectorText) {
+          selectors.push(rule.selectorText);
+        } else if (rule.cssRules) {
+          selectors = selectors.concat(getSelectors([...rule.cssRules]));
+        }
+      }
+      return selectors;
+    };
 
-    const selectors = rules
-      .filter(rule => rule.selectorText)
-      .map(rule => rule.selectorText);
+    const selectors = getSelectors([...sheet.cssRules]);
 
     expect(selectors).toContain('.ease-btn');
     expect(selectors).toContain('.ease-btn-primary');
