@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Recreate CommonJS variables for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 describe('EaseMotion-css Smoke Tests', () => {
   let dom;
@@ -23,13 +28,19 @@ describe('EaseMotion-css Smoke Tests', () => {
     const navbar = readFileSync(resolve(componentsDir, 'navbar.css'), 'utf8');
     const scrollProgress = readFileSync(resolve(componentsDir, 'scroll-progress.css'), 'utf8');
     const sidebar = readFileSync(resolve(componentsDir, 'sidebar.css'), 'utf8');
-const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
-const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
-const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
-const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
-const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
+    const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
+    const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
+    const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
+    const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
+    const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
+    // Safely concatenate with newlines to prevent comment block syntax errors
+    css = [
+      variables, base, animations, utilities, buttons, cards, chip, 
+      footer, masonry, navbar, scrollProgress, sidebar, tabs, 
+      badges, loaders, tooltips, modals
+    ].join('\n');
+    
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
