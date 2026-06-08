@@ -7,6 +7,7 @@ A high-fidelity, hardware-accelerated monitoring interface utility built entirel
 1. **Endless Translation Loops (`.ease-ecg-translate`)**: Instead of relying on processing-heavy HTML Canvas rendering loops, this utility maps a repeating CSS background asset vector and pans it back along the X-axis by exactly `-50%`, triggering an infinite seamless reset pattern.
 2. **Physiological Elastic Scales (`.ease-pulse-text`)**: Utilizes an asymmetrical scale loop mimicking real cardiovascular pressure waves instead of a uniform bounce.
 
+
 ## Classes & Modifiers Applied
 
 | Utility Class Name | Target Effect Behavior |
