@@ -73,7 +73,7 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
 ```
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
@@ -123,7 +123,7 @@ Most people simply forget. This is your reminder. 😊
 | Metric | Value |
 |--------|-------|
 | 📦 **npm Package** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
+| 🌐 **CDN** | [cdn.jsdelivr.net/gh/...](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css) |
 | ⚡ **Classes** | 80+ utility classes, 20+ animation classes |
 | 🎨 **Components** | Buttons (6 variants), Cards (13 variants) |
 | 🔑 **Design Tokens** | 60+ CSS custom properties |
@@ -200,7 +200,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
 </head>
 <body>
   <div class="ease-center ease-fade-in">
@@ -219,7 +219,7 @@ EaseMotion CSS can also be loaded using alternative CDN providers.
 ### jsDelivr (recommended)
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
 ```
 
 ### unpkg
@@ -806,7 +806,7 @@ The project encourages creative variations and parallel implementations rather t
 | 🔀 **Pull Requests** | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls) |
 | 📖 **Documentation** | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/) |
 | 📦 **npm Package** | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css) |
-| 🌐 **CDN** | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css) |
+| 🌐 **CDN** | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css) |
 | 🏆 **GSSoC 2026** | [GirlScript Summer of Code](https://gssoc.girlscript.tech/) |
 
 </div>
