@@ -6,10 +6,10 @@ Skeleton Loading Utilities provide a lightweight, CSS-only solution for building
 
 ## Available classes
 
-- `ease-skeleton` — base skeleton element for generic content placeholders
-- `ease-skeleton-text` — stacked text skeleton with configurable line widths
-- `ease-skeleton-avatar` — circular skeleton perfect for profile images
-- `ease-skeleton-card` — pre-styled card container for skeleton layouts
+- `ease-skeleton` — base skeleton element for generic content placeholders.
+- `ease-skeleton-text` — stacked text skeleton with configurable line widths.
+- `ease-skeleton-avatar` — circular skeleton perfect for profile images.
+- `ease-skeleton-card` — pre-styled card container for skeleton layouts.
 
 ## Installation
 
