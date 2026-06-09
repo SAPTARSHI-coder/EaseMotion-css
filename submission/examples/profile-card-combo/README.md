@@ -1,13 +1,79 @@
 # Advanced Layout Synthesis: Neumorphic-Glass Profile Card Combo
 
+# Neumorphic Glass Profile Card Combo
+
 ## Overview
-An advanced layout showcasing style blending inside an isolated sandbox workspace. It combines the dual-directional lighting calculations of neumorphic shadow design with the frosted depth of a glassmorphic background card overlay.
 
-## 📁 Sandbox Configuration Files
-* `demo.html` — Cross-theme preview playground running background mesh light rings to prove alpha texture stability.
-* `style.css` — Custom layout tracking stylesheet handling complex drop-shadow groupings tied directly back to framework tokens.
+A modern profile card component that combines **Glassmorphism** and **Neumorphism** design principles. The component features a frosted glass background, layered depth shadows, smooth hover interactions, social links, skill badges, and a responsive layout.
 
-## 🚀 Key Layout Mechanics
-1. **Multi-Directional Extrusion Shadows:** Rather than utilizing standard singular box-shadow definitions, this layout models a physical light source by projecting a dark positive coordinate offset paired with a soft negative reflection shadow.
-2. **High-Diffusion Backdrop Filters:** Incorporates a micro-filtered `backdrop-filter: blur(20px)` mask configuration to smooth out busy background vector items, ensuring typography remains legible across any canvas theme layout.
-3. **Hardware Acceleration Shifting:** Elevating states leverage CSS transform adjustments mapped onto standalone compositing pipelines, guaranteeing jitter-free floating animations during hover sequences.
+## Features
+
+* Glassmorphism backdrop blur effect
+* Neumorphic dual-shadow depth styling
+* Circular profile avatar with online status indicator
+* Profile name, role, and bio section
+* Skill badges
+* Social media links
+* Interactive call-to-action button
+* Smooth hover elevation animation
+* Responsive design
+* Uses EaseMotion design tokens
+
+## Files
+
+* `demo.html` — Demonstrates the component in a standalone preview environment.
+* `style.css` — Contains component styling, animations, and interaction effects.
+
+## Usage
+
+1. Open `demo.html` in a modern browser.
+2. Hover over the card to view elevation effects.
+3. Customize the profile image, name, role, skills, social links, and button destination as needed.
+4. Integrate the component into EaseMotion-powered projects.
+
+## Accessibility
+
+* Semantic HTML structure
+* Keyboard-accessible action button
+* Visible focus states
+* Readable typography and spacing
+* Smooth, non-disruptive motion effects
+
+## Design Highlights
+
+### Glassmorphism
+
+Applies a translucent background with backdrop blur to create a frosted glass appearance while maintaining readability.
+
+### Neumorphism
+
+Uses layered shadows and subtle highlights to create depth and a soft tactile visual effect.
+
+### Interactive Experience
+
+The card gently elevates on hover and provides visual feedback on interactive elements, creating a modern user experience.
+
+## Preview
+
+The component presents a professional developer profile card featuring:
+
+* Frosted glass container
+* Neumorphic depth effects
+* Profile avatar
+* Online status indicator
+* Skill badges
+* Social links
+* Interactive profile button
+
+## Compatibility
+
+Supported in all modern browsers that support:
+
+* CSS Flexbox
+* CSS Backdrop Filter
+* CSS Custom Properties (Variables)
+* CSS Transforms and Transitions
+
+## Author
+
+Created as a contribution for the EaseMotion CSS component showcase.
