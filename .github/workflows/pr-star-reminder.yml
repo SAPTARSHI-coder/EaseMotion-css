@@ -1,0 +1,76 @@
+name: PR Star Reminder
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  remind-star:
+    name: Remind to Star Repository
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Check if User Starred Repo
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log(`Checking if PR author "${prAuthor}" has starred the repository ${owner}/${repo}...`);
+            
+            let starred = false;
+            let page = 1;
+            const perPage = 100;
+            
+            while (true) {
+              const { data: stargazers } = await github.rest.activity.listStargazersForRepo({
+                owner,
+                repo,
+                page,
+                per_page: perPage
+              });
+              
+              if (!stargazers || stargazers.length === 0) {
+                break;
+              }
+              
+              const isFound = stargazers.some(item => {
+                const username = item.login || (item.user && item.user.login);
+                return username === prAuthor;
+              });
+              
+              if (isFound) {
+                starred = true;
+                break;
+              }
+              
+              if (stargazers.length < perPage) {
+                break;
+              }
+              page++;
+            }
+            
+            if (starred) {
+              console.log(`User "${prAuthor}" has already starred the repository. No action needed.`);
+            } else {
+              console.log(`User "${prAuthor}" has not starred the repository. Posting reminder comment...`);
+              
+              const commentBody = `### 🎉 Congratulations on your PR merge, @${prAuthor}! 🚀\n\n` +
+                `Thank you so much for your valuable contribution to **EaseMotion CSS**! Your code is now merged into the main branch.\n\n` +
+                `⭐ If you haven't already, please consider **giving this repository a Star**! It helps show your support, increases project visibility, and helps us grow the community. ✨\n\n` +
+                `Thank you again, and happy coding! 💻`;
+                
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+              console.log(`Reminder comment successfully posted.`);
+            }
