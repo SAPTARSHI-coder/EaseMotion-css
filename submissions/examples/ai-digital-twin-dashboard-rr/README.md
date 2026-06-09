@@ -8,8 +8,8 @@ Provides a monitoring interface for digital twin systems, displaying physical as
 
 ```html
 <div class="metric-card">
-    <span>System Health</span>
-    <h2>98%</h2>
+  <span>System Health</span>
+  <h2>98%</h2>
 </div>
 ```
 

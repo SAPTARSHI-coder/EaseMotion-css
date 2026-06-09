@@ -8,7 +8,7 @@ Provides a voting interface where multiple AI agents evaluate a decision and con
 
 ```html
 <div class="agent-card approve">
-    <h3>Research Agent</h3>
+  <h3>Research Agent</h3>
 </div>
 ```
 

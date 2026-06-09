@@ -1,4 +1,3 @@
- 
 # Accordion Component (CSS-only)
 
 CSS-only accordion/FAQ component using details/summary elements with smooth open/close animations.
@@ -21,11 +20,12 @@ CSS-only accordion/FAQ component using details/summary elements with smooth open
 
 ```html
 <details class="ease-accordion">
-    <summary class="ease-accordion-summary">
-        Question Title
-        <span class="accordion-icon">▼</span>
-    </summary>
-    <div class="ease-accordion-content">
-        <p>Answer content here</p>
-    </div>
+  <summary class="ease-accordion-summary">
+    Question Title
+    <span class="accordion-icon">▼</span>
+  </summary>
+  <div class="ease-accordion-content">
+    <p>Answer content here</p>
+  </div>
 </details>
+```

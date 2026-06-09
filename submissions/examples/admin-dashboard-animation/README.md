@@ -31,18 +31,20 @@ submissions/examples/admin-dashboard-animation/
   <div class="em-dash-card__icon">🎓</div>
   <p class="em-dash-card__label">Total Students</p>
   <p class="em-dash-card__value">1,248</p>
-  <span class="em-dash-card__delta em-dash-card__delta--up">▲ 12% vs last year</span>
+  <span class="em-dash-card__delta em-dash-card__delta--up"
+    >▲ 12% vs last year</span
+  >
 </article>
 ```
 
 **Colour variants** — set one modifier class on `.em-dash-card`:
 
-| Class | Accent Colour |
-|---|---|
-| `em-dash-card--blue`  | Indigo `#6366f1` |
+| Class                 | Accent Colour     |
+| --------------------- | ----------------- |
+| `em-dash-card--blue`  | Indigo `#6366f1`  |
 | `em-dash-card--green` | Emerald `#22c55e` |
-| `em-dash-card--amber` | Amber `#f59e0b` |
-| `em-dash-card--red`   | Red `#ef4444` |
+| `em-dash-card--amber` | Amber `#f59e0b`   |
+| `em-dash-card--red`   | Red `#ef4444`     |
 
 ---
 
@@ -96,39 +98,68 @@ Dot variants: `--blue`, `--green`, `--amber`, `--red` — each pulses with a col
 ## How the Animations Work
 
 ### Card Entrance — staggered slide-up + fade
+
 ```css
 @keyframes em-kf-card-enter {
-  from { opacity: 0; transform: translateY(20px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)     scale(1);   }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 ```
+
 Cards 1–4 are delayed by `0.1s` increments so they cascade in from left to right.
 
 ### Bar Chart — scale from origin
+
 ```css
 @keyframes em-kf-bar-fill {
-  from { transform: scaleX(0); }
-  to   { transform: scaleX(1); }
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 ```
+
 `transform-origin: left` makes each bar grow from its left edge, mimicking a real data-loading reveal.
 
 ### Sparkline — scaleY from bottom
+
 ```css
 @keyframes em-kf-bar-grow {
-  from { transform: scaleY(0); }
-  to   { transform: scaleY(1); }
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
 }
 ```
+
 `transform-origin: bottom` makes mini bars grow upward from their baseline.
 
 ### Live Dot Pulse
+
 ```css
 @keyframes em-kf-dot-pulse {
-  0%, 100% { opacity: 1;   transform: scale(1);    }
-  50%       { opacity: 0.5; transform: scale(0.75); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.75);
+  }
 }
 ```
+
 Gives a subtle heartbeat to the activity indicator dots.
 
 ---
@@ -139,17 +170,18 @@ Override any design token in your own `:root` or inline on a parent element:
 
 ```css
 :root {
-  --ease-dash-bg:           #ffffff;  /* light mode background */
-  --ease-dash-surface:      #f8fafc;
+  --ease-dash-bg: #ffffff; /* light mode background */
+  --ease-dash-surface: #f8fafc;
   --ease-dash-text-primary: #0f172a;
-  --ease-dash-accent-blue:  #3b82f6;  /* change brand colour */
+  --ease-dash-accent-blue: #3b82f6; /* change brand colour */
 }
 ```
 
 Adjust animation timing:
+
 ```css
 :root {
-  --ease-dur-slow:    1.2s;   /* slower entrance */
+  --ease-dur-slow: 1.2s; /* slower entrance */
   --ease-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 ```
@@ -168,12 +200,12 @@ Adjust animation timing:
 
 ## Browser Support
 
-| Browser | Version | Notes |
-|---|---|---|
-| Chrome / Edge | 80+ | Full support |
-| Firefox | 72+ | Full support |
-| Safari | 14+ | Full support |
-| iOS Safari | 14+ | Full support |
+| Browser       | Version | Notes        |
+| ------------- | ------- | ------------ |
+| Chrome / Edge | 80+     | Full support |
+| Firefox       | 72+     | Full support |
+| Safari        | 14+     | Full support |
+| iOS Safari    | 14+     | Full support |
 
 ---
 

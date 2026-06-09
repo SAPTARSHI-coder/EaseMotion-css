@@ -8,8 +8,8 @@ Provides a dashboard interface for visualizing AI usage metrics, token consumpti
 
 ```html
 <div class="stat-card">
-    <span class="label">Monthly Cost</span>
-    <h2>$124.50</h2>
+  <span class="label">Monthly Cost</span>
+  <h2>$124.50</h2>
 </div>
 ```
 

@@ -8,7 +8,7 @@ Provides a monitoring interface for AI inference gateways, displaying request ro
 
 ```html
 <div class="endpoint-card">
-    <h3>GPT-4 Endpoint</h3>
+  <h3>GPT-4 Endpoint</h3>
 </div>
 ```
 

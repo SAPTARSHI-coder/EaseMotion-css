@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring autonomous AI agents, task execu
 
 ```html
 <div class="agent-card">
-    <h3>Research Agent</h3>
+  <h3>Research Agent</h3>
 </div>
 ```
 

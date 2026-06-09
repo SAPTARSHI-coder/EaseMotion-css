@@ -8,8 +8,8 @@ Provides a responsive marketplace interface for showcasing AI agents with catego
 
 ```html
 <div class="agent-card">
-    <span class="category">Development</span>
-    <h3>CodePilot AI</h3>
+  <span class="category">Development</span>
+  <h3>CodePilot AI</h3>
 </div>
 ```
 

@@ -8,11 +8,11 @@ As users scroll through the page or click navigation links, the corresponding na
 
 ## Features
 
-* Automatic active-state detection using Intersection Observer
-* Updates navigation state while scrolling
-* Updates navigation state when links are clicked
-* Smooth scrolling support
-* Lightweight and dependency-free implementation
+- Automatic active-state detection using Intersection Observer
+- Updates navigation state while scrolling
+- Updates navigation state when links are clicked
+- Smooth scrolling support
+- Lightweight and dependency-free implementation
 
 ## Usage
 
@@ -31,10 +31,10 @@ The active class is automatically applied to the navigation item corresponding t
 
 The active navigation item includes:
 
-* Highlighted text color
-* Background accent
-* Left border indicator
-* Increased font weight
+- Highlighted text color
+- Background accent
+- Left border indicator
+- Increased font weight
 
 ## Why is it useful?
 
@@ -42,10 +42,10 @@ Documentation pages can become lengthy and difficult to navigate.
 
 Active Navigation Highlighting improves usability by:
 
-* Helping users understand their current location
-* Providing clear visual feedback
-* Improving navigation within long documentation pages
-* Creating a more intuitive developer experience
+- Helping users understand their current location
+- Providing clear visual feedback
+- Improving navigation within long documentation pages
+- Creating a more intuitive developer experience
 
 ## Implementation Details
 

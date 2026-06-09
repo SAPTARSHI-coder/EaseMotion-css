@@ -8,7 +8,7 @@ Provides a dashboard interface for visualizing AI model explanations, feature im
 
 ```html
 <div class="feature">
-    <span>Credit Score</span>
+  <span>Credit Score</span>
 </div>
 ```
 

@@ -79,7 +79,7 @@
 
         // ── Visual feedback ──────────────────────────────────────
         var originalLabel = button.getAttribute("aria-label");
-        var originalText  = button.textContent.trim();
+        var originalText = button.textContent.trim();
 
         button.classList.add("is-copied");
 
@@ -92,7 +92,7 @@
         // ── Screen-reader announcement ───────────────────────────
         // Announce what was copied so users do not have to infer it.
         var copyTarget = originalLabel
-          ? originalLabel.replace(/^Copy\s+/i, "")   // e.g. "--ease-speed-fast variable"
+          ? originalLabel.replace(/^Copy\s+/i, "") // e.g. "--ease-speed-fast variable"
           : textToCopy;
         announce("Copied " + copyTarget);
 
