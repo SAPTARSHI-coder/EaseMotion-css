@@ -1,4 +1,3 @@
- 
 # Blur Icon Hover Animation
 
 Smooth blur transition for icons — blurs and regains clarity on hover.
@@ -27,3 +26,4 @@ Smooth blur transition for icons — blurs and regains clarity on hover.
 
 <!-- On buttons -->
 <button class="ease-blur-icon">❤️ Like</button>
+```

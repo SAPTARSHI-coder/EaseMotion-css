@@ -10,12 +10,12 @@ Add the animation class to any card, alert, panel, or button that already has a 
 
 ```html
 <article class="feature-card blur-border-entrance">
-    <h2>Revenue Snapshot</h2>
-    <p>Use this on cards that need a polished first-load highlight.</p>
+  <h2>Revenue Snapshot</h2>
+  <p>Use this on cards that need a polished first-load highlight.</p>
 </article>
 
 <button class="action-button blur-border-entrance" type="button">
-    Continue setup
+  Continue setup
 </button>
 ```
 

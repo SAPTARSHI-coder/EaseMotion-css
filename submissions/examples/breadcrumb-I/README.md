@@ -1,4 +1,3 @@
- 
 # Breadcrumb with Animated Separator
 
 Breadcrumb navigation with animated separator icons — chevrons rotate, scale, or slide on hover.
@@ -26,9 +25,10 @@ Breadcrumb navigation with animated separator icons — chevrons rotate, scale, 
 
 ```html
 <div class="ease-breadcrumb">
-    <a href="#" class="breadcrumb-link">Home</a>
-    <span class="breadcrumb-separator-rotate">›</span>
-    <a href="#" class="breadcrumb-link">Products</a>
-    <span class="breadcrumb-separator">›</span>
-    <span class="breadcrumb-current">Electronics</span>
+  <a href="#" class="breadcrumb-link">Home</a>
+  <span class="breadcrumb-separator-rotate">›</span>
+  <a href="#" class="breadcrumb-link">Products</a>
+  <span class="breadcrumb-separator">›</span>
+  <span class="breadcrumb-current">Electronics</span>
 </div>
+```

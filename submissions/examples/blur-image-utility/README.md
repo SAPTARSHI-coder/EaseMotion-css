@@ -15,3 +15,4 @@ Add the class:
 
 ```html
 <img src="image.jpg" class="blur-image-utility" />
+```

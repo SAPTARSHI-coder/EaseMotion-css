@@ -4,12 +4,12 @@ A breadcrumb trail showing the user's current location in a hierarchy. Pure CSS 
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-breadcrumb` | Ordered list container (default separator: `/`) |
-| `ease-breadcrumb-arrow` | `›` separator variant |
-| `ease-breadcrumb-bullet` | `•` separator variant |
-| `ease-breadcrumb-chevron` | `❯` separator variant |
+| Class                     | Description                                     |
+| ------------------------- | ----------------------------------------------- |
+| `ease-breadcrumb`         | Ordered list container (default separator: `/`) |
+| `ease-breadcrumb-arrow`   | `›` separator variant                           |
+| `ease-breadcrumb-bullet`  | `•` separator variant                           |
+| `ease-breadcrumb-chevron` | `❯` separator variant                           |
 
 ## Usage
 
@@ -27,7 +27,7 @@ A breadcrumb trail showing the user's current location in a hierarchy. Pure CSS 
 Add a modifier class for a different separator:
 
 ```html
-<ol class="ease-breadcrumb ease-breadcrumb-arrow">
+<ol class="ease-breadcrumb ease-breadcrumb-arrow"></ol>
 ```
 
 ## Why it fits EaseMotion CSS

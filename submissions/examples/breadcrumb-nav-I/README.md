@@ -1,4 +1,3 @@
- 
 # Breadcrumb Component
 
 Breadcrumb navigation component with customizable separator via CSS variable.
@@ -23,18 +22,17 @@ Breadcrumb navigation component with customizable separator via CSS variable.
 
 ```html
 <div class="ease-breadcrumb">
-    <div class="ease-breadcrumb-item">
-        <a href="#">Home</a>
-    </div>
-    <div class="ease-breadcrumb-item">
-        <a href="#">Products</a>
-    </div>
-    <div class="ease-breadcrumb-item">
-        <span>Electronics</span>
-    </div>
+  <div class="ease-breadcrumb-item">
+    <a href="#">Home</a>
+  </div>
+  <div class="ease-breadcrumb-item">
+    <a href="#">Products</a>
+  </div>
+  <div class="ease-breadcrumb-item">
+    <span>Electronics</span>
+  </div>
 </div>
 
 <!-- Custom separator -->
-<div class="ease-breadcrumb" style="--ease-breadcrumb-sep: '/';">
-    ...
-</div>
+<div class="ease-breadcrumb" style="--ease-breadcrumb-sep: '/';">...</div>
+```

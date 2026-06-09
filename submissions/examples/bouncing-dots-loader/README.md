@@ -23,9 +23,11 @@ The bouncing dots loader is a classic loading animation that provides clear visu
 Submitted by: @Pr241singh
 Date: 2026-05-31
 Status: **Pending review**
+
 # Bouncing Dots Loader Animation
 
 ### What does this do?
+
 This submission adds a highly customizable and accessible three-dot bouncing loader animation (`.dots-loader`) with staggered animation delays, ideal for inline action buttons and page-level loading indicators.
 
 ---
@@ -43,16 +45,19 @@ Include three child `.dot` elements inside a parent `.dots-loader` container:
 ```
 
 #### Size Scale Classes (Helper Classes)
+
 - **Small** (ideal inside buttons): `.dots-loader-sm`
 - **Large** (ideal for overlays): `.dots-loader-lg`
 
 #### Theme Classes
+
 - **Success Theme**: `.dots-loader-success`
 - **Danger Theme**: `.dots-loader-danger`
 - **Warning Theme**: `.dots-loader-warning`
 - **Gradient Theme**: `.dots-loader-gradient`
 
 #### Custom CSS Variables Configuration
+
 You can customize the loader properties dynamically by overriding variables in your local stylesheet:
 
 ```css
@@ -69,6 +74,6 @@ You can customize the loader properties dynamically by overriding variables in y
 
 ### Why does it fit EaseMotion CSS?
 
-A staggered bouncing dots loader is an industry-standard indicator for inline form submissions, loading overlays, and dynamic states that was previously missing from the framework. 
+A staggered bouncing dots loader is an industry-standard indicator for inline form submissions, loading overlays, and dynamic states that was previously missing from the framework.
 
 By building it entirely on CSS variables (`--dot-size`, `--dot-color`, `--dot-gap`, etc.), we avoid hardcoded styling limitations. Developers can tweak speed, size, spacing, and colors to match their brand using simple, declarative CSS variables, upholding EaseMotion CSS's philosophy of highly composable, human-readable utility design.

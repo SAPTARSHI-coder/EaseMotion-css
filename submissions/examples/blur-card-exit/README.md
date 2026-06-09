@@ -4,6 +4,7 @@
 A card dismisses with opacity, blur, scale, and downward motion to create a soft exit state.
 
 **How is it used?**
+
 ```html
 <article class="blur-card">
   <span class="status-pill">Review ready</span>
