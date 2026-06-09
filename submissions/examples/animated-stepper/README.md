@@ -56,32 +56,32 @@ A modern, accessible, and fully responsive animated stepper component built with
 ### Link the Stylesheet
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## 📚 CSS Classes Reference
 
 ### Container Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-stepper` | Main container for horizontal stepper layout |
-| `.ease-stepper-vertical` | Modifier class for vertical stepper layout |
+| Class                    | Purpose                                      |
+| ------------------------ | -------------------------------------------- |
+| `.ease-stepper`          | Main container for horizontal stepper layout |
+| `.ease-stepper-vertical` | Modifier class for vertical stepper layout   |
 
 ### Step Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-step` | Individual step element container |
-| `.ease-step-completed` | Marks a completed step (shows checkmark) |
-| `.ease-step-active` | Marks the current/active step (highlighted with pulse animation) |
+| Class                  | Purpose                                                          |
+| ---------------------- | ---------------------------------------------------------------- |
+| `.ease-step`           | Individual step element container                                |
+| `.ease-step-completed` | Marks a completed step (shows checkmark)                         |
+| `.ease-step-active`    | Marks the current/active step (highlighted with pulse animation) |
 
 ### Sub-element Classes
 
-| Class | Purpose |
-|-------|---------|
+| Class          | Purpose                                     |
+| -------------- | ------------------------------------------- |
 | `.step-marker` | Container for step number or indicator icon |
-| `.step-label` | Container for step text label |
+| `.step-label`  | Container for step text label               |
 
 ## 🎨 Customization with CSS Variables
 
@@ -91,22 +91,22 @@ Customize the appearance and behavior by overriding CSS variables:
 :root {
   /* Primary color for active step */
   --stepper-primary-color: #667eea;
-  
+
   /* Color for completed steps */
   --stepper-completed-color: #48bb78;
-  
+
   /* Background color for inactive steps */
   --stepper-bg-color: #f0f4ff;
-  
+
   /* Animation speed (default: 0.3s) */
   --stepper-animation-speed: 0.3s;
-  
+
   /* Size of step marker circles */
   --stepper-size: 45px;
-  
+
   /* Height of progress line */
   --stepper-line-height: 3px;
-  
+
   /* Gap between steps */
   --stepper-spacing: 30px;
 }
@@ -144,11 +144,18 @@ The component automatically adapts to different screen sizes:
 ### Example: Accessible Markup
 
 ```html
-<div class="ease-step ease-step-completed" aria-label="Step 1: Profile Setup completed">
+<div
+  class="ease-step ease-step-completed"
+  aria-label="Step 1: Profile Setup completed"
+>
   <div class="step-marker">✓</div>
   <div class="step-label">Profile Setup</div>
 </div>
-<div class="ease-step ease-step-active" aria-label="Step 2: Account Verification current" aria-current="step">
+<div
+  class="ease-step ease-step-active"
+  aria-label="Step 2: Account Verification current"
+  aria-current="step"
+>
   <div class="step-marker">2</div>
   <div class="step-label">Account Verification</div>
 </div>
@@ -163,18 +170,23 @@ The component automatically adapts to different screen sizes:
 The component includes several smooth animations:
 
 ### Pop-In Animation
+
 Completed steps animate in with a pop effect when they receive the `.ease-step-completed` class.
 
 ### Pulse Animation
+
 The active step continuously pulses to draw attention with a breathing effect.
 
 ### Ripple Effect
+
 Active step marker includes a ripple animation for visual feedback.
 
 ### Smooth Transitions
+
 All state changes include smooth transitions for a polished feel.
 
 ### Hover Effects
+
 Upcoming steps show interactive hover states that scale and change color.
 
 ## 📊 Use Cases

@@ -6,8 +6,8 @@ A terminal-inspired logo reveal animation that progressively decrypts text from 
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Self-contained logo reveal showcase featuring character scrambling, cursor blinking, and replay functionality.
-* `style.css` — Scoped styling layer controlling typography, layout, transitions, cursor animation, and visual presentation.
+- `demo.html` — Self-contained logo reveal showcase featuring character scrambling, cursor blinking, and replay functionality.
+- `style.css` — Scoped styling layer controlling typography, layout, transitions, cursor animation, and visual presentation.
 
 ## 🚀 Key Animation Mechanics
 
@@ -45,14 +45,14 @@ All logic, styling, and rendering remain fully contained within the sandbox subm
 
 ## 🎯 Use Cases
 
-* Logo introductions
-* Portfolio landing pages
-* Developer websites
-* Cyberpunk-themed interfaces
-* Terminal-style UIs
-* Product launch animations
-* Loading screens
-* Interactive brand reveals
+- Logo introductions
+- Portfolio landing pages
+- Developer websites
+- Cyberpunk-themed interfaces
+- Terminal-style UIs
+- Product launch animations
+- Loading screens
+- Interactive brand reveals
 
 ## ✨ Why It Fits EaseMotion CSS
 

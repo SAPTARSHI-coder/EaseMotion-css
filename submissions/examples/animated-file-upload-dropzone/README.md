@@ -5,7 +5,7 @@
 
 2. **How is it used?**
    Apply the dropzone structure using the `.dz` class (see `demo.html` for the full markup):
-   
+
    ```html
    <label class="dz" for="file">
      <input id="file" class="dz__input" type="file" multiple />
@@ -15,4 +15,3 @@
 
 3. **Why is it useful?**
    EaseMotion CSS is built around smooth, human-readable micro-interactions—this component shows clear visual feedback at each upload moment (idle → drag-over → uploading → done) using modern CSS animations and reduced-motion-safe behavior.
-

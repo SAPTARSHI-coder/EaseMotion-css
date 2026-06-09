@@ -7,9 +7,7 @@ Provides a monitoring interface for autonomous AI swarms, displaying coordinatio
 ## How is it used?
 
 ```html
-<div class="agent">
-    A1
-</div>
+<div class="agent">A1</div>
 ```
 
 ## Why is it useful?

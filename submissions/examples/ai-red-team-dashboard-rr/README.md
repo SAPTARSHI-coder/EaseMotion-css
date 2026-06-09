@@ -8,8 +8,8 @@ Provides a dashboard interface for monitoring AI safety, security testing, attac
 
 ```html
 <div class="stat-card">
-    <span class="label">Security Score</span>
-    <h2>92%</h2>
+  <span class="label">Security Score</span>
+  <h2>92%</h2>
 </div>
 ```
 

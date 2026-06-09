@@ -9,9 +9,7 @@ Creates animated tooltips with multiple positions, animation styles, and theme v
 ```html
 <div class="tooltip-wrap">
   <button>Hover Me</button>
-  <span class="tooltip top fade dark">
-    Hello!
-  </span>
+  <span class="tooltip top fade dark"> Hello! </span>
 </div>
 ```
 

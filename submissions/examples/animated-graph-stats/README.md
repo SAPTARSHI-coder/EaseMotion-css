@@ -6,8 +6,8 @@ A lightweight animated title-card experience built primarily with HTML and CSS, 
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Standalone animation showcase rendering the EaseMotion CSS title sequence, decorative geometric elements, and replay controls.
-* `style.css` — Encapsulated styling layer containing typography, layout rules, animation keyframes, easing curves, and visual state transitions.
+- `demo.html` — Standalone animation showcase rendering the EaseMotion CSS title sequence, decorative geometric elements, and replay controls.
+- `style.css` — Encapsulated styling layer containing typography, layout rules, animation keyframes, easing curves, and visual state transitions.
 
 ## 🚀 Key Animation Mechanics
 

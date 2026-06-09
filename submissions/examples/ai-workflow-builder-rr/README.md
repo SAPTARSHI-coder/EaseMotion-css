@@ -8,7 +8,7 @@ Provides a visual workflow builder interface for representing AI processing pipe
 
 ```html
 <div class="node">
-    <h3>AI Model</h3>
+  <h3>AI Model</h3>
 </div>
 ```
 
