@@ -20,27 +20,27 @@ When `var(--missing-var)` has no fallback, the property becomes invalid and the 
 
 ### `core/animations.css` — Key var() usages needing fallbacks
 
-| Variable | Recommended Fallback |
-|----------|---------------------|
-| `--ease-speed-fast` | `150ms` |
-| `--ease-speed-medium` | `300ms` |
-| `--ease-speed-slow` | `600ms` |
-| `--ease-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` |
-| `--ease-ease-out` | `cubic-bezier(0, 0, 0.2, 1)` |
-| `--ease-ease-bounce` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
-| `--ease-color-primary` | `#6c63ff` |
-| `--ease-color-neutral-100` | `#f1f5f9` |
-| `--ease-color-neutral-200` | `#e2e8f0` |
-| `--ease-radius-md` | `0.5rem` |
-| `--ease-shadow-xl` | `0 20px 25px -5px rgba(0,0,0,0.10)` |
-| `--ease-glow-primary` | `0 0 16px rgba(108, 99, 255, 0.45)` |
+| Variable                   | Recommended Fallback                |
+| -------------------------- | ----------------------------------- |
+| `--ease-speed-fast`        | `150ms`                             |
+| `--ease-speed-medium`      | `300ms`                             |
+| `--ease-speed-slow`        | `600ms`                             |
+| `--ease-ease`              | `cubic-bezier(0.4, 0, 0.2, 1)`      |
+| `--ease-ease-out`          | `cubic-bezier(0, 0, 0.2, 1)`        |
+| `--ease-ease-bounce`       | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| `--ease-color-primary`     | `#6c63ff`                           |
+| `--ease-color-neutral-100` | `#f1f5f9`                           |
+| `--ease-color-neutral-200` | `#e2e8f0`                           |
+| `--ease-radius-md`         | `0.5rem`                            |
+| `--ease-shadow-xl`         | `0 20px 25px -5px rgba(0,0,0,0.10)` |
+| `--ease-glow-primary`      | `0 0 16px rgba(108, 99, 255, 0.45)` |
 
 ### `core/variables.css` — Self-referencing vars needing fallbacks
 
-| Variable | Recommended Fallback |
-|----------|---------------------|
-| `--ease-color-bg: var(--ease-color-neutral-50)` | `var(--ease-color-neutral-50, #f8fafc)` |
-| `--ease-color-text: var(--ease-color-neutral-800)` | `var(--ease-color-neutral-800, #1e293b)` |
+| Variable                                            | Recommended Fallback                     |
+| --------------------------------------------------- | ---------------------------------------- |
+| `--ease-color-bg: var(--ease-color-neutral-50)`     | `var(--ease-color-neutral-50, #f8fafc)`  |
+| `--ease-color-text: var(--ease-color-neutral-800)`  | `var(--ease-color-neutral-800, #1e293b)` |
 | `--ease-color-muted: var(--ease-color-neutral-500)` | `var(--ease-color-neutral-500, #64748b)` |
 
 ## How is it used?
@@ -55,7 +55,8 @@ The `style.css` file contains the corrected animation classes with proper fallba
 
 /* After */
 .ease-fade-in {
-  animation: ease-kf-fade-in var(--ease-speed-medium, 300ms) var(--ease-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
+  animation: ease-kf-fade-in var(--ease-speed-medium, 300ms)
+    var(--ease-ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
 }
 ```
 

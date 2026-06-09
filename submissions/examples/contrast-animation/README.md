@@ -12,8 +12,13 @@ Animates the CSS `contrast()` filter — cycling from 50% (washed-out) to 200% (
 }
 
 @keyframes con-cycle {
-  0%, 100% { filter: contrast(0.5); }
-  50%      { filter: contrast(2); }
+  0%,
+  100% {
+    filter: contrast(0.5);
+  }
+  50% {
+    filter: contrast(2);
+  }
 }
 ```
 

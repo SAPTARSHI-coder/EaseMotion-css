@@ -8,13 +8,25 @@ Demonstrates the CSS `@scope` rule — which scopes styles to a specific contain
 
 ```css
 @scope (#container-a) {
-  .highlight { animation: rotate 2s infinite; }
-  @keyframes rotate { 50% { rotate: 5deg; } }
+  .highlight {
+    animation: rotate 2s infinite;
+  }
+  @keyframes rotate {
+    50% {
+      rotate: 5deg;
+    }
+  }
 }
 
 @scope (#container-b) {
-  .highlight { animation: bounce 2s infinite; }
-  @keyframes bounce { 50% { translate: 0 -6px; } }
+  .highlight {
+    animation: bounce 2s infinite;
+  }
+  @keyframes bounce {
+    50% {
+      translate: 0 -6px;
+    }
+  }
 }
 ```
 
