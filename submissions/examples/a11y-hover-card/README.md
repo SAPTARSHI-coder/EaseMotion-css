@@ -9,3 +9,5 @@ An accessible hover card component that gracefully degrades its animations when 
 
 ## Usage
 Simply include the CSS and HTML structures to provide an accessible component for users prone to vestibular motion sickness.
+
+<!-- Trigger CI re-run -->
