@@ -1,10 +1,12 @@
 <div align="center">
 
-<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="500" />
+<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="570" />
+
+<br/>
 
 # ⚡ EaseMotion CSS
 
-**মানুষের ভাষায় লেখা। অ্যানিমেশন-প্রথম। শূন্য নির্ভরতা।**
+**এক্সপ্রেসিভ UI মোশনের জন্য আধুনিক অ্যানিমেশন ফ্রেমওয়ার্ক।**
 
 UI লেখো যেভাবে ইংরেজিতে বলো। কোনো বিল্ড স্টেপ নেই। শর্টহ্যান্ড মুখস্থ করতে হবে না। শুধু একটা ফাইল লিঙ্ক করো আর শিপ করো।
 
@@ -13,11 +15,13 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
-[![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=6c63ff)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=22c55e)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
-[![GitHub Contributors](https://img.shields.io/github/contributors/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=f59e0b)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
-[![Open PRs](https://img.shields.io/github/issues-pr/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
-[![Open Issues](https://img.shields.io/github/issues/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
+[![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
+[![GitHub Forks](https://flat.badgen.net/github/forks/SAPTARSHI-coder/EaseMotion-css?color=22c55e&icon=github&label=forks)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
+[![GitHub Contributors](https://img.shields.io/badge/contributors-236-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![Merged PRs](https://img.shields.io/badge/merged%20PRs-1591-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
+[![Closed Issues](https://img.shields.io/badge/closed%20issues-1149-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
+[![Open PRs](https://flat.badgen.net/github/open-prs/SAPTARSHI-coder/EaseMotion-css?color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
+[![Open Issues](https://flat.badgen.net/github/open-issues/SAPTARSHI-coder/EaseMotion-css?color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
