@@ -2,8 +2,6 @@ name: PR Submission Validator
 
 on:
   pull_request_target:
-    paths:
-      - 'submissions/**'
 
 permissions:
   contents: read
@@ -43,6 +41,7 @@ jobs:
             const exampleFolders = new Set();
             const casingErrors = [];
             const folderCaseMap = new Map();
+            const coreFiles = [];
 
             for (const file of files) {
               const filename = file.filename;
@@ -93,12 +92,32 @@ jobs:
                     }
                   }
                 }
+              } else {
+                if (!filename.startsWith('docs/') && filename !== 'README.md' && filename !== 'LICENSE' && filename !== 'package.json') {
+                  coreFiles.push(filename);
+                }
               }
             }
 
+            const failures = [];
+            const successes = [];
+
+            if (coreFiles.length > 0) {
+              failures.push({
+                folder: 'Core Framework Protection',
+                casingErrors: [`PR modifies core framework/configuration files: ${coreFiles.join(', ')}. Contributors are only allowed to modify files inside the \`submissions/\` directory.`],
+                missing: [],
+                present: []
+              });
+            }
+
             if (exampleFolders.size === 0) {
-              console.log('No files modified inside submissions/ folders.');
-              return;
+              failures.push({
+                folder: 'Submission Folder Protection',
+                casingErrors: ['This PR does not contain any modifications or additions inside the `submissions/` directory. Contributors must place their submissions under `submissions/examples/your-feature-name/`.'],
+                missing: [],
+                present: []
+              });
             }
 
             // Required files and their purposes
@@ -107,9 +126,6 @@ jobs:
               'style.css': 'CSS styles for the demo',
               'README.md': 'Documentation and usage guide'
             };
-
-            const failures = [];
-            const successes = [];
 
             if (casingErrors.length > 0) {
               failures.push({
@@ -155,9 +171,11 @@ jobs:
       - name: Create/Update Failure Comment
         if: failure() && steps.validate.outputs.hasFailures == 'true'
         uses: actions/github-script@v8
+        env:
+          FAILURES_JSON: ${{ steps.validate.outputs.failures }}
         with:
           script: |
-            const failures = JSON.parse(`${{ steps.validate.outputs.failures }}`);
+            const failures = JSON.parse(process.env.FAILURES_JSON);
             
             let commentBody = `## ❌ Submission Validation Failed\n\n`;
             commentBody += `Thank you for your contribution! However, some required files are missing.\n\n`;
@@ -238,9 +256,11 @@ jobs:
       - name: Create/Update Success Comment
         if: success() && steps.validate.outputs.hasFailures == 'false' && steps.validate.outputs.successes != '[]'
         uses: actions/github-script@v8
+        env:
+          SUCCESSES_JSON: ${{ steps.validate.outputs.successes }}
         with:
           script: |
-            const successes = JSON.parse(`${{ steps.validate.outputs.successes }}`);
+            const successes = JSON.parse(process.env.SUCCESSES_JSON);
             
             let commentBody = `## ✅ Submission Validation Passed!\n\n`;
             commentBody += `Great job! All required files are present.\n\n`;
@@ -340,10 +360,12 @@ jobs:
             }
 
       - name: Summary Output
+        env:
+          HAS_FAILURES: ${{ steps.validate.outputs.hasFailures }}
         run: |
           echo "## Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.validate.outputs.hasFailures }}" == "true" ]; then
+          if [ "$HAS_FAILURES" == "true" ]; then
             echo "❌ **Status:** Validation Failed" >> $GITHUB_STEP_SUMMARY
             echo "Please check the comments above for details." >> $GITHUB_STEP_SUMMARY
           else
