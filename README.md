@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/docs/assets/banner.svg" alt="EaseMotion CSS" width="100%" />
+<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="500" />
 
 # ⚡ EaseMotion CSS
 
