@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="420" />
+<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="570" />
 
 <br/>
 
@@ -17,7 +17,9 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
 [![GitHub Forks](https://flat.badgen.net/github/forks/SAPTARSHI-coder/EaseMotion-css?color=22c55e&icon=github&label=forks)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
-[![GitHub Contributors](https://flat.badgen.net/github/contributors/SAPTARSHI-coder/EaseMotion-css?color=f59e0b&icon=github&label=contributors)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![GitHub Contributors](https://img.shields.io/badge/contributors-236-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![Merged PRs](https://img.shields.io/badge/merged%20PRs-1591-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
+[![Closed Issues](https://img.shields.io/badge/closed%20issues-1149-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
 [![Open PRs](https://flat.badgen.net/github/open-prs/SAPTARSHI-coder/EaseMotion-css?color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
 [![Open Issues](https://flat.badgen.net/github/open-issues/SAPTARSHI-coder/EaseMotion-css?color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
