@@ -9,6 +9,7 @@ EaseMotion CSS has a complete `--ease-*` variable system but dark mode was never
 ## What's Included
 
 ### `style.css`
+
 Contains two dark mode override blocks targeting the same set of `--ease-*` visual tokens:
 
 - `@media (prefers-color-scheme: dark)` — auto dark mode, zero JS, follows OS preference
@@ -18,6 +19,7 @@ Contains two dark mode override blocks targeting the same set of `--ease-*` visu
 Only visual tokens are overridden — colors, surfaces, shadows, and glows. Spacing, radii, typography, motion, and z-index are theme-neutral and left untouched.
 
 ### `demo.html`
+
 A fully interactive single-page demo showing:
 
 - A toggle button that switches themes and persists the choice via `localStorage`
@@ -29,14 +31,14 @@ A fully interactive single-page demo showing:
 
 ## Variables Overridden
 
-| Token | Reason |
-|---|---|
-| `--ease-color-bg` / `--ease-color-surface` | Page and card backgrounds |
-| `--ease-color-text` / `--ease-color-muted` | Body and secondary text |
-| `--ease-color-primary` (+ light/dark) | Accent — brightened for dark bg |
+| Token                                              | Reason                                  |
+| -------------------------------------------------- | --------------------------------------- |
+| `--ease-color-bg` / `--ease-color-surface`         | Page and card backgrounds               |
+| `--ease-color-text` / `--ease-color-muted`         | Body and secondary text                 |
+| `--ease-color-primary` (+ light/dark)              | Accent — brightened for dark bg         |
 | `--ease-color-success/danger/warning` (+ variants) | Status colours — lightened for contrast |
-| `--ease-shadow-sm/md/lg/xl` | Deeper opacity on dark surfaces |
-| `--ease-glow-primary/success/danger` | Intensified glow opacity |
+| `--ease-shadow-sm/md/lg/xl`                        | Deeper opacity on dark surfaces         |
+| `--ease-glow-primary/success/danger`               | Intensified glow opacity                |
 
 ---
 

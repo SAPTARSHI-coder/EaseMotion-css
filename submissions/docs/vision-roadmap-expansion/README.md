@@ -8,11 +8,12 @@ If developers can describe a design in plain English, they should be able to imp
 Unlike many utility-first frameworks that rely on abbreviated naming conventions, EaseMotion CSS focuses on expressive class names, animation-first design, and zero-dependency simplicity.
 
 Short-Term Roadmap (Next 3 Months)
+
 1. Documentation Improvements
-Expand framework documentation with detailed examples.
-Improve onboarding guides for first-time contributors.
-Add interactive usage examples and demos.
-Create migration and upgrade guides.
+   Expand framework documentation with detailed examples.
+   Improve onboarding guides for first-time contributors.
+   Add interactive usage examples and demos.
+   Create migration and upgrade guides.
 2. Component Expansion
 
 Planned additions include:
@@ -30,14 +31,12 @@ Tabs
 Feedback components
 Alerts
 Toast notifications
-Progress indicators
-3. Animation Library Growth
+Progress indicators 3. Animation Library Growth
 Additional entrance animations
 Exit animations
 Scroll-triggered effects
 Motion presets for common UI interactions
-Reduced-motion accessibility support improvements
-4. Testing and Quality Assurance
+Reduced-motion accessibility support improvements 4. Testing and Quality Assurance
 Browser compatibility validation
 Performance benchmarking
 Accessibility audits
@@ -87,8 +86,7 @@ EaseMotion CSS will not require:
 
 Custom build pipelines
 Mandatory preprocessors
-Heavy tooling dependencies
-2. Cryptic Naming Conventions
+Heavy tooling dependencies 2. Cryptic Naming Conventions
 
 The framework will avoid:
 
@@ -108,8 +106,7 @@ React
 Vue
 Angular
 Svelte
-Any future frontend framework
-4. Dependency Bloat
+Any future frontend framework 4. Dependency Bloat
 
 The project should continue prioritizing:
 

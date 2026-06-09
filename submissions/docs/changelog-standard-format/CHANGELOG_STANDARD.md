@@ -16,15 +16,19 @@ Each release entry follows this standard structure:
 ## [version] — YYYY-MM-DD
 
 ### Added
+
 - List of new features, utilities, components, or documentation
 
 ### Changed
+
 - List of changes to existing functionality or behavior
 
 ### Fixed
+
 - List of bug fixes
 
 ### Deprecated
+
 - List of features or utilities that are no longer recommended
 ```
 
@@ -51,23 +55,28 @@ Each release entry follows this standard structure:
 ### 4. **Entry Format**
 
 **Simple Entry:**
+
 ```markdown
 - Brief description of the change
 ```
 
 **Grouped Entry (for multiple related items):**
+
 ```markdown
 ### Added
 
 #### Category Name
+
 - First item in category
 - Second item in category
 
 #### Another Category
+
 - Item description
 ```
 
 **Entry with Technical Details:**
+
 ```markdown
 - Feature name — Description with context
   - Technical note or sub-item
@@ -76,13 +85,13 @@ Each release entry follows this standard structure:
 
 ### 5. **Formatting Best Practices**
 
-| Element | Format | Example |
-|---------|--------|---------|
-| Class names | Backticks | `` `.ease-btn` `` |
-| File paths | Backticks | `` `core/variables.css` `` |
-| CSS properties | Backticks | `` `letter-spacing` `` |
-| Links | Markdown links | `[Link text](url)` |
-| Optional sections | Omit if empty | Don't add `### Added` if nothing added |
+| Element           | Format         | Example                                |
+| ----------------- | -------------- | -------------------------------------- |
+| Class names       | Backticks      | `` `.ease-btn` ``                      |
+| File paths        | Backticks      | `` `core/variables.css` ``             |
+| CSS properties    | Backticks      | `` `letter-spacing` ``                 |
+| Links             | Markdown links | `[Link text](url)`                     |
+| Optional sections | Omit if empty  | Don't add `### Added` if nothing added |
 
 ### 6. **Emoji Usage** (Optional but Recommended)
 
@@ -90,8 +99,11 @@ Use emojis sparingly at the section level for visual clarity:
 
 ```markdown
 ### ✨ Added
-### 🔄 Changed  
+
+### 🔄 Changed
+
 ### 🐛 Fixed
+
 ### ⚠️ Deprecated
 ```
 
@@ -100,9 +112,11 @@ Use emojis sparingly at the section level for visual clarity:
 ## Section Guidelines
 
 ### Added
+
 Features, utilities, components, or documentation that are new.
 
 **Examples:**
+
 ```markdown
 ### Added
 
@@ -112,9 +126,11 @@ Features, utilities, components, or documentation that are new.
 ```
 
 ### Changed
+
 Updates to existing features, improvements, behavior modifications, or performance enhancements.
 
 **Examples:**
+
 ```markdown
 ### Changed
 
@@ -124,9 +140,11 @@ Updates to existing features, improvements, behavior modifications, or performan
 ```
 
 ### Fixed
+
 Bug fixes and corrections.
 
 **Examples:**
+
 ```markdown
 ### Fixed
 
@@ -136,9 +154,11 @@ Bug fixes and corrections.
 ```
 
 ### Deprecated
+
 Features marked for removal in future versions. Include replacement instructions.
 
 **Examples:**
+
 ```markdown
 ### Deprecated
 
@@ -152,29 +172,31 @@ Features marked for removal in future versions. Include replacement instructions
 
 Follow [Semantic Versioning](https://semver.org/):
 
-| Change Type | Version Update | Example |
-|-------------|----------------|---------|
-| Breaking changes | Major | v1.0.0 → v2.0.0 |
-| New features (backward compatible) | Minor | v1.0.0 → v1.1.0 |
-| Bug fixes (backward compatible) | Patch | v1.0.0 → v1.0.1 |
-| Pre-release versions | Add suffix | v1.0.0-beta.1, v1.0.0-rc.1 |
+| Change Type                        | Version Update | Example                    |
+| ---------------------------------- | -------------- | -------------------------- |
+| Breaking changes                   | Major          | v1.0.0 → v2.0.0            |
+| New features (backward compatible) | Minor          | v1.0.0 → v1.1.0            |
+| Bug fixes (backward compatible)    | Patch          | v1.0.0 → v1.0.1            |
+| Pre-release versions               | Add suffix     | v1.0.0-beta.1, v1.0.0-rc.1 |
 
 ---
 
 ## Example: Complete Release Entry
 
-```markdown
+````markdown
 ## [v1.2.0] — 2026-06-15
 
 ### ✨ Added
 
 #### Typography Utilities
+
 - `.ease-tracking-tight` — Condensed letter spacing (-0.025em)
 - `.ease-tracking-normal` — Default letter spacing (0em)
 - `.ease-tracking-wide` — Wide letter spacing (0.05em)
 - `.ease-tracking-widest` — Extra wide letter spacing (0.1em)
 
 #### Documentation
+
 - `docs/css-variable-theming.md` — Guide for overriding CSS variables
 - `docs/typography-guide.md` — Best practices for typography
 
@@ -232,13 +254,16 @@ When submitting a PR, contributors can propose changelog entries by adding to th
 ## Changelog Entry (for maintainer)
 
 ### ✨ Added
+
 - `.ease-gradient-text` utility for text gradient effects
 - Support for custom gradient stops via CSS variables
 
 ### 📝 Files
+
 - `components/text-effects.css`
 - `docs/gradient-guide.md`
 ```
+````
 
 ---
 

@@ -1,6 +1,7 @@
 # Bounce Animation Guide
 
 ## 1. What does this do?
+
 A demo showing four ease-bounce CSS animations: continuous bounce, hover bounce, bounce-in on load, and a click bounce button.
 
 ## 2. How is it used?
@@ -17,3 +18,4 @@ A demo showing four ease-bounce CSS animations: continuous bounce, hover bounce,
 
 <!-- Click bounce button -->
 <button class="bounce-btn">Click Me</button>
+```

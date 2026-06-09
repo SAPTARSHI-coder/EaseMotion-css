@@ -28,16 +28,18 @@ All contributions are welcome and eligible for merge when submitted inside the `
 To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
 
 **Example:**
-*   `ease-hover-sap`
-*   `ease-tabs-ak`
-*   `ease-card-pr`
+
+- `ease-hover-sap`
+- `ease-tabs-ak`
+- `ease-card-pr`
 
 This ensures:
-*   Unambiguous component naming,
-*   Preservation of every contributor’s work,
-*   Conflict-free merges,
-*   Easier maintenance and review workflow,
-*   Support for parallel implementations of similar ideas.
+
+- Unambiguous component naming,
+- Preservation of every contributor’s work,
+- Conflict-free merges,
+- Easier maintenance and review workflow,
+- Support for parallel implementations of similar ideas.
 
 The project encourages creative variations and parallel implementations rather than overwriting existing contributor work.
 
@@ -114,10 +116,10 @@ Answer exactly three questions:
 
 ## Naming Rules
 
-| Who | Rule |
-|-----|------|
-| **You (contributor)** | Use any class name that feels readable |
-| **Maintainer** | Renames everything to `ease-kebab-case` before merging |
+| Who                   | Rule                                                   |
+| --------------------- | ------------------------------------------------------ |
+| **You (contributor)** | Use any class name that feels readable                 |
+| **Maintainer**        | Renames everything to `ease-kebab-case` before merging |
 
 **You do not need to use `ease-` naming.** Write `.hover-glow`, `.card-lift`, `.shimmer-btn` — whatever communicates the behavior. The maintainer will standardize it.
 
@@ -148,12 +150,12 @@ Your submission folder **stays in submissions/examples/** permanently as a recor
 
 The submission in `submissions/examples/hover-grow/` was reviewed and integrated:
 
-| Original (your CSS) | Standardized (EaseMotion CSS) |
-|---------------------|------------------------|
-| `.hover-grow-card` | `.ease-hover-grow` |
-| `transform: scale(1.06)` | Same value, unchanged |
-| Hard-coded `300ms` | `var(--ease-speed-medium)` |
-| Hard-coded `cubic-bezier(...)` | `var(--ease-ease-bounce)` |
+| Original (your CSS)            | Standardized (EaseMotion CSS) |
+| ------------------------------ | ----------------------------- |
+| `.hover-grow-card`             | `.ease-hover-grow`            |
+| `transform: scale(1.06)`       | Same value, unchanged         |
+| Hard-coded `300ms`             | `var(--ease-speed-medium)`    |
+| Hard-coded `cubic-bezier(...)` | `var(--ease-ease-bounce)`     |
 
 The class now lives in `core/animations.css` tagged `[INTEGRATED]`.
 
@@ -163,11 +165,9 @@ The class now lives in `core/animations.css` tagged `[INTEGRATED]`.
 
 ```html
 <!-- submissions/examples/focus-ring-button/demo.html -->
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./style.css" />
 
-<button class="focus-ring-button">
-  Save changes
-</button>
+<button class="focus-ring-button">Save changes</button>
 ```
 
 ```css
@@ -200,15 +200,15 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 
 ## Rules Summary
 
-| Rule | Detail |
-|------|--------|
-| ✅ Add folder to `submissions/examples/` | One folder per feature |
-| ✅ Include all three required files | `demo.html`, `style.css`, `README.md` |
-| ✅ One feature per PR | Focused, reviewable |
-| ❌ Do NOT use `ease-` prefix in your CSS | Maintainer handles naming |
-| ❌ Do NOT edit `core/` | PR will be closed |
-| ❌ Do NOT edit `components/` | PR will be closed |
-| ❌ Do NOT merge your own PR | Maintainer-only |
+| Rule                                     | Detail                                |
+| ---------------------------------------- | ------------------------------------- |
+| ✅ Add folder to `submissions/examples/` | One folder per feature                |
+| ✅ Include all three required files      | `demo.html`, `style.css`, `README.md` |
+| ✅ One feature per PR                    | Focused, reviewable                   |
+| ❌ Do NOT use `ease-` prefix in your CSS | Maintainer handles naming             |
+| ❌ Do NOT edit `core/`                   | PR will be closed                     |
+| ❌ Do NOT edit `components/`             | PR will be closed                     |
+| ❌ Do NOT merge your own PR              | Maintainer-only                       |
 
 ---
 

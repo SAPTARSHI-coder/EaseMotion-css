@@ -17,6 +17,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
 ### ✨ Added
 
 #### Core Design System
+
 - `core/variables.css` — Complete design token library
   - Transition speeds: `--ease-speed-fast` (150ms), `--ease-speed-medium` (300ms), `--ease-speed-slow` (600ms)
   - Easing curves: `--ease-ease`, `--ease-ease-out`, `--ease-ease-bounce`
@@ -29,6 +30,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - Z-index scale: base, raised, overlay, modal, toast
 
 #### Base Styles & Reset
+
 - `core/base.css` — Semantic HTML foundation
   - Box-model reset for all elements
   - Smooth scroll behavior
@@ -38,6 +40,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - Accessible focus ring and custom selection color
 
 #### Animation Library
+
 - `core/animations.css` — 12 keyframes and 20+ animation classes
   - Entrance animations: `ease-fade-in`, `ease-fade-out`, `ease-slide-up`, `ease-slide-down`, `ease-slide-in-left`, `ease-slide-in-right`, `ease-zoom-in`, `ease-flip`
   - Looping animations: `ease-bounce`, `ease-rotate`, `ease-pulse`, `ease-ping`, `ease-shake`
@@ -47,6 +50,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - Full `prefers-reduced-motion` support for accessibility
 
 #### Utility Classes
+
 - `core/utilities.css` — 80+ layout and styling utilities
   - Display: `ease-block`, `ease-flex`, `ease-grid`, `ease-hidden`, `ease-invisible`
   - Flexbox: `ease-center`, `ease-flex-col`, `ease-items-*`, `ease-justify-*`
@@ -62,6 +66,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - Cursor and pointer events
 
 #### Component Library
+
 - `components/buttons.css` — Complete button system
   - Variants: primary, success, danger, outline, ghost, link
   - Sizes: sm, base, lg, xl
@@ -78,6 +83,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - Full responsive support
 
 #### Integration & Example Submissions
+
 - Integrated community submissions from `submissions/examples/`:
   - `.ease-hover-grow` — Subtle scale effect on hover
   - `.ease-hover-shimmer` — Shimmer effect overlay
@@ -85,11 +91,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
 - Reference submission examples for future contributors
 
 #### Build & Bundling
+
 - `easemotion.css` — Single-file entry point (imports all core + components)
 - `easemotion.min.css` — Minified production build
 - Build script: `scripts/build-minified-css.mjs`
 
 #### Documentation & Examples
+
 - `examples/demo.html` — Interactive component showcase
   - Dark theme applied
   - Click-to-replay animations
@@ -107,6 +115,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and [Sem
   - `docs/animation-combination-guide.md` — Animation composition tips
 
 #### Community & Contribution Infrastructure
+
 - `submissions/README.md` — Complete contribution workflow guide
 - `.github/CODEOWNERS` — Maintainer enforcement on critical paths
 - `.github/ISSUE_TEMPLATE/feature_request.md` — Structured feature template
@@ -142,20 +151,20 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for submission guidelines and [submissi
 
 ---
 
-*Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)*
+_Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)_
 
 ---
 
 ## Key Improvements in This Format
 
-| Aspect | Old Format | New Format |
-|--------|-----------|-----------|
-| Section organization | Narrative paragraphs | Added / Changed / Fixed / Deprecated |
-| Readability | Dense text | Bulleted, categorized items |
-| Scannability | Hard to find specific changes | Quick visual scanning |
-| Deprecation info | Unclear when something ends | Explicit removal timeline |
-| Contributor guidance | Not provided | Clear template in docs |
-| External links | Inline and mixed | Dedicated reference section |
+| Aspect               | Old Format                    | New Format                           |
+| -------------------- | ----------------------------- | ------------------------------------ |
+| Section organization | Narrative paragraphs          | Added / Changed / Fixed / Deprecated |
+| Readability          | Dense text                    | Bulleted, categorized items          |
+| Scannability         | Hard to find specific changes | Quick visual scanning                |
+| Deprecation info     | Unclear when something ends   | Explicit removal timeline            |
+| Contributor guidance | Not provided                  | Clear template in docs               |
+| External links       | Inline and mixed              | Dedicated reference section          |
 
 ---
 

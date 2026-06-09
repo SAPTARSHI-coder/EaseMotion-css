@@ -7,13 +7,8 @@ Creates lightweight popovers that appear around a trigger element in four direct
 
 ```html
 <div class="popover-wrapper">
+  <button class="btn">Hover Me</button>
 
-  <button class="btn">
-    Hover Me
-  </button>
-
-  <div class="popover popover-top">
-    Appears above the button
-  </div>
-
+  <div class="popover popover-top">Appears above the button</div>
 </div>
+```

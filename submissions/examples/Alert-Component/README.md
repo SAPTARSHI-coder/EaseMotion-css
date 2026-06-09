@@ -6,21 +6,13 @@ Creates reusable alert boxes for displaying status messages, notifications, warn
 **How is it used?**
 
 ```html
-<div class="alert alert-success">
-  Profile updated successfully.
-</div>
+<div class="alert alert-success">Profile updated successfully.</div>
 
-<div class="alert alert-danger">
-  Something went wrong.
-</div>
+<div class="alert alert-danger">Something went wrong.</div>
 
-<div class="alert alert-warning">
-  Storage space is running low.
-</div>
+<div class="alert alert-warning">Storage space is running low.</div>
 
-<div class="alert alert-info">
-  New update available.
-</div>
+<div class="alert alert-info">New update available.</div>
 ```
 
 **Why is it useful?**  
