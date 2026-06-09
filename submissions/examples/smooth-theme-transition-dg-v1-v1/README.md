@@ -55,3 +55,10 @@ Open `demo.html` directly in your browser to test the interactive dashboard.
 
 - Class naming was handled by the contributor (`dg`)
 - Maintainer will rename to ease-\* convention before merging
+
+## Live Integration
+
+This transition is integrated into the live EaseMotion documentation website:
+- Page layouts and core transitions in [docs/docs.css](file:///c:/Users/Dharm/Antigravity/EaseMotion-css/docs/docs.css)
+- Switch event logic and coordinates mapping in [docs/index.html](file:///c:/Users/Dharm/Antigravity/EaseMotion-css/docs/index.html), [docs/animations-preview.html](file:///c:/Users/Dharm/Antigravity/EaseMotion-css/docs/animations-preview.html), and [docs/animation-combo.html](file:///c:/Users/Dharm/Antigravity/EaseMotion-css/docs/animation-combo.html)
+
