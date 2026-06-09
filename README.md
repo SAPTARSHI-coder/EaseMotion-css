@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="420" />
+<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="570" />
 
 <br/>
 
