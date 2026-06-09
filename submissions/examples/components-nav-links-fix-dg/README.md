@@ -1,4 +1,3 @@
-
 # Components Navigation Subheadings Links Fix
 
 ## 1. What does this do?
