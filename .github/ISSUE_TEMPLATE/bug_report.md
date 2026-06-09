@@ -4,6 +4,7 @@ about: Report a broken class, unexpected visual glitch, or broken animation
 title: "[BUG] "
 labels: bug
 assignees: SAPTARSHI-coder
+
 ---
 
 ## 🐛 What's broken?
@@ -40,15 +41,12 @@ assignees: SAPTARSHI-coder
 ```html
 <!DOCTYPE html>
 <html>
-  <head>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css"
-    />
-  </head>
-  <body>
-    <!-- Your reproduction here -->
-  </body>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+</head>
+<body>
+  <!-- Your reproduction here -->
+</body>
 </html>
 ```
 
@@ -56,11 +54,11 @@ assignees: SAPTARSHI-coder
 
 ## 🌍 Environment
 
-| Field                  | Value                      |
-| ---------------------- | -------------------------- |
-| EaseMotion CSS version | e.g. `1.0.0` or CDN link   |
-| Browser                | e.g. Chrome 124, Safari 17 |
-| OS                     | e.g. Windows 11, macOS 14  |
+| Field | Value |
+| ------- | ------- |
+| EaseMotion CSS version | e.g. `1.0.0` or CDN link |
+| Browser | e.g. Chrome 124, Safari 17 |
+| OS | e.g. Windows 11, macOS 14 |
 
 ---
 
