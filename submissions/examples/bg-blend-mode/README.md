@@ -13,11 +13,21 @@ Animates `background-blend-mode` through CSS keyframes — cycling between `mult
 }
 
 @keyframes blend-cycle {
-  0%   { background-blend-mode: multiply; }
-  25%  { background-blend-mode: screen; }
-  50%  { background-blend-mode: overlay; }
-  75%  { background-blend-mode: difference; }
-  100% { background-blend-mode: hard-light; }
+  0% {
+    background-blend-mode: multiply;
+  }
+  25% {
+    background-blend-mode: screen;
+  }
+  50% {
+    background-blend-mode: overlay;
+  }
+  75% {
+    background-blend-mode: difference;
+  }
+  100% {
+    background-blend-mode: hard-light;
+  }
 }
 ```
 

@@ -16,9 +16,8 @@ A modern Bento Grid layout with expandable information panels. Hovering a tile h
 
 ```html
 <div class="tile">
-    <h3>Performance</h3>
+  <h3>Performance</h3>
 
-    <div class="extra">
-        Additional information.
-    </div>
+  <div class="extra">Additional information.</div>
 </div>
+```

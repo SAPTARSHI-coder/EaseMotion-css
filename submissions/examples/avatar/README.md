@@ -4,18 +4,18 @@ Circular profile photo avatars with 5 sizes (xs, sm, default, lg, xl), text init
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-avatar` | Base avatar (40px, circular, initials or image) |
-| `ease-avatar-xs` | Extra small (24px) |
-| `ease-avatar-sm` | Small (32px) |
-| `ease-avatar-lg` | Large (56px) |
-| `ease-avatar-xl` | Extra large (80px) |
-| `ease-avatar-online` | Green status dot |
-| `ease-avatar-offline` | Grey status dot |
-| `ease-avatar-away` | Amber status dot |
-| `ease-avatar-busy` | Red status dot |
-| `ease-avatar-group` | Overlapping avatar stack |
+| Class                 | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `ease-avatar`         | Base avatar (40px, circular, initials or image) |
+| `ease-avatar-xs`      | Extra small (24px)                              |
+| `ease-avatar-sm`      | Small (32px)                                    |
+| `ease-avatar-lg`      | Large (56px)                                    |
+| `ease-avatar-xl`      | Extra large (80px)                              |
+| `ease-avatar-online`  | Green status dot                                |
+| `ease-avatar-offline` | Grey status dot                                 |
+| `ease-avatar-away`    | Amber status dot                                |
+| `ease-avatar-busy`    | Red status dot                                  |
+| `ease-avatar-group`   | Overlapping avatar stack                        |
 
 ## Usage
 

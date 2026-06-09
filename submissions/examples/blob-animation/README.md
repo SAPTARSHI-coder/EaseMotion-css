@@ -6,8 +6,8 @@ A fluid, organic blob animation built with SVG path morphing, gradient fills, am
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Self-contained blob animation showcase including SVG morphing, glow layers, decorative contour lines, and floating particles.
-* `style.css` — Scoped styling layer controlling gradients, glow effects, particle motion, positioning, and visual presentation.
+- `demo.html` — Self-contained blob animation showcase including SVG morphing, glow layers, decorative contour lines, and floating particles.
+- `style.css` — Scoped styling layer controlling gradients, glow effects, particle motion, positioning, and visual presentation.
 
 ## 🚀 Key Animation Mechanics
 
@@ -45,14 +45,14 @@ All rendering logic, animations, and styling remain fully contained within the s
 
 ## 🎯 Use Cases
 
-* Hero section backgrounds
-* Creative landing pages
-* Loading experiences
-* Product showcases
-* Portfolio websites
-* Interactive visual design demos
-* SaaS marketing pages
-* Motion design inspiration
+- Hero section backgrounds
+- Creative landing pages
+- Loading experiences
+- Product showcases
+- Portfolio websites
+- Interactive visual design demos
+- SaaS marketing pages
+- Motion design inspiration
 
 ## ✨ Why It Fits EaseMotion CSS
 
