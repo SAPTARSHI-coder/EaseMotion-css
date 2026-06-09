@@ -1,45 +1,85 @@
-# Modern Shimmering Skeleton Loader States
+# Skeleton Loader
 
-GPU-accelerated skeleton loading placeholders with shimmer animation and dark mode support. Provides reusable CSS classes for common loading patterns: text lines, avatars, cards, and blocks.
+Submission for EaseMotion CSS — resolves [Issue #2667](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/2667)
 
-## Features
+---
 
-- **Shimmer animation** — `@keyframes ease-kf-shimmer` slides a gradient across the element
-- **Light & Dark mode** — automatically adapts via `@media (prefers-color-scheme: dark)`
-- **Sizing helpers** — `.skeleton-avatar` (with `-sm` / `-lg`), `.skeleton-line` (with `-sm` / `-lg`), `.skeleton-card` (with `-sm`), `.skeleton-block`
-- **GPU-accelerated** — animates `background-position` only
-- **Reduced motion** — respects `prefers-reduced-motion`
-- **Pure CSS** — no JavaScript required
+## 1. What does this do?
 
-## Usage
+Adds shimmer and pulse loading placeholder classes that visually fill the
+space where content will appear, giving users instant layout feedback while
+data is being fetched.
+
+---
+
+## 2. How is it used?
+
+Apply the class directly to any block-level element in place of real content.
+Size it with `width` and `height` (inline or via your own layout classes):
 
 ```html
-<!-- Avatar -->
-<div class="skeleton-shimmer skeleton-avatar"></div>
+<!-- Block placeholder (image, card, banner) -->
+<div class="skeleton" style="width: 100%; height: 160px;"></div>
 
-<!-- Text lines -->
-<div class="skeleton-shimmer skeleton-line skeleton-line-lg"></div>
-<div class="skeleton-shimmer skeleton-line"></div>
+<!-- Text line placeholder -->
+<span class="skeleton-text" style="width: 75%;"></span>
+<span class="skeleton-text" style="width: 100%;"></span>
+<span class="skeleton-text" style="width: 50%;"></span>
 
-<!-- Card placeholder -->
-<div class="skeleton-shimmer skeleton-card"></div>
+<!-- Avatar / icon placeholder -->
+<span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
 
-<!-- Block / button -->
-<div class="skeleton-shimmer skeleton-block"></div>
+<!-- Pulse variant (softer, no sweep) -->
+<div class="skeleton-pulse" style="width: 100%; height: 160px;"></div>
 ```
 
-## Custom Gradient
+**Profile card example:**
 
-Override the background to match your brand:
-
-```css
-.my-custom-skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(var(--brand-rgb), 0.1) 25%,
-    rgba(var(--brand-rgb), 0.2) 37%,
-    rgba(var(--brand-rgb), 0.1) 63%
-  );
-  background-size: 400% 100%;
-}
+```html
+<div style="display: flex; gap: 0.75rem; align-items: center;">
+  <span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+    <span class="skeleton-text" style="width: 60%;"></span>
+    <span class="skeleton-text" style="width: 40%;"></span>
+  </div>
+</div>
 ```
+
+---
+
+## 3. Why is it useful?
+
+Skeleton loaders are a first-class animation pattern — the entire effect is
+driven by a single `@keyframes` shimmer sweep or opacity pulse. There is no
+JavaScript, no dependencies, and no build step required. This aligns directly
+with EaseMotion CSS's core philosophy of making animations first-class through
+simple, readable class names.
+
+Unlike a generic spinner, a skeleton preserves the layout of the real content,
+so there is no layout shift when data loads. Frameworks like Chakra UI, Vuetify,
+and MUI all ship skeleton loaders because developers reach for them constantly.
+EaseMotion CSS should too.
+
+The shimmer uses `background-position` animation (GPU-composited) so it is
+performant even on many elements simultaneously. The pulse variant uses
+`opacity` animation — equally cheap, and a good choice when the shimmer sweep
+feels too intense for the context.
+
+Dark mode is handled automatically via `@media (prefers-color-scheme: dark)`.
+The maintainer can replace the hard-coded hex values with `--ease-color-surface`
+and related tokens when integrating into `core/`.
+
+---
+
+## Files
+
+| File        | Purpose                              |
+|-------------|--------------------------------------|
+| `style.css` | Raw CSS — shimmer + pulse keyframes, four utility classes |
+| `demo.html` | Self-contained demo with toggle between loading/loaded states |
+| `README.md` | This file                            |
+
+---
+
+*Proposed ease-\* names (maintainer decides):*
+`ease-skeleton` · `ease-skeleton-text` · `ease-skeleton-circle` · `ease-skeleton-pulse`
