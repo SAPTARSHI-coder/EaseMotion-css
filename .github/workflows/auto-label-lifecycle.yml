@@ -6,6 +6,11 @@ on:
   pull_request_target:
     types: [opened, edited, closed, reopened]
 
+# Prevent parallel runs on the same issue/PR to avoid label add/remove races
+concurrency:
+  group: lifecycle-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
 permissions:
   issues: write
   pull-requests: write
@@ -15,6 +20,9 @@ jobs:
   automate-lifecycle:
     name: Automate Labels and Assignments
     runs-on: ubuntu-latest
+    # Allow closed events from any actor (we want to label merged PRs), but
+    # skip open/edit/reopen when triggered by bot auto-merge push-back events
+    if: github.event.action == 'closed' || (github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]')
     steps:
       - name: Process Lifecycle Event
         uses: actions/github-script@v7
@@ -105,8 +113,23 @@ jobs:
               if (isPR) {
                 const isMerged = item.merged || false;
                 if (isMerged) {
-                  await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
+                  // Use setLabels for atomic replacement: removes gssoc:invalid,
+                  // adds accepted/integrated/GSSoC-26/gssoc:approved in one call.
+                  // Fetch current labels so we don't nuke labels from other workflows.
+                  const { data: freshIssue } = await github.rest.issues.get({
+                    owner, repo, issue_number: issueNumber
+                  });
+                  const existingLabels = freshIssue.labels.map(l => l.name);
+                  const keepLabels = existingLabels.filter(l =>
+                    l !== 'gssoc:invalid'
+                  );
+                  const desiredAdditions = ['accepted', 'integrated'];
+                  const finalLabels = [...new Set([...keepLabels, ...desiredAdditions])];
+                  await github.rest.issues.setLabels({
+                    owner, repo, issue_number: issueNumber,
+                    labels: finalLabels
+                  });
+                  console.log(`Atomic label update: set ${finalLabels.length} labels on merged PR #${issueNumber}.`);
                   await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀`);
                 } else {
                   await removeLabels(['accepted', 'integrated']);
@@ -114,9 +137,20 @@ jobs:
                   console.log(`PR #${issueNumber} was closed without merge. Marked invalid.`);
                 }
               } else {
-                // Issue closed
-                await removeLabels(['gssoc:invalid']);
-                await addLabels(['accepted']);
+                // Issue closed: atomic set to replace gssoc:invalid with accepted
+                const { data: freshIssue } = await github.rest.issues.get({
+                  owner, repo, issue_number: issueNumber
+                });
+                const existingLabels = freshIssue.labels.map(l => l.name);
+                const keepLabels = existingLabels.filter(l =>
+                  l !== 'gssoc:invalid'
+                );
+                const finalLabels = [...new Set([...keepLabels, 'accepted'])];
+                await github.rest.issues.setLabels({
+                  owner, repo, issue_number: issueNumber,
+                  labels: finalLabels
+                });
+                console.log(`Atomic label update: set ${finalLabels.length} labels on closed issue #${issueNumber}.`);
                 await addComment(`🔒 **Issue Resolved & Closed.**\n\nThis issue has been marked as **accepted** and successfully resolved. Thanks for participating! ✨`);
               }
             }
@@ -142,7 +176,13 @@ jobs:
               const body = item.body || '';
               const textContent = `${title} ${body}`.toLowerCase();
 
-              const computedLabels = ['GSSoC-26', 'gssoc:approved'];
+              // Base GSSoC labels are only added on open/reopen, not on edit.
+              // This prevents redundant API calls when a user edits their title/body
+              // or when bot push-back triggers a synchronize+edit cascade.
+              const computedLabels = [];
+              if (action !== 'edited') {
+                computedLabels.push('GSSoC-26', 'gssoc:approved');
+              }
 
               if (textContent.includes('animation') || textContent.includes('animate')) {
                 computedLabels.push('animation');
