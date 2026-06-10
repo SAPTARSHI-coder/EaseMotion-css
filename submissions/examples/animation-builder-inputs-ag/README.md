@@ -29,3 +29,10 @@ For grouping labels and inputs within the control panel:
 ## Why is it useful?
 
 EaseMotion CSS is centered around creating premium, fluid, and visually stunning motion experiences. Standard native inputs feel rigid and break the visual design language. Styling these input fields with modern focus rings, transitions, and dark-theme variables ensures that the framework's interactive documentation tools (like the Animation Builder) match the library's polished, professional aesthetic.
+
+## Tech Stack
+
+- HTML
+- CSS (no frameworks)
+- JavaScript (used in demo.html for interactivity/preview logic only)
+
