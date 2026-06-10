@@ -1,17 +1,17 @@
-# Data Lineage Explorer Component
+# Data Lineage Graph Explorer Component
 
 ## What does this do?
 
-Provides a visualization interface for tracking data movement across systems, transformations, storage layers, machine learning pipelines, and analytics platforms.
+Provides a visual interface for tracking data movement, dependencies, transformations, and downstream consumers across enterprise data platforms.
 
 ## How is it used?
 
 ```html
 <div class="node warehouse">
-    <h3>Data Warehouse</h3>
+    Data Warehouse
 </div>
 ```
 
 ## Why is it useful?
 
-Modern data platforms require visibility into how information moves between systems. This component provides a reusable lineage visualization interface for understanding dependencies, transformations, and downstream impacts while demonstrating enterprise-grade data engineering design patterns.
+Modern organizations need visibility into how data moves between systems. This component provides a reusable lineage visualization interface that helps data engineers, governance teams, and analysts understand dependencies, assess impact, and improve data quality management.
