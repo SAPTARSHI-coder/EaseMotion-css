@@ -23,3 +23,13 @@ card.addEventListener("click", () => {
   previewBox.classList.add(animClass);
 });
 ```
+
+## Why is it useful?
+
+EaseMotion CSS is built around creating highly interactive, fluid, and intuitive animations. If a user can only watch an animation play once upon initial page render, it makes browsing and comparing animations on preview tools extremely frustrating. By enabling user-triggered interactive replays via clicking, developers and designers can test, observe, and adjust animations multiple times, enhancing the accessibility and user experience of EaseMotion documentation tools.
+
+## Tech Stack
+
+- HTML
+- CSS
+- JavaScript (for triggering the layout reflow and animation reset)
