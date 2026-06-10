@@ -74,4 +74,4 @@ The value used in the fix (`#f8fafc`) is identical to the current hardcoded fall
 
 ---
 
-*Submitted by: gw · Issue: `--ease-color-text-dark` not defined in `variables.css`*
+*Submitted by: dv · Issue: `--ease-color-text-dark` not defined in `variables.css`*
