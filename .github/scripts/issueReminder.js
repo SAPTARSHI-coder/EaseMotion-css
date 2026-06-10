@@ -8,9 +8,16 @@ module.exports = async ({ github, context }) => {
   const issueNumber = context.payload.issue.number;
 
   // Fetch the latest issue state to prevent race conditions on closed issues
-  const { data: issue } = await github.rest.issues.get({
-    owner, repo, issue_number: issueNumber
-  });
+  let issue;
+  try {
+    const res = await github.rest.issues.get({
+      owner, repo, issue_number: issueNumber
+    });
+    issue = res.data;
+  } catch (err) {
+    console.error('Failed to fetch issue state:', err.message);
+    return;
+  }
 
   if (issue.state === 'closed') return;
 
