@@ -368,10 +368,9 @@ Every class in the framework has passed through this process. The curation is wh
 
 | Class | Duration |
 |---------|----------|
-| ease-duration-fast | 0.5s |
-| ease-duration-normal | 1s |
-| ease-duration-slow | 2s |
-| ease-duration-extra-slow | 3s |
+| ease-duration-fast | 150ms |
+| ease-duration-medium | 300ms |
+| ease-duration-slow | 600ms |
 
 <!-- Looping animations -->
 <div class="ease-bounce">Bouncing</div>
