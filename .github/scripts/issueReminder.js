@@ -8,15 +8,24 @@ module.exports = async ({ github, context }) => {
   const issueNumber = context.payload.issue.number;
 
   // Fetch the latest issue state to prevent race conditions on closed issues
-  const { data: issue } = await github.rest.issues.get({
-    owner, repo, issue_number: issueNumber
-  });
+  let issue;
+  try {
+    const res = await github.rest.issues.get({
+      owner, repo, issue_number: issueNumber
+    });
+    issue = res.data;
+  } catch (err) {
+    console.error('Failed to fetch issue state:', err.message);
+    return;
+  }
 
   if (issue.state === 'closed') return;
 
-  const commentBody = context.payload.comment.body.toLowerCase();
+  const commentBody = context.payload.comment.body;
+  if (typeof commentBody !== 'string') return;
+  const lowerBody = commentBody.toLowerCase();
 
-  if (commentBody.includes('/claim') || commentBody.includes('/assign')) {
+  if (lowerBody.includes('/claim') || lowerBody.includes('/assign')) {
     return;
   }
 
@@ -49,7 +58,7 @@ module.exports = async ({ github, context }) => {
   ];
 
   // Check if the comment contains any of the trigger phrases
-  const needsReminder = triggerPhrases.some(phrase => commentBody.includes(phrase));
+  const needsReminder = triggerPhrases.some(phrase => lowerBody.includes(phrase));
   if (!needsReminder) {
     return;
   }
