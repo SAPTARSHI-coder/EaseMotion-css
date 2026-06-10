@@ -1,20 +1,28 @@
-# Hover Grow
+# ease-hover-grow
 
-**What does this do?**  
-Scales an element up slightly on hover using an elastic cubic-bezier curve, creating a satisfying "bounce-grow" feedback effect.
+Subtle scale-up effect on hover with bounce easing. A standard interactive feedback pattern for buttons and cards.
 
-**How is it used?**  
+## Usage
+
 ```html
-<div class="hover-grow-card">...</div>
-<button class="hover-grow-btn">Click me</button>
-<img class="hover-grow-img" src="..." />
+<button class="ease-btn ease-hover-grow">Grows on hover</button>
 ```
 
-**Why is it useful?**  
-Hover feedback is the most fundamental interactive affordance on the web. A subtle scale-up with elastic easing feels premium and responsive without being distracting. Works on any element type — cards, buttons, images, icons. Fits EaseMotion CSS because it is one class, one behavior, and it reads like what it does.
+## Variants
 
----
+| Class | Description |
+|---|---|
+| `ease-hover-grow` | Scale to 1.06 on hover |
+| `ease-hover-grow-sm` | Scale to 1.03 |
+| `ease-hover-grow-lg` | Scale to 1.1 |
 
-Submitted by: @example-contributor  
-Date: 2026-03-29  
-Status: **Integrated** — standardized as `ease-hover-grow` in `core/animations.css`
+## Notes
+
+- Uses bounce easing for natural feel
+- Great for interactive elements needing hover feedback
+- Respects `prefers-reduced-motion`
+
+## Submission
+
+- **Author:** SAPTARSHI-coder
+- **Files:** `style.css`, `demo.html`
