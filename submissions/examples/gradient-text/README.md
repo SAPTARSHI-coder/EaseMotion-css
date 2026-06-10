@@ -1,27 +1,26 @@
 # ease-gradient-text
 
-Animated flowing gradient text effect using `background-clip: text`. Zero JavaScript required.
+Static gradient text utility using `background-clip: text` with a gradient background. The non-animated variant of `ease-gradient-text-animated`.
 
 ## Usage
 
 ```html
-<h1 class="ease-gradient-text">Hello World</h1>
+<h1 class="ease-gradient-text">Gradient Text</h1>
 ```
 
 ## Variants
 
 | Class | Description |
 |---|---|
-| `ease-gradient-text` | Default purple → cyan gradient |
-| `ease-gradient-sunset` | Orange → pink → purple |
-| `ease-gradient-ocean` | Cyan → blue → indigo |
-| `ease-gradient-forest` | Green → teal → lime |
-| `ease-gradient-fast` | 2s animation duration |
-| `ease-gradient-slow` | 8s animation duration |
-| `ease-gradient-pause` | Pauses animation on hover |
+| `ease-gradient-text` | Static gradient text |
+
+## Notes
+
+- Uses `linear-gradient(135deg)` with primary/secondary colors
+- Static (non-animated) variant
+- Uses `background-clip: text` for the gradient text effect
 
 ## Submission
 
-- **Author:** sudha09-git
-- **Issue:** #2249
+- **Author:** SAPTARSHI-coder
 - **Files:** `style.css`, `demo.html`
