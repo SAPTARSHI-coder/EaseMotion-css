@@ -40,3 +40,7 @@ EaseMotion CSS is centered around creating premium, fluid, and visually stunning
 
 Open `demo.html` directly in your browser to test the search query filters, animation duration/delay updates, and light/dark theme toggle.
 
+## Contribution Notes
+
+- Class naming was handled by the contributor.
+- Maintainer will standardize the classes to the `ease-*` convention before merging into core.
