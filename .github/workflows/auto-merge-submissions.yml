@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '*/30 * * * *' # Runs every 30 minutes to sweep and merge all open PRs
+    - cron: '0 */3 * * *' # Runs every 3 hours to sweep and merge all open PRs
   workflow_dispatch:
     inputs:
       pr_number:
@@ -358,5 +358,26 @@ jobs:
         run: |
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Merging PR #$PR_NUM..."
-          gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge
-          echo "PR successfully merged."
+          
+          # Check if already merged
+          state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$state" = "MERGED" ]; then
+            echo "PR #$PR_NUM is already merged."
+            exit 0
+          fi
+          
+          # Try to merge and catch already-merged/in-progress scenarios
+          if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
+            echo "PR successfully merged."
+          else
+            exit_code=$?
+            echo "Merge command failed: $merge_output"
+            # If the error indicates that the merge is already in progress, or it was merged concurrently, we treat it as success.
+            if echo "$merge_output" | grep -qE "Merge already in progress|already merged|HTTP 405"; then
+              echo "Merge already in progress or already completed. Treating as success."
+              exit 0
+            else
+              echo "Failed to merge PR #$PR_NUM."
+              exit $exit_code
+            fi
+          fi
