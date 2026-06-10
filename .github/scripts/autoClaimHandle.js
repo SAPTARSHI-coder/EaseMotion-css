@@ -12,10 +12,14 @@ const MAX_ASSIGNED_ISSUES = 1;
 async function handleClaim({ github, context }) {
   const { owner, repo } = context.repo;
   const issueNumber = context.payload.issue.number;
-  const issueState = context.payload.issue.state;
   const commenter = context.payload.comment.user.login;
 
-  if (issueState === 'closed') {
+  // Fetch the latest issue state to prevent race conditions on closed issues
+  const { data: issue } = await github.rest.issues.get({
+    owner, repo, issue_number: issueNumber
+  });
+
+  if (issue.state === 'closed') {
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
       body: `🔒 **Oops!** This issue is closed. Commands can only be used on open issues.`,
@@ -23,29 +27,26 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  const issueAuthor = context.payload.issue.user.login;
-  
-  // can have multiple maintainers using comma ['a','b']
-  const MAINTAINERS = ['saptarshi-coder']; 
-  const isOpenedByMaintainer = MAINTAINERS.includes(issueAuthor.toLowerCase());
 
-  if (!isOpenedByMaintainer && commenter.toLowerCase() !== issueAuthor.toLowerCase()) {
+  const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
+  const issueLabels = context.payload.issue.labels.map((l) => l.name.toLowerCase());
+  const issueTitle = (context.payload.issue.title || '').toLowerCase();
+  const issueBody = (context.payload.issue.body || '').toLowerCase();
+
+  const isSubmissionIssue = issueLabels.some(label => 
+    label.includes('submission') || 
+    label.includes('gssoc')
+  ) || issueTitle.includes('submission') || issueBody.includes('submission');
+
+  if (currentAssignees.includes(commenter.toLowerCase())) {
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
-      body: `🛑 **Hold on!** Since this issue wasn't opened by a maintainer, only the original author (@${issueAuthor}) is eligible to claim it.`,
+      body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
     });
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
-  if (currentAssignees.length > 0) {
-    if (currentAssignees.includes(commenter.toLowerCase())) {
-      await github.rest.issues.createComment({
-        owner, repo, issue_number: issueNumber,
-        body: `✅ **You're all set!** You are already assigned to this issue, @${commenter}.`,
-      });
-      return;
-    }
+  if (currentAssignees.length > 0 && !isSubmissionIssue) {
     const assigneeList = currentAssignees.map((a) => `@${a}`).join(', ');
     await github.rest.issues.createComment({
       owner, repo, issue_number: issueNumber,
