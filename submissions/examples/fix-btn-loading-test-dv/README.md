@@ -86,4 +86,4 @@ The smoke test suite is the project's first line of defence against regressions.
 
 ---
 
-*Submitted by: gw · Issue: `.ease-btn-loading` test asserts `font-size: 0` but component uses `color: transparent`*
+*Submitted by: dv · Issue: `.ease-btn-loading` test asserts `font-size: 0` but component uses `color: transparent`*
