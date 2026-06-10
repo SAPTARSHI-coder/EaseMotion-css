@@ -1,30 +1,27 @@
 # ease-shake
 
-Attention-grabbing shake/vibrate animation using `translateX` keyframes. Zero JavaScript required.
+Shake/wiggle animation using horizontal oscillation. A classic alert/attention effect for form validation, error states, and notifications.
 
 ## Usage
 
 ```html
-<button class="ease-shake">Hover to shake</button>
+<div class="ease-shake">Shaking content</div>
 ```
 
 ## Variants
 
 | Class | Description |
 |---|---|
-| `ease-shake` | Default shake on hover |
-| `ease-shake-subtle` | Subtle low-intensity shake |
-| `ease-shake-hard` | Hard high-intensity shake |
-| `ease-shake-fast` | 250ms duration |
-| `ease-shake-slow` | 900ms duration |
-| `ease-shake-loop` | Infinite looping shake |
-| `ease-delay-100` | 100ms delay |
-| `ease-delay-200` | 200ms delay |
-| `ease-delay-300` | 300ms delay |
-| `ease-delay-500` | 500ms delay |
+| `ease-shake` | Default shake (6px oscillation, once) |
+
+## Notes
+
+- Oscillates 6px left-right
+- Plays once on load (not infinite)
+- Great for form validation errors and alert states
+- Respects `prefers-reduced-motion`
 
 ## Submission
 
-- **Author:** sudha09-git
-- **Issue:** #2342
+- **Author:** SAPTARSHI-coder
 - **Files:** `style.css`, `demo.html`
