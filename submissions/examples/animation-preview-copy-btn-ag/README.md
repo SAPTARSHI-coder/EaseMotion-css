@@ -21,3 +21,11 @@ EaseMotion CSS focuses on creating elegant, visually fluid user interfaces. Unst
 - HTML
 - CSS
 - JavaScript (for demo.html copy-to-clipboard actions only)
+
+## Preview
+
+Open `demo.html` directly in your browser to verify the interactive hover and active states of the styled button.
+
+## Contribution Notes
+
+- Maintainer will integrate these button styles into the core documentation style sheet (`docs/animations-preview.css`) during the framework standardization step.
