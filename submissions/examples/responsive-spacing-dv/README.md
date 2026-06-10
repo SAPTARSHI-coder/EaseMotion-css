@@ -86,4 +86,4 @@ EaseMotion CSS already ships responsive variants for **display, flex, grid, and 
 
 ---
 
-*Submitted by: gw*
+*Submitted by: dv*
