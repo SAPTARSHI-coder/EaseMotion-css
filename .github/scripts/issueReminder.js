@@ -57,8 +57,7 @@ module.exports = async ({ github, context }) => {
   // Gather context variables
   const commenter = context.payload.comment.user.login;
   const issueAuthor = context.payload.issue.user.login;
-  const { owner, repo } = context.repo;
-  const issueNumber = context.payload.issue.number;
+
 
   // Check if the commenter is already assigned
   const assignees = context.payload.issue.assignees.map(a => a.login.toLowerCase());
