@@ -13,6 +13,7 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hWSdGrccBU)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
@@ -513,6 +514,7 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 | 📦 **npm প্যাকেজ** | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css) |
 | 🌐 **CDN** | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css) |
 | 🏆 **GSSoC 2026** | [GirlScript Summer of Code](https://gssoc.girlscript.tech/) |
+| 💬 **ডিসকর্ড সার্ভার** | [ডিসকর্ড-এ জয়েন করো](https://discord.gg/hWSdGrccBU) |
 
 </div>
 
