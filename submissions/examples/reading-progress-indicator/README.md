@@ -1,55 +1,60 @@
-# Reading Progress Indicator
+# Reading Progress Indicator Component
 
 ## What does this do?
+The Reading Progress Indicator displays a thin, elegant, high-contrast bar at the top of the viewport that fills horizontally as the user scrolls, giving immediate visual feedback on reading progress.
 
-This submission adds a responsive reading progress indicator for long-form content, documentation pages, and blogs. The indicator is fixed at the top of the viewport and fills smoothly as the user scrolls.
+---
 
-## Available classes
+## How is it used?
+Attach the progress bar element directly at the root of the document, and configure its parameters via standard CSS variables:
 
-- `ease-reading-progress` — base progress indicator used for standard reading progress.
-- `ease-reading-progress-thin` — thin indicator variant suitable for compact headers.
-- `ease-reading-progress-gradient` — gradient fill variant for a more expressive visual effect.
-
-## Usage examples
-
-### Standard indicator
-
+### HTML Structure
 ```html
-<div class="ease-reading-progress" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+<!-- Positioned at the very top of the body -->
+<div class="reading-progress-bar"></div>
 ```
 
-### Thin variant
-
-```html
-<div class="ease-reading-progress ease-reading-progress-thin" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+### CSS Customization
+```css
+:root {
+  --reading-bar-height: 4px;                  /* Thickness of the indicator */
+  --reading-bar-color-start: #6c63ff;         /* Gradient start accent */
+  --reading-bar-color-end: #f43f5e;           /* Gradient end accent */
+  --reading-bar-glow: rgba(108, 99, 255, 0.4);/* Shadow glow color */
+}
 ```
 
-### Gradient variant
+---
 
-```html
-<div class="ease-reading-progress ease-reading-progress-gradient" role="progressbar" aria-label="Reading progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
-```
+## Why is it useful?
+It aligns perfectly with EaseMotion CSS's philosophy by using browser-native capabilities to handle motion efficiently:
 
-## Customization options
+* **Human-Readable:** It uses straightforward, well-documented custom properties and standards-compliant syntax.
+* **Animation-First:** The animation is bound directly to the viewport scroll timeline using native CSS `@supports (animation-timeline: scroll())` rules, eliminating layout reflows and jank.
+* **Composable:** Developers can drop it into any page layout, customize variables on the fly, and change position (top or bottom) effortlessly.
+* **Practical:** It degrades gracefully. On browsers without native scroll-timeline support, it falls back to a lightweight vanilla JavaScript event listener, ensuring seamless functionality across Safari, Firefox, and mobile engines.
 
-- `--reading-progress-fill` — progress fill color.
-- `--reading-progress-track` — track background color.
-- `--reading-progress-gradient` — gradient fill for the gradient variant.
-- `--reading-progress-height` — default progress bar height.
-- `--reading-progress-thin-height` — thin variant height.
-- `--reading-progress-offset` — vertical offset for stacked indicators.
+---
 
-## Accessibility notes
+## Included Files
 
-- The indicator supports `role="progressbar"` with `aria-valuemin`, `aria-valuemax`, and `aria-valuenow`.
-- The demo detects `prefers-reduced-motion: reduce` and disables animated transitions.
-- The page content remains fully accessible while the indicator remains fixed at the top.
+* **[demo.html](file:///d:/github/EaseMotion-css/submissions/examples/reading-progress-indicator/demo.html):** A complete long-form article demonstration that includes an interactive theme customizer to view the progress bar in various styles, heights, and positions.
+* **[style.css](file:///d:/github/EaseMotion-css/submissions/examples/reading-progress-indicator/style.css):** The complete responsive layout, typography, modern CSS scroll-driven animation rules, and fallback transition styles.
+* **[README.md](file:///d:/github/EaseMotion-css/submissions/examples/reading-progress-indicator/README.md):** Documentation detailing implementation, usage, and accessibility guidelines.
 
-## Browser support
+---
 
-- Chrome
-- Firefox
-- Edge
-- Safari
+## Usage Notes
 
-This implementation uses a lightweight native script to calculate page scroll progress and update the indicator bar. It avoids external dependencies and remains mobile-friendly and production-ready.
+This component is highly suitable for:
+* **Developer Documentation & Knowledge Bases:** Keeps readers motivated through technical guides.
+* **Blogs & Editorial Platforms:** Provides a subtle visual metric for long-form essays.
+* **Online Tutorials & Classrooms:** Measures learning pacing inside interactive content.
+
+---
+
+## Accessibility Considerations
+
+* **Reduced Motion:** If a user prefers reduced motion, the indicator is completely disabled using a `@media (prefers-reduced-motion: reduce)` media query.
+* **Contrast Ratios:** Uses vivid, distinguishable color gradients that stand out clearly against both dark and light background interfaces.
+* **Elegant Height:** Keep height between `2px` and `4px` to remain informative without distracting the reader or covering valuable content.
