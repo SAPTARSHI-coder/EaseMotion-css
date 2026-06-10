@@ -8,38 +8,106 @@ const rootDir = path.resolve(__dirname, "..");
 const entryFile = path.join(rootDir, "easemotion.css");
 const outputFile = path.join(rootDir, "easemotion.min.css");
 
-const localImportPattern =
-  /@import\s+(?:url\(\s*)?["']([^"']+)["']\s*\)?\s*;/g;
+const localImportPattern = /@import\s+(?:url\(\s*)?["']([^"']+)["']\s*\)?\s*;/g;
+function removeCSSComments(source) {
+  let result = "";
+  let i = 0;
 
+  while (i < source.length) {
+    const ch = source[i];
+
+    if (ch === '"' || ch === "'") {
+      const quote = ch;
+      result += ch;
+      i++;
+
+      while (i < source.length) {
+        const c = source[i];
+        result += c;
+
+        if (c === "\\") {
+          i++;
+          if (i < source.length) {
+            result += source[i];
+            i++;
+          }
+          continue;
+        }
+
+        if (c === quote) {
+          i++;
+          break;
+        }
+
+        i++;
+      }
+
+      continue;
+    }
+
+    if (ch === "/" && source[i + 1] === "*") {
+      i += 2;
+
+      while (i < source.length) {
+        if (source[i] === "*" && source[i + 1] === "/") {
+          i += 2;
+          break;
+        }
+        i++;
+      }
+
+      continue;
+    }
+
+    result += ch;
+    i++;
+  }
+
+  return result;
+}
 async function bundleCss(filePath, state) {
   const normalizedPath = path.normalize(filePath);
+  if (state.cache.has(normalizedPath)) {
+    return state.cache.get(normalizedPath);
+  }
 
   if (state.stack.has(normalizedPath)) {
-    const chain = [...state.pathStack, normalizedPath].map((item) =>
-      path.relative(rootDir, item),
-    );
+    const cycleStart = state.pathStack.indexOf(normalizedPath);
+
+    const chain = [
+      ...state.pathStack.slice(cycleStart),
+      normalizedPath,
+    ].map((item) => path.relative(rootDir, item));
 
     throw new Error(
-      `Circular CSS import detected: ${chain.join(" -> ")}`,
+      `Circular CSS import detected while processing "${path.relative(
+        rootDir,
+        normalizedPath,
+      )}": ${chain.join(" -> ")}`
     );
   }
 
   state.stack.add(normalizedPath);
   state.pathStack.push(normalizedPath);
+  
+
   const source = await readFile(normalizedPath, "utf8");
-  const sourceWithoutComments = source.replace(/\/\*[\s\S]*?\*\//g, "");
+  const sourceWithoutComments = removeCSSComments(source);
   const directory = path.dirname(normalizedPath);
 
-  const bundled = sourceWithoutComments.replace(localImportPattern, (fullMatch, importPath) => {
-    if (/^(?:https?:)?\/\//i.test(importPath)) {
-      state.externalImports.add(fullMatch.trim());
-      return "";
-    }
+  const bundled = sourceWithoutComments.replace(
+    localImportPattern,
+    (fullMatch, importPath) => {
+      if (/^(?:https?:)?\/\//i.test(importPath)) {
+        state.externalImports.add(fullMatch.trim());
+        return "";
+      }
 
-    const resolvedImport = path.resolve(directory, importPath);
-    state.localImports.push(resolvedImport);
-    return `__EASEMOTION_IMPORT__${resolvedImport}__`;
-  });
+      const resolvedImport = path.resolve(directory, importPath);
+      state.localImports.push(resolvedImport);
+      return `__EASEMOTION_IMPORT__${resolvedImport}__`;
+    },
+  );
 
   const chunks = [];
   let lastIndex = 0;
@@ -53,17 +121,20 @@ async function bundleCss(filePath, state) {
   }
 
   chunks.push(bundled.slice(lastIndex));
-  const resolvedChunks = await Promise.all(chunks);
+    try {
+      const resolvedChunks = await Promise.all(chunks);
+      const result = resolvedChunks.join("\n");
 
-  state.pathStack.pop();
-  state.stack.delete(normalizedPath);
-
-  return resolvedChunks.join("\n");
+      state.cache.set(normalizedPath, result);
+      return result;
+    } finally {
+      state.stack.delete(normalizedPath);
+      state.pathStack.pop();
+    }
 }
 
 function minifyCss(css) {
-  return css
-    .replace(/\/\*[\s\S]*?\*\//g, "")
+  return removeCSSComments(css)
     .replace(/\r\n/g, "\n")
     .replace(/\n+/g, "\n")
     .replace(/\s+/g, " ")
@@ -79,6 +150,7 @@ async function build() {
     localImports: [],
     stack: new Set(),
     pathStack: [],
+    cache: new Map(),
   };
 
   const bundledCss = await bundleCss(entryFile, state);
@@ -100,6 +172,6 @@ async function build() {
 }
 
 build().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error('Build failed:', error);
   process.exitCode = 1;
 });
