@@ -27,15 +27,14 @@ $colorMap = @(
 function Convert-Content {
     param([string]$content)
 
-    $protected = @{}
-    $counter = 0
+    $state = @{ counter = 0; protected = @{} }
 
     # Protect var() fallback hexes — entire var(--name, #HEX) expression
-    $content = [regex]::Replace($content, 'var\([^)]+?,#[0-9a-fA-F]{3,8}\)', {
+    $content = [regex]::Replace($content, 'var\([^)]+?,\s*#[0-9a-fA-F]{3,8}\)', {
         param($m)
-        $key = "___HV_$counter___"
-        $protected[$key] = $m.Value
-        $script:counter++
+        $key = "___HV_$($state.counter)___"
+        $state.protected[$key] = $m.Value
+        $state.counter++
         return $key
     })
 
@@ -46,8 +45,8 @@ function Convert-Content {
     }
 
     # Restore protected var() expressions
-    foreach ($key in $protected.Keys) {
-        $content = $content -replace [regex]::Escape($key), $protected[$key]
+    foreach ($key in $state.protected.Keys) {
+        $content = $content -replace [regex]::Escape($key), $state.protected[$key]
     }
 
     return $content
@@ -55,8 +54,13 @@ function Convert-Content {
 
 $files = Get-ChildItem -Path $TargetDir -Recurse -Filter "*.css" | Where-Object {
     $_.Name -notmatch '^easemotion\.(css|min\.css)$' -and
+    $_.Name -notmatch '^variables\.css$' -and
     $_.DirectoryName -notmatch '\\node_modules\\' -and
-    $_.DirectoryName -notmatch '\\.git\\'
+    $_.DirectoryName -notmatch '\\.git\\' -and
+    $_.DirectoryName -notmatch '\\assets\\' -and
+    $_.DirectoryName -notmatch '\\submissions\\submissions\\.+\\examples\\' -and
+    $_.FullName -notmatch '[/\\]scss[/\\]' -and
+    $_.FullName -notmatch '[/\\]core[/\\]variables\.css$'
 }
 
 $totalFiles = 0
@@ -70,7 +74,7 @@ foreach ($file in $files) {
     $content = Convert-Content -content $content
 
     if ($content -ne $original) {
-        Set-Content -Path $file.FullName -Value $content -NoNewline -Encoding UTF8
+        [IO.File]::WriteAllText($file.FullName, $content, [Text.UTF8Encoding]::new($false))
         $totalFiles++
     }
 }
