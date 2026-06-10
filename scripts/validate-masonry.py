@@ -66,4 +66,4 @@ def validate():
     return True
 
 if __name__ == '__main__':
-    validate()
+    sys.exit(0 if validate() else 1)
