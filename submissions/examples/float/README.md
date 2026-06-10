@@ -1,6 +1,6 @@
 # ease-float
 
-Smooth infinite floating/levitating animation using `translateY` keyframes. Zero JavaScript required.
+Gentle floating animation that slowly moves an element up and down. Perfect for hover states, call-to-action buttons, and decorative elements.
 
 ## Usage
 
@@ -12,32 +12,18 @@ Smooth infinite floating/levitating animation using `translateY` keyframes. Zero
 
 | Class | Description |
 |---|---|
-| `ease-float` | Default infinite float (12px) |
-| `ease-float-shadow` | Float with animated drop shadow |
-| `ease-float-rotate` | Float with gentle rotation swing |
-| `ease-float-sm` | Small distance (6px) |
-| `ease-float-lg` | Large distance (24px) |
-| `ease-float-fast` | 1.5s duration |
-| `ease-float-slow` | 5s duration |
-| `ease-delay-100` | 100ms delay |
-| `ease-delay-200` | 200ms delay |
-| `ease-delay-300` | 300ms delay |
-| `ease-delay-500` | 500ms delay |
-
-## Custom Properties
-
-| Property | Default | Description |
-|---|---|---|
-| `--ease-float-distance` | `-12px` | Float distance (negative = up) |
+| `ease-float` | Default float (3s loop, gentle) |
+| `ease-float-fast` | Faster float |
+| `ease-float-slow` | Slower float |
 
 ## Notes
 
-- Combine delay variants for staggered floating groups
-- `ease-float-shadow` enhances the depth illusion with synced shadow
-- Works great on icons, illustrations, cards, and product mockups
+- Moves element 12px up/down in a smooth loop
+- 3s duration by default
+- Great for CTAs, floating badges, and decorative UI
+- Respects `prefers-reduced-motion`
 
 ## Submission
 
-- **Author:** sudha09-git
-- **Issue:** #2358
+- **Author:** SAPTARSHI-coder
 - **Files:** `style.css`, `demo.html`
