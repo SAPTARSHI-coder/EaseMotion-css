@@ -1,19 +1,21 @@
 # Ripple Pulse Loader
 
-## Description
+A lightweight loading animation with expanding concentric circles that fade out as they grow.
 
-A CSS-only loading animation featuring expanding ripple circles.
+## Preview
 
-## Files
-
-- demo.html
-- style.css
-- script.js
+A single circle that scales up from 0.5x to 2x while fading from fully opaque to transparent, looping every 1.5 seconds.
 
 ## Usage
 
-Open demo.html in a browser.
+```html
+<div class="ripple-loader"></div>
+```
 
-## Browser Support
+Link `style.css` in your project to apply the animation.
 
-Chrome, Firefox, Edge, Safari
+## Customization
+
+- Change `border-color` to match your theme
+- Adjust `animation-duration` to speed up or slow down
+- Modify `width` and `height` to resize the loader
