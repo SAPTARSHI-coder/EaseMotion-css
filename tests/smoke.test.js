@@ -62,18 +62,18 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     const sheet = document.styleSheets[0];
     
     const getSelectors = (rules) => {
-      let selectors = [];
+      let result = [];
       for (const rule of rules) {
         if (rule.selectorText) {
-          selectors.push(rule.selectorText);
+          result.push(rule.selectorText);
         } else if (rule.cssRules) {
-          selectors = selectors.concat(getSelectors([...rule.cssRules]));
+          result.push(...getSelectors(rule.cssRules));
         }
       }
-      return selectors;
+      return result;
     };
 
-    const selectors = getSelectors([...sheet.cssRules]);
+    const selectors = getSelectors(sheet.cssRules);
 
     expect(selectors).toContain('.ease-btn');
     expect(selectors).toContain('.ease-btn-primary');
