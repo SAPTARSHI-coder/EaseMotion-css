@@ -36,3 +36,7 @@ EaseMotion CSS is centered around creating premium, fluid, and visually stunning
 - CSS (no frameworks)
 - JavaScript (used in demo.html for interactivity/preview logic only)
 
+## Preview
+
+Open `demo.html` directly in your browser to test the search query filters, animation duration/delay updates, and light/dark theme toggle.
+
