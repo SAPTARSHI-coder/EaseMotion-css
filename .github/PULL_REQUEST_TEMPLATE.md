@@ -1,14 +1,15 @@
 ## Pull Request Description
 
-<!-- Briefly describe what you are submitting and why. -->
+<!-- Briefly describe what you're submitting and the problem it solves. -->
 
 ---
 
 ## Type of Change
 
-- [ ] New feature submission (inside `submissions/examples/`)
-- [ ] Bug fix in an existing submission
-- [ ] Documentation improvement
+- [ ] ✨ New animation / hover effect
+- [ ] 🧩 New component
+- [ ] 📝 Documentation improvement
+- [ ] 🐛 Bug fix in an existing submission
 - [ ] Other (describe below)
 
 ---
@@ -18,19 +19,18 @@
 > ⚠️ PRs that fail this checklist will be **closed without review**.
 
 - [ ] All changes are inside `submissions/examples/your-feature-name/`
-- [ ] Includes a `demo.html` — a self-contained working HTML demo
-- [ ] Includes a `style.css` — raw CSS for the proposed feature
-- [ ] Includes a `README.md` — answers: what it does, how to use it, why it's useful
-- [ ] **No changes made to `core/`**
-- [ ] **No changes made to `components/`**
-- [ ] One feature per PR (not multiple unrelated changes)
-- [ ] Demo works by opening `demo.html` directly in a browser (no server required)
+- [ ] Includes `demo.html` — self-contained, opens in browser with no server
+- [ ] Includes `style.css` — raw CSS for the proposed feature
+- [ ] Includes `README.md` — what it does, how to use it, why it fits EaseMotion CSS
+- [ ] **No changes to `core/`**
+- [ ] **No changes to `components/`**
+- [ ] One feature per PR (no bundled unrelated changes)
 
 ---
 
 ## Feature Description
 
-**What does this submission add?**
+**What does this add?**
 
 <!-- One-sentence description -->
 
@@ -40,19 +40,35 @@
 <!-- Show the class usage in HTML -->
 ```
 
-**Why does it fit Flow CSS?**
+**Why does it fit EaseMotion CSS?**
 
 <!-- Explain how this fits the human-readable, animation-first philosophy -->
 
 ---
 
+## Demo
+
+- [ ] Demo added (`demo.html` works by opening directly in a browser)
+
+---
+
+## Browser Testing
+
+- [ ] Chrome
+- [ ] Firefox
+- [ ] Edge
+- [ ] Safari *(optional but appreciated)*
+
+---
+
 ## Notes for Maintainer
 
-<!-- Anything the maintainer should know when reviewing/integrating this submission.
+<!-- Anything the maintainer should know when reviewing or integrating.
      e.g. "I wasn't sure about the timing — feel free to adjust."
-     e.g. "This is inspired by the shimmer effect in Material UI." -->
+     e.g. "Inspired by Material UI's shimmer effect." -->
 
 ---
 
 > **Reminder:** Only the repository maintainer may merge pull requests.  
-> Do not self-merge, even if you have write access.
+> Do not self-merge, even if you have write access.  
+> Maximum **2 active assigned issues** per contributor — unassign extras before opening a PR.
