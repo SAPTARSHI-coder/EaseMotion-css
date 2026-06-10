@@ -4,12 +4,13 @@ Reads /tmp/contributors.json, replaces content between
 <!-- CONTRIBUTOR-WALL-START --> and <!-- CONTRIBUTOR-WALL-END --> markers.
 """
 import json
+import os
 import re
 import sys
 
-COLS = 12
-INPUT = "/tmp/contributors.json"
-README = "README.md"
+COLS = int(os.environ.get("CONTRIBUTOR_COLS", 12))
+INPUT = os.environ.get("CONTRIBUTOR_INPUT", "/tmp/contributors.json")
+README = os.environ.get("CONTRIBUTOR_README", "README.md")
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
 END_MARKER = "<!-- CONTRIBUTOR-WALL-END -->"
 
