@@ -1,14 +1,15 @@
 ## What does this do?
 
-Provides `ease-pointer-events-none` and `ease-pointer-events-auto` utility classes for the CSS `pointer-events` property. Controls whether an element responds to pointer interactions (click, hover, touch).
+Provides `ease-pointer-events` and `ease-touch-action` utility classes for controlling how elements respond to pointer input and touch gestures.
 
 ## How is it used?
 
 ```html
-<div class="ease-pointer-events-none-za">Ignores clicks</div>
-<div class="ease-pointer-events-auto-za">Responds to clicks</div>
+<div class="ease-pointer-events-none-za">Not clickable</div>
+<div class="ease-pointer-events-auto-za">Clickable again</div>
+<div class="ease-touch-action-none-za">No touch gestures</div>
 ```
 
 ## Why is it useful?
 
-`pointer-events: none` is commonly needed for overlay layers, decorative pseudo-elements, disabled UI states, and pass-through click targets. EaseMotion currently has no reusable utility for this despite being used across many components.
+EaseMotion core only uses `pointer-events: none` internally in animations. There are no standalone utility classes for pointer-events or touch-action. These are essential for overlay layers, disabled states, and controlling touch behavior on custom interactive elements.
