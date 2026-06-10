@@ -33,3 +33,11 @@ EaseMotion CSS is built around creating highly interactive, fluid, and intuitive
 - HTML
 - CSS
 - JavaScript (for triggering the layout reflow and animation reset)
+
+## Preview
+
+Open `demo.html` directly in your browser to verify that clicking on any of the preview cards restarts and replays its corresponding animation.
+
+## Contribution Notes
+
+- Maintainer will integrate this click trigger into the core documentation scripts before releasing the feature.
