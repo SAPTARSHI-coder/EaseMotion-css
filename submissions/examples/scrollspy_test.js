@@ -3,6 +3,10 @@
 
 import { test, expect, beforeAll, afterAll } from "vitest";
 import puppeteer from "puppeteer";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let browser;
 let page;
@@ -16,7 +20,7 @@ beforeAll(async () => {
   });
   page = await browser.newPage();
   const filePath = "file://" + encodeURI(
-    "C:/Users/Kamal/Desktop/GSSOC/EaseMotion-css/docs/index.html"
+    path.resolve(__dirname, "../../docs/index.html")
   );
   await page.goto(filePath);
 });
