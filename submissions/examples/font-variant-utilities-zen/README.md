@@ -4,9 +4,9 @@ CSS utility classes for font variant settings.
 
 ## Classes
 
-- `.font-normal` — `font-variant: normal`
-- `.font-small-caps` — `font-variant: small-caps`
-- `.font-all-small-caps` — `font-variant: all-small-caps`
+- `.font-variant-normal` — `font-variant: normal`
+- `.font-variant-small-caps` — `font-variant: small-caps`
+- `.font-variant-all-small-caps` — `font-variant: all-small-caps`
 
 ## Why
 
