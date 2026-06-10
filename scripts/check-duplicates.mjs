@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, "..");
 const baselinePath = path.join(__dirname, "duplicate-baseline.json");
 
-const dirs = ["core", "components"];
+const dirs = ["core", "components", "easemotion"];
 const classPattern = /^\s*\.([a-zA-Z0-9_-]+)(?::[a-z-]+)?(?:\s*,\s*\.[a-zA-Z0-9_-]+)*\s*\{/;
 const keyframePattern = /@keyframes\s+(\S+)/;
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { JSDOM } from 'jsdom';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 describe('EaseMotion-css Smoke Tests', () => {
@@ -11,25 +11,13 @@ describe('EaseMotion-css Smoke Tests', () => {
   beforeAll(() => {
     const coreDir = resolve(__dirname, '../core');
     const componentsDir = resolve(__dirname, '../components');
-    const variables = readFileSync(resolve(coreDir, 'variables.css'), 'utf8');
-    const base = readFileSync(resolve(coreDir, 'base.css'), 'utf8');
-    const animations = readFileSync(resolve(coreDir, 'animations.css'), 'utf8');
-    const utilities = readFileSync(resolve(coreDir, 'utilities.css'), 'utf8');
-    const buttons = readFileSync(resolve(componentsDir, 'buttons.css'), 'utf8');
-    const cards = readFileSync(resolve(componentsDir, 'cards.css'), 'utf8');
-    const chip = readFileSync(resolve(componentsDir, 'chip.css'), 'utf8');
-    const footer = readFileSync(resolve(componentsDir, 'footer.css'), 'utf8');
-    const masonry = readFileSync(resolve(componentsDir, 'masonry.css'), 'utf8');
-    const navbar = readFileSync(resolve(componentsDir, 'navbar.css'), 'utf8');
-    const scrollProgress = readFileSync(resolve(componentsDir, 'scroll-progress.css'), 'utf8');
-    const sidebar = readFileSync(resolve(componentsDir, 'sidebar.css'), 'utf8');
-const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
-const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
-const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
-const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
-const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
-    
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
+    // Load core CSS files
+    const coreFiles = ['variables.css', 'base.css', 'animations.css', 'utilities.css'];
+    const coreCss = coreFiles.map((f) => readFileSync(resolve(coreDir, f), 'utf8')).join('');
+    // Dynamically load all component CSS files
+    const componentFiles = readdirSync(componentsDir).filter((f) => f.endsWith('.css'));
+    const componentCss = componentFiles.map((f) => readFileSync(resolve(componentsDir, f), 'utf8')).join('');
+    css = coreCss + componentCss;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
