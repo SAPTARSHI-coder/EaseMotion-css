@@ -87,12 +87,14 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
-    expect(css).toContain('.ease-btn-loading');
-    expect(css).toContain('font-size: 0');
+    expect(css).toMatch(/\.ease-btn-loading\s*\{[^}]*font-size:\s*0/);
+    expect(css).toMatch(/\.ease-btn-loading\s*\{[^}]*pointer-events:\s*none/);
+    expect(css).not.toMatch(/\.ease-btn-loading\s*\{[^}]*color:\s*transparent/);
     expect(css).toContain('.ease-btn-loading > *');
     expect(css).toContain('visibility: hidden');
     expect(css).toContain('.ease-btn-loading::after');
-    expect(css).toContain('border: 2px solid currentColor');
+    expect(css).toContain('--ease-btn-spinner-color');
+    expect(css).toMatch(/\.ease-btn-loading::after\s*\{[^}]*border:\s*2px solid var\(--ease-btn-spinner-color/);
   });
 
   it('minified bundle should be valid and contain key classes', () => {
