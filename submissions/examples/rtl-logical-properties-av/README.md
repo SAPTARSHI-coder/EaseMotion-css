@@ -1,18 +1,32 @@
-# Logical Properties (RTL Support) Architecture
+# Native RTL Support via CSS Logical Properties
 
 ## What does this do?
-Proposes a massive, structural CSS migration away from physical CSS properties (like `margin-left`, `padding-right`, `border-left`) in favor of modern **Logical Properties** (`margin-inline-start`, `padding-inline-end`, `border-inline-start`). 
+Proposes a massive internationalization (i18n) accessibility refactor to natively support Right-To-Left (RTL) languages (such as Arabic and Hebrew) by actively ripping out all physical layout properties and replacing them with modern CSS Logical Properties.
 
 ## How is it used?
-By adopting logical properties globally across all core framework files, the library will instantly and automatically support Right-to-Left (RTL) languages like Arabic, Hebrew, and Persian out-of-the-box. Developers utilizing EaseMotion simply need to set `dir="rtl"` on their `<html>` or `<body>` tag, and all margins, paddings, absolute positioning, and floats will natively mirror themselves without requiring thousands of lines of heavy, duplicate `[dir="rtl"]` CSS overrides.
+Maintainers and core contributors must systemically audit all core component files (spanning all 15+ files entirely across the `components/*.css` directory). 
 
-To enforce this architecture moving forward, we strongly propose adding the `stylelint-use-logical` plugin to the CI pipeline:
-```json
-"plugins": ["stylelint-use-logical"],
-"rules": {
-  "csstools/use-logical": true
+Currently, developers are dangerously hardcoding physical box dimensions that strictly lock components into a Left-to-Right orientation:
+```css
+/* ❌ BAD: Completely destroys layouts on RTL Arabic websites */
+.ease-card {
+  padding-left: 20px;
+  margin-right: 10px;
+  border-left: 4px solid blue;
+}
+```
+
+These rules must be aggressively replaced with dynamic, text-direction-aware logical properties:
+```css
+/* ✅ GOOD: Natively mirrors the layout based on the <html dir="rtl"> tag */
+.ease-card {
+  padding-inline-start: 20px;
+  margin-inline-end: 10px;
+  border-inline-start: 4px solid blue;
 }
 ```
 
 ## Why is it useful?
-Currently, almost every component inside the `components/` directory (spanning `buttons.css`, `tooltips.css`, `sidebar.css`, and 10+ other core files) relies heavily on hardcoded, physical directions. This completely breaks the UI for RTL users, causing icons to overlap text, tooltips to spawn off-screen, and sidebars to deploy from the wrong side of the viewport. Attempting to manually fix this by writing `[dir="rtl"] .ease-btn { margin-right: ... margin-left: 0; }` across 10+ core files would massively bloat the CSS bundle. Adopting Logical Properties natively solves the problem, reduces CSS file size, and performs phenomenally better in all modern browsers.
+Currently, if an enterprise developer utilizes EaseMotion to build a website that requires localization in Arabic or Hebrew, the framework visually falls apart. Because legacy physical properties like `margin-left` and `padding-right` are rigidly hardcoded across the entire `components/` directory, icons push text in the completely wrong direction, status borders incorrectly appear on the wrong side of cards, and flexbox alignments severely shatter. 
+
+Historically, large UI frameworks forcefully solved this by generating a second, massively bloated `easemotion-rtl.css` file that manually overrode every single layout rule on the page. By migrating to native CSS Logical Properties (`margin-inline-start`, `padding-block`, etc.), the browser handles the RTL mirroring entirely natively via the `dir="rtl"` HTML attribute. This instantly unlocks global internationalization for the framework while actively reducing the final CSS bundle size.
