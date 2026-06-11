@@ -4,7 +4,7 @@ on:
   issues:
     types: [opened, edited, closed, reopened]
   pull_request_target:
-    types: [opened, edited, closed, reopened]
+    types: [opened, edited, closed, reopened, synchronize]
 
 permissions:
   issues: write
@@ -131,7 +131,7 @@ jobs:
             // ==========================================
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
-            if (action === 'opened' || action === 'reopened' || action === 'edited') {
+            if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize') {
               // Only remove accepted/integrated if it is opened or reopened
               if (action === 'opened' || action === 'reopened') {
                 await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
@@ -160,6 +160,45 @@ jobs:
                 computedLabels.push('good first issue');
               } else {
                 computedLabels.push('level:intermediate');
+              }
+
+              if (isPR) {
+                try {
+                  const { data: files } = await github.rest.pulls.listFiles({
+                    owner, repo, pull_number: issueNumber, per_page: 100
+                  });
+                  const filePaths = files.map(f => f.filename);
+                  console.log(`PR changed files: ${filePaths.join(', ')}`);
+
+                  const matchesPattern = (path, pattern) => {
+                    if (pattern.endsWith('/**')) {
+                      return path.startsWith(pattern.slice(0, -2));
+                    }
+                    if (pattern.endsWith('/*')) {
+                      const prefix = pattern.slice(0, -1);
+                      return path.startsWith(prefix) && !path.slice(prefix.length).includes('/');
+                    }
+                    return path === pattern;
+                  };
+
+                  const hasMatch = (patterns) => {
+                    return filePaths.some(filePath => 
+                      patterns.some(pattern => matchesPattern(filePath, pattern))
+                    );
+                  };
+
+                  if (hasMatch(['submissions/examples/**', 'submissions/docs/**'])) {
+                    computedLabels.push('contribution');
+                  }
+                  if (hasMatch(['docs/**', 'submissions/docs/**'])) {
+                    computedLabels.push('documentation');
+                  }
+                  if (hasMatch(['core/**'])) {
+                    computedLabels.push('core');
+                  }
+                } catch (e) {
+                  console.log(`Warning: Failed to fetch PR files: ${e.message}`);
+                }
               }
 
               await addLabels(computedLabels);
