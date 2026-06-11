@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '*/30 * * * *' # Runs every 30 minutes to sweep and merge all open PRs
+    - cron: '0 */3 * * *' # Runs every 3 hours to sweep and merge all open PRs
   workflow_dispatch:
     inputs:
       pr_number:
@@ -63,15 +63,19 @@ jobs:
           PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
-          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName)
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels)
           is_draft=$(echo "$pr_data" | jq -r '.isDraft')
           head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
           head_ref=$(echo "$pr_data" | jq -r '.headRefName')
+          pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
+          pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
           
           echo "prNum=$PR_NUM" >> $GITHUB_OUTPUT
           echo "isDraft=$is_draft" >> $GITHUB_OUTPUT
           echo "headRepo=$head_repo" >> $GITHUB_OUTPUT
           echo "headRef=$head_ref" >> $GITHUB_OUTPUT
+          echo "title=$pr_title" >> $GITHUB_OUTPUT
+          echo "labels=$pr_labels" >> $GITHUB_OUTPUT
           
           echo "PR Number: $PR_NUM"
           echo "Is Draft: $is_draft"
@@ -97,7 +101,7 @@ jobs:
           for file in $files; do
             if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
-            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" ]]; then
+            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" && "$file" != "easemotion.css" && "$file" != "easemotion.min.css" ]]; then
               has_core_changes=true
               echo "Core change detected: $file"
             fi
@@ -143,6 +147,8 @@ jobs:
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
+          PR_LABELS: ${{ steps.pr-metadata.outputs.labels }}
         run: |
           # 1. Setup git configuration
           git config user.name "github-actions[bot]"
@@ -199,15 +205,25 @@ jobs:
           if [ "$has_submissions" = "true" ]; then
             files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
             
-            # Extract unique component folders under submissions/examples/ or submissions/
+            # Extract unique component folders under submissions/examples/, submissions/docs/, or submissions/
             folders=$(for file in $files; do
               if [[ "$file" =~ ^submissions/examples/ ]]; then
                 echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/docs/ ]]; then
+                echo "submissions/docs/$(echo "$file" | cut -d'/' -f3)"
               elif [[ "$file" =~ ^submissions/ ]]; then
                 echo "submissions/$(echo "$file" | cut -d'/' -f2)"
               fi
             done | sort -u)
             
+            # Check if PR is a bug fix or update
+            is_fix=false
+            if [[ "$PR_TITLE" =~ ^[Ff]ix: || "$PR_TITLE" =~ ^[Ff]ix\( || "$PR_TITLE" =~ ^[Cc]hore: || "$PR_LABELS" =~ "bug" || "$PR_LABELS" =~ "fix" ]]; then
+              is_fix=true
+            fi
+            echo "PR Title: $PR_TITLE"
+            echo "Is Bug Fix/Update: $is_fix"
+
             for folder_path in $folders; do
               echo "Evaluating folder $folder_path..."
               
@@ -228,22 +244,26 @@ jobs:
               folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
               
               if [ -n "$folder_in_main" ]; then
-                echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
-                
-                i=1
-                while true; do
-                  candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
-                  if [ -z "$candidate_in_main" ]; then
-                    break
-                  fi
-                  i=$((i+1))
-                done
-                
-                new_name="${folder_name}-v${i}"
-                echo "Renaming $folder_path to $parent_dir/$new_name"
-                
-                git mv "$folder_path" "$parent_dir/$new_name"
-                renamed_any=true
+                if [ "$is_fix" = "true" ]; then
+                  echo "Folder $folder_path already exists in main branch, but PR is marked as a fix/update. Skipping rename."
+                else
+                  echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
+                  
+                  i=1
+                  while true; do
+                    candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                    if [ -z "$candidate_in_main" ]; then
+                      break
+                    fi
+                    i=$((i+1))
+                  done
+                  
+                  new_name="${folder_name}-v${i}"
+                  echo "Renaming $folder_path to $parent_dir/$new_name"
+                  
+                  git mv "$folder_path" "$parent_dir/$new_name"
+                  renamed_any=true
+                fi
               else
                 echo "Folder $folder_path is safe — no name collision in main."
               fi
@@ -366,15 +386,27 @@ jobs:
             exit 0
           fi
           
-          # Try to merge and catch already-merged/in-progress scenarios
+          # Try to merge
           if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
             echo "PR successfully merged."
           else
             exit_code=$?
             echo "Merge command failed: $merge_output"
-            # If the error indicates that the merge is already in progress, or it was merged concurrently, we treat it as success.
-            if echo "$merge_output" | grep -qE "Merge already in progress|already merged|HTTP 405"; then
-              echo "Merge already in progress or already completed. Treating as success."
+            
+            # If the error is due to base branch modification (out of date), trigger branch update
+            if echo "$merge_output" | grep -q "Base branch was modified"; then
+              echo "Base branch has moved. Attempting to update PR branch..."
+              if update_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/update-branch 2>&1); then
+                echo "Successfully triggered PR branch update. PR checks will run again."
+              else
+                echo "Failed to update PR branch: $update_output"
+              fi
+              exit 1
+            fi
+            
+            # If the error indicates that the merge is already in progress, we treat it as success.
+            if echo "$merge_output" | grep -qE "Merge already in progress"; then
+              echo "Merge already in progress. Treating as success."
               exit 0
             else
               echo "Failed to merge PR #$PR_NUM."
