@@ -1,37 +1,15 @@
-# ease-pricing-card — Pricing Card Component
+# Glassmorphic Pricing Card with Interactive State Toggle
 
-A pricing card component with hover lift animation and a featured/highlighted variant.
+An interactive, high-contrast glassmorphic pricing card component designed for premium SaaS interfaces. This component highlights flexible pricing plans using a pure-CSS state switcher.
 
-## Classes
+## Features
+- **Pure CSS Architecture:** Utilizes hidden structural radio/checkbox states and modern sibling selectors (`~`) to toggle content view frames without any JavaScript dependencies.
+- **Glassmorphic Aesthetic:** Uses advanced backdrop-filter layering configurations (`backdrop-filter: blur()`) paired with micro-tonal semi-transparent borders for high-fidelity dark UI presentation profiles.
+- **Hardware-Accelerated Transitions:** Features fluid kinetic lift states (`transform: translateY(-8px)`) and scaling price state entrance animations.
 
-| Class | Description |
-|---|---|
-| `ease-pricing-card` | Base card with hover lift |
-| `ease-pricing-card-featured` | Highlighted variant with primary glow |
-| `ease-pricing-price` | Price slot wrapper |
-| `ease-pricing-features` | Features list (`<ul>`) with checkmarks |
+## Structure File Layout
+- `demo.html` - Self-contained layout presentation structure.
+- `style.css` - Raw modular presentation style definitions.
 
-## Usage
-
-```html
-<div class="ease-pricing-card">
-  <div class="ease-pricing-price">
-    <span class="currency">$</span>
-    <span class="amount">29</span>
-    <span class="period">/ mo</span>
-  </div>
-  <ul class="ease-pricing-features">
-    <li>Feature one</li>
-    <li>Feature two</li>
-  </ul>
-</div>
-
-<!-- Featured variant -->
-<div class="ease-pricing-card ease-pricing-card-featured">
-  ...
-</div>
-```
-
-## Why it fits EaseMotion CSS
-
-Pure CSS hover lift using `translateY` + `box-shadow` transitions. Uses design tokens for spacing, radius, shadow, and color. Respects `prefers-reduced-motion`.
+## Author
+Contributed under GSSoC-26.
