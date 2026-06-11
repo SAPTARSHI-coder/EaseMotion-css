@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  let lastTrigger = null;
+
   function checkModal() {
     const hash = window.location.hash;
     const body = document.body;
@@ -16,6 +18,7 @@
         const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
         if (overlay) {
           body.style.overflow = 'hidden';
+          body.setAttribute('data-modal-open', 'true');
           overlay.classList.add('is-active');
 
           const modal = overlay.querySelector('.ease-modal');
@@ -32,10 +35,33 @@
 
     // If no active modal is found
     body.style.overflow = '';
+    body.removeAttribute('data-modal-open');
+    if (lastTrigger) {
+      lastTrigger.focus();
+      lastTrigger = null;
+    }
   }
 
   // Setup event listeners for hash changes (opening/closing via anchors)
   window.addEventListener('hashchange', checkModal);
+
+  // Capture trigger element
+  document.addEventListener('click', function (e) {
+    const trigger = e.target.closest('a[href^="#"], [data-modal-open]');
+    if (trigger) {
+      lastTrigger = trigger;
+      if (trigger.hasAttribute('data-modal-open')) {
+        const targetId = trigger.getAttribute('data-modal-open');
+        window.location.hash = targetId;
+      }
+    }
+    
+    // Close on backdrop click or close button
+    if (e.target.matches('.ease-modal-overlay') || e.target.closest('.ease-modal-close, [data-modal-close]')) {
+      window.location.hash = '';
+      e.preventDefault();
+    }
+  });
 
   // Setup keyboard trap and escape key
   document.addEventListener('keydown', function (e) {
@@ -56,7 +82,7 @@
       // Tab trap
       if (e.key === 'Tab') {
         const focusableElements = overlay.querySelectorAll(
-          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
         );
         if (focusableElements.length === 0) {
           e.preventDefault();
