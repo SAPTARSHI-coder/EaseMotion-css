@@ -14,3 +14,16 @@ The preview cards are defined as clickable interactive containers that reset and
 </div>
 ```
 
+## Why is it useful?
+
+It removes unnecessary visual clutter and noise from the UI, creating a cleaner, more minimalist, and premium design that leverages standard interactive patterns (clicking the card to preview).
+
+## Tech Stack
+
+- HTML
+- CSS
+- JavaScript (for click-to-replay handler)
+
+## Preview
+
+Open demo.html directly in your browser to see the clean preview card interaction.
