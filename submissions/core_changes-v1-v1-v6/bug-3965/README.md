@@ -1,0 +1,10 @@
+# Fix #3965: Fix #3965: add responsive flex-col/flex-row breakpoint variants (sm/md/lg/xl)
+
+### Proposed Change
+`core/utilities.css` — `.ease-flex-col` and `.ease-flex-row` exist but have no responsive breakpoint variants. Users cannot conditionally switch flex direction at sm/md/lg/xl breakpoints.
+```css
+@media (min-width:640px){.ease-sm-flex-col{flex-direction:column!important}.ease-sm-flex-row{flex-direction:row!important}}
+@media (min-width:768px){.ease-md-flex-col{flex-direction:column!important}.ease-md-flex-row{flex-direction:row!important}}
+@media (min-width:1024px){.ease-lg-flex-col{flex-direction:column!important}.ease-lg-flex-row{flex-direction:row!important}}
+@media (min-width:1280px){.ease-xl-flex-col{flex-direction:column!important}.ease-xl-flex-row{flex-direction:row!important}}
+```
