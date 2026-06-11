@@ -1,6 +1,21 @@
-﻿# Contributing to EaseMotion CSS
+# Contributing to EaseMotion CSS
+
+> [!IMPORTANT]
+> **Temporary Contribution Guidelines & Freeze Notice**
+> 
+> Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
+> 
+> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> 
+> This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
+> 
+> Core contribution access may reopen once the framework structure and validation systems are fully stabilized.
 
 Thank you for your interest in improving EaseMotion CSS.
+
+> [!TIP]
+> **Join our Discord Community!**  
+> We have an official Discord server for EaseMotion CSS. Join us to chat with other contributors, seek help with your submissions, discuss design choices, and receive announcements: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU)
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
@@ -36,6 +51,44 @@ submissions/examples/your-feature-name/
 ```
 
 That is the only directory you should add or modify in your PR.
+
+### 📢 Contribution Rate Limit Update
+
+To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
+
+* Contributors may submit up to **5–6 PRs per day**
+* Focus on quality, originality, accessibility, and proper testing
+* Low-effort, repetitive, or mass-generated PRs may be closed without review
+
+#### Why This Change?
+
+EaseMotion CSS has grown rapidly with hundreds of contributors and thousands of merged PRs. This update helps:
+* Reduce merge conflicts
+* Improve review quality
+* Maintain framework consistency
+* Encourage meaningful contributions over quantity
+
+---
+
+### 📢 Contribution Policy Update
+
+All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+
+To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+
+**Example:**
+*   `ease-hover-sap`
+*   `ease-tabs-ak`
+*   `ease-card-pr`
+
+This ensures:
+*   Unambiguous component naming,
+*   Preservation of every contributor’s work,
+*   Conflict-free merges,
+*   Easier maintenance and review workflow,
+*   Support for parallel implementations of similar ideas.
+
+The project encourages creative variations and parallel implementations rather than overwriting existing contributor work.
 
 ---
 
