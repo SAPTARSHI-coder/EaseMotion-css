@@ -13,6 +13,9 @@
 
 Thank you for your interest in improving EaseMotion CSS.
 
+> [!TIP]
+> **Join our Discord Community!**  
+> We have an official Discord server for EaseMotion CSS. Join us to chat with other contributors, seek help with your submissions, discuss design choices, and receive announcements: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU)
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
@@ -48,6 +51,24 @@ submissions/examples/your-feature-name/
 ```
 
 That is the only directory you should add or modify in your PR.
+
+### 📢 Contribution Rate Limit Update
+
+To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
+
+* Contributors may submit up to **10 PRs per day**
+* Focus on quality, originality, accessibility, and proper testing
+* Low-effort, repetitive, or mass-generated PRs may be closed without review
+
+#### Why This Change?
+
+EaseMotion CSS has grown rapidly with hundreds of contributors and thousands of merged PRs. This update helps:
+* Reduce merge conflicts
+* Improve review quality
+* Maintain framework consistency
+* Encourage meaningful contributions over quantity
+
+---
 
 ### 📢 Contribution Policy Update
 
