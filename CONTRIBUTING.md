@@ -2,17 +2,20 @@
 
 > [!IMPORTANT]
 > **Temporary Contribution Guidelines & Freeze Notice**
-> 
+>
 > Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
-> 
+>
 > For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
-> 
+>
 > This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
-> 
+>
 > Core contribution access may reopen once the framework structure and validation systems are fully stabilized.
 
 Thank you for your interest in improving EaseMotion CSS.
 
+> [!TIP]
+> **Join our Discord Community!**  
+> We have an official Discord server for EaseMotion CSS. Join us to chat with other contributors, seek help with your submissions, discuss design choices, and receive announcements: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU)
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
@@ -49,6 +52,33 @@ submissions/examples/your-feature-name/
 
 That is the only directory you should add or modify in your PR.
 
+### 📢 Contribution Rate Limit Update
+
+To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
+
+- Contributors may submit up to **30 PRs per day**
+- Focus on quality, originality, accessibility, and proper testing
+- Low-effort, repetitive, or mass-generated PRs may be closed without review
+
+#### Why This Change?
+
+EaseMotion CSS has grown rapidly with hundreds of contributors and thousands of merged PRs. This update helps:
+
+- Reduce merge conflicts
+- Improve review quality
+- Maintain framework consistency
+- Encourage meaningful contributions over quantity
+
+### 🧹 Clean Commit History & Squashing
+
+To keep the repository's git history clean and readable, contributors must follow these rules:
+
+- **Squash your commits:** Ensure all commits in your Pull Request are squashed into a single meaningful commit (or a few logical commits) before submitting for review. Do not push dozens of micro-commits (e.g., "fix", "typo", "update style.css", etc.) for a single change.
+- **Keep history clean:** PRs containing noisy, repetitive, or excessive commit histories (e.g., dozens of micro-commits) may be closed without review or blocked from merging.
+- **Write clear commit messages:** Use descriptive commit messages following the Conventional Commits format (e.g., `feat: add card component` or `fix: resolve hover animation issue`).
+
+---
+
 ### 📢 Contribution Policy Update
 
 All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
@@ -56,16 +86,18 @@ All contributions are welcome and eligible for merge when submitted inside the `
 To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
 
 **Example:**
-*   `ease-hover-sap`
-*   `ease-tabs-ak`
-*   `ease-card-pr`
+
+- `ease-hover-sap`
+- `ease-tabs-ak`
+- `ease-card-pr`
 
 This ensures:
-*   Unambiguous component naming,
-*   Preservation of every contributor’s work,
-*   Conflict-free merges,
-*   Easier maintenance and review workflow,
-*   Support for parallel implementations of similar ideas.
+
+- Unambiguous component naming,
+- Preservation of every contributor’s work,
+- Conflict-free merges,
+- Easier maintenance and review workflow,
+- Support for parallel implementations of similar ideas.
 
 The project encourages creative variations and parallel implementations rather than overwriting existing contributor work.
 
@@ -95,10 +127,10 @@ Answer these three questions:
 
 ## Naming Rules
 
-| Who | Rule |
-|-----|------|
-| **Contributors** | Use any class name that makes sense to you |
-| **Maintainer** | Renames everything to follow `ease-kebab-case` convention |
+| Who              | Rule                                                      |
+| ---------------- | --------------------------------------------------------- |
+| **Contributors** | Use any class name that makes sense to you                |
+| **Maintainer**   | Renames everything to follow `ease-kebab-case` convention |
 
 You do not need to worry about the `ease-` prefix. Do not try to pre-standardize — just write clear, readable CSS.
 
@@ -153,7 +185,7 @@ This rule exists to keep assignments fair and ensure active contributors can alw
 
 ### Inactivity
 
-If an assigned issue has **no progress for 5 days**, the maintainer will unassign it and open it for others.
+If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer will unassign it and open it for others.
 
 > This rule is enforced by the maintainer. It is not personal — it keeps the project healthy for everyone.
 
@@ -196,6 +228,7 @@ PR merged
 ```
 
 This ensures:
+
 - **Every class is framework-quality** before it ships
 - **Naming stays consistent** across the entire API
 - **No regressions** from unreviewed direct edits
@@ -208,16 +241,16 @@ PRs that touch `core/` or `components/` will be closed immediately, regardless o
 
 The maintainer uses the following labels to communicate submission status:
 
-| Label | Meaning |
-|-------|---------|
-| `curated` | Submission accepted into the framework |
-| `maintainer-approved` | Reviewed and approved, pending integration |
-| `featured` | Exceptional submission — will be showcased in docs |
-| `good first issue` | Great starting point for new contributors |
-| `animation` | Hover effects, entrance animations, keyframes |
-| `component` | New UI components |
-| `enhancement` | Improvements to existing classes |
-| `documentation` | README, docs, submission guide updates |
+| Label                 | Meaning                                            |
+| --------------------- | -------------------------------------------------- |
+| `curated`             | Submission accepted into the framework             |
+| `maintainer-approved` | Reviewed and approved, pending integration         |
+| `featured`            | Exceptional submission — will be showcased in docs |
+| `good first issue`    | Great starting point for new contributors          |
+| `animation`           | Hover effects, entrance animations, keyframes      |
+| `component`           | New UI components                                  |
+| `enhancement`         | Improvements to existing classes                   |
+| `documentation`       | README, docs, submission guide updates             |
 
 ---
 
@@ -243,4 +276,3 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 **Saptarshi Sadhu**  
 GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
-
