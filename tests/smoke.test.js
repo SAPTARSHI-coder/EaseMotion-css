@@ -86,6 +86,10 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
+  it('should expose tab focus-visible outline rule', () => {
+    expect(css).toContain('ease-tab-input:nth-of-type(1):focus-visible');
+  });
+
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');
