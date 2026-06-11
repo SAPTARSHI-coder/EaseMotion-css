@@ -760,7 +760,7 @@ Your raw CSS  →  Maintainer standardizes  →  ease-* class ships
 
 To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS is introducing a soft contribution limit:
 
-* Contributors may submit up to **5–6 PRs per day**
+* Contributors may submit up to **10 PRs per day**
 * Focus on quality, originality, accessibility, and proper testing
 * Low-effort, repetitive, or mass-generated PRs may be closed without review
 
