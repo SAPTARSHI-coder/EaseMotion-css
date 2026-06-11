@@ -16,10 +16,12 @@ A single-page, printable cheatsheet for the EaseMotion CSS framework.
 
 ## How to use
 
-1. Open `cheatsheet.html` in your browser (double-click or use `Invoke-Item`):
+Open `demo.html` in a browser to preview the cheatsheet.
+
+1. Open `demo.html` in your browser (double-click or use `Invoke-Item`):
 
 ```powershell
-Invoke-Item submissions\html-cheatsheet\cheatsheet.html
+Invoke-Item submissions\examples\html-cheatsheet\demo.html
 ```
 
 2. Use the search box in the side panel or press `/` to focus search.
@@ -40,7 +42,7 @@ Invoke-Item submissions\html-cheatsheet\cheatsheet.html
 
 ## Extending the cheatsheet
 
-To add more classes or sections, edit `cheatsheet.html` and add new `<article class="cheat">` blocks under the relevant section. Include:
+To add more classes or sections, edit `demo.html` and add new `<article class="cheat">` blocks under the relevant section. Include:
 
 ```html
 <article class="cheat" data-keywords="...">
@@ -53,7 +55,7 @@ To add more classes or sections, edit `cheatsheet.html` and add new `<article cl
 
 ## Files
 
-- `cheatsheet.html` — Single-page cheatsheet
+- `demo.html` — Single-page cheatsheet preview
 - `style.css` — Styles and print rules
 - `README.md` — This file
 
