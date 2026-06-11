@@ -6,9 +6,9 @@
 
 # ⚡ EaseMotion CSS
 
-**Modern animation framework for expressive UI motion.**
+**A zero-dependency, animation-first CSS framework for faster, more expressive UI.**
 
-Write UI like you describe it in English. No build steps. No memorizing shorthand. Just link a file and ship.
+EaseMotion CSS lets you build polished interfaces with readable class names such as `ease-fade-in`, `ease-slide-up`, and `ease-hover-grow`. No build step, no complex setup, and no need to memorize shorthand.
 
 <br/>
 
@@ -79,11 +79,11 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 **[📖 Documentation](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 Live Demo](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 Contributing](./CONTRIBUTING.md)**
 
-### Animation Iterations
+### Controlling looping animations
 
-Looping animations in EaseMotion CSS (for example: `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and the `.ease-typewriter-loop`) now respect a global CSS custom property: `--ease-animation-iterations`.
+Looping animations such as `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and `.ease-typewriter-loop` use the CSS variable `--ease-animation-iterations`.
 
-The default remains `infinite` so existing behavior is unchanged. To run looping animations a fixed number of times, override the variable in your project:
+The default value is `infinite`, which keeps existing behavior unchanged. If you want a looping animation to run only a few times, set the variable once in your project:
 
 ```css
 :root {
@@ -159,10 +159,9 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 ## What is EaseMotion CSS? ✨
 
-EaseMotion CSS is a curated, animation-first CSS framework where **class names read like plain English**. No memorizing shorthand. No build steps. No configuration. Just write HTML and it works.
+EaseMotion CSS is a curated, animation-first CSS framework where class names read like plain English. It is designed for developers who want expressive motion and clean HTML without a build tool or complex configuration.
 
 ```html
-<!-- This is all it takes -->
 <div class="ease-center ease-fade-in">
   <h1 class="ease-slide-up ease-delay-100">Build faster.</h1>
   <p class="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
@@ -172,7 +171,12 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 </div>
 ```
 
-> ⚡ Build beautiful animated interfaces using readable CSS classes. No build step. No configuration. Just link a file and start building.
+### Why it is easy to use
+
+- Readable utility names such as `ease-center` and `ease-hover-grow`
+- Zero dependency setup with CDN or npm
+- Ready-to-use motion, layout, and component helpers
+- Easy customization through CSS variables
 
 ---
 
@@ -340,31 +344,25 @@ Every class in the framework has passed through this process. The curation is wh
 ### Animations
 
 ```html
-<!-- Entrance animations (fire on page load) -->
+<!-- Entrance animations (run on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
 <h3 class="ease-slide-in-left">Slide left</h3>
 <h4 class="ease-slide-in-right">Slide right</h4>
-<h5 class="ease-slide-in-left">Slide from left</h5>
-<h4 class="ease-zoom-in">Zoom in</h4>
-<h5 class="ease-flip">3D flip</h5>
-<h5 class="ease-contract-image-entrance">Contract image entrance</h5>
+<h5 class="ease-zoom-in">Zoom in</h5>
+<h6 class="ease-flip">3D flip</h6>
 
-<!-- Staggered sequence — each item 100ms after previous -->
+<!-- Staggered sequence — each item starts 100ms later -->
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
+```
 
 ### Duration Helpers
 
 ```html
-<div class="ease-slide-up ease-duration-fast">
-  Fast Animation
-</div>
-
-<div class="ease-slide-up ease-duration-slow">
-  Slow Animation
-</div>
+<div class="ease-slide-up ease-duration-fast">Fast animation</div>
+<div class="ease-slide-up ease-duration-slow">Slow animation</div>
 ```
 
 | Class | Duration |
