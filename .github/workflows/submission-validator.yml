@@ -339,6 +339,37 @@ jobs:
               console.log('⚠️ Could not add labels:', error.message);
             }
 
+      - name: Close Invalid PR
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const pullNumber = context.payload.pull_request.number;
+              
+              console.log(`Closing invalid PR #${pullNumber}...`);
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: pullNumber,
+                state: 'closed'
+              });
+              console.log('✅ PR successfully closed.');
+              
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pullNumber,
+                body: `🔒 **Pull Request Closed:** This PR has been automatically closed because it failed the repository's submission validation check.\n\nTo continue contributing, please address the errors shown in the validation summary comment above in your local branch, and open a new, clean Pull Request once resolved. Thank you!`
+              });
+              console.log('✅ Close comment posted.');
+            } catch (error) {
+              console.log('⚠️ Could not close PR or post comment:', error.message);
+            }
+
       - name: Remove Labels on Success
         if: success() && steps.validate.outputs.hasFailures == 'false'
         uses: actions/github-script@v7
