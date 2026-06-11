@@ -26,6 +26,6 @@ To prevent core-build conflicts during review cycles, all related code assets ar
 
 ```text
 submissions/ease-tooltip-animation/
-├── ease-tooltip.css   # Full modular component stylesheet 
+├── style.css          # Full modular component stylesheet 
 ├── demo.html          # Interactive local playground interface
 └── README.md          # Documentation 
