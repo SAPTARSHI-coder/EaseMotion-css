@@ -36,9 +36,13 @@ it("should hide plain text in loading buttons and keep the spinner visible", () 
 
 ---
 
-## Solution
+## Solution & Patch
 
-We update the assertion in `tests/smoke.test.js` to target the actual property implemented by `.ease-btn-loading`:
+Because repository validation rules block contributors from directly modifying core files (such as `tests/smoke.test.js`), we provide the correct assertion check as a maintainer patch file inside this submission:
+
+- **Patch File:** [`submissions/examples/smoke-test-false-positive-fix/core-patch/smoke.test.patch.js`](file:///c:/Users/harsh/OneDrive/Desktop/NSoC/Folder/EaseMotion-css/submissions/examples/smoke-test-false-positive-fix/core-patch/smoke.test.patch.js)
+
+The maintainer can manually apply this diff to `tests/smoke.test.js` to change the assertion check:
 
 ```diff
 // tests/smoke.test.js
@@ -54,15 +58,14 @@ We update the assertion in `tests/smoke.test.js` to target the actual property i
 ## Interactive Sandbox & Demo
 
 An interactive simulation lab is provided in `demo.html` allowing contributors to:
-
 1. Load a mockup CSS containing buttons and decimal font sizes.
 2. Select between the **Buggy Substring Check** (asserting `font-size: 0`), **Fixed Substring Check** (asserting `color: transparent`), and a **Strict Selector & Declaration Check** (verifying boundaries).
 3. Inspect how naive substring matching leads to false-positive test runs and check live status results.
 
 ### Files Created
-
 - `demo.html`: Live interactive sandbox lab interface.
 - `style.css`: Clean, visually stunning dark mode layout for the lab.
+- `core-patch/smoke.test.patch.js`: The maintainer patch script.
 - `README.md`: This documentation.
 
 ---

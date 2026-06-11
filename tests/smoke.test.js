@@ -95,7 +95,7 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
-    expect(css).toContain('color: transparent');
+    expect(css).toContain('font-size: 0');
     expect(css).toContain('.ease-btn-loading > *');
     expect(css).toContain('visibility: hidden');
     expect(css).toContain('.ease-btn-loading::after');
