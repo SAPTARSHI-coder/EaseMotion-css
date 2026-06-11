@@ -86,6 +86,12 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
+  it('should expose badge color variant classes', () => {
+    expect(css).toContain('.ease-badge');
+    expect(css).toContain('.ease-badge-danger');
+    expect(css).toContain('.ease-badge-success');
+  });
+
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');
