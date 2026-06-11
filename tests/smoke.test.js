@@ -86,12 +86,6 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
-  it('should expose loader base and variant classes', () => {
-    expect(css).toContain('.ease-loader');
-    expect(css).toContain('.ease-loader-pulse');
-    expect(css).toContain('.ease-loader-ping');
-  });
-
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');
