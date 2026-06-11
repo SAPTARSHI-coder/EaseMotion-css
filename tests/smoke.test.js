@@ -58,6 +58,11 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   });
 
+  it('should disable continuous looping animations for reduced motion', () => {
+    expect(css).toMatch(/\.ease-bounce,[\s\S]*?\.ease-typewriter-loop,[\s\S]*?animation: none !important;/);
+    expect(css).toMatch(/\.ease-fade-in,[\s\S]*?\.ease-contract-image-entrance,[\s\S]*?animation-duration: 0\.01ms !important;/);
+  });
+
   it('should have component classes defined', () => {
     const sheet = document.styleSheets[0];
     

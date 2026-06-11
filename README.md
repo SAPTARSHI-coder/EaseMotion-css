@@ -389,6 +389,10 @@ You can customize the iteration count of looping animations:
 
 By default, the value is `infinite`, preserving existing behavior.
 
+#### Accessibility - reduced motion
+
+Looping animations (`.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, `.ease-shake`, and `.ease-typewriter-loop`) are disabled automatically when a user has enabled Reduce Motion in their operating system settings. Entrance animations are shortened to near-instant timing so content still appears correctly without visible motion.
+
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
 
@@ -930,5 +934,7 @@ Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first 
 ## Accessibility
 
 EaseMotion CSS supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion and reduce animation-related discomfort. When enabled at the operating system level, animations and transitions are minimized to provide a more accessible experience.
+
+Continuous looping animations are stopped in reduced-motion mode, while entrance animations complete almost instantly so content remains visible. No extra developer setup is required.
 
 
