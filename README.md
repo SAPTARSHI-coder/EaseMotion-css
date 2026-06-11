@@ -756,6 +756,24 @@ Your raw CSS  →  Maintainer standardizes  →  ease-* class ships
 
 📖 Read the full guide → [CONTRIBUTING.md](./CONTRIBUTING.md)
 
+### 📢 Contribution Rate Limit Update
+
+To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS is introducing a soft contribution limit:
+
+* Contributors may submit up to **5–6 PRs per day**
+* Focus on quality, originality, accessibility, and proper testing
+* Low-effort, repetitive, or mass-generated PRs may be closed without review
+
+#### Why This Change?
+
+EaseMotion CSS has grown rapidly with hundreds of contributors and thousands of merged PRs. This update helps:
+* Reduce merge conflicts
+* Improve review quality
+* Maintain framework consistency
+* Encourage meaningful contributions over quantity
+
+---
+
 ### 📢 Contribution Policy Update
 
 All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
