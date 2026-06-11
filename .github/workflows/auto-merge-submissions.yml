@@ -115,19 +115,22 @@ jobs:
       # Step 2.5: Block Auto-Merge for Invalid Changes
       - name: Block Auto-Merge for Invalid Changes
         if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           
           if [ "$has_submissions" != "true" ]; then
             echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
-            echo "Only pull requests introducing new submissions or examples can be auto-merged."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the \`submissions/\` directory. Contributors must place their submissions under \`submissions/examples/your-feature-name/\`. Thank you!" --repo ${{ github.repository }}
             exit 1
           fi
           
           if [ "$has_core_changes" = "true" ]; then
             echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
-            echo "Core changes require manual review and approval by the repository owner."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the \`submissions/\` directory. Thank you!" --repo ${{ github.repository }}
             exit 1
           fi
 
@@ -183,8 +186,9 @@ jobs:
               git commit -m "chore: resolve easemotion.min.css merge conflict"
               echo "Conflict resolved and committed."
             else
-              echo "PR has source code conflicts. Aborting merge."
+              echo "PR has source code conflicts. Closing PR..."
               git merge --abort
+              gh pr close ${{ steps.pr-metadata.outputs.prNum }} --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has source code conflicts with the main branch. Please pull the latest changes, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
               exit 1
             fi
           else
@@ -345,7 +349,8 @@ jobs:
             done < <(echo "$response" | jq -c '.check_runs[]')
             
             if [ "$any_failed" = "true" ]; then
-              echo "One or more checks failed. Aborting merge."
+              echo "One or more checks failed. Closing PR..."
+              gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running \`npm test\` and \`npm run lint\`, and submit a new Pull Request. Thank you!" --repo ${{ github.repository }}
               exit 1
             fi
             
