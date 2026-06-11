@@ -1,5 +1,6 @@
 # Animated Tabs Navigation Component
 
+ feature/animated-file-upload
 A modern, highly performant SaaS dashboard tabs navigation component built using **pure HTML and CSS**. It utilizes the CSS checkbox/radio hack for state switching and includes an animated sliding underline indicator, dynamic content panel transitions, staggered element entrances, and full responsive support (horizontal swipe scroll on mobile inputs) without any external libraries or JavaScript.
 
 ## 1. What does this do?
@@ -95,3 +96,22 @@ Active panel selection transitions use the checked state to toggle visibility:
 2. **Dynamic Height Compatibility**: Using absolute positioning for inactive tabs and reverting active ones to `relative` makes the parent card wrap the exact height of the selected view naturally.
 3. **Smooth Mobile Swipe Scrolling**: On narrower viewports, the tab list shrinks labels to `120px` and enables an overflow container. Underline indicator shifts continue to line up perfectly.
 4. **Accessibility Friendly**: Labels map directly to their corresponding hidden radio states, making them fully keyboard navigable (using Space/Enter or arrow keys to switch) and screen-reader descriptive through standard tab, tablist, and tabpanel role definitions.
+=======
+## What does this do?
+
+This component creates a responsive animated tabs navigation interface using only HTML and CSS.
+
+## How is it used?
+
+Add radio inputs, matching tab labels, and content panels:
+
+```html
+<div class="tabs">
+  <input type="radio" name="tabs" id="tab-one" checked>
+  <label for="tab-one" class="tab-label">Overview</label>
+
+  <section class="tab-panel">
+    Tab content here
+  </section>
+</div>
+ main
