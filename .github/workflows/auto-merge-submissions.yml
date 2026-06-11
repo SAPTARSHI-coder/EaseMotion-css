@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '*/30 * * * *' # Runs every 30 minutes to sweep and merge all open PRs
+    - cron: '0 */3 * * *' # Runs every 3 hours to sweep and merge all open PRs
   workflow_dispatch:
     inputs:
       pr_number:
@@ -92,20 +92,45 @@ jobs:
           files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
           
           has_submissions=false
+          has_core_changes=false
           
           for file in $files; do
-            if [[ "$file" =~ ^submissions/examples/ ]]; then
+            if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
+            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" ]]; then
+              has_core_changes=true
+              echo "Core change detected: $file"
             fi
           done
           
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
-          echo "Has submission example changes: $has_submissions"
+          echo "hasCoreChanges=$has_core_changes" >> $GITHUB_OUTPUT
+          echo "Has submission changes: $has_submissions"
+          echo "Has core changes: $has_core_changes"
+
+      # Step 2.5: Block Auto-Merge for Invalid Changes
+      - name: Block Auto-Merge for Invalid Changes
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        run: |
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
+          
+          if [ "$has_submissions" != "true" ]; then
+            echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
+            echo "Only pull requests introducing new submissions or examples can be auto-merged."
+            exit 1
+          fi
+          
+          if [ "$has_core_changes" = "true" ]; then
+            echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
+            echo "Core changes require manual review and approval by the repository owner."
+            exit 1
+          fi
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
         if: steps.pr-metadata.outputs.isDraft != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
           ref: ${{ steps.pr-metadata.outputs.headRef }}
@@ -173,23 +198,54 @@ jobs:
           
           if [ "$has_submissions" = "true" ]; then
             files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-            folders=$(echo "$files" | grep "^submissions/examples/" | cut -d'/' -f3 | sort -u)
             
-            for folder in $folders; do
-              echo "Evaluating folder submissions/examples/$folder..."
-              if [ -n "$(git ls-tree -d upstream/main "submissions/examples/$folder")" ]; then
-                echo "Folder submissions/examples/$folder already exists in main branch! Finding next version suffix..."
+            # Extract unique component folders under submissions/examples/ or submissions/
+            folders=$(for file in $files; do
+              if [[ "$file" =~ ^submissions/examples/ ]]; then
+                echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/ ]]; then
+                echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+              fi
+            done | sort -u)
+            
+            for folder_path in $folders; do
+              echo "Evaluating folder $folder_path..."
+              
+              # GUARD 1: Skip if this folder no longer exists on disk.
+              # The PR files API lists files from ALL commits (including already-renamed ones).
+              # Only process folders that are actually present in the current checkout.
+              if [ ! -d "$folder_path" ]; then
+                echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
+                continue
+              fi
+              
+              # Extract parent directory and folder name
+              parent_dir=$(dirname "$folder_path")
+              folder_name=$(basename "$folder_path")
+              
+              # GUARD 2: Use exact-name matching against git ls-tree output to check existence in main.
+              # This prevents false positives from prefix-based path collisions.
+              folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
+              
+              if [ -n "$folder_in_main" ]; then
+                echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
                 
                 i=1
-                while [ -n "$(git ls-tree -d upstream/main "submissions/examples/${folder}-v${i}")" ]; do
+                while true; do
+                  candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                  if [ -z "$candidate_in_main" ]; then
+                    break
+                  fi
                   i=$((i+1))
                 done
                 
-                new_name="${folder}-v${i}"
-                echo "Renaming submissions/examples/$folder to submissions/examples/$new_name"
+                new_name="${folder_name}-v${i}"
+                echo "Renaming $folder_path to $parent_dir/$new_name"
                 
-                git mv "submissions/examples/$folder" "submissions/examples/$new_name"
+                git mv "$folder_path" "$parent_dir/$new_name"
                 renamed_any=true
+              else
+                echo "Folder $folder_path is safe — no name collision in main."
               fi
             done
           fi
@@ -202,8 +258,8 @@ jobs:
           if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
             echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
             git add -A
-            # Commit only if there are unstaged changes
-            if ! git diff --quiet; then
+            # Commit only if there are staged/unstaged changes
+            if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             fi
             git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
@@ -302,5 +358,38 @@ jobs:
         run: |
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Merging PR #$PR_NUM..."
-          gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge
-          echo "PR successfully merged."
+          
+          # Check if already merged
+          state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$state" = "MERGED" ]; then
+            echo "PR #$PR_NUM is already merged."
+            exit 0
+          fi
+          
+          # Try to merge
+          if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
+            echo "PR successfully merged."
+          else
+            exit_code=$?
+            echo "Merge command failed: $merge_output"
+            
+            # If the error is due to base branch modification (out of date), trigger branch update
+            if echo "$merge_output" | grep -q "Base branch was modified"; then
+              echo "Base branch has moved. Attempting to update PR branch..."
+              if update_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/update-branch 2>&1); then
+                echo "Successfully triggered PR branch update. PR checks will run again."
+              else
+                echo "Failed to update PR branch: $update_output"
+              fi
+              exit 1
+            fi
+            
+            # If the error indicates that the merge is already in progress, we treat it as success.
+            if echo "$merge_output" | grep -qE "Merge already in progress"; then
+              echo "Merge already in progress. Treating as success."
+              exit 0
+            else
+              echo "Failed to merge PR #$PR_NUM."
+              exit $exit_code
+            fi
+          fi

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bug Fix Demo — .ease-btn-loading smoke test mismatch</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <div class="page">
+
+    <header class="page-header">
+      <h1>Bug Fix: <code>.ease-btn-loading</code> smoke test mismatch</h1>
+      <p class="subtitle">
+        The smoke test asserts <code>font-size: 0</code> to hide button text in
+        loading state, but <code>buttons.css</code> actually uses
+        <code>color: transparent !important</code>. The test will always fail
+        even though the component works correctly.
+      </p>
+    </header>
+
+    <!-- ── Bug Summary ─────────────────────────────────────────── -->
+    <section class="bug-box">
+      <div class="bug-row">
+        <div class="bug-col">
+          <div class="label label--fail">❌ What the test checks (<code>smoke.test.js</code> line 91)</div>
+          <pre class="code-block code-block--fail"><code>expect(css).toContain('font-size: 0');
+// This string does NOT exist in buttons.css
+// → test always FAILS</code></pre>
+        </div>
+        <div class="bug-col">
+          <div class="label label--pass">✅ What the component actually does (<code>buttons.css</code> line 215)</div>
+          <pre class="code-block code-block--pass"><code>.ease-btn-loading {
+  color: transparent !important;
+  /* text hidden via color, NOT font-size */
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Live component demo ─────────────────────────────────── -->
+    <section class="section">
+      <h2>Live Loading Button (component works fine)</h2>
+      <p class="muted">The actual button behaviour is correct — text is visually hidden, spinner shows. Only the test is wrong.</p>
+
+      <div class="btn-row">
+        <!-- Simulates the current buttons.css behaviour -->
+        <button class="btn btn--loading" id="btn-current">
+          <span class="btn-text">Submit</span>
+        </button>
+        <span class="btn-note">Current implementation — <code>color: transparent</code></span>
+      </div>
+
+      <div class="btn-row" style="margin-top: 1.5rem;">
+        <button class="btn btn--loading btn--fs0" id="btn-alt">
+          <span class="btn-text">Submit</span>
+        </button>
+        <span class="btn-note">Alternative — <code>font-size: 0</code> (if maintainer prefers this approach)</span>
+      </div>
+    </section>
+
+    <!-- ── Proposed Fix Options ────────────────────────────────── -->
+    <section class="section">
+      <h2>Proposed Fix (two options for the maintainer)</h2>
+
+      <div class="fix-grid">
+
+        <div class="fix-card">
+          <div class="label label--recommended">⭐ Option A — fix the test (recommended)</div>
+          <p class="fix-desc">
+            The component's <code>color: transparent</code> approach is
+            semantically superior — it keeps text in the accessibility tree
+            and font metrics intact so the spinner size is stable. The test
+            should match the implementation.
+          </p>
+          <pre class="code-block"><code>// tests/smoke.test.js — line 89-96
+it('should hide plain text in loading buttons and keep the spinner visible', () => {
+  expect(css).toContain('.ease-btn-loading');
+- expect(css).toContain('font-size: 0');          // ← remove
++ expect(css).toContain('color: transparent');     // ← add
+  expect(css).toContain('.ease-btn-loading > *');
+  expect(css).toContain('visibility: hidden');
+  expect(css).toContain('.ease-btn-loading::after');
+  expect(css).toContain('border: 2px solid currentColor');
+});</code></pre>
+        </div>
+
+        <div class="fix-card">
+          <div class="label label--alt">Option B — fix the component</div>
+          <p class="fix-desc">
+            If <code>font-size: 0</code> was the original design intent,
+            update <code>buttons.css</code> to use it. Note: this collapses
+            the button's text node to zero size, which may affect the
+            spinner's <code>em</code>-based dimensions.
+          </p>
+          <pre class="code-block"><code>/* components/buttons.css — .ease-btn-loading */
+.ease-btn-loading {
+  pointer-events: none;
+  position: relative;
+- color: transparent !important;   /* ← remove */
++ font-size: 0;                    /* ← add    */
+}</code></pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Inspector output ───────────────────────────────────── -->
+    <section class="section">
+      <h2>Computed style inspector</h2>
+      <div class="inspector" id="inspector">Loading computed styles…</div>
+    </section>
+
+  </div><!-- /.page -->
+
+  <script>
+    // Show computed styles of both demo buttons to confirm behavior
+    function inspect(id, label) {
+      var el = document.getElementById(id);
+      if (!el) return '';
+      var s = getComputedStyle(el);
+      return label + '\n' +
+        '  color:       ' + s.color + '\n' +
+        '  font-size:   ' + s.fontSize + '\n' +
+        '  visibility:  ' + s.visibility + '\n';
+    }
+
+    document.getElementById('inspector').textContent =
+      inspect('btn-current', 'btn#btn-current  (.ease-btn-loading — color: transparent)') +
+      '\n' +
+      inspect('btn-alt',     'btn#btn-alt       (font-size: 0 alternative)');
+  </script>
+
+</body>
+</html>
