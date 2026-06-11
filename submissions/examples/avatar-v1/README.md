@@ -39,3 +39,7 @@ Circular profile photo avatars with 5 sizes (xs, sm, default, lg, xl), text init
 ## Why it fits EaseMotion CSS
 
 Five size variants, 4 status indicators via `::after` pseudo-element, overlapping avatar group, and text initials fallback with purple accent colour. Pure CSS, no JavaScript required.
+
+## Notes
+
+Demo uses inline SVG data URIs for avatar images. No network connection required.
