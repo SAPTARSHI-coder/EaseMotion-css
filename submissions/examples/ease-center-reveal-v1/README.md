@@ -1,3 +1,26 @@
+ feature/ease-loading-spinner-pr
+# Smooth Center Reveal Utility Effect
+
+## Overview
+
+This submission adds a smooth center reveal utility effect for EaseMotion CSS.
+
+## Features
+
+- Pure HTML and CSS
+- Center-out reveal animation
+- Uses `clip-path`
+- Smooth hover transition
+- Responsive card layout
+- No external libraries
+
+## Usage
+
+```html
+<div class="ease-center-reveal">
+  Content
+</div>
+=======
 # Center Reveal Utility Effect (EaseMotion CSS)
 
 A smooth, high-performance, GPU-accelerated suite of CSS-only transition utilities that reveal elements from the center outward. Implemented using modern CSS `clip-path` and `transform` functions, this package delivers premium interactive feedback with zero JavaScript dependencies.
@@ -105,3 +128,4 @@ Apply these classes alongside `.ease-reveal-element` to configure the animations
 
 5. **Theme-Neutral**:  
    Fully styled using modern CSS custom properties. Adapts instantly when the global root theme is toggled.
+
