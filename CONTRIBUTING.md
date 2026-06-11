@@ -185,7 +185,7 @@ This rule exists to keep assignments fair and ensure active contributors can alw
 
 ### Inactivity
 
-If an assigned issue has **no progress for 5 days**, the maintainer will unassign it and open it for others.
+If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer will unassign it and open it for others.
 
 > This rule is enforced by the maintainer. It is not personal — it keeps the project healthy for everyone.
 

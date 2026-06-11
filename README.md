@@ -890,7 +890,7 @@ The project encourages creative variations and parallel implementations rather t
 | `maintainer-approved` | Reviewed, pending integration                          |
 | `featured`            | Exceptional submission — will be showcased             |
 
-> **Issue Cooldown Rule:** Maximum **2 active assigned issues** per contributor. Issues with no progress for 5 days are unassigned and reopened.
+> **Issue Cooldown Rule:** Maximum **2 active assigned issues** per contributor. Issues with no progress for 24 hours (1 day) are unassigned and reopened.
 
 ---
 
