@@ -1,0 +1,77 @@
+name: PR Star Reminder
+
+on:
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  remind-star:
+    name: Remind to Star Repository
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Check if User Starred Repo
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prAuthor = context.payload.pull_request.user.login;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log(`Checking if PR author "${prAuthor}" has starred the repository ${owner}/${repo}...`);
+            
+            let starred = false;
+            let page = 1;
+            const perPage = 100;
+            
+            try {
+              while (page <= 5) { // Cap at 5 pages (500 starred repos) to protect API limits
+                const { data: starredRepos } = await github.rest.activity.listReposStarredByUser({
+                  username: prAuthor,
+                  page,
+                  per_page: perPage
+                });
+                
+                if (!starredRepos || starredRepos.length === 0) {
+                  break;
+                }
+                
+                const isFound = starredRepos.some(r => r.full_name === `${owner}/${repo}`);
+                if (isFound) {
+                  starred = true;
+                  break;
+                }
+                
+                if (starredRepos.length < perPage) {
+                  break;
+                }
+                page++;
+              }
+            } catch (err) {
+              console.log(`Failed to fetch starred repos for ${prAuthor}: ${err.message}`);
+            }
+            
+            if (starred) {
+              console.log(`User "${prAuthor}" has already starred the repository. No action needed.`);
+            } else {
+              console.log(`User "${prAuthor}" has not starred the repository. Posting reminder comment...`);
+              
+              const commentBody = `### 🎉 Congratulations on your PR merge, @${prAuthor}! 🚀\n\n` +
+                `Thank you so much for your valuable contribution to **EaseMotion CSS**! Your code is now merged into the main branch.\n\n` +
+                `🎮 **Join our Discord Server!**\n` +
+                `We have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜\n\n` +
+                `⭐ If you haven't already, please consider **giving this repository a Star**! It helps show your support, increases project visibility, and helps us grow the community. ✨\n\n` +
+                `Thank you again, and happy coding! 💻`;
+                
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: context.payload.pull_request.number,
+                body: commentBody
+              });
+              console.log(`Reminder comment successfully posted.`);
+            }

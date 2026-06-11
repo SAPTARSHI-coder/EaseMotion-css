@@ -114,6 +114,10 @@ Here are the default theme variables from `core/variables.css`:
   --ease-color-warning-light: #fcd34d;
   --ease-color-warning-dark:  #b45309;
 
+  --ease-color-info:          #3b82f6;
+--ease-color-info-light:    #93c5fd;
+--ease-color-info-dark:     #1d4ed8;
+
   --ease-color-neutral-50:  #f8fafc;
   --ease-color-neutral-100: #f1f5f9;
   --ease-color-neutral-200: #e2e8f0;

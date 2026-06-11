@@ -13,6 +13,9 @@
 
 Thank you for your interest in improving EaseMotion CSS.
 
+> [!TIP]
+> **Join our Discord Community!**  
+> We have an official Discord server for EaseMotion CSS. Join us to chat with other contributors, seek help with your submissions, discuss design choices, and receive announcements: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU)
 
 Before writing any code, read this document in full. The contribution model is intentionally different from most open-source projects.
 
