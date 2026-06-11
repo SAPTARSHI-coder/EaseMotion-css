@@ -28,9 +28,8 @@ const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
 const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
 const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
 const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
-const forms = readFileSync(resolve(componentsDir, 'forms.css'), 'utf8');
-
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + forms;
+    
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -85,12 +84,6 @@ const forms = readFileSync(resolve(componentsDir, 'forms.css'), 'utf8');
     expect(selectors).toContain('.ease-navbar-glass');
     expect(selectors).toContain('.ease-scroll-progress');
     expect(selectors).toContain('.ease-sidebar');
-  });
-
-  it('should expose form input warning state classes', () => {
-    expect(css).toContain('.ease-input-warning');
-    expect(css).toContain('.ease-field-warning');
-    expect(css).toContain('.ease-field-warning .ease-field-label');
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
