@@ -86,6 +86,16 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
+  it('should expose card modifier classes', () => {
+    expect(css).toContain('.ease-card-hover');
+    expect(css).toContain('.ease-card-glow');
+    expect(css).toContain('.ease-card-glass');
+    expect(css).toContain('.ease-card-neumorphic');
+    expect(css).toContain('.ease-card-flat');
+    expect(css).toContain('.ease-card-outlined');
+    expect(css).toContain('.ease-card-image');
+  });
+
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');
