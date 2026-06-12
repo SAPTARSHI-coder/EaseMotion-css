@@ -21,3 +21,6 @@ Include a link pointing to the `#animations` section inside the `.sidebar-nav` c
 </div>
 ```
 
+## 3. Why is it useful?
+
+While EaseMotion CSS provides a builder tool, users primarily visit the docs to view available animations and class names. A top-level sidebar link to the core Animations section prevents tedious manual scrolling, ensuring a more intuitive, responsive, and structured browsing experience that aligns with EaseMotion's focus on user accessibility.
