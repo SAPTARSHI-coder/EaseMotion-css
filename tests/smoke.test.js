@@ -60,11 +60,20 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
 
   it('should have component classes defined', () => {
     const sheet = document.styleSheets[0];
-    const rules = [...sheet.cssRules];
+    
+    const getSelectors = (rules) => {
+      let result = [];
+      for (const rule of rules) {
+        if (rule.selectorText) {
+          result.push(rule.selectorText);
+        } else if (rule.cssRules) {
+          result.push(...getSelectors(rule.cssRules));
+        }
+      }
+      return result;
+    };
 
-    const selectors = rules
-      .filter(rule => rule.selectorText)
-      .map(rule => rule.selectorText);
+    const selectors = getSelectors(sheet.cssRules);
 
     expect(selectors).toContain('.ease-btn');
     expect(selectors).toContain('.ease-btn-primary');
@@ -75,6 +84,13 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-navbar-glass');
     expect(selectors).toContain('.ease-scroll-progress');
     expect(selectors).toContain('.ease-sidebar');
+  });
+
+  it('should expose scroll-progress theme variants', () => {
+    expect(css).toContain('.ease-scroll-progress-success');
+    expect(css).toContain('.ease-scroll-progress-danger');
+    expect(css).toContain('.ease-scroll-progress-warning');
+    expect(css).toContain('.ease-scroll-progress-root');
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
