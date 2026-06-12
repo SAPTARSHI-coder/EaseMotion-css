@@ -4,6 +4,7 @@
 Animates border components with slide effects during utility interactions like hover.
 
 **How is it used?**
+
 <div class="slide-border-box slide-border-left">Content</div>
 <div class="slide-border-box slide-border-right">Content</div>
 <div class="slide-border-center">Content</div>

@@ -13,8 +13,9 @@ Open `demo.html` in a browser. Click the override buttons to change `--ease-text
 Users who customize typography via `--ease-text-sm`, `--ease-text-xs`, etc. will find the footer unresponsive. Every other component (buttons.css, cards.css, forms.css) uses text token variables.
 
 The fix should be applied to `components/footer.css`:
+
 ```css
-font-size: var(--ease-text-sm, 0.875rem);   /* line 14 */
-font-size: var(--ease-text-base, 1rem);       /* line 30 */
-font-size: var(--ease-text-xs, 0.75rem);      /* line 151 */
+font-size: var(--ease-text-sm, 0.875rem); /* line 14 */
+font-size: var(--ease-text-base, 1rem); /* line 30 */
+font-size: var(--ease-text-xs, 0.75rem); /* line 151 */
 ```

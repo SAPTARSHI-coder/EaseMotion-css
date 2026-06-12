@@ -42,12 +42,12 @@ query, inside the dark-mode block:
 
 ## Behaviour Matrix
 
-| Device / Mode | Before | After |
-|---|---|---|
-| Desktop — light mode | ✅ hover works | ✅ hover works |
-| Desktop — dark mode | ✅ hover works | ✅ hover works |
-| Touch — light mode | ✅ no flash (already guarded) | ✅ no flash |
-| Touch — dark mode | ❌ colour flash on tap | ✅ no flash (fixed) |
+| Device / Mode        | Before                        | After               |
+| -------------------- | ----------------------------- | ------------------- |
+| Desktop — light mode | ✅ hover works                | ✅ hover works      |
+| Desktop — dark mode  | ✅ hover works                | ✅ hover works      |
+| Touch — light mode   | ✅ no flash (already guarded) | ✅ no flash         |
+| Touch — dark mode    | ❌ colour flash on tap        | ✅ no flash (fixed) |
 
 ## Acceptance Criteria
 

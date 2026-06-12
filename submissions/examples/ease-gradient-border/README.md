@@ -7,7 +7,10 @@ Creates a rotating conic-gradient border around cards, buttons, or any UI elemen
 Apply the `.ease-gradient-border` utility class and optionally customize using the custom properties:
 
 ```html
-<article class="ease-gradient-border" style="--ease-gb-width: 4px; --ease-gb-speed: 6s;">
+<article
+  class="ease-gradient-border"
+  style="--ease-gb-width: 4px; --ease-gb-speed: 6s;"
+>
   <h2>Gradient border</h2>
   <p>The border rotates continuously without JavaScript.</p>
 </article>
@@ -16,6 +19,7 @@ Apply the `.ease-gradient-border` utility class and optionally customize using t
 ### Customization Options
 
 You can override these properties on the element style:
+
 - `--ease-gb-width`: Width of the border (default: `3px`)
 - `--ease-gb-radius`: Border radius (default: `18px`)
 - `--ease-gb-speed`: Rotation duration (default: `6s`)

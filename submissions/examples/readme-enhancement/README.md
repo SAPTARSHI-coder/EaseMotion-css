@@ -1,10 +1,6 @@
 \# README Enhancement Proposal
 
-
-
 Improved structure and formatting for EaseMotion CSS README.
-
-
 
 \## Proposed Changes
 
@@ -16,9 +12,6 @@ Improved structure and formatting for EaseMotion CSS README.
 
 \- ✅ Improve code snippet formatting
 
-
-
 \## Issue
 
 Closes #824
-

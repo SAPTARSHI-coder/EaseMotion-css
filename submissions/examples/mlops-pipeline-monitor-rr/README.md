@@ -8,7 +8,7 @@ Provides a visual monitoring interface for machine learning pipelines, tracking 
 
 ```html
 <div class="stage running">
-    <h3>Model Training</h3>
+  <h3>Model Training</h3>
 </div>
 ```
 

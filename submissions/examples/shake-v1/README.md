@@ -10,8 +10,8 @@ Shake/wiggle animation using horizontal oscillation. A classic alert/attention e
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class        | Description                           |
+| ------------ | ------------------------------------- |
 | `ease-shake` | Default shake (6px oscillation, once) |
 
 ## Notes

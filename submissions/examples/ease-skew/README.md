@@ -14,6 +14,5 @@ Ease Skew is a lightweight CSS utility that applies a skew transformation on hov
 ## Usage
 
 ```html
-<div class="ease-skew">
-  Hover Me
-</div>
+<div class="ease-skew">Hover Me</div>
+```

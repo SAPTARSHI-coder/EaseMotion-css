@@ -9,14 +9,14 @@ Several `var()` references in tabs.css lack fallback values. If the CSS custom p
 
 ### Affected lines
 
-| Line | Current | Problem |
-|------|---------|---------|
-| 11 | `var(--ease-color-neutral-200)` | no fallback |
-| 23 | `var(--ease-color-muted)` | no fallback |
-| 48 | `var(--ease-color-primary)` | no fallback |
-| 59 | `var(--ease-color-primary)` | no fallback |
-| 60 | `var(--ease-speed-medium)` + `var(--ease-ease)` | no fallbacks |
-| 78 | `var(--ease-color-primary)` | no fallback |
+| Line | Current                                         | Problem      |
+| ---- | ----------------------------------------------- | ------------ |
+| 11   | `var(--ease-color-neutral-200)`                 | no fallback  |
+| 23   | `var(--ease-color-muted)`                       | no fallback  |
+| 48   | `var(--ease-color-primary)`                     | no fallback  |
+| 59   | `var(--ease-color-primary)`                     | no fallback  |
+| 60   | `var(--ease-speed-medium)` + `var(--ease-ease)` | no fallbacks |
+| 78   | `var(--ease-color-primary)`                     | no fallback  |
 
 ## Expected
 

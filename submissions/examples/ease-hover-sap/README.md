@@ -16,6 +16,7 @@ A subtle scale-down hover effect that gives elements a tactile "pressed" feel.
 ## Usage
 
 ```html
-&lt;!-- After integration, it will become: --&gt;
-&lt;button class="ease-btn ease-btn-primary ease-hover-sap"&gt;Click Me&lt;/button&gt;
-&lt;div class="ease-card ease-hover-sap"&gt;Card content&lt;/div&gt;
+&lt;!-- After integration, it will become: --&gt; &lt;button class="ease-btn
+ease-btn-primary ease-hover-sap"&gt;Click Me&lt;/button&gt; &lt;div
+class="ease-card ease-hover-sap"&gt;Card content&lt;/div&gt;
+```

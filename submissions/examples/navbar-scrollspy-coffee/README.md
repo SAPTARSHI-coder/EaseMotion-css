@@ -30,12 +30,19 @@ This submission builds a documentation-style coffee brewing page with a fixed na
 
 ```html
 <h1 class="ease-fade-in">Coffee brewing documentation</h1>
-<p class="ease-slide-up ease-delay-100">Accurate anchors and active-section tracking.</p>
-<a class="ease-btn ease-btn-primary ease-btn-pill ease-btn-hover" href="#coffee-beans">
+<p class="ease-slide-up ease-delay-100">
+  Accurate anchors and active-section tracking.
+</p>
+<a
+  class="ease-btn ease-btn-primary ease-btn-pill ease-btn-hover"
+  href="#coffee-beans"
+>
   Live Demo
 </a>
 
-<article class="ease-card ease-card-shadow ease-card-hover ease-slide-up ease-delay-200">
+<article
+  class="ease-card ease-card-shadow ease-card-hover ease-slide-up ease-delay-200"
+>
   <h3 class="ease-card-title">Arabica</h3>
   <p>Layered coffee bean reference content.</p>
 </article>

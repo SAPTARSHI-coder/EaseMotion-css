@@ -14,11 +14,11 @@ Staggered bouncing dots loader. Uses three dots with cascading `animation-delay`
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-loader-dots` | Default three-dot bouncing loader |
-| `ease-loader-dots-sm` | Smaller dots variant |
-| `ease-loader-dots-lg` | Larger dots variant |
+| Class                 | Description                       |
+| --------------------- | --------------------------------- |
+| `ease-loader-dots`    | Default three-dot bouncing loader |
+| `ease-loader-dots-sm` | Smaller dots variant              |
+| `ease-loader-dots-lg` | Larger dots variant               |
 
 ## Notes
 

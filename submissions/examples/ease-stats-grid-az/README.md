@@ -24,13 +24,13 @@ Responsive grid of stat/milestone cards with icon, value, and label. Supports ac
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-success` | #10b981 |
-| `--ease-color-warning` | #f59e0b |
-| `--ease-color-danger` | #ef4444 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-lg`       | 12px      |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-success`   | #10b981   |
+| `--ease-color-warning`   | #f59e0b   |
+| `--ease-color-danger`    | #ef4444   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

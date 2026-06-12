@@ -26,26 +26,28 @@ This feature adds six scroll-triggered reveal animation classes to EaseMotion CS
 
 ## Available Classes
 
-| Class | Effect |
-|---|---|
-| `.em-reveal-up` | Fades in & slides upward |
-| `.em-reveal-down` | Fades in & slides downward |
-| `.em-reveal-left` | Slides in from the left |
-| `.em-reveal-right` | Slides in from the right |
-| `.em-reveal-zoom` | Zooms in from smaller scale |
-| `.em-reveal-fade` | Simple opacity fade |
+| Class              | Effect                      |
+| ------------------ | --------------------------- |
+| `.em-reveal-up`    | Fades in & slides upward    |
+| `.em-reveal-down`  | Fades in & slides downward  |
+| `.em-reveal-left`  | Slides in from the left     |
+| `.em-reveal-right` | Slides in from the right    |
+| `.em-reveal-zoom`  | Zooms in from smaller scale |
+| `.em-reveal-fade`  | Simple opacity fade         |
 
 ---
 
 ## Modifiers
 
 ### Speed
+
 ```html
 <div class="em-reveal-up em-reveal--fast">Fast reveal</div>
 <div class="em-reveal-up em-reveal--slow">Slow, cinematic reveal</div>
 ```
 
 ### Stagger (CSS-only)
+
 ```html
 <div class="em-reveal-up">First</div>
 <div class="em-reveal-up em-reveal--delay-1">Second</div>
@@ -75,10 +77,10 @@ The `view()` timeline links animation progress to the element's position relativ
 
 ## Browser Support
 
-| Feature | Support |
-|---|---|
-| `animation-timeline: view()` | Chrome 115+, Edge 115+, Firefox 110+, Safari 18+ |
-| Fallback (older browsers) | Simple fade via `@supports not (animation-timeline: view())` |
+| Feature                      | Support                                                      |
+| ---------------------------- | ------------------------------------------------------------ |
+| `animation-timeline: view()` | Chrome 115+, Edge 115+, Firefox 110+, Safari 18+             |
+| Fallback (older browsers)    | Simple fade via `@supports not (animation-timeline: view())` |
 
 ---
 

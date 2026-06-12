@@ -8,7 +8,7 @@ Provides a centralized interface for discovering, cataloging, evaluating, and co
 
 ```html
 <div class="api-card">
-    <h3>Customer Profile API</h3>
+  <h3>Customer Profile API</h3>
 </div>
 ```
 

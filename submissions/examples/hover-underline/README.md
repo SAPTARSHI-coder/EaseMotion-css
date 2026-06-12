@@ -10,8 +10,8 @@ Animated underline that draws left-to-right using background-size transition. Wo
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                  | Description            |
+| ---------------------- | ---------------------- |
 | `ease-hover-underline` | Default underline draw |
 
 ## Notes

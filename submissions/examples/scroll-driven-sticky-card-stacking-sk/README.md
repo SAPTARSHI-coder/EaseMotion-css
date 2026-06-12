@@ -6,9 +6,10 @@ A modern, high-performance storytelling roadmap component built using **pure HTM
 
 ## 1. What does this do?
 
-This component provides a vertical storytelling deck representing project phases or roadmap stages. 
+This component provides a vertical storytelling deck representing project phases or roadmap stages.
 
 ### Key Animations & Visual Features
+
 1. **Sticky Cascade Stacking**: As the user scrolls, each card slides up until it reaches its designated sticky position threshold, locking into place. Subsequent cards slide up and stack neatly underneath, forming a cascading card deck.
 2. **Depth Scaling**: Cards are scaled using custom multipliers relative to their index. Pinned cards scale down slightly as new cards stack on top of them, creating a 3D depth-of-field perspective.
 3. **Pulsing Connecting Nodes**: Each card is linked to a sidebar timeline path by an accent node that expands and glows when hovered.
@@ -19,11 +20,11 @@ This component provides a vertical storytelling deck representing project phases
 ## 2. How is it used?
 
 ### HTML Setup
+
 Create a timeline column container. Add card items, specifying an inline CSS `--index` property matching their position (from `1` to `5`):
 
 ```html
 <main class="stack-container">
-  
   <!-- Card 1 (Index 1) -->
   <article class="card-item card-indigo" style="--index: 1;">
     <div class="card-inner">
@@ -40,11 +41,11 @@ Create a timeline column container. Add card items, specifying an inline CSS `--
   <article class="card-item card-emerald" style="--index: 2;">
     <!-- ... -->
   </article>
-
 </main>
 ```
 
 ### CSS Sticky Calculation
+
 The stacking layout is governed by calculations using the card's `--index` value to place card tops at unique offset layers:
 
 ```css
@@ -53,11 +54,11 @@ The stacking layout is governed by calculations using the card's `--index` value
   /* Top threshold scales with index */
   top: calc(100px + var(--index) * 36px);
   z-index: var(--index);
-  
+
   /* Creates space to scroll before stacking */
-  margin-bottom: 25vh; 
+  margin-bottom: 25vh;
   width: 100%;
-  
+
   /* Subtle size compression based on scale formulas */
   transform: scale(calc(1 - (5 - var(--index)) * 0.015));
   transform-origin: top center;

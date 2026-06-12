@@ -14,20 +14,20 @@ The visual language draws from glassmorphism: translucent surfaces, blurred back
 
 ## Features
 
-| Feature | Detail |
-|---|---|
-| **Masonry Layout** | CSS `columns` multi-column layout. Cards break-inside: avoid to prevent splits. |
-| **Responsive** | 4 columns on desktop → 2 on tablet (≤900px) → 1 on mobile (≤520px). 5 columns on large screens (≥1600px). |
-| **Staggered Load Animation** | Each card fades and slides up independently via a CSS variable `--card-delay` and `@keyframes card-enter`. |
-| **Hover Lift** | Cards translate upward (`translateY(-8px)`) and scale slightly (`scale(1.015)`) on hover. |
-| **Image Zoom** | The card visual region scales to `1.04` independently via a nested `transform` — only the image zooms, not the text body. |
-| **Shadow Transition** | Shadow deepens and gains a blue-purple tint on hover using layered `box-shadow` tokens. |
-| **Border Glow** | Border color transitions from a neutral transparent to a vivid `rgba(140, 100, 255, 0.55)` on hover. |
-| **Glassmorphism** | Cards use `backdrop-filter: blur(12px)`, semi-transparent backgrounds, and layered shadow systems. |
-| **Ambient Orb Animations** | Blurred light orbs inside each card visual drift on an infinite `alternate` loop — adding life without distraction. |
-| **Gradient Placeholders** | 12 unique gradient schemes cover every card, using a full set of named CSS variable gradients. |
-| **Reduced Motion** | All animations and transitions are disabled for users with `prefers-reduced-motion: reduce`. Cards remain fully visible. |
-| **CSS Only** | Zero JavaScript. Zero frameworks. Zero build steps. |
+| Feature                      | Detail                                                                                                                    |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Masonry Layout**           | CSS `columns` multi-column layout. Cards break-inside: avoid to prevent splits.                                           |
+| **Responsive**               | 4 columns on desktop → 2 on tablet (≤900px) → 1 on mobile (≤520px). 5 columns on large screens (≥1600px).                 |
+| **Staggered Load Animation** | Each card fades and slides up independently via a CSS variable `--card-delay` and `@keyframes card-enter`.                |
+| **Hover Lift**               | Cards translate upward (`translateY(-8px)`) and scale slightly (`scale(1.015)`) on hover.                                 |
+| **Image Zoom**               | The card visual region scales to `1.04` independently via a nested `transform` — only the image zooms, not the text body. |
+| **Shadow Transition**        | Shadow deepens and gains a blue-purple tint on hover using layered `box-shadow` tokens.                                   |
+| **Border Glow**              | Border color transitions from a neutral transparent to a vivid `rgba(140, 100, 255, 0.55)` on hover.                      |
+| **Glassmorphism**            | Cards use `backdrop-filter: blur(12px)`, semi-transparent backgrounds, and layered shadow systems.                        |
+| **Ambient Orb Animations**   | Blurred light orbs inside each card visual drift on an infinite `alternate` loop — adding life without distraction.       |
+| **Gradient Placeholders**    | 12 unique gradient schemes cover every card, using a full set of named CSS variable gradients.                            |
+| **Reduced Motion**           | All animations and transitions are disabled for users with `prefers-reduced-motion: reduce`. Cards remain fully visible.  |
+| **CSS Only**                 | Zero JavaScript. Zero frameworks. Zero build steps.                                                                       |
 
 ---
 
@@ -52,7 +52,6 @@ animated-masonry-gallery/
 
 ```html
 <div class="masonry-grid">
-
   <article class="card card--tall" style="--card-delay: 0.05s;">
     <div class="card__visual card__visual--ai">
       <div class="card__visual-layer"></div>
@@ -68,7 +67,6 @@ animated-masonry-gallery/
   </article>
 
   <!-- Repeat for more cards -->
-
 </div>
 ```
 
@@ -76,11 +74,11 @@ animated-masonry-gallery/
 
 Assign one of three height modifier classes to each card:
 
-| Class | Visual Height |
-|---|---|
-| `.card--short` | 160px |
-| `.card--medium` | 220px |
-| `.card--tall` | 300px |
+| Class           | Visual Height |
+| --------------- | ------------- |
+| `.card--short`  | 160px         |
+| `.card--medium` | 220px         |
+| `.card--tall`   | 300px         |
 
 Mixing these creates the characteristic masonry stagger.
 
@@ -89,7 +87,7 @@ Mixing these creates the characteristic masonry stagger.
 Set `--card-delay` on each card as an inline style to control when it enters:
 
 ```html
-<article class="card card--medium" style="--card-delay: 0.15s;">
+<article class="card card--medium" style="--card-delay: 0.15s;"></article>
 ```
 
 Increment by `0.05s`–`0.10s` per card for a natural cascade effect.
@@ -132,7 +130,11 @@ Replace the gradient visual with a real image by adding an `<img>` inside `.card
 
 ```html
 <div class="card__visual card__visual--ai">
-  <img src="your-image.jpg" alt="Description" style="width:100%;height:100%;object-fit:cover;" />
+  <img
+    src="your-image.jpg"
+    alt="Description"
+    style="width:100%;height:100%;object-fit:cover;"
+  />
   <div class="card__visual-layer"></div>
 </div>
 ```
@@ -163,20 +165,20 @@ The stylesheet is organized into 12 clearly commented sections:
 
 ## Animation Reference
 
-| Animation | Trigger | Duration | Easing |
-|---|---|---|---|
-| `card-enter` | page load | `0.55s` | `cubic-bezier(0, 0, 0.2, 1)` |
-| Stagger delay | `--card-delay` CSS var | `0.05s` steps | — |
-| Lift + Scale | `:hover` | `0.40s` | Spring `cubic-bezier(0.34, 1.56, 0.64, 1)` |
-| Image zoom | `:hover` | `0.40s` | Smooth |
-| Shadow deepen | `:hover` | `0.40s` | Smooth |
-| Border glow | `:hover` | `0.40s` | Smooth |
-| Title glow | `:hover` | `0.25s` | Smooth |
-| `orb-drift-1/2` | ambient/always | `8s–10s` | `ease-in-out infinite alternate` |
-| `rings-pulse` | ambient/always | `3s` | `ease-in-out infinite` |
-| `pulse-dot` | ambient/always | `2.4s` | `ease-in-out infinite` |
-| `header-in` | page load | `0.60s` | ease-out |
-| `fade-up` | page load | `0.70s` | ease-out |
+| Animation       | Trigger                | Duration      | Easing                                     |
+| --------------- | ---------------------- | ------------- | ------------------------------------------ |
+| `card-enter`    | page load              | `0.55s`       | `cubic-bezier(0, 0, 0.2, 1)`               |
+| Stagger delay   | `--card-delay` CSS var | `0.05s` steps | —                                          |
+| Lift + Scale    | `:hover`               | `0.40s`       | Spring `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| Image zoom      | `:hover`               | `0.40s`       | Smooth                                     |
+| Shadow deepen   | `:hover`               | `0.40s`       | Smooth                                     |
+| Border glow     | `:hover`               | `0.40s`       | Smooth                                     |
+| Title glow      | `:hover`               | `0.25s`       | Smooth                                     |
+| `orb-drift-1/2` | ambient/always         | `8s–10s`      | `ease-in-out infinite alternate`           |
+| `rings-pulse`   | ambient/always         | `3s`          | `ease-in-out infinite`                     |
+| `pulse-dot`     | ambient/always         | `2.4s`        | `ease-in-out infinite`                     |
+| `header-in`     | page load              | `0.60s`       | ease-out                                   |
+| `fade-up`       | page load              | `0.70s`       | ease-out                                   |
 
 ---
 
@@ -211,13 +213,13 @@ animated-masonry-gallery/
 
 ## Browser Support
 
-| Feature | Support |
-|---|---|
-| CSS `columns` (multi-column) | All modern browsers, IE10+ |
-| `backdrop-filter` | Chrome 76+, Safari 9+, Firefox 103+ |
-| CSS Custom Properties | All modern browsers, IE edge |
-| `@keyframes` | Universal |
-| `prefers-reduced-motion` | Chrome 74+, Firefox 63+, Safari 10.1+ |
+| Feature                      | Support                               |
+| ---------------------------- | ------------------------------------- |
+| CSS `columns` (multi-column) | All modern browsers, IE10+            |
+| `backdrop-filter`            | Chrome 76+, Safari 9+, Firefox 103+   |
+| CSS Custom Properties        | All modern browsers, IE edge          |
+| `@keyframes`                 | Universal                             |
+| `prefers-reduced-motion`     | Chrome 74+, Firefox 63+, Safari 10.1+ |
 
 For environments without `backdrop-filter` support, the cards gracefully fall back to a semi-transparent solid surface — no layout breaks.
 
@@ -229,4 +231,4 @@ MIT — free for personal and commercial use.
 
 ---
 
-*Part of the [EaseMotion CSS](https://github.com/easemotioncss) open-source animation component library.*
+_Part of the [EaseMotion CSS](https://github.com/easemotioncss) open-source animation component library._

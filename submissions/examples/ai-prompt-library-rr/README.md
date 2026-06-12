@@ -8,8 +8,8 @@ Provides a responsive prompt library interface for displaying and organizing AI 
 
 ```html
 <div class="prompt-card">
-    <span class="category">Development</span>
-    <h3>Prompt Title</h3>
+  <span class="category">Development</span>
+  <h3>Prompt Title</h3>
 </div>
 ```
 

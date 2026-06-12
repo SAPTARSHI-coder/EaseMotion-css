@@ -7,4 +7,4 @@
    Replace `docs/index.html` and `docs/docs.css` with this submission's `demo.html` and `style.css`. All existing section IDs and sidebar anchors are preserved so links don't break.
 
 3. **Why is it useful?**
-   The landing page is the first thing contributors and users see. It should *demonstrate* EaseMotion's animation-first, human-readable philosophy — not just describe it. This redesign shows the framework's own animations running live in the animations table, uses the existing CSS variable palette throughout, and gives every section more visual breathing room without adding any new dependencies.
+   The landing page is the first thing contributors and users see. It should _demonstrate_ EaseMotion's animation-first, human-readable philosophy — not just describe it. This redesign shows the framework's own animations running live in the animations table, uses the existing CSS variable palette throughout, and gives every section more visual breathing room without adding any new dependencies.

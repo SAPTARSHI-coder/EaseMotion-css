@@ -12,7 +12,10 @@ the entire tab navigation row jumps in height whenever a tab is selected.
 
 ```css
 /* Current behaviour — border added only on active label */
-.ease-tabs-auto .ease-tab-input:nth-of-type(1):checked ~ .ease-tabs-nav .ease-tab-label:nth-of-type(1) {
+.ease-tabs-auto
+  .ease-tab-input:nth-of-type(1):checked
+  ~ .ease-tabs-nav
+  .ease-tab-label:nth-of-type(1) {
   border-bottom: 2px solid var(--ease-color-primary); /* ← causes shift */
 }
 ```
@@ -37,10 +40,10 @@ When a tab is selected, only the `border-bottom-color` changes — no height cha
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                        |
+| ----------- | -------------------------------------------------------------- |
 | `style.css` | The CSS override fix (to be merged into `components/tabs.css`) |
-| `demo.html` | Interactive before/after comparison |
+| `demo.html` | Interactive before/after comparison                            |
 
 ## How to Test
 

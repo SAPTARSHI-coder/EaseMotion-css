@@ -10,10 +10,10 @@ Adds a complete set of `ease-lg-*` responsive utility classes for screens
 
 `core/utilities.css` currently ships:
 
-| Prefix | Breakpoint |
-|--------|-----------|
-| `ease-sm-*` | `max-width: 768px` |
-| `ease-md-*` | `769px – 1024px` |
+| Prefix          | Breakpoint                   |
+| --------------- | ---------------------------- |
+| `ease-sm-*`     | `max-width: 768px`           |
+| `ease-md-*`     | `769px – 1024px`             |
 | ~~`ease-lg-*`~~ | ~~`≥ 1025px`~~ — **missing** |
 
 Without `lg` utilities, any layout that needs to behave differently on a wide
@@ -24,7 +24,9 @@ utility-class system for the most common screen size.
 
 ```html
 <!-- 1 col on mobile → 2 on tablet → 4 on desktop -->
-<div class="ease-grid ease-grid-cols-1 ease-md-grid-cols-2 ease-lg-grid-cols-4 ease-gap-6">
+<div
+  class="ease-grid ease-grid-cols-1 ease-md-grid-cols-2 ease-lg-grid-cols-4 ease-gap-6"
+>
   <div class="ease-card">Item 1</div>
   <div class="ease-card">Item 2</div>
   <div class="ease-card">Item 3</div>
@@ -32,9 +34,7 @@ utility-class system for the most common screen size.
 </div>
 
 <!-- Sidebar: hidden on mobile & tablet, visible on desktop -->
-<aside class="ease-sm-hidden ease-md-hidden ease-lg-block">
-  Sidebar
-</aside>
+<aside class="ease-sm-hidden ease-md-hidden ease-lg-block">Sidebar</aside>
 
 <!-- Stack on mobile, row on large screens -->
 <div class="ease-flex ease-flex-col ease-lg-flex-row ease-gap-6">

@@ -4,15 +4,16 @@ A modern multi-step progress component with animated connectors,
 pulsing active step, and hover lift effects — pure HTML and CSS.
 
 ## Structure
+
 animated-stepper-progress/
 ├── demo.html
 ├── style.css
 └── README.md
+
 ## Usage
 
 ```html
 <div class="stepper">
-
   <div class="step completed">
     <div class="step-circle">✓</div>
     <div class="step-info">
@@ -40,21 +41,21 @@ animated-stepper-progress/
       <span class="step-title">Launch</span>
     </div>
   </div>
-
 </div>
 ```
 
 ## Step States
 
-| Class | State |
-|---|---|
-| `step` | Inactive / upcoming |
-| `step active` | Current step (pulsing glow) |
-| `step completed` | Completed step (green) |
-| `step-connector` | Inactive connector line |
+| Class                           | State                                 |
+| ------------------------------- | ------------------------------------- |
+| `step`                          | Inactive / upcoming                   |
+| `step active`                   | Current step (pulsing glow)           |
+| `step completed`                | Completed step (green)                |
+| `step-connector`                | Inactive connector line               |
 | `step-connector completed-line` | Completed connector (purple gradient) |
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - Pulsing glow animation on active step
 - Gradient connector lines for completed steps
@@ -63,6 +64,7 @@ animated-stepper-progress/
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Onboarding flows
 - Checkout processes
 - Learning platform progress

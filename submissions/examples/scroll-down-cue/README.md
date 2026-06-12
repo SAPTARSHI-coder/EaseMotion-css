@@ -4,8 +4,8 @@ A self-contained, animated **"scroll down"** hint for hero sections and
 full-height landing pages. It invites the user to keep scrolling with a subtle
 looping animation.
 
-> This is distinct from `ease-scroll-indicator`, which is a *reading-progress
-> bar* fixed at the top of the page. This example is the bottom-of-hero prompt
+> This is distinct from `ease-scroll-indicator`, which is a _reading-progress
+> bar_ fixed at the top of the page. This example is the bottom-of-hero prompt
 > that nudges the user to scroll **down**.
 
 ## Preview
@@ -15,10 +15,10 @@ hero shows a different cue variant.
 
 ## Variants
 
-| Variant | Class | Motion |
-| ------- | ----- | ------ |
+| Variant | Class                 | Motion                                                   |
+| ------- | --------------------- | -------------------------------------------------------- |
 | Mouse   | `scroll-cue--mouse`   | A wheel-dot drifts down inside a mouse outline and fades |
-| Chevron | `scroll-cue--chevron` | A stack of three chevrons bounces downward in sequence |
+| Chevron | `scroll-cue--chevron` | A stack of three chevrons bounces downward in sequence   |
 
 ## Usage
 
@@ -72,10 +72,10 @@ scroll-down-cue/
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅ |
-| Firefox | ✅ |
-| Safari  | ✅ |
-| Edge    | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why it's useful
 

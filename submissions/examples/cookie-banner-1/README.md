@@ -14,7 +14,12 @@ or clicking the close button.
 
 ```html
 <!-- Default banner -->
-<div class="ease-cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent">
+<div
+  class="ease-cookie-banner"
+  id="cookieBanner"
+  role="dialog"
+  aria-label="Cookie consent"
+>
   <div class="ease-cookie-inner">
     <div class="ease-cookie-icon">🍪</div>
     <div class="ease-cookie-text">
@@ -34,15 +39,16 @@ or clicking the close button.
 
 <!-- Show banner -->
 <script>
-  const banner = document.getElementById('cookieBanner');
-  banner.classList.add('ease-visible');   // slides in
+  const banner = document.getElementById("cookieBanner");
+  banner.classList.add("ease-visible"); // slides in
   // to dismiss:
-  banner.classList.remove('ease-visible');
-  banner.classList.add('ease-hidden');    // slides out
+  banner.classList.remove("ease-visible");
+  banner.classList.add("ease-hidden"); // slides out
 </script>
 ```
 
 **Variants:**
+
 - Default: `ease-cookie-banner`
 - Minimal: `ease-cookie-banner ease-cookie-banner--minimal`
 - Detailed: `ease-cookie-banner ease-cookie-banner--detailed`
@@ -56,6 +62,7 @@ compliance — every website that serves EU or California visitors needs one.
 EaseMotion CSS has no banner component yet, making this a direct gap fill.
 
 Fits the animation-first philosophy:
+
 - `ease-visible` / `ease-hidden` — readable state classes, one toggle each
 - Slide-in uses `cubic-bezier(0.22, 1, 0.36, 1)` spring easing
 - Toggle switches animate thumb with the same spring curve
@@ -68,18 +75,18 @@ Zero external libraries — pure CSS transitions + vanilla JS class toggles.
 
 ## Proposed class names (maintainer decides)
 
-| Raw name                        | Proposed ease-* name                  |
-|---------------------------------|---------------------------------------|
-| `ease-cookie-banner`            | already ease-* prefixed               |
-| `ease-cookie-banner--minimal`   | already ease-* prefixed               |
-| `ease-cookie-banner--detailed`  | already ease-* prefixed               |
-| `ease-cookie-inner`             | already ease-* prefixed               |
-| `ease-cookie-title`             | already ease-* prefixed               |
-| `ease-cookie-desc`              | already ease-* prefixed               |
-| `ease-cookie-actions`           | already ease-* prefixed               |
-| `ease-cookie-close`             | already ease-* prefixed               |
-| `ease-cookie-link`              | already ease-* prefixed               |
-| `ease-toggle`                   | already ease-* prefixed               |
-| `ease-toggle--on`               | already ease-* prefixed               |
-| `ease-visible`                  | already ease-* prefixed               |
-| `ease-hidden`                   | already ease-* prefixed               |
+| Raw name                       | Proposed ease-\* name    |
+| ------------------------------ | ------------------------ |
+| `ease-cookie-banner`           | already ease-\* prefixed |
+| `ease-cookie-banner--minimal`  | already ease-\* prefixed |
+| `ease-cookie-banner--detailed` | already ease-\* prefixed |
+| `ease-cookie-inner`            | already ease-\* prefixed |
+| `ease-cookie-title`            | already ease-\* prefixed |
+| `ease-cookie-desc`             | already ease-\* prefixed |
+| `ease-cookie-actions`          | already ease-\* prefixed |
+| `ease-cookie-close`            | already ease-\* prefixed |
+| `ease-cookie-link`             | already ease-\* prefixed |
+| `ease-toggle`                  | already ease-\* prefixed |
+| `ease-toggle--on`              | already ease-\* prefixed |
+| `ease-visible`                 | already ease-\* prefixed |
+| `ease-hidden`                  | already ease-\* prefixed |

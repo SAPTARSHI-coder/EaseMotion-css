@@ -1,206 +1,206 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Comic Style Animation</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comic Style Animation</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="stage" id="stage">
+      <!-- Burst rays rendered by JS -->
+      <div class="rays" id="rays"></div>
 
-  <div class="stage" id="stage">
-    <!-- Burst rays rendered by JS -->
-    <div class="rays" id="rays"></div>
+      <!-- The word -->
+      <div class="comic-word" id="word">TESTING</div>
+    </div>
 
-    <!-- The word -->
-    <div class="comic-word" id="word">TESTING</div>
-  </div>
-
-  <script>
-    /* ─────────────────────────────────────────────
+    <script>
+      /* ─────────────────────────────────────────────
        CONFIG — tweak anything here
     ───────────────────────────────────────────── */
-    const CONFIG = {
-      word:           'TESTING',   // ← change your word here
-      fps:            30,
-      totalFrames:    90,          // ~3 s @ 30 fps
+      const CONFIG = {
+        word: "TESTING", // ← change your word here
+        fps: 30,
+        totalFrames: 90, // ~3 s @ 30 fps
 
-      // Phase frame boundaries (at 30 fps)
-      textInStart:    0,
-      textInEnd:      18,          // ~0.6 s
-      pulseStart:     18,
-      pulseEnd:       50,          // ~1.67 s
-      outroStart:     50,
-      outroEnd:       75,          // ~2.5 s
-      holdEnd:        90,
+        // Phase frame boundaries (at 30 fps)
+        textInStart: 0,
+        textInEnd: 18, // ~0.6 s
+        pulseStart: 18,
+        pulseEnd: 50, // ~1.67 s
+        outroStart: 50,
+        outroEnd: 75, // ~2.5 s
+        holdEnd: 90,
 
-      // Ray burst parameters
-      rayCount:       12,
-      rayInStart:     6,           // rays start shooting out at frame 6
-      rayInEnd:       20,
-      rayOutStart:    50,
-      rayOutEnd:      72,
+        // Ray burst parameters
+        rayCount: 12,
+        rayInStart: 6, // rays start shooting out at frame 6
+        rayInEnd: 20,
+        rayOutStart: 50,
+        rayOutEnd: 72,
 
-      // Visual
-      rayLenVw:       30,          // ray max length as % of stage width
-      rayWidth:       7,           // px
-      rayColor:       '#6D28D9',
-    };
+        // Visual
+        rayLenVw: 30, // ray max length as % of stage width
+        rayWidth: 7, // px
+        rayColor: "#6D28D9",
+      };
 
-    /* ─────────────────────────────────────────────
+      /* ─────────────────────────────────────────────
        BUILD RAYS
     ───────────────────────────────────────────── */
-    const raysEl  = document.getElementById('rays');
-    const wordEl  = document.getElementById('word');
-    const stageEl = document.getElementById('stage');
+      const raysEl = document.getElementById("rays");
+      const wordEl = document.getElementById("word");
+      const stageEl = document.getElementById("stage");
 
-    // place word text
-    wordEl.textContent = CONFIG.word;
+      // place word text
+      wordEl.textContent = CONFIG.word;
 
-    // Generate ray elements, evenly spaced 360°
-    const rayEls = [];
-    for (let i = 0; i < CONFIG.rayCount; i++) {
-      const angle = (360 / CONFIG.rayCount) * i - 90; // start at top
-      const el = document.createElement('div');
-      el.className = 'ray';
+      // Generate ray elements, evenly spaced 360°
+      const rayEls = [];
+      for (let i = 0; i < CONFIG.rayCount; i++) {
+        const angle = (360 / CONFIG.rayCount) * i - 90; // start at top
+        const el = document.createElement("div");
+        el.className = "ray";
 
-      // Each ray rotates from its own angle, positioned at centre of stage
-      // transform-origin is bottom-centre so height grows outward
-      el.style.cssText = `
+        // Each ray rotates from its own angle, positioned at centre of stage
+        // transform-origin is bottom-centre so height grows outward
+        el.style.cssText = `
         transform: translate(-50%, -100%) rotate(${angle}deg);
         --ray-len: 0px;
       `;
-      raysEl.appendChild(el);
-      rayEls.push({ el, angle });
-    }
+        raysEl.appendChild(el);
+        rayEls.push({ el, angle });
+      }
 
-    /* ─────────────────────────────────────────────
+      /* ─────────────────────────────────────────────
        ANIMATION ENGINE (rAF-based, frame counter)
     ───────────────────────────────────────────── */
-    const MS_PER_FRAME = 1000 / CONFIG.fps;
-    let startTime = null;
-    let lastFrame  = -1;
+      const MS_PER_FRAME = 1000 / CONFIG.fps;
+      let startTime = null;
+      let lastFrame = -1;
 
-    function easeOutExpo(t) {
-      return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    }
-    function easeInQuad(t) {
-      return t * t;
-    }
-    function spring(t) {
-      // Approximates spring overshoot
-      const c4 = (2 * Math.PI) / 3;
-      if (t === 0) return 0;
-      if (t === 1) return 1;
-      return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
-    }
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-    function progress(frame, start, end) {
-      return clamp((frame - start) / (end - start), 0, 1);
-    }
-
-    // Get stage size for ray length
-    function getRayLen() {
-      return stageEl.offsetWidth * (CONFIG.rayLenVw / 100);
-    }
-
-    function tick(ts) {
-      if (!startTime) startTime = ts;
-      const elapsed = ts - startTime;
-      const frame   = Math.floor(elapsed / MS_PER_FRAME);
-
-      if (frame !== lastFrame) {
-        lastFrame = frame;
-        render(frame);
+      function easeOutExpo(t) {
+        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      }
+      function easeInQuad(t) {
+        return t * t;
+      }
+      function spring(t) {
+        // Approximates spring overshoot
+        const c4 = (2 * Math.PI) / 3;
+        if (t === 0) return 0;
+        if (t === 1) return 1;
+        return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+      }
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+      function clamp(v, lo, hi) {
+        return Math.min(hi, Math.max(lo, v));
+      }
+      function progress(frame, start, end) {
+        return clamp((frame - start) / (end - start), 0, 1);
       }
 
-      if (frame < CONFIG.totalFrames) {
-        requestAnimationFrame(tick);
-      }
-    }
-
-    function render(f) {
-      const rayLen = getRayLen();
-
-      /* ── TEXT ── */
-      if (f <= CONFIG.textInEnd) {
-        // Spring pop-in
-        const t  = progress(f, CONFIG.textInStart, CONFIG.textInEnd);
-        const sc = lerp(0.08, 1.0, spring(t));
-        const op = lerp(0.3,  1.0, Math.min(1, t * 3));
-        wordEl.style.opacity   = op;
-        wordEl.style.transform = `scale(${sc})`;
-
-      } else if (f <= CONFIG.pulseEnd) {
-        // Gentle breath
-        const t   = progress(f, CONFIG.pulseStart, CONFIG.pulseEnd);
-        const sc  = 1 + Math.sin(t * Math.PI) * 0.03;
-        wordEl.style.opacity   = 1;
-        wordEl.style.transform = `scale(${sc})`;
-
-      } else if (f <= CONFIG.outroEnd) {
-        // Shrink outro
-        const t  = progress(f, CONFIG.outroStart, CONFIG.outroEnd);
-        const sc = lerp(1.0, 0.88, easeInQuad(t));
-        wordEl.style.transform = `scale(${sc})`;
-        wordEl.style.opacity   = 1;
-
-      } else {
-        // Final hold
-        wordEl.style.transform = 'scale(0.88)';
-        wordEl.style.opacity   = 1;
+      // Get stage size for ray length
+      function getRayLen() {
+        return stageEl.offsetWidth * (CONFIG.rayLenVw / 100);
       }
 
-      /* ── RAYS ── */
-      rayEls.forEach(({ el }, i) => {
-        // Stagger: bottom rays slightly earlier than top
-        const stagger = Math.round((i / CONFIG.rayCount) * 4);
-        const inStart  = CONFIG.rayInStart  + stagger;
-        const inEnd    = CONFIG.rayInEnd    + stagger;
-        const outStart = CONFIG.rayOutStart;
-        const outEnd   = CONFIG.rayOutEnd;
+      function tick(ts) {
+        if (!startTime) startTime = ts;
+        const elapsed = ts - startTime;
+        const frame = Math.floor(elapsed / MS_PER_FRAME);
 
-        let rayH = 0;
-        let rayOp = 0;
-
-        if (f >= inStart && f < outStart) {
-          const t = progress(f, inStart, inEnd);
-          rayH  = lerp(0, rayLen, easeOutExpo(t));
-          rayOp = lerp(0, 0.85, Math.min(1, t * 4));
-        } else if (f >= outStart && f <= outEnd) {
-          const t = progress(f, outStart, outEnd);
-          rayH  = lerp(rayLen, 0, easeInQuad(t));
-          rayOp = lerp(0.85, 0, easeInQuad(t));
+        if (frame !== lastFrame) {
+          lastFrame = frame;
+          render(frame);
         }
 
-        el.style.height  = `${rayH}px`;
-        el.style.opacity = rayOp;
-      });
-    }
+        if (frame < CONFIG.totalFrames) {
+          requestAnimationFrame(tick);
+        }
+      }
 
-    /* ─────────────────────────────────────────────
+      function render(f) {
+        const rayLen = getRayLen();
+
+        /* ── TEXT ── */
+        if (f <= CONFIG.textInEnd) {
+          // Spring pop-in
+          const t = progress(f, CONFIG.textInStart, CONFIG.textInEnd);
+          const sc = lerp(0.08, 1.0, spring(t));
+          const op = lerp(0.3, 1.0, Math.min(1, t * 3));
+          wordEl.style.opacity = op;
+          wordEl.style.transform = `scale(${sc})`;
+        } else if (f <= CONFIG.pulseEnd) {
+          // Gentle breath
+          const t = progress(f, CONFIG.pulseStart, CONFIG.pulseEnd);
+          const sc = 1 + Math.sin(t * Math.PI) * 0.03;
+          wordEl.style.opacity = 1;
+          wordEl.style.transform = `scale(${sc})`;
+        } else if (f <= CONFIG.outroEnd) {
+          // Shrink outro
+          const t = progress(f, CONFIG.outroStart, CONFIG.outroEnd);
+          const sc = lerp(1.0, 0.88, easeInQuad(t));
+          wordEl.style.transform = `scale(${sc})`;
+          wordEl.style.opacity = 1;
+        } else {
+          // Final hold
+          wordEl.style.transform = "scale(0.88)";
+          wordEl.style.opacity = 1;
+        }
+
+        /* ── RAYS ── */
+        rayEls.forEach(({ el }, i) => {
+          // Stagger: bottom rays slightly earlier than top
+          const stagger = Math.round((i / CONFIG.rayCount) * 4);
+          const inStart = CONFIG.rayInStart + stagger;
+          const inEnd = CONFIG.rayInEnd + stagger;
+          const outStart = CONFIG.rayOutStart;
+          const outEnd = CONFIG.rayOutEnd;
+
+          let rayH = 0;
+          let rayOp = 0;
+
+          if (f >= inStart && f < outStart) {
+            const t = progress(f, inStart, inEnd);
+            rayH = lerp(0, rayLen, easeOutExpo(t));
+            rayOp = lerp(0, 0.85, Math.min(1, t * 4));
+          } else if (f >= outStart && f <= outEnd) {
+            const t = progress(f, outStart, outEnd);
+            rayH = lerp(rayLen, 0, easeInQuad(t));
+            rayOp = lerp(0.85, 0, easeInQuad(t));
+          }
+
+          el.style.height = `${rayH}px`;
+          el.style.opacity = rayOp;
+        });
+      }
+
+      /* ─────────────────────────────────────────────
        START
     ───────────────────────────────────────────── */
-    // Wait for font to load, then kick off
-    document.fonts.ready.then(() => {
-      requestAnimationFrame(tick);
-    });
+      // Wait for font to load, then kick off
+      document.fonts.ready.then(() => {
+        requestAnimationFrame(tick);
+      });
 
-    /* ─────────────────────────────────────────────
+      /* ─────────────────────────────────────────────
        REPLAY on click / tap
     ───────────────────────────────────────────── */
-    stageEl.addEventListener('click', () => {
-      startTime = null;
-      lastFrame  = -1;
-      wordEl.style.opacity   = '0';
-      wordEl.style.transform = 'scale(0.1)';
-      rayEls.forEach(({ el }) => {
-        el.style.height  = '0px';
-        el.style.opacity = '0';
+      stageEl.addEventListener("click", () => {
+        startTime = null;
+        lastFrame = -1;
+        wordEl.style.opacity = "0";
+        wordEl.style.transform = "scale(0.1)";
+        rayEls.forEach(({ el }) => {
+          el.style.height = "0px";
+          el.style.opacity = "0";
+        });
+        requestAnimationFrame(tick);
       });
-      requestAnimationFrame(tick);
-    });
-  </script>
-</body>
+    </script>
+  </body>
 </html>

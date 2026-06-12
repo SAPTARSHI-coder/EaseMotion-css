@@ -17,8 +17,8 @@ A terminal-inspired component that simulates command execution with a typing eff
 
 ```html
 <div class="line command">
-    <span class="prompt">$</span>
-    npm install easemotion-css
+  <span class="prompt">$</span>
+  npm install easemotion-css
 </div>
 ```
 

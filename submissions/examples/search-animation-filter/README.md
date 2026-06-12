@@ -6,8 +6,14 @@
 
 ```html
 <section class="animation-section">
-  <input id="animation-search" type="search" aria-label="Search animations by name" />
-  <article class="animation-card" data-animation-name="fade in">Fade In</article>
+  <input
+    id="animation-search"
+    type="search"
+    aria-label="Search animations by name"
+  />
+  <article class="animation-card" data-animation-name="fade in">
+    Fade In
+  </article>
 </section>
 ```
 

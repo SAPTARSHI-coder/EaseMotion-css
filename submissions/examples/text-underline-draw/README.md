@@ -3,7 +3,8 @@
 **What does this do?**  
 Animates an underline under text/links on hover using three distinct animation presets: left-to-right, center-out, and continuous slide-through.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <!-- Left to right underline -->
 <a class="underline-link underline-left">Discover More</a>

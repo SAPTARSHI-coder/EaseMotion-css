@@ -8,11 +8,11 @@ Visualizes the lifecycle of an API request as it travels through infrastructure,
 
 ```html
 <div class="step gateway">
-    <h3>API Gateway</h3>
+  <h3>API Gateway</h3>
 </div>
 
 <div class="step auth">
-    <h3>Authentication</h3>
+  <h3>Authentication</h3>
 </div>
 ```
 

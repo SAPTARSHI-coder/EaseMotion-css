@@ -9,8 +9,10 @@ An ultra-premium visual layout component popular in high-end AI and SaaS applica
 - **Ag-nostic Shell Delivery:** Fully com-posable. Developers can nest pricing blocks, portfolio displays, dashboard metrics grids, or primary buttons cleanly within the border without modifying document streams.
 
 ## Project Structure
+
 - `demo.html`: Independent visual sandbox presentation workspace.
 - `style.css`: Configured production utility sheet rules.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

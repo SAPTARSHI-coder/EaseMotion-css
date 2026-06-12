@@ -1,15 +1,14 @@
- 
 # Hindi Translation of EaseMotion CSS README
 
 This folder contains a Hindi language version (हिंदी) of the EaseMotion CSS documentation.
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description                               |
+| --------------------------- | ----------------------------------------- |
 | 📄 [demo.html](./demo.html) | Hindi version of the README/documentation |
-| 🎨 [style.css](./style.css) | Styling for the Hindi documentation page |
-| 📖 [README.md](./README.md) | This documentation |
+| 🎨 [style.css](./style.css) | Styling for the Hindi documentation page  |
+| 📖 [README.md](./README.md) | This documentation                        |
 
 ## Content Covered
 

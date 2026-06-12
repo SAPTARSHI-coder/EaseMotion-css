@@ -27,7 +27,9 @@ All button enhancements are activated via data attributes:
 <button class="em-btn em-btn-primary" data-magnetic data-3d>Primary</button>
 
 <!-- squish on click -->
-<button class="em-btn em-btn-primary em-squish" data-magnetic data-3d>Squish Me</button>
+<button class="em-btn em-btn-primary em-squish" data-magnetic data-3d>
+  Squish Me
+</button>
 ```
 
 ScrollTrigger activates automatically on any `[data-scroll-section]` wrapper.
@@ -52,13 +54,15 @@ expressive:
   a staggered timeline on page load
 
 Libraries used (CDN only, zero install):
+
 - GSAP 3.12.5
 - GSAP ScrollTrigger 3.12.5
 
 Proposed class names (maintainer decides final naming):
-- `ease-btn-3d`        — enables 3D tilt behavior
-- `ease-btn-magnetic`  — enables magnetic cursor pull
-- `ease-squish`        — enables squish click animation
+
+- `ease-btn-3d` — enables 3D tilt behavior
+- `ease-btn-magnetic` — enables magnetic cursor pull
+- `ease-squish` — enables squish click animation
 - `ease-hover-shimmer` — shimmer sweep on hover
-- `ease-hover-glow`    — pulsing glow ring on hover
-- `ease-hover-lift`    — lift + shadow on hover
+- `ease-hover-glow` — pulsing glow ring on hover
+- `ease-hover-lift` — lift + shadow on hover

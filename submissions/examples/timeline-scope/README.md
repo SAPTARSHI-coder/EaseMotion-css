@@ -12,8 +12,12 @@ Demonstrates `timeline-scope` — a CSS property that makes a named scroll-timel
   timeline-scope: --my-scroll;
 }
 
-.child-a { animation-timeline: --my-scroll; }
-.child-b { animation-timeline: --my-scroll; }
+.child-a {
+  animation-timeline: --my-scroll;
+}
+.child-b {
+  animation-timeline: --my-scroll;
+}
 ```
 
 Without `timeline-scope`, `animation-timeline: --my-scroll` only works on the element that defines `scroll-timeline-name`. With `timeline-scope`, any descendant can reference it.

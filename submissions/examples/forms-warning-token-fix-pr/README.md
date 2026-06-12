@@ -17,8 +17,11 @@ No new classes. This is a **bug fix** requiring two changes:
 And in the `@supports (color: color-mix(...))` block:
 
 ```css
---ease-color-warning-alpha:
-  color-mix(in srgb, var(--ease-color-warning) 15%, transparent);
+--ease-color-warning-alpha: color-mix(
+  in srgb,
+  var(--ease-color-warning) 15%,
+  transparent
+);
 ```
 
 **2. Replace the hardcoded value in `components/forms.css`:**

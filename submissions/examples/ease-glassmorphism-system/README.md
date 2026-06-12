@@ -26,21 +26,21 @@ Copy the `.glass` class structure and customize via CSS variables:
 
 ### CSS Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `--demo-blur` | `15px` | Backdrop blur radius |
-| `--demo-bg-opacity` | `0.15` | White overlay opacity |
-| `--demo-border-opacity` | `0.2` | Border opacity |
-| `--card-shadow` | — | Card box-shadow |
+| Variable                | Default | Description           |
+| ----------------------- | ------- | --------------------- |
+| `--demo-blur`           | `15px`  | Backdrop blur radius  |
+| `--demo-bg-opacity`     | `0.15`  | White overlay opacity |
+| `--demo-border-opacity` | `0.2`   | Border opacity        |
+| `--card-shadow`         | —       | Card box-shadow       |
 
 ## Variants
 
-| Class | Behavior |
-|---|---|
-| `.glass--default` | Standard glass card |
-| `.glass--interactive` | Blur increases on hover |
-| `.glass--elevated` | Stronger blur, lighter tint, deeper shadow |
-| `.glass--bordered` | Colored border accent |
+| Class                 | Behavior                                   |
+| --------------------- | ------------------------------------------ |
+| `.glass--default`     | Standard glass card                        |
+| `.glass--interactive` | Blur increases on hover                    |
+| `.glass--elevated`    | Stronger blur, lighter tint, deeper shadow |
+| `.glass--bordered`    | Colored border accent                      |
 
 ## File Structure
 

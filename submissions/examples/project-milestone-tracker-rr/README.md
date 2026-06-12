@@ -8,10 +8,10 @@ Provides a timeline-based milestone tracker for monitoring project progress thro
 
 ```html
 <div class="milestone active">
-    <div class="circle"></div>
-    <div class="content">
-        <h3>Development Phase</h3>
-    </div>
+  <div class="circle"></div>
+  <div class="content">
+    <h3>Development Phase</h3>
+  </div>
 </div>
 ```
 

@@ -10,8 +10,8 @@ Makes text fill transparent (companion to `ease-text-stroke`). Essential for cre
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                 | Description           |
+| --------------------- | --------------------- |
 | `ease-text-fill-none` | Transparent text fill |
 
 ## Notes

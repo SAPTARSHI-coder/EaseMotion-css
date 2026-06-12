@@ -16,17 +16,20 @@ A production-ready search component for EaseMotion CSS documentation that enable
 ✅ **Dark Mode** — Built-in light/dark mode support  
 ✅ **Zero Dependencies** — Pure vanilla JavaScript, CSS, HTML  
 ✅ **Easy Integration** — Drop into any HTML file in 3 lines  
-✅ **56+ Index Entries** — Pre-indexed documentation pages, components, utilities, animations  
+✅ **56+ Index Entries** — Pre-indexed documentation pages, components, utilities, animations
 
 ---
 
 ## 📦 Components
 
 ### `demo.html`
+
 Interactive demo showcasing the search component with example queries and indexed content.
 
 ### `style.css`
+
 Complete styling for the search component including:
+
 - Search input with icon
 - Dropdown results container
 - Result item styling with breadcrumbs and badges
@@ -36,7 +39,9 @@ Complete styling for the search component including:
 - Mobile responsive design
 
 ### `script.js`
+
 JavaScript search engine featuring:
+
 - Pre-built documentation index with 56+ entries
 - Fuzzy search with relevance scoring
 - Keyboard navigation (arrow keys, Enter, Escape)
@@ -63,13 +68,28 @@ In the `<head>` section:
 
 ```html
 <!-- Load EaseMotion CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css"
+/>
 
 <!-- Load search styles -->
-<link rel="stylesheet" href="./submissions/examples/documentation-search/style.css" />
+<link
+  rel="stylesheet"
+  href="./submissions/examples/documentation-search/style.css"
+/>
 ```
 
 In the `<body>`, add the search HTML (ideally in the header or below it):
@@ -89,10 +109,16 @@ In the `<body>`, add the search HTML (ideally in the header or below it):
     />
     <span class="docs-search-icon">🔍</span>
   </div>
-  <div id="search-results" class="docs-search-results" aria-live="polite" aria-atomic="true"></div>
+  <div
+    id="search-results"
+    class="docs-search-results"
+    aria-live="polite"
+    aria-atomic="true"
+  ></div>
 </div>
 <p id="search-help" class="search-help-text">
-  Type to search pages, headings, components, and utilities. Use arrow keys to navigate.
+  Type to search pages, headings, components, and utilities. Use arrow keys to
+  navigate.
 </p>
 ```
 
@@ -112,9 +138,9 @@ const DOCUMENTATION_INDEX = [
     title: "Your Page Title",
     breadcrumb: "Section Name",
     content: "Brief description of the page content",
-    category: "Page",  // or "Component", "Utility", "Animation", "Guide", "Example"
+    category: "Page", // or "Component", "Utility", "Animation", "Guide", "Example"
     tags: ["tag1", "tag2", "searchable-keywords"],
-    href: "path/to/page.html#section-id"
+    href: "path/to/page.html#section-id",
   },
   // Add more entries...
 ];
@@ -128,45 +154,48 @@ const DOCUMENTATION_INDEX = [
 <!-- Complete minimal example -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Documentation</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation</title>
 
-  <!-- EaseMotion CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+    <!-- EaseMotion CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css"
+    />
 
-  <!-- Search styles -->
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body>
-  <header>
-    <h1>EaseMotion CSS Documentation</h1>
+    <!-- Search styles -->
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>EaseMotion CSS Documentation</h1>
 
-    <!-- Search Component -->
-    <div class="docs-search">
-      <div class="docs-search-wrapper">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search documentation..."
-          aria-label="Search documentation"
-          aria-controls="search-results"
-          class="docs-search-input"
-        />
-        <span class="docs-search-icon">🔍</span>
+      <!-- Search Component -->
+      <div class="docs-search">
+        <div class="docs-search-wrapper">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search documentation..."
+            aria-label="Search documentation"
+            aria-controls="search-results"
+            class="docs-search-input"
+          />
+          <span class="docs-search-icon">🔍</span>
+        </div>
+        <div id="search-results" class="docs-search-results"></div>
       </div>
-      <div id="search-results" class="docs-search-results"></div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <!-- Your documentation content -->
-  </main>
+    <main>
+      <!-- Your documentation content -->
+    </main>
 
-  <!-- Search script -->
-  <script src="./script.js"></script>
-</body>
+    <!-- Search script -->
+    <script src="./script.js"></script>
+  </body>
 </html>
 ```
 
@@ -178,17 +207,18 @@ const DOCUMENTATION_INDEX = [
 
 The search works across multiple fields:
 
-| Field | Weight | Example |
-|-------|--------|---------|
-| `title` | 3x | "button" → finds "Button Primary" |
-| `tags` | 2x | "hover" → finds items tagged with "hover" |
-| `breadcrumb` | 1.5x | "core" → finds pages in "Core" section |
-| `content` | 1x | "animation" → finds animation descriptions |
-| `category` | 1x | "component" → finds all components |
+| Field        | Weight | Example                                    |
+| ------------ | ------ | ------------------------------------------ |
+| `title`      | 3x     | "button" → finds "Button Primary"          |
+| `tags`       | 2x     | "hover" → finds items tagged with "hover"  |
+| `breadcrumb` | 1.5x   | "core" → finds pages in "Core" section     |
+| `content`    | 1x     | "animation" → finds animation descriptions |
+| `category`   | 1x     | "component" → finds all components         |
 
 ### Relevance Scoring
 
 Results are ranked by:
+
 1. **Exact word match** — "fade" beats "fade-in" for query "fade"
 2. **Field weight** — Matches in title rank higher than content
 3. **Position** — Matches at the start of text score higher
@@ -202,12 +232,12 @@ Results are ranked by:
 
 ## ⌨️ Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Arrow Up` | Focus previous result |
-| `Arrow Down` | Focus next result |
-| `Enter` | Navigate to focused result |
-| `Escape` | Close results dropdown |
+| Key          | Action                     |
+| ------------ | -------------------------- |
+| `Arrow Up`   | Focus previous result      |
+| `Arrow Down` | Focus next result          |
+| `Enter`      | Navigate to focused result |
+| `Escape`     | Close results dropdown     |
 
 ---
 
@@ -260,18 +290,18 @@ The search instance is exposed globally for debugging:
 
 ```javascript
 // Access in browser console
-window.documentationSearch
+window.documentationSearch;
 
 // Get search statistics
-window.documentationSearch.getStats()
+window.documentationSearch.getStats();
 // Returns: { totalIndexed: 56, categories: [...], totalTags: 28 }
 
 // Manual search (dev only)
-window.documentationSearch.performSearch("animation")
+window.documentationSearch.performSearch("animation");
 
 // Show/hide results programmatically
-window.documentationSearch.showResults()
-window.documentationSearch.hideResults()
+window.documentationSearch.showResults();
+window.documentationSearch.hideResults();
 ```
 
 ---
@@ -281,6 +311,7 @@ window.documentationSearch.hideResults()
 The component comes with 56 searchable entries covering:
 
 ### Pages (11)
+
 - Getting Started
 - Design Philosophy
 - Installation
@@ -291,10 +322,12 @@ The component comes with 56 searchable entries covering:
 - Contributing, Naming Rules
 
 ### Components (8)
+
 - Buttons (Primary, Secondary, Danger, Disabled)
 - Cards
 
 ### Animations (7)
+
 - ease-fade-in/out
 - ease-slide-down/up
 - ease-bounce
@@ -302,12 +335,14 @@ The component comes with 56 searchable entries covering:
 - ease-rotate
 
 ### Utilities (4)
+
 - ease-hover-glow
 - ease-transition-smooth
 - ease-shadow-elevated
 - ease-border-subtle
 
 ### Other (26+)
+
 - Color Palette, Dark Mode, Typography, Font Sizes
 - Spacing Scale, Responsive Design, Flexbox, Grid
 - Live Demo, Skeleton Loading examples
@@ -320,7 +355,8 @@ The component comes with 56 searchable entries covering:
 
 ```html
 <!-- In demo.html or your HTML -->
-<span class="docs-search-icon">🔎</span>  <!-- Different icon -->
+<span class="docs-search-icon">🔎</span>
+<!-- Different icon -->
 ```
 
 ### Modify the max results
@@ -350,12 +386,12 @@ Override CSS variables in your stylesheet:
 
 ```css
 .docs-search-input {
-  border-radius: 4px;  /* Less rounded */
-  font-size: 1rem;     /* Larger text */
+  border-radius: 4px; /* Less rounded */
+  font-size: 1rem; /* Larger text */
 }
 
 .docs-search-results {
-  max-height: 300px;   /* Shorter dropdown */
+  max-height: 300px; /* Shorter dropdown */
 }
 ```
 
@@ -376,13 +412,14 @@ console.log("Results:", this.filteredResults);
 
 ```javascript
 // In browser console
-window.documentationSearch.index  // View all indexed entries
-window.documentationSearch.getStats()  // Get summary stats
+window.documentationSearch.index; // View all indexed entries
+window.documentationSearch.getStats(); // Get summary stats
 ```
 
 ### Test search quality
 
 Try these queries to verify proper indexing:
+
 - "button" → should show Button entries
 - "animation" → should show ease-fade-in, ease-bounce, etc.
 - "responsive" → should show responsive design, utilities
@@ -408,37 +445,44 @@ Try these queries to verify proper indexing:
 
 ## 📄 Files Summary
 
-| File | Size | Purpose |
-|------|------|---------|
-| `demo.html` | ~3.5 KB | Interactive demo |
-| `style.css` | ~7.2 KB | Component styles |
-| `script.js` | ~10.5 KB | Search engine & index |
-| `README.md` | ~9 KB | This documentation |
-| **Total** | **~30 KB** | **Minimal, no dependencies** |
+| File        | Size       | Purpose                      |
+| ----------- | ---------- | ---------------------------- |
+| `demo.html` | ~3.5 KB    | Interactive demo             |
+| `style.css` | ~7.2 KB    | Component styles             |
+| `script.js` | ~10.5 KB   | Search engine & index        |
+| `README.md` | ~9 KB      | This documentation           |
+| **Total**   | **~30 KB** | **Minimal, no dependencies** |
 
 ---
 
 ## 🎓 How It Works
 
 ### 1. **Indexing**
+
 All searchable content (pages, sections, components, utilities) is stored in `DOCUMENTATION_INDEX` array with metadata.
 
 ### 2. **Search**
+
 When user types, `performSearch()` method:
+
 - Iterates through index entries
 - Calculates relevance score based on field matches and weights
 - Filters results above score threshold
 - Sorts by relevance (highest first)
 
 ### 3. **Rendering**
+
 Filtered results are rendered as HTML with:
+
 - Title (with matching text highlighted)
 - Breadcrumb (section info)
 - Category badge (Page/Component/Utility/etc)
 - Preview/description text
 
 ### 4. **Navigation**
+
 User can:
+
 - **Click** result item → navigate to `href`
 - **Keyboard** navigate → arrow keys to select, Enter to navigate
 - **Escape** → close dropdown

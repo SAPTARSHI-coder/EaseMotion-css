@@ -10,8 +10,8 @@ Ping/radar scale-out loop animation. Uses cubic-bezier easing for an elastic fee
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class       | Description                  |
+| ----------- | ---------------------------- |
 | `ease-ping` | Default ping/radar animation |
 
 ## Notes

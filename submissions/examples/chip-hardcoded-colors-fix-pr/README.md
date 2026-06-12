@@ -26,7 +26,7 @@ No new classes. This is a **bug fix** — the following rules should be updated 
 }
 ```
 
-*(The same changes apply to the dark mode block in `chip.css`)*
+_(The same changes apply to the dark mode block in `chip.css`)_
 
 ## Why is it useful?
 

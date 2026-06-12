@@ -9,13 +9,9 @@ Adds reusable 3D flip entrance animations for modern UI components.
 ## How is it used?
 
 ```html
-<div class="ease-flip-x">
-    Content
-</div>
+<div class="ease-flip-x">Content</div>
 
-<div class="ease-flip-y">
-    Content
-</div>
+<div class="ease-flip-y">Content</div>
 ```
 
 ---

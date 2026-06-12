@@ -1,4 +1,3 @@
- 
 # Wave Animation for Text & Icons
 
 Cascading wave effect across child elements using nth-child animation delays.
@@ -23,7 +22,7 @@ Cascading wave effect across child elements using nth-child animation delays.
 
 ```html
 <div class="ease-wave">
-    <span>W</span><span>A</span><span>V</span><span>E</span>
+  <span>W</span><span>A</span><span>V</span><span>E</span>
 </div>
 
 <!-- Different wave heights -->
@@ -32,3 +31,4 @@ Cascading wave effect across child elements using nth-child animation delays.
 
 <!-- Hover trigger -->
 <div class="ease-wave-hover">Hover to wave</div>
+```

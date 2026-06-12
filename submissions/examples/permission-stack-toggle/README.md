@@ -21,7 +21,7 @@ A modern permission-settings component inspired by mobile OS permission panels. 
 ```html
 <div class="tg-perm">
   <label class="tg-perm-row">
-    <input type="checkbox" class="tg-perm-input" checked>
+    <input type="checkbox" class="tg-perm-input" checked />
     <span class="tg-perm-icon"> … </span>
     <span class="tg-perm-info">
       <span class="tg-perm-title">Location</span>

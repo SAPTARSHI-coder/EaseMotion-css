@@ -1,4 +1,3 @@
- 
 # Spinner Loading Component
 
 Spinner/loader component with circular spinner, size variants, and bouncing dots variant.
@@ -38,3 +37,4 @@ Spinner/loader component with circular spinner, size variants, and bouncing dots
 
 <!-- Bouncing dots -->
 <div class="ease-spinner-dots"></div>
+```

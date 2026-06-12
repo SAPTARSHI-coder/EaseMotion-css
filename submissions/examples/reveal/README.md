@@ -11,20 +11,20 @@ Scroll-triggered element reveal animations using `animation-timeline: view()`. Z
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-reveal` | Default fade + slide up |
-| `ease-reveal-up` | Slide up on reveal |
-| `ease-reveal-down` | Slide down on reveal |
-| `ease-reveal-left` | Slide left on reveal |
-| `ease-reveal-right` | Slide right on reveal |
-| `ease-reveal-fade` | Fade only |
-| `ease-reveal-fast` | 300ms duration |
-| `ease-reveal-slow` | 900ms duration |
-| `ease-delay-100` | 100ms delay |
-| `ease-delay-200` | 200ms delay |
-| `ease-delay-300` | 300ms delay |
-| `ease-delay-500` | 500ms delay |
+| Class               | Description             |
+| ------------------- | ----------------------- |
+| `ease-reveal`       | Default fade + slide up |
+| `ease-reveal-up`    | Slide up on reveal      |
+| `ease-reveal-down`  | Slide down on reveal    |
+| `ease-reveal-left`  | Slide left on reveal    |
+| `ease-reveal-right` | Slide right on reveal   |
+| `ease-reveal-fade`  | Fade only               |
+| `ease-reveal-fast`  | 300ms duration          |
+| `ease-reveal-slow`  | 900ms duration          |
+| `ease-delay-100`    | 100ms delay             |
+| `ease-delay-200`    | 200ms delay             |
+| `ease-delay-300`    | 300ms delay             |
+| `ease-delay-500`    | 500ms delay             |
 
 ## Browser Support
 

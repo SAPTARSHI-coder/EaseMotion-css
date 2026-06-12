@@ -23,7 +23,7 @@ No new classes. This is a **bug fix** — the following rules should be added in
 
 ## Why is it useful?
 
-Before this fix, keyboard users pressing `Tab` to navigate through the footer would receive **no visual feedback** indicating which link was currently focused. 
+Before this fix, keyboard users pressing `Tab` to navigate through the footer would receive **no visual feedback** indicating which link was currently focused.
 
 This violates **WCAG 2.1 SC 2.4.7 (Focus Visible)**, which requires that any keyboard-operable user interface has a mode of operation where the keyboard focus indicator is visible.
 

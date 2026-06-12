@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring dependency health, software vuln
 
 ```html
 <div class="package-card healthy">
-    <h3>Frontend Dependencies</h3>
+  <h3>Frontend Dependencies</h3>
 </div>
 ```
 

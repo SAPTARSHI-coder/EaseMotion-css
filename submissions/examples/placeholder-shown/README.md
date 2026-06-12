@@ -16,14 +16,16 @@ Creates a floating label pattern using the `:placeholder-shown` pseudo-class —
 ```css
 .label {
   position: absolute;
-  top: 50%; left: 0.85rem;
+  top: 50%;
+  left: 0.85rem;
   translate: 0 -50%;
   transition: all 0.25s;
 }
 
 .input:not(:placeholder-shown) + .label,
 .input:focus + .label {
-  top: 0; translate: 0 -50%;
+  top: 0;
+  translate: 0 -50%;
   font-size: 0.8rem;
   color: blue;
 }

@@ -4,6 +4,7 @@
 Adds reusable delay utility classes for staging entrance animations in a predictable sequence.
 
 **How is it used?**
+
 ```html
 <article class="delay-card em-delay-1">First item</article>
 <article class="delay-card em-delay-2">Second item</article>

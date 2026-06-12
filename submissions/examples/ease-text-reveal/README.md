@@ -1,14 +1,8 @@
 \# ease-text-reveal
 
-
-
 Text reveals character by character from behind a mask.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -26,11 +20,7 @@ Text reveals character by character from behind a mask.
 
 | `ease-text-reveal-scroll` | Scroll triggered reveal |
 
-
-
 \## Variables
-
-
 
 | Variable | Default | Description |
 
@@ -40,39 +30,23 @@ Text reveals character by character from behind a mask.
 
 | `--ease-reveal-delay` | 0s | Animation delay |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic reveal -->
 
-<div class="ease-text-reveal">
-
-&#x20;   <span>Your text here</span>
-
-</div>
-
-
+<div class="ease-text-reveal">&#x20; <span>Your text here</span></div>
 
 <!-- Custom duration -->
 
 <div class="ease-text-reveal" style="--ease-reveal-duration: 1.5s;">
-
-&#x20;   <span>Slow reveal</span>
-
+  &#x20; <span>Slow reveal</span>
 </div>
-
-
 
 <!-- Word by word -->
 
 <div class="ease-text-reveal-words">
-
-&#x20;   <span>This</span> <span>reveals</span> <span>word</span> <span>by</span> <span>word</span>
-
+  &#x20; <span>This</span> <span>reveals</span> <span>word</span>
+  <span>by</span> <span>word</span>
 </div>
-
+```

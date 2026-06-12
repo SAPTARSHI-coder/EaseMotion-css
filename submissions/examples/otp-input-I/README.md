@@ -1,4 +1,3 @@
- 
 # OTP/PIN Code Entry Component (ease-otp-input)
 
 OTP/PIN code entry with auto-advance, paste support, and smooth animations.
@@ -23,14 +22,15 @@ OTP/PIN code entry with auto-advance, paste support, and smooth animations.
 
 ```html
 <div class="ease-otp-input" data-length="6">
-    <input type="text" maxlength="1" class="otp-box">
-    <input type="text" maxlength="1" class="otp-box">
-    <input type="text" maxlength="1" class="otp-box">
-    <input type="text" maxlength="1" class="otp-box">
-    <input type="text" maxlength="1" class="otp-box">
-    <input type="text" maxlength="1" class="otp-box">
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
+  <input type="text" maxlength="1" class="otp-box" />
 </div>
 
 <script>
-    document.querySelectorAll('.ease-otp-input').forEach(initOTP);
+  document.querySelectorAll(".ease-otp-input").forEach(initOTP);
 </script>
+```

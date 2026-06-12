@@ -26,11 +26,11 @@ This is an **HTML requirement** — CSS cannot provide accessible names.
 For a fully accessible modal, three attributes are required on the
 dialog container:
 
-| Attribute | Value | Purpose |
-|---|---|---|
-| `role` | `"dialog"` | Identifies the element as a dialog to screen readers |
-| `aria-modal` | `"true"` | Prevents SR from reading content behind the modal |
-| `aria-labelledby` | ID of heading | Links the dialog to its visible title |
+| Attribute         | Value         | Purpose                                              |
+| ----------------- | ------------- | ---------------------------------------------------- |
+| `role`            | `"dialog"`    | Identifies the element as a dialog to screen readers |
+| `aria-modal`      | `"true"`      | Prevents SR from reading content behind the modal    |
+| `aria-labelledby` | ID of heading | Links the dialog to its visible title                |
 
 ```html
 <div

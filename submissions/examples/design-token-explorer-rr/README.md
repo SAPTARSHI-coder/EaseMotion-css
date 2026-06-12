@@ -8,8 +8,8 @@ Provides a visual explorer for common design system tokens including colors, typ
 
 ```html
 <div class="color-card primary">
-    <span>Primary</span>
-    <small>#2563EB</small>
+  <span>Primary</span>
+  <small>#2563EB</small>
 </div>
 ```
 

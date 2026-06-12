@@ -11,18 +11,18 @@ Firefox < 110 and Safari < 15.4.
 
 ## Solution
 
-| Layer | Mechanism |
-|---|---|
+| Layer           | Mechanism                                                            |
+| --------------- | -------------------------------------------------------------------- |
 | Modern browsers | `@supports (animation-timeline: scroll())` wraps the CSS declaration |
-| Legacy browsers | JS `scroll` event listener drives `scaleX()` directly |
+| Legacy browsers | JS `scroll` event listener drives `scaleX()` directly                |
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `style.css` | CSS with `@supports` guard + `@keyframes` |
-| `scroll-progress-fallback.js` | Feature-detects and applies JS fallback |
-| `demo.html` | Live demonstration |
+| File                          | Purpose                                   |
+| ----------------------------- | ----------------------------------------- |
+| `style.css`                   | CSS with `@supports` guard + `@keyframes` |
+| `scroll-progress-fallback.js` | Feature-detects and applies JS fallback   |
+| `demo.html`                   | Live demonstration                        |
 
 ## Testing
 

@@ -8,9 +8,9 @@ Provides a responsive Kanban-style task management board with animated task card
 
 ```html
 <div class="column">
-    <div class="task-card">
-        <h3>Task Title</h3>
-    </div>
+  <div class="task-card">
+    <h3>Task Title</h3>
+  </div>
 </div>
 ```
 

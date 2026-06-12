@@ -16,19 +16,13 @@ Add the class to any card element:
 
 ```html
 <!-- Slide up (default) -->
-<div class="ease-card card-slide-hover">
-  ...
-</div>
+<div class="ease-card card-slide-hover">...</div>
 
 <!-- Slide left variant -->
-<div class="ease-card card-slide-left-hover">
-  ...
-</div>
+<div class="ease-card card-slide-left-hover">...</div>
 
 <!-- Slide right variant -->
-<div class="ease-card card-slide-right-hover">
-  ...
-</div>
+<div class="ease-card card-slide-right-hover">...</div>
 ```
 
 Composable with existing EaseMotion card modifiers:
@@ -49,11 +43,11 @@ EaseMotion CSS treats motion as a first-class feature. The existing `ease-card-h
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `style.css` | Raw CSS — `@keyframes` + utility classes |
+| File        | Purpose                                       |
+| ----------- | --------------------------------------------- |
+| `style.css` | Raw CSS — `@keyframes` + utility classes      |
 | `demo.html` | Self-contained browser demo, no server needed |
-| `README.md` | This file |
+| `README.md` | This file                                     |
 
 ---
 
@@ -65,15 +59,15 @@ EaseMotion CSS treats motion as a first-class feature. The existing `ease-card-h
 
 Added the following:
 
-| Addition | Description |
-|----------|-------------|
-| `@keyframes card-slide-enter` | Slides element from `translateY(0)` → `translateY(-10px)` |
-| `@keyframes card-slide-leave` | Returns from `translateY(-10px)` → `translateY(0)` |
-| `.card-slide-hover` | Applies slide-up on hover, slide-back on leave |
-| `@keyframes card-slide-left-enter/leave` | Horizontal left variants |
-| `.card-slide-left-hover` | Applies slide-left on hover |
-| `@keyframes card-slide-right-enter/leave` | Horizontal right variants |
-| `.card-slide-right-hover` | Applies slide-right on hover |
+| Addition                                  | Description                                               |
+| ----------------------------------------- | --------------------------------------------------------- |
+| `@keyframes card-slide-enter`             | Slides element from `translateY(0)` → `translateY(-10px)` |
+| `@keyframes card-slide-leave`             | Returns from `translateY(-10px)` → `translateY(0)`        |
+| `.card-slide-hover`                       | Applies slide-up on hover, slide-back on leave            |
+| `@keyframes card-slide-left-enter/leave`  | Horizontal left variants                                  |
+| `.card-slide-left-hover`                  | Applies slide-left on hover                               |
+| `@keyframes card-slide-right-enter/leave` | Horizontal right variants                                 |
+| `.card-slide-right-hover`                 | Applies slide-right on hover                              |
 
 ### New file: `submissions/examples/slide-card-hover/demo.html`
 

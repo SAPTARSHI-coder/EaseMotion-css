@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a pure CSS accordion component with two modes (single using `<details>`/`<summary>` and exclusive using hidden radio inputs), three border variants (bordered, borderless, separated), three size variants (sm, base, lg), and custom icon support — all with smooth open/close animations and zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <!-- Single accordion (multiple open allowed) -->
    <div class="accordion accordion-bordered">
@@ -18,7 +19,7 @@
    <!-- Exclusive accordion (only one open) -->
    <div class="accordion accordion-bordered accordion-exclusive">
      <div class="accordion-group">
-       <input type="radio" name="ex" id="ex1" class="accordion-radio" checked>
+       <input type="radio" name="ex" id="ex1" class="accordion-radio" checked />
        <label class="accordion-header" for="ex1">
          <span class="accordion-title">Title</span>
          <span class="accordion-icon"></span>

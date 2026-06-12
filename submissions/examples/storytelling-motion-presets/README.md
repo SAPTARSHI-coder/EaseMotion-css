@@ -26,36 +26,42 @@ Developers no longer need to choose between out-of-context effect names. They ch
 ## Available Storytelling Presets
 
 ### `.introduce`
+
 - Fade in
 - Slide up
 - Smooth, welcoming easing
 - Best for hero sections, onboarding content, and first impressions
 
 ### `.highlight`
+
 - Gentle scale
 - Soft glow
 - Attention motion that feels polished without being loud
 - Ideal for pricing cards, featured items, and callout panels
 
 ### `.reveal`
+
 - Progressive fade
 - Upward motion
 - Natural settle effect
 - Great for feature lists, content reveals, and progressive announcements
 
 ### `.showcase`
+
 - Zoom in
 - Fade in
 - Slight emphasis on scale and arrival
 - Built for product showcases, hero visuals, and landing page highlights
 
 ### `.celebrate`
+
 - Bounce
 - Glow
 - Positive motion with a warm reward feeling
 - Perfect for success messages, confirmations, and milestone feedback
 
 ### `.focus`
+
 - Subtle fade
 - Scale in
 - Directional attention motion

@@ -5,6 +5,7 @@ Three foundational form primitives for EaseMotion CSS: text inputs, checkboxes, 
 ## Included
 
 ### Text Inputs
+
 - **Base** — default bordered input
 - **Outline** — transparent background with border
 - **Filled** — light gray background, no border
@@ -12,16 +13,19 @@ Three foundational form primitives for EaseMotion CSS: text inputs, checkboxes, 
 - **Validation states** — `.input-error` (red) / `.input-success` (green) with hint text
 
 ### Checkboxes
+
 - Hidden native input styled with `.check-box` pseudo-element
 - Animated check mark on `:checked` via `::after` with scale + opacity transition
 - Color variants: `-success`, `-danger`
 
 ### Toggle Switches
+
 - Hidden native checkbox with `.toggle-track` and sliding knob (`::after`)
 - Smooth spring-like knob animation via `cubic-bezier(0.68, -0.55, 0.265, 1.55)`
 - Color variants: `-success`, `-danger`
 
 ## Features
+
 - **Pure CSS** — no JavaScript required for any component
 - **Animation-first** — smooth transitions on focus, check, toggle
 - **Accessible** — `:focus-visible` outlines, hidden native inputs retain keyboard navigation

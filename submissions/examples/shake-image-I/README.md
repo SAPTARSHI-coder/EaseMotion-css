@@ -1,4 +1,3 @@
- 
 # Shake Image Utility
 
 Smooth shake animation for images — perfect for error states and interactive feedback.
@@ -19,8 +18,9 @@ Smooth shake animation for images — perfect for error states and interactive f
 ## Usage
 
 ```html
-<img src="image.jpg" class="ease-shake-image" alt="Image">
+<img src="image.jpg" class="ease-shake-image" alt="Image" />
 
 <!-- Different intensities -->
-<img class="ease-shake-image-subtle" src="image.jpg">
-<img class="ease-shake-image-strong" src="image.jpg">
+<img class="ease-shake-image-subtle" src="image.jpg" />
+<img class="ease-shake-image-strong" src="image.jpg" />
+```

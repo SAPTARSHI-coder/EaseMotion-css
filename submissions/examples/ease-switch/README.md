@@ -6,14 +6,14 @@ A toggle switch (iOS-style pill) for boolean settings — enable/disable, on/off
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Small | `.ease-switch--sm` | 32x20px track, 16px thumb |
-| Medium (default) | *(none)* | 40x24px track, 20px thumb |
-| Large | `.ease-switch--lg` | 52x32px track, 28px thumb |
-| Danger | `.ease-switch--danger` | Red track when on |
-| Disabled | `.ease-switch--disabled` | Reduced opacity, no pointer events |
-| Label right | `.ease-switch-wrapper--right` | Label on the right side |
+| Variant          | Class                         | Description                        |
+| ---------------- | ----------------------------- | ---------------------------------- |
+| Small            | `.ease-switch--sm`            | 32x20px track, 16px thumb          |
+| Medium (default) | _(none)_                      | 40x24px track, 20px thumb          |
+| Large            | `.ease-switch--lg`            | 52x32px track, 28px thumb          |
+| Danger           | `.ease-switch--danger`        | Red track when on                  |
+| Disabled         | `.ease-switch--disabled`      | Reduced opacity, no pointer events |
+| Label right      | `.ease-switch-wrapper--right` | Label on the right side            |
 
 ## How is it used?
 
@@ -21,7 +21,7 @@ A toggle switch (iOS-style pill) for boolean settings — enable/disable, on/off
 <label class="ease-switch-wrapper">
   <span class="ease-switch__label">Enable notifications</span>
   <span class="ease-switch">
-    <input type="checkbox" role="switch">
+    <input type="checkbox" role="switch" />
     <span class="ease-switch__track">
       <span class="ease-switch__thumb"></span>
     </span>
@@ -32,9 +32,9 @@ A toggle switch (iOS-style pill) for boolean settings — enable/disable, on/off
 Toggle the `.ease-switch--checked` class on `.ease-switch` to match the checkbox state:
 
 ```js
-input.addEventListener('change', function() {
-  sw.classList.toggle('ease-switch--checked', input.checked);
-  input.setAttribute('aria-checked', input.checked);
+input.addEventListener("change", function () {
+  sw.classList.toggle("ease-switch--checked", input.checked);
+  input.setAttribute("aria-checked", input.checked);
 });
 ```
 
@@ -42,7 +42,7 @@ Without wrapper (standalone):
 
 ```html
 <span class="ease-switch">
-  <input type="checkbox" role="switch" aria-label="Toggle setting">
+  <input type="checkbox" role="switch" aria-label="Toggle setting" />
   <span class="ease-switch__track">
     <span class="ease-switch__thumb"></span>
   </span>

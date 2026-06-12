@@ -9,8 +9,10 @@ A physics-modeled micro-interaction utility component that introduces realistic 
 - **Universal Utility Composability:** Built as an abstract layout-agnostic framework utility class. It can be instantly drops onto CTA actions, profile avatars, interface dashboard nodes, alert tags, or modal viewport containers flawlessly.
 
 ## Manifest File Map
+
 - `demo.html`: Standalone self-contained interface sandbox preview setup.
 - `style.css`: Configured production sheet rule sets.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

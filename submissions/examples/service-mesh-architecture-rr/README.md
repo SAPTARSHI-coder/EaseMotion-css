@@ -7,13 +7,9 @@ Visualizes a modern service mesh architecture where services communicate through
 ## How is it used?
 
 ```html
-<div class="service">
-    Service A
-</div>
+<div class="service">Service A</div>
 
-<div class="sidecar">
-    Sidecar Proxy
-</div>
+<div class="sidecar">Sidecar Proxy</div>
 ```
 
 ## Why is it useful?

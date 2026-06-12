@@ -10,3 +10,4 @@ Creates a dashboard card that displays writing and content creation metrics such
 <div class="writer-dashboard-card">
   <h3>Monthly Writing Stats</h3>
 </div>
+```

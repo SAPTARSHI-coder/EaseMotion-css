@@ -1,14 +1,8 @@
 \# ease-split-button
 
-
-
 Button split into primary action + dropdown arrow for secondary actions.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -30,11 +24,7 @@ Button split into primary action + dropdown arrow for secondary actions.
 
 | `ease-split-btn-disabled` | Disabled state |
 
-
-
 \## Features
-
-
 
 \- 🔽 Primary action + dropdown menu
 
@@ -46,33 +36,28 @@ Button split into primary action + dropdown arrow for secondary actions.
 
 \- ⌨️ CSS-only using :focus-within
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-split-btn">
+  &#x20; <button class="ease-split-btn-primary">Save</button>
 
-&#x20;   <button class="ease-split-btn-primary">Save</button>
+  &#x20;
+  <div class="ease-split-btn-dropdown">
+    &#x20; <button class="ease-split-btn-arrow">▼</button>
 
-&#x20;   <div class="ease-split-btn-dropdown">
+    &#x20;
+    <div class="ease-split-btn-menu">
+      &#x20; <a href="#">Save as Draft</a>
 
-&#x20;       <button class="ease-split-btn-arrow">▼</button>
+      &#x20; <a href="#">Save as Copy</a>
 
-&#x20;       <div class="ease-split-btn-menu">
+      &#x20; <a href="#">Export</a>
 
-&#x20;           <a href="#">Save as Draft</a>
+      &#x20;
+    </div>
 
-&#x20;           <a href="#">Save as Copy</a>
-
-&#x20;           <a href="#">Export</a>
-
-&#x20;       </div>
-
-&#x20;   </div>
-
+    &#x20;
+  </div>
 </div>
-
+```

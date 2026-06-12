@@ -1,4 +1,3 @@
- 
 # Liquid Border Trace Animation
 
 Glowing border trace effect that travels smoothly around the perimeter of components on hover.
@@ -20,3 +19,4 @@ Glowing border trace effect that travels smoothly around the perimeter of compon
 ```html
 <button class="ease-border-trace">Get Started</button>
 <div class="ease-border-trace">Card content</div>
+```

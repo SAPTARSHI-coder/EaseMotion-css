@@ -10,11 +10,11 @@ Subtle press/click-feedback hover effect that scales the element down to `0.95`.
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-shrink` | Default shrink to 0.95 |
-| `ease-hover-shrink-sm` | Subtle shrink to 0.98 |
-| `ease-hover-shrink-lg` | Strong shrink to 0.90 |
+| Class                  | Description            |
+| ---------------------- | ---------------------- |
+| `ease-hover-shrink`    | Default shrink to 0.95 |
+| `ease-hover-shrink-sm` | Subtle shrink to 0.98  |
+| `ease-hover-shrink-lg` | Strong shrink to 0.90  |
 
 ## Notes
 

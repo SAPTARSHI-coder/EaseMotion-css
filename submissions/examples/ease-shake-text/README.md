@@ -4,8 +4,12 @@
 Adds a CSS-only shake animation for short text elements that need a brief attention cue during hover or focus interactions.
 
 **How is it used?**
+
 ```html
-<button class="shake-text" style="--shake-distance: 5px; --shake-duration: 360ms;">
+<button
+  class="shake-text"
+  style="--shake-distance: 5px; --shake-duration: 360ms;"
+>
   Username already taken
 </button>
 ```

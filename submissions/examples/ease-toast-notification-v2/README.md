@@ -28,6 +28,7 @@ The Toast Notification System v2 is a complete overhaul of standard toast compon
 ## Positioning System
 
 You can position the notification container using the following classes on the `.ease-toast-container`:
+
 - `top-right` (Default)
 - `top-left`
 - `bottom-right`

@@ -3,13 +3,14 @@
 1. **What does this do?** Provides a pure CSS dropdown menu component with two interaction modes (hover via `:hover` and click via `:focus-within`), left/right alignment, 3 size variants (sm, base, lg), item dividers, danger items, and optional icon support via `--dropdown-icon` — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <!-- Hover dropdown -->
    <div class="dropdown">
      <button class="dropdown-trigger">Menu ▾</button>
      <div class="dropdown-menu">
        <a href="#" class="dropdown-item">Profile</a>
-       <hr class="dropdown-divider">
+       <hr class="dropdown-divider" />
        <a href="#" class="dropdown-item dropdown-item-danger">Log out</a>
      </div>
    </div>

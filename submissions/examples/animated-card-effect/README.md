@@ -67,11 +67,12 @@ submission adds:
 - Zero-dependency — pure CSS + vanilla JS, no libraries
 
 Proposed class names (maintainer decides final naming):
-- `ease-stat-card`           — card container
-- `ease-stat-card--accent`   — cyan color variant
-- `ease-stat-card--zero`     — violet color variant
-- `ease-stat-card--warm`     — orange color variant
-- `ease-stat-number`         — animated number element
-- `ease-stat-label`          — label below the number
-- `ease-stat-bar`            — progress bar
-- `ease-stat-bg-glow`        — ambient glow layer
+
+- `ease-stat-card` — card container
+- `ease-stat-card--accent` — cyan color variant
+- `ease-stat-card--zero` — violet color variant
+- `ease-stat-card--warm` — orange color variant
+- `ease-stat-number` — animated number element
+- `ease-stat-label` — label below the number
+- `ease-stat-bar` — progress bar
+- `ease-stat-bg-glow` — ambient glow layer

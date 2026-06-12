@@ -13,6 +13,7 @@ The `.ease-btn-loading` class adds a spinner using `::after` with
 state and causing a visible layout shift.
 
 This breaks:
+
 - Side-by-side button comparisons
 - `.ease-btn-group` layouts (adjacent buttons shift)
 - Fixed-width containers
@@ -26,14 +27,15 @@ center instead of being appended after the text. Hide the text with
 `color: transparent` so the button keeps its original width.
 
 **Before (buggy):**
+
 ```css
 .ease-btn-loading {
   pointer-events: none;
 }
 
 .ease-btn-loading::after {
-  content: '';
-  display: inline-block;        /* appended after text = wider button */
+  content: "";
+  display: inline-block; /* appended after text = wider button */
   width: 0.85em;
   height: 0.85em;
   border: 2px solid currentColor;
@@ -45,16 +47,17 @@ center instead of being appended after the text. Hide the text with
 ```
 
 **After (fixed):**
+
 ```css
 .ease-btn-loading {
   pointer-events: none;
   position: relative;
-  color: transparent !important;  /* hide text, keep width */
+  color: transparent !important; /* hide text, keep width */
 }
 
 .ease-btn-loading::after {
-  content: '';
-  position: absolute;             /* centered overlay, no extra width */
+  content: "";
+  position: absolute; /* centered overlay, no extra width */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

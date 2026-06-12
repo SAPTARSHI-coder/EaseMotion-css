@@ -22,3 +22,4 @@ Additionally, this submission fixes structural dark mode token transitions and i
 sticky-header/
 ├── demo.html    # Interactive sandbox with built-in dark mode and a11y testing suites
 └── style.css    # Unified stylesheet handling components, tokens, and a11y overrides
+```

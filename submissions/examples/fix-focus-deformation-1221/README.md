@@ -11,8 +11,8 @@ Preserves each component's intended `border-radius` when it receives keyboard fo
 Load `style.css` after EaseMotion CSS. The overrides restore shape on focus for pill buttons and cards:
 
 ```html
-<link rel="stylesheet" href="easemotion.css">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="easemotion.css" />
+<link rel="stylesheet" href="style.css" />
 
 <button class="ease-btn ease-btn-primary ease-btn-pill">Focus Me</button>
 

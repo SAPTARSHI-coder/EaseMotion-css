@@ -8,8 +8,8 @@ Displays key startup metrics including Monthly Recurring Revenue (MRR), Annual R
 
 ```html
 <div class="card mrr">
-    <h2>$48.2K</h2>
-    <span>Monthly Recurring Revenue</span>
+  <h2>$48.2K</h2>
+  <span>Monthly Recurring Revenue</span>
 </div>
 ```
 

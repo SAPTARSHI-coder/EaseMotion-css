@@ -22,15 +22,15 @@ The `.ease-sidebar-toggle` is an interactive `<button>` element that keyboard us
 
 Every other interactive component in EaseMotion CSS already provides a `:focus-visible` style:
 
-| Component | Has `:focus-visible`? |
-|-----------|----------------------|
-| `.ease-btn` (buttons.css) | ✅ Yes |
-| `.ease-modal-close` (modals.css) | ✅ Yes |
-| `.ease-navbar-item` (navbar.css) | ✅ Yes |
-| `.ease-chip` (chip.css) | ✅ Yes |
-| `.ease-tab` (tabs.css) | ✅ Yes |
-| `.ease-card-hover` (cards.css) | ✅ Yes |
-| `.ease-marquee` (ease-marquee.css) | ✅ Yes |
-| **`.ease-sidebar-toggle`** (sidebar.css) | **❌ Missing** |
+| Component                                | Has `:focus-visible`? |
+| ---------------------------------------- | --------------------- |
+| `.ease-btn` (buttons.css)                | ✅ Yes                |
+| `.ease-modal-close` (modals.css)         | ✅ Yes                |
+| `.ease-navbar-item` (navbar.css)         | ✅ Yes                |
+| `.ease-chip` (chip.css)                  | ✅ Yes                |
+| `.ease-tab` (tabs.css)                   | ✅ Yes                |
+| `.ease-card-hover` (cards.css)           | ✅ Yes                |
+| `.ease-marquee` (ease-marquee.css)       | ✅ Yes                |
+| **`.ease-sidebar-toggle`** (sidebar.css) | **❌ Missing**        |
 
 This fix follows the exact same pattern (`outline: 2px solid var(--ease-color-primary); outline-offset: 3px`) used across the entire framework, ensuring visual consistency and WCAG 2.1 SC 2.4.7 (Focus Visible) compliance.

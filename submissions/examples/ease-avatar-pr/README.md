@@ -19,20 +19,13 @@ Avatar component with online/offline/busy status indicator dot.
 ## Usage
 
 ```html
-&lt;!-- Basic avatar with status --&gt;
-&lt;div class="avatar-pr avatar-pr-md"&gt;
-  JD
-  &lt;span class="avatar-pr-status avatar-pr-online"&gt;&lt;/span&gt;
+&lt;!-- Basic avatar with status --&gt; &lt;div class="avatar-pr
+avatar-pr-md"&gt; JD &lt;span class="avatar-pr-status
+avatar-pr-online"&gt;&lt;/span&gt; &lt;/div&gt; &lt;!-- With user info --&gt;
+&lt;div class="avatar-pr-wrapper"&gt; &lt;div class="avatar-pr avatar-pr-md"&gt;
+JD &lt;span class="avatar-pr-status avatar-pr-online"&gt;&lt;/span&gt;
+&lt;/div&gt; &lt;div class="avatar-pr-info"&gt; &lt;span
+class="avatar-pr-name"&gt;John Doe&lt;/span&gt; &lt;span
+class="avatar-pr-role"&gt;Frontend Developer&lt;/span&gt; &lt;/div&gt;
 &lt;/div&gt;
-
-&lt;!-- With user info --&gt;
-&lt;div class="avatar-pr-wrapper"&gt;
-  &lt;div class="avatar-pr avatar-pr-md"&gt;
-    JD
-    &lt;span class="avatar-pr-status avatar-pr-online"&gt;&lt;/span&gt;
-  &lt;/div&gt;
-  &lt;div class="avatar-pr-info"&gt;
-    &lt;span class="avatar-pr-name"&gt;John Doe&lt;/span&gt;
-    &lt;span class="avatar-pr-role"&gt;Frontend Developer&lt;/span&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+```

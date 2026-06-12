@@ -11,7 +11,9 @@ Demonstrates animated `scrollbar-width` and `scrollbar-color` CSS properties —
 .element {
   scrollbar-width: thin;
   scrollbar-color: #6c63ff #1e293b;
-  transition: scrollbar-width .3s, scrollbar-color .3s;
+  transition:
+    scrollbar-width 0.3s,
+    scrollbar-color 0.3s;
 }
 .element:hover {
   scrollbar-width: auto;
@@ -19,12 +21,20 @@ Demonstrates animated `scrollbar-width` and `scrollbar-color` CSS properties —
 }
 
 /* Animated color via @property */
-@property --thumb { syntax: '<color>'; initial-value: #6c63ff; inherits: false; }
+@property --thumb {
+  syntax: "<color>";
+  initial-value: #6c63ff;
+  inherits: false;
+}
 .element {
   scrollbar-color: var(--thumb) #1e293b;
   animation: pulse 2s ease-in-out infinite alternate;
 }
-@keyframes pulse { to { --thumb: #c084fc; } }
+@keyframes pulse {
+  to {
+    --thumb: #c084fc;
+  }
+}
 ```
 
 ## Why is it useful?

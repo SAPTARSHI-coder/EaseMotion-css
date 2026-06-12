@@ -14,7 +14,7 @@ Demonstrates the `@media (prefers-contrast)` CSS media query — adjusting anima
 @media (prefers-contrast: more) {
   .element {
     animation-duration: 1.5s; /* faster for better feedback */
-    border: 3px solid white;   /* stronger visual boundary */
+    border: 3px solid white; /* stronger visual boundary */
   }
 }
 

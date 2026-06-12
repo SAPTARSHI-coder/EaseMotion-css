@@ -10,11 +10,11 @@ Infinite 360-degree rotation animation. A fundamental spinner/loader pattern dis
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-rotate` | Default rotation (1.2s, linear, infinite) |
-| `ease-rotate-fast` | Faster rotation |
-| `ease-rotate-slow` | Slower rotation |
+| Class              | Description                               |
+| ------------------ | ----------------------------------------- |
+| `ease-rotate`      | Default rotation (1.2s, linear, infinite) |
+| `ease-rotate-fast` | Faster rotation                           |
+| `ease-rotate-slow` | Slower rotation                           |
 
 ## Notes
 

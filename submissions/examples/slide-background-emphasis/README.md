@@ -8,19 +8,13 @@ A pure CSS looping gradient slide animation that sweeps a linear gradient horizo
 
 ```html
 <!-- Default purple-blue gradient -->
-<button class="slide-bg-btn slide-bg-emphasis">
-  Slide Effect
-</button>
+<button class="slide-bg-btn slide-bg-emphasis">Slide Effect</button>
 
 <!-- Cyan-teal variant -->
-<button class="slide-bg-btn slide-bg-emphasis-cyan">
-  Cyan Variant
-</button>
+<button class="slide-bg-btn slide-bg-emphasis-cyan">Cyan Variant</button>
 
 <!-- Pink-orange variant -->
-<button class="slide-bg-btn slide-bg-emphasis-pink">
-  Pink Variant
-</button>
+<button class="slide-bg-btn slide-bg-emphasis-pink">Pink Variant</button>
 ```
 
 Apply `.slide-bg-emphasis` (or variant classes) to any button or container element with `.slide-bg-btn` base styling.

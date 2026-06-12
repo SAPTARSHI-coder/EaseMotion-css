@@ -23,15 +23,13 @@ Pure-CSS collapsible sections with smooth `max-height` animation. Supports both 
 ```html
 <div class="ease-accordion">
   <div class="ease-accordion-item">
-    <input type="checkbox" id="panel-1" class="ease-accordion-toggle" checked>
+    <input type="checkbox" id="panel-1" class="ease-accordion-toggle" checked />
     <label for="panel-1" class="ease-accordion-header">
       <span>Title</span>
       <span class="ease-accordion-icon"></span>
     </label>
     <div class="ease-accordion-body">
-      <div class="ease-accordion-body-inner">
-        Content goes here...
-      </div>
+      <div class="ease-accordion-body-inner">Content goes here...</div>
     </div>
   </div>
   <!-- more items -->
@@ -43,7 +41,13 @@ Pure-CSS collapsible sections with smooth `max-height` animation. Supports both 
 ```html
 <div class="ease-accordion">
   <div class="ease-accordion-item">
-    <input type="radio" id="step-1" name="my-accordion" class="ease-accordion-toggle" checked>
+    <input
+      type="radio"
+      id="step-1"
+      name="my-accordion"
+      class="ease-accordion-toggle"
+      checked
+    />
     <label for="step-1" class="ease-accordion-header">...</label>
     <div class="ease-accordion-body">...</div>
   </div>
@@ -55,10 +59,10 @@ Pure-CSS collapsible sections with smooth `max-height` animation. Supports both 
 
 ## CSS Variables
 
-| Variable              | Description                              |
-|-----------------------|------------------------------------------|
+| Variable                       | Description                                                        |
+| ------------------------------ | ------------------------------------------------------------------ |
 | `--ease-accordion-item-border` | Override the item border (default uses `--ease-color-neutral-200`) |
-| `--ease-accordion-item-bg`     | Override the item background            |
+| `--ease-accordion-item-bg`     | Override the item background                                       |
 
 ---
 

@@ -1,23 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { JSDOM } from 'jsdom';
-import fs from 'fs';
-import path from 'path';
+import { describe, it, expect, beforeEach } from "vitest";
+import { JSDOM } from "jsdom";
+import fs from "fs";
+import path from "path";
 
 // Simulate loading the core script
-const scriptPath = path.resolve(__dirname, '../../../core/modal.js');
-let scriptCode = '';
+const scriptPath = path.resolve(__dirname, "../../../core/modal.js");
+let scriptCode = "";
 if (fs.existsSync(scriptPath)) {
-  scriptCode = fs.readFileSync(scriptPath, 'utf-8');
+  scriptCode = fs.readFileSync(scriptPath, "utf-8");
 }
 
-describe('Modal Component JavaScript Logic', () => {
+describe("Modal Component JavaScript Logic", () => {
   let dom;
   let window;
   let document;
 
   beforeEach(() => {
     // Setup a mock DOM environment
-    dom = new JSDOM(`
+    dom = new JSDOM(
+      `
       <!DOCTYPE html>
       <body>
         <div id="demo-modal" class="ease-modal-overlay">
@@ -28,46 +29,48 @@ describe('Modal Component JavaScript Logic', () => {
         </div>
         <a href="#demo-modal" id="trigger">Open</a>
       </body>
-    `, { runScripts: "dangerously" });
-    
+    `,
+      { runScripts: "dangerously" }
+    );
+
     window = dom.window;
     document = window.document;
 
     // Inject the actual framework script into the DOM
     if (scriptCode) {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       script.textContent = scriptCode;
       document.body.appendChild(script);
     }
   });
 
-  it('toggles the is-active class based on location hash', () => {
-    const overlay = document.querySelector('#demo-modal');
-    
+  it("toggles the is-active class based on location hash", () => {
+    const overlay = document.querySelector("#demo-modal");
+
     // Simulate user clicking link to #demo-modal
-    window.location.hash = '#demo-modal';
-    const event = new window.Event('hashchange');
+    window.location.hash = "#demo-modal";
+    const event = new window.Event("hashchange");
     window.dispatchEvent(event);
 
-    expect(overlay.classList.contains('is-active')).toBe(true);
-    expect(document.body.style.overflow).toBe('hidden');
+    expect(overlay.classList.contains("is-active")).toBe(true);
+    expect(document.body.style.overflow).toBe("hidden");
 
     // Simulate closing
-    window.location.hash = '';
+    window.location.hash = "";
     window.dispatchEvent(event);
 
-    expect(overlay.classList.contains('is-active')).toBe(false);
-    expect(document.body.style.overflow).toBe('');
+    expect(overlay.classList.contains("is-active")).toBe(false);
+    expect(document.body.style.overflow).toBe("");
   });
 
-  it('traps focus correctly when Escape is pressed', () => {
-    window.location.hash = '#demo-modal';
-    window.dispatchEvent(new window.Event('hashchange'));
+  it("traps focus correctly when Escape is pressed", () => {
+    window.location.hash = "#demo-modal";
+    window.dispatchEvent(new window.Event("hashchange"));
 
     // Trigger escape
-    const escEvent = new window.KeyboardEvent('keydown', { key: 'Escape' });
+    const escEvent = new window.KeyboardEvent("keydown", { key: "Escape" });
     document.dispatchEvent(escEvent);
 
-    expect(window.location.hash).toBe('');
+    expect(window.location.hash).toBe("");
   });
 });

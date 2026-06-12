@@ -7,9 +7,7 @@ Provides a centralized dashboard for evaluating deployment readiness, validation
 ## How is it used?
 
 ```html
-<div class="stage completed">
-    QA Validation
-</div>
+<div class="stage completed">QA Validation</div>
 ```
 
 ## Why is it useful?

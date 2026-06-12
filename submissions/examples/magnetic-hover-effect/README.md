@@ -5,6 +5,7 @@ Creates a "magnetic" pull effect where the element smoothly pops out and floats 
 
 **How is it used?**
 Apply the class to a button or card:
+
 ```html
 <button class="magnetic-button">Hover Me</button>
 ```

@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring secrets, certificate expiration,
 
 ```html
 <div class="secret-card healthy">
-    <h3>Production API Keys</h3>
+  <h3>Production API Keys</h3>
 </div>
 ```
 

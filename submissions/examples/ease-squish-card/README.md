@@ -1,14 +1,8 @@
 \# ease-squish-card
 
-
-
 Squish animation effect for card emphasis on click.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Speed |
 
@@ -24,17 +18,8 @@ Squish animation effect for card emphasis on click.
 
 | `ease-squish-bounce` | Squish with bounce | 0.5s |
 
-
-
 \## Usage
 
-
-
 ```html
-
-<div class="ease-squish">
-
-&#x20;   Click to squish
-
-</div>
-
+<div class="ease-squish">&#x20; Click to squish</div>
+```

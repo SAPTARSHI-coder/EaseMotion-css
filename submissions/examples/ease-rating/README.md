@@ -16,20 +16,20 @@ A CSS-only star rating component built using radio inputs and reverse sibling se
 
 ```html
 <div class="ease-rating">
-    <input type="radio" id="star5" name="rating">
-    <label for="star5">★</label>
+  <input type="radio" id="star5" name="rating" />
+  <label for="star5">★</label>
 
-    <input type="radio" id="star4" name="rating">
-    <label for="star4">★</label>
+  <input type="radio" id="star4" name="rating" />
+  <label for="star4">★</label>
 
-    <input type="radio" id="star3" name="rating">
-    <label for="star3">★</label>
+  <input type="radio" id="star3" name="rating" />
+  <label for="star3">★</label>
 
-    <input type="radio" id="star2" name="rating">
-    <label for="star2">★</label>
+  <input type="radio" id="star2" name="rating" />
+  <label for="star2">★</label>
 
-    <input type="radio" id="star1" name="rating">
-    <label for="star1">★</label>
+  <input type="radio" id="star1" name="rating" />
+  <label for="star1">★</label>
 </div>
 ```
 

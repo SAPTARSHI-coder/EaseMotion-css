@@ -4,8 +4,14 @@
 Animates a stat number from zero to its configured target value when the card scrolls into view.
 
 **How is it used?**
+
 ```html
-<article class="count-card" data-target="95" data-suffix="%" data-ease="ease-out">
+<article
+  class="count-card"
+  data-target="95"
+  data-suffix="%"
+  data-ease="ease-out"
+>
   <span class="count-label">Retention lift</span>
   <strong class="count-number"></strong>
 </article>

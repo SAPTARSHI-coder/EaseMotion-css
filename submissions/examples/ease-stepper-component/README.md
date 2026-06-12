@@ -11,6 +11,7 @@
 The **Progress Stepper** is a highly interactive, responsive multi-step wizard component designed for professional SaaS onboarding flows, checkout processes, and administrative registration panels. Built entirely in HTML and CSS with zero JavaScript, it visualizes complex process states using fluid, hardware-accelerated animations.
 
 ### Core Visual Capabilities:
+
 - **Three Core State Indicators:**
   - **Completed (`--done`):** Displays a vibrant emerald check circle with a subtle ambient radial glow.
   - **Active / Current (`--active`):** Showcases a pulsing indigo border using a breathing timing cycle to signal "in progress."
@@ -29,9 +30,11 @@ To integrate this onboarding progress stepper inside your application, follow th
 
 ```html
 <nav class="ease-stepper" aria-label="Onboarding Timeline">
-
   <!-- Step 1: Done -->
-  <div class="ease-stepper__step ease-stepper__step--done ease-step-wrapper--delay-0" tabindex="0">
+  <div
+    class="ease-stepper__step ease-stepper__step--done ease-step-wrapper--delay-0"
+    tabindex="0"
+  >
     <div class="ease-stepper__bullet">✓</div>
     <div class="ease-stepper__label">
       <span class="ease-stepper__name">Account Setup</span>
@@ -40,10 +43,17 @@ To integrate this onboarding progress stepper inside your application, follow th
   </div>
 
   <!-- Connector Line Segment (Completed) -->
-  <div class="ease-stepper__connector ease-stepper__connector--done" aria-hidden="true"></div>
+  <div
+    class="ease-stepper__connector ease-stepper__connector--done"
+    aria-hidden="true"
+  ></div>
 
   <!-- Step 2: Active -->
-  <div class="ease-stepper__step ease-stepper__step--active ease-step-wrapper--delay-1" tabindex="0" aria-current="step">
+  <div
+    class="ease-stepper__step ease-stepper__step--active ease-step-wrapper--delay-1"
+    tabindex="0"
+    aria-current="step"
+  >
     <div class="ease-stepper__bullet">2</div>
     <div class="ease-stepper__label">
       <span class="ease-stepper__name">Billing Info</span>
@@ -52,17 +62,22 @@ To integrate this onboarding progress stepper inside your application, follow th
   </div>
 
   <!-- Connector Line Segment (Pending) -->
-  <div class="ease-stepper__connector ease-stepper__connector" aria-hidden="true"></div>
+  <div
+    class="ease-stepper__connector ease-stepper__connector"
+    aria-hidden="true"
+  ></div>
 
   <!-- Step 3: Pending -->
-  <div class="ease-stepper__step ease-stepper__step--pending ease-step-wrapper--delay-2" tabindex="0">
+  <div
+    class="ease-stepper__step ease-stepper__step--pending ease-step-wrapper--delay-2"
+    tabindex="0"
+  >
     <div class="ease-stepper__bullet">🔒</div>
     <div class="ease-stepper__label">
       <span class="ease-stepper__name">Confirm Launch</span>
       <span class="ease-stepper__status">Upcoming</span>
     </div>
   </div>
-
 </nav>
 ```
 

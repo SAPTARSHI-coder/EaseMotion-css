@@ -13,6 +13,7 @@ Open `demo.html` in a browser. Enable `prefers-reduced-motion: reduce` in your O
 `will-change` tells the browser to keep the element on a separate compositor layer. Keeping it active on low-powered devices wastes GPU memory and battery — exactly the audience that benefits from reduced motion.
 
 The fix should be applied to `components/scroll-progress.css`:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-scroll-progress {

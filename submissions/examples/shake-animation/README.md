@@ -11,17 +11,13 @@ Provides reusable horizontal and vertical shake animations that can be used to d
 Horizontal shake:
 
 ```html
-<div class="shake-horizontal">
-    Content
-</div>
+<div class="shake-horizontal">Content</div>
 ```
 
 Vertical shake:
 
 ```html
-<div class="shake-vertical">
-    Content
-</div>
+<div class="shake-vertical">Content</div>
 ```
 
 ---

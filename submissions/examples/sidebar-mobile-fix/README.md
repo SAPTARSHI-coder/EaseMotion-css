@@ -11,10 +11,10 @@ always skipped, causing an instant snap with no animation.
 
 ## Fix
 
-| Property | Before | After |
-|---|---|---|
-| Hidden state | `display: none` | `visibility: hidden` + `pointer-events: none` |
-| Open state | `display: block` | `visibility: visible` + `pointer-events: auto` |
+| Property     | Before           | After                                          |
+| ------------ | ---------------- | ---------------------------------------------- |
+| Hidden state | `display: none`  | `visibility: hidden` + `pointer-events: none`  |
+| Open state   | `display: block` | `visibility: visible` + `pointer-events: auto` |
 
 The element stays in the render tree in both states, so
 `transform: translateX()` transitions smoothly.

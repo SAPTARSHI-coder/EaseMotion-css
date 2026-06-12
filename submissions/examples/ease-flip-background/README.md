@@ -7,9 +7,7 @@ Adds a background flip animation that reveals a colored background on hover.
 ## How is it used?
 
 ```html
-<div class="flip-background">
-  Content
-</div>
+<div class="flip-background">Content</div>
 ```
 
 ## Why is it useful?

@@ -4,11 +4,11 @@ Submission proposing `.ease-leading-tight`, `.ease-leading-normal`, and `.ease-l
 
 ## Class Reference
 
-| Class | Token | Default Value | Best Used For |
-| --- | --- | --- | --- |
-| `.ease-leading-tight` | `--ease-leading-tight` | 1.25 | Display headings, compact UI |
-| `.ease-leading-normal` | `--ease-leading-normal` | 1.5 | Body text, general content |
-| `.ease-leading-loose` | `--ease-leading-loose` | 1.875 | Long-form reading, accessibility |
+| Class                  | Token                   | Default Value | Best Used For                    |
+| ---------------------- | ----------------------- | ------------- | -------------------------------- |
+| `.ease-leading-tight`  | `--ease-leading-tight`  | 1.25          | Display headings, compact UI     |
+| `.ease-leading-normal` | `--ease-leading-normal` | 1.5           | Body text, general content       |
+| `.ease-leading-loose`  | `--ease-leading-loose`  | 1.875         | Long-form reading, accessibility |
 
 ## Example
 

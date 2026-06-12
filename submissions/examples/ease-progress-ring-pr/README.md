@@ -29,26 +29,19 @@ The Ease Progress Ring component provides a circular progress indicator built en
 ### Available Progress Variants
 
 ```html
-progress-45
-progress-60
-progress-75
-progress-80
-progress-90
-progress-100
+progress-45 progress-60 progress-75 progress-80 progress-90 progress-100
 ```
 
 ### Size Variants
 
 ```html
-small
-large
+small large
 ```
 
 ### Color Variants
 
 ```html
-success
-danger
+success danger
 ```
 
 ---

@@ -7,13 +7,9 @@ Visualizes the Cyber Kill Chain framework, showing the sequential stages attacke
 ## How is it used?
 
 ```html
-<div class="stage exploit">
-    Exploitation
-</div>
+<div class="stage exploit">Exploitation</div>
 
-<div class="stage control">
-    Command & Control
-</div>
+<div class="stage control">Command & Control</div>
 ```
 
 ## Why is it useful?

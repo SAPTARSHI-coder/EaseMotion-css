@@ -8,7 +8,7 @@ Provides an interface where multiple AI agents present arguments, evaluate evide
 
 ```html
 <div class="agent-card">
-    <span class="role research">Research Agent</span>
+  <span class="role research">Research Agent</span>
 </div>
 ```
 

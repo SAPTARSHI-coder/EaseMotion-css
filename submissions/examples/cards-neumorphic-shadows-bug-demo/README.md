@@ -13,7 +13,10 @@ Lines 161-162 use hardcoded `rgba(15, 23, 42, 0.12)` and `rgba(255, 255, 255, 0.
 .ease-card-neumorphic {
   box-shadow:
     var(--ease-shadow-neumorphic-dark, 8px 8px 20px rgba(15, 23, 42, 0.12)),
-    var(--ease-shadow-neumorphic-light, -8px -8px 20px rgba(255, 255, 255, 0.78));
+    var(
+      --ease-shadow-neumorphic-light,
+      -8px -8px 20px rgba(255, 255, 255, 0.78)
+    );
 }
 ```
 

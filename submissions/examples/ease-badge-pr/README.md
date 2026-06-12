@@ -18,11 +18,8 @@ Status badge component with color variants and optional dot indicator.
 ## Usage
 
 ```html
-&lt;!-- With dot indicator --&gt;
-&lt;span class="badge-pr badge-pr-success"&gt;
-  &lt;span class="badge-pr-dot"&gt;&lt;/span&gt;
-  Active
-&lt;/span&gt;
-
-&lt;!-- Without dot --&gt;
-&lt;span class="badge-pr badge-pr-warning"&gt;Pending&lt;/span&gt;
+&lt;!-- With dot indicator --&gt; &lt;span class="badge-pr badge-pr-success"&gt;
+&lt;span class="badge-pr-dot"&gt;&lt;/span&gt; Active &lt;/span&gt; &lt;!--
+Without dot --&gt; &lt;span class="badge-pr
+badge-pr-warning"&gt;Pending&lt;/span&gt;
+```

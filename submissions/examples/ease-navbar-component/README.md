@@ -33,15 +33,17 @@ The Navbar Component is designed to be fully responsive out-of-the-box. It uses 
 <nav class="ease-navbar" id="main-nav">
   <!-- Brand / Logo -->
   <a href="#" class="ease-nav-brand">BrandLogo</a>
-  
+
   <!-- Mobile Toggle -->
   <button class="ease-nav-toggle" onclick="toggleNav('main-nav')">
     <span></span><span></span><span></span>
   </button>
-  
+
   <!-- Links -->
   <ul class="ease-nav-menu">
-    <li class="ease-nav-item"><a href="#" class="ease-nav-link active">Home</a></li>
+    <li class="ease-nav-item">
+      <a href="#" class="ease-nav-link active">Home</a>
+    </li>
     <li class="ease-nav-item">
       <a href="#" class="ease-nav-link">Dropdown ▾</a>
       <div class="ease-nav-dropdown-content">
@@ -50,7 +52,7 @@ The Navbar Component is designed to be fully responsive out-of-the-box. It uses 
       </div>
     </li>
   </ul>
-  
+
   <!-- Actions (Buttons) -->
   <div class="ease-nav-actions">
     <a href="#" class="ease-btn ease-btn-primary">Sign up</a>
@@ -65,7 +67,7 @@ Add this script to allow the mobile menu to open and close.
 ```javascript
 function toggleNav(navId) {
   const nav = document.getElementById(navId);
-  nav.classList.toggle('mobile-open');
+  nav.classList.toggle("mobile-open");
 }
 ```
 

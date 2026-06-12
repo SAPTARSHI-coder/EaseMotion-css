@@ -7,9 +7,7 @@ Adds a button entrance animation where the button rotates and scales into view.
 ## How is it used?
 
 ```html
-<button class="rotate-button-entrance">
-  Get Started
-</button>
+<button class="rotate-button-entrance">Get Started</button>
 ```
 
 ## Why is it useful?

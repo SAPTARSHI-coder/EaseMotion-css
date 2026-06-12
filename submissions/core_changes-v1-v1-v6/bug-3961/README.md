@@ -1,7 +1,9 @@
 # Fix #3961: Fix #3961: core/modal.js use CSS.escape() and remove blanket try-catch
 
 ### Proposed Change
+
 `core/modal.js` has a blanket `try-catch` in `checkModal()` that silently swallows ALL selector errors — including legitimate programmer mistakes (invalid hash syntax like `#bad..hash`).
+
 ```css
 (function(){
 'use strict';

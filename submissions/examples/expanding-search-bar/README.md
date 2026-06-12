@@ -37,8 +37,13 @@ No JavaScript. The expand/collapse is driven entirely by CSS:
   <label class="search__icon" for="navsearch" aria-label="Search">
     <!-- magnifier SVG -->
   </label>
-  <input id="navsearch" class="search__input" type="search"
-         name="q" placeholder="Search docs…" />
+  <input
+    id="navsearch"
+    class="search__input"
+    type="search"
+    name="q"
+    placeholder="Search docs…"
+  />
 </form>
 ```
 
@@ -66,10 +71,10 @@ expanding-search-bar/
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅ |
-| Firefox | ✅ |
-| Safari  | ✅ |
-| Edge    | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 > Note: the "stay open when text is present" behaviour uses `:has()`, supported
 > in all current evergreen browsers. The core focus-to-expand works everywhere

@@ -23,3 +23,4 @@ Additionally, this submission introduces robust visual compliance patches to res
 sticky-header/
 ├── demo.html    # Interactive dashboard hosting dark-theme and a11y test suites
 └── style.css    # Clean CSS workspace containing design tokens, components, and fixes
+```

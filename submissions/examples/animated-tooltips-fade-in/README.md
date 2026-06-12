@@ -3,6 +3,7 @@
 A clean, pure-CSS directional tooltip component system with micro-animations when hovering.
 
 ## Features
+
 - Direct hovering logic using CSS `:hover` states (zero JS dependencies).
 - Smooth position offset transitions utilizing `transform` properties.
 - Support for 4 positioning guidelines:
@@ -13,6 +14,7 @@ A clean, pure-CSS directional tooltip component system with micro-animations whe
 - Standardized triangle arrows pointing to the parent target.
 
 ## Usage
+
 Wrap the target button/link and the tooltip inside a container with `.em-tooltip-container`:
 
 ```html

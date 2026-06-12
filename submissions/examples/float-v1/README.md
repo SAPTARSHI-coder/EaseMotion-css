@@ -10,11 +10,11 @@ Gentle floating animation that slowly moves an element up and down. Perfect for 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-float` | Default float (3s loop, gentle) |
-| `ease-float-fast` | Faster float |
-| `ease-float-slow` | Slower float |
+| Class             | Description                     |
+| ----------------- | ------------------------------- |
+| `ease-float`      | Default float (3s loop, gentle) |
+| `ease-float-fast` | Faster float                    |
+| `ease-float-slow` | Slower float                    |
 
 ## Notes
 

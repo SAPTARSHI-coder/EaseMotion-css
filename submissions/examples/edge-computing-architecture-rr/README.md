@@ -7,13 +7,9 @@ Visualizes how data moves from edge devices through local and regional edge infr
 ## How is it used?
 
 ```html
-<div class="node edge">
-    Local Edge Node
-</div>
+<div class="node edge">Local Edge Node</div>
 
-<div class="node cloud">
-    Cloud Platform
-</div>
+<div class="node cloud">Cloud Platform</div>
 ```
 
 ## Why is it useful?

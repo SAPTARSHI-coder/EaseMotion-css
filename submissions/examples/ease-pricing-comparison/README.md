@@ -28,16 +28,16 @@ ease-pricing-comparison/
 
 ## Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-pricing-table` | Grid container for plan cards |
-| `.ease-pricing-card` | Individual pricing plan card |
-| `.ease-pricing-card.featured` | Highlighted recommended plan |
-| `.ease-plan-badge` | "Most Popular" badge |
-| `.ease-plan-name` | Plan title |
-| `.ease-plan-price` | Price display container |
-| `.price-amount` | Price number (has data-monthly / data-yearly) |
-| `.price-period` | "/month" or "/year" label |
-| `.ease-plan-desc` | Plan description |
-| `.ease-plan-features` | Feature list with check/cross icons |
-| `.ease-plan-btn` | CTA button (variants: `-primary`, `-outline`, `-ghost`) |
+| Class                         | Purpose                                                 |
+| ----------------------------- | ------------------------------------------------------- |
+| `.ease-pricing-table`         | Grid container for plan cards                           |
+| `.ease-pricing-card`          | Individual pricing plan card                            |
+| `.ease-pricing-card.featured` | Highlighted recommended plan                            |
+| `.ease-plan-badge`            | "Most Popular" badge                                    |
+| `.ease-plan-name`             | Plan title                                              |
+| `.ease-plan-price`            | Price display container                                 |
+| `.price-amount`               | Price number (has data-monthly / data-yearly)           |
+| `.price-period`               | "/month" or "/year" label                               |
+| `.ease-plan-desc`             | Plan description                                        |
+| `.ease-plan-features`         | Feature list with check/cross icons                     |
+| `.ease-plan-btn`              | CTA button (variants: `-primary`, `-outline`, `-ghost`) |

@@ -3,7 +3,8 @@
 **What does this do?**  
 Adds a quick squish-and-rebound animation for text-sized interactive elements such as buttons, links, and chips.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <button class="squish-text">Save Changes</button>
 <a class="squish-text" href="/docs">Read the docs</a>

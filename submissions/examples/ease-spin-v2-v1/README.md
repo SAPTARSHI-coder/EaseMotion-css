@@ -5,6 +5,7 @@ Applies a continuous 360° rotation loop to any element. Ideal for loading
 spinners and decorative rotating icons.
 
 **How is it used?**
+
 ```html
 <!-- Basic usage -->
 <div class="ease-spin"></div>
@@ -18,10 +19,10 @@ spinners and decorative rotating icons.
 
 **CSS Custom Properties:**
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-spin-speed` | `1s` | Duration of one full rotation |
-| `--ease-spin-direction` | `normal` | `normal` or `reverse` |
+| Property                | Default  | Description                   |
+| ----------------------- | -------- | ----------------------------- |
+| `--ease-spin-speed`     | `1s`     | Duration of one full rotation |
+| `--ease-spin-direction` | `normal` | `normal` or `reverse`         |
 
 **Why is it useful?**
 Loading spinners and rotating decorative elements are among the most

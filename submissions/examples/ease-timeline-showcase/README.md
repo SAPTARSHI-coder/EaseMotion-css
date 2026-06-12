@@ -34,19 +34,25 @@ To set up a timeline, use the following HTML skeleton:
 ```html
 <!-- Main timeline container -->
 <div class="ease-timeline ease-timeline-gradient">
-
   <!-- First item (will align card to the left, date to the right) -->
   <div class="ease-timeline-item">
     <div class="ease-timeline-dot ease-dot-primary">
       <!-- SVG Icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <circle cx="12" cy="12" r="10"></circle>
       </svg>
     </div>
     <span class="ease-timeline-date">Q1 2026</span>
     <div class="ease-timeline-card ease-timeline-card-accent">
       <h3 class="ease-timeline-title">Project Kickoff</h3>
-      <p class="ease-timeline-desc">Initial repository setup and tech stack selection.</p>
+      <p class="ease-timeline-desc">
+        Initial repository setup and tech stack selection.
+      </p>
     </div>
   </div>
 
@@ -54,17 +60,23 @@ To set up a timeline, use the following HTML skeleton:
   <div class="ease-timeline-item">
     <div class="ease-timeline-dot ease-dot-info">
       <!-- SVG Icon -->
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
         <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
       </svg>
     </div>
     <span class="ease-timeline-date">Q2 2026</span>
     <div class="ease-timeline-card ease-timeline-card-accent">
       <h3 class="ease-timeline-title">Design Phase</h3>
-      <p class="ease-timeline-desc">Created the core visual tokens and components list.</p>
+      <p class="ease-timeline-desc">
+        Created the core visual tokens and components list.
+      </p>
     </div>
   </div>
-
 </div>
 ```
 
@@ -76,17 +88,18 @@ You can customize the timeline parameters locally or globally using CSS custom v
 
 ### Layout Variables
 
-| CSS Custom Variable | Purpose | Default Value |
-| :--- | :--- | :--- |
-| `--ease-timeline-line-width` | Controls the thickness of the vertical line | `4px` |
+| CSS Custom Variable          | Purpose                                            | Default Value                     |
+| :--------------------------- | :------------------------------------------------- | :-------------------------------- |
+| `--ease-timeline-line-width` | Controls the thickness of the vertical line        | `4px`                             |
 | `--ease-timeline-line-color` | Controls the fallback background color of the line | `#e2e8f0` / `#1e293b` (dark mode) |
-| `--ease-timeline-dot-size` | Controls the width and height of the track circles | `42px` |
-| `--ease-timeline-dot-border` | Overrides the border color of the track circles | `var(--ease-color-primary)` |
-| `--ease-timeline-gap` | Space between subsequent timeline items | `3rem` |
+| `--ease-timeline-dot-size`   | Controls the width and height of the track circles | `42px`                            |
+| `--ease-timeline-dot-border` | Overrides the border color of the track circles    | `var(--ease-color-primary)`       |
+| `--ease-timeline-gap`        | Space between subsequent timeline items            | `3rem`                            |
 
 ### Customizing Colors
 
 To change the timeline dot colors, you can use one of the pre-built helper classes:
+
 - `.ease-dot-primary`
 - `.ease-dot-success`
 - `.ease-dot-warning`

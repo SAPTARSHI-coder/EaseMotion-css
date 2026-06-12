@@ -14,11 +14,11 @@ CSS Variables provide a scalable solution by allowing animation behavior to be c
 
 Benefits include:
 
-* Consistent animation behavior across an application
-* Easy theme customization
-* Reduced maintenance overhead
-* Better design system integration
-* Improved accessibility workflows
+- Consistent animation behavior across an application
+- Easy theme customization
+- Reduced maintenance overhead
+- Better design system integration
+- Improved accessibility workflows
 
 ---
 
@@ -88,9 +88,7 @@ Example:
 ```
 
 ```html
-<div class="hero-card em-fade-in">
-  Hero Content
-</div>
+<div class="hero-card em-fade-in">Hero Content</div>
 ```
 
 The animation duration for this component becomes 1200ms while all other elements continue using global settings.
@@ -102,105 +100,79 @@ The animation duration for this component becomes 1200ms while all other element
 ### Fade In
 
 ```html
-<div class="em-fade-in">
-  Fade In Example
-</div>
+<div class="em-fade-in">Fade In Example</div>
 ```
 
 ### Fade Out
 
 ```html
-<div class="em-fade-out">
-  Fade Out Example
-</div>
+<div class="em-fade-out">Fade Out Example</div>
 ```
 
 ### Slide Up
 
 ```html
-<div class="em-slide-up">
-  Slide Up Example
-</div>
+<div class="em-slide-up">Slide Up Example</div>
 ```
 
 ### Slide Down
 
 ```html
-<div class="em-slide-down">
-  Slide Down Example
-</div>
+<div class="em-slide-down">Slide Down Example</div>
 ```
 
 ### Slide Left
 
 ```html
-<div class="em-slide-left">
-  Slide Left Example
-</div>
+<div class="em-slide-left">Slide Left Example</div>
 ```
 
 ### Slide Right
 
 ```html
-<div class="em-slide-right">
-  Slide Right Example
-</div>
+<div class="em-slide-right">Slide Right Example</div>
 ```
 
 ### Zoom In
 
 ```html
-<div class="em-zoom-in">
-  Zoom In Example
-</div>
+<div class="em-zoom-in">Zoom In Example</div>
 ```
 
 ### Zoom Out
 
 ```html
-<div class="em-zoom-out">
-  Zoom Out Example
-</div>
+<div class="em-zoom-out">Zoom Out Example</div>
 ```
 
 ### Bounce
 
 ```html
-<div class="em-bounce">
-  Bounce Example
-</div>
+<div class="em-bounce">Bounce Example</div>
 ```
 
 ### Shake
 
 ```html
-<div class="em-shake">
-  Shake Example
-</div>
+<div class="em-shake">Shake Example</div>
 ```
 
 ### Pulse
 
 ```html
-<div class="em-pulse">
-  Pulse Example
-</div>
+<div class="em-pulse">Pulse Example</div>
 ```
 
 ### Spin
 
 ```html
-<div class="em-spin">
-  Spin Example
-</div>
+<div class="em-spin">Spin Example</div>
 ```
 
 ### Flip
 
 ```html
-<div class="em-flip">
-  Flip Example
-</div>
+<div class="em-flip">Flip Example</div>
 ```
 
 ---
@@ -315,8 +287,7 @@ The animation duration for this component becomes 1200ms while all other element
 
 ```css
 .bounce-demo {
-  --easemotion-easing:
-    cubic-bezier(.34,1.56,.64,1);
+  --easemotion-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 ```
 
@@ -324,8 +295,7 @@ The animation duration for this component becomes 1200ms while all other element
 
 ```css
 .spring-demo {
-  --easemotion-easing:
-    cubic-bezier(.175,.885,.32,1.275);
+  --easemotion-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 ```
 
@@ -349,11 +319,11 @@ Variables can be combined to create unique motion patterns.
 
 The demo includes a playground section that demonstrates:
 
-* Duration customization
-* Delay customization
-* Easing customization
-* Variable combinations
-* Animation previews
+- Duration customization
+- Delay customization
+- Easing customization
+- Variable combinations
+- Animation previews
 
 This allows developers to experiment with values before integrating them into applications.
 
@@ -366,7 +336,7 @@ EaseMotion respects the user's reduced motion preferences.
 ```css
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: .01ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
 }
@@ -380,11 +350,11 @@ This helps reduce excessive motion for users who prefer minimal animations.
 
 | Browser | Support |
 | ------- | ------- |
-| Chrome  | ✅       |
-| Edge    | ✅       |
-| Firefox | ✅       |
-| Safari  | ✅       |
-| Opera   | ✅       |
+| Chrome  | ✅      |
+| Edge    | ✅      |
+| Firefox | ✅      |
+| Safari  | ✅      |
+| Opera   | ✅      |
 
 CSS Variables are supported in all modern browsers.
 
@@ -474,11 +444,11 @@ Check for component-level overrides that may be replacing global values.
 
 Potential improvements include:
 
-* Direction variables
-* Staggered animations
-* Motion presets
-* Theme-specific animation tokens
-* Runtime animation controls
+- Direction variables
+- Staggered animations
+- Motion presets
+- Theme-specific animation tokens
+- Runtime animation controls
 
 ---
 

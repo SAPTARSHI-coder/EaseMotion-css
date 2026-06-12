@@ -16,6 +16,7 @@ The `.ease-skeleton-shimmer` and `.ease-skeleton-pulse` classes use `var(--ease-
 ## Expected
 
 Every `var()` should include a fallback:
+
 - `var(--ease-color-neutral-100, #f1f5f9)`
 - `var(--ease-color-neutral-200, #e2e8f0)`
 

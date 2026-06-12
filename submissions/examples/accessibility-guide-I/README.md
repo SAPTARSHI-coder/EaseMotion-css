@@ -1,26 +1,25 @@
- 
 # Accessibility Guide - Version I
 
 A comprehensive accessibility guide for using EaseMotion CSS inclusively.
 
 ## Topics Covered
 
-| Topic | Description |
-|-------|-------------|
-| `prefers-reduced-motion` | Respect user motion preferences |
-| `ease-sr-only` | Screen reader only text |
-| Color Contrast | WCAG 2.1 AA guidelines (4.5:1) |
-| ARIA Attributes | Accessible Rich Internet Applications |
-| Focus Indicators | Never remove focus outlines |
-| Semantic HTML | Use proper HTML elements |
+| Topic                    | Description                           |
+| ------------------------ | ------------------------------------- |
+| `prefers-reduced-motion` | Respect user motion preferences       |
+| `ease-sr-only`           | Screen reader only text               |
+| Color Contrast           | WCAG 2.1 AA guidelines (4.5:1)        |
+| ARIA Attributes          | Accessible Rich Internet Applications |
+| Focus Indicators         | Never remove focus outlines           |
+| Semantic HTML            | Use proper HTML elements              |
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description                     |
+| --------------------------- | ------------------------------- |
 | 📄 [demo.html](./demo.html) | Interactive accessibility guide |
-| 🎨 [style.css](./style.css) | Guide styling |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Guide styling                   |
+| 📖 [README.md](./README.md) | Documentation                   |
 
 ## Key Takeaways
 

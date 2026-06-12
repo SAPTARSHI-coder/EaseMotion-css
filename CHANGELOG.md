@@ -104,4 +104,4 @@ See [VISION.md](./VISION.md) for the long-term direction.
 
 ---
 
-*Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)*
+_Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)_

@@ -7,9 +7,7 @@ Provides a visual interface for monitoring event producers, brokers, topics, con
 ## How is it used?
 
 ```html
-<div class="node broker">
-    Event Broker
-</div>
+<div class="node broker">Event Broker</div>
 ```
 
 ## Why is it useful?

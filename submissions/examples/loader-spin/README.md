@@ -10,11 +10,11 @@ Classic spinning border loader. The most widely recognized loading indicator pat
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-loader-spin` | Default spinning loader |
-| `ease-loader-spin-sm` | Small variant |
-| `ease-loader-spin-lg` | Large variant |
+| Class                 | Description             |
+| --------------------- | ----------------------- |
+| `ease-loader-spin`    | Default spinning loader |
+| `ease-loader-spin-sm` | Small variant           |
+| `ease-loader-spin-lg` | Large variant           |
 
 ## Notes
 

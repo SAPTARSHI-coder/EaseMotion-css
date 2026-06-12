@@ -3,14 +3,21 @@
 1. **What does this do?** Provides a responsive data table component with striped rows, bordered cells, hover highlighting, and a compact (small) variant — all pure CSS with horizontal scroll support via `.table-wrapper`.
 
 2. **How is it used?**
+
    ```html
    <div class="table-wrapper">
      <table class="table">
        <thead>
-         <tr><th>Name</th><th>Email</th></tr>
+         <tr>
+           <th>Name</th>
+           <th>Email</th>
+         </tr>
        </thead>
        <tbody>
-         <tr><td>Alice</td><td>alice@example.com</td></tr>
+         <tr>
+           <td>Alice</td>
+           <td>alice@example.com</td>
+         </tr>
        </tbody>
      </table>
    </div>

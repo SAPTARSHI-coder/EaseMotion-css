@@ -13,6 +13,7 @@ Open `demo.html` in a browser. Enable `prefers-reduced-motion: reduce` in your O
 WCAG 2.1 SC 2.3.3 requires all non-essential motion to cease under `prefers-reduced-motion: reduce`. Every other decorative-animation component has a guard — badges is an inconsistent gap.
 
 The fix should be applied to `components/badges.css`:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-badge-pulse::after {

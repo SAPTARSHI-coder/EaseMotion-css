@@ -12,22 +12,22 @@ Smooth 3D perspective tilt effect on hover using CSS `perspective` and `rotateX`
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                 | Description                             |
+| --------------------- | --------------------------------------- |
 | `ease-tilt-container` | Required parent for perspective context |
-| `ease-tilt` | Default tilt (rotateY left) |
-| `ease-tilt-left` | Tilt to the left |
-| `ease-tilt-right` | Tilt to the right |
-| `ease-tilt-up` | Tilt upward |
-| `ease-tilt-down` | Tilt downward |
-| `ease-tilt-subtle` | 6° rotation |
-| `ease-tilt-hard` | 20° rotation |
-| `ease-tilt-scale` | Adds scale(1.05) + shadow on hover |
+| `ease-tilt`           | Default tilt (rotateY left)             |
+| `ease-tilt-left`      | Tilt to the left                        |
+| `ease-tilt-right`     | Tilt to the right                       |
+| `ease-tilt-up`        | Tilt upward                             |
+| `ease-tilt-down`      | Tilt downward                           |
+| `ease-tilt-subtle`    | 6° rotation                             |
+| `ease-tilt-hard`      | 20° rotation                            |
+| `ease-tilt-scale`     | Adds scale(1.05) + shadow on hover      |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property          | Default | Description          |
+| ----------------- | ------- | -------------------- |
 | `--ease-tilt-deg` | `12deg` | Tilt rotation degree |
 
 ## Notes

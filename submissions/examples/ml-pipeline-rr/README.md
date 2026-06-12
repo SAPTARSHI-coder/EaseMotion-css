@@ -8,11 +8,11 @@ Visualizes the complete machine learning lifecycle from data collection to deplo
 
 ```html
 <div class="stage training">
-    <h3>Training</h3>
+  <h3>Training</h3>
 </div>
 
 <div class="stage deployment">
-    <h3>Deployment</h3>
+  <h3>Deployment</h3>
 </div>
 ```
 

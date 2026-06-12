@@ -1,30 +1,29 @@
- 
 # Skew on Hover Animation
 
 Element skews horizontally or vertically on hover — dynamic and playful effect.
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description      |
+| --------------------------- | ---------------- |
 | 📄 [demo.html](./demo.html) | Interactive demo |
-| 🎨 [style.css](./style.css) | Skew styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Skew styles      |
+| 📖 [README.md](./README.md) | Documentation    |
 
 ## Classes
 
-| Class | Skew | Axis | Speed |
-|-------|------|------|-------|
-| `ease-skew-hover` | 10° | X | 0.3s |
-| `ease-skew-x-5/10/15/20` | 5-20° | X | 0.3s |
-| `ease-skew-y-5/10/15/20` | 5-20° | Y | 0.3s |
-| `ease-skew-xy-5/10/15` | 5-15° | Both | 0.3s |
-| `ease-skew-left` | -15° | X | 0.3s |
-| `ease-skew-right` | 15° | X | 0.3s |
-| `ease-skew-up` | -15° | Y | 0.3s |
-| `ease-skew-down` | 15° | Y | 0.3s |
-| `ease-skew-x-10-fast` | 10° | X | 0.15s |
-| `ease-skew-x-10-slow` | 10° | X | 0.6s |
+| Class                    | Skew  | Axis | Speed |
+| ------------------------ | ----- | ---- | ----- |
+| `ease-skew-hover`        | 10°   | X    | 0.3s  |
+| `ease-skew-x-5/10/15/20` | 5-20° | X    | 0.3s  |
+| `ease-skew-y-5/10/15/20` | 5-20° | Y    | 0.3s  |
+| `ease-skew-xy-5/10/15`   | 5-15° | Both | 0.3s  |
+| `ease-skew-left`         | -15°  | X    | 0.3s  |
+| `ease-skew-right`        | 15°   | X    | 0.3s  |
+| `ease-skew-up`           | -15°  | Y    | 0.3s  |
+| `ease-skew-down`         | 15°   | Y    | 0.3s  |
+| `ease-skew-x-10-fast`    | 10°   | X    | 0.15s |
+| `ease-skew-x-10-slow`    | 10°   | X    | 0.6s  |
 
 ## Usage
 
@@ -41,3 +40,4 @@ Element skews horizontally or vertically on hover — dynamic and playful effect
 <!-- Direction variants -->
 <div class="ease-skew-left">Skew left</div>
 <div class="ease-skew-right">Skew right</div>
+```

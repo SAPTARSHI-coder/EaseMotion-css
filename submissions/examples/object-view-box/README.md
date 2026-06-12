@@ -13,8 +13,12 @@ Animates `object-view-box` — a CSS property that crops replaced elements (like
 }
 
 @keyframes pan-right {
-  0%   { object-view-box: inset(0 0 0 0); }
-  100% { object-view-box: inset(0 50% 0 0); }
+  0% {
+    object-view-box: inset(0 0 0 0);
+  }
+  100% {
+    object-view-box: inset(0 50% 0 0);
+  }
 }
 ```
 

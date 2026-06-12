@@ -7,9 +7,7 @@ Provides a hierarchical visualization of how AI agents decompose large objective
 ## How is it used?
 
 ```html
-<div class="goal-node">
-    Build Platform
-</div>
+<div class="goal-node">Build Platform</div>
 ```
 
 ## Why is it useful?

@@ -1,13 +1,18 @@
 # Ease Video Zd
 
 ## What does this do?
+
 An animated video player UI component with preview area, play button, progress bar, time display, volume control, and settings/fullscreen buttons — pure HTML and CSS.
 
 ## How is it used?
+
 ```html
 <div class="vp-card">
   <div class="vp-preview">
-    <div class="vp-thumbnail" style="background-image: url('video-thumb.jpg');"></div>
+    <div
+      class="vp-thumbnail"
+      style="background-image: url('video-thumb.jpg');"
+    ></div>
     <button class="vp-play-btn" aria-label="Play video">▶</button>
     <span class="vp-time-badge">12:34</span>
   </div>
@@ -33,4 +38,5 @@ An animated video player UI component with preview area, play button, progress b
 ```
 
 ## Why is it useful?
+
 Video players are a fundamental component of media sites, course platforms, and content dashboards. This UI skin provides a polished, ready-to-use player interface with hover-reveal progress thumb, pulsing play button, and smooth entrances.

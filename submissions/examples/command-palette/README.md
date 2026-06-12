@@ -17,8 +17,8 @@ A command palette component inspired by modern developer tools such as VS Code, 
 
 ```html
 <div class="command-item">
-    <span>Open File</span>
-    <kbd>⌘P</kbd>
+  <span>Open File</span>
+  <kbd>⌘P</kbd>
 </div>
 ```
 

@@ -10,3 +10,4 @@ The skeleton shimmer used light neutral colors in dark mode, which caused poor c
 
 ```html
 <div class="ease-skeleton-shimmer skeleton-line"></div>
+```

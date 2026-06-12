@@ -10,11 +10,11 @@ Subtle scale-up effect on hover with bounce easing. A standard interactive feedb
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-grow` | Scale to 1.06 on hover |
-| `ease-hover-grow-sm` | Scale to 1.03 |
-| `ease-hover-grow-lg` | Scale to 1.1 |
+| Class                | Description            |
+| -------------------- | ---------------------- |
+| `ease-hover-grow`    | Scale to 1.06 on hover |
+| `ease-hover-grow-sm` | Scale to 1.03          |
+| `ease-hover-grow-lg` | Scale to 1.1           |
 
 ## Notes
 

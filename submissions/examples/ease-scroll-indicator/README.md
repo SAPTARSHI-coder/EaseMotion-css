@@ -18,13 +18,13 @@ A thin horizontal progress bar fixed at the top of the viewport that fills from 
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Gradient (default) | *(none)* | Primary → secondary gradient |
-| Solid | `.ease-scroll-indicator--solid` | Solid primary colour |
-| Thin | `.ease-scroll-indicator--thin` | 2px height |
-| Thick | `.ease-scroll-indicator--thick` | 6px height |
-| Custom colour | `style="--ease-scroll-color: #..."` | Any custom colour |
+| Variant            | Class                               | Description                  |
+| ------------------ | ----------------------------------- | ---------------------------- |
+| Gradient (default) | _(none)_                            | Primary → secondary gradient |
+| Solid              | `.ease-scroll-indicator--solid`     | Solid primary colour         |
+| Thin               | `.ease-scroll-indicator--thin`      | 2px height                   |
+| Thick              | `.ease-scroll-indicator--thick`     | 6px height                   |
+| Custom colour      | `style="--ease-scroll-color: #..."` | Any custom colour            |
 
 ## How is it used?
 
@@ -35,14 +35,21 @@ A thin horizontal progress bar fixed at the top of the viewport that fills from 
 JS fallback:
 
 ```js
-var bar = document.getElementById('scroll-bar');
-document.addEventListener('scroll', function() {
-  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-  var scrolled = height > 0 ? (winScroll / height) * 100 : 0;
-  bar.style.width = scrolled + '%';
-  bar.classList.toggle('ease-scroll-indicator--hidden', scrolled < 0.5);
-}, { passive: true });
+var bar = document.getElementById("scroll-bar");
+document.addEventListener(
+  "scroll",
+  function () {
+    var winScroll =
+      document.body.scrollTop || document.documentElement.scrollTop;
+    var height =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
+    var scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+    bar.style.width = scrolled + "%";
+    bar.classList.toggle("ease-scroll-indicator--hidden", scrolled < 0.5);
+  },
+  { passive: true }
+);
 ```
 
 ## Why is it useful?

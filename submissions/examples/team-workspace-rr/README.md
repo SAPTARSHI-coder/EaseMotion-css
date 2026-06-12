@@ -8,7 +8,7 @@ Provides a modern collaboration workspace interface with project management, tea
 
 ```html
 <div class="card">
-    <h3>Active Projects</h3>
+  <h3>Active Projects</h3>
 </div>
 ```
 

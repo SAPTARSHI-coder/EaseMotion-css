@@ -45,8 +45,8 @@ Follow these steps to override Easemotion variables safely.
 ### Example import order
 
 ```html
-<link rel="stylesheet" href="path/to/easemotion.css">
-<link rel="stylesheet" href="path/to/theme-overrides.css">
+<link rel="stylesheet" href="path/to/easemotion.css" />
+<link rel="stylesheet" href="path/to/theme-overrides.css" />
 ```
 
 ### Why order matters
@@ -76,10 +76,10 @@ A simple safe pattern is:
 
 ```css
 :root {
-  --ease-color-bg:      #0f172a;
+  --ease-color-bg: #0f172a;
   --ease-color-surface: #111827;
-  --ease-color-text:    #f8fafc;
-  --ease-color-muted:   #94a3b8;
+  --ease-color-text: #f8fafc;
+  --ease-color-muted: #94a3b8;
   --ease-color-primary: #8b5cf6;
 }
 ```
@@ -98,27 +98,27 @@ Here are the default theme variables from `core/variables.css`:
 
 ```css
 :root {
-  --ease-color-primary:       #6c63ff;
+  --ease-color-primary: #6c63ff;
   --ease-color-primary-light: #a09af8;
-  --ease-color-primary-dark:  #4b44cc;
+  --ease-color-primary-dark: #4b44cc;
 
-  --ease-color-success:       #22c55e;
+  --ease-color-success: #22c55e;
   --ease-color-success-light: #86efac;
-  --ease-color-success-dark:  #15803d;
+  --ease-color-success-dark: #15803d;
 
-  --ease-color-danger:        #ef4444;
-  --ease-color-danger-light:  #fca5a5;
-  --ease-color-danger-dark:   #b91c1c;
+  --ease-color-danger: #ef4444;
+  --ease-color-danger-light: #fca5a5;
+  --ease-color-danger-dark: #b91c1c;
 
-  --ease-color-warning:       #f59e0b;
+  --ease-color-warning: #f59e0b;
   --ease-color-warning-light: #fcd34d;
-  --ease-color-warning-dark:  #b45309;
+  --ease-color-warning-dark: #b45309;
 
-  --ease-color-info:          #3b82f6;
---ease-color-info-light:    #93c5fd;
---ease-color-info-dark:     #1d4ed8;
+  --ease-color-info: #3b82f6;
+  --ease-color-info-light: #93c5fd;
+  --ease-color-info-dark: #1d4ed8;
 
-  --ease-color-neutral-50:  #f8fafc;
+  --ease-color-neutral-50: #f8fafc;
   --ease-color-neutral-100: #f1f5f9;
   --ease-color-neutral-200: #e2e8f0;
   --ease-color-neutral-300: #cbd5e1;
@@ -129,10 +129,10 @@ Here are the default theme variables from `core/variables.css`:
   --ease-color-neutral-800: #1e293b;
   --ease-color-neutral-900: #0f172a;
 
-  --ease-color-bg:      var(--ease-color-neutral-50);
+  --ease-color-bg: var(--ease-color-neutral-50);
   --ease-color-surface: #ffffff;
-  --ease-color-text:    var(--ease-color-neutral-800);
-  --ease-color-muted:   var(--ease-color-neutral-500);
+  --ease-color-text: var(--ease-color-neutral-800);
+  --ease-color-muted: var(--ease-color-neutral-500);
 }
 ```
 
@@ -142,13 +142,13 @@ This override converts Easemotion from the default light palette to a darker, br
 
 ```css
 :root {
-  --ease-color-bg:      #0b1120;
+  --ease-color-bg: #0b1120;
   --ease-color-surface: #111827;
-  --ease-color-text:    #e2e8f0;
-  --ease-color-muted:   #94a3b8;
+  --ease-color-text: #e2e8f0;
+  --ease-color-muted: #94a3b8;
   --ease-color-primary: #7c3aed;
   --ease-color-primary-light: #a78bfa;
-  --ease-color-primary-dark:  #5b21b6;
+  --ease-color-primary-dark: #5b21b6;
 }
 ```
 
@@ -168,13 +168,13 @@ Use this when you want a brighter, clean interface that still uses Easemotion to
 
 ```css
 :root {
-  --ease-color-bg:      #f8fafc;
+  --ease-color-bg: #f8fafc;
   --ease-color-surface: #ffffff;
-  --ease-color-text:    #111827;
-  --ease-color-muted:   #64748b;
+  --ease-color-text: #111827;
+  --ease-color-muted: #64748b;
   --ease-color-primary: #6366f1;
   --ease-color-primary-light: #a5b4fc;
-  --ease-color-primary-dark:  #4338ca;
+  --ease-color-primary-dark: #4338ca;
 }
 ```
 
@@ -186,13 +186,13 @@ A dark theme with rich surfaces and subtle neutral tones.
 
 ```css
 :root {
-  --ease-color-bg:      #0f172a;
+  --ease-color-bg: #0f172a;
   --ease-color-surface: #111827;
-  --ease-color-text:    #e2e8f0;
-  --ease-color-muted:   #94a3b8;
+  --ease-color-text: #e2e8f0;
+  --ease-color-muted: #94a3b8;
   --ease-color-primary: #8b5cf6;
   --ease-color-success: #22c55e;
-  --ease-color-danger:  #ef4444;
+  --ease-color-danger: #ef4444;
   --ease-color-warning: #f59e0b;
 }
 ```
@@ -203,15 +203,15 @@ If you want both light and dark themes, define theme-specific selectors instead 
 
 ```css
 :root {
-  --ease-color-bg:      #f8fafc;
+  --ease-color-bg: #f8fafc;
   --ease-color-surface: #ffffff;
-  --ease-color-text:    #111827;
+  --ease-color-text: #111827;
 }
 
 .dark-theme {
-  --ease-color-bg:      #0f172a;
+  --ease-color-bg: #0f172a;
   --ease-color-surface: #111827;
-  --ease-color-text:    #e2e8f0;
+  --ease-color-text: #e2e8f0;
 }
 ```
 

@@ -4,12 +4,12 @@ Pendulum swing animation that oscillates an element around a top-center anchor p
 
 ## Class reference
 
-| Class | Rotation Range | Duration | Trigger |
-|-------|----------------|----------|---------|
-| `.ease-swing` | ±15° | 1.2s | Continuous loop |
-| `.ease-swing-small` | ±6° | 1.0s | Continuous loop |
-| `.ease-swing-large` | ±30° | 1.5s | Continuous loop |
-| `.ease-swing-hover` | ±15° | 0.8s × 3 | On `:hover` only |
+| Class               | Rotation Range | Duration | Trigger          |
+| ------------------- | -------------- | -------- | ---------------- |
+| `.ease-swing`       | ±15°           | 1.2s     | Continuous loop  |
+| `.ease-swing-small` | ±6°            | 1.0s     | Continuous loop  |
+| `.ease-swing-large` | ±30°           | 1.5s     | Continuous loop  |
+| `.ease-swing-hover` | ±15°           | 0.8s × 3 | On `:hover` only |
 
 ## Usage
 

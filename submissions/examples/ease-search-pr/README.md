@@ -21,8 +21,7 @@ Search input with integrated icon, clear button, and focus glow.
 ## Usage
 
 ```html
-&lt;div class="search-pr"&gt;
-  &lt;svg class="search-pr-icon"&gt;🔍&lt;/svg&gt;
-  &lt;input type="text" class="search-pr-input" placeholder="Search..."&gt;
-  &lt;button class="search-pr-clear"&gt;✕&lt;/button&gt;
-&lt;/div&gt;
+&lt;div class="search-pr"&gt; &lt;svg class="search-pr-icon"&gt;🔍&lt;/svg&gt;
+&lt;input type="text" class="search-pr-input" placeholder="Search..."&gt;
+&lt;button class="search-pr-clear"&gt;✕&lt;/button&gt; &lt;/div&gt;
+```

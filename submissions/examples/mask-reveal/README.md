@@ -10,10 +10,10 @@ Horizontal mask reveal animation using `clip-path: inset()` for a left-to-right 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-mask-reveal` | Horizontal left-to-right reveal |
-| `ease-mask-reveal-y` | Vertical top-to-bottom reveal |
+| Class                | Description                     |
+| -------------------- | ------------------------------- |
+| `ease-mask-reveal`   | Horizontal left-to-right reveal |
+| `ease-mask-reveal-y` | Vertical top-to-bottom reveal   |
 
 ## Notes
 

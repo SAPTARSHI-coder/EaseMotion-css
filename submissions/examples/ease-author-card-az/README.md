@@ -28,10 +28,10 @@ Bio/profile card with avatar (image or initials fallback), name, role, bio text,
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-lg`       | 12px      |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

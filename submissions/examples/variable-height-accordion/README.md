@@ -1,9 +1,11 @@
 # ⚡ Utility: Pure CSS Variable Height Accordion Reveal
 
 ### What does this do?
+
 This layout feature resolves a long-standing web interaction limitation: smoothly animating an element container's height from `height: 0` to `height: auto` dynamically using pure CSS. By leveraging modern CSS Grid fractional track transitions (`0fr` ⇄ `1fr`), elements reveal smoothly without requiring hardcoded pixel limits.
 
 ### How is it used?
+
 Assemble your collapse items with the semantic input check triggers and wrap the hidden layers inside the structural sub-grid classes:
 
 ```html
@@ -20,4 +22,5 @@ Assemble your collapse items with the semantic input check triggers and wrap the
 ```
 
 ### By
+
 Pari Dubey

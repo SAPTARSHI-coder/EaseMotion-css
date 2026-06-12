@@ -7,9 +7,7 @@ Adds a smooth shadow fade animation on hover.
 ## How is it used?
 
 ```html
-<div class="fade-shadow">
-  Content
-</div>
+<div class="fade-shadow">Content</div>
 ```
 
 ## Why is it useful?

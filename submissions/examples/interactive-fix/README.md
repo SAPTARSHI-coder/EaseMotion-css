@@ -21,3 +21,4 @@ Additionally, this example directory introduces fixes to resolve mobile tap targ
 interactive-showcase-fix-xyz/
 ├── demo.html    # Interactive sandbox playground testing hitboxes, contrast, and animations
 └── style.css    # Clean CSS workspace containing design tokens and touch-safe fixes
+```

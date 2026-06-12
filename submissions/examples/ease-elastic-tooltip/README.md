@@ -8,3 +8,4 @@ Simply include the stylesheet and append a `data-tooltip` attribute containing y
 
 ```html
 <button data-tooltip="Your tooltip text goes here!">Hover Me</button>
+```

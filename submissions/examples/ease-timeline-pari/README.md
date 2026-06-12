@@ -5,6 +5,7 @@ A vertical timeline component with animated slide-left entrance
 for each item using staggered nth-child delays.
 
 **How is it used?**
+
 <div class="ease-timeline">
   <div class="ease-timeline-item">
     <p class="item-date">June 2026</p>

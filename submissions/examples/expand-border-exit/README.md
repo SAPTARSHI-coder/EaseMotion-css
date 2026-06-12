@@ -10,8 +10,8 @@ Exit animation where the element's border expands outward (scale + border-width 
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                     | Description                |
+| ------------------------- | -------------------------- |
 | `ease-expand-border-exit` | Default expand border exit |
 
 ## Notes

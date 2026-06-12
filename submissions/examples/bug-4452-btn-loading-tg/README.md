@@ -12,12 +12,24 @@ No HTML changes required. Apply the CSS patch from this submission to `component
 
 ```css
 /* Per variant — add spinner color token */
-.ease-btn-primary  { --ease-btn-spinner-color: #ffffff; }
-.ease-btn-success  { --ease-btn-spinner-color: #ffffff; }
-.ease-btn-danger   { --ease-btn-spinner-color: #ffffff; }
-.ease-btn-outline  { --ease-btn-spinner-color: var(--ease-color-primary, #6c63ff); }
-.ease-btn-ghost    { --ease-btn-spinner-color: var(--ease-color-neutral-700, #334155); }
-.ease-btn-link     { --ease-btn-spinner-color: var(--ease-color-primary, #6c63ff); }
+.ease-btn-primary {
+  --ease-btn-spinner-color: #ffffff;
+}
+.ease-btn-success {
+  --ease-btn-spinner-color: #ffffff;
+}
+.ease-btn-danger {
+  --ease-btn-spinner-color: #ffffff;
+}
+.ease-btn-outline {
+  --ease-btn-spinner-color: var(--ease-color-primary, #6c63ff);
+}
+.ease-btn-ghost {
+  --ease-btn-spinner-color: var(--ease-color-neutral-700, #334155);
+}
+.ease-btn-link {
+  --ease-btn-spinner-color: var(--ease-color-primary, #6c63ff);
+}
 
 /* Replace loading state rules */
 .ease-btn-loading {
@@ -45,11 +57,11 @@ Loading buttons are used during async actions (form submit, API calls). An invis
 
 ## Maintainer integration
 
-| Target file | Action |
-|-------------|--------|
-| `components/buttons.css` | Apply patch in `core-patch/buttons.css` |
-| `tests/smoke.test.js` | Apply patch in `core-patch/smoke.test.js` |
-| `easemotion.min.css` | Run `npm run build` after merging |
+| Target file              | Action                                    |
+| ------------------------ | ----------------------------------------- |
+| `components/buttons.css` | Apply patch in `core-patch/buttons.css`   |
+| `tests/smoke.test.js`    | Apply patch in `core-patch/smoke.test.js` |
+| `easemotion.min.css`     | Run `npm run build` after merging         |
 
 ## Tech Stack
 

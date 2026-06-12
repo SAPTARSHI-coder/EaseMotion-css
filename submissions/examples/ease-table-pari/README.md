@@ -5,6 +5,7 @@ A styled data table component with striped rows, hover effects,
 and a responsive wrapper.
 
 **How is it used?**
+
 <div class="ease-table-responsive">
   <table class="ease-table ease-table-striped ease-table-hover">
     <thead>

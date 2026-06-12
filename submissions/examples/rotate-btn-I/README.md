@@ -1,4 +1,3 @@
- 
 # Rotate Button Entrance Animation
 
 Smooth rotate entrance animation for buttons on page load.
@@ -29,3 +28,4 @@ Smooth rotate entrance animation for buttons on page load.
 
 <!-- Staggered entrance -->
 <button class="ease-rotate-btn-delay-1">First</button>
+```

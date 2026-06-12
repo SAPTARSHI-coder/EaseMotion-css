@@ -22,10 +22,10 @@ Horizontal filter chips bar with active/inactive states, counts, closeable chips
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-md`       | 8px       |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

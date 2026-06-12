@@ -10,14 +10,14 @@ Marker-style text highlight utility using CSS `background-size` technique. No ex
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-highlight-text` | Default primary highlight |
-| `ease-highlight-yellow` | Yellow marker style |
-| `ease-highlight-green` | Green highlight |
-| `ease-highlight-red` | Red highlight |
-| `ease-highlight-wide` | Thicker highlight (50%) |
-| `ease-highlight-thin` | Thinner highlight (20%) |
+| Class                   | Description               |
+| ----------------------- | ------------------------- |
+| `ease-highlight-text`   | Default primary highlight |
+| `ease-highlight-yellow` | Yellow marker style       |
+| `ease-highlight-green`  | Green highlight           |
+| `ease-highlight-red`    | Red highlight             |
+| `ease-highlight-wide`   | Thicker highlight (50%)   |
+| `ease-highlight-thin`   | Thinner highlight (20%)   |
 
 ## Notes
 

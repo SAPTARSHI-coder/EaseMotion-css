@@ -12,12 +12,12 @@ beforeAll(async () => {
   browser = await puppeteer.launch({
     headless: true,
     // The repository serves the docs via a simple file URL; adjust if a dev server is used.
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   page = await browser.newPage();
-  const filePath = "file://" + encodeURI(
-    "C:/Users/Kamal/Desktop/GSSOC/EaseMotion-css/docs/index.html"
-  );
+  const filePath =
+    "file://" +
+    encodeURI("C:/Users/Kamal/Desktop/GSSOC/EaseMotion-css/docs/index.html");
   await page.goto(filePath);
 });
 
@@ -52,7 +52,7 @@ test("sidebar highlight updates while scrolling through sections", async () => {
   const offsets = {
     animations: 1200,
     components: 2400,
-    contributing: 3600
+    contributing: 3600,
   };
 
   // Scroll to Animations

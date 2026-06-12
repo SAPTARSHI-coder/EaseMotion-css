@@ -1,10 +1,13 @@
 # Core Changes — Issue #4586: Missing reduced-motion overrides for `.ease-hover-glow`, `.ease-hover-underline`, `.ease-shimmer-text`
 
 ## Overview
+
 The `@media (prefers-reduced-motion: reduce)` block in `core/animations.css` suppresses `transition` and `animation-duration` broadly, but three classes still show their hover/active effects because their **target CSS properties** aren't explicitly reset.
 
 ## Problem
+
 The current reduced-motion block:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   [class*="ease-"] {
@@ -20,14 +23,16 @@ The current reduced-motion block:
 }
 ```
 
-| Class | What it does | Why it slips through |
-|-------|-------------|---------------------|
-| `.ease-hover-glow` | Sets `filter: drop-shadow(...)` on hover | `[class*="ease-hover-"]` suppresses transition but not the `filter` value itself |
-| `.ease-hover-underline` | Sets `background-size: 100% 2px` on hover | Same — transition is killed but `background-size` still applies instantly |
-| `.ease-shimmer-text` | Animates `background-position` with `background-clip: text` | Not caught by `[class*="ease-hover-"]` at all |
+| Class                   | What it does                                                | Why it slips through                                                             |
+| ----------------------- | ----------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `.ease-hover-glow`      | Sets `filter: drop-shadow(...)` on hover                    | `[class*="ease-hover-"]` suppresses transition but not the `filter` value itself |
+| `.ease-hover-underline` | Sets `background-size: 100% 2px` on hover                   | Same — transition is killed but `background-size` still applies instantly        |
+| `.ease-shimmer-text`    | Animates `background-position` with `background-clip: text` | Not caught by `[class*="ease-hover-"]` at all                                    |
 
 ## Fix
+
 Add explicit reduced-motion rules:
+
 ```css
 .ease-hover-glow:hover,
 .ease-hover-glow:focus-visible {
@@ -47,10 +52,13 @@ Add explicit reduced-motion rules:
 ```
 
 ## Affected Files
+
 - `core/animations.css` — add the three rules to the existing `@media (prefers-reduced-motion: reduce)` block
 
 ## Verification
+
 Open `demo.html`. Toggle reduce-motion simulation. Without the fix, hover over the glow/underline/text elements and they still animate. With the fix, they stay static.
 
 ## Labels
+
 - `bug`, `animation`, `accessibility`, `GSSoC-26`

@@ -10,13 +10,13 @@ Outlined card variant with transparent background and 2px border. Perfect for mi
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-outlined` | Default (2px neutral border) |
-| `ease-card-outlined-primary` | Primary color border |
-| `ease-card-outlined-success` | Success green border |
-| `ease-card-outlined-danger` | Danger red border |
-| `ease-card-outlined-dashed` | Dashed border style |
+| Class                        | Description                  |
+| ---------------------------- | ---------------------------- |
+| `ease-card-outlined`         | Default (2px neutral border) |
+| `ease-card-outlined-primary` | Primary color border         |
+| `ease-card-outlined-success` | Success green border         |
+| `ease-card-outlined-danger`  | Danger red border            |
+| `ease-card-outlined-dashed`  | Dashed border style          |
 
 ## Notes
 

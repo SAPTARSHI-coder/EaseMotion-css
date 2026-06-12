@@ -4,25 +4,25 @@ A GitHub-style contribution heatmap that visualizes activity over time using a g
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-heatmap` | Container card with border and background |
-| `ease-heatmap-header` | Title and subtitle row |
-| `ease-heatmap-title` | Section title |
-| `ease-heatmap-subtitle` | Time range subtitle |
-| `ease-heatmap-table` | Table structure wrapper |
-| `ease-heatmap-months` | Month label row |
-| `ease-heatmap-body` | Flex row for day labels and grid |
-| `ease-heatmap-days` | Day label column |
-| `ease-heatmap-grid` | Grid of activity cells |
-| `ease-heatmap-cell` | Individual cell with hover scale |
-| `ease-heatmap-lvl-0` | No activity (dim) |
-| `ease-heatmap-lvl-1` | Low activity |
-| `ease-heatmap-lvl-2` | Medium activity |
-| `ease-heatmap-lvl-3` | High activity |
-| `ease-heatmap-lvl-4` | Highest activity (brightest) |
-| `ease-heatmap-legend` | Legend row |
-| `ease-heatmap-legend-label` | Less / More labels |
+| Class                       | Description                               |
+| --------------------------- | ----------------------------------------- |
+| `ease-heatmap`              | Container card with border and background |
+| `ease-heatmap-header`       | Title and subtitle row                    |
+| `ease-heatmap-title`        | Section title                             |
+| `ease-heatmap-subtitle`     | Time range subtitle                       |
+| `ease-heatmap-table`        | Table structure wrapper                   |
+| `ease-heatmap-months`       | Month label row                           |
+| `ease-heatmap-body`         | Flex row for day labels and grid          |
+| `ease-heatmap-days`         | Day label column                          |
+| `ease-heatmap-grid`         | Grid of activity cells                    |
+| `ease-heatmap-cell`         | Individual cell with hover scale          |
+| `ease-heatmap-lvl-0`        | No activity (dim)                         |
+| `ease-heatmap-lvl-1`        | Low activity                              |
+| `ease-heatmap-lvl-2`        | Medium activity                           |
+| `ease-heatmap-lvl-3`        | High activity                             |
+| `ease-heatmap-lvl-4`        | Highest activity (brightest)              |
+| `ease-heatmap-legend`       | Legend row                                |
+| `ease-heatmap-legend-label` | Less / More labels                        |
 
 ## Usage
 
@@ -41,13 +41,23 @@ A GitHub-style contribution heatmap that visualizes activity over time using a g
 
     <div class="ease-heatmap-body">
       <div class="ease-heatmap-days">
-        <span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span>Sun</span>
+        <span>Mon</span><span></span><span>Wed</span><span></span
+        ><span>Fri</span><span></span><span>Sun</span>
       </div>
 
       <div class="ease-heatmap-grid">
-        <span class="ease-heatmap-cell ease-heatmap-lvl-0" title="0 contributions"></span>
-        <span class="ease-heatmap-cell ease-heatmap-lvl-2" title="5 contributions"></span>
-        <span class="ease-heatmap-cell ease-heatmap-lvl-4" title="15 contributions"></span>
+        <span
+          class="ease-heatmap-cell ease-heatmap-lvl-0"
+          title="0 contributions"
+        ></span>
+        <span
+          class="ease-heatmap-cell ease-heatmap-lvl-2"
+          title="5 contributions"
+        ></span>
+        <span
+          class="ease-heatmap-cell ease-heatmap-lvl-4"
+          title="15 contributions"
+        ></span>
         <!-- ... -->
       </div>
     </div>

@@ -5,6 +5,7 @@ Creates a highly responsive, spring-like "elastic" bounce when you hover over an
 
 **How is it used?**
 Apply the class to an element like a button or card:
+
 ```html
 <button class="elastic-button">Hover Me</button>
 ```

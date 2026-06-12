@@ -4,6 +4,7 @@
 Applies increasing animation delays to repeated child elements so they fade or slide into view one after another.
 
 **How is it used?**
+
 ```html
 <ul class="stagger-list slide-up" style="--ease-stagger-step: 90ms;">
   <li>Review contribution guide</li>

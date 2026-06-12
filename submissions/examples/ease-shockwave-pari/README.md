@@ -5,6 +5,7 @@ Propagates a visual wave across sibling elements when one is hovered,
 creating a chain-reaction scale and opacity effect.
 
 **How is it used?**
+
 <div class="ease-shockwave-group">
   <button class="ease-shockwave-item">One</button>
   <button class="ease-shockwave-item">Two</button>

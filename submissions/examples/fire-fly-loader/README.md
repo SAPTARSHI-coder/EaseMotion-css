@@ -6,8 +6,8 @@ A canvas-based loading animation where scattered particles converge into a rotat
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Self-contained particle ring animation rendered entirely using the HTML Canvas API.
-* `style.css` — Scoped styling layer responsible for layout, canvas positioning, and presentation.
+- `demo.html` — Self-contained particle ring animation rendered entirely using the HTML Canvas API.
+- `style.css` — Scoped styling layer responsible for layout, canvas positioning, and presentation.
 
 ## 🚀 Key Animation Mechanics
 
@@ -49,14 +49,14 @@ The animation is fully self-contained within the sandbox directory and does not 
 
 ## 🎯 Use Cases
 
-* Loading screens
-* Application startup animations
-* Dashboard placeholders
-* Authentication screens
-* Data processing indicators
-* Splash screens
-* Landing page motion accents
-* Product onboarding flows
+- Loading screens
+- Application startup animations
+- Dashboard placeholders
+- Authentication screens
+- Data processing indicators
+- Splash screens
+- Landing page motion accents
+- Product onboarding flows
 
 ## ✨ Why It Fits EaseMotion CSS
 

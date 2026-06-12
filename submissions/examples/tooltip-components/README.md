@@ -11,22 +11,26 @@ Add `ease-tooltip` and `data-tip="your message"` to any element:
 <button class="ease-tooltip" data-tip="Hello!">Hover me</button>
 
 <!-- Bottom -->
-<button class="ease-tooltip ease-tooltip-bottom" data-tip="Below">Hover me</button>
+<button class="ease-tooltip ease-tooltip-bottom" data-tip="Below">
+  Hover me
+</button>
 
 <!-- Left -->
 <button class="ease-tooltip ease-tooltip-left" data-tip="Left">Hover me</button>
 
 <!-- Right -->
-<button class="ease-tooltip ease-tooltip-right" data-tip="Right">Hover me</button>
+<button class="ease-tooltip ease-tooltip-right" data-tip="Right">
+  Hover me
+</button>
 ```
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                      |
+| ----------- | -------------------------------------------- |
 | `demo.html` | Full working demo, opens directly in browser |
-| `style.css` | Tooltip styles with all four directions |
-| `README.md` | This file |
+| `style.css` | Tooltip styles with all four directions      |
+| `README.md` | This file                                    |
 
 ## Why it fits EaseMotion CSS
 

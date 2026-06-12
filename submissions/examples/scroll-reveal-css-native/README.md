@@ -14,9 +14,7 @@ Triggers a fade + slide-up entrance animation on any element the moment it scrol
 
 ```html
 <!-- Basic scroll reveal (fade + slide up) -->
-<div class="scroll-reveal">
-  I animate in when I enter the viewport.
-</div>
+<div class="scroll-reveal">I animate in when I enter the viewport.</div>
 
 <!-- Composable with delay utilities for staggered sequences -->
 <div class="scroll-reveal delay-100">First item</div>
@@ -41,7 +39,7 @@ Every existing EaseMotion CSS animation class (`ease-fade-in`, `ease-slide-up`, 
 This submission fills that gap using `animation-timeline: view()` and `animation-range`, a modern CSS scroll-driven animation API now supported across all major browsers:
 
 | Browser | Support |
-|---------|---------|
+| ------- | ------- |
 | Chrome  | 115+    |
 | Firefox | 110+    |
 | Safari  | 18+     |
@@ -57,8 +55,8 @@ It fits EaseMotion CSS's four core principles:
 
 ## Files
 
-| File        | Purpose                          |
-|-------------|----------------------------------|
+| File        | Purpose                                |
+| ----------- | -------------------------------------- |
 | `style.css` | Raw CSS for all scroll-reveal variants |
-| `demo.html` | Self-contained browser demo      |
-| `README.md` | This file                        |
+| `demo.html` | Self-contained browser demo            |
+| `README.md` | This file                              |

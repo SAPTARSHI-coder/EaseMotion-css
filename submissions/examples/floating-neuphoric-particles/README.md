@@ -13,3 +13,4 @@ Developers reference the viewport structure setup as the root backdrop beneath a
   <div class="neo-particle size-sm position-1 animate-slow"></div>
   <div class="neo-particle size-md position-2 animate-mid"></div>
 </div>
+```

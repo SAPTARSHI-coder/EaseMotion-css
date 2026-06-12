@@ -20,25 +20,17 @@ Pagination component with active, disabled, and hover states for navigating page
 ## Usage
 
 ```html
-&lt;&lt;nav aria-label="Pagination"&gt;
-  &lt;ul class="pagination-pr"&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;a href="#" class="pagination-pr-link pagination-pr-disabled" aria-label="Previous page"&gt;←&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;a href="#" class="pagination-pr-link"&gt;1&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;a href="#" class="pagination-pr-link pagination-pr-active" aria-current="page"&gt;2&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;a href="#" class="pagination-pr-link"&gt;3&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;span class="pagination-pr-ellipsis"&gt;…&lt;/span&gt;
-    &lt;/li&gt;
-    &lt;li class="pagination-pr-item"&gt;
-      &lt;a href="#" class="pagination-pr-link" aria-label="Next page"&gt;→&lt;/a&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/nav&gt;
+&lt;&lt;nav aria-label="Pagination"&gt; &lt;ul class="pagination-pr"&gt; &lt;li
+class="pagination-pr-item"&gt; &lt;a href="#" class="pagination-pr-link
+pagination-pr-disabled" aria-label="Previous page"&gt;←&lt;/a&gt; &lt;/li&gt;
+&lt;li class="pagination-pr-item"&gt; &lt;a href="#"
+class="pagination-pr-link"&gt;1&lt;/a&gt; &lt;/li&gt; &lt;li
+class="pagination-pr-item"&gt; &lt;a href="#" class="pagination-pr-link
+pagination-pr-active" aria-current="page"&gt;2&lt;/a&gt; &lt;/li&gt; &lt;li
+class="pagination-pr-item"&gt; &lt;a href="#"
+class="pagination-pr-link"&gt;3&lt;/a&gt; &lt;/li&gt; &lt;li
+class="pagination-pr-item"&gt; &lt;span
+class="pagination-pr-ellipsis"&gt;…&lt;/span&gt; &lt;/li&gt; &lt;li
+class="pagination-pr-item"&gt; &lt;a href="#" class="pagination-pr-link"
+aria-label="Next page"&gt;→&lt;/a&gt; &lt;/li&gt; &lt;/ul&gt; &lt;/nav&gt;
+```

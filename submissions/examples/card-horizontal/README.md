@@ -13,8 +13,8 @@ Horizontal flex-based card layout with wrapping, gap, and padding. Arranges cont
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                  | Description                        |
+| ---------------------- | ---------------------------------- |
 | `ease-card-horizontal` | Horizontal card (stacks on mobile) |
 
 ## Notes

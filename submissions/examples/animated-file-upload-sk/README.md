@@ -7,6 +7,7 @@ A modern, high-performance SaaS dashboard file upload component built using **pu
 ## 1. What does this do?
 
 This component provides a fully functional, interactive drag-and-drop dashboard deck showcasing five crucial upload states:
+
 - **Default Empty State**: Features a clean upload zone with a floating cloud upload icon, click-to-browse link, and supported format tags.
 - **Drag Over (Simulated)**: Highlights the dropzone with a glowing, pulsing indigo border, speeds up the floating cloud icon, and exposes a dashed "ghost card" hovering below.
 - **Uploading State**: Shows multiple files actively processing with a diagonally-shining progress bar, loading state badges, and cancel button hover states.
@@ -14,6 +15,7 @@ This component provides a fully functional, interactive drag-and-drop dashboard 
 - **Upload Error**: Illustrates upload failures (such as file size exceeded or invalid formats) using danger badges, retry buttons with rotational transitions, and explanatory helper texts.
 
 ### Animation Details
+
 1. **Floating Icon**: The cloud icon moves smoothly up and down using a custom ease keyframe (`floatIcon`).
 2. **Hover Glow Effect**: Hovering over the zone scales it up slightly and adds a rich indigo box-shadow glow.
 3. **Pulsing Drag highlights**: Under the dragover state, the dashed border pulses with high-contrast glowing shadows.
@@ -26,22 +28,36 @@ This component provides a fully functional, interactive drag-and-drop dashboard 
 ## 2. How is it used?
 
 ### HTML Structure
+
 To instantiate the component with its state engine, add radio triggers before the component card, then build the zones and list segments:
 
 ```html
 <div class="upload-card">
   <!-- Hidden Radio Inputs -->
-  <input type="radio" id="state-default" name="demo-state" class="state-radio" checked>
-  <input type="radio" id="state-dragover" name="demo-state" class="state-radio">
+  <input
+    type="radio"
+    id="state-default"
+    name="demo-state"
+    class="state-radio"
+    checked
+  />
+  <input
+    type="radio"
+    id="state-dragover"
+    name="demo-state"
+    class="state-radio"
+  />
   <!-- ... state-uploading, state-success, state-error ... -->
 
   <!-- Upload Area -->
   <div class="upload-zone">
-    <input type="file" class="upload-input" multiple>
+    <input type="file" class="upload-input" multiple />
     <div class="upload-icon-wrapper">
       <!-- SVG Cloud -->
     </div>
-    <h2 class="upload-title">Drag & drop files here or <span class="browse-text">browse</span></h2>
+    <h2 class="upload-title">
+      Drag & drop files here or <span class="browse-text">browse</span>
+    </h2>
     <!-- format badges -->
   </div>
 
@@ -50,16 +66,16 @@ To instantiate the component with its state engine, add radio triggers before th
     <div class="files-cards-container">
       <!-- Default Placeholder -->
       <div class="empty-placeholder state-empty">...</div>
-      
+
       <!-- Ghost Drag card -->
       <div class="file-card ghost-card state-dragover-ghost">...</div>
-      
+
       <!-- Uploading card -->
       <div class="file-card state-uploading-card">...</div>
 
       <!-- Success card -->
       <div class="file-card state-success-card">...</div>
-      
+
       <!-- Error card -->
       <div class="file-card state-error-card">...</div>
     </div>
@@ -68,6 +84,7 @@ To instantiate the component with its state engine, add radio triggers before th
 ```
 
 ### CSS State Routing
+
 The visibility and transition parameters of the cards respond to the active radio checked selector rules:
 
 ```css
@@ -83,7 +100,10 @@ The visibility and transition parameters of the cards respond to the active radi
   animation: cardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-#state-uploading:checked ~ .upload-card .files-list-section .state-uploading-card {
+#state-uploading:checked
+  ~ .upload-card
+  .files-list-section
+  .state-uploading-card {
   display: flex;
   animation: cardFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

@@ -1,9 +1,11 @@
 # Ease Status Msg Zd
 
 ## What does this do?
+
 A set of animated inline status message components for success, error, warning, and info notifications — built with pure HTML and CSS, featuring slide-in entrance, bounce-in icons, shake animation on error, auto-dismiss progress bar, dismiss button, and stacked message support.
 
 ## How is it used?
+
 ```html
 <!-- Success message -->
 <div class="msg msg-success">
@@ -40,4 +42,5 @@ A set of animated inline status message components for success, error, warning, 
 ```
 
 ## Why is it useful?
+
 Inline status messages are essential for form validation, API feedback, settings changes, and real-time notifications in web applications. This component provides a clean, reusable pattern for four common message types (success, error, warning, info) with distinctive color coding, appropriate entrance animations (slide-in), icon animations (bounce-in for success, shake for errors), auto-dismiss progress indicators, dismiss buttons, and stacked message layout — all in pure CSS with full `prefers-reduced-motion` support and zero JavaScript dependencies.

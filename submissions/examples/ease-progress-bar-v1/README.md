@@ -10,53 +10,68 @@ Set the fill percentage on the wrapper, then add the required classes:
 
 ```html
 <!-- Basic primary bar (CSS-only auto-reveal on load) -->
-<div class="ease-progress ease-progress-auto" style="--ease-progress-value: 72%;">
-  <div class="ease-progress-bar ease-progress-primary"
-       role="progressbar"
-       aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"
-       aria-label="72 percent complete">
-  </div>
+<div
+  class="ease-progress ease-progress-auto"
+  style="--ease-progress-value: 72%;"
+>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="72"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label="72 percent complete"
+  ></div>
 </div>
 
 <!-- Animated striped fill (Issue #254 requirement) -->
-<div class="ease-progress ease-progress-auto" style="--ease-progress-value: 65%;">
-  <div class="ease-progress-bar ease-progress-success ease-progress-animated"
-       role="progressbar"
-       aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
-  </div>
+<div
+  class="ease-progress ease-progress-auto"
+  style="--ease-progress-value: 65%;"
+>
+  <div
+    class="ease-progress-bar ease-progress-success ease-progress-animated"
+    role="progressbar"
+    aria-valuenow="65"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 
 <!-- JS-driven update: toggle .ease-progress-loaded -->
-<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 50%;">
+<div
+  class="ease-progress ease-progress-loaded"
+  style="--ease-progress-value: 50%;"
+>
   <div class="ease-progress-bar ease-progress-warning"></div>
 </div>
 ```
 
 ### Classes
 
-| Class | Element | Purpose |
-| --- | --- | --- |
-| `.ease-progress` | wrapper | Track — set `--ease-progress-value` here |
-| `.ease-progress-bar` | child | Fill element |
-| `.ease-progress-animated` | bar | Moving diagonal stripes |
-| `.ease-progress-primary` | bar | Purple gradient fill |
-| `.ease-progress-success` | bar | Green gradient fill |
-| `.ease-progress-danger` | bar | Red gradient fill |
-| `.ease-progress-warning` | bar | Amber gradient fill |
-| `.ease-progress-auto` | wrapper | CSS-only entrance animation (no JS) |
-| `.ease-progress-loaded` | wrapper | Triggers fill transition (for JS updates) |
-| `.ease-progress-indeterminate` | wrapper | Unknown-duration loading loop |
-| `.ease-progress-segmented` | wrapper | Quarter-milestone tick marks |
-| `.ease-progress-complete` | wrapper | Subtle glow pulse at 100% |
+| Class                          | Element | Purpose                                   |
+| ------------------------------ | ------- | ----------------------------------------- |
+| `.ease-progress`               | wrapper | Track — set `--ease-progress-value` here  |
+| `.ease-progress-bar`           | child   | Fill element                              |
+| `.ease-progress-animated`      | bar     | Moving diagonal stripes                   |
+| `.ease-progress-primary`       | bar     | Purple gradient fill                      |
+| `.ease-progress-success`       | bar     | Green gradient fill                       |
+| `.ease-progress-danger`        | bar     | Red gradient fill                         |
+| `.ease-progress-warning`       | bar     | Amber gradient fill                       |
+| `.ease-progress-auto`          | wrapper | CSS-only entrance animation (no JS)       |
+| `.ease-progress-loaded`        | wrapper | Triggers fill transition (for JS updates) |
+| `.ease-progress-indeterminate` | wrapper | Unknown-duration loading loop             |
+| `.ease-progress-segmented`     | wrapper | Quarter-milestone tick marks              |
+| `.ease-progress-complete`      | wrapper | Subtle glow pulse at 100%                 |
 
 ### Custom properties
 
-| Property | Default | Description |
-| --- | --- | --- |
-| `--ease-progress-value` | `0%` | Target fill width |
-| `--ease-progress-duration` | `900ms` | Fill animation duration |
-| `--ease-progress-delay` | `120ms` | Stagger delay before fill starts |
-| `--ease-progress-height` | `10px` | Track height |
+| Property                   | Default | Description                      |
+| -------------------------- | ------- | -------------------------------- |
+| `--ease-progress-value`    | `0%`    | Target fill width                |
+| `--ease-progress-duration` | `900ms` | Fill animation duration          |
+| `--ease-progress-delay`    | `120ms` | Stagger delay before fill starts |
+| `--ease-progress-height`   | `10px`  | Track height                     |
 
 ## Why does it fit EaseMotion CSS?
 

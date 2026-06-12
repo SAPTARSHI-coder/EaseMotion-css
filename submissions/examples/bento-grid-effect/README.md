@@ -16,12 +16,11 @@ and CSS transitions.
 ```html
 <!-- Basic bento grid -->
 <div class="bento-grid">
-
   <!-- large card: spans 2 cols × 2 rows -->
   <div class="bento-card bento-large bento-card--purple">
     <div class="bento-glow"></div>
     <span class="bento-chip">Animation First</span>
-    <h2 class="bento-title">Build faster<br/>with motion.</h2>
+    <h2 class="bento-title">Build faster<br />with motion.</h2>
     <p class="bento-body">Your feature description here.</p>
   </div>
 
@@ -38,9 +37,10 @@ and CSS transitions.
     <div class="bento-glow"></div>
     <span class="bento-chip">Stable</span>
     <h3 class="bento-title bento-title--sm">One line. That's all.</h3>
-    <code class="bento-code">&lt;link rel="stylesheet" href="easemotion.css" /&gt;</code>
+    <code class="bento-code"
+      >&lt;link rel="stylesheet" href="easemotion.css" /&gt;</code
+    >
   </div>
-
 </div>
 ```
 
@@ -70,14 +70,14 @@ portfolio sites. This fills a gap in EaseMotion CSS's component library.
 
 ## Proposed class names (maintainer decides final naming)
 
-| Raw name            | Proposed ease-* name         |
-|---------------------|------------------------------|
-| `bento-grid`        | `ease-bento-grid`            |
-| `bento-card`        | `ease-bento-card`            |
-| `bento-large`       | `ease-bento-large`           |
-| `bento-wide`        | `ease-bento-wide`            |
-| `bento-tall`        | `ease-bento-tall`            |
-| `bento-card--purple`| `ease-bento-card-purple`     |
-| `bento-card--glass` | `ease-bento-card-glass`      |
-| `bento-card--dark`  | `ease-bento-card-dark`       |
-| `bento-glow`        | `ease-bento-glow`            |
+| Raw name             | Proposed ease-\* name    |
+| -------------------- | ------------------------ |
+| `bento-grid`         | `ease-bento-grid`        |
+| `bento-card`         | `ease-bento-card`        |
+| `bento-large`        | `ease-bento-large`       |
+| `bento-wide`         | `ease-bento-wide`        |
+| `bento-tall`         | `ease-bento-tall`        |
+| `bento-card--purple` | `ease-bento-card-purple` |
+| `bento-card--glass`  | `ease-bento-card-glass`  |
+| `bento-card--dark`   | `ease-bento-card-dark`   |
+| `bento-glow`         | `ease-bento-glow`        |

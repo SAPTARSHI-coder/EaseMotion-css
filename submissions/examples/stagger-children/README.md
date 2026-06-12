@@ -35,8 +35,12 @@ class on the parent element. No JavaScript required.
 </nav>
 
 <!-- Speed modifiers stack onto any variant -->
-<ul class="stagger-children stagger-fast">...</ul>
-<ul class="stagger-children stagger-slow">...</ul>
+<ul class="stagger-children stagger-fast">
+  ...
+</ul>
+<ul class="stagger-children stagger-slow">
+  ...
+</ul>
 
 <!-- Manual delay on individual elements -->
 <span class="ease-fade-in delay-1">Line one</span>
@@ -68,13 +72,13 @@ The maintainer can replace hard-coded delay values with a CSS variable such as
 
 ## Files
 
-| File        | Purpose                                                     |
-|-------------|-------------------------------------------------------------|
-| `style.css` | 3 animation variants, 2 speed modifiers, 6 delay helpers   |
-| `demo.html` | 5 demos: list, grid, nav, fast stagger, hero text reveal   |
-| `README.md` | This file                                                   |
+| File        | Purpose                                                  |
+| ----------- | -------------------------------------------------------- |
+| `style.css` | 3 animation variants, 2 speed modifiers, 6 delay helpers |
+| `demo.html` | 5 demos: list, grid, nav, fast stagger, hero text reveal |
+| `README.md` | This file                                                |
 
 ---
 
-Proposed ease-* names (maintainer decides):
+Proposed ease-\* names (maintainer decides):
 ease-stagger-children · ease-stagger-fade · ease-stagger-slide · ease-stagger-fast · ease-stagger-slow · ease-delay-[0-5]

@@ -9,7 +9,7 @@ Entrance animations that fire only when an element scrolls into the viewport.
 | `scroll-fade-in` | Fades in on scroll |
 | `scroll-slide-up` | Slides up on scroll |
 | `scroll-zoom-in` | Zooms in on scroll |
-| `scroll-slide-left` | Slides from left on   scroll |
+| `scroll-slide-left` | Slides from left on scroll |
 | `scroll-slide-right` | Slides from right on scroll |
 
 ## Usage
@@ -22,6 +22,7 @@ Entrance animations that fire only when an element scrolls into the viewport.
 Add the companion JS snippet from `demo.html` to your page.
 
 ## Notes
+
 - Uses IntersectionObserver — no dependencies
 - Animates once per element, does not repeat
 - Composable with delay classes: `delay-100`, `delay-200`, `delay-300`

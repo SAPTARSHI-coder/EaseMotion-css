@@ -21,3 +21,4 @@ Developers can customize animation behavior globally using CSS variables:
   --ease-easing: ease-in-out;
   --ease-scale: 1.08;
 }
+```

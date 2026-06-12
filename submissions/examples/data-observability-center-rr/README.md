@@ -8,7 +8,7 @@ Provides a centralized monitoring interface for data platform health, dataset fr
 
 ```html
 <div class="dataset-card healthy">
-    <h3>Customer Analytics</h3>
+  <h3>Customer Analytics</h3>
 </div>
 ```
 

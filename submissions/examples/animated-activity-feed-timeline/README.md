@@ -23,7 +23,7 @@ A modern, motion-first activity feed timeline for dashboards and collaboration U
 <link rel="stylesheet" href="../../../easemotion.css" />
 <link rel="stylesheet" href="./style.css" />
 
-<section class="ease-af"> ... </section>
+<section class="ease-af">...</section>
 ```
 
 ## Why this fits EaseMotion CSS

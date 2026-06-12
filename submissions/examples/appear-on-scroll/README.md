@@ -9,9 +9,7 @@ This effect gradually reveals elements with a fade and upward motion, creating a
 Apply the animation class to any element you want to reveal.
 
 ```html
-<div class="scroll-reveal">
-  Content appears with animation
-</div>
+<div class="scroll-reveal">Content appears with animation</div>
 ```
 
 You can also use delay variations for staggered animations:

@@ -1,9 +1,11 @@
 # Blockquote Component
 
 ### What does this do?
+
 Adds `ease-blockquote-az` — a styled blockquote component with a large decorative quotation mark, italic quote text, author citation with optional avatar, and multiple color/size variants.
 
 ### How is it used?
+
 The maintainer should copy `style.css` into `components/blockquote.css` and import it.
 
 ```html
@@ -22,6 +24,7 @@ The maintainer should copy `style.css` into `components/blockquote.css` and impo
 Variants: `.bordered`, `.center`, `.color-success`, `.color-warning`, `.color-danger`, `.sm`.
 
 ### Why is it useful?
+
 1. **Decorative quote mark** — large curly quote rendered via CSS `::before`, no extra markup
 2. **Rich citation** — author name, title, and optional avatar slot in naturally
 3. **Color variants** — success (green), warning (amber), danger (red) for contextual quotes

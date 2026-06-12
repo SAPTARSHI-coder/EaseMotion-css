@@ -10,18 +10,18 @@ Blur-to-focus reveal animation using CSS `filter: blur()` keyframes. Zero JavaSc
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-blur-in` | Default blur-to-focus (12px) |
-| `ease-blur-in-light` | Light blur reveal (4px) |
-| `ease-blur-in-heavy` | Heavy blur reveal (24px) |
-| `ease-blur-in-loop` | Infinite pulsing blur effect |
-| `ease-blur-in-fast` | 300ms duration |
-| `ease-blur-in-slow` | 1200ms duration |
-| `ease-delay-100` | 100ms delay |
-| `ease-delay-200` | 200ms delay |
-| `ease-delay-300` | 300ms delay |
-| `ease-delay-500` | 500ms delay |
+| Class                | Description                  |
+| -------------------- | ---------------------------- |
+| `ease-blur-in`       | Default blur-to-focus (12px) |
+| `ease-blur-in-light` | Light blur reveal (4px)      |
+| `ease-blur-in-heavy` | Heavy blur reveal (24px)     |
+| `ease-blur-in-loop`  | Infinite pulsing blur effect |
+| `ease-blur-in-fast`  | 300ms duration               |
+| `ease-blur-in-slow`  | 1200ms duration              |
+| `ease-delay-100`     | 100ms delay                  |
+| `ease-delay-200`     | 200ms delay                  |
+| `ease-delay-300`     | 300ms delay                  |
+| `ease-delay-500`     | 500ms delay                  |
 
 ## Notes
 

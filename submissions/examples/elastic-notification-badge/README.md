@@ -15,8 +15,8 @@ A notification badge that enters with an elastic stretch effect. The badge brief
 
 ```html
 <button class="notification-btn">
-    Messages
-    <span class="badge">9</span>
+  Messages
+  <span class="badge">9</span>
 </button>
 ```
 

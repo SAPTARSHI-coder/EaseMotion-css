@@ -15,12 +15,12 @@ The CSS-only `:nth-of-type` approach has a fundamental hard limit: you
 must write one selector chain per tab. This submission replaces it with
 a `data-tab` attribute pattern driven by a tiny vanilla JS file.
 
-| | CSS-only (before) | data-tab + JS (after) |
-|---|---|---|
-| Max tabs | 6 | Unlimited |
-| Failure mode | Silent, broken UI | N/A |
-| Keyboard nav | None | ← → Home End |
-| ARIA | None | `role=tablist/tab/tabpanel`, `aria-selected`, `aria-controls` |
+|              | CSS-only (before) | data-tab + JS (after)                                         |
+| ------------ | ----------------- | ------------------------------------------------------------- |
+| Max tabs     | 6                 | Unlimited                                                     |
+| Failure mode | Silent, broken UI | N/A                                                           |
+| Keyboard nav | None              | ← → Home End                                                  |
+| ARIA         | None              | `role=tablist/tab/tabpanel`, `aria-selected`, `aria-controls` |
 
 ## HTML Pattern
 

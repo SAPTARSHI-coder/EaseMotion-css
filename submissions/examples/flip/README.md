@@ -10,11 +10,11 @@
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-flip` | Default flip Y-axis entrance |
-| `ease-flip-sm` | Subtle flip |
-| `ease-flip-lg` | Strong flip |
+| Class          | Description                  |
+| -------------- | ---------------------------- |
+| `ease-flip`    | Default flip Y-axis entrance |
+| `ease-flip-sm` | Subtle flip                  |
+| `ease-flip-lg` | Strong flip                  |
 
 ## Notes
 

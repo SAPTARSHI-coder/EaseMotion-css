@@ -7,14 +7,22 @@ Demonstrates the `color-mix()` CSS function — mixing two colors across differe
 ## How is it used?
 
 ```css
-@property --mix-pct { syntax: '<percentage>'; initial-value: 0%; inherits: false; }
+@property --mix-pct {
+  syntax: "<percentage>";
+  initial-value: 0%;
+  inherits: false;
+}
 
 .element {
   background: color-mix(in srgb, blue var(--mix-pct), red);
   animation: slide-mix 3s ease-in-out infinite alternate;
 }
 
-@keyframes slide-mix { to { --mix-pct: 100%; } }
+@keyframes slide-mix {
+  to {
+    --mix-pct: 100%;
+  }
+}
 ```
 
 ## Why is it useful?

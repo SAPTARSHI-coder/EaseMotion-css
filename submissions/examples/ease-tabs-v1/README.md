@@ -22,13 +22,19 @@ A CSS-only tab switcher with animated active indicator. Uses hidden radio inputs
 ```html
 <div class="ease-tabs">
   <div class="ease-tabs-nav">
-    <input type="radio" id="tab-1" name="my-tabs" class="ease-tabs-input" checked>
+    <input
+      type="radio"
+      id="tab-1"
+      name="my-tabs"
+      class="ease-tabs-input"
+      checked
+    />
     <label for="tab-1" class="ease-tabs-label">Tab 1</label>
 
-    <input type="radio" id="tab-2" name="my-tabs" class="ease-tabs-input">
+    <input type="radio" id="tab-2" name="my-tabs" class="ease-tabs-input" />
     <label for="tab-2" class="ease-tabs-label">Tab 2</label>
 
-    <input type="radio" id="tab-3" name="my-tabs" class="ease-tabs-input">
+    <input type="radio" id="tab-3" name="my-tabs" class="ease-tabs-input" />
     <label for="tab-3" class="ease-tabs-label">Tab 3</label>
   </div>
 

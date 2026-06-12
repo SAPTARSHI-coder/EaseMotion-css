@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring Kubernetes cluster health, node 
 
 ```html
 <div class="node-card healthy">
-    <h3>worker-node-01</h3>
+  <h3>worker-node-01</h3>
 </div>
 ```
 

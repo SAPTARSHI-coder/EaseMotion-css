@@ -10,11 +10,11 @@ Entrance animation that slides an element up while fading in. The most requested
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-slide-up` | Default slide up (24px) |
-| `ease-slide-up-sm` | Subtle slide (12px) |
-| `ease-slide-up-lg` | Strong slide (48px) |
+| Class              | Description             |
+| ------------------ | ----------------------- |
+| `ease-slide-up`    | Default slide up (24px) |
+| `ease-slide-up-sm` | Subtle slide (12px)     |
+| `ease-slide-up-lg` | Strong slide (48px)     |
 
 ## Notes
 

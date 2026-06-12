@@ -1,13 +1,14 @@
 # Prefers Reduced Motion Accessibility Fix
 
 ### What does this do?
+
 This submission provides precise, targeted `@media (prefers-reduced-motion: reduce)` resets and fallbacks for all entrance, exit, looping, and hover classes in EaseMotion CSS, replacing the global `*` wildcard reset that disables benign transitions and introduces layout visibility bugs.
 
 ---
 
 ### How is it used?
 
-The maintainer should replace the legacy wildcard rule at the bottom of `core/animations.css` (lines 688–696) with the production media query blocks inside `style.css`. 
+The maintainer should replace the legacy wildcard rule at the bottom of `core/animations.css` (lines 688–696) with the production media query blocks inside `style.css`.
 
 No modifications are needed on the user side; standard class usage (e.g., `<div class="ease-slide-up">`) automatically detects user OS settings and applies the appropriate overrides:
 
@@ -21,6 +22,6 @@ No modifications are needed on the user side; standard class usage (e.g., `<div 
 
 ### Why is it useful?
 
-1. **Fixes Accessibility Anti-Patterns**: The global `* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }` wildcard kills *all* transitions on a webpage. Harmless transitions like button hover background-color fades, focus border-color glow transitions, and light mode/dark mode theme fades are completely disabled despite having no impact on vestibular disorders. This fix selectively disables only motion-heavy properties (transforms, translations, bounces, infinite loops) while keeping benign color transitions functional.
+1. **Fixes Accessibility Anti-Patterns**: The global `* { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }` wildcard kills _all_ transitions on a webpage. Harmless transitions like button hover background-color fades, focus border-color glow transitions, and light mode/dark mode theme fades are completely disabled despite having no impact on vestibular disorders. This fix selectively disables only motion-heavy properties (transforms, translations, bounces, infinite loops) while keeping benign color transitions functional.
 2. **Prevents Layout and Visibility Failures**: Under the legacy wildcard system, typewriter animations (`.ease-typewriter-loop`) remain permanently hidden at `width: 0` because the animation is cancelled. Similarly, exit animations with delays can get stuck in incomplete states. This fix explicitly handles layout-critical properties to guarantee content visibility under reduced-motion.
 3. **Graceful Fallbacks over Complete Halts**: Rather than cutting off elements immediately mid-animation or skipping entrance effects entirely, mapping entrances to simple opacity fades (`ease-kf-fade-in`) maintains design continuity and polished UX without compromising accessibility.

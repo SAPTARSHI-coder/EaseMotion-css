@@ -12,9 +12,7 @@ A smooth flip-style hover animation for border components.
 ## Usage
 
 ```html
-<div class="ease-flip-border-hover">
-  Hover Me
-</div>
+<div class="ease-flip-border-hover">Hover Me</div>
 ```
 
 ## Animation Details

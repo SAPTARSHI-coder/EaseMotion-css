@@ -14,7 +14,7 @@ No new classes are introduced. This is a **bug fix** — the `@media` block shou
   .ease-tab-label {
     transition: none !important;
   }
-  
+
   .ease-tab-panel {
     animation: none !important;
   }

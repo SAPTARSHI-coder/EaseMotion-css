@@ -22,3 +22,4 @@ A beautiful animated mesh gradient background with multiple floating gradient or
     <h1>Your Content Here</h1>
   </div>
 </div>
+```

@@ -49,6 +49,7 @@ The `sidebar.css` file already defines a `cubic-bezier(0.34, 1.56, 0.64, 1)` bou
 3. There are no intermediate frames for the `transform` transition to interpolate
 
 The `visibility` + `pointer-events` pattern is the standard CSS solution:
+
 - `visibility: hidden` keeps the element in the layout but invisible (allowing transitions)
 - `pointer-events: none` prevents click/touch interaction while hidden
 - `transform: translateX(-100%)` keeps it visually off-screen

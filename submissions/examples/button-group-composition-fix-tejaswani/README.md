@@ -10,9 +10,9 @@ This demo showcases button groups with proper border-radius composition for diff
 
 ```html
 <div class="button-group pill">
-    <button>Left</button>
-    <button>Middle</button>
-    <button>Right</button>
+  <button>Left</button>
+  <button>Middle</button>
+  <button>Right</button>
 </div>
 ```
 
@@ -20,9 +20,9 @@ This demo showcases button groups with proper border-radius composition for diff
 
 ```html
 <div class="button-group small">
-    <button>Left</button>
-    <button>Middle</button>
-    <button>Right</button>
+  <button>Left</button>
+  <button>Middle</button>
+  <button>Right</button>
 </div>
 ```
 
@@ -30,9 +30,9 @@ This demo showcases button groups with proper border-radius composition for diff
 
 ```html
 <div class="button-group large">
-    <button>Left</button>
-    <button>Middle</button>
-    <button>Right</button>
+  <button>Left</button>
+  <button>Middle</button>
+  <button>Right</button>
 </div>
 ```
 

@@ -4,10 +4,12 @@ A modern frosted glass card component with smooth hover lift animation —
 built in pure HTML and CSS.
 
 ## Structure
+
 glassmorphism-hover-card/
 ├── demo.html
 ├── style.css
 └── README.md
+
 ## Usage
 
 ```html
@@ -21,13 +23,14 @@ glassmorphism-hover-card/
 
 ## Card Variants
 
-| Class | Style |
-|---|---|
-| `glass-card` | Default frosted white |
-| `glass-card card-purple` | Indigo tinted glass |
-| `glass-card card-cyan` | Cyan tinted glass |
+| Class                    | Style                 |
+| ------------------------ | --------------------- |
+| `glass-card`             | Default frosted white |
+| `glass-card card-purple` | Indigo tinted glass   |
+| `glass-card card-cyan`   | Cyan tinted glass     |
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - `backdrop-filter: blur()` frosted glass effect
 - Smooth hover lift with `translateY`
@@ -37,6 +40,7 @@ glassmorphism-hover-card/
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Dashboards
 - Pricing sections
 - Portfolio cards

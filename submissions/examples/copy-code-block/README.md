@@ -10,9 +10,9 @@ Adds a modern code block component with a hover-revealed copy button and animate
 
 ```html
 <div class="code-block">
-    <button class="copy-btn">📋</button>
+  <button class="copy-btn">📋</button>
 
-    <pre>
+  <pre>
         <code>
 npm install easemotion-css
         </code>

@@ -1,21 +1,20 @@
- 
 # Text Italic Utilities
 
 Simple text utilities for font-style control — italic and normal text.
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description      |
+| --------------------------- | ---------------- |
 | 📄 [demo.html](./demo.html) | Interactive demo |
-| 🎨 [style.css](./style.css) | Utility styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Utility styles   |
+| 📖 [README.md](./README.md) | Documentation    |
 
 ## Classes
 
-| Class | CSS Property |
-|-------|--------------|
-| `ease-italic` | `font-style: italic` |
+| Class             | CSS Property         |
+| ----------------- | -------------------- |
+| `ease-italic`     | `font-style: italic` |
 | `ease-not-italic` | `font-style: normal` |
 
 ## Usage
@@ -30,3 +29,4 @@ Simple text utilities for font-style control — italic and normal text.
 <!-- With other classes -->
 <p class="ease-italic ease-bold">Italic and bold</p>
 <span class="ease-italic">Inline italic text</span>
+```

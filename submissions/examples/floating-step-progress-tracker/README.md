@@ -16,13 +16,10 @@ A multi-step progress tracker that uses floating milestone animations and conten
 
 ```html
 <div class="step">
+  <div class="step-circle">1</div>
 
-    <div class="step-circle">1</div>
+  <h3>Planning</h3>
 
-    <h3>Planning</h3>
-
-    <div class="step-info">
-        Define goals and requirements.
-    </div>
-
+  <div class="step-info">Define goals and requirements.</div>
 </div>
+```

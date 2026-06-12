@@ -26,7 +26,11 @@ Use a `<fieldset>` with the class `em-segmented`. Place a hidden `<input type="r
 For the pill variant, add `em-segmented--pill`:
 
 ```html
-<fieldset class="em-segmented em-segmented--pill" role="group" aria-label="Theme">
+<fieldset
+  class="em-segmented em-segmented--pill"
+  role="group"
+  aria-label="Theme"
+>
   <input type="radio" name="theme" id="theme-light" value="light" checked />
   <label for="theme-light">Light</label>
 
@@ -36,6 +40,7 @@ For the pill variant, add `em-segmented--pill`:
 ```
 
 **Accessibility notes:**
+
 - Use `role="group"` and `aria-label` on the `<fieldset>` to describe the control to screen readers
 - Keyboard navigation works natively — arrow keys move between segments
 - `focus-visible` ring is applied for keyboard users only

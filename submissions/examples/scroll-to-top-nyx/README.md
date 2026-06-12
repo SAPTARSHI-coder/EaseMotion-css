@@ -15,6 +15,5 @@ A reusable Scroll To Top Button example for EaseMotion CSS submissions.
 Include the HTML button:
 
 ```html
-<button id="scrollTopBtn" class="scroll-top-btn">
-    ↑
-</button>
+<button id="scrollTopBtn" class="scroll-top-btn">↑</button>
+```

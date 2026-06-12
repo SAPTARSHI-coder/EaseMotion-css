@@ -12,21 +12,21 @@ Pure CSS click ripple effect using `:active::after` and `scale` keyframes. Zero 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-ripple` | Default dark ripple |
-| `ease-ripple-light` | White ripple for dark buttons |
-| `ease-ripple-dark` | Dark ripple for light elements |
-| `ease-ripple-primary` | Indigo ripple |
-| `ease-ripple-success` | Green ripple |
-| `ease-ripple-danger` | Red ripple |
-| `ease-ripple-fast` | 250ms ripple |
-| `ease-ripple-slow` | 900ms ripple |
+| Class                 | Description                    |
+| --------------------- | ------------------------------ |
+| `ease-ripple`         | Default dark ripple            |
+| `ease-ripple-light`   | White ripple for dark buttons  |
+| `ease-ripple-dark`    | Dark ripple for light elements |
+| `ease-ripple-primary` | Indigo ripple                  |
+| `ease-ripple-success` | Green ripple                   |
+| `ease-ripple-danger`  | Red ripple                     |
+| `ease-ripple-fast`    | 250ms ripple                   |
+| `ease-ripple-slow`    | 900ms ripple                   |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property              | Default           | Description       |
+| --------------------- | ----------------- | ----------------- |
 | `--ease-ripple-color` | `rgba(0,0,0,0.2)` | Ripple fill color |
 
 ## Submission

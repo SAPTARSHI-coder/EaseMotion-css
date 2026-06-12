@@ -18,6 +18,7 @@ A clean, accessible accordion component built with the `ease-` naming convention
 ## 🚀 Usage
 
 ### Basic Accordion (Single open mode)
+
 ```html
 <div class="ease-accordion" data-mode="single">
   <div class="ease-accordion-item ease-accordion-slide">
@@ -33,6 +34,7 @@ A clean, accessible accordion component built with the `ease-` naming convention
 ```
 
 ### Multi-open Accordion
+
 ```html
 <div class="ease-accordion" data-mode="multi">
   <!-- items -->
@@ -40,6 +42,7 @@ A clean, accessible accordion component built with the `ease-` naming convention
 ```
 
 ### Bordered Variant
+
 ```html
 <div class="ease-accordion-item ease-accordion-slide ease-accordion-bordered">
   <!-- header & body -->
@@ -51,32 +54,36 @@ A clean, accessible accordion component built with the `ease-` naming convention
 ## 🎨 Available Classes
 
 ### Core
-| Class | Description |
-|-------|-------------|
-| `ease-accordion` | Main container |
-| `ease-accordion-item` | Each collapsible item |
-| `ease-accordion-header` | Clickable title button |
-| `ease-accordion-body` | Collapsible content |
-| `ease-accordion-icon` | + / × icon indicator |
-| `ease-accordion-open` | Toggled state (added by JS) |
+
+| Class                   | Description                 |
+| ----------------------- | --------------------------- |
+| `ease-accordion`        | Main container              |
+| `ease-accordion-item`   | Each collapsible item       |
+| `ease-accordion-header` | Clickable title button      |
+| `ease-accordion-body`   | Collapsible content         |
+| `ease-accordion-icon`   | + / × icon indicator        |
+| `ease-accordion-open`   | Toggled state (added by JS) |
 
 ### Animations
-| Class | Effect |
-|-------|--------|
+
+| Class                  | Effect                        |
+| ---------------------- | ----------------------------- |
 | `ease-accordion-slide` | Smooth height slide (default) |
-| `ease-accordion-fade` | Fade + slide combo |
-| `ease-accordion-flip` | 3D rotateX flip |
+| `ease-accordion-fade`  | Fade + slide combo            |
+| `ease-accordion-flip`  | 3D rotateX flip               |
 
 ### Variants
-| Class | Description |
-|-------|-------------|
+
+| Class                     | Description             |
+| ------------------------- | ----------------------- |
 | `ease-accordion-bordered` | Adds individual borders |
 
 ### Modes (via `data-mode`)
-| Value | Behavior |
-|-------|----------|
+
+| Value    | Behavior                     |
+| -------- | ---------------------------- |
 | `single` | Only one item open at a time |
-| `multi` | Multiple items can be open |
+| `multi`  | Multiple items can be open   |
 
 ---
 
@@ -85,21 +92,21 @@ A clean, accessible accordion component built with the `ease-` naming convention
 The accordion needs minimal JS to toggle items. Just include this script:
 
 ```javascript
-document.querySelectorAll('.ease-accordion').forEach(accordion => {
-  const mode = accordion.dataset.mode || 'single';
-  const items = accordion.querySelectorAll('.ease-accordion-item');
+document.querySelectorAll(".ease-accordion").forEach((accordion) => {
+  const mode = accordion.dataset.mode || "single";
+  const items = accordion.querySelectorAll(".ease-accordion-item");
 
-  items.forEach(item => {
-    const header = item.querySelector('.ease-accordion-header');
-    header.addEventListener('click', () => {
-      const isOpen = item.classList.contains('ease-accordion-open');
-      if (mode === 'single') {
-        items.forEach(i => i.classList.remove('ease-accordion-open'));
+  items.forEach((item) => {
+    const header = item.querySelector(".ease-accordion-header");
+    header.addEventListener("click", () => {
+      const isOpen = item.classList.contains("ease-accordion-open");
+      if (mode === "single") {
+        items.forEach((i) => i.classList.remove("ease-accordion-open"));
       }
       if (!isOpen) {
-        item.classList.add('ease-accordion-open');
+        item.classList.add("ease-accordion-open");
       } else {
-        item.classList.remove('ease-accordion-open');
+        item.classList.remove("ease-accordion-open");
       }
     });
   });

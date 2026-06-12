@@ -13,3 +13,4 @@ Creates a responsive animated timeline component for visualizing workflows, onbo
     <h3>Research</h3>
   </div>
 </div>
+```

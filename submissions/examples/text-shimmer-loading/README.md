@@ -4,23 +4,23 @@ A skeleton-loading-style shimmer sweep that animates across text — perfect for
 
 ## Usage
 
-​```html
+​`html
 <span class="text-shimmer">Loading your content...</span>
-​```
+​`
 
 For dark backgrounds:
 
-​```html
+​`html
 <span class="text-shimmer-dark">Fetching latest updates...</span>
-​```
+​`
 
 For a slower sweep on longer text:
 
-​```html
+​`html
 <span class="text-shimmer text-shimmer-slow">
   Please wait while we prepare your dashboard
 </span>
-​```
+​`
 
 ## Features
 

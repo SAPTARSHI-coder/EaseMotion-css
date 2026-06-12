@@ -29,19 +29,19 @@ Reusable section heading with title, subtitle, optional badge, action link with 
 
 ## Elements
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-section-badge-az` | Pill badge label |
-| `.ease-section-title-az` | Main heading |
+| Class                       | Purpose          |
+| --------------------------- | ---------------- |
+| `.ease-section-badge-az`    | Pill badge label |
+| `.ease-section-title-az`    | Main heading     |
 | `.ease-section-subtitle-az` | Description text |
-| `.ease-section-link-az` | Action link |
-| `.ease-section-divider-az` | Horizontal rule |
+| `.ease-section-link-az`     | Action link      |
+| `.ease-section-divider-az`  | Horizontal rule  |
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

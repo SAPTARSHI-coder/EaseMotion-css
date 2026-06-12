@@ -10,9 +10,9 @@ Circular clip-path reveal animation using `clip-path: circle()` for an expanding
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-mask-reveal-circle` | Circle reveal from center to 75% |
+| Class                          | Description                       |
+| ------------------------------ | --------------------------------- |
+| `ease-mask-reveal-circle`      | Circle reveal from center to 75%  |
 | `ease-mask-reveal-circle-full` | Circle reveal from center to 100% |
 
 ## Notes

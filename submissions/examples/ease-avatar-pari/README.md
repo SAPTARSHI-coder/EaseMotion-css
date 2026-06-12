@@ -5,6 +5,7 @@ A CSS avatar component with size variants, circle variant, color themes,
 and a stacked group with hover expand animation.
 
 **How is it used?**
+
 <!-- Base -->
 <div class="ease-avatar">AB</div>
 

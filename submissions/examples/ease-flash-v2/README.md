@@ -13,16 +13,14 @@ Rapid visibility flicker animation that mimics a camera flash or warning strobe.
 ## Usage
 
 ```html
-<div class="ease-flash">
-    Alert Message
-</div>
+<div class="ease-flash">Alert Message</div>
 ```
 
 ## Customization
 
 ```css
 :root {
-    --ease-flash-count: 3;
+  --ease-flash-count: 3;
 }
 ```
 

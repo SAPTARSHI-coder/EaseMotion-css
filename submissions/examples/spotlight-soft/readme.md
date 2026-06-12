@@ -23,22 +23,26 @@ Dark overlay covers the scene. As the cursor moves, a warm radial gradient cuts 
 Add the cursor tracker (≈15 lines, no library required):
 
 ```js
-const scene = document.getElementById('my-scene');
+const scene = document.getElementById("my-scene");
 
-scene.addEventListener('mousemove', (e) => {
+scene.addEventListener("mousemove", (e) => {
   const rect = scene.getBoundingClientRect();
-  scene.style.setProperty('--x', `${e.clientX - rect.left}px`);
-  scene.style.setProperty('--y', `${e.clientY - rect.top}px`);
+  scene.style.setProperty("--x", `${e.clientX - rect.left}px`);
+  scene.style.setProperty("--y", `${e.clientY - rect.top}px`);
 });
 
 // Touch support
-scene.addEventListener('touchmove', (e) => {
-  e.preventDefault();
-  const t = e.touches[0];
-  const rect = scene.getBoundingClientRect();
-  scene.style.setProperty('--x', `${t.clientX - rect.left}px`);
-  scene.style.setProperty('--y', `${t.clientY - rect.top}px`);
-}, { passive: false });
+scene.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    const rect = scene.getBoundingClientRect();
+    scene.style.setProperty("--x", `${t.clientX - rect.left}px`);
+    scene.style.setProperty("--y", `${t.clientY - rect.top}px`);
+  },
+  { passive: false }
+);
 ```
 
 That's it. No canvas, no WebGL, no JS animation libraries.
@@ -62,26 +66,26 @@ That's it. No canvas, no WebGL, no JS animation libraries.
 
 Override any variable on `.ease-spotlight-soft` or inline on the element:
 
-| Variable              | Default    | Description                              |
-|-----------------------|------------|------------------------------------------|
-| `--spotlight-size`    | `380px`    | Radius of the transparent reveal zone   |
-| `--spotlight-opacity` | `0.92`     | Darkness of the overlay at full cover    |
-| `--spotlight-blur`    | `48px`     | Softness of the warm bloom layer         |
-| `--spotlight-color`   | `#fff8e7`  | Tint of the torch glow                   |
+| Variable              | Default   | Description                           |
+| --------------------- | --------- | ------------------------------------- |
+| `--spotlight-size`    | `380px`   | Radius of the transparent reveal zone |
+| `--spotlight-opacity` | `0.92`    | Darkness of the overlay at full cover |
+| `--spotlight-blur`    | `48px`    | Softness of the warm bloom layer      |
+| `--spotlight-color`   | `#fff8e7` | Tint of the torch glow                |
 
 ```css
 /* Wider, cooler spotlight */
 .my-hero {
-  --spotlight-size:  520px;
+  --spotlight-size: 520px;
   --spotlight-color: #dce8ff;
-  --spotlight-blur:  64px;
+  --spotlight-blur: 64px;
 }
 
 /* Tight, dramatic */
 .my-hero {
-  --spotlight-size:    200px;
+  --spotlight-size: 200px;
   --spotlight-opacity: 0.97;
-  --spotlight-blur:    24px;
+  --spotlight-blur: 24px;
 }
 ```
 
@@ -123,4 +127,4 @@ Works in all browsers that support CSS `mask-image` with `radial-gradient` — C
 ## Contributing
 
 Part of [EaseMotion CSS](https://github.com/your-org/easemotion-css) · GSSoC contribution  
-One utility per PR · Do not modify `core/` or `components/` 
+One utility per PR · Do not modify `core/` or `components/`

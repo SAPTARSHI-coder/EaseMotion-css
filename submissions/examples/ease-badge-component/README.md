@@ -34,6 +34,7 @@ The `ease-badge` is designed to perfect the layout and styling of secondary tags
 ## Usage Examples
 
 ### 1. Standard Color Badges (Solid, Soft, Outline)
+
 ```html
 <!-- Solid Badge -->
 <span class="ease-badge ease-badge-primary">New Feature</span>
@@ -46,28 +47,34 @@ The `ease-badge` is designed to perfect the layout and styling of secondary tags
 ```
 
 ### 2. Pill Shape
+
 ```html
 <span class="ease-badge ease-badge-primary ease-badge-pill">99+</span>
 ```
 
 ### 3. Dot & Status Markers
+
 ```html
 <!-- Inline Status Dot -->
 <span class="ease-badge ease-badge-has-dot">Active</span>
 
 <!-- Corner Positioned Dot (inside relative wrapper) -->
 <div class="avatar-wrapper" style="position: relative; display: inline-block;">
-  <img src="avatar.jpg" alt="User Avatar" style="border-radius: 50%;">
+  <img src="avatar.jpg" alt="User Avatar" style="border-radius: 50%;" />
   <span class="ease-badge-dot ease-badge-success ease-badge-corner"></span>
 </div>
 ```
 
 ### 4. Gradient Backgrounds
+
 ```html
-<span class="ease-badge ease-badge-gradient ease-badge-gradient-sunset">Trending</span>
+<span class="ease-badge ease-badge-gradient ease-badge-gradient-sunset"
+  >Trending</span
+>
 ```
 
 ### 5. Motion & Pulse Animations
+
 ```html
 <!-- Interactive Link Badge (Lifts on hover) -->
 <a href="#" class="ease-badge ease-badge-primary">Learn More</a>
@@ -84,11 +91,11 @@ You can customize the badge parameters locally or globally using CSS custom vari
 
 ### Layout Variables
 
-| CSS Custom Variable | Purpose | Default Reference |
-| :--- | :--- | :--- |
-| `font-size` | Sizing reference for `em` scaling | Inherits from parent (`0.75em` base multiplier) |
-| `border-radius` | Controls shape geometry corners | `var(--ease-radius-sm)` (0.25rem) |
-| `transition-duration` | Speeds up or slows down animations | `var(--ease-speed-fast)` (150ms) |
+| CSS Custom Variable   | Purpose                            | Default Reference                               |
+| :-------------------- | :--------------------------------- | :---------------------------------------------- |
+| `font-size`           | Sizing reference for `em` scaling  | Inherits from parent (`0.75em` base multiplier) |
+| `border-radius`       | Controls shape geometry corners    | `var(--ease-radius-sm)` (0.25rem)               |
+| `transition-duration` | Speeds up or slows down animations | `var(--ease-speed-fast)` (150ms)                |
 
 ### Overriding Badge Colors
 
@@ -97,7 +104,7 @@ To customize a badge color theme locally, override the custom colors in your own
 ```css
 .my-custom-badge {
   /* Override color tokens */
-  --ease-color-primary: #10b981; 
+  --ease-color-primary: #10b981;
   --ease-badge-primary-soft-text: #047857;
 }
 ```

@@ -7,9 +7,7 @@ Adds a zoom scaling effect when hovering over an element.
 ## How is it used?
 
 ```html
-<div class="zoom-hover">
-  Content
-</div>
+<div class="zoom-hover">Content</div>
 ```
 
 ## Why is it useful?

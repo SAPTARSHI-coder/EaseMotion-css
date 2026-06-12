@@ -18,23 +18,27 @@ Beautifully animated modal & dialog components built with the `ease-` naming con
 ## 🚀 Usage
 
 ### Basic Modal Structure
+
 ```html
 <div class="ease-modal-backdrop" id="my-modal">
   <div class="ease-modal-card ease-fade-in">
     <h2>Hello!</h2>
     <p>This is a modal dialog.</p>
-    <button class="ease-btn-primary" onclick="closeModal('my-modal')">Close</button>
+    <button class="ease-btn-primary" onclick="closeModal('my-modal')">
+      Close
+    </button>
   </div>
 </div>
 ```
 
 ### Open / Close Logic
+
 ```javascript
 function openModal(id) {
-  document.getElementById(id).classList.add('ease-modal-open');
+  document.getElementById(id).classList.add("ease-modal-open");
 }
 function closeModal(id) {
-  document.getElementById(id).classList.remove('ease-modal-open');
+  document.getElementById(id).classList.remove("ease-modal-open");
 }
 ```
 
@@ -42,32 +46,32 @@ function closeModal(id) {
 
 ## 🎨 Available Classes
 
-| Class | Description |
-|-------|-------------|
+| Class                 | Description                           |
+| --------------------- | ------------------------------------- |
 | `ease-modal-backdrop` | Full-screen backdrop with blur effect |
-| `ease-modal-open` | Toggle class to show the modal |
-| `ease-modal-card` | The actual modal content container |
-| `ease-fade-in` | Smooth fade entrance animation |
-| `ease-slide-up` | Slide up from bottom animation |
-| `ease-scale-bounce` | Bouncy scale-in animation |
-| `ease-btn-primary` | Primary action button |
+| `ease-modal-open`     | Toggle class to show the modal        |
+| `ease-modal-card`     | The actual modal content container    |
+| `ease-fade-in`        | Smooth fade entrance animation        |
+| `ease-slide-up`       | Slide up from bottom animation        |
+| `ease-scale-bounce`   | Bouncy scale-in animation             |
+| `ease-btn-primary`    | Primary action button                 |
 
 ---
 
 ## 🎬 Available Animations
 
-| Animation Class | Effect | Duration | Best For |
-|-----------------|--------|----------|----------|
-| `ease-fade-in` | Smooth opacity fade | 0.4s | Subtle, professional UIs |
-| `ease-slide-up` | Slides up from below | 0.45s | Mobile-style modals |
-| `ease-slide-down` | Drops from top | 0.45s | Notifications, alerts |
-| `ease-slide-left` | Glides in from right | 0.45s | Side panels |
-| `ease-slide-right` | Glides in from left | 0.45s | Side panels |
-| `ease-scale-bounce` | Springy pop-in | 0.5s | Playful confirmations |
-| `ease-zoom-in` | Grows from tiny | 0.4s | Image previews, gallery |
-| `ease-flip-in` | 3D Y-axis flip | 0.6s | Eye-catching reveals |
-| `ease-rotate-in` | Spins into place | 0.5s | Fun, energetic UIs |
-| `ease-swing-in` | Pendulum swing | 0.7s | Playful notifications |
+| Animation Class     | Effect               | Duration | Best For                 |
+| ------------------- | -------------------- | -------- | ------------------------ |
+| `ease-fade-in`      | Smooth opacity fade  | 0.4s     | Subtle, professional UIs |
+| `ease-slide-up`     | Slides up from below | 0.45s    | Mobile-style modals      |
+| `ease-slide-down`   | Drops from top       | 0.45s    | Notifications, alerts    |
+| `ease-slide-left`   | Glides in from right | 0.45s    | Side panels              |
+| `ease-slide-right`  | Glides in from left  | 0.45s    | Side panels              |
+| `ease-scale-bounce` | Springy pop-in       | 0.5s     | Playful confirmations    |
+| `ease-zoom-in`      | Grows from tiny      | 0.4s     | Image previews, gallery  |
+| `ease-flip-in`      | 3D Y-axis flip       | 0.6s     | Eye-catching reveals     |
+| `ease-rotate-in`    | Spins into place     | 0.5s     | Fun, energetic UIs       |
+| `ease-swing-in`     | Pendulum swing       | 0.7s     | Playful notifications    |
 
 ---
 
@@ -77,10 +81,10 @@ Override the CSS variables to match your theme:
 
 ```css
 :root {
-  --ease-primary: #7c3aed;       /* Accent color */
-  --ease-bg: #1a1a2e;            /* Page background */
-  --ease-card-bg: #25253f;       /* Modal card background */
-  --ease-text: #f5f5f5;          /* Text color */
+  --ease-primary: #7c3aed; /* Accent color */
+  --ease-bg: #1a1a2e; /* Page background */
+  --ease-card-bg: #25253f; /* Modal card background */
+  --ease-text: #f5f5f5; /* Text color */
   --ease-glow: rgba(124, 58, 237, 0.4);
   --ease-backdrop: rgba(0, 0, 0, 0.6);
 }

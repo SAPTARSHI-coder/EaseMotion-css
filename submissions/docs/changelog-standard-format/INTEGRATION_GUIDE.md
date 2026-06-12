@@ -8,7 +8,7 @@ This file shows exactly what should be added to the main `CONTRIBUTING.md` file 
 
 Add this section after the submission checklist section:
 
-```markdown
+````markdown
 ---
 
 ## Changelog Entries
@@ -20,46 +20,56 @@ Every PR that adds features, changes functionality, or fixes bugs must include a
 Use this template in your PR description:
 
 \`\`\`markdown
+
 ## Changelog Entry
 
 ### Type
+
 Choose one: ✨ Added | 🔄 Changed | 🐛 Fixed | ⚠️ Deprecated
 
 ### Proposed Entry
+
 - Brief description of what changed
 - Include class names, file paths, or values if relevant
 - Keep to one line per change
-\`\`\`
+  \`\`\`
 
 ### Examples
 
 **New Utility:**
+
 ```markdown
 ## Changelog Entry
 
 ### Type: ✨ Added
 
 ### Proposed Entry
+
 - `.ease-tracking-tight` — Condensed letter spacing (-0.025em) for modern headlines
 ```
+````
 
 **Bug Fix:**
+
 ```markdown
 ## Changelog Entry
 
 ### Type: 🐛 Fixed
 
 ### Proposed Entry
+
 - Fixed `.ease-hover-lift` shadow clipping on iOS Safari 14+
 ```
 
 **Breaking Change:**
+
 ```markdown
 ## Changelog Entry
 
 ### Type: 🔄 Changed
 
 ### Proposed Entry
+
 - **BREAKING:** Renamed `--ease-old-color` to `--ease-color-primary`
   - Migrate all CSS variable references in your stylesheets
   - See migration guide: docs/v2-upgrade.md
@@ -77,6 +87,7 @@ Choose one: ✨ Added | 🔄 Changed | 🐛 Fixed | ⚠️ Deprecated
 ### Non-Changelog PRs
 
 Not all PRs need changelog entries. Skip if:
+
 - Internal refactoring (no user-facing change)
 - Documentation-only updates (see separate process below)
 - Dependency updates
@@ -100,6 +111,7 @@ For documentation-only PRs (no code changes), add instead:
 ### Changelog Entry Review
 
 Before merging:
+
 - Maintainer will finalize changelog entry
 - Will be added to `CHANGELOG.md` with version and date
 - Released in the next project version
@@ -107,7 +119,8 @@ Before merging:
 See [submissions/changelog-standard-format/](../submissions/changelog-standard-format/) for complete format specification and templates.
 
 ---
-```
+
+````
 
 ---
 
@@ -120,7 +133,7 @@ Update `.github/PULL_REQUEST_TEMPLATE.md` with:
 
 ## Changelog Entry
 
-> All PRs that add features, fix bugs, or change functionality should include a changelog entry.  
+> All PRs that add features, fix bugs, or change functionality should include a changelog entry.
 > See [CONTRIBUTING.md](../CONTRIBUTING.md#changelog-entries) for format and examples.
 
 ### Type
@@ -138,7 +151,7 @@ Update `.github/PULL_REQUEST_TEMPLATE.md` with:
 \`\`\`
 
 ---
-```
+````
 
 ---
 
@@ -192,9 +205,11 @@ Update `.github/PULL_REQUEST_TEMPLATE.md` with:
 
 ```markdown
 ## Description
+
 Added letter-spacing utilities to control text tracking for typography-driven designs.
 
 ## Changes
+
 - Created 4 new utility classes for tracking control
 - Added demo and documentation
 - No changes to core files
@@ -206,6 +221,7 @@ Added letter-spacing utilities to control text tracking for typography-driven de
 ### Type: ✨ Added
 
 ### Proposed Entry
+
 - `.ease-tracking-tight`, `.ease-tracking-normal`, `.ease-tracking-wide`, `.ease-tracking-widest` — Letter-spacing utilities for condensed to dramatic text spacing
 - `docs/typography-guide.md` — Typography best practices guide
 ```
@@ -216,12 +232,13 @@ Added letter-spacing utilities to control text tracking for typography-driven de
 ✅ Changelog entry looks good! Minor suggestion:
 
 \`\`\`markdown
+
 - .ease-tracking-tight — Condensed letter spacing (-0.025em) for bold headlines
 - .ease-tracking-normal — Default letter spacing (0em)
 - .ease-tracking-wide — Wide letter spacing (0.05em) for subtle emphasis
 - .ease-tracking-widest — Extra wide letter spacing (0.1em) for dramatic display text
 - docs/typography-guide.md — Typography best practices and tracking recommendations
-\`\`\`
+  \`\`\`
 
 I separated tracking values by class for better clarity. Feel free to adjust!
 ```
@@ -230,13 +247,13 @@ I separated tracking values by class for better clarity. Feel free to adjust!
 
 ## File Locations
 
-| File | Location | Purpose |
-|------|----------|---------|
-| Format Spec | `submissions/changelog-standard-format/CHANGELOG_STANDARD.md` | Full specification |
-| Templates | `submissions/changelog-standard-format/CHANGELOG_TEMPLATE.md` | Copy-paste examples |
-| Reference | `submissions/changelog-standard-format/CHANGELOG_REFORMATTED_EXAMPLE.md` | How v1.0.0 reformatted |
-| Guide | `submissions/changelog-standard-format/README.md` | Implementation overview |
-| Main Log | `CHANGELOG.md` (root) | Actual project changelog |
+| File        | Location                                                                 | Purpose                  |
+| ----------- | ------------------------------------------------------------------------ | ------------------------ |
+| Format Spec | `submissions/changelog-standard-format/CHANGELOG_STANDARD.md`            | Full specification       |
+| Templates   | `submissions/changelog-standard-format/CHANGELOG_TEMPLATE.md`            | Copy-paste examples      |
+| Reference   | `submissions/changelog-standard-format/CHANGELOG_REFORMATTED_EXAMPLE.md` | How v1.0.0 reformatted   |
+| Guide       | `submissions/changelog-standard-format/README.md`                        | Implementation overview  |
+| Main Log    | `CHANGELOG.md` (root)                                                    | Actual project changelog |
 
 ---
 
@@ -265,26 +282,32 @@ Create a quick reference card or checklist:
 # Changelog Quick Reference
 
 ## Format
+
 ✨ Added | 🔄 Changed | 🐛 Fixed | ⚠️ Deprecated
 
 ## Template
-\`\`\`
-- [Class/Feature name] — [Description with value if relevant]
+
 \`\`\`
 
+- [Class/Feature name] — [Description with value if relevant]
+  \`\`\`
+
 ## Examples
+
 - ✨ `.ease-tracking-tight` — Condensed letter spacing (-0.025em)
 - 🐛 Fixed `.ease-hover-lift` shadow on Safari
 - 🔄 Updated `--ease-color-primary` from #6c63ff to #7c3aed
 - ⚠️ `.ease-old-class` — Use `.ease-new-class` instead (removal: v2.0.0)
 
 ## Do's ✅
+
 - Include class/file names
 - Be specific
 - One line per change
 - Link PRs if complex
 
 ## Don'ts ❌
+
 - Vague descriptions
 - Paragraph format
 - Multiple unrelated changes per line
@@ -297,12 +320,12 @@ Create a quick reference card or checklist:
 
 After integration, track:
 
-| Metric | Goal | How |
-|--------|------|-----|
-| % PRs with changelog entry | 100% | Check PR descriptions |
-| Entry quality score | 90%+ | Review clarity and specificity |
-| Integration time | < 10 min/PR | Time from PR to merged |
-| Contributor confusion | 0 issues | Monitor GitHub discussions |
+| Metric                     | Goal        | How                            |
+| -------------------------- | ----------- | ------------------------------ |
+| % PRs with changelog entry | 100%        | Check PR descriptions          |
+| Entry quality score        | 90%+        | Review clarity and specificity |
+| Integration time           | < 10 min/PR | Time from PR to merged         |
+| Contributor confusion      | 0 issues    | Monitor GitHub discussions     |
 
 ---
 
@@ -345,12 +368,15 @@ Starting [DATE], all PRs must include a changelog entry!
 
 **Example:**
 ```
+
 ## Changelog Entry
 
 ### Type: ✨ Added
 
 ### Proposed Entry
+
 - `.ease-new-class` — Brief description of what it does (value: 0.5em)
+
 ```
 
 Questions? Ask in #general or check the docs!

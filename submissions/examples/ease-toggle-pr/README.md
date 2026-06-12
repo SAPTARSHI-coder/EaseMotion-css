@@ -19,10 +19,8 @@ Pure CSS toggle switch with smooth slide animation using the checkbox hack.
 ## Usage
 
 ```html
-&lt;label class="toggle-pr"&gt;
-  &lt;input type="checkbox" class="toggle-pr-input"&gt;
-  &lt;span class="toggle-pr-track"&gt;
-    &lt;span class="toggle-pr-thumb"&gt;&lt;/span&gt;
-  &lt;/span&gt;
-  &lt;span class="toggle-pr-label"&gt;Label Text&lt;/span&gt;
-&lt;/label&gt;
+&lt;label class="toggle-pr"&gt; &lt;input type="checkbox"
+class="toggle-pr-input"&gt; &lt;span class="toggle-pr-track"&gt; &lt;span
+class="toggle-pr-thumb"&gt;&lt;/span&gt; &lt;/span&gt; &lt;span
+class="toggle-pr-label"&gt;Label Text&lt;/span&gt; &lt;/label&gt;
+```

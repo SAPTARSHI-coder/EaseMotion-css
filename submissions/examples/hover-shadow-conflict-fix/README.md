@@ -23,5 +23,6 @@ using CSS multi-value `box-shadow`:
 ```
 
 ## Files
+
 - `style.css` — the fix
 - `demo.html` — visual proof: three cards (glow only / lift only / both combined)

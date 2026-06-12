@@ -20,10 +20,16 @@ A CSS-only animated underline decoration utility that creates engaging underline
 <a href="#" class="underline-wave">Navigation Link</a>
 
 <!-- Custom color and thickness -->
-<a href="#" class="underline-draw" style="--underline-color: #06b6d4; --underline-thickness: 3px;">Styled Link</a>
+<a
+  href="#"
+  class="underline-draw"
+  style="--underline-color: #06b6d4; --underline-thickness: 3px;"
+  >Styled Link</a
+>
 ```
 
 Customize via CSS custom properties:
+
 - `--underline-color` — underline color (default: `#f97316`)
 - `--underline-thickness` — underline thickness (default: `2px`)
 

@@ -12,9 +12,7 @@ A smooth fade-style entrance animation for text components.
 ## Usage
 
 ```html
-<h1 class="ease-fade-text-entrance">
-  Welcome
-</h1>
+<h1 class="ease-fade-text-entrance">Welcome</h1>
 ```
 
 ## Animation Details

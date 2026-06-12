@@ -4,6 +4,7 @@
 Creates a shiny, iridescent trading-card foil effect.
 
 **How is it used?**
+
 <div class="ease-holo-card-ai">Rare</div>
 
 **Why is it useful?**

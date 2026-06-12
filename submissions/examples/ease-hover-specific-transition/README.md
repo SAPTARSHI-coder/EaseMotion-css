@@ -1,7 +1,8 @@
-**What does this do?** 
+**What does this do?**
 This example uses `transition: transform 0.3s ease` together with `transform: scale()` to create a smooth zoom-in effect when a user hovers over an element such as a button.
 
-**How is it used?** 
+**How is it used?**
+
 ```html
 <button class="ease-hover-grow">Hover me</button>
 ```

@@ -6,17 +6,20 @@ Creates two resizable panels separated by a draggable divider handle. Supports h
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Horizontal | `.ease-split-pane--horizontal` | Left/right panels with vertical divider (default) |
-| Vertical | `.ease-split-pane--vertical` | Top/bottom panels with horizontal divider |
-| Nested | *(nest `.ease-split-pane` inside)* | Split pane within a split pane |
-| Collapsible | *(add toggle button)* | First panel collapses/expands via toggle button |
+| Variant     | Class                              | Description                                       |
+| ----------- | ---------------------------------- | ------------------------------------------------- |
+| Horizontal  | `.ease-split-pane--horizontal`     | Left/right panels with vertical divider (default) |
+| Vertical    | `.ease-split-pane--vertical`       | Top/bottom panels with horizontal divider         |
+| Nested      | _(nest `.ease-split-pane` inside)_ | Split pane within a split pane                    |
+| Collapsible | _(add toggle button)_              | First panel collapses/expands via toggle button   |
 
 ## How is it used?
 
 ```html
-<div class="ease-split-pane ease-split-pane--horizontal" data-ease-min-panel-width="100">
+<div
+  class="ease-split-pane ease-split-pane--horizontal"
+  data-ease-min-panel-width="100"
+>
   <div class="ease-split-pane__panel" style="width:250px;">
     <!-- Left panel content -->
   </div>
@@ -32,7 +35,7 @@ Creates two resizable panels separated by a draggable divider handle. Supports h
 JavaScript initialisation:
 
 ```js
-initSplitPane(document.getElementById('my-split-pane'));
+initSplitPane(document.getElementById("my-split-pane"));
 ```
 
 ## Behaviour

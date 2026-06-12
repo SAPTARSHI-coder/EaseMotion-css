@@ -1,4 +1,3 @@
- 
 # Glassmorphism Card (ease-card-glass)
 
 Glassmorphism-style card using backdrop-filter blur, semi-transparent background, and frosted glass border.
@@ -22,11 +21,12 @@ Glassmorphism-style card using backdrop-filter blur, semi-transparent background
 
 ```html
 <div class="ease-card-glass">
-    <h3>Card Title</h3>
-    <p>Card content here</p>
+  <h3>Card Title</h3>
+  <p>Card content here</p>
 </div>
 
 <!-- With color variant -->
 <div class="ease-card-glass glass-blue">
-    <h3>Blue Glass Card</h3>
+  <h3>Blue Glass Card</h3>
 </div>
+```

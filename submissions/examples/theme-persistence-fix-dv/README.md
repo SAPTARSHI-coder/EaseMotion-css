@@ -1,6 +1,7 @@
 # Theme Toggle Persistence Fix
 
 ## What does this do?
+
 Persists the user's dark/light theme choice to `localStorage` so the selected theme survives page refreshes — and restores it on load with zero flash of the wrong theme.
 
 ## How is it used?
@@ -12,21 +13,22 @@ Persists the user's dark/light theme choice to `localStorage` so the selected th
   <!-- Must be first — runs before CSS to prevent flash of wrong theme -->
   <script>
     (function () {
-      var saved = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', saved);
+      var saved = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", saved);
     })();
   </script>
   <!-- rest of <head> … -->
+</head>
 ```
 
 **Step 2 — In the toggle click handler, write the new theme to `localStorage`:**
 
 ```js
-themeBtn.addEventListener('click', () => {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme); // ← ADD THIS LINE
+themeBtn.addEventListener("click", () => {
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+  const newTheme = currentTheme === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", newTheme);
+  localStorage.setItem("theme", newTheme); // ← ADD THIS LINE
 });
 ```
 

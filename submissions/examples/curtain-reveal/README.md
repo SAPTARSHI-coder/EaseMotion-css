@@ -38,3 +38,4 @@ Add the curtain base class plus a direction class to any wrapper element:
 <div class="curtain curtain-bottom">
   <p>Revealed from bottom!</p>
 </div>
+```

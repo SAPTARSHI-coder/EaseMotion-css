@@ -1,14 +1,8 @@
 \# ease-display utilities
 
-
-
 CSS display utilities for controlling layout behavior.
 
-
-
 \## Classes
-
-
 
 | Class | Value |
 
@@ -28,14 +22,9 @@ CSS display utilities for controlling layout behavior.
 
 | `ease-inline-grid` | display: inline-grid |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-block">Block element</div>
 
 <span class="ease-inline">Inline element</span>
@@ -43,4 +32,4 @@ CSS display utilities for controlling layout behavior.
 <div class="ease-flex">Flex container</div>
 
 <div class="ease-grid">Grid container</div>
-
+```

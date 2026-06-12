@@ -11,6 +11,7 @@
 The **Modern Statistics Card** is a highly interactive, hardware-accelerated dashboard KPI (Key Performance Indicator) component designed for professional SaaS applications and administrative panels. Built strictly in HTML and CSS with zero JavaScript, it introduces fluid cascading layouts and custom micro-animations that make data dashboards feel alive.
 
 ### Core Visual Capabilities:
+
 - **Staggered Page Entrance Cascade:** Upon dashboard load, individual cards slide upward and fade in sequentially (Cascading left-to-right) using predefined CSS animation delays. This creates a coordinated layout reveal.
 - **Dynamic Mini Sparklines:** Each statistics tile embeds a micro bar chart (sparkline). During page entrance, the sparkline bars grow vertically from their baselines using staggered load animations.
 - **Color-Matched Ambient Glows:** Hovering a card triggers a multi-layered transition—the card lifts smoothly using an elastic spring curve, and a color-matched drop-shadow glow fades in to reflect the card's theme (e.g. emerald green for financial revenue, indigo blue for active users).
@@ -26,9 +27,11 @@ To drop this statistics layout grid into your administrative interface, follow t
 
 ```html
 <section class="ease-dashboard-stage">
-
   <!-- Blue Active Users Card (Slide Delay 0) -->
-  <article class="ease-stat-card ease-stat-card--blue ease-stat-card--delay-0" tabindex="0">
+  <article
+    class="ease-stat-card ease-stat-card--blue ease-stat-card--delay-0"
+    tabindex="0"
+  >
     <header class="ease-stat-card__header">
       <span class="ease-stat-card__label">Active Users</span>
       <div class="ease-stat-card__icon-wrapper" aria-hidden="true">👥</div>
@@ -53,7 +56,6 @@ To drop this statistics layout grid into your administrative interface, follow t
       <div class="ease-stat-sparkline__bar" style="height: 90%;"></div>
     </div>
   </article>
-
 </section>
 ```
 
@@ -61,18 +63,18 @@ To drop this statistics layout grid into your administrative interface, follow t
 
 Set the corresponding subclass modifier on the `.ease-stat-card` container to load customized HSL coordinate spectrums and HSL rgb values:
 
-| Modifer Class | Dashboard Theme Color | Translucent Color RGB Accent |
-|---|---|---|
-| `ease-stat-card--blue` | Indigo/Blue | `rgba(99, 102, 241, 0.12)` |
-| `ease-stat-card--green` | Emerald/Green | `rgba(52, 211, 153, 0.12)` |
-| `ease-stat-card--amber` | Amber/Orange | `rgba(245, 158, 11, 0.12)` |
-| `ease-stat-card--purple` | Violet/Purple | `rgba(167, 139, 250, 0.12)` |
+| Modifer Class            | Dashboard Theme Color | Translucent Color RGB Accent |
+| ------------------------ | --------------------- | ---------------------------- |
+| `ease-stat-card--blue`   | Indigo/Blue           | `rgba(99, 102, 241, 0.12)`   |
+| `ease-stat-card--green`  | Emerald/Green         | `rgba(52, 211, 153, 0.12)`   |
+| `ease-stat-card--amber`  | Amber/Orange          | `rgba(245, 158, 11, 0.12)`   |
+| `ease-stat-card--purple` | Violet/Purple         | `rgba(167, 139, 250, 0.12)`  |
 
 ---
 
 ## 3. Why is it useful?
 
-Analytical dashboards often battle loading sluggishness and high layout-shift scores when fetching graphs and analytics. 
+Analytical dashboards often battle loading sluggishness and high layout-shift scores when fetching graphs and analytics.
 
 ### Key Performance & Design Advantages:
 

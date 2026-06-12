@@ -10,13 +10,13 @@ Shimmer/gradient sweep animation for text elements. Creates a metallic sheen eff
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-shimmer-text` | Default shimmer (3s cycle) |
-| `ease-shimmer-text-fast` | Fast shimmer (1.5s) |
-| `ease-shimmer-text-slow` | Slow shimmer (6s) |
-| `ease-shimmer-text-primary` | Primary gradient colors |
-| `ease-shimmer-text-success` | Success/green gradient |
+| Class                       | Description                |
+| --------------------------- | -------------------------- |
+| `ease-shimmer-text`         | Default shimmer (3s cycle) |
+| `ease-shimmer-text-fast`    | Fast shimmer (1.5s)        |
+| `ease-shimmer-text-slow`    | Slow shimmer (6s)          |
+| `ease-shimmer-text-primary` | Primary gradient colors    |
+| `ease-shimmer-text-success` | Success/green gradient     |
 
 ## Notes
 

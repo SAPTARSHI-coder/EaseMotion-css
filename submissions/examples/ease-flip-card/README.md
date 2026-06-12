@@ -27,12 +27,12 @@ Adds a smooth, GPU-accelerated 3D flip effect to any card element. The front and
 
 ## Classes
 
-| Class | Role |
-|---|---|
-| `ease-flip-card` | Outer container. Sets `perspective` for 3D depth. |
+| Class                  | Role                                                  |
+| ---------------------- | ----------------------------------------------------- |
+| `ease-flip-card`       | Outer container. Sets `perspective` for 3D depth.     |
 | `ease-flip-card-inner` | Inner wrapper that performs the `rotateY` transition. |
-| `ease-flip-card-front` | Front face — visible by default. |
-| `ease-flip-card-back` | Back face — revealed after flip. |
+| `ease-flip-card-front` | Front face — visible by default.                      |
+| `ease-flip-card-back`  | Back face — revealed after flip.                      |
 
 ## Why it fits EaseMotion CSS
 

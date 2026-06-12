@@ -5,25 +5,26 @@ Smoothly scales up and slightly rotates an image within an overflow-hidden conta
 
 **How is it used?**  
 Applied to a wrapper card or wrapper div containing an image:
+
 ```html
 <!-- Scale 12% + rotate -2deg -->
 <div class="gallery-card zoom-rotate-left">
   <div class="img-container">
-    <img src="your-image.png" alt="...">
+    <img src="your-image.png" alt="..." />
   </div>
 </div>
 
 <!-- Scale 12% + rotate 2deg -->
 <div class="gallery-card zoom-rotate-right">
   <div class="img-container">
-    <img src="your-image.png" alt="...">
+    <img src="your-image.png" alt="..." />
   </div>
 </div>
 
 <!-- Scale 18% + rotate 3.5deg -->
 <div class="gallery-card zoom-rotate-deep">
   <div class="img-container">
-    <img src="your-image.png" alt="...">
+    <img src="your-image.png" alt="..." />
   </div>
 </div>
 ```

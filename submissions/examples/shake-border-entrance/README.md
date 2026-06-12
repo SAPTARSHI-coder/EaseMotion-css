@@ -10,13 +10,11 @@ Add the animation class to any bordered card, alert, or button:
 
 ```html
 <article class="shake-border-card">
-    <h2>Security Notice</h2>
-    <p>Review the highlighted setting before continuing.</p>
+  <h2>Security Notice</h2>
+  <p>Review the highlighted setting before continuing.</p>
 </article>
 
-<button class="shake-border-button" type="button">
-    Review changes
-</button>
+<button class="shake-border-button" type="button">Review changes</button>
 ```
 
 ## Why is it useful?

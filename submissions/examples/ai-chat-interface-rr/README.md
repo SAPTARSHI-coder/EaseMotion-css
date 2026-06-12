@@ -7,13 +7,9 @@ Provides a responsive AI chat interface with user messages, assistant messages, 
 ## How is it used?
 
 ```html
-<div class="message ai">
-    AI response
-</div>
+<div class="message ai">AI response</div>
 
-<div class="message user">
-    User message
-</div>
+<div class="message user">User message</div>
 ```
 
 ## Why is it useful?

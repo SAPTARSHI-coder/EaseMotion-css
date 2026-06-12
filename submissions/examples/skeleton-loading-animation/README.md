@@ -41,20 +41,20 @@ pseudo-element, so the shimmer never interferes with the element's own styling.
 
 **3. Combine with shape and timing modifiers**
 
-| Modifier           | Effect                                |
-|--------------------|---------------------------------------|
-| `skeleton--circle` | Rounds the element to a full circle   |
-| `skeleton--pill`   | Fully rounded ends (badges, buttons)  |
-| `skeleton--rounded`| Larger corner radius                  |
-| `skeleton--square` | No border radius                      |
-| `skeleton--slow`   | Slower shimmer (2.4 s)                |
-| `skeleton--fast`   | Faster shimmer (0.9 s)                |
-| `skeleton--d1` … `skeleton--d5` | Stagger delays (0.1–0.5 s) |
+| Modifier                        | Effect                               |
+| ------------------------------- | ------------------------------------ |
+| `skeleton--circle`              | Rounds the element to a full circle  |
+| `skeleton--pill`                | Fully rounded ends (badges, buttons) |
+| `skeleton--rounded`             | Larger corner radius                 |
+| `skeleton--square`              | No border radius                     |
+| `skeleton--slow`                | Slower shimmer (2.4 s)               |
+| `skeleton--fast`                | Faster shimmer (0.9 s)               |
+| `skeleton--d1` … `skeleton--d5` | Stagger delays (0.1–0.5 s)           |
 
 **4. Stagger multiple skeletons for a more natural feel**
 
 ```html
-<div class="skeleton"       style="height:14px;"></div>
+<div class="skeleton" style="height:14px;"></div>
 <div class="skeleton skeleton--d1" style="height:14px; width:88%;"></div>
 <div class="skeleton skeleton--d2" style="height:14px; width:72%;"></div>
 ```
@@ -94,8 +94,8 @@ Override them globally or per-component without touching the source file:
 ```css
 /* Cooler, more subtle tone for a dark sidebar */
 .sidebar .skeleton {
-  --sk-base:     #1e2128;
-  --sk-shine:    #2a2e38;
+  --sk-base: #1e2128;
+  --sk-shine: #2a2e38;
   --sk-duration: 2s;
 }
 ```
@@ -104,11 +104,11 @@ Override them globally or per-component without touching the source file:
 
 ## Files
 
-| File        | Purpose                                              |
-|-------------|------------------------------------------------------|
-| `style.css` | The skeleton animation library (drop-in stylesheet)  |
-| `demo.html` | Live demo — profile cards, article feed, dashboard   |
-| `README.md` | This file                                            |
+| File        | Purpose                                             |
+| ----------- | --------------------------------------------------- |
+| `style.css` | The skeleton animation library (drop-in stylesheet) |
+| `demo.html` | Live demo — profile cards, article feed, dashboard  |
+| `README.md` | This file                                           |
 
 ---
 

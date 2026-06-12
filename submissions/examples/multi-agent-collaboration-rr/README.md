@@ -7,13 +7,9 @@ Visualizes how multiple AI agents collaborate through an orchestrated workflow t
 ## How is it used?
 
 ```html
-<div class="node orchestrator">
-    Orchestrator Agent
-</div>
+<div class="node orchestrator">Orchestrator Agent</div>
 
-<div class="node planner">
-    Planner Agent
-</div>
+<div class="node planner">Planner Agent</div>
 ```
 
 ## Why is it useful?

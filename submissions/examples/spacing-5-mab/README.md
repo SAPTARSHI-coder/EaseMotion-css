@@ -13,9 +13,7 @@ Adds the missing `padding-5` and `margin-5` utility classes that correspond to t
 </div>
 
 <!-- Margin at scale step 5 -->
-<div class="margin-5">
-  This box has 1.25rem (20px) of margin on all sides.
-</div>
+<div class="margin-5">This box has 1.25rem (20px) of margin on all sides.</div>
 
 <!-- Composing both -->
 <section class="padding-5 margin-5">
@@ -48,12 +46,12 @@ This directly aligns with EaseMotion CSS's philosophy that class names should be
 
 ### Token Coverage After Fix
 
-| Token | Value | Padding Class | Margin Class |
-|---|---|---|---|
-| `--ease-space-1` | 0.25rem | ✅ exists | ✅ exists |
-| `--ease-space-2` | 0.5rem | ✅ exists | ✅ exists |
-| `--ease-space-3` | 0.75rem | ✅ exists | ✅ exists |
-| `--ease-space-4` | 1rem | ✅ exists | ✅ exists |
+| Token            | Value   | Padding Class             | Margin Class              |
+| ---------------- | ------- | ------------------------- | ------------------------- |
+| `--ease-space-1` | 0.25rem | ✅ exists                 | ✅ exists                 |
+| `--ease-space-2` | 0.5rem  | ✅ exists                 | ✅ exists                 |
+| `--ease-space-3` | 0.75rem | ✅ exists                 | ✅ exists                 |
+| `--ease-space-4` | 1rem    | ✅ exists                 | ✅ exists                 |
 | `--ease-space-5` | 1.25rem | ❌ missing → ✅ **added** | ❌ missing → ✅ **added** |
-| `--ease-space-6` | 1.5rem | ✅ exists | ✅ exists |
-| `--ease-space-8` | 2rem | ✅ exists | ✅ exists |
+| `--ease-space-6` | 1.5rem  | ✅ exists                 | ✅ exists                 |
+| `--ease-space-8` | 2rem    | ✅ exists                 | ✅ exists                 |

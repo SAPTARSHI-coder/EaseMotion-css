@@ -1,7 +1,5 @@
 \# Getting Started Guide for EaseMotion CSS
 
-
-
 A beginner-friendly guide covering:
 
 \- Adding the CDN link
@@ -16,11 +14,7 @@ A beginner-friendly guide covering:
 
 \- Complete example
 
-
-
 \## Files
-
-
 
 | File | Description |
 
@@ -32,11 +26,7 @@ A beginner-friendly guide covering:
 
 | \[README.md](./README.md) | Documentation |
 
-
-
 \## What's Included
-
-
 
 \- 📦 CDN installation
 
@@ -50,11 +40,6 @@ A beginner-friendly guide covering:
 
 \- 📝 Complete HTML example
 
-
-
 \## Issue
 
-
-
 Closes #332
-

@@ -11,6 +11,7 @@ The layout container used `display: flex; flex-direction: column; width: 100%; t
 ## Fix
 
 Added a `@media (max-width: 768px)` breakpoint with:
+
 - `width: 90%; margin: 0 auto;` — constrains width and auto-centers horizontally
 - `align-items: center;` — flexbox centering override
 - `text-align: center;` — text centering override
@@ -18,6 +19,7 @@ Added a `@media (max-width: 768px)` breakpoint with:
 - `box-sizing: border-box;` — prevents overflow from padding
 
 Additional improvements:
+
 - Light mode support via `prefers-color-scheme: light`
 - Transition disabled for `prefers-reduced-motion: reduce`
 - Further refinement at 480px breakpoint
@@ -50,10 +52,12 @@ Additional improvements:
 ```
 
 ## Tech Stack
+
 - HTML
 - CSS (flexbox, media queries)
 
 ## Preview
+
 Open `demo.html` directly in your browser and resize below 768px.
 
 Closes #1232

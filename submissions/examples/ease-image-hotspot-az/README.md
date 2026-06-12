@@ -24,14 +24,14 @@ Interactive image with positioned hotspot markers that reveal tooltip content on
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-3` | 12px |
-| `--ease-space-4` | 16px |
-| `--ease-radius-md` | 8px / 12px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-800` | #1f2937 |
-| `--ease-font-sans` | system-ui |
+| Variable                   | Default    |
+| -------------------------- | ---------- |
+| `--ease-space-3`           | 12px       |
+| `--ease-space-4`           | 16px       |
+| `--ease-radius-md`         | 8px / 12px |
+| `--ease-color-primary`     | #6366f1    |
+| `--ease-color-neutral-800` | #1f2937    |
+| `--ease-font-sans`         | system-ui  |
 
 ## Notes
 

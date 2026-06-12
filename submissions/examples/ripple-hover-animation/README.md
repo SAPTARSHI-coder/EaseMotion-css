@@ -12,9 +12,7 @@ A lightweight ripple hover animation utility built using pure CSS.
 ## Usage
 
 ```html
-<button class="ripple-btn">
-  Hover Me
-</button>
+<button class="ripple-btn">Hover Me</button>
 ```
 
 ## Why It Fits EaseMotion CSS

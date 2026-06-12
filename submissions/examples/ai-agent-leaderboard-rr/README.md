@@ -8,9 +8,9 @@ Displays AI agents in a ranked leaderboard format with performance metrics and r
 
 ```html
 <div class="row">
-    <span>#1</span>
-    <span>CodePilot AI</span>
-    <span>98%</span>
+  <span>#1</span>
+  <span>CodePilot AI</span>
+  <span>98%</span>
 </div>
 ```
 

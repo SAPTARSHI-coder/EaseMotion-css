@@ -1,4 +1,3 @@
- 
 # Pointer/Cursor Utilities
 
 Pointer/cursor utilities: pointer (hand cursor), no-pointer (events pass through), and default cursor.
@@ -11,11 +10,11 @@ Pointer/cursor utilities: pointer (hand cursor), no-pointer (events pass through
 
 ## Classes
 
-| Class | CSS Property |
-|-------|--------------|
-| `ease-pointer` | `cursor: pointer` |
-| `ease-no-pointer` | `pointer-events: none` |
-| `ease-cursor-default` | `cursor: default` |
+| Class                 | CSS Property           |
+| --------------------- | ---------------------- |
+| `ease-pointer`        | `cursor: pointer`      |
+| `ease-no-pointer`     | `pointer-events: none` |
+| `ease-cursor-default` | `cursor: default`      |
 
 ## Usage
 
@@ -28,3 +27,4 @@ Pointer/cursor utilities: pointer (hand cursor), no-pointer (events pass through
 
 <!-- Explicit default cursor -->
 <div class="ease-cursor-default">Default cursor</div>
+```

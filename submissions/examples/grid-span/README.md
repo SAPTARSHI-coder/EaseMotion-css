@@ -10,14 +10,14 @@ Grid column span and placement utilities. Part of `core/utilities.css`.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-grid` | `display: grid` |
-| `ease-grid-auto` | Auto-fit responsive columns |
-| `ease-grid-cols-1` through `-4` | Fixed column count |
-| `ease-col-span-1` through `-4` | Column span |
-| `ease-col-full` | Full width (1 / -1) |
-| `ease-place-start/center/end` | `place-items` alignment |
+| Class                           | Description                 |
+| ------------------------------- | --------------------------- |
+| `ease-grid`                     | `display: grid`             |
+| `ease-grid-auto`                | Auto-fit responsive columns |
+| `ease-grid-cols-1` through `-4` | Fixed column count          |
+| `ease-col-span-1` through `-4`  | Column span                 |
+| `ease-col-full`                 | Full width (1 / -1)         |
+| `ease-place-start/center/end`   | `place-items` alignment     |
 
 ## Notes
 

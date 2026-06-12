@@ -7,6 +7,7 @@ Intent-Based Layout Utilities provide semantic CSS classes that describe **what 
 ## Problem Statement
 
 Traditional layout utilities require developers to think in CSS terms:
+
 - Understand Flexbox properties (`justify-content`, `align-items`, `flex-wrap`)
 - Understand Grid properties (`grid-template-columns`, `gap`)
 - Combine multiple utility classes to achieve simple layouts
@@ -20,24 +21,31 @@ This creates a disconnect between how designers describe layouts ("sidebar with 
 Intent-Based Layout Utilities encode common layout patterns as semantic class names. Each utility describes the **design intent**, and the CSS handles the implementation details internally.
 
 **Before:**
+
 ```html
 <nav class="flex justify-between items-center gap-4 flex-wrap">
   <div>Logo</div>
-  <ul class="flex gap-6">...</ul>
+  <ul class="flex gap-6">
+    ...
+  </ul>
 </nav>
 ```
 
 **After:**
+
 ```html
 <nav class="split">
   <div>Logo</div>
-  <ul>...</ul>
+  <ul>
+    ...
+  </ul>
 </nav>
 ```
 
 ## Available Utilities
 
 ### `.split`
+
 **Intent:** Push items to opposite ends (left/right separation).
 
 **Use case:** Website headers, navbars, footers, toolbar layouts.
@@ -45,6 +53,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** Flexbox with `justify-content: space-between` and `align-items: center`.
 
 **Example:**
+
 ```html
 <header class="split">
   <div class="logo">Brand</div>
@@ -56,11 +65,13 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 **Variants:**
+
 - `.split.compact` — Tighter spacing between items
 
 ---
 
 ### `.cluster`
+
 **Intent:** Group related items together with automatic wrapping.
 
 **Use case:** Button groups, tag collections, action menus, icon groups.
@@ -68,6 +79,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** Flexbox with `flex-wrap: wrap` and consistent gap.
 
 **Example:**
+
 ```html
 <div class="cluster">
   <button>Save</button>
@@ -77,6 +89,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 **Variants:**
+
 - `.cluster.tight` — Smaller gaps between items
 
 **Key feature:** Items wrap automatically on smaller screens without media queries.
@@ -84,6 +97,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ---
 
 ### `.center-content`
+
 **Intent:** Perfect centering (horizontal and vertical alignment).
 
 **Use case:** Hero sections, modals, splash screens, centered overlays.
@@ -91,6 +105,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** Flexbox with `justify-content: center` and `align-items: center`.
 
 **Example:**
+
 ```html
 <div class="center-content">
   <div class="modal">
@@ -101,11 +116,13 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 **Variants:**
+
 - `.center-content.full-height` — Extends to full viewport height
 
 ---
 
 ### `.sidebar-layout`
+
 **Intent:** Create a sidebar + main content pattern.
 
 **Use case:** Documentation sites, admin dashboards, two-column layouts.
@@ -113,6 +130,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** CSS Grid with `grid-template-columns: 250px 1fr`.
 
 **Example:**
+
 ```html
 <div class="sidebar-layout">
   <aside class="sidebar">Navigation Menu</aside>
@@ -123,11 +141,13 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Responsive behavior:** Automatically stacks (sidebar on top) on screens below 768px.
 
 **Variants:**
+
 - `.sidebar-layout.reverse` — Sidebar on right instead of left
 
 ---
 
 ### `.feature-layout`
+
 **Intent:** Alternate text and media in a side-by-side pattern.
 
 **Use case:** Marketing sections, feature showcases, product highlights.
@@ -135,6 +155,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** CSS Grid with `grid-template-columns: 1fr 1fr`.
 
 **Example:**
+
 ```html
 <div class="feature-layout">
   <div class="feature-text">
@@ -142,7 +163,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
     <p>Description...</p>
   </div>
   <div class="feature-media">
-    <img src="feature.png" alt="Feature">
+    <img src="feature.png" alt="Feature" />
   </div>
 </div>
 ```
@@ -150,11 +171,13 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Responsive behavior:** Stacks to single column on screens below 1024px.
 
 **Variants:**
+
 - `.feature-layout.reverse` — Flips media to left, text to right
 
 ---
 
 ### `.content-focus`
+
 **Intent:** Optimize for reading with limited width and centered content.
 
 **Use case:** Blog posts, articles, documentation, long-form content.
@@ -162,6 +185,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 **Implementation:** `max-width: 65ch` with `margin: auto` for centering.
 
 **Example:**
+
 ```html
 <article class="content-focus">
   <h1>Article Title</h1>
@@ -176,6 +200,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ## Usage Examples
 
 ### Website Navigation
+
 ```html
 <nav class="split">
   <div class="navbar-brand">Company</div>
@@ -188,6 +213,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 ### Button Action Group
+
 ```html
 <div class="cluster">
   <button class="btn-primary">Save</button>
@@ -197,6 +223,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 ### Documentation Layout
+
 ```html
 <div class="sidebar-layout">
   <aside>
@@ -215,6 +242,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 ### Hero with Centered Content
+
 ```html
 <section class="center-content full-height">
   <div class="hero">
@@ -226,6 +254,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 ### Marketing Feature Section
+
 ```html
 <section class="feature-layout">
   <div class="text">
@@ -233,7 +262,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
     <p>Optimized for speed across all devices</p>
   </div>
   <div class="media">
-    <img src="performance-chart.png" alt="Performance">
+    <img src="performance-chart.png" alt="Performance" />
   </div>
 </section>
 
@@ -244,23 +273,25 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
     <p>Simple API that developers love</p>
   </div>
   <div class="media">
-    <img src="interface.png" alt="Interface">
+    <img src="interface.png" alt="Interface" />
   </div>
 </section>
 ```
 
 ### Blog Post
+
 ```html
 <article class="content-focus">
   <h1>The Future of Web Design</h1>
   <p>By Jane Doe • March 15, 2025</p>
-  
+
   <p>Long-form content optimized for reading...</p>
   <p>More paragraphs with 65 character line length...</p>
 </article>
 ```
 
 ### Combined Layout
+
 ```html
 <div class="sidebar-layout">
   <aside class="sidebar">
@@ -285,17 +316,21 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ### Website Header
 
 **Traditional (Utility Classes):**
+
 ```html
 <nav class="flex justify-between items-center gap-8 flex-wrap md:gap-4">
   <div class="font-bold text-xl">Logo</div>
   <ul class="flex gap-6 items-center md:gap-3">
     <li><a href="/" class="text-gray-600 hover:text-blue-600">Home</a></li>
-    <li><a href="/about" class="text-gray-600 hover:text-blue-600">About</a></li>
+    <li>
+      <a href="/about" class="text-gray-600 hover:text-blue-600">About</a>
+    </li>
   </ul>
 </nav>
 ```
 
 **Intent-Based:**
+
 ```html
 <nav class="split">
   <div class="navbar-brand">Logo</div>
@@ -311,6 +346,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ### Card Grid
 
 **Traditional:**
+
 ```html
 <div class="grid grid-cols-3 gap-6 auto-rows-max md:grid-cols-2 sm:grid-cols-1">
   <div class="card">...</div>
@@ -320,6 +356,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 ```
 
 **Intent-Based:**
+
 ```html
 <div class="cluster">
   <div class="card">...</div>
@@ -349,8 +386,8 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 
 ```css
 :root {
-  --spacing-md: 2rem;  /* Increase default gap */
-  --spacing-lg: 3rem;  /* Increase large spacing */
+  --spacing-md: 2rem; /* Increase default gap */
+  --spacing-lg: 3rem; /* Increase large spacing */
 }
 ```
 
@@ -358,7 +395,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 
 ```css
 .sidebar-layout {
-  grid-template-columns: 300px 1fr;  /* Wider sidebar */
+  grid-template-columns: 300px 1fr; /* Wider sidebar */
 }
 ```
 
@@ -366,7 +403,7 @@ Intent-Based Layout Utilities encode common layout patterns as semantic class na
 
 ```css
 :root {
-  --content-width: 80ch;  /* Wider reading width */
+  --content-width: 80ch; /* Wider reading width */
 }
 ```
 
@@ -398,6 +435,7 @@ No additional media query breakpoints required in most cases.
 ## Browser Support
 
 Intent-Based Layout Utilities use standard CSS Grid and Flexbox:
+
 - Chrome/Edge 29+
 - Firefox 52+
 - Safari 10.1+
@@ -423,6 +461,7 @@ Intent-Based Layout Utilities use standard CSS Grid and Flexbox:
 "Write UI like you describe it in English."
 
 Intent-Based Layout Utilities embody this by:
+
 1. Using semantic, descriptive class names (`.split`, `.cluster`, `.sidebar-layout`).
 2. Making complex layouts accessible with simple abstractions.
 3. Reducing cognitive load by hiding implementation details.

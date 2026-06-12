@@ -1,14 +1,8 @@
 \# ease-overflow utilities
 
-
-
 Overflow control utilities for hiding, auto, scroll, and axis-specific overflow.
 
-
-
 \## Available Classes
-
-
 
 | Class | Value |
 
@@ -24,17 +18,12 @@ Overflow control utilities for hiding, auto, scroll, and axis-specific overflow.
 
 | `ease-overflow-y-hidden` | overflow-y: hidden |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-overflow-hidden">Clipped content</div>
 
 <div class="ease-overflow-auto">Scroll when needed</div>
 
 <div class="ease-overflow-x-hidden">Hide horizontal overflow</div>
-
+```

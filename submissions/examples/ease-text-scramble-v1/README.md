@@ -13,6 +13,5 @@ A text animation that rapidly cycles through random characters before revealing 
 ## Example
 
 ```html
-<h1 class="ease-scramble" data-text="Hello World">
-  Hello World
-</h1>
+<h1 class="ease-scramble" data-text="Hello World">Hello World</h1>
+```

@@ -17,8 +17,8 @@ Added two declarations to `.ease-card-glow`:
 
 ```css
 .ease-card-glow {
-  will-change: box-shadow, transform;  /* hints browser to use compositor */
-  transform: translateZ(0);           /* forces GPU layer creation */
+  will-change: box-shadow, transform; /* hints browser to use compositor */
+  transform: translateZ(0); /* forces GPU layer creation */
 }
 ```
 
@@ -33,5 +33,6 @@ who prefer no motion.
 4. Hover the **After fix** card → no flash
 
 ## Files
+
 - `style.css` — the fix
 - `demo.html` — three-card comparison (hover + buggy glow + fixed glow)

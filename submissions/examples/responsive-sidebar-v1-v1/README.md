@@ -12,10 +12,10 @@ The goal is to fix the issue where the sidebar overlaps or hides the main conten
 
 On mobile viewports (`< 768px`):
 
-* Sidebar overlaps main content
-* Content gets clipped on the right side
-* Horizontal scrolling is required to read content
-* Poor user experience on smaller devices
+- Sidebar overlaps main content
+- Content gets clipped on the right side
+- Horizontal scrolling is required to read content
+- Poor user experience on smaller devices
 
 ---
 
@@ -23,10 +23,10 @@ On mobile viewports (`< 768px`):
 
 This implementation provides:
 
-* A **fixed sidebar** for desktop screens
-* A **collapsible sidebar** for mobile devices
-* A **hamburger toggle button** to open/close sidebar
-* Proper spacing so main content remains fully visible
+- A **fixed sidebar** for desktop screens
+- A **collapsible sidebar** for mobile devices
+- A **hamburger toggle button** to open/close sidebar
+- Proper spacing so main content remains fully visible
 
 ---
 
@@ -45,15 +45,15 @@ responsive-sidebar/
 
 ### 💻 Desktop View
 
-* Sidebar is visible by default
-* Main content is shifted using `margin-left`
+- Sidebar is visible by default
+- Main content is shifted using `margin-left`
 
 ### 📱 Mobile View
 
-* Sidebar is hidden by default
-* Accessible via hamburger menu
-* No content overlap or clipping
-* Smooth slide-in animation
+- Sidebar is hidden by default
+- Accessible via hamburger menu
+- No content overlap or clipping
+- Smooth slide-in animation
 
 ---
 
@@ -61,19 +61,19 @@ responsive-sidebar/
 
 ### Sidebar Styling
 
-* Uses `position: fixed` for layout
-* Smooth transitions using `transform`
+- Uses `position: fixed` for layout
+- Smooth transitions using `transform`
 
 ### Mobile Responsiveness
 
-* Media query: `@media (max-width: 768px)`
-* Sidebar hidden using `translateX(-100%)`
-* Activated using `.active` class
+- Media query: `@media (max-width: 768px)`
+- Sidebar hidden using `translateX(-100%)`
+- Activated using `.active` class
 
 ### Toggle Functionality
 
-* JavaScript toggles sidebar visibility
-* Improves accessibility and usability
+- JavaScript toggles sidebar visibility
+- Improves accessibility and usability
 
 ---
 
@@ -82,7 +82,7 @@ responsive-sidebar/
 1. Include EaseMotion CSS:
 
 ```html
-<link rel="stylesheet" href="../../easemotion.css">
+<link rel="stylesheet" href="../../easemotion.css" />
 ```
 
 2. Add sidebar and content structure:
@@ -102,24 +102,24 @@ responsive-sidebar/
 
 ## 🌟 Benefits
 
-* Improves mobile user experience
-* Prevents layout breakage
-* Easy to integrate with existing EaseMotion utilities
-* Lightweight and customizable
+- Improves mobile user experience
+- Prevents layout breakage
+- Easy to integrate with existing EaseMotion utilities
+- Lightweight and customizable
 
 ---
 
 ## 🔮 Future Improvements
 
-* Add overlay background on mobile
-* Add swipe gestures for sidebar
-* Convert into reusable EaseMotion component
+- Add overlay background on mobile
+- Add swipe gestures for sidebar
+- Convert into reusable EaseMotion component
 
 ---
 
 ## 👩‍💻 Contributor
 
-* **Shruti1420**
+- **Shruti1420**
 
 ---
 

@@ -5,16 +5,16 @@ and hover micro-interactions — built for EaseMotion CSS.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-bento-grid` | Grid wrapper — 3-column asymmetric layout |
-| `ease-bento-card` | Base card with hover lift micro-interaction |
-| `ease-bento-card-wide` | Card spanning 2 columns |
-| `ease-bento-card-tall` | Card spanning 2 rows |
-| `ease-bento-card-large` | Card spanning 2 columns + 2 rows |
-| `ease-bento-card-primary` | Card with primary color background |
-| `ease-bento-card-success` | Card with success color background |
-| `ease-bento-content` | Content wrapper inside a card |
+| Class                     | Description                                 |
+| ------------------------- | ------------------------------------------- |
+| `ease-bento-grid`         | Grid wrapper — 3-column asymmetric layout   |
+| `ease-bento-card`         | Base card with hover lift micro-interaction |
+| `ease-bento-card-wide`    | Card spanning 2 columns                     |
+| `ease-bento-card-tall`    | Card spanning 2 rows                        |
+| `ease-bento-card-large`   | Card spanning 2 columns + 2 rows            |
+| `ease-bento-card-primary` | Card with primary color background          |
+| `ease-bento-card-success` | Card with success color background          |
+| `ease-bento-content`      | Content wrapper inside a card               |
 
 ## Usage
 

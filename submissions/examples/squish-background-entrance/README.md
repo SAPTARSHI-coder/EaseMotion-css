@@ -5,6 +5,7 @@ A lightweight pure CSS squish entrance animation utility for background componen
 ---
 
 ## ✨ Features
+
 - Pure CSS animation
 - Smooth squish entrance effect
 - Lightweight and reusable
@@ -15,6 +16,5 @@ A lightweight pure CSS squish entrance animation utility for background componen
 ## 🚀 Usage
 
 ```html
-<div class="squish-box">
-  EaseMotion
-</div>
+<div class="squish-box">EaseMotion</div>
+```

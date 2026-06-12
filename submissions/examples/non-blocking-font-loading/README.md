@@ -11,7 +11,7 @@ measurable First Contentful Paint (FCP) delay on every page that uses the framew
 `core/base.css` line 6 currently reads:
 
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 ```
 
 CSS `@import` inside a stylesheet is **synchronously render-blocking**: the browser
@@ -23,9 +23,10 @@ Lighthouse flags this pattern under "Eliminate render-blocking resources."
 **Step 1 — Remove from `core/base.css`:**
 
 Delete line 6 entirely:
+
 ```css
 /* REMOVE this line from core/base.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 ```
 
 The `--ease-font-sans` token already includes `system-ui, -apple-system, sans-serif`
@@ -34,9 +35,12 @@ as fallbacks, so the framework degrades gracefully without Inter.
 **Step 2 — Add to `docs/index.html` and all example `<head>` blocks:**
 
 ```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 ```
 
 ### How is it used?

@@ -14,3 +14,4 @@ When one item is hovered, nearby items react sequentially with delayed animation
   <div class="ease-shockwave-item">2</div>
   <div class="ease-shockwave-item">3</div>
 </div>
+```

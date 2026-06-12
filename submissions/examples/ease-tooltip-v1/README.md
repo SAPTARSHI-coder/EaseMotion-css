@@ -22,19 +22,19 @@ On `:hover` and `:focus-within`, the tooltip **fades in** (`opacity: 0` → `1`)
 
 ### Attributes
 
-| Attribute | Values | Default | Description |
-|-----------|--------|---------|-------------|
-| `data-tooltip` | any string | — | Text shown in the bubble (`content: attr(data-tooltip)`) |
-| `data-position` | `top`, `bottom`, `left`, `right` | `top` | Placement relative to the trigger |
+| Attribute       | Values                           | Default | Description                                              |
+| --------------- | -------------------------------- | ------- | -------------------------------------------------------- |
+| `data-tooltip`  | any string                       | —       | Text shown in the bubble (`content: attr(data-tooltip)`) |
+| `data-position` | `top`, `bottom`, `left`, `right` | `top`   | Placement relative to the trigger                        |
 
 ### Position behavior
 
-| Position | Motion on show |
-|----------|----------------|
-| `top` (default) | Fades in, slides **up** 4px |
-| `bottom` | Fades in, slides **down** 4px |
-| `left` | Fades in, slides **left** 4px |
-| `right` | Fades in, slides **right** 4px |
+| Position        | Motion on show                 |
+| --------------- | ------------------------------ |
+| `top` (default) | Fades in, slides **up** 4px    |
+| `bottom`        | Fades in, slides **down** 4px  |
+| `left`          | Fades in, slides **left** 4px  |
+| `right`         | Fades in, slides **right** 4px |
 
 ## Accessibility
 
@@ -43,11 +43,11 @@ On `:hover` and `:focus-within`, the tooltip **fades in** (`opacity: 0` → `1`)
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                   |
+| ----------- | --------------------------------------------------------- |
 | `style.css` | Component styles (copy into your bundle or link directly) |
-| `demo.html` | Live preview of all four positions + default |
-| `README.md` | This guide |
+| `demo.html` | Live preview of all four positions + default              |
+| `README.md` | This guide                                                |
 
 ## Preview
 

@@ -5,7 +5,9 @@ A professional frontend quality-engineering dashboard for automatically detectin
 ## 📝 GSSoC 2026 Submission Questionnaire
 
 ### 1. What does this do?
+
 This is an interactive visual testing suite that automatically profiles, scans, and highlights silent degradations or changes in animation setups:
+
 - **Baseline vs Updated Comparator**: A side-by-side split screen workspace that compares V1 Baseline (optimized GPU composite animation) against V2 Updated (unintentionally changed CPU reflow property transition).
 - **Regression Severity Analyzer**: Assesses timings, coordinates offsets, and paint workloads to classify regressions into Minor (timing shifts), Moderate (travel drift), or Critical (reflow jank, broken a11y) categories.
 - **Accessibility Regression Scanner**: Audits prefers-reduced-motion fallback compatibility. Alerts developers if a user preference query breaks and triggers motion.
@@ -14,6 +16,7 @@ This is an interactive visual testing suite that automatically profiles, scans, 
 - **CSS Resolution Exporter**: Compiles production-ready corrected styling blocks to instantly restore optimized variable parameters.
 
 ### 2. How is it used?
+
 1. Open [demo.html](demo.html) directly in a web browser.
 2. Tweak config variables (Timing drift, Travel drift, or Accessibility support query overrides) to introduce a regression.
 3. Click **"Run Regression Scan"** to start the validator suite. Check the delta logs streamed in the emulated CLI terminal.
@@ -21,11 +24,13 @@ This is an interactive visual testing suite that automatically profiles, scans, 
 5. Click **"Copy Resolution CSS"** to copy the corrected stylesheet template containing transition transforms and accessibility fallbacks.
 
 ### 3. Why is it useful?
+
 In large-scale design systems, developers often modify animation styles or update spacing/margins, which can break transitions silently. For example, replacing a translate animation with an animated margin might look cosmetically similar but introduces rendering jank (layout thrashing) and drops frames on low-end devices. Furthermore, accessibility overrides like `prefers-reduced-motion` can get broken or omitted. This regression lab automates motion testing, visually highlights layout paint zones via heatmaps, and ensures animations stay fast, smooth, and safe across revisions.
 
 ---
 
 ## 🛠️ Tech Stack & Implementation Details
+
 - **HTML5 & Vanilla CSS3**: Custom grid layout, glassmorphic card containers, and DevTools-style paint highlights.
 - **Regression Detection Engine**: Mathematical rules comparing timings, offsets, and styles to compute drift percentages.
 - **Modern Code Exporter**: Real-time CSS compiler formatting variables and media-query structures.

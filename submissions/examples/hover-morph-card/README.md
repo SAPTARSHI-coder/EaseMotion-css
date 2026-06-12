@@ -10,12 +10,12 @@ Card morphing hover effect — transitions from square/rectangle to circle on ho
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                   | Description                      |
+| ----------------------- | -------------------------------- |
 | `ease-hover-morph-card` | Default morph (0.3s, scale 1.08) |
-| `ease-morph-slow` | Slow transition (0.8s) |
-| `ease-morph-fast` | Fast transition (0.15s) |
-| `ease-morph-scale-lg` | Extra scale (1.15x) |
+| `ease-morph-slow`       | Slow transition (0.8s)           |
+| `ease-morph-fast`       | Fast transition (0.15s)          |
+| `ease-morph-scale-lg`   | Extra scale (1.15x)              |
 
 ## Notes
 

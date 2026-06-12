@@ -11,20 +11,22 @@ Provides a composable toast notification system with four semantic color variant
 ```html
 <!-- Stack container — place once near </body> -->
 <div class="toast-stack">
-
   <!-- Individual toast — add any EaseMotion entrance class -->
   <div class="toast toast-success ease-slide-in-right">
     <span class="toast-icon">✓</span>
     <span class="toast-message">Changes saved successfully.</span>
-    <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">✕</button>
+    <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">
+      ✕
+    </button>
   </div>
 
   <div class="toast toast-danger ease-slide-in-right">
     <span class="toast-icon">✕</span>
     <span class="toast-message">Something went wrong.</span>
-    <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">✕</button>
+    <button class="toast-close" onclick="dismissToast(this.closest('.toast'))">
+      ✕
+    </button>
   </div>
-
 </div>
 ```
 
@@ -54,18 +56,18 @@ Provides a composable toast notification system with four semantic color variant
 
 ```js
 function dismissToast(toast) {
-  if (!toast || toast.classList.contains('toast--dismissing')) return;
-  toast.classList.add('toast--dismissing');
+  if (!toast || toast.classList.contains("toast--dismissing")) return;
+  toast.classList.add("toast--dismissing");
   setTimeout(() => toast.remove(), 350);
 }
 
 function fireToast(variant, message, duration = 4000) {
-  const icons = { success: '✓', danger: '✕', warning: '⚠', info: 'ℹ' };
-  const stack = document.querySelector('.toast-stack');
-  const el = document.createElement('div');
+  const icons = { success: "✓", danger: "✕", warning: "⚠", info: "ℹ" };
+  const stack = document.querySelector(".toast-stack");
+  const el = document.createElement("div");
   el.className = `toast toast-${variant} ease-slide-in-right`;
-  el.style.setProperty('--toast-duration', `${duration}ms`);
-  el.setAttribute('role', 'alert');
+  el.style.setProperty("--toast-duration", `${duration}ms`);
+  el.setAttribute("role", "alert");
   el.innerHTML = `
     <span class="toast-icon">${icons[variant]}</span>
     <span class="toast-message">${message}</span>

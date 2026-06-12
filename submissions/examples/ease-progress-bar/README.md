@@ -16,11 +16,11 @@ All color variants, size variants, animated stripes, and an indeterminate state 
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `style.css` | Component styles |
+| File        | Purpose               |
+| ----------- | --------------------- |
+| `style.css` | Component styles      |
 | `demo.html` | Interactive demo page |
-| `README.md` | This file |
+| `README.md` | This file             |
 
 ---
 
@@ -32,18 +32,21 @@ All color variants, size variants, animated stripes, and an indeterminate state 
 
 <!-- 2. Write the HTML -->
 <div class="ease-progress" style="--ease-progress-value: 72%;">
-  <div class="ease-progress-bar ease-progress-primary"
-       role="progressbar"
-       aria-valuenow="72"
-       aria-valuemin="0"
-       aria-valuemax="100"
-       aria-label="72% complete">
-  </div>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="72"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label="72% complete"
+  ></div>
 </div>
 
 <!-- 3. Trigger the fill animation -->
 <script>
-  document.querySelector('.ease-progress').classList.add('ease-progress-loaded');
+  document
+    .querySelector(".ease-progress")
+    .classList.add("ease-progress-loaded");
 </script>
 ```
 
@@ -53,34 +56,34 @@ All color variants, size variants, animated stripes, and an indeterminate state 
 
 ### Track element — `.ease-progress`
 
-| Class | Effect |
-|-------|--------|
-| `.ease-progress` | Base track wrapper — required |
-| `.ease-progress-loaded` | Triggers fill transition to `--ease-progress-value` |
-| `.ease-progress-indeterminate` | Looping animation for unknown-duration operations |
-| `.ease-progress-sm` | 6px height |
-| `.ease-progress-lg` | 16px height |
-| `.ease-progress-xl` | 24px height |
+| Class                          | Effect                                              |
+| ------------------------------ | --------------------------------------------------- |
+| `.ease-progress`               | Base track wrapper — required                       |
+| `.ease-progress-loaded`        | Triggers fill transition to `--ease-progress-value` |
+| `.ease-progress-indeterminate` | Looping animation for unknown-duration operations   |
+| `.ease-progress-sm`            | 6px height                                          |
+| `.ease-progress-lg`            | 16px height                                         |
+| `.ease-progress-xl`            | 24px height                                         |
 
 **Custom properties (set on the track):**
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-progress-value` | `0%` | Target fill width |
-| `--ease-progress-track-height` | `10px` | Track height override |
+| Variable                       | Default | Description           |
+| ------------------------------ | ------- | --------------------- |
+| `--ease-progress-value`        | `0%`    | Target fill width     |
+| `--ease-progress-track-height` | `10px`  | Track height override |
 
 ### Fill element — `.ease-progress-bar`
 
 Must be a direct child of `.ease-progress`.
 
-| Class | Effect |
-|-------|--------|
-| `.ease-progress-bar` | Base fill — required |
-| `.ease-progress-primary` | Purple fill (default color) |
-| `.ease-progress-success` | Green fill |
-| `.ease-progress-danger` | Red fill |
-| `.ease-progress-warning` | Amber fill |
-| `.ease-progress-animated` | Moving diagonal stripes |
+| Class                     | Effect                      |
+| ------------------------- | --------------------------- |
+| `.ease-progress-bar`      | Base fill — required        |
+| `.ease-progress-primary`  | Purple fill (default color) |
+| `.ease-progress-success`  | Green fill                  |
+| `.ease-progress-danger`   | Red fill                    |
+| `.ease-progress-warning`  | Amber fill                  |
+| `.ease-progress-animated` | Moving diagonal stripes     |
 
 ---
 
@@ -90,8 +93,13 @@ Must be a direct child of `.ease-progress`.
 
 ```html
 <div class="ease-progress" style="--ease-progress-value: 60%;">
-  <div class="ease-progress-bar ease-progress-primary"
-       role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="60"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 ```
 
@@ -99,15 +107,33 @@ Must be a direct child of `.ease-progress`.
 
 ```html
 <div class="ease-progress" style="--ease-progress-value: 88%;">
-  <div class="ease-progress-bar ease-progress-success" role="progressbar" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-success"
+    role="progressbar"
+    aria-valuenow="88"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 
 <div class="ease-progress" style="--ease-progress-value: 45%;">
-  <div class="ease-progress-bar ease-progress-warning" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-warning"
+    role="progressbar"
+    aria-valuenow="45"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 
 <div class="ease-progress" style="--ease-progress-value: 32%;">
-  <div class="ease-progress-bar ease-progress-danger" role="progressbar" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-danger"
+    role="progressbar"
+    aria-valuenow="32"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 ```
 
@@ -115,8 +141,13 @@ Must be a direct child of `.ease-progress`.
 
 ```html
 <div class="ease-progress" style="--ease-progress-value: 65%;">
-  <div class="ease-progress-bar ease-progress-primary ease-progress-animated"
-       role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-primary ease-progress-animated"
+    role="progressbar"
+    aria-valuenow="65"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 ```
 
@@ -125,12 +156,24 @@ Must be a direct child of `.ease-progress`.
 ```html
 <!-- Small -->
 <div class="ease-progress ease-progress-sm" style="--ease-progress-value: 60%;">
-  <div class="ease-progress-bar ease-progress-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="60"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 
 <!-- Large -->
 <div class="ease-progress ease-progress-lg" style="--ease-progress-value: 60%;">
-  <div class="ease-progress-bar ease-progress-primary" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="60"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  ></div>
 </div>
 ```
 
@@ -139,7 +182,13 @@ Must be a direct child of `.ease-progress`.
 ```html
 <div class="ease-progress-labeled">
   <div class="ease-progress" style="--ease-progress-value: 78%;">
-    <div class="ease-progress-bar ease-progress-primary" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+    <div
+      class="ease-progress-bar ease-progress-primary"
+      role="progressbar"
+      aria-valuenow="78"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    ></div>
   </div>
   <span class="ease-progress-label">78%</span>
 </div>
@@ -155,7 +204,13 @@ Must be a direct child of `.ease-progress`.
       <span class="ease-progress-row-value">94%</span>
     </div>
     <div class="ease-progress" style="--ease-progress-value: 94%;">
-      <div class="ease-progress-bar ease-progress-primary" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100"></div>
+      <div
+        class="ease-progress-bar ease-progress-primary"
+        role="progressbar"
+        aria-valuenow="94"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      ></div>
     </div>
   </div>
 </div>
@@ -165,23 +220,29 @@ Must be a direct child of `.ease-progress`.
 
 ```html
 <div class="ease-progress ease-progress-indeterminate">
-  <div class="ease-progress-bar ease-progress-primary"
-       role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Loading…"></div>
+  <div
+    class="ease-progress-bar ease-progress-primary"
+    role="progressbar"
+    aria-valuenow="0"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-label="Loading…"
+  ></div>
 </div>
 ```
 
 ### Dynamic value via JavaScript
 
 ```js
-const track = document.querySelector('.ease-progress');
-const bar   = track.querySelector('.ease-progress-bar');
+const track = document.querySelector(".ease-progress");
+const bar = track.querySelector(".ease-progress-bar");
 
 // Ensure loaded class is present for transitions to work
-track.classList.add('ease-progress-loaded');
+track.classList.add("ease-progress-loaded");
 
 // Update value at any time — CSS transition handles the animation
-track.style.setProperty('--ease-progress-value', '75%');
-bar.setAttribute('aria-valuenow', '75');
+track.style.setProperty("--ease-progress-value", "75%");
+bar.setAttribute("aria-valuenow", "75");
 ```
 
 ---
@@ -203,17 +264,17 @@ bar.setAttribute('aria-valuenow', '75');
 
 All values reference EaseMotion CSS tokens. None are hard-coded.
 
-| Token | Usage |
-|-------|-------|
-| `--ease-color-primary` | Primary fill |
-| `--ease-color-success` | Success fill |
-| `--ease-color-danger` | Danger fill |
-| `--ease-color-warning` | Warning fill |
-| `--ease-color-neutral-200` | Track background |
-| `--ease-radius-full` | Pill border radius |
-| `--ease-space-*` | Label/stack spacing |
-| `--ease-text-sm` | Label font size |
-| `--ease-ease` | Fill transition curve |
+| Token                      | Usage                 |
+| -------------------------- | --------------------- |
+| `--ease-color-primary`     | Primary fill          |
+| `--ease-color-success`     | Success fill          |
+| `--ease-color-danger`      | Danger fill           |
+| `--ease-color-warning`     | Warning fill          |
+| `--ease-color-neutral-200` | Track background      |
+| `--ease-radius-full`       | Pill border radius    |
+| `--ease-space-*`           | Label/stack spacing   |
+| `--ease-text-sm`           | Label font size       |
+| `--ease-ease`              | Fill transition curve |
 
 ---
 
@@ -228,6 +289,7 @@ Works in all browsers that support CSS custom properties (Chrome 49+, Firefox 31
 ## Changelog Entry (for maintainer)
 
 ### ✨ Added
+
 - `.ease-progress` track wrapper component
 - `.ease-progress-bar` fill element with `--ease-progress-value` CSS variable API
 - `.ease-progress-animated` modifier for moving striped fills

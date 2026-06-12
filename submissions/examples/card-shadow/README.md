@@ -10,8 +10,8 @@ Card modifier that applies a large box-shadow and removes the border. A simple c
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class              | Description                 |
+| ------------------ | --------------------------- |
 | `ease-card-shadow` | Card with shadow, no border |
 
 ## Notes

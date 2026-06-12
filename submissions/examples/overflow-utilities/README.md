@@ -11,10 +11,10 @@ Overflow control utilities for managing content scroll and clipping. Part of `co
 
 ## Classes
 
-| Class | Description |
-|---|---|
+| Class                  | Description        |
+| ---------------------- | ------------------ |
 | `ease-overflow-hidden` | `overflow: hidden` |
-| `ease-overflow-auto` | `overflow: auto` |
+| `ease-overflow-auto`   | `overflow: auto`   |
 | `ease-overflow-scroll` | `overflow: scroll` |
 | `ease-overflow-x-auto` | `overflow-x: auto` |
 | `ease-overflow-y-auto` | `overflow-y: auto` |

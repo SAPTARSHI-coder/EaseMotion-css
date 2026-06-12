@@ -10,8 +10,8 @@ Full-width block button (`width: 100%`). Pairs with any button variant `.ease-bt
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class            | Description             |
+| ---------------- | ----------------------- |
 | `ease-btn-block` | Full-width block button |
 
 ## Notes

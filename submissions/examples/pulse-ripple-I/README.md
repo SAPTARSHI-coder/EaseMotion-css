@@ -1,4 +1,3 @@
- 
 # Pulse Ripple Loading Button
 
 Pulse ripple loading animation — continuous expanding ring effect for submit/loading states.
@@ -32,3 +31,4 @@ Pulse ripple loading animation — continuous expanding ring effect for submit/l
 <button class="ease-pulse-btn">Submit</button>
 <button class="pulse-btn-primary ease-pulse-btn">Primary</button>
 <button class="ease-pulse-fast">Fast Pulse</button>
+```

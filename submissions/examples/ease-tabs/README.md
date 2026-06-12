@@ -46,47 +46,79 @@ To include the sliding glassmorphic tabs component in your project:
 
 ```html
 <div class="ease-tabs-container">
-  
   <!-- Visually Hidden inputs for selection logic -->
-  <input type="radio" id="tab-dashboard" name="ease-tabs" class="ease-tab-input" checked>
-  <input type="radio" id="tab-analytics" name="ease-tabs" class="ease-tab-input">
-  <input type="radio" id="tab-settings" name="ease-tabs" class="ease-tab-input">
+  <input
+    type="radio"
+    id="tab-dashboard"
+    name="ease-tabs"
+    class="ease-tab-input"
+    checked
+  />
+  <input
+    type="radio"
+    id="tab-analytics"
+    name="ease-tabs"
+    class="ease-tab-input"
+  />
+  <input
+    type="radio"
+    id="tab-settings"
+    name="ease-tabs"
+    class="ease-tab-input"
+  />
 
   <!-- Accessible Tab Navigation list -->
   <nav class="ease-tabs-nav" role="tablist" aria-label="Settings configuration">
-    
-    <label for="tab-dashboard" class="ease-tab-label label-dashboard" role="tab">
+    <label
+      for="tab-dashboard"
+      class="ease-tab-label label-dashboard"
+      role="tab"
+    >
       <span>Dashboard</span>
     </label>
-    
-    <label for="tab-analytics" class="ease-tab-label label-analytics" role="tab">
+
+    <label
+      for="tab-analytics"
+      class="ease-tab-label label-analytics"
+      role="tab"
+    >
       <span>Analytics</span>
     </label>
-    
+
     <label for="tab-settings" class="ease-tab-label label-settings" role="tab">
       <span>Settings</span>
     </label>
 
     <!-- Animated Glass Slider -->
     <div class="ease-tab-glider" aria-hidden="true"></div>
-
   </nav>
 
   <!-- Content Panels -->
   <div class="ease-tabs-content">
-    <article id="panel-dashboard" class="ease-tab-panel panel-dashboard" role="tabpanel">
+    <article
+      id="panel-dashboard"
+      class="ease-tab-panel panel-dashboard"
+      role="tabpanel"
+    >
       <!-- Content for Dashboard goes here -->
     </article>
-    
-    <article id="panel-analytics" class="ease-tab-panel panel-analytics" role="tabpanel">
+
+    <article
+      id="panel-analytics"
+      class="ease-tab-panel panel-analytics"
+      role="tabpanel"
+    >
       <!-- Content for Analytics goes here -->
     </article>
-    
-    <article id="panel-settings" class="ease-tab-panel panel-settings" role="tabpanel">
+
+    <article
+      id="panel-settings"
+      class="ease-tab-panel panel-settings"
+      role="tabpanel"
+    >
       <!-- Content for Settings goes here -->
     </article>
   </div>
-
 </div>
 ```
 
@@ -95,6 +127,7 @@ To include the sliding glassmorphic tabs component in your project:
 ## CSS Highlights
 
 ### Dynamic Glider Scaling
+
 The glider width and translation matrix are mathematically calculated to remain fluid regardless of container resizing:
 
 ```css
@@ -112,14 +145,19 @@ The glider width and translation matrix are mathematically calculated to remain 
   transform: translateX(0);
 }
 #tab-analytics:checked ~ .ease-tabs-nav .ease-tab-glider {
-  transform: translateX(calc(100% + 4px)); /* 100% glider width + 4px flex gap */
+  transform: translateX(
+    calc(100% + 4px)
+  ); /* 100% glider width + 4px flex gap */
 }
 #tab-settings:checked ~ .ease-tabs-nav .ease-tab-glider {
-  transform: translateX(calc(200% + 8px)); /* 200% glider width + 8px flex gaps */
+  transform: translateX(
+    calc(200% + 8px)
+  ); /* 200% glider width + 8px flex gaps */
 }
 ```
 
 ### Frosted Backdrop Layout
+
 Provides the characteristic glassmorphic light diffusion and crisp borders:
 
 ```css
@@ -128,7 +166,7 @@ Provides the characteristic glassmorphic light diffusion and crisp borders:
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 
+  box-shadow:
     0 4px 30px rgba(0, 0, 0, 0.3),
     inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
@@ -138,18 +176,18 @@ Provides the characteristic glassmorphic light diffusion and crisp borders:
 
 ## Browser Support
 
-| Browser | Supported | Features Utilized |
-| :--- | :--- | :--- |
-| **Google Chrome** | Yes (76+) | Backdrop blur, flexbox, transforms |
+| Browser             | Supported | Features Utilized                  |
+| :------------------ | :-------- | :--------------------------------- |
+| **Google Chrome**   | Yes (76+) | Backdrop blur, flexbox, transforms |
 | **Mozilla Firefox** | Yes (70+) | Backdrop blur, flexbox, transforms |
-| **Apple Safari** | Yes (13+) | `-webkit-backdrop-filter` prefixes |
-| **Microsoft Edge** | Yes (79+) | Backdrop blur, flexbox, transforms |
+| **Apple Safari**    | Yes (13+) | `-webkit-backdrop-filter` prefixes |
+| **Microsoft Edge**  | Yes (79+) | Backdrop blur, flexbox, transforms |
 
 ---
 
 ## Screenshots
 
-*Place screenshot assets or live mockups illustrating the dark-theme layout with sliding interactions here.*
+_Place screenshot assets or live mockups illustrating the dark-theme layout with sliding interactions here._
 
 ---
 

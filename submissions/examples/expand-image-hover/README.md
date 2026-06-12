@@ -1,10 +1,12 @@
 # Expand Image Hover
 
 ## What does this do?
+
 Smoothly scales an image up when hovered, creating a subtle zoom-in effect
 that draws attention without shifting the surrounding layout.
 
 ## How is it used?
+
 Wrap any `<img>` in a container with the class applied:
 
 ```html
@@ -17,6 +19,7 @@ The wrapper clips overflow so the image expands within its own bounds.
 No JavaScript required — pure CSS `:hover` + `transition`.
 
 ## Why is it useful?
+
 Image hover feedback is one of the most common UI patterns — product cards,
 gallery grids, profile photos. EaseMotion CSS already has hover utilities for
 buttons and general elements (`ease-hover-grow`, `ease-hover-lift`), but no

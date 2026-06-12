@@ -9,19 +9,20 @@ A high-fidelity, hardware-accelerated monitoring interface utility built entirel
 
 ## Classes & Modifiers Applied
 
-| Utility Class Name | Target Effect Behavior |
-| --- | --- |
-| `.ease-pulse-text` | Triggers a 4-stage physics-based heartbeat contraction animation |
-| `.pulse-glow-dot` | Ambient warning alert glow loop with custom box-shadow spreading vectors |
+| Utility Class Name  | Target Effect Behavior                                                      |
+| ------------------- | --------------------------------------------------------------------------- |
+| `.ease-pulse-text`  | Triggers a 4-stage physics-based heartbeat contraction animation            |
+| `.pulse-glow-dot`   | Ambient warning alert glow loop with custom box-shadow spreading vectors    |
 | `.ecg-scroll-track` | Shifts the viewport background container endlessly at a standard 3.5s tempo |
 
 ## Code Usage Example
 
 ```html
 <div class="medical-display">
-    <span class="value ease-pulse-text">72</span>
-    
-    <div class="ecg-viewport">
-        <div class="ecg-scroll-track"></div>
-    </div>
+  <span class="value ease-pulse-text">72</span>
+
+  <div class="ecg-viewport">
+    <div class="ecg-scroll-track"></div>
+  </div>
 </div>
+```

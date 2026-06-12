@@ -1,14 +1,8 @@
 \# ease-floating
 
-
-
 Continuous subtle up-and-down floating motion for UI elements.
 
-
-
 \## Classes
-
-
 
 | Class | Speed | Movement |
 
@@ -24,17 +18,8 @@ Continuous subtle up-and-down floating motion for UI elements.
 
 | `ease-floating-long` | Normal (3s) | 20px |
 
-
-
 \## Usage
 
-
-
 ```html
-
-<div class="ease-floating">
-
-&#x20;   Content floats up and down
-
-</div>
-
+<div class="ease-floating">&#x20; Content floats up and down</div>
+```

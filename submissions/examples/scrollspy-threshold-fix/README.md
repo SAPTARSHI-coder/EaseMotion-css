@@ -16,6 +16,7 @@ height is often larger than the entire viewport — so the threshold is
 **never reached** and the active sidebar link never fires.
 
 This is especially bad on:
+
 - Mobile viewports (short screen height)
 - Laptop screens with browser devtools open
 - Any section taller than ~2× the viewport
@@ -28,6 +29,7 @@ Replace `threshold: 0.4` with `threshold: 0.1` and add a `rootMargin`
 that creates a trigger zone near the top of the viewport.
 
 **Before (buggy):**
+
 ```javascript
 const observer = new IntersectionObserver(
   (entries) => {
@@ -49,6 +51,7 @@ const observer = new IntersectionObserver(
 ```
 
 **After (fixed):**
+
 ```javascript
 const observer = new IntersectionObserver(
   (entries) => {
@@ -64,8 +67,8 @@ const observer = new IntersectionObserver(
     });
   },
   {
-    threshold: 0.1,                   // only 10% needed to trigger
-    rootMargin: "-10% 0px -80% 0px"  // fires when section hits top 10% of viewport
+    threshold: 0.1, // only 10% needed to trigger
+    rootMargin: "-10% 0px -80% 0px", // fires when section hits top 10% of viewport
   }
 );
 ```
@@ -74,9 +77,9 @@ const observer = new IntersectionObserver(
 
 ## Why this works
 
-| Setting | What it does |
-|---|---|
-| `threshold: 0.1` | Fires when just 10% of the section is visible — works even for very tall sections |
+| Setting                           | What it does                                                                                                                         |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `threshold: 0.1`                  | Fires when just 10% of the section is visible — works even for very tall sections                                                    |
 | `rootMargin: '-10% 0px -80% 0px'` | Shrinks the detection zone to the top portion of the viewport, so the active link updates as soon as the user scrolls into a section |
 
 ---

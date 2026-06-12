@@ -27,23 +27,23 @@ Dismissible top banner for announcements, promotions, alerts, and system message
 
 ## Elements
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-announcement-icon-az` | Emoji/icon |
-| `.ease-announcement-text-az` | Message text |
-| `.ease-announcement-link-az` | Inline link |
-| `.ease-announcement-btn-az` | CTA button |
+| Class                         | Purpose        |
+| ----------------------------- | -------------- |
+| `.ease-announcement-icon-az`  | Emoji/icon     |
+| `.ease-announcement-text-az`  | Message text   |
+| `.ease-announcement-link-az`  | Inline link    |
+| `.ease-announcement-btn-az`   | CTA button     |
 | `.ease-announcement-close-az` | Dismiss button |
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-success` | #10b981 |
-| `--ease-color-warning` | #f59e0b |
-| `--ease-color-danger` | #ef4444 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-md`       | 8px       |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-success`   | #10b981   |
+| `--ease-color-warning`   | #f59e0b   |
+| `--ease-color-danger`    | #ef4444   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

@@ -8,26 +8,25 @@ The sidebar is built using pure HTML, CSS, and JavaScript and dynamically genera
 
 ## Features
 
-* Multi-level nested navigation
-* Expandable and collapsible menu sections
-* Active page highlighting
-* Smooth expand/collapse animations
-* Documentation-style layout
-* Dark theme inspired by modern developer docs
-* Dynamically generated from JavaScript data
-* Unlimited nesting depth
-* Lightweight and dependency-free
-* Responsive and easy to customize
+- Multi-level nested navigation
+- Expandable and collapsible menu sections
+- Active page highlighting
+- Smooth expand/collapse animations
+- Documentation-style layout
+- Dark theme inspired by modern developer docs
+- Dynamically generated from JavaScript data
+- Unlimited nesting depth
+- Lightweight and dependency-free
+- Responsive and easy to customize
 
 ---
 
 ## Usage
 
 1. Include the component files in your project:
-
-   * `index.html`
-   * `style.css`
-   * `script.js`
+   - `index.html`
+   - `style.css`
+   - `script.js`
 
 2. Configure the sidebar structure inside `sidebarData`:
 
@@ -56,10 +55,10 @@ EaseMotion CSS documentation contains multiple categories such as Variables, Uti
 
 This sidebar improves documentation usability by:
 
-* Organizing related documentation pages into collapsible groups
-* Reducing visual clutter for large documentation sets
-* Making navigation faster and more intuitive
-* Following familiar documentation patterns used by modern developer platforms
-* Providing a scalable structure that can grow alongside the EaseMotion CSS documentation
+- Organizing related documentation pages into collapsible groups
+- Reducing visual clutter for large documentation sets
+- Making navigation faster and more intuitive
+- Following familiar documentation patterns used by modern developer platforms
+- Providing a scalable structure that can grow alongside the EaseMotion CSS documentation
 
 The component aligns well with EaseMotion CSS by offering a clean, developer-friendly navigation experience while maintaining a lightweight implementation using only HTML, CSS, and JavaScript.

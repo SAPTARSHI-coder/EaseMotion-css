@@ -21,13 +21,10 @@ Vertical timeline with connected nodes, alternating content sides, and responsiv
 ## Usage
 
 ```html
-&lt;div class="timeline-pr"&gt;
-  &lt;div class="timeline-pr-item timeline-pr-item-completed"&gt;
-    &lt;div class="timeline-pr-node"&gt;&lt;/div&gt;
-    &lt;div class="timeline-pr-content"&gt;
-      &lt;div class="timeline-pr-date"&gt;Jan 15, 2026&lt;/div&gt;
-      &lt;h3 class="timeline-pr-title"&gt;Event Title&lt;/h3&gt;
-      &lt;p class="timeline-pr-description"&gt;Description text here...&lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="timeline-pr"&gt; &lt;div class="timeline-pr-item
+timeline-pr-item-completed"&gt; &lt;div class="timeline-pr-node"&gt;&lt;/div&gt;
+&lt;div class="timeline-pr-content"&gt; &lt;div class="timeline-pr-date"&gt;Jan
+15, 2026&lt;/div&gt; &lt;h3 class="timeline-pr-title"&gt;Event Title&lt;/h3&gt;
+&lt;p class="timeline-pr-description"&gt;Description text here...&lt;/p&gt;
+&lt;/div&gt; &lt;/div&gt; &lt;/div&gt;
+```

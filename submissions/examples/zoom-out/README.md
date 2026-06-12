@@ -10,11 +10,11 @@ Zoom-out entrance animation from scale(1.5) to scale(1). Creates a dramatic reve
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-zoom-out` | Default zoom-out entrance |
-| `ease-zoom-out-sm` | Subtle zoom (1.2x) |
-| `ease-zoom-out-lg` | Strong zoom (2x) |
+| Class              | Description               |
+| ------------------ | ------------------------- |
+| `ease-zoom-out`    | Default zoom-out entrance |
+| `ease-zoom-out-sm` | Subtle zoom (1.2x)        |
+| `ease-zoom-out-lg` | Strong zoom (2x)          |
 
 ## Notes
 

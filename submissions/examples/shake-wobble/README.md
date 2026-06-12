@@ -29,17 +29,17 @@ hover-only (pure CSS, zero JS).
 
 ## Class Reference
 
-| Class | Description |
-|---|---|
-| ease-shake | Horizontal shake, error feedback |
-| ease-shake-hover | Shake on hover, no JS |
-| ease-wobble | Rotational wobble, playful attention |
-| ease-wobble-hover | Wobble on hover, no JS |
-| ease-bounce-attention | Vertical bounce, notification style |
-| ease-bounce-attention-hover | Bounce on hover, no JS |
-| ease-pulse-attention | Scale pulse, heartbeat style |
-| ease-pulse-attention-hover | Pulse on hover, no JS |
-| ease-error-flash | Shake + red border flash combined |
+| Class                       | Description                          |
+| --------------------------- | ------------------------------------ |
+| ease-shake                  | Horizontal shake, error feedback     |
+| ease-shake-hover            | Shake on hover, no JS                |
+| ease-wobble                 | Rotational wobble, playful attention |
+| ease-wobble-hover           | Wobble on hover, no JS               |
+| ease-bounce-attention       | Vertical bounce, notification style  |
+| ease-bounce-attention-hover | Bounce on hover, no JS               |
+| ease-pulse-attention        | Scale pulse, heartbeat style         |
+| ease-pulse-attention-hover  | Pulse on hover, no JS                |
+| ease-error-flash            | Shake + red border flash combined    |
 
 ## Use cases
 
@@ -50,15 +50,15 @@ hover-only (pure CSS, zero JS).
 
 ## CSS Variables used
 
-| Token | Role |
-|---|---|
+| Token           | Role                            |
+| --------------- | ------------------------------- |
 | --ease-ease-out | Easing curve for all animations |
 
 ## Browser support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| CSS animations | yes | yes | yes | yes |
-| CSS custom properties | yes | yes | yes | yes |
+| Feature               | Chrome | Edge | Firefox | Safari |
+| --------------------- | ------ | ---- | ------- | ------ |
+| CSS animations        | yes    | yes  | yes     | yes    |
+| CSS custom properties | yes    | yes  | yes     | yes    |
 
 Submitted under MIT License · EaseMotion CSS · 2026

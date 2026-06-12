@@ -4,7 +4,7 @@ A purely CSS-driven component that mimics modern smartphone "Dynamic Island" not
 
 ## 🚀 How it works
 
-The component leverages the **CSS Checkbox Hack** (`:checked` pseudo-class) combined with a `<label>` element that acts as the physical card. 
+The component leverages the **CSS Checkbox Hack** (`:checked` pseudo-class) combined with a `<label>` element that acts as the physical card.
 When a user clicks the card, it invisibly toggles the checkbox, triggering the `width`, `height`, `border-radius`, and `opacity` transition states across the container and its children.
 
 ## 💻 Usage

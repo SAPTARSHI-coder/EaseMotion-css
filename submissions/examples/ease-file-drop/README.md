@@ -1,14 +1,8 @@
 \# ease-file-drop
 
-
-
 Styled drag-and-drop file upload zone with animations.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -30,11 +24,7 @@ Styled drag-and-drop file upload zone with animations.
 
 | `ease-file-dark` | Dark color variant |
 
-
-
 \## Features
-
-
 
 \- 📁 Dashed border with pulse animation
 
@@ -46,27 +36,23 @@ Styled drag-and-drop file upload zone with animations.
 
 \- 🎨 Multiple color variants
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-file-drop">
+  &#x20;
+  <div class="ease-file-drop-content">
+    &#x20; <span class="ease-file-drop-icon">📁</span>
 
-&#x20;   <div class="ease-file-drop-content">
+    &#x20;
+    <p>Drag \& drop files here</p>
 
-&#x20;       <span class="ease-file-drop-icon">📁</span>
+    &#x20;
+  </div>
 
-&#x20;       <p>Drag \& drop files here</p>
+  &#x20; <input type="file" class="ease-file-input" multiple />
 
-&#x20;   </div>
-
-&#x20;   <input type="file" class="ease-file-input" multiple>
-
-&#x20;   <div class="ease-file-drop-success">✓</div>
-
+  &#x20;
+  <div class="ease-file-drop-success">✓</div>
 </div>
-
+```

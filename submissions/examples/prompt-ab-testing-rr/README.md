@@ -8,7 +8,7 @@ Provides a dashboard interface for comparing two prompt variations and evaluatin
 
 ```html
 <div class="prompt-card">
-    <div class="badge">Prompt A</div>
+  <div class="badge">Prompt A</div>
 </div>
 ```
 

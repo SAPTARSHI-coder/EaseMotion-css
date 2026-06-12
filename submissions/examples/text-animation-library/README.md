@@ -7,6 +7,7 @@ Text Animation Library provides a curated collection of CSS animations specifica
 ## Problem Statement
 
 Typography animations require specialized techniques and careful consideration:
+
 - Most generic animations distract from text readability
 - Complex multi-stage animations need careful CSS coordination
 - Text-specific effects (typewriter, wave, gradient) are challenging in pure CSS
@@ -18,6 +19,7 @@ These challenges often result in developers either skipping text animations enti
 ## Proposed Solution
 
 Text Animation Library provides six purpose-built animations, each optimized for specific text contexts and use cases. Every animation is:
+
 - **Semantic:** Class names describe the visual effect clearly
 - **Accessible:** Respects `prefers-reduced-motion` and maintains readability
 - **Pure CSS:** No JavaScript or DOM manipulation required
@@ -26,9 +28,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ## Available Text Animations
 
 ### `.text-reveal`
+
 **Purpose:** Gentle fade-in and slide-up entrance for text.
 
 **Stages:**
+
 1. Opacity: 0 → 1
 2. Transform: translateY(30px) → translateY(0)
 
@@ -37,11 +41,13 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Best for:** Hero headings, section titles, introductory text, initial page load
 
 **Example:**
+
 ```html
 <h1 class="text-reveal">Welcome to Motion</h1>
 ```
 
 **With stagger:**
+
 ```html
 <p class="text-reveal">First paragraph</p>
 <p class="text-reveal" style="animation-delay: 100ms;">Second paragraph</p>
@@ -51,9 +57,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ---
 
 ### `.text-glow`
+
 **Purpose:** Animated glow effect for emphasis (works best on dark backgrounds).
 
 **Effect:**
+
 - Continuous pulsing text-shadow glow
 - Color: Blue (rgb(59, 130, 246))
 - Creates luminous, attention-grabbing text
@@ -63,11 +71,13 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Best for:** Callouts, highlights, special messages, dark theme headings, emphasis
 
 **Example:**
+
 ```html
 <h2 class="text-glow">Important Notice</h2>
 ```
 
 **On dark background:**
+
 ```html
 <div style="background: #1f2937; padding: 2rem;">
   <h2 class="text-glow">Premium Feature</h2>
@@ -77,9 +87,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ---
 
 ### `.text-gradient`
+
 **Purpose:** Modern animated gradient moving through text.
 
 **Effect:**
+
 - Multi-color gradient: #667eea → #764ba2 → #f093fb → #4facfe
 - Gradient shifts position continuously
 - Uses `background-clip: text` for text-only coloring
@@ -89,6 +101,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Best for:** Marketing headlines, modern branding, product taglines, eye-catching text
 
 **Example:**
+
 ```html
 <h1 class="text-gradient">Unlock Your Potential</h1>
 ```
@@ -96,9 +109,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ---
 
 ### `.typewriter`
+
 **Purpose:** Simulates typewriter effect with progressive character reveal and cursor.
 
 **Effect:**
+
 - Characters appear progressively from left to right
 - Animated cursor blinking
 - Uses `steps()` timing for character-by-character reveal
@@ -109,11 +124,13 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Best for:** Hero statements, code snippets, dramatic reveals, tech/startup aesthetic
 
 **Example:**
+
 ```html
 <h1 class="typewriter">Build Amazing Products</h1>
 ```
 
 **For code:**
+
 ```html
 <code class="typewriter">$ npm install ease-motion</code>
 ```
@@ -121,9 +138,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ---
 
 ### `.text-wave`
+
 **Purpose:** Sequential character-by-character wave motion.
 
 **Effect:**
+
 - Individual characters bounce up and down in sequence
 - Each character has incremental delay (0.1s between each)
 - Creates flowing, attention-grabbing wave effect
@@ -135,6 +154,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Important:** Must wrap individual characters in `<span>` elements
 
 **Example:**
+
 ```html
 <h2>
   <span class="text-wave">G</span>
@@ -154,9 +174,11 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ---
 
 ### `.text-slide`
+
 **Purpose:** Smooth horizontal slide entrance from left.
 
 **Stages:**
+
 1. Opacity: 0 → 1
 2. Transform: translateX(-50px) → translateX(0)
 
@@ -165,6 +187,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
 **Best for:** Smooth page transitions, sidebar text, supporting copy, secondary headings
 
 **Example:**
+
 ```html
 <h3 class="text-slide">Powerful Features</h3>
 ```
@@ -182,9 +205,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
     Discover amazing possibilities
   </p>
   <button class="btn">
-    <span class="text-wave">
-      G<span class="text-wave">e</span>t Started
-    </span>
+    <span class="text-wave"> G<span class="text-wave">e</span>t Started </span>
   </button>
 </section>
 ```
@@ -193,9 +214,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
 
 ```html
 <div class="hero-section">
-  <h1 class="text-gradient">
-    Transform Your Business Today
-  </h1>
+  <h1 class="text-gradient">Transform Your Business Today</h1>
 </div>
 ```
 
@@ -248,9 +267,7 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ### Per-Element Custom Timing
 
 ```html
-<h1 class="text-reveal" style="animation-duration: 1.2s;">
-  Custom Duration
-</h1>
+<h1 class="text-reveal" style="animation-duration: 1.2s;">Custom Duration</h1>
 
 <p class="text-slide" style="animation-duration: 0.5s; animation-delay: 200ms;">
   Faster entrance with delay
@@ -260,13 +277,9 @@ Text Animation Library provides six purpose-built animations, each optimized for
 ### Combine with Other Classes
 
 ```html
-<h1 class="text-reveal text-gradient">
-  Animated heading
-</h1>
+<h1 class="text-reveal text-gradient">Animated heading</h1>
 
-<p class="text-slide" style="animation-delay: 100ms;">
-  Supporting copy
-</p>
+<p class="text-slide" style="animation-delay: 100ms;">Supporting copy</p>
 ```
 
 ---
@@ -327,6 +340,7 @@ Users who have enabled "Reduce motion" in their OS settings will see static text
 ## Browser Support
 
 All text animations use standard CSS `@keyframes` and `animation` properties. Supported in all modern browsers:
+
 - Chrome/Edge 43+
 - Firefox 16+
 - Safari 9+
@@ -351,6 +365,7 @@ All text animations use standard CSS `@keyframes` and `animation` properties. Su
 "If you can describe the effect, you should be able to use it as a class."
 
 Text Animation Library embodies this philosophy by:
+
 1. Using semantic, English-like class names (`.text-wave`, `.typewriter`).
 2. Making sophisticated animations accessible with simple classes.
 3. Prioritizing accessibility and readability over flashiness.

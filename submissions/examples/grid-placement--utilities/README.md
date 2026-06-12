@@ -12,11 +12,10 @@ Provides reusable CSS Grid utility classes for placement alignment, column spann
     Analytics Overview
   </article>
 
-  <article class="dashboard-card col-span-full">
-    System Status
-  </article>
+  <article class="dashboard-card col-span-full">System Status</article>
 </div>
 
 <div class="placement-grid place-center">
   <div class="utility-card">Centered content</div>
 </div>
+```

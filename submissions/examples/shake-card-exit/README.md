@@ -10,8 +10,8 @@ Card exit animation that oscillates left-right with decreasing amplitude while f
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                  | Description                  |
+| ---------------------- | ---------------------------- |
 | `ease-shake-card-exit` | Default shake exit animation |
 
 ## Notes

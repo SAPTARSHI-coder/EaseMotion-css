@@ -12,8 +12,12 @@ Cycles through all colors automatically using the CSS `hue-rotate()` filter — 
 }
 
 @keyframes hue-cycle {
-  from { filter: hue-rotate(0deg); }
-  to   { filter: hue-rotate(360deg); }
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(360deg);
+  }
 }
 ```
 

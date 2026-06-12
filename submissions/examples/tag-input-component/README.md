@@ -20,3 +20,4 @@ Adds a styled CSS-only tag input wrapper where chips are displayed inline with a
 
   <input type="text" placeholder="Add a tag..." aria-label="Add a tag" />
 </div>
+```

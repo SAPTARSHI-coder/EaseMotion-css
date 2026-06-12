@@ -19,11 +19,13 @@ A complete collection of **loading spinners** and **skeleton loaders** built wit
 ## 🚀 Usage
 
 ### Basic Spinner
+
 ```html
 <div class="ease-spinner-circle"></div>
 ```
 
 ### Spinner with Size
+
 ```html
 <div class="ease-spinner-circle ease-spinner-sm"></div>
 <div class="ease-spinner-circle ease-spinner-md"></div>
@@ -31,6 +33,7 @@ A complete collection of **loading spinners** and **skeleton loaders** built wit
 ```
 
 ### Spinner in Button
+
 ```html
 <button class="ease-btn">
   <span class="ease-spinner-circle ease-spinner-sm"></span>
@@ -39,6 +42,7 @@ A complete collection of **loading spinners** and **skeleton loaders** built wit
 ```
 
 ### Skeleton Card
+
 ```html
 <div class="ease-skeleton-card">
   <div class="ease-skeleton-rect"></div>
@@ -48,6 +52,7 @@ A complete collection of **loading spinners** and **skeleton loaders** built wit
 ```
 
 ### Skeleton Profile
+
 ```html
 <div class="ease-skeleton-profile">
   <div class="ease-skeleton-circle"></div>
@@ -63,31 +68,34 @@ A complete collection of **loading spinners** and **skeleton loaders** built wit
 ## 🎨 Available Classes
 
 ### Spinners
-| Class | Description |
-|-------|-------------|
+
+| Class                 | Description           |
+| --------------------- | --------------------- |
 | `ease-spinner-circle` | Classic rotating ring |
-| `ease-spinner-dots` | Three bouncing dots |
-| `ease-spinner-pulse` | Pulsing circle |
-| `ease-spinner-bars` | Audio-style bars |
-| `ease-spinner-ripple` | Expanding ripple |
-| `ease-spinner-orbit` | Dual orbiting rings |
+| `ease-spinner-dots`   | Three bouncing dots   |
+| `ease-spinner-pulse`  | Pulsing circle        |
+| `ease-spinner-bars`   | Audio-style bars      |
+| `ease-spinner-ripple` | Expanding ripple      |
+| `ease-spinner-orbit`  | Dual orbiting rings   |
 
 ### Sizes
-| Class | Dimensions |
-|-------|-----------|
-| `ease-spinner-sm` | 18×18px |
-| `ease-spinner-md` | 32×32px |
-| `ease-spinner-lg` | 56×56px |
+
+| Class             | Dimensions |
+| ----------------- | ---------- |
+| `ease-spinner-sm` | 18×18px    |
+| `ease-spinner-md` | 32×32px    |
+| `ease-spinner-lg` | 56×56px    |
 
 ### Skeletons
-| Class | Description |
-|-------|-------------|
-| `ease-skeleton-text` | Text line placeholder |
-| `ease-skeleton-short` | 60% width modifier |
-| `ease-skeleton-circle` | Circular placeholder |
-| `ease-skeleton-rect` | Rectangular placeholder |
-| `ease-skeleton-card` | Full card wrapper |
-| `ease-skeleton-profile` | Avatar + text wrapper |
+
+| Class                   | Description             |
+| ----------------------- | ----------------------- |
+| `ease-skeleton-text`    | Text line placeholder   |
+| `ease-skeleton-short`   | 60% width modifier      |
+| `ease-skeleton-circle`  | Circular placeholder    |
+| `ease-skeleton-rect`    | Rectangular placeholder |
+| `ease-skeleton-card`    | Full card wrapper       |
+| `ease-skeleton-profile` | Avatar + text wrapper   |
 
 ---
 
@@ -107,15 +115,15 @@ Override CSS variables to match your theme:
 
 ## 🎬 Animation Details
 
-| Animation | Duration | Type |
-|-----------|----------|------|
-| Circle spin | 0.8s | Linear loop |
-| Dot bounce | 1.4s | Staggered |
-| Pulse | 1.2s | Scale + fade |
-| Bar stretch | 1.2s | Staggered |
-| Ripple | 1.4s | Expanding |
-| Orbit | 1s | Dual rotation |
-| Shimmer | 1.4s | Gradient sweep |
+| Animation   | Duration | Type           |
+| ----------- | -------- | -------------- |
+| Circle spin | 0.8s     | Linear loop    |
+| Dot bounce  | 1.4s     | Staggered      |
+| Pulse       | 1.2s     | Scale + fade   |
+| Bar stretch | 1.2s     | Staggered      |
+| Ripple      | 1.4s     | Expanding      |
+| Orbit       | 1s       | Dual rotation  |
+| Shimmer     | 1.4s     | Gradient sweep |
 
 ---
 

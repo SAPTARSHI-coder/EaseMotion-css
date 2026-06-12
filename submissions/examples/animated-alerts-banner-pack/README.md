@@ -3,6 +3,7 @@
 A collection of lightweight, pure-CSS alert and banner components featuring fluid entrance animations.
 
 ## Features
+
 - Base `.em-alert` styling with 4 core variants:
   - `.em-alert-success` (Green)
   - `.em-alert-danger` (Red)
@@ -14,6 +15,7 @@ A collection of lightweight, pure-CSS alert and banner components featuring flui
 - Responsive flex layout with optional dismissible action trigger support.
 
 ## Usage
+
 Add classes directly to your alert element container:
 
 ```html

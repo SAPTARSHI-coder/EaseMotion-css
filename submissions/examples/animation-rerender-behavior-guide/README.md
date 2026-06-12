@@ -8,16 +8,14 @@ This example demonstrates how animation utilities can behave during component re
 
 Animations may restart when utility classes are reapplied during re-renders, causing:
 
-* Unwanted visual effects
-* Poor user experience
-* Inconsistent animation behavior
+- Unwanted visual effects
+- Poor user experience
+- Inconsistent animation behavior
 
 ## Restart Condition Example
 
 ```html
-<div class="ease-fade-in">
-  Animated Content
-</div>
+<div class="ease-fade-in">Animated Content</div>
 ```
 
 Repeated rendering may replay the animation unexpectedly.
@@ -27,9 +25,7 @@ Repeated rendering may replay the animation unexpectedly.
 Apply animation utilities only when an animation should intentionally start.
 
 ```html
-<div class="ease-fade-in">
-  Animated Content
-</div>
+<div class="ease-fade-in">Animated Content</div>
 ```
 
 Avoid repeatedly reapplying animation classes during updates.
@@ -40,11 +36,7 @@ Avoid repeatedly reapplying animation classes during updates.
 
 ```jsx
 function Card() {
-  return (
-    <div className="ease-fade-in">
-      React Content
-    </div>
-  );
+  return <div className="ease-fade-in">React Content</div>;
 }
 ```
 
@@ -52,11 +44,7 @@ function Card() {
 
 ```jsx
 export default function Home() {
-  return (
-    <div className="ease-slide-up">
-      Next.js Content
-    </div>
-  );
+  return <div className="ease-slide-up">Next.js Content</div>;
 }
 ```
 
@@ -64,14 +52,12 @@ export default function Home() {
 
 ```vue
 <template>
-  <div class="ease-bounce">
-    Vue Content
-  </div>
+  <div class="ease-bounce">Vue Content</div>
 </template>
 ```
 
 ## Benefits
 
-* Improved UX
-* Reduced unnecessary animation playback
-* More predictable animation behavior
+- Improved UX
+- Reduced unnecessary animation playback
+- More predictable animation behavior

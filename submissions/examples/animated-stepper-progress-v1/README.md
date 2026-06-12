@@ -49,16 +49,16 @@ animated-stepper-progress/
 5. Control stagger timing via the `--step-index` CSS custom property on each `.step`:
 
 ```html
-<article class="step step--active" style="--step-index: 2;">
+<article class="step step--active" style="--step-index: 2;"></article>
 ```
 
 ### Step State Classes
 
-| Class            | Description                         |
-|------------------|-------------------------------------|
-| `step--completed`| Step is finished. Shows checkmark.  |
-| `step--active`   | Current step. Pulsing ring + glow.  |
-| `step--upcoming` | Not yet started. Muted appearance.  |
+| Class             | Description                        |
+| ----------------- | ---------------------------------- |
+| `step--completed` | Step is finished. Shows checkmark. |
+| `step--active`    | Current step. Pulsing ring + glow. |
+| `step--upcoming`  | Not yet started. Muted appearance. |
 
 ---
 
@@ -82,22 +82,22 @@ Each animation is a self-contained `@keyframes` block. `slideUpFade` can be drop
 
 ## Animation Reference
 
-| Name                | Applied To              | Effect                                |
-|---------------------|-------------------------|---------------------------------------|
-| `stepEntrance`      | `.step`                 | Staggered slide-up fade on load       |
-| `slideUpFade`       | Header, summary         | Smooth upward entrance                |
-| `checkPop`          | `.step__check`          | Spring-scale checkmark on complete    |
-| `activeCirclePulse` | `.step--active` circle  | Breathing glow on active state        |
-| `pulsing`           | `.step__pulse`          | Expanding ring pulse on active        |
-| `glowPulse`         | `.step__glow`           | Radial glow breathe on active         |
-| `connectorFill`     | `.connector__line`      | Left-to-right fill on completed lines |
-| `connectorPulse`    | Hover on connectors     | Glow intensification on hover         |
-| `borderRotate`      | `::before` on hover     | Hue-rotating gradient border          |
-| `shimmerSweep`      | `::after` on hover      | Light sweep across card surface       |
-| `gradientShift`     | `.title-gradient`       | Slow ambient gradient drift on title  |
-| `progressExpand`    | `.progress-summary__fill` | Progress bar width reveal           |
-| `progressShimmer`   | `::after` on fill       | Repeating shine on progress bar       |
-| `blobFloat`         | `.bg-blob`              | Slow ambient float on decorative orbs |
+| Name                | Applied To                | Effect                                |
+| ------------------- | ------------------------- | ------------------------------------- |
+| `stepEntrance`      | `.step`                   | Staggered slide-up fade on load       |
+| `slideUpFade`       | Header, summary           | Smooth upward entrance                |
+| `checkPop`          | `.step__check`            | Spring-scale checkmark on complete    |
+| `activeCirclePulse` | `.step--active` circle    | Breathing glow on active state        |
+| `pulsing`           | `.step__pulse`            | Expanding ring pulse on active        |
+| `glowPulse`         | `.step__glow`             | Radial glow breathe on active         |
+| `connectorFill`     | `.connector__line`        | Left-to-right fill on completed lines |
+| `connectorPulse`    | Hover on connectors       | Glow intensification on hover         |
+| `borderRotate`      | `::before` on hover       | Hue-rotating gradient border          |
+| `shimmerSweep`      | `::after` on hover        | Light sweep across card surface       |
+| `gradientShift`     | `.title-gradient`         | Slow ambient gradient drift on title  |
+| `progressExpand`    | `.progress-summary__fill` | Progress bar width reveal             |
+| `progressShimmer`   | `::after` on fill         | Repeating shine on progress bar       |
+| `blobFloat`         | `.bg-blob`                | Slow ambient float on decorative orbs |
 
 ---
 
@@ -107,14 +107,14 @@ All design tokens are exposed as CSS variables on `:root` for easy theming:
 
 ```css
 :root {
-  --grad-primary:   /* main indigo-purple gradient */
-  --grad-active:    /* active state gradient */
-  --grad-completed: /* completed state gradient */
-  --circle-size:    /* step circle diameter */
-  --radius-card:    /* card border radius */
-  --dur-slow:       /* standard animation duration */
-  --ease-spring:    /* spring easing curve */
-  --stagger:        /* per-step entrance delay */
+  --grad-primary:   /* main indigo-purple gradient */ --grad-active:
+    /* active state gradient */
+    --grad-completed: /* completed state gradient */
+    --circle-size: /* step circle diameter */
+    --radius-card: /* card border radius */
+    --dur-slow: /* standard animation duration */
+    --ease-spring: /* spring easing curve */
+    --stagger: /* per-step entrance delay */;
 }
 ```
 

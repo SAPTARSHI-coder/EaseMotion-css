@@ -5,6 +5,7 @@ Fixes the fade-in animation flicker on Safari browsers by adding
 -webkit- prefixes, will-change, backface-visibility, and translateZ(0).
 
 **The Fix:**
+
 ```css
 .ease-fade-in {
   will-change: opacity;

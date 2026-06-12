@@ -12,11 +12,11 @@ Max-width centered container utility. The fundamental layout building block for 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-container` | Centered container with max-width |
-| `ease-container-sm` | Smaller max-width |
-| `ease-container-lg` | Larger max-width |
+| Class               | Description                       |
+| ------------------- | --------------------------------- |
+| `ease-container`    | Centered container with max-width |
+| `ease-container-sm` | Smaller max-width                 |
+| `ease-container-lg` | Larger max-width                  |
 
 ## Notes
 

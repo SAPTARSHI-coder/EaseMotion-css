@@ -1,9 +1,11 @@
 # Ease Callout Zd
 
 ## What does this do?
+
 A set of animated callout/feature highlight boxes with colored left accents, icons, slide-in entrance animation, hover lift effect, optional badges, and stacked layout — built with pure HTML and CSS.
 
 ## How is it used?
+
 ```html
 <!-- Basic callout -->
 <div class="cl-callout cl-blue">
@@ -34,4 +36,5 @@ A set of animated callout/feature highlight boxes with colored left accents, ico
 Colors: cl-blue, cl-green, cl-orange, cl-purple
 
 ## Why is it useful?
+
 Callout boxes are essential for documentation, feature announcements, onboarding tips, and highlighting important information in dashboards. This component provides a clean, reusable pattern with distinctive color-coded left accents, slide-in animations, icon pop effects, hover lift, and stacked support — all pure CSS with prefers-reduced-motion support.

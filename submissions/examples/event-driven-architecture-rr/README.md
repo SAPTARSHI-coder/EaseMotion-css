@@ -7,17 +7,11 @@ Visualizes how services communicate through an event-driven architecture using p
 ## How is it used?
 
 ```html
-<div class="node producer">
-    User Service
-</div>
+<div class="node producer">User Service</div>
 
-<div class="bus">
-    Event Bus
-</div>
+<div class="bus">Event Bus</div>
 
-<div class="node consumer">
-    Email Service
-</div>
+<div class="node consumer">Email Service</div>
 ```
 
 ## Why is it useful?

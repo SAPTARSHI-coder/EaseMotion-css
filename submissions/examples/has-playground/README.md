@@ -13,7 +13,7 @@ Demonstrates parent-dependent animations using the CSS `:has()` pseudo-class —
 }
 
 .parent:has(input:focus) {
-  box-shadow: 0 0 0 4px rgba(0,0,255,0.1);
+  box-shadow: 0 0 0 4px rgba(0, 0, 255, 0.1);
 }
 ```
 

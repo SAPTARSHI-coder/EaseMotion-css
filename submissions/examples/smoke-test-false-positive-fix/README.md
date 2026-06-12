@@ -58,11 +58,13 @@ The maintainer can manually apply this diff to `tests/smoke.test.js` to change t
 ## Interactive Sandbox & Demo
 
 An interactive simulation lab is provided in `demo.html` allowing contributors to:
+
 1. Load a mockup CSS containing buttons and decimal font sizes.
 2. Select between the **Buggy Substring Check** (asserting `font-size: 0`), **Fixed Substring Check** (asserting `color: transparent`), and a **Strict Selector & Declaration Check** (verifying boundaries).
 3. Inspect how naive substring matching leads to false-positive test runs and check live status results.
 
 ### Files Created
+
 - `demo.html`: Live interactive sandbox lab interface.
 - `style.css`: Clean, visually stunning dark mode layout for the lab.
 - `core-patch/smoke.test.patch.js`: The maintainer patch script.

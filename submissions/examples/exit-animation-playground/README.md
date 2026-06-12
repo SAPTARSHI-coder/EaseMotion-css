@@ -12,14 +12,14 @@ press **Replay all** to trigger them again without reloading.
 
 ## Effects included
 
-| Effect | Motion |
-| ------ | ------ |
-| `fade`   | Opacity `1 → 0` |
+| Effect   | Motion                                                        |
+| -------- | ------------------------------------------------------------- |
+| `fade`   | Opacity `1 → 0`                                               |
 | `rotate` | Rotate + scale down + fade (mirrors `ease-rotate-image-exit`) |
-| `slide`  | Translate out horizontally + fade |
-| `scale`  | Shrink to 40% + fade |
-| `shake`  | Quick shake, then fade out |
-| `bounce` | Squash, lift, then drop away + fade |
+| `slide`  | Translate out horizontally + fade                             |
+| `scale`  | Shrink to 40% + fade                                          |
+| `shake`  | Quick shake, then fade out                                    |
+| `bounce` | Squash, lift, then drop away + fade                           |
 
 ## Usage
 
@@ -35,9 +35,9 @@ container. Apply an effect class to any element inside a `.playing` parent:
 To replay, remove the `playing` class, force a reflow, then add it back:
 
 ```js
-stage.classList.remove('playing');
+stage.classList.remove("playing");
 void stage.offsetWidth; // force reflow
-stage.classList.add('playing');
+stage.classList.add("playing");
 ```
 
 ## Files
@@ -59,10 +59,10 @@ plays. All controls are keyboard-focusable.
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅ |
-| Firefox | ✅ |
-| Safari  | ✅ |
-| Edge    | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why it's useful
 

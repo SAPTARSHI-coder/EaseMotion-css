@@ -22,39 +22,42 @@
  */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // Check native sibling-index() support
-  const hasNative = CSS.supports('animation-delay', 'calc(sibling-index() * 1ms)');
+  const hasNative = CSS.supports(
+    "animation-delay",
+    "calc(sibling-index() * 1ms)"
+  );
 
   // Animation hidden/visible states for fallback
   const animStates = {
-    'auto-stagger--slide-up': {
-      hidden:  { opacity: '0', transform: 'translateY(24px)' },
-      visible: { opacity: '1', transform: 'translateY(0)' },
+    "auto-stagger--slide-up": {
+      hidden: { opacity: "0", transform: "translateY(24px)" },
+      visible: { opacity: "1", transform: "translateY(0)" },
     },
-    'auto-stagger--slide-left': {
-      hidden:  { opacity: '0', transform: 'translateX(-24px)' },
-      visible: { opacity: '1', transform: 'translateX(0)' },
+    "auto-stagger--slide-left": {
+      hidden: { opacity: "0", transform: "translateX(-24px)" },
+      visible: { opacity: "1", transform: "translateX(0)" },
     },
-    'auto-stagger--fade': {
-      hidden:  { opacity: '0', transform: 'none' },
-      visible: { opacity: '1', transform: 'none' },
+    "auto-stagger--fade": {
+      hidden: { opacity: "0", transform: "none" },
+      visible: { opacity: "1", transform: "none" },
     },
-    'auto-stagger--zoom': {
-      hidden:  { opacity: '0', transform: 'scale(0.88)' },
-      visible: { opacity: '1', transform: 'scale(1)' },
+    "auto-stagger--zoom": {
+      hidden: { opacity: "0", transform: "scale(0.88)" },
+      visible: { opacity: "1", transform: "scale(1)" },
     },
     // Default
     default: {
-      hidden:  { opacity: '0', transform: 'translateY(24px)' },
-      visible: { opacity: '1', transform: 'translateY(0)' },
+      hidden: { opacity: "0", transform: "translateY(24px)" },
+      visible: { opacity: "1", transform: "translateY(0)" },
     },
   };
 
   function getAnimState(group) {
     for (const key of Object.keys(animStates)) {
-      if (key !== 'default' && group.classList.contains(key)) {
+      if (key !== "default" && group.classList.contains(key)) {
         return animStates[key];
       }
     }
@@ -63,7 +66,9 @@
 
   function getDelay(group) {
     // Try CSS variable first
-    const cssVal = getComputedStyle(group).getPropertyValue('--stagger-delay').trim();
+    const cssVal = getComputedStyle(group)
+      .getPropertyValue("--stagger-delay")
+      .trim();
     if (cssVal) {
       const ms = parseFloat(cssVal);
       return isNaN(ms) ? 80 : ms;
@@ -75,7 +80,7 @@
   function initGroup(group) {
     // If native supported, CSS handles everything — just mark as ready
     if (hasNative) {
-      group.classList.add('as-native');
+      group.classList.add("as-native");
       return;
     }
 
@@ -85,51 +90,54 @@
     const delayMs = getDelay(group);
 
     // Set initial hidden state
-    children.forEach(child => {
+    children.forEach((child) => {
       Object.assign(child.style, anim.hidden);
-      child.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
-      child.style.willChange = 'opacity, transform';
+      child.style.transition = "opacity 0.55s ease, transform 0.55s ease";
+      child.style.willChange = "opacity, transform";
     });
 
     let fired = false;
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !fired) {
-          fired = true;
-          observer.disconnect();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !fired) {
+            fired = true;
+            observer.disconnect();
 
-          children.forEach((child, i) => {
-            setTimeout(() => {
-              Object.assign(child.style, anim.visible);
-              child.style.willChange = 'auto';
-            }, i * delayMs);
-          });
-        }
-      });
-    }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+            children.forEach((child, i) => {
+              setTimeout(() => {
+                Object.assign(child.style, anim.visible);
+                child.style.willChange = "auto";
+              }, i * delayMs);
+            });
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
+    );
 
     observer.observe(group);
   }
 
   function init() {
-    document.querySelectorAll('.auto-stagger').forEach(initGroup);
+    document.querySelectorAll(".auto-stagger").forEach(initGroup);
   }
 
   // MutationObserver for dynamic content
-  const mo = new MutationObserver(mutations => {
-    mutations.forEach(m => {
-      m.addedNodes.forEach(node => {
+  const mo = new MutationObserver((mutations) => {
+    mutations.forEach((m) => {
+      m.addedNodes.forEach((node) => {
         if (node.nodeType === 1) {
-          if (node.classList?.contains('auto-stagger')) initGroup(node);
-          node.querySelectorAll?.('.auto-stagger').forEach(initGroup);
+          if (node.classList?.contains("auto-stagger")) initGroup(node);
+          node.querySelectorAll?.(".auto-stagger").forEach(initGroup);
         }
       });
     });
   });
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
       init();
       mo.observe(document.body, { childList: true, subtree: true });
     });
@@ -140,5 +148,4 @@
 
   // Public API
   window.EaseAutoStagger = { init, hasNative };
-
 })();

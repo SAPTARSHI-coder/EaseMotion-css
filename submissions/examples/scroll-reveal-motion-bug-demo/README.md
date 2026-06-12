@@ -16,8 +16,8 @@ The scroll-reveal transition uses a hardcoded `0.7s` duration instead of referen
 
 ```css
 transition:
-  opacity var(--ease-reveal-duration, 0.7s) ...,
-  transform var(--ease-reveal-duration, 0.7s) ...;
+  opacity var(--ease-reveal-duration, 0.7s)...,
+  transform var(--ease-reveal-duration, 0.7s)...;
 ```
 
 ## Demo

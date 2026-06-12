@@ -11,6 +11,7 @@ EaseMotion CSS is designed to work seamlessly with accessibility best practices.
 The CSS `prefers-reduced-motion` media query detects if users have requested reduced motion in their operating system settings. This preference indicates users who experience discomfort, dizziness, or seizures triggered by animations.
 
 **Enable reduced motion:**
+
 - **Windows 11/10:** Settings → Ease of Access → Display → Show animations (toggle OFF)
 - **macOS:** System Preferences → Accessibility → Display → Reduce motion
 - **iOS:** Settings → Accessibility → Motion → Reduce Motion
@@ -19,6 +20,7 @@ The CSS `prefers-reduced-motion` media query detects if users have requested red
 ### How EaseMotion CSS Handles It
 
 All animation classes automatically respect `prefers-reduced-motion`. When enabled, animations run with:
+
 - Duration: `0.01ms` (essentially instant)
 - Iteration count: `1` (no loops)
 - Transition duration: `0.01ms` (no fade transitions)
@@ -76,9 +78,7 @@ Use `.ease-sr-only` to hide content visually while keeping it available to scree
 </div>
 
 <!-- Loading indicator with status -->
-<div aria-live="polite" class="ease-sr-only">
-  Loading results…
-</div>
+<div aria-live="polite" class="ease-sr-only">Loading results…</div>
 ```
 
 ### CSS Implementation
@@ -96,6 +96,7 @@ Use `.ease-sr-only` to hide content visually while keeping it available to scree
 ```
 
 This technique:
+
 - ✅ Removes content from layout flow
 - ✅ Prevents visual display
 - ✅ Remains available to screen readers
@@ -110,6 +111,7 @@ This technique:
 EaseMotion CSS color tokens are designed with WCAG compliance in mind. However, you should always verify contrast in your specific implementation.
 
 **WCAG 2.1 Levels:**
+
 - **AA (standard):** 4.5:1 for normal text, 3:1 for large text
 - **AAA (enhanced):** 7:1 for normal text, 4.5:1 for large text
 
@@ -117,16 +119,17 @@ EaseMotion CSS color tokens are designed with WCAG compliance in mind. However, 
 
 Default color combinations meet WCAG AA:
 
-| Foreground | Background | Contrast Ratio | WCAG Level |
-|-----------|-----------|----------------|-----------|
-| `--ease-color-text` (#1e293b) | `--ease-color-surface` (#ffffff) | 15:1 | ✅ AAA |
-| `--ease-color-primary` (#6c63ff) | `--ease-color-surface` (#ffffff) | 6.5:1 | ✅ AAA |
-| `--ease-color-success` (#22c55e) | `--ease-color-surface` (#ffffff) | 5.5:1 | ✅ AAA |
-| `--ease-color-muted` (#64748b) | `--ease-color-surface` (#ffffff) | 7.1:1 | ✅ AAA |
+| Foreground                       | Background                       | Contrast Ratio | WCAG Level |
+| -------------------------------- | -------------------------------- | -------------- | ---------- |
+| `--ease-color-text` (#1e293b)    | `--ease-color-surface` (#ffffff) | 15:1           | ✅ AAA     |
+| `--ease-color-primary` (#6c63ff) | `--ease-color-surface` (#ffffff) | 6.5:1          | ✅ AAA     |
+| `--ease-color-success` (#22c55e) | `--ease-color-surface` (#ffffff) | 5.5:1          | ✅ AAA     |
+| `--ease-color-muted` (#64748b)   | `--ease-color-surface` (#ffffff) | 7.1:1          | ✅ AAA     |
 
 ### Testing for Contrast
 
 Use online contrast checkers:
+
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/)
 - [Accessible Colors](https://accessible-colors.com/)
 - Browser DevTools: Right-click element → Inspect → check contrast ratio
@@ -135,14 +138,10 @@ Use online contrast checkers:
 
 ```html
 <!-- ✅ DO: Use sufficient contrast -->
-<button class="ease-btn ease-btn-primary">
-  Save Changes
-</button>
+<button class="ease-btn ease-btn-primary">Save Changes</button>
 
 <!-- ❌ AVOID: Light text on light background -->
-<p style="color: #e2e8f0;">
-  This text is too faint
-</p>
+<p style="color: #e2e8f0;">This text is too faint</p>
 
 <!-- ✅ DO: Provide text alternatives for color-only information -->
 <div style="color: #ef4444;">
@@ -172,9 +171,10 @@ ARIA attributes describe meaning and state to assistive technologies. Combine th
 
 ```html
 <!-- Animated button with accessible label -->
-<button 
+<button
   class="ease-btn ease-btn-primary ease-hover-grow"
-  aria-label="Add new item">
+  aria-label="Add new item"
+>
   <svg aria-hidden="true"><!-- + icon --></svg>
   <span class="ease-sr-only">Add new item</span>
 </button>
@@ -184,16 +184,11 @@ ARIA attributes describe meaning and state to assistive technologies. Combine th
 
 ```html
 <!-- Animated loader with screen reader announcement -->
-<div 
-  aria-live="polite" 
-  aria-busy="true" 
-  role="status">
+<div aria-live="polite" aria-busy="true" role="status">
   <div class="ease-bounce">
     <span aria-hidden="true">●</span>
   </div>
-  <span class="ease-sr-only">
-    Loading results, please wait
-  </span>
+  <span class="ease-sr-only"> Loading results, please wait </span>
 </div>
 ```
 
@@ -202,18 +197,15 @@ ARIA attributes describe meaning and state to assistive technologies. Combine th
 ```html
 <form>
   <label for="email">Email</label>
-  <input 
+  <input
     id="email"
     type="email"
     aria-describedby="email-error"
-    aria-invalid="false" />
-  
+    aria-invalid="false"
+  />
+
   <!-- Animated error message -->
-  <div 
-    id="email-error"
-    class="ease-fade-in"
-    aria-live="assertive"
-    role="alert">
+  <div id="email-error" class="ease-fade-in" aria-live="assertive" role="alert">
     Please enter a valid email address
   </div>
 </form>
@@ -223,10 +215,7 @@ ARIA attributes describe meaning and state to assistive technologies. Combine th
 
 ```html
 <!-- Animated underline link with accessible state -->
-<a 
-  href="/profile"
-  class="ease-hover-underline"
-  aria-current="page">
+<a href="/profile" class="ease-hover-underline" aria-current="page">
   Profile
 </a>
 ```
@@ -235,10 +224,7 @@ ARIA attributes describe meaning and state to assistive technologies. Combine th
 
 ```html
 <!-- Visually reduced + semantically marked as disabled -->
-<button 
-  class="ease-btn ease-btn-primary"
-  aria-disabled="true"
-  disabled>
+<button class="ease-btn ease-btn-primary" aria-disabled="true" disabled>
   Submit (Disabled)
 </button>
 ```

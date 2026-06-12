@@ -10,15 +10,16 @@
 
 ## Node Types
 
-| Class | Purpose |
-|---|---|
-| `flow-node threat` | Threat/attacker source |
-| `flow-node defense` | Firewall / WAF layer |
-| `flow-node auth` | Authentication layer |
-| `flow-node gateway` | API gateway / router |
-| `flow-node resource` | Secured resource |
+| Class                | Purpose                |
+| -------------------- | ---------------------- |
+| `flow-node threat`   | Threat/attacker source |
+| `flow-node defense`  | Firewall / WAF layer   |
+| `flow-node auth`     | Authentication layer   |
+| `flow-node gateway`  | API gateway / router   |
+| `flow-node resource` | Secured resource       |
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - Hover lift animations on each node
 - Color-coded security layers
@@ -27,6 +28,7 @@
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Security documentation
 - Threat modeling diagrams
 - Cybersecurity training materials

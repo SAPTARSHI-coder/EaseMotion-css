@@ -1,4 +1,3 @@
- 
 # Scale Card Entrance Animation
 
 Smooth scale entrance animation for cards — scales up while fading in.
@@ -23,9 +22,10 @@ Smooth scale entrance animation for cards — scales up while fading in.
 
 ```html
 <div class="ease-scale-card">
-    <!-- Card content -->
+  <!-- Card content -->
 </div>
 
 <!-- Staggered entrance -->
 <div class="ease-scale-card-delay-1">First</div>
 <div class="ease-scale-card-delay-2">Second</div>
+```

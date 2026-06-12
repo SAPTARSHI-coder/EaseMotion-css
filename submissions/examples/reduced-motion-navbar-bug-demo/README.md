@@ -13,6 +13,7 @@ Open `demo.html` in a browser. Enable `prefers-reduced-motion: reduce` in your O
 Every other major component (cards, buttons, sidebar, footer, tooltips, modals, chip, masonry, scroll-progress) has its own reduced-motion guard. Navbar is an inconsistent gap.
 
 The fix should be applied to `components/navbar.css`:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-navbar-glass,

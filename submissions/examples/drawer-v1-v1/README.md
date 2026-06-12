@@ -37,16 +37,16 @@ a backdrop overlay, a close button, and structured header/body/footer regions.
 ```
 
 Direction variants:
-  .ease-drawer                — left (default)
-  .ease-drawer ease-drawer-right   — right
-  .ease-drawer ease-drawer-top     — top
-  .ease-drawer ease-drawer-bottom  — bottom
+.ease-drawer — left (default)
+.ease-drawer ease-drawer-right — right
+.ease-drawer ease-drawer-top — top
+.ease-drawer ease-drawer-bottom — bottom
 
 Width modifiers (left/right only):
-  .ease-drawer-sm   220px
-  .ease-drawer      300px default
-  .ease-drawer-lg   420px
-  .ease-drawer-full 100vw
+.ease-drawer-sm 220px
+.ease-drawer 300px default
+.ease-drawer-lg 420px
+.ease-drawer-full 100vw
 
 ---
 
@@ -64,29 +64,29 @@ Reduced-motion safe — transitions disabled when user prefers it.
 
 ## Classes
 
-ease-drawer-toggle   — hidden checkbox (state controller)
-ease-drawer-overlay  — backdrop label, click to close
-ease-drawer          — panel, slides from left by default
-ease-drawer-right    — slides from right
-ease-drawer-top      — slides from top
-ease-drawer-bottom   — slides from bottom
-ease-drawer-sm       — 220px width
-ease-drawer-lg       — 420px width
-ease-drawer-full     — 100vw width
-ease-drawer-close    — X close button label
-ease-drawer-header   — titled top region
-ease-drawer-body     — scrollable content region
-ease-drawer-footer   — action region at bottom
+ease-drawer-toggle — hidden checkbox (state controller)
+ease-drawer-overlay — backdrop label, click to close
+ease-drawer — panel, slides from left by default
+ease-drawer-right — slides from right
+ease-drawer-top — slides from top
+ease-drawer-bottom — slides from bottom
+ease-drawer-sm — 220px width
+ease-drawer-lg — 420px width
+ease-drawer-full — 100vw width
+ease-drawer-close — X close button label
+ease-drawer-header — titled top region
+ease-drawer-body — scrollable content region
+ease-drawer-footer — action region at bottom
 
 ---
 
 ## Files
 
-style.css  — full component, dark mode, reduced-motion
-demo.html  — 5 demos: nav, cart, filters, announcement, contact form
-README.md  — this file
+style.css — full component, dark mode, reduced-motion
+demo.html — 5 demos: nav, cart, filters, announcement, contact form
+README.md — this file
 
-Proposed ease-* names (maintainer decides):
+Proposed ease-\* names (maintainer decides):
 ease-drawer, ease-drawer-right, ease-drawer-top, ease-drawer-bottom,
 ease-drawer-sm, ease-drawer-lg, ease-drawer-full, ease-drawer-toggle,
 ease-drawer-overlay, ease-drawer-close, ease-drawer-header,

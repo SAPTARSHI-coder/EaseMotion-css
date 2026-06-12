@@ -8,8 +8,8 @@ Provides a professional investor-focused dashboard displaying funding, valuation
 
 ```html
 <div class="card valuation">
-    <h2>$85M</h2>
-    <span>Company Valuation</span>
+  <h2>$85M</h2>
+  <span>Company Valuation</span>
 </div>
 ```
 

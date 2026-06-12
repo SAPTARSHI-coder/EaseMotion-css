@@ -7,13 +7,9 @@ Visualizes a connected smart city ecosystem consisting of transportation systems
 ## How is it used?
 
 ```html
-<div class="node center">
-    City Operations Center
-</div>
+<div class="node center">City Operations Center</div>
 
-<div class="node iot">
-    IoT Sensors
-</div>
+<div class="node iot">IoT Sensors</div>
 ```
 
 ## Why is it useful?

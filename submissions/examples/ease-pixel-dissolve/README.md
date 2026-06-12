@@ -9,8 +9,10 @@ A retro-inspired, sci-fi digital disintegration transition layer popular in cine
 - **Compositor Engine Isolation:** Operates 100% free of runtime JavaScript canvas animation arrays. Main thread execution queues are left completely unthrottled for buttery production tracking performance.
 
 ## Working Files Map
+
 - `demo.html`: Functional standalone visual presentation layer preview.
 - `style.css`: Production ready utility class definitions.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

@@ -30,7 +30,9 @@ Interactive pricing comparison cards for showcasing subscription plans side-by-s
       <li>5 Projects</li>
       <li class="na">Advanced Analytics</li>
     </ul>
-    <button class="ease-pricing-btn ease-pricing-btn--primary">Get Started</button>
+    <button class="ease-pricing-btn ease-pricing-btn--primary">
+      Get Started
+    </button>
   </div>
 
   <!-- Featured card -->
@@ -54,8 +56,8 @@ Add `class="na"` to any `<li>` to show a cross icon instead of a checkmark:
 
 ## CSS Variables
 
-| Variable | Default | Description |
-|---|---|---|
+| Variable                  | Default | Description                        |
+| ------------------------- | ------- | ---------------------------------- |
 | `--ease-pricing-card-min` | `260px` | Minimum card width before wrapping |
 
 ---

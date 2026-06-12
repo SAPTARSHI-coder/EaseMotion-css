@@ -7,9 +7,7 @@ Adds a hover effect that smoothly transitions an element's colors.
 ## How is it used?
 
 ```html
-<div class="hover-color-shift">
-  Hover over me
-</div>
+<div class="hover-color-shift">Hover over me</div>
 ```
 
 ## Why is it useful?

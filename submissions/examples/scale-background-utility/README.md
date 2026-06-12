@@ -12,9 +12,7 @@ A smooth scale-style background animation utility for interactive components.
 ## Usage
 
 ```html
-<div class="ease-scale-background-utility">
-  Hover Me
-</div>
+<div class="ease-scale-background-utility">Hover Me</div>
 ```
 
 ## Animation Details

@@ -8,8 +8,8 @@ Provides a responsive pricing comparison section with multiple plans, feature co
 
 ```html
 <div class="pricing-card">
-    <h2>Starter</h2>
-    <div class="price">$9/month</div>
+  <h2>Starter</h2>
+  <div class="price">$9/month</div>
 </div>
 ```
 

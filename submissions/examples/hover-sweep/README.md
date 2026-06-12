@@ -23,21 +23,13 @@ A pure CSS hover animation where the entire background sweeps across the element
 ## Usage
 
 ```html
-<button class="sweep-btn sweep-left">
-  Sweep Left
-</button>
+<button class="sweep-btn sweep-left">Sweep Left</button>
 
-<button class="sweep-btn sweep-right">
-  Sweep Right
-</button>
+<button class="sweep-btn sweep-right">Sweep Right</button>
 
-<button class="sweep-btn sweep-top">
-  Sweep Top
-</button>
+<button class="sweep-btn sweep-top">Sweep Top</button>
 
-<button class="sweep-btn sweep-bottom">
-  Sweep Bottom
-</button>
+<button class="sweep-btn sweep-bottom">Sweep Bottom</button>
 ```
 
 ## Customization

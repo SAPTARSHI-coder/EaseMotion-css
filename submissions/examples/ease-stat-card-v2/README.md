@@ -10,9 +10,9 @@ Creates a reusable statistics card component with support for icons, metric valu
 
 ```html
 <div class="ease-stat-card">
-    <div class="icon">📈</div>
-    <h2>12,500</h2>
-    <p>Total Users</p>
+  <div class="icon">📈</div>
+  <h2>12,500</h2>
+  <p>Total Users</p>
 </div>
 ```
 

@@ -4,22 +4,19 @@ A CSS-only typing text animation that reveals text character-by-character using 
 
 ## Features
 
-* Pure CSS (No JavaScript)
-* Character-by-character typing effect
-* Blinking cursor animation
-* Configurable typing speed using `--typing-speed`
-* Configurable character count using `--typing-chars`
-* Right-to-left (RTL) text support
-* Lightweight and reusable
+- Pure CSS (No JavaScript)
+- Character-by-character typing effect
+- Blinking cursor animation
+- Configurable typing speed using `--typing-speed`
+- Configurable character count using `--typing-chars`
+- Right-to-left (RTL) text support
+- Lightweight and reusable
 
 ## Usage
 
 ```html
 <div class="typing-cursor">
-  <span
-    class="typing-text"
-    style="--typing-speed:0.1s; --typing-chars:18;"
-  >
+  <span class="typing-text" style="--typing-speed:0.1s; --typing-chars:18;">
     Hello EaseMotion!
   </span>
 </div>
@@ -34,19 +31,20 @@ A CSS-only typing text animation that reveals text character-by-character using 
 
 ## Included Examples
 
-* Default typing
-* Fast typing
-* Slow typing
-* RTL typing
+- Default typing
+- Fast typing
+- Slow typing
+- RTL typing
 
 ## Browser Support
 
 Works in all modern browsers supporting:
 
-* CSS Keyframes
-* CSS Variables
-* CSS steps()
-* CSS Animations
+- CSS Keyframes
+- CSS Variables
+- CSS steps()
+- CSS Animations
 
 ```
+
 ```

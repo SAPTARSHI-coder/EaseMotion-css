@@ -8,11 +8,17 @@ Demonstrates `animation-play-state` — the CSS property that pauses and resumes
 
 ```css
 /* Pause on hover */
-.spinner { animation: spin 2s linear infinite; }
-.spinner:hover { animation-play-state: paused; }
+.spinner {
+  animation: spin 2s linear infinite;
+}
+.spinner:hover {
+  animation-play-state: paused;
+}
 
 /* Toggle via class */
-.spinner.paused { animation-play-state: paused; }
+.spinner.paused {
+  animation-play-state: paused;
+}
 ```
 
 ## Why is it useful?

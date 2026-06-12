@@ -13,7 +13,6 @@ Wrap your card content in `.em-tilt-wrapper` and place the four invisible quadra
 ```html
 <div class="em-tilt-wrapper">
   <div class="em-tilt-card">
-
     <div class="em-tilt-quadrant em-tilt-quadrant--tl" aria-hidden="true"></div>
     <div class="em-tilt-quadrant em-tilt-quadrant--tr" aria-hidden="true"></div>
     <div class="em-tilt-quadrant em-tilt-quadrant--bl" aria-hidden="true"></div>
@@ -23,7 +22,6 @@ Wrap your card content in `.em-tilt-wrapper` and place the four invisible quadra
       <div class="em-tilt-shimmer" aria-hidden="true"></div>
       <!-- your card content here -->
     </div>
-
   </div>
 </div>
 ```

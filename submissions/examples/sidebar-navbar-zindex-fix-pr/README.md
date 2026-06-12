@@ -30,10 +30,10 @@ An **optional** `.ease-sidebar-backdrop` element is also proposed for parity wit
 
 Both components fight for the same stacking layer:
 
-| Component | File | z-index |
-|---|---|---|
-| `.ease-navbar-glass-sticky` | navbar.css | `var(--ease-z-overlay, 100)` |
-| `.ease-sidebar` (mobile) | sidebar.css | `100` (hardcoded) |
+| Component                   | File        | z-index                      |
+| --------------------------- | ----------- | ---------------------------- |
+| `.ease-navbar-glass-sticky` | navbar.css  | `var(--ease-z-overlay, 100)` |
+| `.ease-sidebar` (mobile)    | sidebar.css | `100` (hardcoded)            |
 
 This causes two problems:
 

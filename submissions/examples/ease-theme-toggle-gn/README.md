@@ -4,21 +4,22 @@
    Implements a working light/dark theme toggle switch using the CSS checkbox hack and custom properties — no JavaScript required.
 
 2. **How is it used?**
+
 ```html
-   <!-- Hidden checkbox -->
-   <input type="checkbox" id="theme-toggle"/>
+<!-- Hidden checkbox -->
+<input type="checkbox" id="theme-toggle" />
 
-   <div class="page">
-     <!-- Toggle label -->
-     <label class="theme-toggle-label" for="theme-toggle">
-       <span class="toggle-icon">☀️</span>
-       <div class="toggle-track"></div>
-       <span class="toggle-icon">🌙</span>
-     </label>
+<div class="page">
+  <!-- Toggle label -->
+  <label class="theme-toggle-label" for="theme-toggle">
+    <span class="toggle-icon">☀️</span>
+    <div class="toggle-track"></div>
+    <span class="toggle-icon">🌙</span>
+  </label>
 
-     <!-- Your content reacts automatically -->
-     <div class="demo-card">...</div>
-   </div>
+  <!-- Your content reacts automatically -->
+  <div class="demo-card">...</div>
+</div>
 ```
 
 3. **Why is it useful?**

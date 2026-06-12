@@ -1,10 +1,12 @@
 # ease-truncate Text Overflow Utilities
 
 ## What does it do?
+
 Provides text truncation utilities for single-line ellipsis
 and multi-line clamping using `-webkit-line-clamp`.
 
 ## How is it used?
+
 ```html
 <!-- Single line ellipsis -->
 <p class="ease-truncate">Very long text that gets cut off...</p>
@@ -17,6 +19,7 @@ and multi-line clamping using `-webkit-line-clamp`.
 ```
 
 ## Classes
+
 - `.ease-truncate` — single-line ellipsis
 - `.ease-clamp-2` — clamp to 2 lines
 - `.ease-clamp-3` — clamp to 3 lines
@@ -25,7 +28,9 @@ and multi-line clamping using `-webkit-line-clamp`.
 - `.ease-truncate-none` — disable truncation
 
 ## Tech Stack
+
 - CSS only, no JavaScript
 
 ## Preview
+
 Open `demo.html` directly in browser.

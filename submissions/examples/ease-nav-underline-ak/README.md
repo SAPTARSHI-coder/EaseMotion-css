@@ -14,3 +14,4 @@ Adds an animated underline hover effect for navigation links with smooth transit
   <a href="#" class="nav-link">About</a>
   <a href="#" class="nav-link">Contact</a>
 </nav>
+```

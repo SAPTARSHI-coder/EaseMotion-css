@@ -10,8 +10,8 @@ Icon exit animation that simultaneously scales down and fades out. Perfect for i
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                 | Description            |
+| --------------------- | ---------------------- |
 | `ease-fade-icon-exit` | Default icon fade exit |
 
 ## Notes

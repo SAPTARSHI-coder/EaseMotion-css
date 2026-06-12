@@ -10,11 +10,11 @@ Ping loader variant: a radar-like pulse animation that repeatedly scales up to 2
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-loader-ping` | Default ping loader |
-| `ease-loader-ping-sm` | Small variant |
-| `ease-loader-ping-lg` | Large variant |
+| Class                 | Description         |
+| --------------------- | ------------------- |
+| `ease-loader-ping`    | Default ping loader |
+| `ease-loader-ping-sm` | Small variant       |
+| `ease-loader-ping-lg` | Large variant       |
 
 ## Notes
 

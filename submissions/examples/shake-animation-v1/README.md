@@ -1,7 +1,7 @@
 # shake-animation
 
 **GSSoC · EaseMotion CSS Submission**  
-Issue: *"Add ease-shake animation for error states"*
+Issue: _"Add ease-shake animation for error states"_
 
 ---
 
@@ -15,11 +15,11 @@ fixing without a page reload or a loud alert.
 
 Three intensity variants are included:
 
-| Class | Duration | Displacement | Use case |
-|---|---|---|---|
-| `shake-error` | 0.52 s | ±7 px | General form fields |
-| `shake-error--subtle` | 0.40 s | ±5 px | OTP boxes, inline inputs |
-| `shake-error--strong` | 0.65 s | ±11 px | Auth failures, critical alerts |
+| Class                 | Duration | Displacement | Use case                       |
+| --------------------- | -------- | ------------ | ------------------------------ |
+| `shake-error`         | 0.52 s   | ±7 px        | General form fields            |
+| `shake-error--subtle` | 0.40 s   | ±5 px        | OTP boxes, inline inputs       |
+| `shake-error--strong` | 0.65 s   | ±11 px       | Auth failures, critical alerts |
 
 ---
 
@@ -42,14 +42,14 @@ Add the class directly in HTML for a persistent demo state:
 Or apply it dynamically via JavaScript on validation failure:
 
 ```js
-function triggerShake(el, variant = 'shake-error') {
+function triggerShake(el, variant = "shake-error") {
   el.classList.remove(variant);
-  void el.offsetWidth;          // force reflow so animation re-fires
+  void el.offsetWidth; // force reflow so animation re-fires
   el.classList.add(variant);
 }
 
 // Example: shake a form group on invalid email
-triggerShake(document.getElementById('group-email'));
+triggerShake(document.getElementById("group-email"));
 ```
 
 ### 3. Pair with the `error-field` state class (optional)
@@ -70,10 +70,10 @@ the motion:
 
 ```html
 <!-- Subtle — OTP digits -->
-<div class="otp-row shake-error--subtle"> … </div>
+<div class="otp-row shake-error--subtle">…</div>
 
 <!-- Strong — whole card auth error -->
-<div class="login-card shake-error--strong"> … </div>
+<div class="login-card shake-error--strong">…</div>
 ```
 
 ---
@@ -120,4 +120,4 @@ gracefully to no movement in environments that do not support `@keyframes`.
 
 ---
 
-*Submitted for GSSoC · EaseMotion CSS open-source project.*
+_Submitted for GSSoC · EaseMotion CSS open-source project._

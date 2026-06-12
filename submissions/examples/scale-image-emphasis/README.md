@@ -4,38 +4,34 @@ A lightweight CSS utility that creates a scale emphasis effect for image element
 
 ## Features
 
-* Pure CSS implementation
-* Smooth scale emphasis animation
-* Subtle pop effect for visual focus
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Smooth scale emphasis animation
+- Subtle pop effect for visual focus
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Usage
 
 ```html
-<img
-  src="image.jpg"
-  alt="Demo Image"
-  class="ease-scale-image-emphasis"
-/>
+<img src="image.jpg" alt="Demo Image" class="ease-scale-image-emphasis" />
 ```
 
 ## Behavior
 
-* Image smoothly scales up for emphasis
-* Slight overshoot creates a natural pop effect
-* Returns smoothly to its original size
-* Uses easing for fluid motion
+- Image smoothly scales up for emphasis
+- Slight overshoot creates a natural pop effect
+- Returns smoothly to its original size
+- Uses easing for fluid motion
 
 ## Browser Support
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅         |
-| Firefox | ✅         |
-| Safari  | ✅         |
-| Edge    | ✅         |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

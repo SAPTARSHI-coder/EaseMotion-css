@@ -82,12 +82,12 @@ This pattern is especially valuable in animation libraries like EaseMotion CSS, 
 
 ## Browser support
 
-| Feature | Support |
-|---|---|
-| Clipboard API (`navigator.clipboard.writeText`) | Chrome, Firefox, Safari, Edge on HTTPS |
-| Textarea fallback (`execCommand('copy')`) | Older browsers and non-secure (HTTP) contexts |
-| CSS animations | All modern browsers; disabled under `prefers-reduced-motion` |
+| Feature                                         | Support                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------ |
+| Clipboard API (`navigator.clipboard.writeText`) | Chrome, Firefox, Safari, Edge on HTTPS                       |
+| Textarea fallback (`execCommand('copy')`)       | Older browsers and non-secure (HTTP) contexts                |
+| CSS animations                                  | All modern browsers; disabled under `prefers-reduced-motion` |
 
 ---
 
-*Submitted for GSSoC · EaseMotion CSS open-source project.*
+_Submitted for GSSoC · EaseMotion CSS open-source project._

@@ -8,12 +8,12 @@ Displays a supply chain monitoring dashboard with inventory metrics, shipment tr
 
 ```html
 <div class="card inventory">
-    <h2>24.8K</h2>
-    <p>Inventory Units</p>
+  <h2>24.8K</h2>
+  <p>Inventory Units</p>
 </div>
 
 <div class="panel">
-    <h3>Recent Shipments</h3>
+  <h3>Recent Shipments</h3>
 </div>
 ```
 

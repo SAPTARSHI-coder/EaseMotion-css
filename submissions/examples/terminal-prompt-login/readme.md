@@ -21,8 +21,8 @@ A terminal-inspired login form that mimics a command-line authentication interfa
 
 ```html
 <form class="lf-term">
-  <div class="lf-term-bar"> … </div>
-  <div class="lf-term-body"> … </div>
+  <div class="lf-term-bar">…</div>
+  <div class="lf-term-body">…</div>
 </form>
 ```
 

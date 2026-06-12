@@ -13,12 +13,12 @@ A visual guide to the CSS `animation-fill-mode` property — showing how `none`,
 }
 ```
 
-| Value | Behavior |
-|-------|----------|
-| `none` | Snaps back to original styles |
-| `forwards` | Keeps the last keyframe after animation ends |
-| `backwards` | Applies first keyframe during the delay |
-| `both` | Combines forwards + backwards |
+| Value       | Behavior                                     |
+| ----------- | -------------------------------------------- |
+| `none`      | Snaps back to original styles                |
+| `forwards`  | Keeps the last keyframe after animation ends |
+| `backwards` | Applies first keyframe during the delay      |
+| `both`      | Combines forwards + backwards                |
 
 ## Why is it useful?
 

@@ -10,8 +10,8 @@ Text exit animation that scales text down while fading out. A clean dismiss effe
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                  | Description             |
+| ---------------------- | ----------------------- |
 | `ease-scale-text-exit` | Default scale text exit |
 
 ## Notes

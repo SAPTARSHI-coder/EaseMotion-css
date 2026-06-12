@@ -8,7 +8,7 @@ Provides a feature catalog interface for browsing, monitoring, and managing mach
 
 ```html
 <div class="feature-card">
-    <h3>Customer Age</h3>
+  <h3>Customer Age</h3>
 </div>
 ```
 

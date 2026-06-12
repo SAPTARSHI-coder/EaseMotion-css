@@ -5,6 +5,7 @@ Creates a highly dynamic, cyberpunk-style stutter and chromatic aberration (red/
 
 **How is it used?**
 Apply the class to a text element and pass the exact same text into a `data-text` attribute (which CSS uses to duplicate the text for the glitch slices):
+
 ```html
 <h1 class="glitch-text" data-text="ERROR">ERROR</h1>
 ```

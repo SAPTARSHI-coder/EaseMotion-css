@@ -1,4 +1,3 @@
- 
 # Screen Reader Only Utility
 
 Visually hidden but accessible to screen readers — essential for accessible icon buttons and skip links.
@@ -21,9 +20,10 @@ Visually hidden but accessible to screen readers — essential for accessible ic
 
 <!-- Accessible icon button -->
 <button>
-    <span>❤️</span>
-    <span class="ease-sr-only">Like this post</span>
+  <span>❤️</span>
+  <span class="ease-sr-only">Like this post</span>
 </button>
 
 <!-- Skip to content link -->
 <a href="#main" class="ease-sr-only">Skip to main content</a>
+```

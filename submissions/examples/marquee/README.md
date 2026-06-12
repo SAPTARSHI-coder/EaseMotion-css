@@ -18,14 +18,14 @@ Infinite scrolling ticker/marquee animation using `translateX` keyframes. Zero J
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-marquee` | Base infinite horizontal scroll |
-| `ease-marquee-pause` | Pauses animation on hover |
-| `ease-marquee-reverse` | Scrolls in reverse direction |
-| `ease-marquee-fast` | 8s duration |
-| `ease-marquee-slow` | 40s duration |
-| `ease-marquee-y` | Vertical scroll variant |
+| Class                  | Description                     |
+| ---------------------- | ------------------------------- |
+| `ease-marquee`         | Base infinite horizontal scroll |
+| `ease-marquee-pause`   | Pauses animation on hover       |
+| `ease-marquee-reverse` | Scrolls in reverse direction    |
+| `ease-marquee-fast`    | 8s duration                     |
+| `ease-marquee-slow`    | 40s duration                    |
+| `ease-marquee-y`       | Vertical scroll variant         |
 
 ## Notes
 

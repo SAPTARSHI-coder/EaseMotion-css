@@ -38,6 +38,6 @@ According to the [MDN Web Docs for `will-change`](https://developer.mozilla.org/
 
 > "`will-change` is intended to be used as a last resort... **Don't apply will-change to too many elements.** Some stronger optimizations linked to `will-change` **use a lot of machine resources** (GPU memory), and overuse can cause the page to slow down or consume a lot of resources."
 
-Because `.ease-scroll-progress` is a `position: fixed` element that is permanently visible across the entire page's lifetime, unconditionally applying `will-change: transform` forces the browser to dedicate VRAM to an independent compositing layer permanently. 
+Because `.ease-scroll-progress` is a `position: fixed` element that is permanently visible across the entire page's lifetime, unconditionally applying `will-change: transform` forces the browser to dedicate VRAM to an independent compositing layer permanently.
 
 By applying the hint only when `animation-timeline: scroll()` is supported, and explicitly removing it when `prefers-reduced-motion` is active, we ensure we don't waste precious mobile GPU memory when the animation isn't even running.

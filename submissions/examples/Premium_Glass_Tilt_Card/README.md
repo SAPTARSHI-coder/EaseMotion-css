@@ -12,13 +12,11 @@ Creates a premium glassmorphism card that lifts and tilts in 3D space when hover
   <h2>Premium Plan</h2>
 
   <p>
-    Unlock advanced analytics, unlimited projects,
-    priority support, and premium features.
+    Unlock advanced analytics, unlimited projects, priority support, and premium
+    features.
   </p>
 
-  <div class="price">
-    $19<span>/month</span>
-  </div>
+  <div class="price">$19<span>/month</span></div>
 
   <button>Get Started</button>
 </div>

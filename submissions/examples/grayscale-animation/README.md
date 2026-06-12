@@ -7,13 +7,23 @@ Animates the CSS `grayscale()` filter — cycling from full color to black & whi
 ## How is it used?
 
 ```css
-.element { filter: grayscale(0.8); transition: filter 0.3s; }
-.element:hover { filter: grayscale(0); }
+.element {
+  filter: grayscale(0.8);
+  transition: filter 0.3s;
+}
+.element:hover {
+  filter: grayscale(0);
+}
 
 /* Or with keyframes */
 @keyframes gray-cycle {
-  0%, 100% { filter: grayscale(0); }
-  50%      { filter: grayscale(1); }
+  0%,
+  100% {
+    filter: grayscale(0);
+  }
+  50% {
+    filter: grayscale(1);
+  }
 }
 ```
 

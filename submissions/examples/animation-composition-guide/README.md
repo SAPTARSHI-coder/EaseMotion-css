@@ -7,32 +7,26 @@ This example demonstrates how multiple animation utilities can be combined safel
 ### Fade + Slide
 
 ```html
-<div class="ease-fade-in ease-slide-up">
-  Content
-</div>
+<div class="ease-fade-in ease-slide-up">Content</div>
 ```
 
 ### Zoom + Fade
 
 ```html
-<div class="ease-fade-in ease-zoom-in">
-  Content
-</div>
+<div class="ease-fade-in ease-zoom-in">Content</div>
 ```
 
 ### Rotate + Fade
 
 ```html
-<div class="ease-fade-in ease-rotate">
-  Content
-</div>
+<div class="ease-fade-in ease-rotate">Content</div>
 ```
 
 ## Benefits
 
-* More expressive animations
-* Cleaner implementation
-* Reduced custom CSS
+- More expressive animations
+- Cleaner implementation
+- Reduced custom CSS
 
 ## Notes
 

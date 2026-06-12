@@ -10,8 +10,7 @@ Creates a modern glassmorphism card using a semi-transparent background, backdro
   <h2>Premium Workspace</h2>
 
   <p>
-    Build beautiful interfaces with a clean,
-    modern glassmorphism aesthetic.
+    Build beautiful interfaces with a clean, modern glassmorphism aesthetic.
   </p>
 
   <button>Get Started</button>

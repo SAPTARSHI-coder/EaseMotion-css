@@ -1,14 +1,8 @@
 \# ease-z-index utilities
 
-
-
 CSS z-index utilities for controlling stacking order of positioned elements.
 
-
-
 \## Classes
-
-
 
 | Class | Value | Use Case |
 
@@ -26,11 +20,7 @@ CSS z-index utilities for controlling stacking order of positioned elements.
 
 | `ease-z-top` | 9999 | Highest priority (modals, tooltips) |
 
-
-
 \## Important Note
-
-
 
 ⚠️ z-index only works on positioned elements. Your element must have one of these position properties:
 
@@ -42,21 +32,17 @@ CSS z-index utilities for controlling stacking order of positioned elements.
 
 \- `position: sticky`
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div style="position: relative;">
+  &#x20;
+  <div class="ease-z-0">Back element</div>
 
-&#x20;   <div class="ease-z-0">Back element</div>
+  &#x20;
+  <div class="ease-z-100">Front element</div>
 
-&#x20;   <div class="ease-z-100">Front element</div>
-
-&#x20;   <div class="ease-z-top">Modal overlay</div>
-
+  &#x20;
+  <div class="ease-z-top">Modal overlay</div>
 </div>
-
+```

@@ -10,8 +10,8 @@ Animated gradient text effect. Applies a rotating background-position gradient t
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                         | Description                    |
+| ----------------------------- | ------------------------------ |
 | `ease-gradient-text-animated` | Animated flowing gradient text |
 
 ## Notes

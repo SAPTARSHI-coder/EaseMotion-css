@@ -7,16 +7,18 @@ An animation-first, pure CSS toast notification system showcasing stacked alert 
 ## 📷 Screenshots
 
 > [!NOTE]
-> *Screenshots Placeholder: Insert demo preview screenshots showing Success, Error, Warning, and Info toasts stacked at the bottom-right.*
+> _Screenshots Placeholder: Insert demo preview screenshots showing Success, Error, Warning, and Info toasts stacked at the bottom-right._
 
 ---
 
 ## ❓ Questions & Answers
 
 ### 1. What does this do?
+
 Provides a premium, theme-customizable, and responsive toast alert notification system that stacks notifications at the bottom-right of the viewport and automatically dismisses them with slide-in and progress-bar animations.
 
 ### 2. How is it used?
+
 Place alert banners inside a fixed container on your page, applying the `.toast-banner` class and a variant class like `.toast-success`:
 
 ```html
@@ -34,6 +36,7 @@ Place alert banners inside a fixed container on your page, applying the `.toast-
 ```
 
 ### 3. Why is it useful?
+
 Toast stacks provide immediate visual feedback for application updates (success, failures, system alerts) without interrupting the user's workflow. This implementation provides an integrated hover-pause timer state and a linear progress bar indicating the exact remaining visibility duration.
 
 ---

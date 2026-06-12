@@ -6,20 +6,20 @@ A styled range slider (`<input type="range">`) with custom track and thumb, fill
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Small | `.ease-slider--sm` | 4px track, 16px thumb |
-| Medium (default) | *(none)* | 6px track, 20px thumb |
-| Large | `.ease-slider--lg` | 8px track, 24px thumb |
-| Gradient | `.ease-slider--gradient` | Track fill uses gradient |
-| Vertical | `.ease-slider--vertical` | Vertical orientation |
-| Disabled | `.ease-slider--disabled` | Reduced opacity, no pointer events |
+| Variant          | Class                    | Description                        |
+| ---------------- | ------------------------ | ---------------------------------- |
+| Small            | `.ease-slider--sm`       | 4px track, 16px thumb              |
+| Medium (default) | _(none)_                 | 6px track, 20px thumb              |
+| Large            | `.ease-slider--lg`       | 8px track, 24px thumb              |
+| Gradient         | `.ease-slider--gradient` | Track fill uses gradient           |
+| Vertical         | `.ease-slider--vertical` | Vertical orientation               |
+| Disabled         | `.ease-slider--disabled` | Reduced opacity, no pointer events |
 
 ## How is it used?
 
 ```html
 <div class="ease-slider">
-  <input type="range" min="0" max="100" value="50" step="1">
+  <input type="range" min="0" max="100" value="50" step="1" />
   <div class="ease-slider__tooltip">50</div>
   <div class="ease-slider__labels">
     <span>0</span>
@@ -35,13 +35,13 @@ A styled range slider (`<input type="range">`) with custom track and thumb, fill
 With JavaScript to update the tooltip position:
 
 ```js
-var input = document.querySelector('.ease-slider input');
-var tooltip = document.querySelector('.ease-slider__tooltip');
-input.addEventListener('input', function() {
+var input = document.querySelector(".ease-slider input");
+var tooltip = document.querySelector(".ease-slider__tooltip");
+input.addEventListener("input", function () {
   var pct = (input.value - input.min) / (input.max - input.min);
   var offset = pct * input.offsetWidth;
   tooltip.textContent = input.value;
-  tooltip.style.left = offset + 'px';
+  tooltip.style.left = offset + "px";
 });
 ```
 

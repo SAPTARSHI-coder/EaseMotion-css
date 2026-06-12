@@ -11,24 +11,23 @@ Extends `position: sticky` to account for iOS notch and Android gesture-navigati
 Add `viewport-fit=cover` to your viewport meta tag (required for `env()` insets to work), then apply the classes:
 
 ```html
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+/>
 
 <!-- Sticky header — clears notch / status bar -->
-<header class="em-sticky-safe-top">
-  Navigation
-</header>
+<header class="em-sticky-safe-top">Navigation</header>
 
 <!-- Sticky footer — clears home indicator bar -->
-<footer class="em-sticky-safe-bottom">
-  Tab Bar
-</footer>
+<footer class="em-sticky-safe-bottom">Tab Bar</footer>
 ```
 
 The two utility classes:
 
-| Class | Behaviour |
-|---|---|
-| `em-sticky-safe-top` | `position: sticky; top: 0;` + `padding-top: env(safe-area-inset-top)` |
+| Class                   | Behaviour                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------ |
+| `em-sticky-safe-top`    | `position: sticky; top: 0;` + `padding-top: env(safe-area-inset-top)`          |
 | `em-sticky-safe-bottom` | `position: sticky; bottom: 0;` + `padding-bottom: env(safe-area-inset-bottom)` |
 
 Browsers without `env()` support silently ignore the inset padding and fall back to plain sticky — the layout still works, just without the inset offset.

@@ -33,6 +33,7 @@ This matches the existing definition in `easemotion/zoom.css` and ensures the zo
 ## Verification
 
 After applying the fix:
+
 1. Use `<div class="ease-zoom-out">` with any standard entry point
 2. The element should animate from scale(1.5) → scale(1) on load
 3. Run `npm test` — all 9 tests should pass, including the duplicate keyframe detection test

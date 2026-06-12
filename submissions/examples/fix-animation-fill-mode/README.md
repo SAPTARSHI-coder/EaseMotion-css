@@ -18,11 +18,18 @@ No usage change for end users. The fix is internal to the animation class defini
 <div class="ease-fade-in">Hello</div>
 
 <!-- Most impactful case — delayed or conditional reveal -->
-<div id="modal-content" style="display:none;" class="ease-fade-in ease-slide-up ease-delay-200">
+<div
+  id="modal-content"
+  style="display:none;"
+  class="ease-fade-in ease-slide-up ease-delay-200"
+>
   Modal content
 </div>
 <script>
-  setTimeout(() => document.getElementById('modal-content').style.display = 'block', 800);
+  setTimeout(
+    () => (document.getElementById("modal-content").style.display = "block"),
+    800
+  );
 </script>
 ```
 
@@ -40,10 +47,10 @@ This aligns with EaseMotion CSS's philosophy of **animation-first** — entrance
 
 ### Change summary
 
-| Class | Property added |
-|---|---|
-| `ease-fade-in` | `animation-fill-mode: both` |
-| `ease-slide-up` | `animation-fill-mode: both` |
-| `ease-slide-down` | `animation-fill-mode: both` |
-| `ease-slide-left` | `animation-fill-mode: both` |
+| Class              | Property added              |
+| ------------------ | --------------------------- |
+| `ease-fade-in`     | `animation-fill-mode: both` |
+| `ease-slide-up`    | `animation-fill-mode: both` |
+| `ease-slide-down`  | `animation-fill-mode: both` |
+| `ease-slide-left`  | `animation-fill-mode: both` |
 | `ease-slide-right` | `animation-fill-mode: both` |

@@ -25,10 +25,10 @@ Vertical list of items with checkmark icons, title, and description. Available i
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-color-success` | #10b981 |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-color-success`   | #10b981   |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

@@ -7,9 +7,7 @@ Creates animated toast notifications for displaying success, error, warning, and
 ## How is it used?
 
 ```html
-<div class="toast success">
-  Profile updated successfully!
-</div>
+<div class="toast success">Profile updated successfully!</div>
 ```
 
 Additional variants can be used for warnings, errors, and informational messages.

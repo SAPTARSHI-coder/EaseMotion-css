@@ -15,18 +15,18 @@ Pure CSS 3D card flip using `perspective`, `rotateY` and `backface-visibility`. 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-flip` | Default hover flip on Y axis |
-| `ease-flip-x` | Flip on X axis |
+| Class             | Description                     |
+| ----------------- | ------------------------------- |
+| `ease-flip`       | Default hover flip on Y axis    |
+| `ease-flip-x`     | Flip on X axis                  |
 | `ease-flip-click` | Click to flip via checkbox hack |
-| `ease-flip-fast` | 300ms flip speed |
-| `ease-flip-slow` | 1000ms flip speed |
+| `ease-flip-fast`  | 300ms flip speed                |
+| `ease-flip-slow`  | 1000ms flip speed               |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property              | Default | Description              |
+| --------------------- | ------- | ------------------------ |
 | `--ease-speed-medium` | `600ms` | Flip transition duration |
 
 ## Browser Support

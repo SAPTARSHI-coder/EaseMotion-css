@@ -10,10 +10,12 @@ To prevent text readability degradation or jagged edge blurring across browser e
 2. **The Background Typography Mask:** The text layer initiates at `opacity: 0` and employs an entry `clip-path: inset()` reveal vector carefully synchronized right behind the foreground wave path timeline to ensure the text remains perfectly crisp and readable.
 
 ## Directory Tree Manifest
+
 - `demo.html`: Independent standalone preview stage engine workspace.
 - `style.css`: Composed native CSS animation classes and keyframes.
 
 ## Usage Layout Integration
+
 ```html
 <div class="ease-liquid-text-stage">
   <div class="ease-liquid-filter-container">
@@ -22,5 +24,7 @@ To prevent text readability degradation or jagged edge blurring across browser e
   <h1 class="ease-liquid-text-strata">Your Text Here</h1>
 </div>
 ```
+
 ## Author
+
 Pari Dubey

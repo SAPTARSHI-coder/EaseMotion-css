@@ -8,7 +8,7 @@ Provides a modern Personal Knowledge Management (PKM) workspace interface for or
 
 ```html
 <div class="card">
-    <h3>Notes</h3>
+  <h3>Notes</h3>
 </div>
 ```
 

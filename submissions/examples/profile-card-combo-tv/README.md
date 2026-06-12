@@ -8,21 +8,21 @@ A modern profile card component that combines **Glassmorphism** and **Neumorphis
 
 ## Features
 
-* Glassmorphism backdrop blur effect
-* Neumorphic dual-shadow depth styling
-* Circular profile avatar with online status indicator
-* Profile name, role, and bio section
-* Skill badges
-* Social media links
-* Interactive call-to-action button
-* Smooth hover elevation animation
-* Responsive design
-* Uses EaseMotion design tokens
+- Glassmorphism backdrop blur effect
+- Neumorphic dual-shadow depth styling
+- Circular profile avatar with online status indicator
+- Profile name, role, and bio section
+- Skill badges
+- Social media links
+- Interactive call-to-action button
+- Smooth hover elevation animation
+- Responsive design
+- Uses EaseMotion design tokens
 
 ## Files
 
-* `demo.html` — Demonstrates the component in a standalone preview environment.
-* `style.css` — Contains component styling, animations, and interaction effects.
+- `demo.html` — Demonstrates the component in a standalone preview environment.
+- `style.css` — Contains component styling, animations, and interaction effects.
 
 ## Usage
 
@@ -33,11 +33,11 @@ A modern profile card component that combines **Glassmorphism** and **Neumorphis
 
 ## Accessibility
 
-* Semantic HTML structure
-* Keyboard-accessible action button
-* Visible focus states
-* Readable typography and spacing
-* Smooth, non-disruptive motion effects
+- Semantic HTML structure
+- Keyboard-accessible action button
+- Visible focus states
+- Readable typography and spacing
+- Smooth, non-disruptive motion effects
 
 ## Design Highlights
 
@@ -57,22 +57,22 @@ The card gently elevates on hover and provides visual feedback on interactive el
 
 The component presents a professional developer profile card featuring:
 
-* Frosted glass container
-* Neumorphic depth effects
-* Profile avatar
-* Online status indicator
-* Skill badges
-* Social links
-* Interactive profile button
+- Frosted glass container
+- Neumorphic depth effects
+- Profile avatar
+- Online status indicator
+- Skill badges
+- Social links
+- Interactive profile button
 
 ## Compatibility
 
 Supported in all modern browsers that support:
 
-* CSS Flexbox
-* CSS Backdrop Filter
-* CSS Custom Properties (Variables)
-* CSS Transforms and Transitions
+- CSS Flexbox
+- CSS Backdrop Filter
+- CSS Custom Properties (Variables)
+- CSS Transforms and Transitions
 
 ## Author
 

@@ -10,7 +10,6 @@ const templateSelect = document.getElementById("templateSelect");
 const themeToggle = document.getElementById("themeToggle");
 
 const templates = {
-
   button: {
     html: `
 <button class="demo-btn">
@@ -30,7 +29,7 @@ const templates = {
 .demo-btn:hover{
   opacity:0.9;
 }
-`
+`,
   },
 
   card: {
@@ -56,7 +55,7 @@ const templates = {
   color:white;
   border:none;
 }
-`
+`,
   },
 
   alert: {
@@ -73,13 +72,11 @@ const templates = {
   border-radius:8px;
   border:1px solid #c3e6cb;
 }
-`
-  }
-
+`,
+  },
 };
 
-function updatePreview(){
-
+function updatePreview() {
   const html = htmlEditor.value;
   const css = cssEditor.value;
 
@@ -98,8 +95,7 @@ function updatePreview(){
   `;
 }
 
-function loadTemplate(templateName){
-
+function loadTemplate(templateName) {
   htmlEditor.value = templates[templateName].html;
   cssEditor.value = templates[templateName].css;
 
@@ -113,28 +109,25 @@ runBtn.addEventListener("click", updatePreview);
 htmlEditor.addEventListener("input", updatePreview);
 cssEditor.addEventListener("input", updatePreview);
 
-templateSelect.addEventListener("change",(e)=>{
+templateSelect.addEventListener("change", (e) => {
   loadTemplate(e.target.value);
 });
 
-resetBtn.addEventListener("click",()=>{
+resetBtn.addEventListener("click", () => {
   loadTemplate("button");
 });
 
-copyBtn.addEventListener("click",async()=>{
-
+copyBtn.addEventListener("click", async () => {
   await navigator.clipboard.writeText(htmlEditor.value);
 
-  copyBtn.textContent="Copied!";
+  copyBtn.textContent = "Copied!";
 
-  setTimeout(()=>{
-    copyBtn.textContent="Copy HTML";
-  },1500);
-
+  setTimeout(() => {
+    copyBtn.textContent = "Copy HTML";
+  }, 1500);
 });
 
-downloadBtn.addEventListener("click",()=>{
-
+downloadBtn.addEventListener("click", () => {
   const fullHTML = `
 <!DOCTYPE html>
 <html>
@@ -151,10 +144,7 @@ ${htmlEditor.value}
 </html>
 `;
 
-  const blob = new Blob(
-    [fullHTML],
-    {type:"text/html"}
-  );
+  const blob = new Blob([fullHTML], { type: "text/html" });
 
   const link = document.createElement("a");
 
@@ -162,18 +152,14 @@ ${htmlEditor.value}
   link.download = "component.html";
 
   link.click();
-
 });
 
-themeToggle.addEventListener("click",()=>{
-
+themeToggle.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 
-  if(document.body.classList.contains("dark-mode")){
-    themeToggle.textContent="☀️ Light Mode";
+  if (document.body.classList.contains("dark-mode")) {
+    themeToggle.textContent = "☀️ Light Mode";
+  } else {
+    themeToggle.textContent = "🌙 Dark Mode";
   }
-  else{
-    themeToggle.textContent="🌙 Dark Mode";
-  }
-
 });

@@ -12,22 +12,22 @@ Applies a rapid left-right shake on the X axis to any element. The animation dec
 
 ```html
 <!-- Apply the class directly in HTML -->
-<input class="ease-shake-x" type="text">
+<input class="ease-shake-x" type="text" />
 
 <!-- Or toggle it via JavaScript on form submit -->
 <script>
   function showError(element) {
-    element.classList.remove('ease-shake-x');
+    element.classList.remove("ease-shake-x");
     void element.offsetWidth; // force reflow to replay animation
-    element.classList.add('ease-shake-x');
+    element.classList.add("ease-shake-x");
   }
 </script>
 ```
 
 ## Classes
 
-| Class | Role |
-|---|---|
+| Class          | Role                                                     |
+| -------------- | -------------------------------------------------------- |
 | `ease-shake-x` | Triggers a horizontal shake animation (runs once, 0.5s). |
 
 ## Why it fits EaseMotion CSS

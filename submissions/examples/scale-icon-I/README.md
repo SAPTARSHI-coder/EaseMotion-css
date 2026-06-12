@@ -31,3 +31,4 @@ Smooth scale animation for icons during emphasis interactions — perfect for at
 
 <!-- Pulse effect -->
 <div class="ease-scale-icon-pulse">💓</div>
+```

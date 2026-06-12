@@ -15,44 +15,38 @@ Adds responsive padding and margin utility classes — `ease-sm-p-4`, `ease-md-p
 </div>
 
 <!-- Horizontal padding only -->
-<div class="ease-px-2 ease-md-px-6 ease-lg-px-10">
-  Content
-</div>
+<div class="ease-px-2 ease-md-px-6 ease-lg-px-10">Content</div>
 
 <!-- Margin responsive -->
-<div class="ease-m-2 ease-sm-m-4 ease-md-m-6 ease-lg-m-8">
-  Content
-</div>
+<div class="ease-m-2 ease-sm-m-4 ease-md-m-6 ease-lg-m-8">Content</div>
 
 <!-- Centre block at sm and above -->
-<div class="ease-sm-mx-auto" style="max-width:400px">
-  Centred
-</div>
+<div class="ease-sm-mx-auto" style="max-width:400px">Centred</div>
 ```
 
 ### Space scale (mirrors `variables.css`)
 
-| Step | Value     | px  |
-|------|-----------|-----|
-| 1    | 0.25 rem  | 4   |
-| 2    | 0.5 rem   | 8   |
-| 3    | 0.75 rem  | 12  |
-| 4    | 1 rem     | 16  |
-| 6    | 1.5 rem   | 24  |
-| 8    | 2 rem     | 32  |
-| 10   | 2.5 rem   | 40  |
-| 12   | 3 rem     | 48  |
-| 16   | 4 rem     | 64  |
+| Step | Value    | px  |
+| ---- | -------- | --- |
+| 1    | 0.25 rem | 4   |
+| 2    | 0.5 rem  | 8   |
+| 3    | 0.75 rem | 12  |
+| 4    | 1 rem    | 16  |
+| 6    | 1.5 rem  | 24  |
+| 8    | 2 rem    | 32  |
+| 10   | 2.5 rem  | 40  |
+| 12   | 3 rem    | 48  |
+| 16   | 4 rem    | 64  |
 
 ### Breakpoints (mirrors `variables.css` `--ease-bp-*`)
 
-| Prefix    | Min-width |
-|-----------|-----------|
-| (none)    | all       |
-| `ease-sm-` | 640 px   |
-| `ease-md-` | 768 px   |
-| `ease-lg-` | 1024 px  |
-| `ease-xl-` | 1280 px  |
+| Prefix     | Min-width |
+| ---------- | --------- |
+| (none)     | all       |
+| `ease-sm-` | 640 px    |
+| `ease-md-` | 768 px    |
+| `ease-lg-` | 1024 px   |
+| `ease-xl-` | 1280 px   |
 
 ### Supported class patterns
 
@@ -86,4 +80,4 @@ EaseMotion CSS already ships responsive variants for **display, flex, grid, and 
 
 ---
 
-*Submitted by: dv*
+_Submitted by: dv_

@@ -45,19 +45,17 @@ Locks keyboard focus inside an open modal dialog so users cannot Tab into backgr
 </div>
 
 <!-- Page content wrapper — receives aria-hidden while modal is open -->
-<div id="page-content">
-  …rest of page…
-</div>
+<div id="page-content">…rest of page…</div>
 ```
 
 ### Close triggers
 
-| Pattern | Behaviour |
-|---|---|
-| `<button class="ease-modal-close">` | Closes the active modal |
+| Pattern                                     | Behaviour               |
+| ------------------------------------------- | ----------------------- |
+| `<button class="ease-modal-close">`         | Closes the active modal |
 | `data-modal-close` attribute on any element | Closes the active modal |
-| Click on the overlay backdrop | Closes the active modal |
-| <kbd>Escape</kbd> key | Closes the active modal |
+| Click on the overlay backdrop               | Closes the active modal |
+| <kbd>Escape</kbd> key                       | Closes the active modal |
 
 ---
 
@@ -76,26 +74,26 @@ The previous `core/modal.js` moved focus to `.ease-modal` on open but had two bu
 
 ### `modal.js` — drop-in replacement for `core/modal.js`
 
-| Feature | Detail |
-|---|---|
-| **Focus trap** | Tab and Shift+Tab cycle only through focusable children of the open overlay |
-| **Wrap-around** | Last element → Tab → wraps to first; First element → Shift+Tab → wraps to last |
-| **Empty focusable list** | Tab press absorbed entirely when no focusable children exist |
-| **Focus return** | Trigger element stored on open; focus restored after close transition |
+| Feature                    | Detail                                                                                              |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| **Focus trap**             | Tab and Shift+Tab cycle only through focusable children of the open overlay                         |
+| **Wrap-around**            | Last element → Tab → wraps to first; First element → Shift+Tab → wraps to last                      |
+| **Empty focusable list**   | Tab press absorbed entirely when no focusable children exist                                        |
+| **Focus return**           | Trigger element stored on open; focus restored after close transition                               |
 | **aria-hidden background** | `#page-content` (or any `[data-modal-inert]` element) gets `aria-hidden="true"` while modal is open |
-| **Escape key** | Closes modal and restores focus |
-| **Backdrop click** | Click on overlay (not `.ease-modal`) closes the modal |
-| **Hash-link support** | `<a href="#modal-id">` pattern still works alongside `data-modal-open` |
-| **Body scroll lock** | `overflow: hidden` on body while modal is open |
-| **One modal at a time** | Opening a second modal closes the first |
+| **Escape key**             | Closes modal and restores focus                                                                     |
+| **Backdrop click**         | Click on overlay (not `.ease-modal`) closes the modal                                               |
+| **Hash-link support**      | `<a href="#modal-id">` pattern still works alongside `data-modal-open`                              |
+| **Body scroll lock**       | `overflow: hidden` on body while modal is open                                                      |
+| **One modal at a time**    | Opening a second modal closes the first                                                             |
 
 ### `style.css`
 
-| Feature | Detail |
-|---|---|
-| **`:focus-visible` ring** | All interactive elements inside modal get a `2.5px #6c63ff` outline on keyboard focus |
+| Feature                           | Detail                                                                                                                     |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **`:focus-visible` ring**         | All interactive elements inside modal get a `2.5px #6c63ff` outline on keyboard focus                                      |
 | **`:focus` suppressed for mouse** | `:focus:not(:focus-visible)` removes outline for mouse clicks (no ring for mouse users, always visible for keyboard users) |
-| **`pointer-events: none`** | Background set to non-interactive while modal is open |
+| **`pointer-events: none`**        | Background set to non-interactive while modal is open                                                                      |
 
 ---
 
@@ -107,11 +105,11 @@ EaseMotion's philosophy is **zero JavaScript required for visuals, but JavaScrip
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `style.css` | Visual styles + focus-visible ring + backdrop inert companion |
-| `modal.js` | Drop-in replacement for `core/modal.js` — focus trap, aria-hidden, focus return |
-| `demo.html` | Self-contained demo with 4 test cases and a live event log |
+| File        | Purpose                                                                         |
+| ----------- | ------------------------------------------------------------------------------- |
+| `style.css` | Visual styles + focus-visible ring + backdrop inert companion                   |
+| `modal.js`  | Drop-in replacement for `core/modal.js` — focus trap, aria-hidden, focus return |
+| `demo.html` | Self-contained demo with 4 test cases and a live event log                      |
 
 Open `demo.html` directly in a browser — no server required.
 

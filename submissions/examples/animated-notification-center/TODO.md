@@ -5,6 +5,3 @@
 
 - [x] Ensure folder is placed only under submissions/examples/
 - [x] Add index.html wrapper for easier preview
-
-
-

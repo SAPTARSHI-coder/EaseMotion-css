@@ -10,11 +10,11 @@ Squish/press animation on hover, focus, and active states. Scales X-axis up and 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-squish-button` | Default squish animation |
-| `ease-squish-button-sm` | Subtle squish |
-| `ease-squish-button-lg` | Strong squish |
+| Class                   | Description              |
+| ----------------------- | ------------------------ |
+| `ease-squish-button`    | Default squish animation |
+| `ease-squish-button-sm` | Subtle squish            |
+| `ease-squish-button-lg` | Strong squish            |
 
 ## Notes
 

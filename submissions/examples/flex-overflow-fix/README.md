@@ -28,8 +28,12 @@ Add two classes in the overflow/display section:
 
 ```css
 /* Flex / grid overflow fix */
-.ease-min-h-0 { min-height: 0; }
-.ease-min-w-0 { min-width:  0; }
+.ease-min-h-0 {
+  min-height: 0;
+}
+.ease-min-w-0 {
+  min-width: 0;
+}
 ```
 
 ### How is it used?
@@ -46,7 +50,7 @@ Add two classes in the overflow/display section:
 
 <!-- Truncated text in a flex row (ease-truncate alone fails without this) -->
 <div class="ease-flex ease-gap-4">
-  <img src="avatar.jpg" style="width:40px;flex-shrink:0;">
+  <img src="avatar.jpg" style="width:40px;flex-shrink:0;" />
   <div class="ease-min-w-0">
     <p class="ease-truncate">Very long display name that must be truncated</p>
   </div>

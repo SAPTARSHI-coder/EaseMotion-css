@@ -7,9 +7,7 @@ Creates a glowing emphasis animation for buttons using pure CSS. The glow effect
 ## How is it used?
 
 ```html
-<button class="glow-button">
-  Get Started
-</button>
+<button class="glow-button">Get Started</button>
 ```
 
 ## Why is it useful?

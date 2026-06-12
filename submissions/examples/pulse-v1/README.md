@@ -10,11 +10,11 @@ Infinite pulse opacity animation. A subtle attention-drawing effect for notifica
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-pulse` | Default pulse (opacity fade loop) |
-| `ease-pulse-fast` | Faster pulse |
-| `ease-pulse-slow` | Slower pulse |
+| Class             | Description                       |
+| ----------------- | --------------------------------- |
+| `ease-pulse`      | Default pulse (opacity fade loop) |
+| `ease-pulse-fast` | Faster pulse                      |
+| `ease-pulse-slow` | Slower pulse                      |
 
 ## Notes
 

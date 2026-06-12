@@ -1,4 +1,3 @@
- 
 # Glassmorphism Hover Card
 
 Glassmorphism hover card with blur, transparency, and subtle elevation.
@@ -21,9 +20,10 @@ Glassmorphism hover card with blur, transparency, and subtle elevation.
 
 ```html
 <div class="ease-glass-card">
-    <h3>Card Title</h3>
-    <p>Card content here</p>
+  <h3>Card Title</h3>
+  <p>Card content here</p>
 </div>
 
 <!-- Color variants -->
 <div class="glass-card-primary ease-glass-card">Primary</div>
+```

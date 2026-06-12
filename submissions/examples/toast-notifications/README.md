@@ -19,59 +19,79 @@ Animated, accessible toast notifications built with the `ease-` naming conventio
 ## 🚀 Usage
 
 ### Basic Toast Trigger
+
 ```html
 <button onclick="showToast('success', 'Done!')">Show Toast</button>
 ```
 
 ### Custom Position
+
 ```html
-<button onclick="showToast('error', 'Oops!', 'bottom-left')">Error Toast</button>
+<button onclick="showToast('error', 'Oops!', 'bottom-left')">
+  Error Toast
+</button>
 ```
 
 ### Custom Animation
+
 ```html
-<button onclick="showToast('info', 'Hi!', 'top-right', 'bounce')">Bounce Toast</button>
+<button onclick="showToast('info', 'Hi!', 'top-right', 'bounce')">
+  Bounce Toast
+</button>
 ```
 
 ### Required HTML Containers
+
 ```html
-<div class="ease-toast-container ease-pos-top-left" id="container-top-left"></div>
-<div class="ease-toast-container ease-pos-top-right" id="container-top-right"></div>
-<div class="ease-toast-container ease-pos-bottom-left" id="container-bottom-left"></div>
-<div class="ease-toast-container ease-pos-bottom-right" id="container-bottom-right"></div>
+<div
+  class="ease-toast-container ease-pos-top-left"
+  id="container-top-left"
+></div>
+<div
+  class="ease-toast-container ease-pos-top-right"
+  id="container-top-right"
+></div>
+<div
+  class="ease-toast-container ease-pos-bottom-left"
+  id="container-bottom-left"
+></div>
+<div
+  class="ease-toast-container ease-pos-bottom-right"
+  id="container-bottom-right"
+></div>
 ```
 
 ---
 
 ## 🎨 Available Classes
 
-| Class | Description |
-|-------|-------------|
-| `ease-toast-container` | Container that holds the toasts |
-| `ease-toast` | Individual toast element |
-| `ease-toast-success` | Green success variant |
-| `ease-toast-error` | Red error variant |
-| `ease-toast-warning` | Yellow warning variant |
-| `ease-toast-info` | Blue info variant |
-| `ease-pos-top-left` | Position: top-left |
-| `ease-pos-top-right` | Position: top-right |
-| `ease-pos-bottom-left` | Position: bottom-left |
-| `ease-pos-bottom-right` | Position: bottom-right |
-| `ease-anim-slide` | Slide-in animation |
-| `ease-anim-fade` | Fade-in animation |
-| `ease-anim-bounce` | Bounce-in animation |
-| `ease-anim-pop` | Pop-in animation |
+| Class                   | Description                     |
+| ----------------------- | ------------------------------- |
+| `ease-toast-container`  | Container that holds the toasts |
+| `ease-toast`            | Individual toast element        |
+| `ease-toast-success`    | Green success variant           |
+| `ease-toast-error`      | Red error variant               |
+| `ease-toast-warning`    | Yellow warning variant          |
+| `ease-toast-info`       | Blue info variant               |
+| `ease-pos-top-left`     | Position: top-left              |
+| `ease-pos-top-right`    | Position: top-right             |
+| `ease-pos-bottom-left`  | Position: bottom-left           |
+| `ease-pos-bottom-right` | Position: bottom-right          |
+| `ease-anim-slide`       | Slide-in animation              |
+| `ease-anim-fade`        | Fade-in animation               |
+| `ease-anim-bounce`      | Bounce-in animation             |
+| `ease-anim-pop`         | Pop-in animation                |
 
 ---
 
 ## 🎬 Animation Details
 
-| Animation | Duration | Easing | Best For |
-|-----------|----------|--------|----------|
-| `ease-anim-slide` | 0.4s | cubic-bezier | Default, professional |
-| `ease-anim-fade` | 0.4s | ease | Subtle notifications |
-| `ease-anim-bounce` | 0.6s | spring | Playful confirmations |
-| `ease-anim-pop` | 0.4s | spring | Quick alerts |
+| Animation          | Duration | Easing       | Best For              |
+| ------------------ | -------- | ------------ | --------------------- |
+| `ease-anim-slide`  | 0.4s     | cubic-bezier | Default, professional |
+| `ease-anim-fade`   | 0.4s     | ease         | Subtle notifications  |
+| `ease-anim-bounce` | 0.6s     | spring       | Playful confirmations |
+| `ease-anim-pop`    | 0.4s     | spring       | Quick alerts          |
 
 ---
 
@@ -103,11 +123,12 @@ showToast(type, message, position, animation);
 ```
 
 ### Examples
+
 ```javascript
-showToast('success', 'Saved successfully!');
-showToast('error', 'Failed to save', 'bottom-right');
-showToast('warning', 'Check your input', 'top-left', 'bounce');
-showToast('info', 'New update available', 'bottom-left', 'pop');
+showToast("success", "Saved successfully!");
+showToast("error", "Failed to save", "bottom-right");
+showToast("warning", "Check your input", "top-left", "bounce");
+showToast("info", "New update available", "bottom-left", "pop");
 ```
 
 ---

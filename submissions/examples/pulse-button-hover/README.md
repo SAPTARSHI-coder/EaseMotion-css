@@ -12,9 +12,7 @@ A smooth pulse-style hover animation for button components.
 ## Usage
 
 ```html
-<button class="ease-pulse-button-hover">
-  Hover Me
-</button>
+<button class="ease-pulse-button-hover">Hover Me</button>
 ```
 
 ## Animation Details

@@ -1,9 +1,11 @@
 # Ease Pulse Glow Sn
 
 ## What does this do?
+
 A set of CSS animation utility classes for pulse (gentle scale) and glow (shadow pulsing) effects that create subtle attention-grabbing animations for important UI elements.
 
 ## How is it used?
+
 ```html
 <!-- Pulse animation (gently scales 1 to 1.05) -->
 <div class="animate-pulse">Live indicator</div>
@@ -21,7 +23,9 @@ A set of CSS animation utility classes for pulse (gentle scale) and glow (shadow
 <div class="animate-pulse" style="--pulse-intensity: 0.1">Stronger pulse</div>
 
 <!-- Custom glow color -->
-<div class="animate-glow" style="--glow-color: rgba(255, 165, 0, 0.5)">Orange glow</div>
+<div class="animate-glow" style="--glow-color: rgba(255, 165, 0, 0.5)">
+  Orange glow
+</div>
 
 <!-- Speed variants -->
 <div class="animate-pulse-fast">Fast pulse</div>
@@ -35,4 +39,5 @@ A set of CSS animation utility classes for pulse (gentle scale) and glow (shadow
 ```
 
 ## Why is it useful?
+
 Pulse and glow effects are essential for drawing user attention to key interface elements. Pulse is ideal for live indicators, recording dots, active states, and notification badges. Glow is perfect for call-to-action buttons, active form fields, and featured content highlights. Both use performant CSS properties (transform and box-shadow) with no JavaScript overhead, and fully respect `prefers-reduced-motion`.

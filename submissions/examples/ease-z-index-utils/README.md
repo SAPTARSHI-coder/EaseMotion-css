@@ -4,12 +4,12 @@ Semantic z-index utility classes that expose the framework's `--ease-z-*` design
 
 ## Class reference
 
-| Class | CSS Property | Token |
-|-------|--------------|-------|
-| `.ease-z-base` | `z-index: var(--ease-z-base)` | `--ease-z-base` |
+| Class             | CSS Property                     | Token              |
+| ----------------- | -------------------------------- | ------------------ |
+| `.ease-z-base`    | `z-index: var(--ease-z-base)`    | `--ease-z-base`    |
 | `.ease-z-overlay` | `z-index: var(--ease-z-overlay)` | `--ease-z-overlay` |
-| `.ease-z-modal` | `z-index: var(--ease-z-modal)` | `--ease-z-modal` |
-| `.ease-z-toast` | `z-index: var(--ease-z-toast)` | `--ease-z-toast` |
+| `.ease-z-modal`   | `z-index: var(--ease-z-modal)`   | `--ease-z-modal`   |
+| `.ease-z-toast`   | `z-index: var(--ease-z-toast)`   | `--ease-z-toast`   |
 
 ## Usage
 

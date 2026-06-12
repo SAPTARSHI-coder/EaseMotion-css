@@ -10,18 +10,18 @@ A pure CSS animated number count-up utility using `@property` and `counter-reset
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-counter` | Default count-up animation |
-| `ease-counter-fast` | Faster animation duration |
-| `ease-counter-slow` | Slower animation duration |
-| `ease-delay-100` to `ease-delay-500` | Staggered start delays |
+| Class                                | Description                |
+| ------------------------------------ | -------------------------- |
+| `ease-counter`                       | Default count-up animation |
+| `ease-counter-fast`                  | Faster animation duration  |
+| `ease-counter-slow`                  | Slower animation duration  |
+| `ease-delay-100` to `ease-delay-500` | Staggered start delays     |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-counter-to` | `100` | Target number to count up to |
+| Property            | Default | Description                  |
+| ------------------- | ------- | ---------------------------- |
+| `--ease-counter-to` | `100`   | Target number to count up to |
 
 ## Browser Support
 

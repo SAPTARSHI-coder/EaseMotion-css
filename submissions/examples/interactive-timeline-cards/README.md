@@ -4,29 +4,27 @@ An animated vertical timeline component that highlights milestones with glowing 
 
 ## Features
 
-* Pure CSS timeline interaction
-* Animated glowing timeline nodes
-* Expanding milestone cards
-* Smooth content reveal
-* Vertical roadmap layout
-* Responsive design
-* Reduced motion support
-* No JavaScript required
+- Pure CSS timeline interaction
+- Animated glowing timeline nodes
+- Expanding milestone cards
+- Smooth content reveal
+- Vertical roadmap layout
+- Responsive design
+- Reduced motion support
+- No JavaScript required
 
 ## Usage
 
 ```html
 <div class="timeline-item">
-    <div class="timeline-dot"></div>
+  <div class="timeline-dot"></div>
 
-    <div class="timeline-card">
-        <h3>Development Phase</h3>
-        <p>Core features implemented.</p>
+  <div class="timeline-card">
+    <h3>Development Phase</h3>
+    <p>Core features implemented.</p>
 
-        <div class="timeline-extra">
-            Additional milestone information.
-        </div>
-    </div>
+    <div class="timeline-extra">Additional milestone information.</div>
+  </div>
 </div>
 ```
 

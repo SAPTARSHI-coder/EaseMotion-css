@@ -23,19 +23,9 @@ Styled data table with hover rows, zebra striping, sort indicators, and user cel
 ## Usage
 
 ```html
-&lt;div class="table-pr-wrapper"&gt;
-  &lt;table class="table-pr"&gt;
-    &lt;thead&gt;
-      &lt;tr&gt;
-        &lt;th&gt;Name&lt;/th&gt;
-        &lt;th&gt;Role&lt;/th&gt;
-      &lt;/tr&gt;
-    &lt;/thead&gt;
-    &lt;tbody&gt;
-      &lt;tr&gt;
-        &lt;td&gt;John Doe&lt;/td&gt;
-        &lt;td&gt;Admin&lt;/td&gt;
-      &lt;/tr&gt;
-    &lt;/tbody&gt;
-  &lt;/table&gt;
-&lt;/div&gt;
+&lt;div class="table-pr-wrapper"&gt; &lt;table class="table-pr"&gt;
+&lt;thead&gt; &lt;tr&gt; &lt;th&gt;Name&lt;/th&gt; &lt;th&gt;Role&lt;/th&gt;
+&lt;/tr&gt; &lt;/thead&gt; &lt;tbody&gt; &lt;tr&gt; &lt;td&gt;John
+Doe&lt;/td&gt; &lt;td&gt;Admin&lt;/td&gt; &lt;/tr&gt; &lt;/tbody&gt;
+&lt;/table&gt; &lt;/div&gt;
+```

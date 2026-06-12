@@ -26,7 +26,6 @@ Use the following semantic skeleton:
 
 ```html
 <section class="ease-code-block-wrapper">
-  
   <!-- Header tab chrome bar -->
   <header class="ease-code-header-bar">
     <div class="ease-code-window-dots">
@@ -34,7 +33,7 @@ Use the following semantic skeleton:
       <span class="ease-code-dot ease-code-dot--minimize"></span>
       <span class="ease-code-dot ease-code-dot--maximize"></span>
     </div>
-    
+
     <div class="ease-code-file-meta">
       <span class="ease-code-lang-icon" style="color: #f1e05a;">JS</span>
       <span class="ease-code-filename">app.js</span>
@@ -48,7 +47,6 @@ Use the following semantic skeleton:
     <span class="ease-code-line">const value = "Hello World";</span>
     <span class="ease-code-line--highlighted">console.log(value);</span>
   </code></pre>
-
 </section>
 ```
 
@@ -56,23 +54,23 @@ Use the following semantic skeleton:
 
 Standard styling spans are pre-themed:
 
-| Class | Match | Styled color |
-|---|---|---|
-| `.syn-kw` | Keyword (`const`, `function`, `return`) | Purple |
-| `.syn-str` | Strings (`"text"`) | Green |
-| `.syn-fn` | Function calls (`log()`, `apply()`) | Blue |
-| `.syn-cmt` | Comments (`// context`) | Dim Gray (Italic) |
-| `.syn-num` | Number values (`170`, `0.01`) | Orange |
-| `.syn-op` | Operator tokens (`+`, `=`, `?`) | Teal |
-| `.syn-cls` | Custom Classes (`SpringForce`) | Yellow |
-| `.syn-prop` | Property tags (`stiffness`, `style`) | Red |
+| Class       | Match                                   | Styled color      |
+| ----------- | --------------------------------------- | ----------------- |
+| `.syn-kw`   | Keyword (`const`, `function`, `return`) | Purple            |
+| `.syn-str`  | Strings (`"text"`)                      | Green             |
+| `.syn-fn`   | Function calls (`log()`, `apply()`)     | Blue              |
+| `.syn-cmt`  | Comments (`// context`)                 | Dim Gray (Italic) |
+| `.syn-num`  | Number values (`170`, `0.01`)           | Orange            |
+| `.syn-op`   | Operator tokens (`+`, `=`, `?`)         | Teal              |
+| `.syn-cls`  | Custom Classes (`SpringForce`)          | Yellow            |
+| `.syn-prop` | Property tags (`stiffness`, `style`)    | Red               |
 
 ---
 
 ## 3. Why is it useful?
 
 1. **Purely Declarative** — Requires absolutely zero scripting dependencies. Line numbers, row highlighting, scrollbars, and elevations execute during browser parsing.
-2. **Accessible Code Selection** — In modern web browsers, content rendered inside pseudo-elements (`::before`) is omitted from clipboard selection. Placing line counters in the `::before` pseudo-element allows developers to select and copy code blocks *without* dragging along numbers.
+2. **Accessible Code Selection** — In modern web browsers, content rendered inside pseudo-elements (`::before`) is omitted from clipboard selection. Placing line counters in the `::before` pseudo-element allows developers to select and copy code blocks _without_ dragging along numbers.
 3. **Hardware Elevated Transitions** — Highlighting lines, copy transitions, and card elevations use exclusively GPU-composited variables (`transform` and `opacity`), preventing page repaints or layout recalculations.
 4. **Responsive Horizontal Scrolling** — Line rows map seamlessly to block dimensions; overflow lines generate elegant, custom track scrollbars that keep containers intact across tablets and mobile viewports.
 5. **Completely Custom-Property Configured** — Modifying themes is highly direct. Change variables like `--code-bg`, `--syn-keyword`, or `--code-line-hightlight-border` inline to match any documentation palette instantly.

@@ -8,8 +8,8 @@ Displays product releases and version updates in a modern animated timeline form
 
 ```html
 <div class="release-card">
-    <div class="version">v2.0.0</div>
-    <h3>Feature Title</h3>
+  <div class="version">v2.0.0</div>
+  <h3>Feature Title</h3>
 </div>
 ```
 

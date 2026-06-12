@@ -18,7 +18,9 @@ Unlike the checkbox hack (which requires an invisible `&lt;input&gt;` and a `&lt
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .dropdown:focus-within .dropdown__menu {
@@ -26,3 +28,4 @@ Unlike the checkbox hack (which requires an invisible `&lt;input&gt;` and a `&lt
   transform: translateY(0);
   pointer-events: auto;
 }
+```

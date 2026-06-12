@@ -7,5 +7,5 @@ An architectural utility implementation that replaces basic linear or cubic easi
 Apply the spring-load utilities directly onto your interactive structures:
 
 ```html
-<div class="spring-card">
-  </div>
+<div class="spring-card"></div>
+```

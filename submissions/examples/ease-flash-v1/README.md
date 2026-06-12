@@ -20,8 +20,8 @@ Rapid opacity flashing animation utility for alerts, warnings, and notifications
 ## Flash Count
 
 ```css
-:root{
-  --ease-flash-count:2;
+:root {
+  --ease-flash-count: 2;
 }
 ```
 

@@ -10,22 +10,22 @@ Radial gradient spotlight effect on hover using CSS custom properties and `@prop
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-spotlight` | Default white spotlight |
-| `ease-spotlight-blue` | Blue spotlight |
-| `ease-spotlight-purple` | Purple spotlight |
-| `ease-spotlight-warm` | Warm orange spotlight |
-| `ease-spotlight-green` | Green spotlight |
-| `ease-spotlight-sm` | 150px spotlight size |
-| `ease-spotlight-lg` | 500px spotlight size |
+| Class                   | Description             |
+| ----------------------- | ----------------------- |
+| `ease-spotlight`        | Default white spotlight |
+| `ease-spotlight-blue`   | Blue spotlight          |
+| `ease-spotlight-purple` | Purple spotlight        |
+| `ease-spotlight-warm`   | Warm orange spotlight   |
+| `ease-spotlight-green`  | Green spotlight         |
+| `ease-spotlight-sm`     | 150px spotlight size    |
+| `ease-spotlight-lg`     | 500px spotlight size    |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-spotlight-color` | `rgba(255,255,255,0.15)` | Spotlight color |
-| `--ease-spotlight-size` | `300px` | Spotlight radius |
+| Property                 | Default                  | Description      |
+| ------------------------ | ------------------------ | ---------------- |
+| `--ease-spotlight-color` | `rgba(255,255,255,0.15)` | Spotlight color  |
+| `--ease-spotlight-size`  | `300px`                  | Spotlight radius |
 
 ## Submission
 

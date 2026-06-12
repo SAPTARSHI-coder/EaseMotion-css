@@ -10,14 +10,14 @@ The `tada` keyframe animation makes an element briefly **grow and rock left–ri
 
 The animation runs for **1.1 seconds** and follows this sequence:
 
-| Phase | Transform | Feel |
-|---|---|---|
-| Rest | `scale(1) rotate(0deg)` | Normal |
-| Pop | `scale(1.12) rotate(-4deg)` | Surprise jump |
-| Flick right | `scale(1.12) rotate(+4deg)` | Snap across |
-| Rapid wiggle | `±5deg` × 3 beats | Celebration energy |
-| Settle | Scale returns to 1 | Breathe out |
-| Land | `scale(1) rotate(0deg)` | Back to normal |
+| Phase        | Transform                   | Feel               |
+| ------------ | --------------------------- | ------------------ |
+| Rest         | `scale(1) rotate(0deg)`     | Normal             |
+| Pop          | `scale(1.12) rotate(-4deg)` | Surprise jump      |
+| Flick right  | `scale(1.12) rotate(+4deg)` | Snap across        |
+| Rapid wiggle | `±5deg` × 3 beats           | Celebration energy |
+| Settle       | Scale returns to 1          | Breathe out        |
+| Land         | `scale(1) rotate(0deg)`     | Back to normal     |
 
 ---
 
@@ -46,22 +46,22 @@ Add the stylesheet to your page and apply one of the utility classes:
 
 ### All available classes
 
-| Class | Duration | Trigger | Use case |
-|---|---|---|---|
-| `tada-effect` | 1.1 s | On load / mount | Success icons, confirmation modals |
-| `tada-effect--hover` | 1.1 s | `:hover` | CTA buttons, interactive badges |
-| `tada-effect--loop` | 1.1 s | Infinite | Idle reward states, waiting badges |
-| `tada-effect--slow` | 1.4 s | On load | Hero icons, large cards |
-| `tada-effect--fast` | 0.8 s | On load | Inline chips, small labels |
+| Class                | Duration | Trigger         | Use case                           |
+| -------------------- | -------- | --------------- | ---------------------------------- |
+| `tada-effect`        | 1.1 s    | On load / mount | Success icons, confirmation modals |
+| `tada-effect--hover` | 1.1 s    | `:hover`        | CTA buttons, interactive badges    |
+| `tada-effect--loop`  | 1.1 s    | Infinite        | Idle reward states, waiting badges |
+| `tada-effect--slow`  | 1.4 s    | On load         | Hero icons, large cards            |
+| `tada-effect--fast`  | 0.8 s    | On load         | Inline chips, small labels         |
 
 The demo also shows three real-world component classes from the demo card:
 
-| Class | Purpose |
-|---|---|
-| `celebration-icon` | Large circular icon with warm glow |
-| `achievement-banner` | "Achievement Unlocked" pill label |
-| `success-card` | Full confirmation card layout |
-| `reward-badge` | Animated completion badge with delay |
+| Class                | Purpose                              |
+| -------------------- | ------------------------------------ |
+| `celebration-icon`   | Large circular icon with warm glow   |
+| `achievement-banner` | "Achievement Unlocked" pill label    |
+| `success-card`       | Full confirmation card layout        |
+| `reward-badge`       | Animated completion badge with delay |
 
 ---
 
@@ -69,7 +69,7 @@ The demo also shows three real-world component classes from the demo card:
 
 ### It communicates success with personality
 
-A simple colour change or checkmark tells users something worked. A `tada` animation tells them something *worth celebrating* happened. The physical metaphor — the brief swell, the exuberant wiggle, the calm return — mirrors how a person actually reacts to good news.
+A simple colour change or checkmark tells users something worked. A `tada` animation tells them something _worth celebrating_ happened. The physical metaphor — the brief swell, the exuberant wiggle, the calm return — mirrors how a person actually reacts to good news.
 
 ### It works everywhere without dependencies
 

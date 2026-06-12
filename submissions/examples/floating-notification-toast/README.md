@@ -4,18 +4,18 @@ A lightweight notification toast component built entirely with HTML and CSS. Dis
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-toast` | Base toast container with slide-in animation |
-| `ease-toast-success` | Green success variant |
-| `ease-toast-error` | Red error variant |
-| `ease-toast-warning` | Amber warning variant |
-| `ease-toast-info` | Blue info variant |
-| `ease-toast-icon` | Circular status icon slot |
-| `ease-toast-content` | Title and message wrapper |
-| `ease-toast-title` | Toast title text |
-| `ease-toast-msg` | Toast message text |
-| `ease-toast-close` | Dismiss button |
+| Class                | Description                                  |
+| -------------------- | -------------------------------------------- |
+| `ease-toast`         | Base toast container with slide-in animation |
+| `ease-toast-success` | Green success variant                        |
+| `ease-toast-error`   | Red error variant                            |
+| `ease-toast-warning` | Amber warning variant                        |
+| `ease-toast-info`    | Blue info variant                            |
+| `ease-toast-icon`    | Circular status icon slot                    |
+| `ease-toast-content` | Title and message wrapper                    |
+| `ease-toast-title`   | Toast title text                             |
+| `ease-toast-msg`     | Toast message text                           |
+| `ease-toast-close`   | Dismiss button                               |
 
 ## Usage
 

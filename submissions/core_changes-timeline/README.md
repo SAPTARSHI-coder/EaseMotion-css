@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a chronological timeline component with vertical line, circular dots, date/title/text per event, active state, and color variants (default, success, warning, error) — pure CSS.
 
 2. **How is it used?**
+
    ```html
    <div class="timeline">
      <div class="tl-item tl-active">

@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring active incidents, service health
 
 ```html
 <div class="panel incident">
-    <h2>Active Incident</h2>
+  <h2>Active Incident</h2>
 </div>
 ```
 

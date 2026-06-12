@@ -8,8 +8,8 @@ Demonstrates the CSS `steps()` timing function — which divides an animation in
 
 ```css
 .element {
-  animation: slide 3s steps(4) infinite;   /* 4 distinct positions */
-  animation: slide 3s steps(8) infinite;   /* 8 distinct positions */
+  animation: slide 3s steps(4) infinite; /* 4 distinct positions */
+  animation: slide 3s steps(8) infinite; /* 8 distinct positions */
   animation: slide 3s steps(4, jump-none) infinite; /* no jump on start/end */
 }
 ```

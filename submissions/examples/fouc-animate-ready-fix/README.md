@@ -24,7 +24,7 @@ New utility class `.ease-animate-ready`:
 
 ```css
 .ease-animate-ready {
-  opacity: 0;           /* pre-set to animation start state */
+  opacity: 0; /* pre-set to animation start state */
   animation-delay: 16ms; /* one rAF frame — lets opacity:0 paint first */
 }
 ```
@@ -59,5 +59,6 @@ element is inside a conditionally shown container:
 3. Click **Toggle ✅ Fixed** — card starts invisible, fades in cleanly
 
 ## Files
+
 - `style.css` — the fix (`.ease-animate-ready` utility)
 - `demo.html` — side-by-side buggy vs fixed toggle demo

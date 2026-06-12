@@ -4,12 +4,12 @@ A lightweight and interactive button animation built using **pure HTML and CSS**
 
 ## Features
 
-* Pure HTML and CSS (zero JavaScript)
-* Fizzy particle burst animation
-* Lightweight and responsive
-* Easy to customize
-* Beginner-friendly code structure
-* Works in modern browsers
+- Pure HTML and CSS (zero JavaScript)
+- Fizzy particle burst animation
+- Lightweight and responsive
+- Easy to customize
+- Beginner-friendly code structure
+- Works in modern browsers
 
 ## Files
 
@@ -34,9 +34,9 @@ No build tools, dependencies, or installations are required.
   <span>Download</span>
 
   <div class="particles">
-    <span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span> <span></span
+    ><span></span><span></span><span></span> <span></span><span></span
+    ><span></span><span></span>
   </div>
 </button>
 ```
@@ -83,16 +83,16 @@ Modify the animation duration to make the effect faster or slower.
 
 Compatible with all modern browsers that support:
 
-* CSS Animations
-* CSS Transforms
-* Flexbox/Grid Layout
+- CSS Animations
+- CSS Transforms
+- Flexbox/Grid Layout
 
 ## Acceptance Criteria
 
-* Pure HTML and CSS (zero JS)
-* Works by opening demo.html directly
-* Includes: demo.html, style.css, README.md
-* Added under: submissions/examples/ease-status-msg-zd/
+- Pure HTML and CSS (zero JS)
+- Works by opening demo.html directly
+- Includes: demo.html, style.css, README.md
+- Added under: submissions/examples/ease-status-msg-zd/
 
 ## License
 

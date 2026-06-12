@@ -10,12 +10,12 @@ When a user hovers over an icon card, the icon rotates a full 360° with a subtl
 
 Four ready-to-use variants are included:
 
-| Class modifier | Behaviour |
-|---|---|
-| *(none)* | Default — 360° clockwise, 0.55 s spring ease |
-| `.spin-ccw` | Counter-clockwise, same timing |
-| `.spin-slow` | 360° clockwise, 0.9 s ease-out — stately, deliberate |
-| `.spin-double` | 720° clockwise, 0.75 s spring ease — celebratory |
+| Class modifier | Behaviour                                            |
+| -------------- | ---------------------------------------------------- |
+| _(none)_       | Default — 360° clockwise, 0.55 s spring ease         |
+| `.spin-ccw`    | Counter-clockwise, same timing                       |
+| `.spin-slow`   | 360° clockwise, 0.9 s ease-out — stately, deliberate |
+| `.spin-double` | 720° clockwise, 0.75 s spring ease — celebratory     |
 
 ---
 
@@ -29,18 +29,21 @@ Four ready-to-use variants are included:
 
 <!-- 2. Card wrapper (apply a variant modifier here if needed) -->
 <div class="icon-card">
-
   <!-- 3. Icon wrapper — set colour tokens with inline style or a utility class -->
   <div class="icon-wrap" style="--icon-bg: #fdecea; --icon-color: #c0392b;">
-
     <!-- 4. Drop in any inline SVG -->
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-         fill="none" stroke="currentColor" stroke-width="1.7"
-         stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="3"/>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.7"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="12" cy="12" r="3" />
       <!-- … -->
     </svg>
-
   </div>
 
   <!-- 5. Optional label text -->
@@ -48,7 +51,6 @@ Four ready-to-use variants are included:
     <span class="icon-card-label">Settings</span>
     <span class="icon-card-desc">Adjust your preferences.</span>
   </div>
-
 </div>
 ```
 
@@ -57,9 +59,9 @@ Four ready-to-use variants are included:
 Add the modifier class to `.icon-card`:
 
 ```html
-<div class="icon-card spin-ccw"> … </div>
-<div class="icon-card spin-slow"> … </div>
-<div class="icon-card spin-double"> … </div>
+<div class="icon-card spin-ccw">…</div>
+<div class="icon-card spin-slow">…</div>
+<div class="icon-card spin-double">…</div>
 ```
 
 Variants can be combined — `.spin-ccw.spin-slow` produces a slow counter-clockwise spin.
@@ -69,8 +71,8 @@ Variants can be combined — `.spin-ccw.spin-slow` produces a slow counter-clock
 Two CSS custom properties on `.icon-wrap` control the tinted background and stroke colour:
 
 ```css
---icon-bg:    /* background fill of the icon tile */
---icon-color: /* SVG stroke / fill colour         */
+--icon-bg:    /* background fill of the icon tile */ --icon-color:
+  /* SVG stroke / fill colour         */;
 ```
 
 Set them inline, in a stylesheet, or via any CSS-in-JS approach. The demo uses semantic colour variables declared in `:root` (see `style.css`).

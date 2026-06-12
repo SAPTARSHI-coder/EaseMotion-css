@@ -6,19 +6,11 @@ Adds a smooth zoom animation when an element is hovered. The element gently scal
 **How is it used?**
 
 ```html
-<div class="zoom-hover">
-  Hover Me
-</div>
+<div class="zoom-hover">Hover Me</div>
 
-<button class="zoom-hover">
-  Get Started
-</button>
+<button class="zoom-hover">Get Started</button>
 
-<img
-  class="zoom-hover"
-  src="image.jpg"
-  alt="Preview"
-/>
+<img class="zoom-hover" src="image.jpg" alt="Preview" />
 ```
 
 **Why is it useful?**

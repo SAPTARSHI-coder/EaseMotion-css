@@ -4,8 +4,12 @@
 Adds an entrance animation where the element settles in while its shadow briefly shakes from side to side.
 
 **How is it used?**
+
 ```html
-<article class="shadow-shake-card" style="--shake-distance: 12px; --shadow-strength: 34px;">
+<article
+  class="shadow-shake-card"
+  style="--shake-distance: 12px; --shadow-strength: 34px;"
+>
   <h2>New lesson unlocked</h2>
   <p>The card arrives with a tactile shadow shake.</p>
 </article>

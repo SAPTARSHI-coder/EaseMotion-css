@@ -4,24 +4,24 @@ CSS-only shake animation on hover — perfect for buttons, cards, and interactiv
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| 📄 [demo.html](./demo.html) | Interactive demo |
+| File                        | Description            |
+| --------------------------- | ---------------------- |
+| 📄 [demo.html](./demo.html) | Interactive demo       |
 | 🎨 [style.css](./style.css) | Shake animation styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 📖 [README.md](./README.md) | Documentation          |
 
 ## Classes
 
-| Class | Effect | Duration |
-|-------|--------|----------|
-| `ease-shake-hover` | Horizontal shake | 0.4s |
-| `ease-shake-subtle` | Subtle shake | 0.3s |
-| `ease-shake-strong` | Strong shake | 0.5s |
-| `ease-shake-horizontal` | Left-right shake | 0.4s |
-| `ease-shake-vertical` | Up-down shake | 0.4s |
-| `ease-shake-diagonal` | Diagonal shake | 0.4s |
-| `ease-shake-fast` | Fast shake | 0.2s |
-| `ease-shake-slow` | Slow shake | 0.8s |
+| Class                   | Effect           | Duration |
+| ----------------------- | ---------------- | -------- |
+| `ease-shake-hover`      | Horizontal shake | 0.4s     |
+| `ease-shake-subtle`     | Subtle shake     | 0.3s     |
+| `ease-shake-strong`     | Strong shake     | 0.5s     |
+| `ease-shake-horizontal` | Left-right shake | 0.4s     |
+| `ease-shake-vertical`   | Up-down shake    | 0.4s     |
+| `ease-shake-diagonal`   | Diagonal shake   | 0.4s     |
+| `ease-shake-fast`       | Fast shake       | 0.2s     |
+| `ease-shake-slow`       | Slow shake       | 0.8s     |
 
 ## Usage
 
@@ -40,4 +40,5 @@ CSS-only shake animation on hover — perfect for buttons, cards, and interactiv
 
 <!-- Different speeds -->
 <div class="ease-shake-fast">Fast shake</div>
-<div class="ease-shake-slow">Slow shake</div> 
+<div class="ease-shake-slow">Slow shake</div>
+```

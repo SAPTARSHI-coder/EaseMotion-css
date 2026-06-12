@@ -19,7 +19,10 @@ copying markup into a project.
 ## Example Output
 
 ```html
-<div class="ease-fade-in ease-hover-glow ease-rounded-lg" style="animation-duration: 600ms; animation-delay: 0ms;">
+<div
+  class="ease-fade-in ease-hover-glow ease-rounded-lg"
+  style="animation-duration: 600ms; animation-delay: 0ms;"
+>
   Demo Element
 </div>
 ```

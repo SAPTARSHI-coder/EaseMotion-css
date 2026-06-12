@@ -10,14 +10,14 @@ Outline/stroked text effect using `-webkit-text-stroke` with transparent fill. C
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-text-stroke-1` | 1px stroke width |
-| `ease-text-stroke-2` | 2px stroke width |
-| `ease-text-stroke-3` | 3px stroke width |
-| `ease-text-stroke-white` | White stroke color |
-| `ease-text-stroke-primary` | Primary brand stroke color |
-| `ease-text-fill-none` | Transparent fill (default with stroke) |
+| Class                      | Description                            |
+| -------------------------- | -------------------------------------- |
+| `ease-text-stroke-1`       | 1px stroke width                       |
+| `ease-text-stroke-2`       | 2px stroke width                       |
+| `ease-text-stroke-3`       | 3px stroke width                       |
+| `ease-text-stroke-white`   | White stroke color                     |
+| `ease-text-stroke-primary` | Primary brand stroke color             |
+| `ease-text-fill-none`      | Transparent fill (default with stroke) |
 
 ## Notes
 

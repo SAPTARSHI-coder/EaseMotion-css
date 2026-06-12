@@ -16,11 +16,9 @@ A card expansion interaction that reveals additional content when hovered. The c
 
 ```html
 <div class="feature-card">
-    <h3>Performance</h3>
+  <h3>Performance</h3>
 
-    <p class="hidden-content">
-        Optimized animations and lightweight styles.
-    </p>
+  <p class="hidden-content">Optimized animations and lightweight styles.</p>
 </div>
 ```
 

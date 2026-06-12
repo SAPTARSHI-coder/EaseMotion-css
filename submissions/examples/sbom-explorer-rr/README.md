@@ -8,7 +8,7 @@ Provides a centralized interface for exploring software components, dependencies
 
 ```html
 <div class="package-card healthy">
-    <h3>React</h3>
+  <h3>React</h3>
 </div>
 ```
 

@@ -7,6 +7,5 @@ Liquid Border Trace creates a glowing fluid-like border animation that continuou
 ## How does a developer use it?
 
 ```html
-<button class="ease-liquid-border-trace">
-  Liquid Border Trace
-</button>
+<button class="ease-liquid-border-trace">Liquid Border Trace</button>
+```

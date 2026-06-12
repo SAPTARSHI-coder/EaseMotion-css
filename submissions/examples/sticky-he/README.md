@@ -21,3 +21,4 @@ Additionally, this component contains robust accessibility (a11y) enhancements t
 sticky-header/
 ├── demo.html    # Interactive sandbox containing testing suites
 └── style.css    # Clean, production-ready utility styling rules
+```

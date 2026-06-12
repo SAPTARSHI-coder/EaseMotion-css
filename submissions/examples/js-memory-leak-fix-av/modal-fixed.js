@@ -4,7 +4,7 @@
 */
 
 const EaseModal = (function () {
-  'use strict';
+  "use strict";
 
   let initialized = false;
 
@@ -15,7 +15,7 @@ const EaseModal = (function () {
   }
 
   function handleKeyDown(e) {
-    if (e.key === 'Escape') {
+    if (e.key === "Escape") {
       console.log("[EaseModal] Escape pressed - closing active modals...");
     }
   }
@@ -27,10 +27,10 @@ const EaseModal = (function () {
      */
     init: function () {
       if (initialized) return;
-      
-      window.addEventListener('hashchange', handleHashChange);
-      document.addEventListener('keydown', handleKeyDown);
-      
+
+      window.addEventListener("hashchange", handleHashChange);
+      document.addEventListener("keydown", handleKeyDown);
+
       initialized = true;
       console.log("✅ EaseModal listeners MOUNTED.");
     },
@@ -42,11 +42,11 @@ const EaseModal = (function () {
     destroy: function () {
       if (!initialized) return;
 
-      window.removeEventListener('hashchange', handleHashChange);
-      document.removeEventListener('keydown', handleKeyDown);
-      
+      window.removeEventListener("hashchange", handleHashChange);
+      document.removeEventListener("keydown", handleKeyDown);
+
       initialized = false;
       console.log("🛑 EaseModal listeners DESTROYED (Memory Leak Prevented).");
-    }
+    },
   };
 })();

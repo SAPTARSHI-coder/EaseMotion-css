@@ -16,14 +16,9 @@ A search component that smoothly expands when hovered or focused. The interactio
 
 ```html
 <div class="search-wrapper">
+  <span class="search-icon">🔍</span>
 
-    <span class="search-icon">🔍</span>
-
-    <input
-        type="text"
-        placeholder="Search documentation..."
-    >
-
+  <input type="text" placeholder="Search documentation..." />
 </div>
 ```
 

@@ -12,8 +12,13 @@ Animates the CSS `saturate()` filter — cycling color intensity from grayscale 
 }
 
 @keyframes sat-cycle {
-  0%, 100% { filter: saturate(0); }  /* grayscale */
-  50%      { filter: saturate(2); }  /* hyper-vibrant */
+  0%,
+  100% {
+    filter: saturate(0);
+  } /* grayscale */
+  50% {
+    filter: saturate(2);
+  } /* hyper-vibrant */
 }
 ```
 

@@ -1,14 +1,8 @@
 \# ease-text-align utilities
 
-
-
 CSS text alignment utilities for controlling text position.
 
-
-
 \## Classes
-
-
 
 | Class | Value |
 
@@ -22,14 +16,9 @@ CSS text alignment utilities for controlling text position.
 
 | `ease-text-justify` | text-align: justify |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <p class="ease-text-left">Left aligned text</p>
 
 <p class="ease-text-center">Centered text</p>
@@ -37,4 +26,4 @@ CSS text alignment utilities for controlling text position.
 <p class="ease-text-right">Right aligned text</p>
 
 <p class="ease-text-justify">Justified text</p>
-
+```

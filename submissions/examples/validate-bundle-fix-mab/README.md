@@ -30,8 +30,8 @@ This ensures the script checks for actual content changes in the CSS rather than
 
 ## 3. Why is it useful?
 
-Currently, contributors on Windows with Git's default `core.autocrlf = true` setting cannot pass validation checks (like `npm run validate:bundle` or `npm run release:check`). 
+Currently, contributors on Windows with Git's default `core.autocrlf = true` setting cannot pass validation checks (like `npm run validate:bundle` or `npm run release:check`).
 
-This is because Git automatically converts LF (`\n`) to CRLF (`\r\n`) when checking out the minified CSS bundle. However, the build script `build-minified-css.mjs` generates files with LF line endings. This mismatch causes the byte-for-byte comparison to fail even when the CSS content is identical. 
+This is because Git automatically converts LF (`\n`) to CRLF (`\r\n`) when checking out the minified CSS bundle. However, the build script `build-minified-css.mjs` generates files with LF line endings. This mismatch causes the byte-for-byte comparison to fail even when the CSS content is identical.
 
 Normalizing line endings removes this barrier for all Windows-based contributors without affecting the validation logic on Unix-based CI systems.

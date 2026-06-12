@@ -4,11 +4,11 @@ A lightweight CSS hover effect that adds a holographic shine animation and glowi
 
 ## Features
 
-* CSS-only implementation
-* Smooth holographic shine animation
-* Subtle glow and scale effect on hover
-* Easy to customize and integrate
-* Perfect for cards, buttons, and UI components
+- CSS-only implementation
+- Smooth holographic shine animation
+- Subtle glow and scale effect on hover
+- Easy to customize and integrate
+- Perfect for cards, buttons, and UI components
 
 ## Preview
 

@@ -46,11 +46,11 @@ The utility includes three animation variants:
 
 ## Included Variants
 
-| Class | Description |
-|---------|------------|
-| ease-orbit-spin | Standard orbital rotation |
-| ease-orbit-reverse | Reverse orbital rotation |
-| ease-orbit-fast | Fast orbital rotation |
+| Class              | Description               |
+| ------------------ | ------------------------- |
+| ease-orbit-spin    | Standard orbital rotation |
+| ease-orbit-reverse | Reverse orbital rotation  |
+| ease-orbit-fast    | Fast orbital rotation     |
 
 ---
 

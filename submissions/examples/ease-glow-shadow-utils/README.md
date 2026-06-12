@@ -4,18 +4,18 @@ Submission proposing `.ease-glow-*` utility classes that expose the semantic glo
 
 ## Class Reference
 
-| Class | Token | Glow Color |
-| --- | --- | --- |
-| `.ease-glow-primary` | `--ease-glow-primary` | Purple `rgba(108, 99, 255, 0.45)` |
-| `.ease-glow-secondary` | `--ease-glow-secondary` | Slate `rgba(100, 116, 139, 0.45)` |
-| `.ease-glow-success` | `--ease-glow-success` | Green `rgba(16, 185, 129, 0.45)` |
-| `.ease-glow-danger` | `--ease-glow-danger` | Red `rgba(239, 68, 68, 0.45)` |
-| `.ease-glow-info` | `--ease-glow-info` | Blue `rgba(59, 130, 246, 0.45)` |
-| `.ease-glow-primary-hover` | `--ease-glow-primary` | Purple glow on `:hover` |
-| `.ease-glow-secondary-hover` | `--ease-glow-secondary` | Slate glow on `:hover` |
-| `.ease-glow-success-hover` | `--ease-glow-success` | Green glow on `:hover` |
-| `.ease-glow-danger-hover` | `--ease-glow-danger` | Red glow on `:hover` |
-| `.ease-glow-info-hover` | `--ease-glow-info` | Blue glow on `:hover` |
+| Class                        | Token                   | Glow Color                        |
+| ---------------------------- | ----------------------- | --------------------------------- |
+| `.ease-glow-primary`         | `--ease-glow-primary`   | Purple `rgba(108, 99, 255, 0.45)` |
+| `.ease-glow-secondary`       | `--ease-glow-secondary` | Slate `rgba(100, 116, 139, 0.45)` |
+| `.ease-glow-success`         | `--ease-glow-success`   | Green `rgba(16, 185, 129, 0.45)`  |
+| `.ease-glow-danger`          | `--ease-glow-danger`    | Red `rgba(239, 68, 68, 0.45)`     |
+| `.ease-glow-info`            | `--ease-glow-info`      | Blue `rgba(59, 130, 246, 0.45)`   |
+| `.ease-glow-primary-hover`   | `--ease-glow-primary`   | Purple glow on `:hover`           |
+| `.ease-glow-secondary-hover` | `--ease-glow-secondary` | Slate glow on `:hover`            |
+| `.ease-glow-success-hover`   | `--ease-glow-success`   | Green glow on `:hover`            |
+| `.ease-glow-danger-hover`    | `--ease-glow-danger`    | Red glow on `:hover`              |
+| `.ease-glow-info-hover`      | `--ease-glow-info`      | Blue glow on `:hover`             |
 
 Combine hover variants with `.ease-glow-transition` for a smooth glow appearance instead of an abrupt snap.
 

@@ -3,6 +3,7 @@
 A premium, pure-CSS Modal and Dialog component system supporting various entry transitions and responsive overlays.
 
 ## Features
+
 - Fully interactive modal states using the CSS checkbox hack (zero Javascript needed).
 - Glassmorphism backdrop-blur overlay styled under `.em-modal-overlay`.
 - 4 built-in animation presets applied to `.em-modal`:
@@ -12,6 +13,7 @@ A premium, pure-CSS Modal and Dialog component system supporting various entry t
   - `.em-modal-bounce-in` (playful bounce keyframes)
 
 ## Usage
+
 Structure your HTML using a hidden checkbox matching the overlay trigger labels:
 
 ```html

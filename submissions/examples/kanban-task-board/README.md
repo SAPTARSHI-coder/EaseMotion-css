@@ -4,22 +4,22 @@ A modern Kanban-style task management component with columns for organizing task
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-kanban` | Horizontal board container with scroll support |
-| `ease-kanban-column` | Status column (To Do / In Progress / Completed) |
-| `ease-kanban-header` | Column header with dot indicator, title, and count |
-| `ease-kanban-dot` | Status indicator dot |
-| `ease-kanban-dot-todo` | Blue dot for To Do column |
-| `ease-kanban-dot-progress` | Amber dot with pulse for In Progress column |
-| `ease-kanban-dot-done` | Green dot for Completed column |
-| `ease-kanban-count` | Task count badge |
-| `ease-task-card` | Individual task card with entrance animation and hover lift |
-| `ease-task-title` | Task title text |
-| `ease-task-meta` | Due date or status metadata |
-| `ease-task-tag` | Category tag badge |
-| `ease-task-tag-dev` | Purple tag for development tasks |
-| `ease-task-tag-design` | Pink tag for design tasks |
+| Class                      | Description                                                 |
+| -------------------------- | ----------------------------------------------------------- |
+| `ease-kanban`              | Horizontal board container with scroll support              |
+| `ease-kanban-column`       | Status column (To Do / In Progress / Completed)             |
+| `ease-kanban-header`       | Column header with dot indicator, title, and count          |
+| `ease-kanban-dot`          | Status indicator dot                                        |
+| `ease-kanban-dot-todo`     | Blue dot for To Do column                                   |
+| `ease-kanban-dot-progress` | Amber dot with pulse for In Progress column                 |
+| `ease-kanban-dot-done`     | Green dot for Completed column                              |
+| `ease-kanban-count`        | Task count badge                                            |
+| `ease-task-card`           | Individual task card with entrance animation and hover lift |
+| `ease-task-title`          | Task title text                                             |
+| `ease-task-meta`           | Due date or status metadata                                 |
+| `ease-task-tag`            | Category tag badge                                          |
+| `ease-task-tag-dev`        | Purple tag for development tasks                            |
+| `ease-task-tag-design`     | Pink tag for design tasks                                   |
 
 ## Usage
 

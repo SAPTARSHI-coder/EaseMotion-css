@@ -9,10 +9,10 @@ No JavaScript. No external libraries. One stylesheet.
 
 `count-up` makes a number visually count up from **0** to a target integer when the page loads — the kind of effect you normally see powering stats dashboards, portfolio pages, and annual-report sites. Here it is implemented entirely in CSS using two modern features:
 
-| Feature | Role |
-|---|---|
+| Feature     | Role                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
 | `@property` | Registers `--num` as a typed `<integer>` so the browser can interpolate it smoothly inside `@keyframes` |
-| `counter()` | Reads the live integer value of `--num` on every animation frame and renders it as visible text |
+| `counter()` | Reads the live integer value of `--num` on every animation frame and renders it as visible text         |
 
 Neither technique requires JavaScript. The combination is what makes the animation possible: `@property` unlocks numeric interpolation; `counter()` converts that interpolated value into a rendered digit string every frame.
 
@@ -42,9 +42,7 @@ The only required customisation is the inline `--num-end` custom property — se
 Pass a `--hue` value (0 – 360) alongside `--num-end` to give each card its own accent colour:
 
 ```html
-<article class="stat-card" style="--num-end: 450; --hue: 160;">
-  ...
-</article>
+<article class="stat-card" style="--num-end: 450; --hue: 160;">...</article>
 ```
 
 ### 4 · Adjust animation duration
@@ -66,22 +64,26 @@ Override `--duration` in `:root` or inline to control speed:
 ```css
 /* Step 1 — register the property as a typed integer */
 @property --num {
-  syntax:        "<integer>";
+  syntax: "<integer>";
   initial-value: 0;
-  inherits:      false;
+  inherits: false;
 }
 
 /* Step 2 — animate it */
 @keyframes count {
-  from { --num: 0; }
-  to   { --num: var(--num-end); }
+  from {
+    --num: 0;
+  }
+  to {
+    --num: var(--num-end);
+  }
 }
 
 /* Step 3 — render the live value via counter() */
 .num::after {
-  counter-reset: num var(--num);   /* sync the CSS counter to --num    */
-  content:       counter(num);     /* output the integer as text       */
-  animation:     count var(--duration) cubic-bezier(0.16, 1, 0.3, 1) both;
+  counter-reset: num var(--num); /* sync the CSS counter to --num    */
+  content: counter(num); /* output the integer as text       */
+  animation: count var(--duration) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 ```
 
@@ -110,11 +112,11 @@ A `prefers-reduced-motion` media query snaps immediately to the final value, so 
 
 ## Browser Support
 
-| Browser | Version |
-|---|---|
-| Chrome / Edge | 85 + |
-| Firefox | 128 + |
-| Safari | 16.4 + |
+| Browser       | Version |
+| ------------- | ------- |
+| Chrome / Edge | 85 +    |
+| Firefox       | 128 +   |
+| Safari        | 16.4 +  |
 
 Older browsers display the static final value (graceful degradation via `initial-value: 0` resolving at `--num-end` with no animation).
 

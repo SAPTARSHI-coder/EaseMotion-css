@@ -8,8 +8,8 @@ Provides a responsive interface for comparing responses from multiple AI models 
 
 ```html
 <div class="model-card">
-    <span class="model-badge">GPT-5</span>
-    <p>Model response...</p>
+  <span class="model-badge">GPT-5</span>
+  <p>Model response...</p>
 </div>
 ```
 

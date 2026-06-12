@@ -3,13 +3,14 @@
 1. **What does this do?** Provides a pure CSS avatar component with image support (via `<img>` child), initials fallback (via `data-initials`), 5 size variants (xs, sm, base, lg, xl), 3 shape variants (circle, rounded, square), status indicators (online, offline, away, busy via `data-status`), and overlapping avatar groups — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <!-- Initials avatar -->
    <div class="avatar" data-initials="JD" style="--avatar-bg: #6c63ff;"></div>
 
    <!-- Image avatar -->
    <div class="avatar avatar-lg">
-     <img src="user.jpg" alt="User">
+     <img src="user.jpg" alt="User" />
    </div>
 
    <!-- With status -->

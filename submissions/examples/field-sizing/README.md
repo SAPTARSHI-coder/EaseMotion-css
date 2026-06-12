@@ -7,7 +7,9 @@ Demonstrates the CSS `field-sizing: content` property — which makes form contr
 ## How is it used?
 
 ```css
-textarea, input, select {
+textarea,
+input,
+select {
   field-sizing: content;
 }
 ```

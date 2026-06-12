@@ -10,16 +10,16 @@ A pure CSS tooltip using `data-tip` attribute and `::after` pseudo-element. Zero
 
 ## Variants
 
-| Attribute | Value | Description |
-|---|---|---|
-| `data-tip-pos` | `top` (default) | Tooltip appears above |
-| `data-tip-pos` | `bottom` | Tooltip appears below |
-| `data-tip-pos` | `left` | Tooltip appears left |
-| `data-tip-pos` | `right` | Tooltip appears right |
-| `data-tip-color` | `success` | Green tooltip |
-| `data-tip-color` | `danger` | Red tooltip |
-| `data-tip-color` | `info` | Blue tooltip |
-| `data-tip-color` | `warning` | Amber tooltip |
+| Attribute        | Value           | Description           |
+| ---------------- | --------------- | --------------------- |
+| `data-tip-pos`   | `top` (default) | Tooltip appears above |
+| `data-tip-pos`   | `bottom`        | Tooltip appears below |
+| `data-tip-pos`   | `left`          | Tooltip appears left  |
+| `data-tip-pos`   | `right`         | Tooltip appears right |
+| `data-tip-color` | `success`       | Green tooltip         |
+| `data-tip-color` | `danger`        | Red tooltip           |
+| `data-tip-color` | `info`          | Blue tooltip          |
+| `data-tip-color` | `warning`       | Amber tooltip         |
 
 ## Delay Variants
 

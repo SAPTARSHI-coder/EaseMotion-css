@@ -8,11 +8,11 @@ Visualizes a Zero Trust security workflow where every request must pass through 
 
 ```html
 <div class="layer identity">
-    <h3>Identity Verification</h3>
+  <h3>Identity Verification</h3>
 </div>
 
 <div class="layer policy">
-    <h3>Policy Engine</h3>
+  <h3>Policy Engine</h3>
 </div>
 ```
 

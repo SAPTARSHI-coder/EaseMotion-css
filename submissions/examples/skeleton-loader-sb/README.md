@@ -1,6 +1,6 @@
 # Skeleton Loading States
 
-A pure CSS skeleton loader component that provides visually appealing placeholder states while content is loading. 
+A pure CSS skeleton loader component that provides visually appealing placeholder states while content is loading.
 
 ## Why it's useful
 

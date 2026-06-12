@@ -8,9 +8,9 @@ Provides responsive team profile cards with expandable content, skill tags, and 
 
 ```html
 <div class="team-card">
-    <div class="card-header">
-        <h2>Member Name</h2>
-    </div>
+  <div class="card-header">
+    <h2>Member Name</h2>
+  </div>
 </div>
 ```
 

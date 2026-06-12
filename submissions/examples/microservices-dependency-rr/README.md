@@ -7,13 +7,9 @@ Displays dependency relationships between microservices, infrastructure componen
 ## How is it used?
 
 ```html
-<div class="node auth">
-    Auth Service
-</div>
+<div class="node auth">Auth Service</div>
 
-<div class="node database">
-    Database
-</div>
+<div class="node database">Database</div>
 ```
 
 ## Why is it useful?

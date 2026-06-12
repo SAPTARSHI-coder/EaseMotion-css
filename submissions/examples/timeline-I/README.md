@@ -1,4 +1,3 @@
- 
 # Timeline Component
 
 Vertical timeline component with animated entrance — perfect for history, roadmap, and milestones.
@@ -23,12 +22,13 @@ Vertical timeline component with animated entrance — perfect for history, road
 
 ```html
 <div class="ease-timeline">
-    <div class="ease-timeline-item">
-        <div class="timeline-marker"></div>
-        <div class="timeline-content">
-            <h3>Title</h3>
-            <p class="timeline-date">Date</p>
-            <p>Description</p>
-        </div>
+  <div class="ease-timeline-item">
+    <div class="timeline-marker"></div>
+    <div class="timeline-content">
+      <h3>Title</h3>
+      <p class="timeline-date">Date</p>
+      <p>Description</p>
     </div>
+  </div>
 </div>
+```

@@ -14,7 +14,7 @@ Defines the missing `--ease-color-text-dark` CSS custom property in `core/variab
 @media (prefers-color-scheme: dark) {
   :root {
     /* existing tokens ... */
-    --ease-color-text-dark: #f8fafc;   /* ← add this line */
+    --ease-color-text-dark: #f8fafc; /* ← add this line */
   }
 }
 ```
@@ -46,13 +46,14 @@ EaseMotion CSS is **token-first**: every design decision should flow through a C
 
 The missing `--ease-color-text-dark` token breaks that contract:
 
-| | Before (bug) | After (fix) |
-|---|---|---|
-| Token defined in `variables.css` | ❌ No | ✅ Yes |
+|                                   | Before (bug)           | After (fix)              |
+| --------------------------------- | ---------------------- | ------------------------ |
+| Token defined in `variables.css`  | ❌ No                  | ✅ Yes                   |
 | Consumer can override text colour | ❌ Must edit component | ✅ One variable override |
-| Dark-mode glass card colour | Hardcoded `#f8fafc` | Driven by token |
+| Dark-mode glass card colour       | Hardcoded `#f8fafc`    | Driven by token          |
 
 **Consumer override example:**
+
 ```css
 /* Zero framework edits needed */
 :root {
@@ -66,12 +67,12 @@ The value used in the fix (`#f8fafc`) is identical to the current hardcoded fall
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                           |
+| ----------- | ----------------------------------------------------------------- |
 | `demo.html` | Self-contained demo showing the buggy vs. fixed card side-by-side |
-| `style.css` | CSS with commented patch instructions for the maintainer |
-| `README.md` | This file |
+| `style.css` | CSS with commented patch instructions for the maintainer          |
+| `README.md` | This file                                                         |
 
 ---
 
-*Submitted by: dv · Issue: `--ease-color-text-dark` not defined in `variables.css`*
+_Submitted by: dv · Issue: `--ease-color-text-dark` not defined in `variables.css`_

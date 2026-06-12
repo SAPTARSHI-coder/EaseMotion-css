@@ -8,8 +8,8 @@ Provides a command center dashboard for monitoring product launch performance, u
 
 ```html
 <div class="card users">
-    <h2>12.4K</h2>
-    <span>Active Users</span>
+  <h2>12.4K</h2>
+  <span>Active Users</span>
 </div>
 ```
 

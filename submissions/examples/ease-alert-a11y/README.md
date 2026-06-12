@@ -4,12 +4,12 @@ An accessible alert component with correct ARIA roles, dismissal announcements, 
 
 ## ARIA roles
 
-| Alert Type | Role | aria-live | When to Use |
-|------------|------|-----------|-------------|
-| Info | `status` | `polite` | Non-critical information that does not interrupt |
-| Success | `status` | `polite` | Confirmation of a completed action |
-| Warning | `alert` | `assertive` | Time-sensitive situation requiring attention |
-| Error | `alert` | `assertive` | Failed action requiring immediate user response |
+| Alert Type | Role     | aria-live   | When to Use                                      |
+| ---------- | -------- | ----------- | ------------------------------------------------ |
+| Info       | `status` | `polite`    | Non-critical information that does not interrupt |
+| Success    | `status` | `polite`    | Confirmation of a completed action               |
+| Warning    | `alert`  | `assertive` | Time-sensitive situation requiring attention     |
+| Error      | `alert`  | `assertive` | Failed action requiring immediate user response  |
 
 Use `role="alert"` only for warnings and errors that need immediate attention. Info and success messages should use `role="status"` so screen readers do not interrupt the user on page load.
 
@@ -29,7 +29,9 @@ When a dismissible alert is removed from the DOM, three things must happen:
 <div class="ease-alert ease-alert-success" role="status" aria-live="polite">
   <span aria-hidden="true">✓</span>
   <p>Payment processed successfully.</p>
-  <button class="ease-alert-dismiss" aria-label="Dismiss success alert">✕</button>
+  <button class="ease-alert-dismiss" aria-label="Dismiss success alert">
+    ✕
+  </button>
 </div>
 ```
 

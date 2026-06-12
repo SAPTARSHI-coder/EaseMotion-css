@@ -4,11 +4,11 @@ Roll entrance and exit animations that combine horizontal translation with rotat
 
 ## Class reference
 
-| Class | Direction | Fill Mode | Typical Use |
-|-------|-----------|-----------|-------------|
-| `.ease-roll-in` | From left | `both` | Staggered avatar chips, sidebar items |
-| `.ease-roll-in-right` | From right | `both` | Right-aligned notifications, trailing elements |
-| `.ease-roll-out` | Exit to left | `both` | Dismissing chips, removing list items |
+| Class                 | Direction    | Fill Mode | Typical Use                                    |
+| --------------------- | ------------ | --------- | ---------------------------------------------- |
+| `.ease-roll-in`       | From left    | `both`    | Staggered avatar chips, sidebar items          |
+| `.ease-roll-in-right` | From right   | `both`    | Right-aligned notifications, trailing elements |
+| `.ease-roll-out`      | Exit to left | `both`    | Dismissing chips, removing list items          |
 
 All three classes set `animation-fill-mode: both` automatically, so elements retain their final visible state after entrance animations complete.
 

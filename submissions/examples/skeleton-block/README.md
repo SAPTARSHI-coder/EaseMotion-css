@@ -10,8 +10,8 @@ A rounded skeleton placeholder block (`display: block` + `border-radius`). The s
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                 | Description                    |
+| --------------------- | ------------------------------ |
 | `ease-skeleton-block` | Default rounded skeleton block |
 
 ## Notes

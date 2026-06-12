@@ -13,6 +13,5 @@ A lightweight CSS-only hover effect that gives a button a magnetic, lifted appea
 ## Usage
 
 ```html
-<button class="magnetic-btn">
-  Hover Me
-</button>
+<button class="magnetic-btn">Hover Me</button>
+```

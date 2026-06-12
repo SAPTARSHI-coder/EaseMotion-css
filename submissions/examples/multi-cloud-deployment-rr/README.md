@@ -7,13 +7,9 @@ Visualizes how applications are distributed across multiple cloud providers usin
 ## How is it used?
 
 ```html
-<div class="provider aws">
-    AWS
-</div>
+<div class="provider aws">AWS</div>
 
-<div class="provider azure">
-    Azure
-</div>
+<div class="provider azure">Azure</div>
 ```
 
 ## Why is it useful?

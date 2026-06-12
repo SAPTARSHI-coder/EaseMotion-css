@@ -8,9 +8,9 @@ A visual guide to CSS `animation-timing-function` — showing `ease`, `linear`, 
 
 ```css
 .element {
-  animation: slide 2s ease-out infinite;     /* smooth stop */
-  animation: slide 2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;  /* bouncy */
-  animation: slide 2s steps(5) infinite;     /* five distinct jumps */
+  animation: slide 2s ease-out infinite; /* smooth stop */
+  animation: slide 2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; /* bouncy */
+  animation: slide 2s steps(5) infinite; /* five distinct jumps */
 }
 ```
 

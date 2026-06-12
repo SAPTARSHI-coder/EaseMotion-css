@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a pure CSS toast notification component with 4 type variants (info, success, warning, error), positioned container (top-right, top-left, bottom-right, bottom-left), close button, icon, title, message, and smooth entrance animation — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <div class="toast-container toast-top-right">
      <div class="toast toast-success" role="alert">

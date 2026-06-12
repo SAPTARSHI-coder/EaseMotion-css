@@ -13,20 +13,20 @@ A full badge component with dots, counts, labels and color variants. Zero JavaSc
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-badge-primary` | Blue badge |
-| `ease-badge-success` | Green badge |
-| `ease-badge-danger` | Red badge |
-| `ease-badge-warning` | Yellow badge |
-| `ease-badge-info` | Light blue badge |
-| `ease-badge-dark` | Dark badge |
-| `ease-badge-dot` | Adds dot indicator |
-| `ease-badge-pulse` | Animated pulse dot |
-| `ease-badge-count` | Notification count style |
-| `ease-badge-outline` | Transparent with border |
-| `ease-badge-sm` | Small size |
-| `ease-badge-lg` | Large size |
+| Class                | Description              |
+| -------------------- | ------------------------ |
+| `ease-badge-primary` | Blue badge               |
+| `ease-badge-success` | Green badge              |
+| `ease-badge-danger`  | Red badge                |
+| `ease-badge-warning` | Yellow badge             |
+| `ease-badge-info`    | Light blue badge         |
+| `ease-badge-dark`    | Dark badge               |
+| `ease-badge-dot`     | Adds dot indicator       |
+| `ease-badge-pulse`   | Animated pulse dot       |
+| `ease-badge-count`   | Notification count style |
+| `ease-badge-outline` | Transparent with border  |
+| `ease-badge-sm`      | Small size               |
+| `ease-badge-lg`      | Large size               |
 
 ## Submission
 

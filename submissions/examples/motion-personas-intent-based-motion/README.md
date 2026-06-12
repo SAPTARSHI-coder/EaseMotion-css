@@ -43,7 +43,9 @@ Combine a persona and an intent on the same element:
 ```html
 <button class="ease-persona-premium ease-confirm">Save changes</button>
 <div class="ease-persona-playful ease-introduce">New widget loaded</div>
-<section class="ease-persona-minimal ease-notify">Status update received</section>
+<section class="ease-persona-minimal ease-notify">
+  Status update received
+</section>
 ```
 
 ## Examples
@@ -57,7 +59,9 @@ Combine a persona and an intent on the same element:
 ### Playful introduction
 
 ```html
-<div class="ease-persona-playful ease-introduce">New dashboard card available</div>
+<div class="ease-persona-playful ease-introduce">
+  New dashboard card available
+</div>
 ```
 
 ### Minimal highlight
@@ -75,7 +79,9 @@ Combine a persona and an intent on the same element:
 ### Cinematic warning
 
 ```html
-<div class="ease-persona-cinematic ease-warn">Review required before publishing</div>
+<div class="ease-persona-cinematic ease-warn">
+  Review required before publishing
+</div>
 ```
 
 ## Accessibility

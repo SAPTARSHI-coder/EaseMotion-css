@@ -8,9 +8,7 @@ Creates a pure CSS ripple animation that expands and fades when a user clicks a 
 ```html
 <button class="ripple-btn">Click Me</button>
 
-<div class="ripple-card">
-  Card content
-</div>
+<div class="ripple-card">Card content</div>
 ```
 
 **Why is it useful?**  

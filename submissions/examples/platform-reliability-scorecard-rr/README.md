@@ -8,7 +8,7 @@ Provides a centralized interface for evaluating platform reliability, SLA compli
 
 ```html
 <div class="score-card excellent">
-    <h3>Service Availability</h3>
+  <h3>Service Availability</h3>
 </div>
 ```
 

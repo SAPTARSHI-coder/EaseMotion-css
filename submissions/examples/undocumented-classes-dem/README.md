@@ -11,15 +11,15 @@ The following classes are fully implemented in `core/animations.css`
 but are completely absent from `docs/index.html`. Users who rely on
 the documentation to discover classes will never find them.
 
-| Class | Exists in CSS | In Docs |
-|---|---|---|
-| `ease-hover-shimmer` | ✅ | ❌ |
-| `ease-hover-underline` | ✅ | ❌ |
-| `ease-card-lift` | ✅ | ❌ |
-| `ease-float` | ✅ | ❌ (in HTML example but not in table) |
-| `ease-skeleton-shimmer` | ✅ | ❌ |
-| `ease-skeleton-pulse` | ✅ | ❌ |
-| `ease-skeleton-block` | ✅ | ❌ |
+| Class                   | Exists in CSS | In Docs                               |
+| ----------------------- | ------------- | ------------------------------------- |
+| `ease-hover-shimmer`    | ✅            | ❌                                    |
+| `ease-hover-underline`  | ✅            | ❌                                    |
+| `ease-card-lift`        | ✅            | ❌                                    |
+| `ease-float`            | ✅            | ❌ (in HTML example but not in table) |
+| `ease-skeleton-shimmer` | ✅            | ❌                                    |
+| `ease-skeleton-pulse`   | ✅            | ❌                                    |
+| `ease-skeleton-block`   | ✅            | ❌                                    |
 
 ---
 
@@ -58,7 +58,12 @@ Add the following rows and section to `docs/index.html`:
 ```html
 <h3 class="docs-h3">Skeleton / Loading</h3>
 <table class="docs-table">
-  <thead><tr><th>Class</th><th>Effect</th></tr></thead>
+  <thead>
+    <tr>
+      <th>Class</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
   <tbody>
     <tr>
       <td><code>ease-skeleton-shimmer</code></td>
@@ -70,7 +75,9 @@ Add the following rows and section to `docs/index.html`:
     </tr>
     <tr>
       <td><code>ease-skeleton-block</code></td>
-      <td>Base block shape with border-radius, combine with shimmer or pulse</td>
+      <td>
+        Base block shape with border-radius, combine with shimmer or pulse
+      </td>
     </tr>
   </tbody>
 </table>

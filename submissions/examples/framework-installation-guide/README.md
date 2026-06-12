@@ -16,11 +16,7 @@ npm install easemotion-css
 import "easemotion-css";
 
 export default function App() {
-  return (
-    <div className="ease-fade-in">
-      Hello React
-    </div>
-  );
+  return <div className="ease-fade-in">Hello React</div>;
 }
 ```
 
@@ -42,11 +38,7 @@ import "easemotion-css";
 
 ```jsx
 export default function Home() {
-  return (
-    <div className="ease-slide-up">
-      Next.js Example
-    </div>
-  );
+  return <div className="ease-slide-up">Next.js Example</div>;
 }
 ```
 
@@ -68,9 +60,7 @@ import "easemotion-css";
 
 ```vue
 <template>
-  <div class="ease-bounce">
-    Vue Example
-  </div>
+  <div class="ease-bounce">Vue Example</div>
 </template>
 ```
 
@@ -92,11 +82,7 @@ import "easemotion-css";
 
 ```jsx
 function App() {
-  return (
-    <div className="ease-pulse">
-      Vite Example
-    </div>
-  );
+  return <div className="ease-pulse">Vite Example</div>;
 }
 
 export default App;
@@ -104,7 +90,7 @@ export default App;
 
 ## Benefits
 
-* Easier onboarding
-* Reduced setup confusion
-* Framework-specific examples
-* Better developer experience
+- Easier onboarding
+- Reduced setup confusion
+- Framework-specific examples
+- Better developer experience

@@ -1,20 +1,19 @@
- 
 # User-Select Utility (ease-no-select)
 
 Prevents text selection on interactive elements — perfect for buttons, drag handles, and UI controls.
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description      |
+| --------------------------- | ---------------- |
 | 📄 [demo.html](./demo.html) | Interactive demo |
-| 🎨 [style.css](./style.css) | Utility styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Utility styles   |
+| 📖 [README.md](./README.md) | Documentation    |
 
 ## Class
 
-| Class | CSS Property |
-|-------|--------------|
+| Class            | CSS Property        |
+| ---------------- | ------------------- |
 | `ease-no-select` | `user-select: none` |
 
 ## Usage
@@ -31,6 +30,7 @@ Prevents text selection on interactive elements — perfect for buttons, drag ha
 
 <!-- Prevent selection on entire menu -->
 <div class="ease-no-select">
-    <a href="#">Home</a>
-    <a href="#">About</a>
+  <a href="#">Home</a>
+  <a href="#">About</a>
 </div>
+```

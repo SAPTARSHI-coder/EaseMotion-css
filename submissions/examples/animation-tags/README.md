@@ -6,8 +6,8 @@ Animation Difficulty & Use-Case Tags is a frontend enhancement example for EaseM
 
 The demo categorizes animations using:
 
-* Difficulty Levels (Beginner, Intermediate, Advanced)
-* Use-Case Tags (Hero Section, Buttons, Navigation, Cards, CTA, Alerts)
+- Difficulty Levels (Beginner, Intermediate, Advanced)
+- Use-Case Tags (Hero Section, Buttons, Navigation, Cards, CTA, Alerts)
 
 It also includes interactive filtering, searching, and theme switching to showcase how animation libraries can provide a better developer experience.
 
@@ -19,20 +19,20 @@ It also includes interactive filtering, searching, and theme switching to showca
 
 Animations are grouped based on implementation complexity:
 
-* Beginner
-* Intermediate
-* Advanced
+- Beginner
+- Intermediate
+- Advanced
 
 ### Use-Case Categorization
 
 Animations are tagged according to practical applications:
 
-* Hero Sections
-* Buttons
-* Navigation
-* Cards
-* CTA Elements
-* Alerts
+- Hero Sections
+- Buttons
+- Navigation
+- Cards
+- CTA Elements
+- Alerts
 
 ### Search Functionality
 
@@ -42,23 +42,23 @@ Users can search animations by name in real time.
 
 Users can filter animations using:
 
-* Difficulty Level Filter
-* Use-Case Filter
+- Difficulty Level Filter
+- Use-Case Filter
 
 ### Theme Toggle
 
 Supports:
 
-* Light Mode
-* Dark Mode
+- Light Mode
+- Dark Mode
 
 ### Responsive Layout
 
 The interface automatically adapts to:
 
-* Desktop
-* Tablet
-* Mobile Devices
+- Desktop
+- Tablet
+- Mobile Devices
 
 ---
 
@@ -137,11 +137,11 @@ A single button switches between Light Mode and Dark Mode without reloading the 
 
 This enhancement improves EaseMotion CSS by:
 
-* Making animations easier to discover.
-* Helping beginners find suitable animations quickly.
-* Improving navigation within large animation collections.
-* Demonstrating how metadata can enhance animation libraries.
-* Providing a foundation for future advanced filtering systems.
+- Making animations easier to discover.
+- Helping beginners find suitable animations quickly.
+- Improving navigation within large animation collections.
+- Demonstrating how metadata can enhance animation libraries.
+- Providing a foundation for future advanced filtering systems.
 
 ---
 
@@ -149,13 +149,13 @@ This enhancement improves EaseMotion CSS by:
 
 Potential future enhancements include:
 
-* Multi-select filtering
-* Tag-based navigation
-* Sorting by popularity
-* Animation preview controls
-* Favorites/Bookmarks system
-* Local storage for theme persistence
-* Accessibility enhancements using prefers-reduced-motion
+- Multi-select filtering
+- Tag-based navigation
+- Sorting by popularity
+- Animation preview controls
+- Favorites/Bookmarks system
+- Local storage for theme persistence
+- Accessibility enhancements using prefers-reduced-motion
 
 ---
 

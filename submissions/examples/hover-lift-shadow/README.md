@@ -10,11 +10,11 @@ Classic card lift effect combining `translateY(-4px)` lift with a growing box-sh
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-lift-shadow` | Default lift with shadow grow |
-| `ease-hover-lift-shadow-sm` | Subtle lift |
-| `ease-hover-lift-shadow-lg` | Strong lift |
+| Class                       | Description                   |
+| --------------------------- | ----------------------------- |
+| `ease-hover-lift-shadow`    | Default lift with shadow grow |
+| `ease-hover-lift-shadow-sm` | Subtle lift                   |
+| `ease-hover-lift-shadow-lg` | Strong lift                   |
 
 ## Notes
 

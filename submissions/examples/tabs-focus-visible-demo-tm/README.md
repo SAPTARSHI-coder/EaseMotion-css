@@ -1,12 +1,14 @@
 # Tabs Focus-Visible Demo
 
 ## What does this do?
+
 Self-contained demo of the keyboard-accessible tabs pattern
 defined in `components/tabs.css`. Linked to issue #5509 which
 proposed smoke-test coverage for the `:focus-visible` rule chain
 that surfaces an outline on the visible `.ease-tab-label`.
 
 ## How is it used?
+
 The tab group is composed of hidden radio inputs followed by
 a tablist and tab panels. The pattern uses CSS sibling selectors
 to switch the active state:
@@ -26,21 +28,25 @@ to switch the active state:
     </div>
 
 ## Why is this useful?
+
 The `:focus-visible` rule chain on hidden inputs makes the
 visible label show an outline when the user navigates with
 the keyboard. This is a real accessibility feature that the
 smoke test in `tests/smoke.test.js` should be asserting.
 
 ## Tech Stack
+
 - HTML
 - CSS (no frameworks, no JavaScript)
 
 ## Preview
+
 Open `demo.html` directly in your browser and use Tab to
 navigate between the tab labels — you should see the focus
 outline appear on the active label.
 
 ## Contribution Notes
+
 - Linked to upstream issue #5509
 - The proposed smoke test additions in #5509 are out of scope
   for this submission since `tests/` is a framework file that

@@ -7,9 +7,7 @@ Adds a slide-in entrance animation for buttons.
 ## How is it used?
 
 ```html
-<button class="slide-button">
-  Get Started
-</button>
+<button class="slide-button">Get Started</button>
 ```
 
 ## Why is it useful?

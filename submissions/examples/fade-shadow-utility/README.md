@@ -12,9 +12,7 @@ A smooth fade-style shadow animation for utility interactions.
 ## Usage
 
 ```html
-<div class="ease-fade-shadow-utility">
-  Hover Me
-</div>
+<div class="ease-fade-shadow-utility">Hover Me</div>
 ```
 
 ## Animation Details

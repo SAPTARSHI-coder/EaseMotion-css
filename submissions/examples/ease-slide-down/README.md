@@ -7,9 +7,7 @@ Adds a smooth slide-down entrance animation for elements appearing on the page.
 ## How is it used?
 
 ```html
-<div class="slide-down">
-  Content
-</div>
+<div class="slide-down">Content</div>
 ```
 
 ## Why is it useful?

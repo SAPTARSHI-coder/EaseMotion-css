@@ -3,6 +3,7 @@
 A high-visibility, component-isolated utility layer for modern frosted-glass card containers with active 3D transform metrics and responsive backdrop neon light emissions.
 
 ## Installation / Structure Integration
+
 All parameters are scoped exclusively under custom namespace suffixes to safely guarantee zero root framework collisions.
 
 ```text
@@ -13,6 +14,7 @@ submissions/examples/glass-interactions-sh/
 ```
 
 ### How to Utilize
+
 ```HTML
 <div class="ease-glass-card-sh">
   <!-- Glowing vector layer -->
@@ -26,9 +28,9 @@ submissions/examples/glass-interactions-sh/
 ```
 
 ### CSS Architecture Breakdowns
+
 - Hardware Acceleration: Uses pre-calculated cubic-bezier vectors (cubic-bezier(0.25, 1, 0.5, 1)) for buttery-smooth performance.
 
 - Isolations: Utilizes custom design properties (--glass-bg, --glow-color) making it easily customizable when combined with other modern frameworks.
-
 
 ---

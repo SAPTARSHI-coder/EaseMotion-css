@@ -9,6 +9,7 @@ on `.ease-card-neumorphic` in dark mode. The token
 `--ease-color-text-dark` was **never declared** in `core/variables.css`.
 
 This means:
+
 - The CSS custom property was always unresolved in the cascade
 - It always silently fell back to the hard-coded `#f8fafc`
 - Consumers who tried to override it with `:root { --ease-color-text-dark: … }` had **no effect**
@@ -37,12 +38,12 @@ design-token system and fully overridable.
 
 ## Verification
 
-| Check | Before | After |
-|---|---|---|
-| Token declared in `variables.css` | ❌ | ✅ |
-| `color` resolves from cascade | ❌ (always fallback) | ✅ |
-| Consumer can override token | ❌ silently ignored | ✅ works |
-| Visual regression | — | ✅ none (same value) |
+| Check                             | Before               | After                |
+| --------------------------------- | -------------------- | -------------------- |
+| Token declared in `variables.css` | ❌                   | ✅                   |
+| `color` resolves from cascade     | ❌ (always fallback) | ✅                   |
+| Consumer can override token       | ❌ silently ignored  | ✅ works             |
+| Visual regression                 | —                    | ✅ none (same value) |
 
 ## Acceptance Criteria
 

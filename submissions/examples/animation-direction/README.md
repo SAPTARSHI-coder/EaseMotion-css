@@ -13,12 +13,12 @@ A visual guide to the CSS `animation-direction` property — showing how `normal
 }
 ```
 
-| Value | Behavior |
-|-------|----------|
-| `normal` | 0% → 100% every cycle |
-| `reverse` | 100% → 0% every cycle |
-| `alternate` | 0% → 100%, then 100% → 0% (back and forth) |
-| `alternate-reverse` | 100% → 0%, then 0% → 100% |
+| Value               | Behavior                                   |
+| ------------------- | ------------------------------------------ |
+| `normal`            | 0% → 100% every cycle                      |
+| `reverse`           | 100% → 0% every cycle                      |
+| `alternate`         | 0% → 100%, then 100% → 0% (back and forth) |
+| `alternate-reverse` | 100% → 0%, then 0% → 100%                  |
 
 ## Why is it useful?
 

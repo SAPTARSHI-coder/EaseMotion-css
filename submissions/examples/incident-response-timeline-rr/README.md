@@ -8,10 +8,10 @@ Provides a chronological timeline for displaying incidents, investigations, miti
 
 ```html
 <div class="event critical">
-    <div class="dot"></div>
-    <div class="content">
-        <h3>API Outage Detected</h3>
-    </div>
+  <div class="dot"></div>
+  <div class="content">
+    <h3>API Outage Detected</h3>
+  </div>
 </div>
 ```
 

@@ -22,15 +22,15 @@ Add `.skeleton` to any block element to give it the base placeholder style, then
 
 Available shape helpers:
 
-| Class | Description |
-|---|---|
-| `skeleton-image` | Full-width 160px image band |
-| `skeleton-avatar` | 40px circular avatar |
-| `skeleton-line` | Short text-line bar |
-| `skeleton-line--full` | 100% width |
-| `skeleton-line--wide` | 75% width |
-| `skeleton-line--medium` | 55% width |
-| `skeleton-line--narrow` | 35% width |
+| Class                   | Description                 |
+| ----------------------- | --------------------------- |
+| `skeleton-image`        | Full-width 160px image band |
+| `skeleton-avatar`       | 40px circular avatar        |
+| `skeleton-line`         | Short text-line bar         |
+| `skeleton-line--full`   | 100% width                  |
+| `skeleton-line--wide`   | 75% width                   |
+| `skeleton-line--medium` | 55% width                   |
+| `skeleton-line--narrow` | 35% width                   |
 
 ---
 

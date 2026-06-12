@@ -33,7 +33,7 @@ Scale feedback on hover is one of the most universally recognised interactive af
 
 This submission fits EaseMotion CSS's philosophy in three ways:
 
-- **One class, one behaviour** — each class does exactly one thing (grow *or* shrink), matching the framework's single-responsibility rule.
+- **One class, one behaviour** — each class does exactly one thing (grow _or_ shrink), matching the framework's single-responsibility rule.
 - **Token-driven** — timing and easing values are declared as CSS custom properties (`--zoom-speed`, `--zoom-easing`, `--zoom-easing-bounce`) so the maintainer can wire them up to `--ease-speed-medium` and `--ease-ease-bounce` trivially during integration.
 - **Accessible by default** — a `prefers-reduced-motion: reduce` block disables all transforms for users who have opted out of motion, matching `core/animations.css` behaviour exactly.
 

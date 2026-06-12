@@ -12,7 +12,7 @@ The chip component has `:hover`, `:focus-visible`, `:checked`, and `:disabled` s
 ```css
 .ease-chip:active {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
 ```
 

@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a fixed-position mobile bottom navigation bar with icon + label per item, active state highlighting, and safe-area-inset support for notched devices — pure CSS.
 
 2. **How is it used?**
+
    ```html
    <nav class="bottom-nav">
      <a href="#" class="bn-item bn-active">

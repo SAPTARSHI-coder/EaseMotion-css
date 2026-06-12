@@ -11,23 +11,25 @@ Identifies and resolves a mismatch between the smoke test assertion (`font-size:
 ### The bug — exact file locations
 
 **`tests/smoke.test.js` — line 91 (the failing assertion):**
+
 ```js
-it('should hide plain text in loading buttons and keep the spinner visible', () => {
-  expect(css).toContain('.ease-btn-loading');
-  expect(css).toContain('font-size: 0');        // ← WRONG — this string does not exist
-  expect(css).toContain('.ease-btn-loading > *');
-  expect(css).toContain('visibility: hidden');
-  expect(css).toContain('.ease-btn-loading::after');
-  expect(css).toContain('border: 2px solid currentColor');
+it("should hide plain text in loading buttons and keep the spinner visible", () => {
+  expect(css).toContain(".ease-btn-loading");
+  expect(css).toContain("font-size: 0"); // ← WRONG — this string does not exist
+  expect(css).toContain(".ease-btn-loading > *");
+  expect(css).toContain("visibility: hidden");
+  expect(css).toContain(".ease-btn-loading::after");
+  expect(css).toContain("border: 2px solid currentColor");
 });
 ```
 
 **`components/buttons.css` — lines 212–216 (the actual implementation):**
+
 ```css
 .ease-btn-loading {
   pointer-events: none;
   position: relative;
-  color: transparent !important;   /* ← text hidden via color, NOT font-size */
+  color: transparent !important; /* ← text hidden via color, NOT font-size */
 }
 ```
 
@@ -67,23 +69,23 @@ If `font-size: 0` was the original design intent:
 
 The smoke test suite is the project's first line of defence against regressions. A test that always fails (even when the component works correctly) erodes confidence in the entire test suite and forces contributors to ignore red test output.
 
-| | Before (bug) | After (fix) |
-|---|---|---|
-| Smoke test passes | ❌ Always fails | ✅ Passes |
-| Component behaviour | ✅ Correct | ✅ Unchanged |
+|                                   | Before (bug)                     | After (fix)  |
+| --------------------------------- | -------------------------------- | ------------ |
+| Smoke test passes                 | ❌ Always fails                  | ✅ Passes    |
+| Component behaviour               | ✅ Correct                       | ✅ Unchanged |
 | Accessibility (text in a11y tree) | ✅ `color: transparent` keeps it | ✅ Preserved |
-| Spinner sizing | ✅ `em`-relative, stable | ✅ Stable |
+| Spinner sizing                    | ✅ `em`-relative, stable         | ✅ Stable    |
 
 ---
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Live button demo (both approaches) + diff patches for maintainer |
+| File        | Purpose                                                                |
+| ----------- | ---------------------------------------------------------------------- |
+| `demo.html` | Live button demo (both approaches) + diff patches for maintainer       |
 | `style.css` | CSS implementing both `color: transparent` and `font-size: 0` variants |
-| `README.md` | This file |
+| `README.md` | This file                                                              |
 
 ---
 
-*Submitted by: dv · Issue: `.ease-btn-loading` test asserts `font-size: 0` but component uses `color: transparent`*
+_Submitted by: dv · Issue: `.ease-btn-loading` test asserts `font-size: 0` but component uses `color: transparent`_

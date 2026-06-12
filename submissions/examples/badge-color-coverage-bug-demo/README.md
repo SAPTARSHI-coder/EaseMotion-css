@@ -6,6 +6,7 @@
 ## Problem
 
 `.ease-badge` only has `primary` (default), `danger`, and `success` color variants. Missing:
+
 - `ease-badge-warning`
 - `ease-badge-info`
 - `ease-badge-secondary`
@@ -15,9 +16,15 @@
 Add the missing variant classes:
 
 ```css
-.ease-badge-warning { background-color: var(--ease-color-warning); }
-.ease-badge-info    { background-color: var(--ease-color-info); }
-.ease-badge-secondary { background-color: var(--ease-color-secondary); }
+.ease-badge-warning {
+  background-color: var(--ease-color-warning);
+}
+.ease-badge-info {
+  background-color: var(--ease-color-info);
+}
+.ease-badge-secondary {
+  background-color: var(--ease-color-secondary);
+}
 ```
 
 ## Demo

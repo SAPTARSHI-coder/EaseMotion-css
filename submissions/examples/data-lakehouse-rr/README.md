@@ -7,13 +7,9 @@ Visualizes a modern data lakehouse architecture where multiple data sources feed
 ## How is it used?
 
 ```html
-<div class="node lakehouse">
-    Data Lakehouse Platform
-</div>
+<div class="node lakehouse">Data Lakehouse Platform</div>
 
-<div class="node ml">
-    Machine Learning
-</div>
+<div class="node ml">Machine Learning</div>
 ```
 
 ## Why is it useful?

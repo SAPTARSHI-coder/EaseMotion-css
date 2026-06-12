@@ -1,6 +1,7 @@
 # Core Changes v1
 
 ## Overview
+
 Collection of bug-fix and enhancement submissions for EaseMotion CSS core components and tooling. This folder aggregates pull requests that address specific issues in the framework's core styles, components, and developer tooling.
 
 ## Contents
@@ -62,4 +63,5 @@ Collection of bug-fix and enhancement submissions for EaseMotion CSS core compon
 - **sticky-and-test-fix** — Sticky positioning + smoke test assertion
 
 ## Usage
+
 Each subdirectory contains a standalone fix. Refer to each folder's individual files for implementation details.

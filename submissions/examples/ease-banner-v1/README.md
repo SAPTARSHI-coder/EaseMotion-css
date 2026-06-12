@@ -1,14 +1,8 @@
 \# ease-banner
 
-
-
 Top-of-page banner/announcement component with slide-down entrance animation.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -28,11 +22,7 @@ Top-of-page banner/announcement component with slide-down entrance animation.
 
 | `ease-banner-close` | Close button for dismissible banner |
 
-
-
 \## Features
-
-
 
 \- 🎯 Slide-down entrance animation
 
@@ -42,43 +32,39 @@ Top-of-page banner/announcement component with slide-down entrance animation.
 
 \- 📱 Responsive design
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic banner -->
 
 <div class="ease-banner">
+  &#x20;
+  <div class="ease-banner-content">
+    &#x20; <span>🎉</span>
 
-&#x20;   <div class="ease-banner-content">
+    &#x20;
+    <p>Your message here</p>
 
-&#x20;       <span>🎉</span>
-
-&#x20;       <p>Your message here</p>
-
-&#x20;   </div>
-
+    &#x20;
+  </div>
 </div>
-
-
 
 <!-- Dismissible banner -->
 
 <div class="ease-banner ease-banner-info">
+  &#x20;
+  <div class="ease-banner-content">
+    &#x20; <span>ℹ️</span>
 
-&#x20;   <div class="ease-banner-content">
+    &#x20;
+    <p>Info message</p>
 
-&#x20;       <span>ℹ️</span>
+    &#x20;
+  </div>
 
-&#x20;       <p>Info message</p>
-
-&#x20;   </div>
-
-&#x20;   <button class="ease-banner-close" onclick="this.parentElement.remove()">✕</button>
-
+  &#x20;
+  <button class="ease-banner-close" onclick="this.parentElement.remove()">
+    ✕
+  </button>
 </div>
-
+```

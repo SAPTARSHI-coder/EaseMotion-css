@@ -12,10 +12,9 @@ Example:
 
 ```html
 <div class="timeline">
-    <div class="timeline-item">
-        <div class="marker"></div>
-        <div class="content">
-            Content
-        </div>
-    </div>
+  <div class="timeline-item">
+    <div class="marker"></div>
+    <div class="content">Content</div>
+  </div>
 </div>
+```

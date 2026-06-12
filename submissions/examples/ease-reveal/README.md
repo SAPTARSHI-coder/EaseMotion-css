@@ -4,28 +4,28 @@ Elements reveal with animation when they enter the viewport — scroll-triggered
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description      |
+| --------------------------- | ---------------- |
 | 📄 [demo.html](./demo.html) | Interactive demo |
-| 🎨 [style.css](./style.css) | Reveal styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Reveal styles    |
+| 📖 [README.md](./README.md) | Documentation    |
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
-| `ease-reveal` | Slide up from bottom |
-| `ease-reveal-left` | Slide in from left |
-| `ease-reveal-right` | Slide in from right |
-| `ease-reveal-up` | Slide up from bottom |
-| `ease-reveal-down` | Slide down from top |
-| `ease-reveal-fade` | Fade only |
-| `ease-reveal-zoom` | Zoom in |
-| `ease-reveal-flip` | 3D flip |
-| `ease-reveal-blur` | Blur to clear |
-| `ease-reveal-delay-1` | With 0.1s delay |
-| `ease-reveal-delay-2` | With 0.2s delay |
-| `ease-reveal-delay-3` | With 0.3s delay |
+| Class                 | Effect               |
+| --------------------- | -------------------- |
+| `ease-reveal`         | Slide up from bottom |
+| `ease-reveal-left`    | Slide in from left   |
+| `ease-reveal-right`   | Slide in from right  |
+| `ease-reveal-up`      | Slide up from bottom |
+| `ease-reveal-down`    | Slide down from top  |
+| `ease-reveal-fade`    | Fade only            |
+| `ease-reveal-zoom`    | Zoom in              |
+| `ease-reveal-flip`    | 3D flip              |
+| `ease-reveal-blur`    | Blur to clear        |
+| `ease-reveal-delay-1` | With 0.1s delay      |
+| `ease-reveal-delay-2` | With 0.2s delay      |
+| `ease-reveal-delay-3` | With 0.3s delay      |
 
 ## Usage
 
@@ -42,4 +42,5 @@ Elements reveal with animation when they enter the viewport — scroll-triggered
 <div class="ease-reveal-flip">3D flip reveal</div>
 
 <!-- With delay -->
-<div class="ease-reveal-delay-1">Reveals after delay</div> 
+<div class="ease-reveal-delay-1">Reveals after delay</div>
+```

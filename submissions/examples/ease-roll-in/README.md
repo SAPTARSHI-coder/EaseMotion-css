@@ -12,11 +12,10 @@
 
 ## Motion Details
 
-| Class | Behavior |
-|---|---|
-| `.ease-roll-in` | Starts at `translateX(-100%) rotate(-120deg)` and eases to rest. |
-| `.ease-roll-in-right` | Starts at `translateX(100%) rotate(120deg)` and eases to rest. |
-| `.ease-roll-out` | Exits toward `translateX(100%) rotate(120deg)` while fading out. |
+| Class                 | Behavior                                                         |
+| --------------------- | ---------------------------------------------------------------- |
+| `.ease-roll-in`       | Starts at `translateX(-100%) rotate(-120deg)` and eases to rest. |
+| `.ease-roll-in-right` | Starts at `translateX(100%) rotate(120deg)` and eases to rest.   |
+| `.ease-roll-out`      | Exits toward `translateX(100%) rotate(120deg)` while fading out. |
 
 The rotation is tuned to feel linked with the travel distance, and the easing uses a soft ease-out curve. Reduced-motion users get a near-instant fade.
-

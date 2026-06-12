@@ -1,16 +1,19 @@
 # Theme Toggle Fix — EaseMotion CSS Submission
 
 ## 1. What does this do?
+
 Fixes the visual glitch/flash when switching themes by suppressing competing CSS transitions during the View Transitions API circular sweep reveal.
 
 ## 2. How is it used?
 
 **HTML — toggle button:**
+
 ```html
 <button id="themeToggle">🌙</button>
 ```
 
 **JS — fixed toggle function:**
+
 ```js
 function toggleTheme() {
   const current = document.documentElement.getAttribute("data-theme");
@@ -29,7 +32,6 @@ function toggleTheme() {
     transition.finished.then(() => {
       document.documentElement.removeAttribute("data-transitioning");
     });
-
   } else {
     // Fallback for unsupported browsers
     document.documentElement.setAttribute("data-theme", next);
@@ -39,6 +41,7 @@ function toggleTheme() {
 ```
 
 **CSS — suppress transitions during sweep:**
+
 ```css
 :root[data-transitioning] *,
 :root[data-transitioning] *::before,

@@ -8,7 +8,7 @@ Displays the flow of a request through multiple security layers, from external t
 
 ```html
 <div class="step firewall">
-    <h3>Firewall</h3>
+  <h3>Firewall</h3>
 </div>
 ```
 

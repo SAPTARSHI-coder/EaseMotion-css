@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a styled list group component with variants including active item (`list-item-active`), disabled item (`list-item-disabled`), badge support (`.list-badge`), flush (borderless), bordered, and 4 color variants (primary, success, warning, error) — all pure CSS.
 
 2. **How is it used?**
+
    ```html
    <ul class="list-group">
      <li class="list-item list-item-active">Dashboard</li>

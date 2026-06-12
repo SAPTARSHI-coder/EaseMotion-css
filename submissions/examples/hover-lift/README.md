@@ -10,11 +10,11 @@ Lift effect on hover with translateY(-4px) and shadow. A simpler variant of ease
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-lift` | Default lift with shadow |
-| `ease-hover-lift-sm` | Subtle lift |
-| `ease-hover-lift-lg` | Strong lift |
+| Class                | Description              |
+| -------------------- | ------------------------ |
+| `ease-hover-lift`    | Default lift with shadow |
+| `ease-hover-lift-sm` | Subtle lift              |
+| `ease-hover-lift-lg` | Strong lift              |
 
 ## Notes
 

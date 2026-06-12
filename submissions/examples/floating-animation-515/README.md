@@ -7,9 +7,7 @@ Creates a smooth floating effect by moving an element vertically in a continuous
 ## 2. How is it used?
 
 ```html
-<div class="floating-element">
-    Floating Content
-</div>
+<div class="floating-element">Floating Content</div>
 ```
 
 ## 3. Why is it useful?

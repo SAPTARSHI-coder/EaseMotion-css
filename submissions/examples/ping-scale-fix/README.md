@@ -24,19 +24,23 @@ Replace the hardcoded `scale(2)` with `scale(var(--ease-ping-scale, 2))`
 so developers can tune it per element without any keyframe override.
 
 **Before (buggy):**
+
 ```css
 @keyframes ease-kf-ping {
-  75%, 100% {
-    transform: scale(2);   /* hardcoded */
+  75%,
+  100% {
+    transform: scale(2); /* hardcoded */
     opacity: 0;
   }
 }
 ```
 
 **After (fixed):**
+
 ```css
 @keyframes ease-kf-ping {
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(var(--ease-ping-scale, 2)); /* customizable */
     opacity: 0;
   }
@@ -65,12 +69,12 @@ so developers can tune it per element without any keyframe override.
 
 ## Scale guide
 
-| Value | Best for |
-|---|---|
+| Value       | Best for                               |
+| ----------- | -------------------------------------- |
 | `1.2 – 1.5` | Large elements (badges, buttons 40px+) |
-| `1.6 – 2.0` | Medium elements (default, avatars) |
-| `2.0 – 2.5` | Small elements (10–16px dots) |
-| `2.5 – 3.0` | Tiny elements (6–8px indicators) |
+| `1.6 – 2.0` | Medium elements (default, avatars)     |
+| `2.0 – 2.5` | Small elements (10–16px dots)          |
+| `2.5 – 3.0` | Tiny elements (6–8px indicators)       |
 
 ---
 

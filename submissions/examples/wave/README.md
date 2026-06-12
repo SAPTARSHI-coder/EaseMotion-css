@@ -10,10 +10,10 @@ Waving/hand-gesture animation with translateX and rotate. Slows down on hover fo
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-wave` | Default wave animation |
-| `ease-wave:hover` | Slows down on hover |
+| Class             | Description            |
+| ----------------- | ---------------------- |
+| `ease-wave`       | Default wave animation |
+| `ease-wave:hover` | Slows down on hover    |
 
 ## Notes
 

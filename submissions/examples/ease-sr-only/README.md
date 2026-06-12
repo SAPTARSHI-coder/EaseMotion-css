@@ -21,6 +21,7 @@ is inconsistent and completely undiscoverable for new users.
 Add three utility classes to `core/utilities.css`:
 
 ### 1. ease-sr-only
+
 Visually hides an element but keeps it readable by screen readers.
 
 ```css
@@ -38,6 +39,7 @@ Visually hides an element but keeps it readable by screen readers.
 ```
 
 ### 2. ease-sr-only-focusable
+
 Hidden by default but revealed on keyboard focus — used for skip links.
 
 ```css
@@ -59,6 +61,7 @@ Hidden by default but revealed on keyboard focus — used for skip links.
 ```
 
 ### 3. ease-not-sr-only
+
 Reverses ease-sr-only — makes element visible again.
 
 ```css
@@ -97,7 +100,9 @@ Reverses ease-sr-only — makes element visible again.
 <!-- Toggle visibility with JS -->
 <div class="ease-sr-only" id="msg">Now visible!</div>
 <script>
-  document.getElementById('msg').classList.replace('ease-sr-only', 'ease-not-sr-only');
+  document
+    .getElementById("msg")
+    .classList.replace("ease-sr-only", "ease-not-sr-only");
 </script>
 ```
 

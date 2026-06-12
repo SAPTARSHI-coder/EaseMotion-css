@@ -23,13 +23,13 @@ Modifier classes applied via JS:
 
 ```js
 // expand on hover over interactive elements
-el.addEventListener('mouseenter', () => orb.classList.add('orb--expand'));
+el.addEventListener("mouseenter", () => orb.classList.add("orb--expand"));
 
 // press effect
-document.addEventListener('mousedown', () => orb.classList.add('orb--click'));
+document.addEventListener("mousedown", () => orb.classList.add("orb--click"));
 
 // double-click burst
-document.addEventListener('dblclick', e => spawnBurst(e.clientX, e.clientY));
+document.addEventListener("dblclick", (e) => spawnBurst(e.clientX, e.clientY));
 ```
 
 ---
@@ -52,12 +52,12 @@ Class name reads like English: `cursor-orb` — instantly obvious.
 
 ## Proposed class names (maintainer decides)
 
-| Raw name       | Proposed ease-* name    |
-|----------------|-------------------------|
-| `cursor-orb`   | `ease-cursor-orb`       |
-| `orb`          | `ease-orb`              |
-| `orb-dot`      | `ease-orb-dot`          |
-| `orb-particle` | `ease-orb-particle`     |
-| `orb--expand`  | `ease-orb-expand`       |
-| `orb--click`   | `ease-orb-click`        |
-| `orb--burst`   | `ease-orb-burst`        |
+| Raw name       | Proposed ease-\* name |
+| -------------- | --------------------- |
+| `cursor-orb`   | `ease-cursor-orb`     |
+| `orb`          | `ease-orb`            |
+| `orb-dot`      | `ease-orb-dot`        |
+| `orb-particle` | `ease-orb-particle`   |
+| `orb--expand`  | `ease-orb-expand`     |
+| `orb--click`   | `ease-orb-click`      |
+| `orb--burst`   | `ease-orb-burst`      |

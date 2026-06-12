@@ -41,8 +41,16 @@ The Tabs Component is designed to be lightweight, accessible, and easy to integr
 ```html
 <div class="ease-tabs ease-tabs-underline">
   <div class="ease-tab-list" role="tablist">
-    <button class="ease-tab-btn active" role="tab" onclick="switchTab(this, 'tab-1')">Tab 1</button>
-    <button class="ease-tab-btn" role="tab" onclick="switchTab(this, 'tab-2')">Tab 2</button>
+    <button
+      class="ease-tab-btn active"
+      role="tab"
+      onclick="switchTab(this, 'tab-1')"
+    >
+      Tab 1
+    </button>
+    <button class="ease-tab-btn" role="tab" onclick="switchTab(this, 'tab-2')">
+      Tab 2
+    </button>
   </div>
   <div id="tab-1" class="ease-tab-content active" role="tabpanel">
     <p>Content for Tab 1</p>
@@ -57,17 +65,17 @@ The Tabs Component is designed to be lightweight, accessible, and easy to integr
 
 ```javascript
 function switchTab(clickedBtn, targetId) {
-  const tabsContainer = clickedBtn.closest('.ease-tabs');
-  
+  const tabsContainer = clickedBtn.closest(".ease-tabs");
+
   // Update buttons
-  const buttons = tabsContainer.querySelectorAll('.ease-tab-btn');
-  buttons.forEach(btn => btn.classList.remove('active'));
-  clickedBtn.classList.add('active');
-  
+  const buttons = tabsContainer.querySelectorAll(".ease-tab-btn");
+  buttons.forEach((btn) => btn.classList.remove("active"));
+  clickedBtn.classList.add("active");
+
   // Update content
-  const contents = tabsContainer.querySelectorAll('.ease-tab-content');
-  contents.forEach(content => content.classList.remove('active'));
-  document.getElementById(targetId).classList.add('active');
+  const contents = tabsContainer.querySelectorAll(".ease-tab-content");
+  contents.forEach((content) => content.classList.remove("active"));
+  document.getElementById(targetId).classList.add("active");
 }
 ```
 

@@ -6,21 +6,21 @@ Provides reusable loading-state components using pure CSS.
 
 Includes:
 
-* Loading spinners
-* Skeleton text placeholders
-* Skeleton avatars
-* Skeleton cards
+- Loading spinners
+- Skeleton text placeholders
+- Skeleton avatars
+- Skeleton cards
 
 ## Features
 
-* Pure CSS
-* No JavaScript
-* Lightweight
-* Responsive
-* Multiple spinner sizes
-* Multiple spinner color variants
-* Skeleton shimmer animation
-* Reduced motion support
+- Pure CSS
+- No JavaScript
+- Lightweight
+- Responsive
+- Multiple spinner sizes
+- Multiple spinner color variants
+- Skeleton shimmer animation
+- Reduced motion support
 
 ## Usage
 
@@ -55,23 +55,23 @@ Includes:
 
 ### Spinner
 
-* ease-spinner
-* ease-spinner-sm
-* ease-spinner-lg
-* ease-spinner-primary
-* ease-spinner-success
-* ease-spinner-danger
+- ease-spinner
+- ease-spinner-sm
+- ease-spinner-lg
+- ease-spinner-primary
+- ease-spinner-success
+- ease-spinner-danger
 
 ### Skeleton
 
-* ease-skeleton
-* ease-skeleton-text
-* ease-skeleton-avatar
-* ease-skeleton-card
+- ease-skeleton
+- ease-skeleton-text
+- ease-skeleton-avatar
+- ease-skeleton-card
 
 ## Browser Support
 
-* Chrome ✅
-* Firefox ✅
-* Edge ✅
-* Safari ✅
+- Chrome ✅
+- Firefox ✅
+- Edge ✅
+- Safari ✅

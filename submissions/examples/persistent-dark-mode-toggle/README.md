@@ -9,10 +9,10 @@ Adds a visually polished dark mode toggle that persists the user's theme prefere
 Include the theme-locking script in your `<head>` to prevent unstyled flashes:
 
 ```javascript
-(function() {
-  const theme = localStorage.getItem('theme') || 'light';
-  if (theme === 'dark') {
-    document.documentElement.classList.add('dark');
+(function () {
+  const theme = localStorage.getItem("theme") || "light";
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
   }
 })();
 ```

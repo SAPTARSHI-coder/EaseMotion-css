@@ -5,6 +5,7 @@ Creates a fun, physical reaction where an element compresses downwards (gets sho
 
 **How is it used?**
 Apply the class to an interactive element like a button:
+
 ```html
 <button class="squish-button">Click Me!</button>
 ```

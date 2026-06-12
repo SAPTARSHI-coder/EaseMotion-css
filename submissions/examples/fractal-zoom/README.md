@@ -9,17 +9,11 @@ Adds reusable fractal zoom animations that create the illusion of continuously z
 ## How is it used?
 
 ```html
-<div class="ease-fractal-zoom-mt">
-    Content
-</div>
+<div class="ease-fractal-zoom-mt">Content</div>
 
-<div class="ease-fractal-zoom-soft-mt">
-    Content
-</div>
+<div class="ease-fractal-zoom-soft-mt">Content</div>
 
-<div class="ease-fractal-zoom-fast-mt">
-    Content
-</div>
+<div class="ease-fractal-zoom-fast-mt">Content</div>
 ```
 
 ---

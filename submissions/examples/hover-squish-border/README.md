@@ -10,11 +10,11 @@ Squish border-radius animation on hover. The element's border-radius expands the
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-squish-border` | Default squish hover |
-| `ease-squish-fast` | Fast animation (0.2s) |
-| `ease-squish-slow` | Slow animation (0.7s) |
+| Class                      | Description           |
+| -------------------------- | --------------------- |
+| `ease-hover-squish-border` | Default squish hover  |
+| `ease-squish-fast`         | Fast animation (0.2s) |
+| `ease-squish-slow`         | Slow animation (0.7s) |
 
 ## Notes
 

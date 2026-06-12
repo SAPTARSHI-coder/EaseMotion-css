@@ -5,6 +5,7 @@ A pagination component with hover animations, active and disabled states,
 rounded variant, and color themes.
 
 **How is it used?**
+
 <ul class="ease-pagination">
   <li class="ease-page-item ease-page-disabled">
     <a class="ease-page-link">← Prev</a>

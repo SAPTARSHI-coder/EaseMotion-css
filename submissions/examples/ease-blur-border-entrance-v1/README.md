@@ -7,9 +7,7 @@ Adds an entrance animation with a soft blurred border glow effect.
 ## How is it used?
 
 ```html
-<div class="blur-border-entrance">
-  Content
-</div>
+<div class="blur-border-entrance">Content</div>
 ```
 
 ## Why is it useful?

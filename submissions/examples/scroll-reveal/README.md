@@ -29,17 +29,17 @@ Add this JS snippet once to your page:
 
 ## Class Reference
 
-| Class | Description |
-|---|---|
-| ease-reveal | Fade up on scroll (default) |
-| ease-reveal-left | Slide in from left |
-| ease-reveal-right | Slide in from right |
-| ease-reveal-zoom | Zoom in on scroll |
-| ease-reveal-delay-100 | 100ms transition delay |
-| ease-reveal-delay-200 | 200ms transition delay |
-| ease-reveal-delay-300 | 300ms transition delay |
-| ease-reveal-delay-400 | 400ms transition delay |
-| ease-reveal-delay-500 | 500ms transition delay |
+| Class                 | Description                 |
+| --------------------- | --------------------------- |
+| ease-reveal           | Fade up on scroll (default) |
+| ease-reveal-left      | Slide in from left          |
+| ease-reveal-right     | Slide in from right         |
+| ease-reveal-zoom      | Zoom in on scroll           |
+| ease-reveal-delay-100 | 100ms transition delay      |
+| ease-reveal-delay-200 | 200ms transition delay      |
+| ease-reveal-delay-300 | 300ms transition delay      |
+| ease-reveal-delay-400 | 400ms transition delay      |
+| ease-reveal-delay-500 | 500ms transition delay      |
 
 ## Staggered example
 
@@ -49,17 +49,17 @@ Add this JS snippet once to your page:
 
 ## CSS Variables used
 
-| Token | Role |
-|---|---|
+| Token             | Role                |
+| ----------------- | ------------------- |
 | --ease-speed-slow | Transition duration |
-| --ease-ease-out | Easing curve |
+| --ease-ease-out   | Easing curve        |
 
 ## Browser support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| IntersectionObserver | yes | yes | yes | yes |
-| CSS transitions | yes | yes | yes | yes |
-| CSS custom properties | yes | yes | yes | yes |
+| Feature               | Chrome | Edge | Firefox | Safari |
+| --------------------- | ------ | ---- | ------- | ------ |
+| IntersectionObserver  | yes    | yes  | yes     | yes    |
+| CSS transitions       | yes    | yes  | yes     | yes    |
+| CSS custom properties | yes    | yes  | yes     | yes    |
 
 Submitted under MIT License · EaseMotion CSS · 2026

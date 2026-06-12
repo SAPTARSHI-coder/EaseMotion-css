@@ -11,3 +11,4 @@ A component package delivering hardware-accelerated magnetic micro-interactions 
     <span class="ease-btn-glow"></span>
   </button>
 </div>
+```

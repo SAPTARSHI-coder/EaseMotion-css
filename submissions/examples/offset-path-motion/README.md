@@ -14,8 +14,12 @@ Animates elements along custom geometric paths using `offset-path` — circles, 
 }
 
 @keyframes move-along {
-  0%   { offset-distance: 0%; }
-  100% { offset-distance: 100%; }
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
 }
 ```
 

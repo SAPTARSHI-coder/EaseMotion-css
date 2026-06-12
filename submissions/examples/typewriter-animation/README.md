@@ -10,11 +10,11 @@ Text inside a specially-prepared element animates as if it's being typed in real
 
 Three ready-to-use examples are included:
 
-| Example | Description |
-|---------|-------------|
-| **Hero heading** | Large display text that types in once on page load, with a staggered subtitle fade |
-| **Code snippet** | Four lines of code that type in sequence, one after another |
-| **Terminal prompt** | A looping command-line that types, pauses, erases, and repeats |
+| Example             | Description                                                                        |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| **Hero heading**    | Large display text that types in once on page load, with a staggered subtitle fade |
+| **Code snippet**    | Four lines of code that type in sequence, one after another                        |
+| **Terminal prompt** | A looping command-line that types, pauses, erases, and repeats                     |
 
 ---
 
@@ -26,7 +26,7 @@ Add `overflow: hidden; white-space: nowrap` to an element, then animate its `wid
 
 ```css
 .my-text {
-  --chars: 14;                /* "Hello, world!" = 13 chars + 1 for safety */
+  --chars: 14; /* "Hello, world!" = 13 chars + 1 for safety */
 
   display: inline-block;
   overflow: hidden;
@@ -34,7 +34,7 @@ Add `overflow: hidden; white-space: nowrap` to an element, then animate its `wid
   border-right: 2px solid currentColor; /* the cursor */
 
   animation:
-    type-in      calc(var(--chars) * 60ms) steps(var(--chars)) forwards,
+    type-in calc(var(--chars) * 60ms) steps(var(--chars)) forwards,
     cursor-blink 700ms steps(1) infinite;
 }
 ```
@@ -49,13 +49,22 @@ Each line gets its own `animation-delay`. The delay for line N is roughly the su
 
 ```css
 /* Line 1: 20 chars, starts immediately */
-.line-1 { --chars: 20; animation-delay: 0s; }
+.line-1 {
+  --chars: 20;
+  animation-delay: 0s;
+}
 
 /* Line 2: 25 chars, starts after line 1 finishes */
-.line-2 { --chars: 25; animation-delay: calc(20 * 60ms); }
+.line-2 {
+  --chars: 25;
+  animation-delay: calc(20 * 60ms);
+}
 
 /* Line 3: starts after both previous lines */
-.line-3 { --chars: 10; animation-delay: calc(45 * 60ms); }
+.line-3 {
+  --chars: 10;
+  animation-delay: calc(45 * 60ms);
+}
 ```
 
 ### Looping (type + erase)
@@ -67,7 +76,7 @@ Swap `type-in` for `type-in-then-delete` and set `infinite`:
   --chars: 18;
   animation:
     type-in-then-delete 5s steps(var(--chars)) infinite,
-    cursor-blink        700ms steps(1) infinite;
+    cursor-blink 700ms steps(1) infinite;
 }
 ```
 

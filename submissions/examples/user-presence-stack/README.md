@@ -8,7 +8,7 @@ Creates a stack of overlapping user avatars with hover animations.
 
 ```html
 <div class="presence-stack">
-    <img src="avatar.jpg" alt="User">
+  <img src="avatar.jpg" alt="User" />
 </div>
 ```
 

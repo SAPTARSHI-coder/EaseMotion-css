@@ -10,8 +10,8 @@ Shimmer sweep overlay animation using a translucent gradient with sweeping backg
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                | Description                     |
+| -------------------- | ------------------------------- |
 | `ease-shimmer-sweep` | Default shimmer sweep (3s loop) |
 
 ## Notes

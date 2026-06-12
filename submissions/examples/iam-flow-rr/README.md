@@ -7,13 +7,9 @@ Visualizes the authentication and authorization process from user login through 
 ## How is it used?
 
 ```html
-<div class="stage sso">
-    Single Sign-On (SSO)
-</div>
+<div class="stage sso">Single Sign-On (SSO)</div>
 
-<div class="stage token">
-    Access Token (JWT)
-</div>
+<div class="stage token">Access Token (JWT)</div>
 ```
 
 ## Why is it useful?

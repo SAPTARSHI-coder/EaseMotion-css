@@ -24,7 +24,9 @@ vanilla JS.
     </div>
     <div class="dz-text">
       <p class="dz-title">Drop files here to upload</p>
-      <p class="dz-sub">or <label for="fileInput" class="dz-browse">browse files</label></p>
+      <p class="dz-sub">
+        or <label for="fileInput" class="dz-browse">browse files</label>
+      </p>
     </div>
     <div class="dz-meta">
       <span class="dz-chip">PNG</span>
@@ -44,7 +46,10 @@ vanilla JS.
         <span class="file-size">2.4 MB</span>
       </div>
       <div class="file-progress-wrap">
-        <div class="file-progress-bar file-progress-bar--done" style="width:100%"></div>
+        <div
+          class="file-progress-bar file-progress-bar--done"
+          style="width:100%"
+        ></div>
       </div>
       <span class="file-status file-status--done">Complete</span>
     </div>
@@ -76,29 +81,30 @@ from the framework:
 - All states: empty, drag-over, uploading, complete, error
 
 Zero external libraries — pure CSS transitions + vanilla JS drag events
-+ `requestAnimationFrame` entrance for new file items.
-`prefers-reduced-motion` strips all animations.
+
+- `requestAnimationFrame` entrance for new file items.
+  `prefers-reduced-motion` strips all animations.
 
 ---
 
 ## Proposed class names (maintainer decides final naming)
 
-| Raw name                    | Proposed ease-* name                |
-|-----------------------------|-------------------------------------|
-| `dropzone`                  | `ease-dropzone`                     |
-| `dropzone--dragover`        | `ease-dropzone-dragover`            |
-| `dropzone--compact`         | `ease-dropzone-compact`             |
-| `dz-icon-wrap`              | `ease-dz-icon`                      |
-| `dz-icon-ring`              | `ease-dz-ring`                      |
-| `dz-icon-body`              | `ease-dz-icon-body`                 |
-| `dz-browse`                 | `ease-dz-browse`                    |
-| `dz-chip`                   | `ease-dz-chip`                      |
-| `file-list`                 | `ease-file-list`                    |
-| `file-item`                 | `ease-file-item`                    |
-| `file-item--done`           | `ease-file-item-done`               |
-| `file-item--uploading`      | `ease-file-item-uploading`          |
-| `file-item--error`          | `ease-file-item-error`              |
-| `file-progress-bar--active` | `ease-file-progress-active`         |
-| `file-progress-bar--done`   | `ease-file-progress-done`           |
-| `file-progress-bar--error`  | `ease-file-progress-error`          |
-| `file-remove`               | `ease-file-remove`                  |
+| Raw name                    | Proposed ease-\* name       |
+| --------------------------- | --------------------------- |
+| `dropzone`                  | `ease-dropzone`             |
+| `dropzone--dragover`        | `ease-dropzone-dragover`    |
+| `dropzone--compact`         | `ease-dropzone-compact`     |
+| `dz-icon-wrap`              | `ease-dz-icon`              |
+| `dz-icon-ring`              | `ease-dz-ring`              |
+| `dz-icon-body`              | `ease-dz-icon-body`         |
+| `dz-browse`                 | `ease-dz-browse`            |
+| `dz-chip`                   | `ease-dz-chip`              |
+| `file-list`                 | `ease-file-list`            |
+| `file-item`                 | `ease-file-item`            |
+| `file-item--done`           | `ease-file-item-done`       |
+| `file-item--uploading`      | `ease-file-item-uploading`  |
+| `file-item--error`          | `ease-file-item-error`      |
+| `file-progress-bar--active` | `ease-file-progress-active` |
+| `file-progress-bar--done`   | `ease-file-progress-done`   |
+| `file-progress-bar--error`  | `ease-file-progress-error`  |
+| `file-remove`               | `ease-file-remove`          |

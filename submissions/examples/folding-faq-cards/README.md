@@ -15,15 +15,9 @@ A FAQ component that reveals answers using a smooth unfolding animation. The car
 
 ```html
 <div class="faq-card">
+  <div class="faq-title">Question</div>
 
-    <div class="faq-title">
-        Question
-    </div>
-
-    <div class="faq-content">
-        Answer
-    </div>
-
+  <div class="faq-content">Answer</div>
 </div>
 ```
 

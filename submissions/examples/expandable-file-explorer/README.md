@@ -17,10 +17,10 @@ A file explorer component inspired by modern code editors such as VS Code. Folde
 
 ```html
 <details>
-    <summary>📁 Components</summary>
+  <summary>📁 Components</summary>
 
-    <div class="file">📄 buttons.css</div>
-    <div class="file">📄 cards.css</div>
+  <div class="file">📄 buttons.css</div>
+  <div class="file">📄 cards.css</div>
 </details>
 ```
 

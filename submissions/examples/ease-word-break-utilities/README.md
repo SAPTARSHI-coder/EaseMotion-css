@@ -18,17 +18,11 @@ A collection of lightweight CSS utilities for controlling word wrapping and text
 ## Usage
 
 ```html
-<p class="ease-break-word">
-  Long text here
-</p>
+<p class="ease-break-word">Long text here</p>
 
-<p class="ease-break-all">
-  Long text here
-</p>
+<p class="ease-break-all">Long text here</p>
 
-<p class="ease-break-keep">
-  Long text here
-</p>
+<p class="ease-break-keep">Long text here</p>
 ```
 
 ## Utility Details

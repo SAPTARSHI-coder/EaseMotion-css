@@ -21,7 +21,7 @@
  */
 
 (function () {
-  'use strict';
+  "use strict";
 
   // Bail out if View Transitions API not supported
   if (!document.startViewTransition) return;
@@ -29,15 +29,15 @@
   // Get transition style from meta tag
   function getTransitionStyle() {
     const meta = document.querySelector('meta[name="view-transition"]');
-    return meta?.content || 'fade';
+    return meta?.content || "fade";
   }
 
   // Inject CSS for transitions
   function injectStyles() {
-    if (document.getElementById('vt-styles')) return;
+    if (document.getElementById("vt-styles")) return;
 
-    const style = document.createElement('style');
-    style.id = 'vt-styles';
+    const style = document.createElement("style");
+    style.id = "vt-styles";
     style.textContent = `
       /* ── Base: instant by default ── */
       ::view-transition-old(root),
@@ -127,27 +127,28 @@
   }
 
   // Track last click position for circular reveal
-  let clickX = 50, clickY = 50;
+  let clickX = 50,
+    clickY = 50;
 
-  document.addEventListener('click', (e) => {
-    clickX = (e.clientX / window.innerWidth * 100).toFixed(1);
-    clickY = (e.clientY / window.innerHeight * 100).toFixed(1);
+  document.addEventListener("click", (e) => {
+    clickX = ((e.clientX / window.innerWidth) * 100).toFixed(1);
+    clickY = ((e.clientY / window.innerHeight) * 100).toFixed(1);
   });
 
   // Navigate with transition
   async function navigate(url, style) {
     // Set CSS vars for reveal origin
-    document.documentElement.style.setProperty('--vt-x', `${clickX}%`);
-    document.documentElement.style.setProperty('--vt-y', `${clickY}%`);
+    document.documentElement.style.setProperty("--vt-x", `${clickX}%`);
+    document.documentElement.style.setProperty("--vt-y", `${clickY}%`);
 
     // Set transition style attribute
-    document.documentElement.setAttribute('data-vt', style);
+    document.documentElement.setAttribute("data-vt", style);
 
     await document.startViewTransition(async () => {
       const res = await fetch(url);
       const html = await res.text();
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
+      const doc = parser.parseFromString(html, "text/html");
 
       // Swap body content
       document.body.innerHTML = doc.body.innerHTML;
@@ -160,40 +161,40 @@
       let vtMeta = document.querySelector('meta[name="view-transition"]');
       if (newVtMeta) {
         if (!vtMeta) {
-          vtMeta = document.createElement('meta');
-          vtMeta.name = 'view-transition';
+          vtMeta = document.createElement("meta");
+          vtMeta.name = "view-transition";
           document.head.appendChild(vtMeta);
         }
         vtMeta.content = newVtMeta.content;
       }
 
       // Update URL
-      history.pushState({}, '', url);
+      history.pushState({}, "", url);
 
       // Re-init any scripts
-      window.dispatchEvent(new Event('vt:navigated'));
-
+      window.dispatchEvent(new Event("vt:navigated"));
     }).finished;
   }
 
   // Intercept anchor clicks
   function handleClick(e) {
-    const anchor = e.target.closest('a[href]');
+    const anchor = e.target.closest("a[href]");
     if (!anchor) return;
 
-    const href = anchor.getAttribute('href');
+    const href = anchor.getAttribute("href");
     if (!href) return;
 
     // Skip: external, hash-only, mailto, tel, download
     if (
-      href.startsWith('http') ||
-      href.startsWith('//') ||
-      href.startsWith('#') ||
-      href.startsWith('mailto:') ||
-      href.startsWith('tel:') ||
-      anchor.hasAttribute('download') ||
-      anchor.target === '_blank'
-    ) return;
+      href.startsWith("http") ||
+      href.startsWith("//") ||
+      href.startsWith("#") ||
+      href.startsWith("mailto:") ||
+      href.startsWith("tel:") ||
+      anchor.hasAttribute("download") ||
+      anchor.target === "_blank"
+    )
+      return;
 
     // Skip if modifier key held
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -208,7 +209,7 @@
   }
 
   // Handle browser back/forward
-  window.addEventListener('popstate', () => {
+  window.addEventListener("popstate", () => {
     const style = getTransitionStyle();
     navigate(location.href, style).catch(() => {
       window.location.reload();
@@ -217,10 +218,10 @@
 
   // Init
   injectStyles();
-  document.addEventListener('click', handleClick);
+  document.addEventListener("click", handleClick);
 
   // Re-attach after transitions
-  window.addEventListener('vt:navigated', () => {
+  window.addEventListener("vt:navigated", () => {
     injectStyles();
   });
 
@@ -229,5 +230,4 @@
     navigate,
     getStyle: getTransitionStyle,
   };
-
 })();

@@ -8,7 +8,7 @@ Provides a centralized interface for managing feature flags, monitoring rollout 
 
 ```html
 <div class="flag-card enabled">
-    <h3>New Checkout Flow</h3>
+  <h3>New Checkout Flow</h3>
 </div>
 ```
 

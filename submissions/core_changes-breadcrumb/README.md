@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a pure CSS breadcrumb navigation trail using an `<ol>` list with multiple separator styles (slash, chevron, arrow, bullet), three size variants (sm, base, lg), and custom separator support via `--breadcrumb-separator` — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <!-- Default (slash separator) -->
    <nav aria-label="breadcrumb" class="breadcrumb">
@@ -15,7 +16,9 @@
 
    <!-- Chevron variant -->
    <nav class="breadcrumb breadcrumb-chevron">
-     <ol>...</ol>
+     <ol>
+       ...
+     </ol>
    </nav>
    ```
 

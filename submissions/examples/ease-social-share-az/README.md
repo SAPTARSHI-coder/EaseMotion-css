@@ -26,11 +26,11 @@ Social share button group with platform-branded colors, optional share counts, c
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-1` | 4px |
-| `--ease-space-2` | 8px |
-| `--ease-space-3` | 12px |
-| `--ease-radius-md` | 8px |
-| `--ease-font-sans` | system-ui |
-| `--ease-color-neutral-*` | grays |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-1`         | 4px       |
+| `--ease-space-2`         | 8px       |
+| `--ease-space-3`         | 12px      |
+| `--ease-radius-md`       | 8px       |
+| `--ease-font-sans`       | system-ui |
+| `--ease-color-neutral-*` | grays     |

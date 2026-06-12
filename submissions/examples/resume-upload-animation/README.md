@@ -28,7 +28,12 @@ submissions/examples/resume-upload-animation/
 
 ```html
 <label class="em-upload-label" for="resume-file">
-  <input id="resume-file" class="em-upload-input" type="file" accept="application/pdf" />
+  <input
+    id="resume-file"
+    class="em-upload-input"
+    type="file"
+    accept="application/pdf"
+  />
   <div class="em-upload-zone">
     <div class="em-upload-icon">📄</div>
     <p class="em-upload-zone__title">
@@ -46,9 +51,13 @@ The zone activates its glow border and radial background on hover **and** on key
 ### 2. Progress Bar (uploading state)
 
 ```html
-<div class="em-upload-progress-wrap"
-     role="progressbar" aria-label="Upload progress"
-     aria-valuemin="0" aria-valuemax="100">
+<div
+  class="em-upload-progress-wrap"
+  role="progressbar"
+  aria-label="Upload progress"
+  aria-valuemin="0"
+  aria-valuemax="100"
+>
   <div class="em-upload-progress-label">
     <strong>Uploading…</strong>
     <span>100%</span>
@@ -84,7 +93,11 @@ Slides in from the left with a bounce curve on page load. Hover adds a subtle bo
 
 ```html
 <!-- Success -->
-<div class="em-upload-hint em-upload-hint--success" role="status" aria-live="polite">
+<div
+  class="em-upload-hint em-upload-hint--success"
+  role="status"
+  aria-live="polite"
+>
   ✅ Resume uploaded successfully!
 </div>
 
@@ -99,9 +112,7 @@ Slides in from the left with a bounce curve on page load. Hover adds a subtle bo
 ### 5. Submit Button
 
 ```html
-<button class="em-upload-btn" type="submit">
-  🚀 Submit Resume
-</button>
+<button class="em-upload-btn" type="submit">🚀 Submit Resume</button>
 ```
 
 On hover: lifts with `translateY(-2px)`, adds an indigo glow `box-shadow`, and a shine sweep crosses the button via `::before`.
@@ -111,6 +122,7 @@ On hover: lifts with `translateY(-2px)`, adds an indigo glow `box-shadow`, and a
 ## How the Animations Work
 
 ### Drop Zone Glow — CSS `:has()` + `:focus-visible`
+
 ```css
 .em-upload-label:has(.em-upload-input:focus-visible) .em-upload-zone,
 .em-upload-zone:hover {
@@ -119,38 +131,59 @@ On hover: lifts with `translateY(-2px)`, adds an indigo glow `box-shadow`, and a
   transform: translateY(-3px);
 }
 ```
+
 No JavaScript needed to detect keyboard focus — pure CSS selector chain.
 
 ### Floating Icon
+
 ```css
 @keyframes em-kf-icon-float {
-  0%, 100% { transform: translateY(0);    }
-  50%       { transform: translateY(-6px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 ```
+
 Pauses on hover so the icon doesn't fight the zoom scale.
 
 ### Progress Fill with Shimmer
+
 ```css
 @keyframes em-kf-progress-fill {
-  from { width: 0%;   }
-  to   { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 /* Shimmer overlay on ::after */
 @keyframes em-kf-shimmer {
-  from { background-position: 200% 0;  }
-  to   { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 ```
 
 ### Button Shine Sweep
+
 ```css
 .em-upload-btn::before {
   left: -100%;
   transition: left 0.4s ease;
 }
-.em-upload-btn:hover::before { left: 140%; }
+.em-upload-btn:hover::before {
+  left: 140%;
+}
 ```
+
 A diagonal gradient slides across on hover — a premium micro-interaction with zero JavaScript.
 
 ---
@@ -159,11 +192,11 @@ A diagonal gradient slides across on hover — a premium micro-interaction with 
 
 ```css
 :root {
-  --em-upload-accent:       #f59e0b;   /* amber brand */
-  --em-upload-accent-glow:  rgba(245, 158, 11, 0.2);
-  --em-upload-bg:           #ffffff;   /* light mode */
-  --em-upload-surface:      #f8fafc;
-  --em-upload-text:         #0f172a;
+  --em-upload-accent: #f59e0b; /* amber brand */
+  --em-upload-accent-glow: rgba(245, 158, 11, 0.2);
+  --em-upload-bg: #ffffff; /* light mode */
+  --em-upload-surface: #f8fafc;
+  --em-upload-text: #0f172a;
 }
 ```
 
@@ -181,11 +214,11 @@ A diagonal gradient slides across on hover — a premium micro-interaction with 
 
 ## Browser Support
 
-| Browser | Version | Notes |
-|---|---|---|
-| Chrome / Edge | 105+ | Full support incl. `:has()` |
-| Firefox | 121+ | Full support incl. `:has()` |
-| Safari | 15.4+ | Full support incl. `:has()` |
+| Browser       | Version | Notes                       |
+| ------------- | ------- | --------------------------- |
+| Chrome / Edge | 105+    | Full support incl. `:has()` |
+| Firefox       | 121+    | Full support incl. `:has()` |
+| Safari        | 15.4+   | Full support incl. `:has()` |
 
 > **Note**: The drop zone focus state uses `:has()`. For older browsers without `:has()` support, the zone still works on hover — the keyboard-focus glow is a progressive enhancement.
 

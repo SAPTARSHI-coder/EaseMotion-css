@@ -8,7 +8,7 @@ Provides a modern notification center UI with read/unread indicators, notificati
 
 ```html
 <div class="notification unread">
-    <h3>You were mentioned in a project</h3>
+  <h3>You were mentioned in a project</h3>
 </div>
 ```
 

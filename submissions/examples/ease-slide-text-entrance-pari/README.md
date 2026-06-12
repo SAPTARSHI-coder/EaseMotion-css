@@ -4,6 +4,7 @@
 Animates text components (headings, labels, paragraphs) with a smooth slide-in entrance from any direction.
 
 **How is it used?**
+
 <h1 class="slide-text-left">Heading</h1>
 <p class="slide-text-right">Paragraph</p>
 <span class="slide-text-bottom">Label</span>

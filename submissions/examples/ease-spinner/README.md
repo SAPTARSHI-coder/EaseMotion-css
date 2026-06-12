@@ -1,14 +1,8 @@
 \# ease-spinner
 
-
-
 CSS-only circular spin loader for loading states.
 
-
-
 \## Classes
-
-
 
 | Class | Speed | Size | Color |
 
@@ -28,17 +22,12 @@ CSS-only circular spin loader for loading states.
 
 | `ease-spinner-white` | 1s | 40px | White |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-spinner"></div>
 
 <div class="ease-spinner-fast"></div>
 
 <div class="ease-spinner-small"></div>
-
+```

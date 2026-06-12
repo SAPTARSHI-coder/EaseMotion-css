@@ -18,12 +18,11 @@ Add `perspective` on a parent wrapper so the 3D rotation has depth. The demo use
 
 ## Classes
 
-| Class | Behavior |
-|---|---|
-| `.ease-flip-x` | Enters from `rotateX(90deg)` and fades in. |
-| `.ease-flip-y` | Enters from `rotateY(90deg)` and fades in. |
+| Class              | Behavior                                        |
+| ------------------ | ----------------------------------------------- |
+| `.ease-flip-x`     | Enters from `rotateX(90deg)` and fades in.      |
+| `.ease-flip-y`     | Enters from `rotateY(90deg)` and fades in.      |
 | `.ease-flip-x-out` | Exits toward `rotateX(90deg)` while fading out. |
 | `.ease-flip-y-out` | Exits toward `rotateY(90deg)` while fading out. |
 
 All animations use ease-out timing and respect `prefers-reduced-motion`.
-

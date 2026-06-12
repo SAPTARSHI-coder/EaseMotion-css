@@ -8,12 +8,12 @@ Displays a Security Operations Center (SOC) dashboard with threat metrics, alert
 
 ```html
 <div class="card threats">
-    <h2>124</h2>
-    <p>Threats Detected</p>
+  <h2>124</h2>
+  <p>Threats Detected</p>
 </div>
 
 <div class="panel">
-    <h3>Critical Alerts</h3>
+  <h3>Critical Alerts</h3>
 </div>
 ```
 

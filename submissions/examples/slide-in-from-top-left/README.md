@@ -10,11 +10,11 @@ Diagonal corner entrance animation: element slides in from the top-left corner t
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-slide-in-from-top-left` | Diagonal from top-left corner |
-| `ease-slide-in-from-top-right` | Diagonal from top-right corner |
-| `ease-slide-in-from-bottom-left` | Diagonal from bottom-left corner |
+| Class                             | Description                       |
+| --------------------------------- | --------------------------------- |
+| `ease-slide-in-from-top-left`     | Diagonal from top-left corner     |
+| `ease-slide-in-from-top-right`    | Diagonal from top-right corner    |
+| `ease-slide-in-from-bottom-left`  | Diagonal from bottom-left corner  |
 | `ease-slide-in-from-bottom-right` | Diagonal from bottom-right corner |
 
 ## Notes

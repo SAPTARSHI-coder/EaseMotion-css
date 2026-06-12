@@ -3,7 +3,8 @@
 **What does this do?**  
 Draws a dynamic border around an element (buttons or cards) on hover using multiple style presets like clockwise, corner, or center-out drawing.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <!-- Clockwise sequential border drawing -->
 <button class="draw-btn draw-clockwise">Clockwise Draw</button>

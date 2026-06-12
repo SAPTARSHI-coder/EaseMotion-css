@@ -13,7 +13,8 @@ Line 115 uses `rgba(245, 158, 11, 0.15)` directly for the warning state focus sh
 .ease-input-warning,
 .ease-input-warning:focus {
   border-color: var(--ease-color-warning, #f59e0b) !important;
-  box-shadow: 0 0 0 3px var(--ease-color-warning-alpha, rgba(245, 158, 11, 0.15)) !important;
+  box-shadow: 0 0 0 3px
+    var(--ease-color-warning-alpha, rgba(245, 158, 11, 0.15)) !important;
 }
 ```
 

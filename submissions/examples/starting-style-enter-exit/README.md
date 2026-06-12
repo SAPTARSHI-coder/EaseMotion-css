@@ -10,9 +10,10 @@ Toggle the controls in each demo to see elements animate in and out. The CSS pat
 
 ```css
 .element {
-  transition: display 0.3s allow-discrete,
-              opacity 0.3s,
-              translate 0.3s;
+  transition:
+    display 0.3s allow-discrete,
+    opacity 0.3s,
+    translate 0.3s;
   opacity: 1;
 }
 

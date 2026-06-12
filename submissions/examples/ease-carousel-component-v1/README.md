@@ -27,14 +27,14 @@ You can customize the carousel colors, shadows, borders, and transition timings 
   --ease-carousel-border-color: var(--ease-color-neutral-200, #e2e8f0);
   --ease-carousel-radius: var(--ease-radius-lg, 12px);
   --ease-carousel-shadow: var(--ease-shadow-lg);
-  
+
   --ease-carousel-control-bg: rgba(15, 23, 42, 0.65);
   --ease-carousel-control-color: #ffffff;
   --ease-carousel-control-border: 1px solid rgba(255, 255, 255, 0.15);
-  
+
   --ease-carousel-indicator-bg: rgba(255, 255, 255, 0.35);
   --ease-carousel-indicator-active-bg: var(--ease-color-primary, #6c63ff);
-  
+
   --ease-carousel-transition-speed: var(--ease-speed-medium, 300ms);
 }
 ```
@@ -44,10 +44,17 @@ You can customize the carousel colors, shadows, borders, and transition timings 
 ## Carousel Variants
 
 ### 1. Base Markup Structure
+
 All carousels share this base wrapper layout:
 
 ```html
-<div class="ease-carousel" id="my-carousel" data-autoplay="true" data-loop="true" data-transition="slide">
+<div
+  class="ease-carousel"
+  id="my-carousel"
+  data-autoplay="true"
+  data-loop="true"
+  data-transition="slide"
+>
   <div class="ease-carousel-viewport">
     <div class="ease-carousel-track">
       <!-- Slides live here -->
@@ -57,13 +64,31 @@ All carousels share this base wrapper layout:
   </div>
 
   <!-- Navigation Arrows -->
-  <button class="ease-carousel-control ease-carousel-control--prev" aria-label="Previous">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <button
+    class="ease-carousel-control ease-carousel-control--prev"
+    aria-label="Previous"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <polyline points="15 18 9 12 15 6"></polyline>
     </svg>
   </button>
-  <button class="ease-carousel-control ease-carousel-control--next" aria-label="Next">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <button
+    class="ease-carousel-control ease-carousel-control--next"
+    aria-label="Next"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <polyline points="9 18 15 12 9 6"></polyline>
     </svg>
   </button>
@@ -78,19 +103,25 @@ All carousels share this base wrapper layout:
 ### 2. Specific Slide Content Layouts
 
 #### Image Carousel
+
 Full bleed media with bottom description gradient overlays:
+
 ```html
 <div class="ease-carousel-slide">
-  <img src="banner.jpg" class="ease-carousel-slide-img" alt="SaaS graphic">
+  <img src="banner.jpg" class="ease-carousel-slide-img" alt="SaaS graphic" />
   <div class="ease-carousel-slide-overlay">
     <h2>SaaS Dashboard Release</h2>
-    <p>Monitor your performance metrics with hardware-accelerated charting core.</p>
+    <p>
+      Monitor your performance metrics with hardware-accelerated charting core.
+    </p>
   </div>
 </div>
 ```
 
 #### Card Carousel
+
 Slides structured with flex grids displaying statistics or pricing tables:
+
 ```html
 <div class="ease-carousel-slide">
   <div class="ease-carousel-slide-card-grid">
@@ -105,7 +136,9 @@ Slides structured with flex grids displaying statistics or pricing tables:
 ```
 
 #### Testimonial Carousel
+
 Quotes, star ratings, and custom circular avatars:
+
 ```html
 <div class="ease-carousel-slide">
   <div class="ease-carousel-slide-testimonial">
@@ -124,9 +157,10 @@ Quotes, star ratings, and custom circular avatars:
 
 ## Interactivity Javascript Initialization
 
-Bind the modular class `EaseCarouselController` from `demo.html` to instantiate the sliders. 
+Bind the modular class `EaseCarouselController` from `demo.html` to instantiate the sliders.
 
 It reads values automatically from these properties:
+
 - `data-autoplay="true/false"` — Controls automatic shifting.
 - `data-loop="true/false"` — Enables looping back.
 - `data-transition="slide/fade"` — Sets animation transitions.

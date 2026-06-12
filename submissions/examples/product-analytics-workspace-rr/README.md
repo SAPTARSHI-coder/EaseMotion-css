@@ -8,8 +8,8 @@ Provides a modern analytics workspace with KPI cards, conversion funnel visualiz
 
 ```html
 <div class="card">
-    <h3>Revenue</h3>
-    <span class="value">$128K</span>
+  <h3>Revenue</h3>
+  <span class="value">$128K</span>
 </div>
 ```
 

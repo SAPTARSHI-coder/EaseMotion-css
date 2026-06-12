@@ -7,9 +7,7 @@ Adds a shake animation effect that moves an element horizontally on hover.
 ## How is it used?
 
 ```html
-<div class="shake-effect">
-  Content
-</div>
+<div class="shake-effect">Content</div>
 ```
 
 ## Why is it useful?

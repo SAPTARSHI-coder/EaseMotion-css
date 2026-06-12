@@ -23,7 +23,7 @@ disabling smooth scrolling when the user has expressed a reduced-motion preferen
 /* BEFORE — core/base.css, inside the html { … } block */
 html {
   font-size: 16px;
-  scroll-behavior: smooth;        /* ← remove this line */
+  scroll-behavior: smooth; /* ← remove this line */
   -webkit-text-size-adjust: 100%;
 }
 

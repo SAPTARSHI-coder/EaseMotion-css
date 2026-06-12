@@ -12,9 +12,7 @@ A smooth expand-style entrance animation for icon components.
 ## Usage
 
 ```html
-<div class="ease-expand-icon-entrance">
-  ⭐
-</div>
+<div class="ease-expand-icon-entrance">⭐</div>
 ```
 
 ## Animation Details

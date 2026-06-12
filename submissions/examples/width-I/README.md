@@ -1,4 +1,3 @@
- 
 # Width Utilities
 
 Width utilities: full, half, third, quarter, three-quarter, screen, auto.
@@ -11,15 +10,15 @@ Width utilities: full, half, third, quarter, three-quarter, screen, auto.
 
 ## Classes
 
-| Class | Width |
-|-------|-------|
-| `ease-w-full` | 100% |
-| `ease-w-half` | 50% |
-| `ease-w-third` | 33.333% |
-| `ease-w-quarter` | 25% |
-| `ease-w-three-quarter` | 75% |
-| `ease-w-screen` | 100vw |
-| `ease-w-auto` | auto |
+| Class                  | Width   |
+| ---------------------- | ------- |
+| `ease-w-full`          | 100%    |
+| `ease-w-half`          | 50%     |
+| `ease-w-third`         | 33.333% |
+| `ease-w-quarter`       | 25%     |
+| `ease-w-three-quarter` | 75%     |
+| `ease-w-screen`        | 100vw   |
+| `ease-w-auto`          | auto    |
 
 ## Usage
 
@@ -30,7 +29,8 @@ Width utilities: full, half, third, quarter, three-quarter, screen, auto.
 
 <!-- Three column layout -->
 <div class="row">
-    <div class="ease-w-third">Column 1</div>
-    <div class="ease-w-third">Column 2</div>
-    <div class="ease-w-third">Column 3</div>
+  <div class="ease-w-third">Column 1</div>
+  <div class="ease-w-third">Column 2</div>
+  <div class="ease-w-third">Column 3</div>
 </div>
+```

@@ -18,23 +18,17 @@ Animated loading skeleton placeholder with shimmer sweep effect.
 ## Usage
 
 ```html
-&lt;!-- Individual shapes --&gt;
-&lt;div class="skeleton-pr skeleton-pr-circle"&gt;&lt;/div&gt;
-&lt;div class="skeleton-pr skeleton-pr-text" style="width: 200px;"&gt;&lt;/div&gt;
-&lt;div class="skeleton-pr skeleton-pr-title" style="width: 200px;"&gt;&lt;/div&gt;
-&lt;div class="skeleton-pr skeleton-pr-image" style="width: 200px;"&gt;&lt;/div&gt;
-
-&lt;!-- Card layout --&gt;
-&lt;div class="skeleton-pr-card"&gt;
-  &lt;div class="skeleton-pr-header"&gt;
-    &lt;div class="skeleton-pr skeleton-pr-circle"&gt;&lt;/div&gt;
-    &lt;div&gt;
-      &lt;div class="skeleton-pr skeleton-pr-title"&gt;&lt;/div&gt;
-      &lt;div class="skeleton-pr skeleton-pr-text-sm"&gt;&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="skeleton-pr-body"&gt;
-    &lt;div class="skeleton-pr skeleton-pr-text"&gt;&lt;/div&gt;
-    &lt;div class="skeleton-pr skeleton-pr-text"&gt;&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;!-- Individual shapes --&gt; &lt;div class="skeleton-pr
+skeleton-pr-circle"&gt;&lt;/div&gt; &lt;div class="skeleton-pr skeleton-pr-text"
+style="width: 200px;"&gt;&lt;/div&gt; &lt;div class="skeleton-pr
+skeleton-pr-title" style="width: 200px;"&gt;&lt;/div&gt; &lt;div
+class="skeleton-pr skeleton-pr-image" style="width: 200px;"&gt;&lt;/div&gt;
+&lt;!-- Card layout --&gt; &lt;div class="skeleton-pr-card"&gt; &lt;div
+class="skeleton-pr-header"&gt; &lt;div class="skeleton-pr
+skeleton-pr-circle"&gt;&lt;/div&gt; &lt;div&gt; &lt;div class="skeleton-pr
+skeleton-pr-title"&gt;&lt;/div&gt; &lt;div class="skeleton-pr
+skeleton-pr-text-sm"&gt;&lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;div
+class="skeleton-pr-body"&gt; &lt;div class="skeleton-pr
+skeleton-pr-text"&gt;&lt;/div&gt; &lt;div class="skeleton-pr
+skeleton-pr-text"&gt;&lt;/div&gt; &lt;/div&gt; &lt;/div&gt;
+```

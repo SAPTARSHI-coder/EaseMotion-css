@@ -1,13 +1,17 @@
 # Issue #5720: No dark mode overrides for footer component
 
 ## Description
+
 `components/footer.css` has no `@media (prefers-color-scheme: dark)` overrides. The footer uses `background: var(--ease-color-neutral-900)` and `border-top: 1px solid var(--ease-color-neutral-200)`. In dark mode, these colors match the page background, making the footer nearly invisible.
 
 ## Root Cause
+
 The footer component was never given dark mode styling, unlike other components (cards, navbar, sidebar, etc.).
 
 ## Proposed Fix
+
 Add to `components/footer.css`:
+
 ```css
 @media (prefers-color-scheme: dark) {
   .ease-footer {
@@ -24,5 +28,6 @@ Add to `components/footer.css`:
 ```
 
 ## Files
+
 - `style.css` — dark mode overrides for footer
 - `demo.html` — full footer demo in light/dark mode

@@ -12,11 +12,7 @@ A smooth squish-style hover animation for image components.
 ## Usage
 
 ```html
-<img
-  src="image.jpg"
-  class="ease-squish-image-hover"
-  alt="Demo"
-/>
+<img src="image.jpg" class="ease-squish-image-hover" alt="Demo" />
 ```
 
 ## Animation Details

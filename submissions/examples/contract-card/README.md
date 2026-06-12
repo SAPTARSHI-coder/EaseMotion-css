@@ -6,9 +6,7 @@ Applies a subtle shrink effect to cards on hover, creating a pressed or contract
 **How is it used?**
 
 ```html
-<div class="contract-card">
-  Content
-</div>
+<div class="contract-card">Content</div>
 ```
 
 **Why is it useful?**

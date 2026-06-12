@@ -1,14 +1,22 @@
 # Ease Account Zd
 
 ## What does this do?
+
 An animated account settings / profile page component with avatar, form fields, toggle switches, and action buttons — pure HTML and CSS.
 
 ## How is it used?
+
 ```html
 <div class="ac-card">
   <div class="ac-header">
     <div class="ac-avatar-wrap">
-      <img class="ac-avatar" src="avatar.jpg" alt="Profile photo" width="64" height="64">
+      <img
+        class="ac-avatar"
+        src="avatar.jpg"
+        alt="Profile photo"
+        width="64"
+        height="64"
+      />
     </div>
     <div class="ac-heading">
       <h2>Name</h2>
@@ -20,7 +28,7 @@ An animated account settings / profile page component with avatar, form fields, 
       <div class="ac-section-title">Section Title</div>
       <div class="ac-row">
         <span class="ac-label">Field</span>
-        <input class="ac-input" type="text" value="Value">
+        <input class="ac-input" type="text" value="Value" />
       </div>
     </div>
     <div class="ac-actions">
@@ -34,4 +42,5 @@ Toggle: `.ac-toggle` (off) / `.ac-toggle-on` (on)
 Buttons: ac-btn-primary, ac-btn-secondary, ac-btn-danger
 
 ## Why is it useful?
+
 Account settings pages are a core part of every web application. This component provides a clean, animated settings interface with form fields, toggles, and action buttons.

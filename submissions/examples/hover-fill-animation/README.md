@@ -10,10 +10,10 @@ When a user hovers over (or focuses) an element, a coloured background layer swe
 
 Two directional variants are included:
 
-| Variant | CSS class modifier | Mechanism |
-|---|---|---|
-| Bottom → Top | `fill-bottom-top` | `scaleY(0 → 1)` with `transform-origin: bottom center` |
-| Left → Right | `fill-left-right` | `scaleX(0 → 1)` with `transform-origin: left center` |
+| Variant      | CSS class modifier | Mechanism                                              |
+| ------------ | ------------------ | ------------------------------------------------------ |
+| Bottom → Top | `fill-bottom-top`  | `scaleY(0 → 1)` with `transform-origin: bottom center` |
+| Left → Right | `fill-left-right`  | `scaleX(0 → 1)` with `transform-origin: left center`   |
 
 ---
 
@@ -28,6 +28,7 @@ Two directional variants are included:
 ### 2. Apply a component class + a direction modifier
 
 #### Fill Button — bottom-to-top
+
 ```html
 <button class="fill-button fill-bottom-top">
   <span>Get Started</span>
@@ -35,6 +36,7 @@ Two directional variants are included:
 ```
 
 #### Fill Button — left-to-right
+
 ```html
 <button class="fill-button fill-left-right">
   <span>Learn More</span>
@@ -42,6 +44,7 @@ Two directional variants are included:
 ```
 
 #### Outline Button with Fill
+
 ```html
 <button class="outline-fill fill-bottom-top">
   <span>Subscribe</span>
@@ -49,6 +52,7 @@ Two directional variants are included:
 ```
 
 #### Fill Link
+
 ```html
 <a href="/docs" class="fill-link fill-link--ltr">Documentation</a>
 
@@ -60,6 +64,7 @@ Two directional variants are included:
 ```
 
 #### Fill Card
+
 ```html
 <article class="fill-card fill-card--btt">
   <h3 class="card-title">Performance</h3>
@@ -71,6 +76,7 @@ Two directional variants are included:
 ```
 
 #### Slide Fill (pills / tags)
+
 ```html
 <button class="slide-fill">Design</button>
 <button class="slide-fill slide-fill--active">CSS</button>
@@ -82,10 +88,10 @@ Override these properties anywhere in your stylesheet:
 
 ```css
 :root {
-  --fill-white:   rgba(255 255 255 / 1);    /* default fill colour */
-  --fill-gold:    #c9a84c;                  /* accent fill colour  */
-  --dur-fill:     0.38s;                    /* animation duration  */
-  --ease-fill:    cubic-bezier(0.4,0,0.2,1);/* easing curve        */
+  --fill-white: rgba(255 255 255 / 1); /* default fill colour */
+  --fill-gold: #c9a84c; /* accent fill colour  */
+  --dur-fill: 0.38s; /* animation duration  */
+  --ease-fill: cubic-bezier(0.4, 0, 0.2, 1); /* easing curve        */
 }
 ```
 
@@ -112,7 +118,7 @@ Override these properties anywhere in your stylesheet:
 
 1. **Containment** — The parent element is `position: relative` and `overflow: hidden`. This makes it the reference box for the fill layer, and ensures the fill is clipped to the element's border-box.
 
-2. **The fill layer** — `::before` is `position: absolute; inset: 0` so it exactly covers the parent. It starts with `transform: scaleY(0)` (invisible, zero height) and a `transform-origin` pointing to the edge the fill grows *from*.
+2. **The fill layer** — `::before` is `position: absolute; inset: 0` so it exactly covers the parent. It starts with `transform: scaleY(0)` (invisible, zero height) and a `transform-origin` pointing to the edge the fill grows _from_.
 
 3. **GPU acceleration** — Only `transform` and `transition` are used. No `height`, `clip-path` toggling, or `opacity`. This ensures the browser handles the animation entirely on the compositor thread — no layout recalculation, no paint — resulting in consistently smooth 60 fps motion.
 
@@ -130,7 +136,8 @@ No JavaScript event listeners, no RAF loops, no DOM mutations. The entire effect
 **2. Performance-safe by design.**  
 `transform` transitions are composited separately from the main thread. The animation cannot cause layout reflow or style recalculation in the elements around it.
 
-**3. Accessible out of the box.**  
+**3. Accessible out of the box.**
+
 - Works on `:focus-visible` — keyboard users get the same feedback as pointer users.
 - Respects `prefers-reduced-motion: reduce` — a single media query in `style.css` collapses all transition durations to near zero.
 - The fill is purely decorative; no semantic information is conveyed through the animation.

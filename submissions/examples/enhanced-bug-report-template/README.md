@@ -7,6 +7,7 @@ Proposes an enhanced bug report issue template with improved structure, clearer 
 ## Current State
 
 The existing `.github/ISSUE_TEMPLATE/bug_report.md` already covers the basics:
+
 - Steps to reproduce
 - Expected vs actual behavior
 - Browser + OS info

@@ -1,6 +1,7 @@
 # ease-sidebar-highlight-fix
 
 ## 1. What does this do?
+
 Demonstrates and fixes the broken sidebar active link highlighting in EaseMotion CSS docs, where the `#animations` and `#contributing` sections never triggered the purple highlight indicator when scrolled into view.
 
 ## 2. How is it used?
@@ -10,13 +11,13 @@ The fix replaces the broken `IntersectionObserver` threshold with a `rootMargin`
 ```javascript
 // ❌ BEFORE — broken for long/tall sections
 const observer = new IntersectionObserver(callback, {
-  threshold: 0.4
+  threshold: 0.4,
 });
 
 // ✅ AFTER — works for ALL section heights
 const observer = new IntersectionObserver(callback, {
   rootMargin: "-20% 0px -70% 0px",
-  threshold: 0
+  threshold: 0,
 });
 ```
 
@@ -39,4 +40,5 @@ The fix uses `rootMargin: "-20% 0px -70% 0px"` which creates a narrow trigger ba
 This fits EaseMotion CSS's philosophy of clean, minimal and reliable UI behavior. Navigation should always tell the user exactly where they are on the page.
 
 ## Bug Reference
+
 Fixes: https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/1888

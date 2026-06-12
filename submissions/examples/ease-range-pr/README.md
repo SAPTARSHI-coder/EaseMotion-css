@@ -20,14 +20,10 @@ Custom styled range input slider with fill progress, thumb hover effects, and va
 ## Usage
 
 ```html
-&lt;div class="range-pr-wrapper"&gt;
-  &lt;div class="range-pr-header"&gt;
-    &lt;label class="range-pr-label" for="slider"&gt;Label&lt;/label&gt;
-    &lt;span class="range-pr-value"&gt;50%&lt;/span&gt;
-  &lt;/div&gt;
-  &lt;input type="range" id="slider" class="range-pr" min="0" max="100" value="50"&gt;
-  &lt;div class="range-pr-footer"&gt;
-    &lt;span&gt;Min&lt;/span&gt;
-    &lt;span&gt;Max&lt;/span&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="range-pr-wrapper"&gt; &lt;div class="range-pr-header"&gt;
+&lt;label class="range-pr-label" for="slider"&gt;Label&lt;/label&gt; &lt;span
+class="range-pr-value"&gt;50%&lt;/span&gt; &lt;/div&gt; &lt;input type="range"
+id="slider" class="range-pr" min="0" max="100" value="50"&gt; &lt;div
+class="range-pr-footer"&gt; &lt;span&gt;Min&lt;/span&gt;
+&lt;span&gt;Max&lt;/span&gt; &lt;/div&gt; &lt;/div&gt;
+```

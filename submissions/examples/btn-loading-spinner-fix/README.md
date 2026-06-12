@@ -13,11 +13,11 @@ of the button instead of the centre.
 
 ## Fix
 
-| | Before | After |
-|---|---|---|
-| Centering | `translate: -50% -50%` (Level 5, broken in Safari < 14.1) | Removed |
-| Keyframe `from` | `rotate(0deg)` | `translate(-50%, -50%) rotate(0deg)` |
-| Keyframe `to` | `rotate(360deg)` | `translate(-50%, -50%) rotate(360deg)` |
+|                 | Before                                                    | After                                  |
+| --------------- | --------------------------------------------------------- | -------------------------------------- |
+| Centering       | `translate: -50% -50%` (Level 5, broken in Safari < 14.1) | Removed                                |
+| Keyframe `from` | `rotate(0deg)`                                            | `translate(-50%, -50%) rotate(0deg)`   |
+| Keyframe `to`   | `rotate(360deg)`                                          | `translate(-50%, -50%) rotate(360deg)` |
 
 By embedding `translate(-50%, -50%)` in both keyframe stops, the offset
 is universally supported all the way back to Safari 9+.

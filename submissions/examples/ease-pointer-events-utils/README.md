@@ -4,12 +4,12 @@ Utility classes for controlling pointer hit-testing and touch gesture behavior o
 
 ## Class reference
 
-| Class | CSS Property | Value | Use Case |
-|-------|--------------|-------|----------|
-| `.ease-pointer-events-none` | `pointer-events` | `none` | Let clicks pass through decorative overlays, watermarks, or non-interactive layers |
-| `.ease-pointer-events-auto` | `pointer-events` | `auto` | Restore normal click targeting on an element that previously ignored pointer events |
-| `.ease-touch-action-none` | `touch-action` | `none` | Disable browser touch gestures (pan/zoom) on custom draggable or swipe-controlled UI |
-| `.ease-touch-action-manipulation` | `touch-action` | `manipulation` | Remove double-tap zoom delay on buttons and links for faster taps on touch screens |
+| Class                             | CSS Property     | Value          | Use Case                                                                             |
+| --------------------------------- | ---------------- | -------------- | ------------------------------------------------------------------------------------ |
+| `.ease-pointer-events-none`       | `pointer-events` | `none`         | Let clicks pass through decorative overlays, watermarks, or non-interactive layers   |
+| `.ease-pointer-events-auto`       | `pointer-events` | `auto`         | Restore normal click targeting on an element that previously ignored pointer events  |
+| `.ease-touch-action-none`         | `touch-action`   | `none`         | Disable browser touch gestures (pan/zoom) on custom draggable or swipe-controlled UI |
+| `.ease-touch-action-manipulation` | `touch-action`   | `manipulation` | Remove double-tap zoom delay on buttons and links for faster taps on touch screens   |
 
 ## Usage
 
@@ -18,7 +18,10 @@ Utility classes for controlling pointer hit-testing and touch gesture behavior o
   <button type="button">Save changes</button>
 
   <!-- Decorative gradient layer — clicks pass through to the button -->
-  <div class="ease-pointer-events-none decorative-overlay" aria-hidden="true"></div>
+  <div
+    class="ease-pointer-events-none decorative-overlay"
+    aria-hidden="true"
+  ></div>
 </div>
 
 <button type="button" class="ease-touch-action-manipulation">

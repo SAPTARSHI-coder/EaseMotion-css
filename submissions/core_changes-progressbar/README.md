@@ -3,9 +3,16 @@
 1. **What does this do?** Provides a pure CSS progress bar component with determinate mode (via inline `width` style on `.progress-bar`), indeterminate mode (animated sliding bar for unknown progress), 3 size variants (sm, base, lg), 4 color variants (primary, success, warning, danger), striped and animated-stripe styles, and optional label — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <!-- Determinate -->
-   <div class="progress" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+   <div
+     class="progress"
+     role="progressbar"
+     aria-valuenow="50"
+     aria-valuemin="0"
+     aria-valuemax="100"
+   >
      <div class="progress-bar" style="width: 50%;"></div>
    </div>
 

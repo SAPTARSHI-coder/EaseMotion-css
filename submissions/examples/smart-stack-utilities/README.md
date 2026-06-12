@@ -35,8 +35,8 @@ Form example:
 
 ```html
 <form class="stack">
-  <label>Full name <input type="text"></label>
-  <label>Email <input type="email"></label>
+  <label>Full name <input type="text" /></label>
+  <label>Email <input type="email" /></label>
   <button class="btn primary">Send</button>
 </form>
 ```

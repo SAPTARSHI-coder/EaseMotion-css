@@ -35,10 +35,7 @@ makes the image full width.
     width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
-    border-radius:
-      var(--ease-radius-lg)
-      var(--ease-radius-lg)
-      0 0;
+    border-radius: var(--ease-radius-lg) var(--ease-radius-lg) 0 0;
   }
 }
 ```

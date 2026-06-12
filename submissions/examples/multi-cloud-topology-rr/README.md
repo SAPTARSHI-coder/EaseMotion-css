@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring resources, dependencies, connect
 
 ```html
 <div class="cloud-card aws">
-    <h3>AWS</h3>
+  <h3>AWS</h3>
 </div>
 ```
 

@@ -10,9 +10,9 @@ Link-style button variant — renders as an underlined text link while maintaini
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-btn-link` | Underlined text link style |
+| Class                | Description                |
+| -------------------- | -------------------------- |
+| `ease-btn-link`      | Underlined text link style |
 | `ease-btn-link-icon` | Adds animated arrow suffix |
 
 ## Notes

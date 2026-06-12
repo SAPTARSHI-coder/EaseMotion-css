@@ -8,11 +8,18 @@ Demonstrates CSS trigonometric functions `sin()` and `cos()` inside `@keyframes`
 
 ```css
 @property --t {
-  syntax: "<number>"; initial-value: 0; inherits: false;
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: false;
 }
 
 @keyframes tick {
-  from { --t: 0; } to { --t: 360; }
+  from {
+    --t: 0;
+  }
+  to {
+    --t: 360;
+  }
 }
 
 .element {

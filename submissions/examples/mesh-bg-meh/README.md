@@ -9,20 +9,21 @@
 2. How is it used?
    Add `mesh-bg` to any container and include a `mesh-blob` span
    inside for the third blob layer:
+
 ```html
-   <div class="mesh-bg">
-     <span class="mesh-blob"></span>
-     <div class="mesh-content">
-       Your content here
-     </div>
-   </div>
+<div class="mesh-bg">
+  <span class="mesh-blob"></span>
+  <div class="mesh-content">Your content here</div>
+</div>
 ```
-   Color variants:
-   - Default → purple/amber
-   - `.mesh-bg-blue`  → blue/cyan
-   - `.mesh-bg-green` → green/lime
-   - `.mesh-bg-warm`  → orange/red
-   - `.mesh-bg-light` → pastel (light backgrounds)
+
+Color variants:
+
+- Default → purple/amber
+- `.mesh-bg-blue` → blue/cyan
+- `.mesh-bg-green` → green/lime
+- `.mesh-bg-warm` → orange/red
+- `.mesh-bg-light` → pastel (light backgrounds)
 
 3. Why is it useful?
    EaseMotion CSS animates elements but has nothing for ambient

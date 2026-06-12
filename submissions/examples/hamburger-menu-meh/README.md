@@ -8,16 +8,16 @@ The hamburger icon morphs into a close (✕) icon when activated, while a mobile
 
 ### Features
 
-* Pure CSS implementation
-* No JavaScript required
-* Responsive mobile navigation
-* Animated hamburger-to-close transition
-* Smooth slide-in menu panel
-* Light variant
-* Dark variant
-* Call-to-action button support
-* Mobile-first behavior
-* Easy customization
+- Pure CSS implementation
+- No JavaScript required
+- Responsive mobile navigation
+- Animated hamburger-to-close transition
+- Smooth slide-in menu panel
+- Light variant
+- Dark variant
+- Call-to-action button support
+- Mobile-first behavior
+- Easy customization
 
 ---
 
@@ -27,32 +27,24 @@ The hamburger icon morphs into a close (✕) icon when activated, while a mobile
 
 ```html
 <nav class="hamburger-light">
+  <div class="logo">EaseMotion</div>
 
-    <div class="logo">
-        EaseMotion
-    </div>
+  <input type="checkbox" id="menu-light" />
 
-    <input type="checkbox" id="menu-light">
+  <label for="menu-light" class="hamburger-btn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </label>
 
-    <label for="menu-light" class="hamburger-btn">
-        <span></span>
-        <span></span>
-        <span></span>
-    </label>
+  <div class="menu">
+    <a href="#" class="active">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Blog</a>
 
-    <div class="menu">
-
-        <a href="#" class="active">Home</a>
-        <a href="#">About</a>
-        <a href="#">Services</a>
-        <a href="#">Blog</a>
-
-        <a href="#" class="cta-btn">
-            Get Started
-        </a>
-
-    </div>
-
+    <a href="#" class="cta-btn"> Get Started </a>
+  </div>
 </nav>
 ```
 
@@ -60,32 +52,24 @@ The hamburger icon morphs into a close (✕) icon when activated, while a mobile
 
 ```html
 <nav class="hamburger-dark">
+  <div class="logo">EaseMotion</div>
 
-    <div class="logo">
-        EaseMotion
-    </div>
+  <input type="checkbox" id="menu-dark" />
 
-    <input type="checkbox" id="menu-dark">
+  <label for="menu-dark" class="hamburger-btn">
+    <span></span>
+    <span></span>
+    <span></span>
+  </label>
 
-    <label for="menu-dark" class="hamburger-btn">
-        <span></span>
-        <span></span>
-        <span></span>
-    </label>
+  <div class="menu">
+    <a href="#" class="active">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Blog</a>
 
-    <div class="menu">
-
-        <a href="#" class="active">Home</a>
-        <a href="#">About</a>
-        <a href="#">Services</a>
-        <a href="#">Blog</a>
-
-        <a href="#" class="cta-btn">
-            Get Started
-        </a>
-
-    </div>
-
+    <a href="#" class="cta-btn"> Get Started </a>
+  </div>
 </nav>
 ```
 
@@ -108,11 +92,11 @@ This component provides a complete mobile navigation solution using only HTML an
 
 Benefits include:
 
-* Lightweight and dependency-free
-* Easy to integrate into existing projects
-* Works across modern browsers
-* Responsive by default
-* Clean and reusable code structure
-* Demonstrates animation-first UI design
+- Lightweight and dependency-free
+- Easy to integrate into existing projects
+- Works across modern browsers
+- Responsive by default
+- Clean and reusable code structure
+- Demonstrates animation-first UI design
 
 The component can serve as a foundation for future navigation-related components and responsive menu systems.

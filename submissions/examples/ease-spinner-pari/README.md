@@ -5,6 +5,7 @@ A CSS spinner/loader component with circular and dots variants,
 size options, and color customization via CSS variables.
 
 **How is it used?**
+
 <!-- Circular spinner -->
 <div class="ease-spinner"></div>
 <div class="ease-spinner ease-spinner-sm"></div>

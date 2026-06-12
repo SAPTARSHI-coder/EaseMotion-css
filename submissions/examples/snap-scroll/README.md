@@ -13,14 +13,14 @@ Scroll snap utilities for creating snap-scrollable containers. Part of `core/uti
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-snap-x` | Horizontal scroll snap container |
-| `ease-snap-y` | Vertical scroll snap container |
-| `ease-snap-start` | Snap align to start |
-| `ease-snap-center` | Snap align to center |
-| `ease-snap-end` | Snap align to end |
-| `ease-snap-mandatory` | Strict snap (always snaps) |
+| Class                 | Description                      |
+| --------------------- | -------------------------------- |
+| `ease-snap-x`         | Horizontal scroll snap container |
+| `ease-snap-y`         | Vertical scroll snap container   |
+| `ease-snap-start`     | Snap align to start              |
+| `ease-snap-center`    | Snap align to center             |
+| `ease-snap-end`       | Snap align to end                |
+| `ease-snap-mandatory` | Strict snap (always snaps)       |
 
 ## Notes
 

@@ -23,10 +23,10 @@ Rotates an element back and forth from its top-center pivot point with decaying 
 
 ## Classes
 
-| Class | Role |
-|---|---|
-| `ease-swing` | Runs the swing animation once. |
-| `ease-swing-loop` | Runs the swing animation in a continuous loop. |
+| Class              | Role                                           |
+| ------------------ | ---------------------------------------------- |
+| `ease-swing`       | Runs the swing animation once.                 |
+| `ease-swing-loop`  | Runs the swing animation in a continuous loop. |
 | `ease-hover-swing` | Triggers the swing on hover or keyboard focus. |
 
 ## Implementation notes

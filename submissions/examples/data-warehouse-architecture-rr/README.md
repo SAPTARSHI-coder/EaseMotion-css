@@ -7,13 +7,9 @@ Visualizes the flow of data from multiple sources through ETL processing into a 
 ## How is it used?
 
 ```html
-<div class="node etl">
-    ETL Pipeline
-</div>
+<div class="node etl">ETL Pipeline</div>
 
-<div class="node warehouse">
-    Data Warehouse
-</div>
+<div class="node warehouse">Data Warehouse</div>
 ```
 
 ## Why is it useful?

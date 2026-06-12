@@ -1,11 +1,13 @@
 # Ease Pricing Card Component
 
 ## What does this do?
+
 A premium, highly interactive, and responsive suite of Pricing Cards and Plan layouts featuring modern visual aesthetics (such as gradients, dark styles, and outline presets), hover transitions, popular badge animations, and a pure-CSS billing toggle.
 
 ---
 
 ## Why is it useful?
+
 Pricing cards are a critical component for SaaS landing pages, memberships, and product checkouts. This component provides 10 distinct, production-ready design variants that load with zero dependencies and adapt fluidly across devices. By utilizing standard CSS variables, it integrates seamlessly into the EaseMotion CSS framework and supports native dark/light modes out of the box.
 
 ---
@@ -18,14 +20,15 @@ Pricing cards are a critical component for SaaS landing pages, memberships, and 
 <div class="ease-pricing-wrapper">
   <!-- Grid container -->
   <div class="ease-pricing-grid">
-
     <!-- Card element -->
     <div class="ease-pricing-card ease-card--standard">
       <div class="ease-card-header">
         <!-- Optional popular badge -->
         <span class="ease-pricing-badge ease-badge--popular">Popular</span>
         <h4 class="ease-plan-name">Standard Plan</h4>
-        <p class="ease-plan-desc">For small teams building modern apps together.</p>
+        <p class="ease-plan-desc">
+          For small teams building modern apps together.
+        </p>
       </div>
 
       <!-- Price & Cycle -->
@@ -38,7 +41,9 @@ Pricing cards are a critical component for SaaS landing pages, memberships, and 
       <ul class="ease-feature-list">
         <li class="ease-feature-item">
           <span class="ease-feature-icon">
-            <svg viewBox="0 0 24 24"><polyline class="icon-check" points="20 6 9 17 4 12"></polyline></svg>
+            <svg viewBox="0 0 24 24">
+              <polyline class="icon-check" points="20 6 9 17 4 12"></polyline>
+            </svg>
           </span>
           5 User licenses
         </li>
@@ -53,7 +58,6 @@ Pricing cards are a critical component for SaaS landing pages, memberships, and 
       <!-- CTA Button -->
       <a href="#" class="ease-pricing-btn ease-pricing-btn--primary">Get Pro</a>
     </div>
-
   </div>
 </div>
 ```
@@ -61,6 +65,7 @@ Pricing cards are a critical component for SaaS landing pages, memberships, and 
 ---
 
 ## Features
+
 - **Pure CSS Layout & Toggle**: A billing cycle switch (Monthly / Yearly) driven by a standard checkbox hack, requiring zero JavaScript.
 - **Micro-animations**: Dynamic hover scaling (`translateY(-8px)`), border animations, glowing drop shadows, and pulsating action badges.
 - **High-End Aesthetics**: High visual contrast, soft CSS box shadows, custom cubic-bezier curves for transitions, and gradients.
@@ -113,7 +118,7 @@ You can override style variables by targeting `:root` or wrapping containers in 
   --ep-color-primary: #10b981; /* Shift primary colors to Emerald Green */
   --ep-color-gradient-start: #10b981;
   --ep-color-gradient-end: #3b82f6; /* Custom green-to-blue gradient */
-  
+
   --ease-radius-xl: 2rem; /* Make card corners more rounded */
 }
 ```

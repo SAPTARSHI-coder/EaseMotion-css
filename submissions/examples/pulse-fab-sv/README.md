@@ -7,9 +7,7 @@ Creates a floating action button fixed to the bottom-right corner of the page wi
 ## How is it used?
 
 ```html
-<button class="pulse-fab">
-  +
-</button>
+<button class="pulse-fab">+</button>
 ```
 
 ## Why is it useful?

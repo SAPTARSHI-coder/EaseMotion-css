@@ -2,9 +2,8 @@
 name: Feature Request
 about: Propose a new utility, animation, or component for EaseMotion CSS
 title: "[FEATURE] Your feature name here"
-labels: ''
-assignees: ''
-
+labels: ""
+assignees: ""
 ---
 
 ## Feature Name

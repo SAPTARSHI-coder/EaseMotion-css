@@ -4,6 +4,7 @@
 Animates card components with a glowing shadow effect during hover/emphasis interactions.
 
 **How is it used?**
+
 <div class="glow-card glow-purple">Content</div>
 <div class="glow-card glow-green">Content</div>
 <div class="glow-card glow-orange">Content</div>

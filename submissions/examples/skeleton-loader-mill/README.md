@@ -4,6 +4,7 @@
    A shimmer-animated placeholder component that mimics content layout while data is loading.
 
 2. **How is it used?**
+
    ```html
    <div class="skeleton-card">
      <div class="skeleton-circle"></div>

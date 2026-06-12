@@ -12,7 +12,7 @@ CSS-only toggle switch component with default, success, danger, and warning colo
     class="ease-toggle"
     role="switch"
     aria-label="Enable dark mode"
-  >
+  />
   <label for="dark-mode">
     <span class="ease-toggle-sr-only">Enable dark mode</span>
   </label>
@@ -21,23 +21,25 @@ CSS-only toggle switch component with default, success, danger, and warning colo
 
 ```html
 <script>
-document.querySelectorAll('input.ease-toggle[role="switch"]').forEach(function(toggle) {
-  toggle.setAttribute('aria-checked', toggle.checked ? 'true' : 'false');
-  toggle.addEventListener('change', function() {
-    this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-  });
-});
+  document
+    .querySelectorAll('input.ease-toggle[role="switch"]')
+    .forEach(function (toggle) {
+      toggle.setAttribute("aria-checked", toggle.checked ? "true" : "false");
+      toggle.addEventListener("change", function () {
+        this.setAttribute("aria-checked", this.checked ? "true" : "false");
+      });
+    });
 </script>
 ```
 
 ## Variants
 
-| Class | Description |
-| --- | --- |
-| `.ease-toggle` | Default blue checked state |
-| `.ease-toggle.success` | Green checked state |
-| `.ease-toggle.danger` | Red checked state |
-| `.ease-toggle.warning` | Amber checked state |
+| Class                  | Description                |
+| ---------------------- | -------------------------- |
+| `.ease-toggle`         | Default blue checked state |
+| `.ease-toggle.success` | Green checked state        |
+| `.ease-toggle.danger`  | Red checked state          |
+| `.ease-toggle.warning` | Amber checked state        |
 
 ## Accessibility
 

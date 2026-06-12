@@ -43,6 +43,7 @@ must manually write the `@keyframes`, set `background-size: 300% 300%`,
 and pick colors from scratch for every project.
 
 `ease-bg-animate` gives EaseMotion users a complete, composable system:
+
 - One class to activate the effect
 - Color variant classes covering four common palettes
 - Speed modifiers that stack freely onto any combination
@@ -55,15 +56,15 @@ respected — users who opt out see a static gradient instead.
 
 ## Files
 
-| File        | Purpose                                                                       |
-|-------------|-------------------------------------------------------------------------------|
-| `style.css` | 1 keyframe, base class, 4 color variants, 2 speed modifiers, reduced-motion   |
-| `demo.html` | Full-width hero, 4 variant cards, speed comparison, variant reference table   |
-| `README.md` | This file                                                                     |
+| File        | Purpose                                                                     |
+| ----------- | --------------------------------------------------------------------------- |
+| `style.css` | 1 keyframe, base class, 4 color variants, 2 speed modifiers, reduced-motion |
+| `demo.html` | Full-width hero, 4 variant cards, speed comparison, variant reference table |
+| `README.md` | This file                                                                   |
 
 ---
 
-Proposed ease-* names (maintainer decides):
+Proposed ease-\* names (maintainer decides):
 ease-bg-animate · ease-bg-animate-sunset · ease-bg-animate-ocean · ease-bg-animate-forest · ease-bg-animate-dark · ease-bg-animate-slow · ease-bg-animate-fast
 
 Closes #2741

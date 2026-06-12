@@ -11,14 +11,14 @@ Accent border card variants using colored left borders for semantic status indic
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-accent` | Primary color left border |
-| `ease-card-accent-success` | Green success border |
-| `ease-card-accent-danger` | Red danger border |
-| `ease-card-accent-warning` | Amber warning border |
-| `ease-card-accent-info` | Light primary info border |
-| `ease-card-accent-neutral` | Gray neutral border |
+| Class                      | Description               |
+| -------------------------- | ------------------------- |
+| `ease-card-accent`         | Primary color left border |
+| `ease-card-accent-success` | Green success border      |
+| `ease-card-accent-danger`  | Red danger border         |
+| `ease-card-accent-warning` | Amber warning border      |
+| `ease-card-accent-info`    | Light primary info border |
+| `ease-card-accent-neutral` | Gray neutral border       |
 
 ## Notes
 

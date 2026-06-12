@@ -21,18 +21,14 @@ Styled code block with dark theme, language label, line numbers, and syntax high
 ## Usage
 
 ```html
-&lt;div class="code-block-pr"&gt;
-  &lt;div class="code-block-pr-header"&gt;
-    &lt;div class="code-block-pr-dots"&gt;
-      &lt;span class="code-block-pr-dot code-block-pr-dot-red"&gt;&lt;/span&gt;
-      &lt;span class="code-block-pr-dot code-block-pr-dot-yellow"&gt;&lt;/span&gt;
-      &lt;span class="code-block-pr-dot code-block-pr-dot-green"&gt;&lt;/span&gt;
-    &lt;/div&gt;
-    &lt;span class="code-block-pr-lang"&gt;HTML&lt;/span&gt;
-    &lt;button class="code-block-pr-copy"&gt;Copy&lt;/button&gt;
-  &lt;/div&gt;
-  &lt;div class="code-block-pr-body"&gt;
-    &lt;div class="code-block-pr-lines"&gt;1&lt;br&gt;2&lt;br&gt;3&lt;/div&gt;
-    &lt;div class="code-block-pr-code"&gt;code here&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="code-block-pr"&gt; &lt;div class="code-block-pr-header"&gt;
+&lt;div class="code-block-pr-dots"&gt; &lt;span class="code-block-pr-dot
+code-block-pr-dot-red"&gt;&lt;/span&gt; &lt;span class="code-block-pr-dot
+code-block-pr-dot-yellow"&gt;&lt;/span&gt; &lt;span class="code-block-pr-dot
+code-block-pr-dot-green"&gt;&lt;/span&gt; &lt;/div&gt; &lt;span
+class="code-block-pr-lang"&gt;HTML&lt;/span&gt; &lt;button
+class="code-block-pr-copy"&gt;Copy&lt;/button&gt; &lt;/div&gt; &lt;div
+class="code-block-pr-body"&gt; &lt;div
+class="code-block-pr-lines"&gt;1&lt;br&gt;2&lt;br&gt;3&lt;/div&gt; &lt;div
+class="code-block-pr-code"&gt;code here&lt;/div&gt; &lt;/div&gt; &lt;/div&gt;
+```

@@ -8,10 +8,11 @@ Connect your action triggers and container elements using matching checkbox and 
 
 ```html
 <label for="my-modal" class="ease-modal-trigger-label">Open Modal</label>
-<input type="checkbox" id="my-modal" class="ease-modal-toggle">
+<input type="checkbox" id="my-modal" class="ease-modal-toggle" />
 
 <div class="ease-modal-overlay">
   <div class="ease-modal-card">
     <!-- Header, Body, and Close Labels go here -->
   </div>
 </div>
+```

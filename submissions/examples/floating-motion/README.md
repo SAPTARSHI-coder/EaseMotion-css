@@ -9,17 +9,11 @@ Adds reusable floating motion animations that create smooth vertical movement fo
 ## How is it used?
 
 ```html
-<div class="ease-float">
-    Content
-</div>
+<div class="ease-float">Content</div>
 
-<div class="ease-float-slow">
-    Content
-</div>
+<div class="ease-float-slow">Content</div>
 
-<div class="ease-float-fast">
-    Content
-</div>
+<div class="ease-float-fast">Content</div>
 ```
 
 ---

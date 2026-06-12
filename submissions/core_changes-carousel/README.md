@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a CSS-only carousel using `scroll-snap-type: x mandatory` for slide behavior, with navigation dots and optional image captions — zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <div class="carousel">
      <div class="carousel-track">

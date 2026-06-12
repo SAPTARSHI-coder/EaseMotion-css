@@ -6,16 +6,16 @@ A responsive top navigation bar with branding, navigation links, optional CTA bu
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Sticky | `.ease-navbar--sticky` | Sticky at top (default) |
-| Fixed | `.ease-navbar--fixed` | Fixed at top |
-| Static | `.ease-navbar--static` | Normal flow |
-| Large | `.ease-navbar--lg` | 64px height (default: 56px) |
-| Transparent | `.ease-navbar--transparent` | No background or border |
-| Glass | `.ease-navbar--glass` | Frosted glass (backdrop-filter blur) |
-| Centered | `.ease-navbar--centered` | Links centred, brand on left |
-| Split | `.ease-navbar--split` | Brand left, links centre, CTA right |
+| Variant     | Class                       | Description                          |
+| ----------- | --------------------------- | ------------------------------------ |
+| Sticky      | `.ease-navbar--sticky`      | Sticky at top (default)              |
+| Fixed       | `.ease-navbar--fixed`       | Fixed at top                         |
+| Static      | `.ease-navbar--static`      | Normal flow                          |
+| Large       | `.ease-navbar--lg`          | 64px height (default: 56px)          |
+| Transparent | `.ease-navbar--transparent` | No background or border              |
+| Glass       | `.ease-navbar--glass`       | Frosted glass (backdrop-filter blur) |
+| Centered    | `.ease-navbar--centered`    | Links centred, brand on left         |
+| Split       | `.ease-navbar--split`       | Brand left, links centre, CTA right  |
 
 ## How is it used?
 
@@ -54,10 +54,10 @@ A responsive top navigation bar with branding, navigation links, optional CTA bu
 Minimal JS handles: hamburger toggle, mobile menu open/close, body scroll lock, and close on link click.
 
 ```js
-toggle.addEventListener('click', function() {
-  mobile.classList.toggle('ease-navbar__mobile--open');
-  navbar.classList.toggle('ease-navbar--mobile-open');
-  document.body.style.overflow = isOpen ? 'hidden' : '';
+toggle.addEventListener("click", function () {
+  mobile.classList.toggle("ease-navbar__mobile--open");
+  navbar.classList.toggle("ease-navbar--mobile-open");
+  document.body.style.overflow = isOpen ? "hidden" : "";
 });
 ```
 

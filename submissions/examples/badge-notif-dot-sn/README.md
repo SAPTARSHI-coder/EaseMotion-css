@@ -1,9 +1,11 @@
 # Notification Badge Dot
 
 ## Summary
+
 Pulsing unread notification badge for icon buttons.
 
 ## Usage
+
 ```html
 <div class="ease-notif-wrapper">
   <button>bell</button>

@@ -14,10 +14,12 @@ a pop animation.
 
 ```html
 <div class="feedback-section">
-
   <!-- type switcher -->
   <div class="feedback-types">
-    <button class="feedback-type-btn feedback-type-btn--active" data-type="general">
+    <button
+      class="feedback-type-btn feedback-type-btn--active"
+      data-type="general"
+    >
       <span class="ftype-icon">💬</span>
       <span class="ftype-label">General</span>
     </button>
@@ -40,12 +42,16 @@ a pop animation.
       </div>
       <div class="feedback-field">
         <label class="feedback-label" for="msg">Your feedback</label>
-        <textarea id="msg" class="feedback-textarea" rows="4" placeholder="What could be better?"></textarea>
+        <textarea
+          id="msg"
+          class="feedback-textarea"
+          rows="4"
+          placeholder="What could be better?"
+        ></textarea>
       </div>
       <button class="feedback-submit" type="button">Send Feedback</button>
     </div>
   </div>
-
 </div>
 ```
 
@@ -65,6 +71,7 @@ an appropriate color accent:
 - **Bug report** — red, browser + OS fields, steps to reproduce
 
 Fits EaseMotion CSS philosophy:
+
 - `feedback-type-btn--active`, `feedback-card--bug` — readable modifier classes
 - Form entrance uses `cubic-bezier(0.22, 1, 0.36, 1)` spring — consistent with framework easing
 - Success icon uses `cubic-bezier(0.34, 1.56, 0.64, 1)` bounce pop
@@ -75,19 +82,19 @@ Fits EaseMotion CSS philosophy:
 
 ## Proposed class names (maintainer decides)
 
-| Raw name                      | Proposed ease-* name               |
-|-------------------------------|------------------------------------|
-| `feedback-section`            | `ease-feedback-section`            |
-| `feedback-types`              | `ease-feedback-types`              |
-| `feedback-type-btn`           | `ease-feedback-type-btn`           |
-| `feedback-type-btn--active`   | `ease-feedback-type-btn-active`    |
-| `feedback-card`               | `ease-feedback-card`               |
-| `feedback-card--suggestion`   | `ease-feedback-card-suggestion`    |
-| `feedback-card--bug`          | `ease-feedback-card-bug`           |
-| `feedback-form`               | `ease-feedback-form`               |
-| `feedback-input`              | `ease-feedback-input`              |
-| `feedback-textarea`           | `ease-feedback-textarea`           |
-| `feedback-submit`             | `ease-feedback-submit`             |
-| `feedback-success`            | `ease-feedback-success`            |
-| `star`                        | `ease-star`                        |
-| `priority-btn`                | `ease-priority-btn`                |
+| Raw name                    | Proposed ease-\* name           |
+| --------------------------- | ------------------------------- |
+| `feedback-section`          | `ease-feedback-section`         |
+| `feedback-types`            | `ease-feedback-types`           |
+| `feedback-type-btn`         | `ease-feedback-type-btn`        |
+| `feedback-type-btn--active` | `ease-feedback-type-btn-active` |
+| `feedback-card`             | `ease-feedback-card`            |
+| `feedback-card--suggestion` | `ease-feedback-card-suggestion` |
+| `feedback-card--bug`        | `ease-feedback-card-bug`        |
+| `feedback-form`             | `ease-feedback-form`            |
+| `feedback-input`            | `ease-feedback-input`           |
+| `feedback-textarea`         | `ease-feedback-textarea`        |
+| `feedback-submit`           | `ease-feedback-submit`          |
+| `feedback-success`          | `ease-feedback-success`         |
+| `star`                      | `ease-star`                     |
+| `priority-btn`              | `ease-priority-btn`             |

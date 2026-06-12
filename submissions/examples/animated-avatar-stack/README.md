@@ -26,4 +26,3 @@ Displays a compact, overlapping stack of team avatars with smooth hover/focus ex
 
 **3. Why is it useful?**  
 Avatar stacks are a common collaboration UI pattern (dashboards, team pages, SaaS apps). This component is motion-first and composable: it uses micro-interactions (lift/scale + z-index management) while remaining responsive and respects `prefers-reduced-motion`.
-

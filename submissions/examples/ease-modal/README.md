@@ -22,7 +22,7 @@ A CSS-only modal dialog component with animated backdrop and panel. Supports two
 ### Checkbox `:checked` mode (recommended)
 
 ```html
-<input type="checkbox" id="my-modal" class="ease-modal-toggle">
+<input type="checkbox" id="my-modal" class="ease-modal-toggle" />
 <div class="ease-modal-overlay">
   <div class="ease-modal-panel">
     <label for="my-modal" class="ease-modal-close">&times;</label>
@@ -57,13 +57,13 @@ A CSS-only modal dialog component with animated backdrop and panel. Supports two
 
 ## Toggle mode comparison
 
-| Feature                  | Checkbox `:checked` | `:target` URL hash     |
-|--------------------------|---------------------|------------------------|
-| JavaScript required      | No                  | No                     |
-| Backdrop click-to-close  | Yes (label targets) | Yes (backdrop link)    |
-| Escape key close         | Via JS listener     | Via JS listener        |
-| Browser history impact   | None                | Adds/clears URL hash   |
-| Multiple modals          | Yes (independent)   | Yes (independent)      |
+| Feature                 | Checkbox `:checked` | `:target` URL hash   |
+| ----------------------- | ------------------- | -------------------- |
+| JavaScript required     | No                  | No                   |
+| Backdrop click-to-close | Yes (label targets) | Yes (backdrop link)  |
+| Escape key close        | Via JS listener     | Via JS listener      |
+| Browser history impact  | None                | Adds/clears URL hash |
+| Multiple modals         | Yes (independent)   | Yes (independent)    |
 
 ---
 

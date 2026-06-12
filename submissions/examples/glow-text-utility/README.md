@@ -12,9 +12,7 @@ A smooth glow-style animation utility for text components.
 ## Usage
 
 ```html
-<h1 class="ease-glow-text-utility">
-  Glow Effect
-</h1>
+<h1 class="ease-glow-text-utility">Glow Effect</h1>
 ```
 
 ## Animation Details

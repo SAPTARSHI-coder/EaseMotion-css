@@ -4,6 +4,7 @@
 Custom styled radio buttons with animated fill on selection and a card variant.
 
 **How is it used?**
+
 <div class="ease-radio-group">
   <label class="ease-radio">
     <input type="radio" name="group" />

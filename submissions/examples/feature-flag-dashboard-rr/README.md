@@ -8,8 +8,8 @@ Displays feature flags, rollout status, environments, and enable/disable states 
 
 ```html
 <div class="flag-card enabled">
-    <h3>Dark Mode</h3>
-    <span class="status on">Enabled</span>
+  <h3>Dark Mode</h3>
+  <span class="status on">Enabled</span>
 </div>
 ```
 

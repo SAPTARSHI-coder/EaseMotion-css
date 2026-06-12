@@ -21,7 +21,10 @@ An expandable floating action button that reveals multiple quick actions. Common
 ## Usage
 
 ```html
-<div class="ease-speed-dial ease-speed-dial--br ease-speed-dial--up" id="myDial">
+<div
+  class="ease-speed-dial ease-speed-dial--br ease-speed-dial--up"
+  id="myDial"
+>
   <div class="ease-speed-dial__backdrop"></div>
 
   <div class="ease-speed-dial__actions">
@@ -39,30 +42,32 @@ An expandable floating action button that reveals multiple quick actions. Common
 </div>
 
 <script>
-  const dial = document.getElementById('myDial');
-  document.querySelector('.ease-speed-dial__btn').addEventListener('click', () => {
-    dial.classList.toggle('ease-speed-dial--open');
-  });
+  const dial = document.getElementById("myDial");
+  document
+    .querySelector(".ease-speed-dial__btn")
+    .addEventListener("click", () => {
+      dial.classList.toggle("ease-speed-dial--open");
+    });
 </script>
 ```
 
 ### Positions
 
-| Class | Position |
-|-------|----------|
+| Class                 | Position               |
+| --------------------- | ---------------------- |
 | `ease-speed-dial--br` | Bottom-right (default) |
-| `ease-speed-dial--bl` | Bottom-left |
-| `ease-speed-dial--tr` | Top-right |
-| `ease-speed-dial--tl` | Top-left |
+| `ease-speed-dial--bl` | Bottom-left            |
+| `ease-speed-dial--tr` | Top-right              |
+| `ease-speed-dial--tl` | Top-left               |
 
 ### Directions
 
-| Class | Direction |
-|-------|-----------|
-| `ease-speed-dial--up` | Fan upward (default) |
-| `ease-speed-dial--down` | Fan downward |
-| `ease-speed-dial--left` | Fan left |
-| `ease-speed-dial--right` | Fan right |
+| Class                    | Direction            |
+| ------------------------ | -------------------- |
+| `ease-speed-dial--up`    | Fan upward (default) |
+| `ease-speed-dial--down`  | Fan downward         |
+| `ease-speed-dial--left`  | Fan left             |
+| `ease-speed-dial--right` | Fan right            |
 
 ### Hover trigger
 
@@ -77,7 +82,7 @@ An expandable floating action button that reveals multiple quick actions. Common
 ## Browser Support
 
 | Browser | Supported |
-|---------|-----------|
+| ------- | --------- |
 | Chrome  | Yes       |
 | Firefox | Yes       |
 | Safari  | Yes       |

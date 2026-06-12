@@ -7,9 +7,7 @@ Provides a visual interface for monitoring build pipelines, test execution, depl
 ## How is it used?
 
 ```html
-<div class="stage success">
-    Build
-</div>
+<div class="stage success">Build</div>
 ```
 
 ## Why is it useful?

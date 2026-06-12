@@ -10,8 +10,8 @@ Static gradient text utility using `background-clip: text` with a gradient backg
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                | Description          |
+| -------------------- | -------------------- |
 | `ease-gradient-text` | Static gradient text |
 
 ## Notes

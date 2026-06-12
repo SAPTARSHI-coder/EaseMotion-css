@@ -4,17 +4,17 @@ A celebratory scale-and-rotate wobble animation for success toasts, badge emphas
 
 ## Class reference
 
-| Class | Trigger | Loop | Use Case |
-|-------|---------|------|----------|
-| `.ease-tada` | On class add / page load | No | Success toast, one-shot confirmation |
-| `.ease-tada-hover` | `:hover` | No | Interactive badge or button emphasis |
-| `.ease-tada-loop` | Automatic | Yes | Notification count, live status badge |
+| Class              | Trigger                  | Loop | Use Case                              |
+| ------------------ | ------------------------ | ---- | ------------------------------------- |
+| `.ease-tada`       | On class add / page load | No   | Success toast, one-shot confirmation  |
+| `.ease-tada-hover` | `:hover`                 | No   | Interactive badge or button emphasis  |
+| `.ease-tada-loop`  | Automatic                | Yes  | Notification count, live status badge |
 
 ## CSS variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-tada-duration` | `0.8s` | Total duration of the tada keyframe animation |
+| Variable               | Default | Description                                   |
+| ---------------------- | ------- | --------------------------------------------- |
+| `--ease-tada-duration` | `0.8s`  | Total duration of the tada keyframe animation |
 
 ```css
 .success-toast {

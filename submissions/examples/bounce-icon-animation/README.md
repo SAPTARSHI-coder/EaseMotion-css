@@ -10,12 +10,12 @@ A lightweight CSS utility that adds a bounce effect to icons and small UI elemen
 
 ## Features
 
- Pure CSS
- Lightweight and reusable
- Suitable for icons, badges, and notifications
- Easy to integrate into existing projects
+Pure CSS
+Lightweight and reusable
+Suitable for icons, badges, and notifications
+Easy to integrate into existing projects
 
 ## Files
 
- `style.css` – animation implementation
- `demo.html` – working example
+`style.css` – animation implementation
+`demo.html` – working example

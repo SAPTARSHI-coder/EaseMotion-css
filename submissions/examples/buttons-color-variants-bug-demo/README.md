@@ -10,9 +10,21 @@
 ## Expected
 
 ```css
-.ease-btn-warning   { background-color: var(--ease-color-warning, #f59e0b);    border-color: var(--ease-color-warning, #f59e0b); color: #fff; }
-.ease-btn-info      { background-color: var(--ease-color-info, #3b82f6);       border-color: var(--ease-color-info, #3b82f6); color: #fff; }
-.ease-btn-secondary { background-color: var(--ease-color-secondary, #8b5cf6);  border-color: var(--ease-color-secondary, #8b5cf6); color: #fff; }
+.ease-btn-warning {
+  background-color: var(--ease-color-warning, #f59e0b);
+  border-color: var(--ease-color-warning, #f59e0b);
+  color: #fff;
+}
+.ease-btn-info {
+  background-color: var(--ease-color-info, #3b82f6);
+  border-color: var(--ease-color-info, #3b82f6);
+  color: #fff;
+}
+.ease-btn-secondary {
+  background-color: var(--ease-color-secondary, #8b5cf6);
+  border-color: var(--ease-color-secondary, #8b5cf6);
+  color: #fff;
+}
 ```
 
 ## Demo

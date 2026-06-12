@@ -1,4 +1,3 @@
- 
 # Pagination Component
 
 Pagination component with active/disabled states and hover animations.
@@ -25,16 +24,17 @@ Pagination component with active/disabled states and hover animations.
 
 ```html
 <div class="ease-pagination">
-    <div class="ease-page-item ease-page-disabled">
-        <a href="#" class="ease-page-link">«</a>
-    </div>
-    <div class="ease-page-item ease-page-active">
-        <a href="#" class="ease-page-link">1</a>
-    </div>
-    <div class="ease-page-item">
-        <a href="#" class="ease-page-link">2</a>
-    </div>
-    <div class="ease-page-item">
-        <a href="#" class="ease-page-link">»</a>
-    </div>
+  <div class="ease-page-item ease-page-disabled">
+    <a href="#" class="ease-page-link">«</a>
+  </div>
+  <div class="ease-page-item ease-page-active">
+    <a href="#" class="ease-page-link">1</a>
+  </div>
+  <div class="ease-page-item">
+    <a href="#" class="ease-page-link">2</a>
+  </div>
+  <div class="ease-page-item">
+    <a href="#" class="ease-page-link">»</a>
+  </div>
 </div>
+```

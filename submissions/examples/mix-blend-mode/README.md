@@ -12,10 +12,18 @@ Demonstrates CSS `mix-blend-mode` animations — a shape cycles through 7 blend 
 }
 
 @keyframes blend-cycle {
-  0%  { mix-blend-mode: normal; }
-  25% { mix-blend-mode: difference; }
-  50% { mix-blend-mode: screen; }
-  75% { mix-blend-mode: multiply; }
+  0% {
+    mix-blend-mode: normal;
+  }
+  25% {
+    mix-blend-mode: difference;
+  }
+  50% {
+    mix-blend-mode: screen;
+  }
+  75% {
+    mix-blend-mode: multiply;
+  }
 }
 ```
 

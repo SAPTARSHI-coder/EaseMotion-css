@@ -19,6 +19,7 @@ A complete progress indicator collection built with the `ease-` naming conventio
 ## 🚀 Usage
 
 ### Linear Progress
+
 ```html
 <div class="ease-progress-linear ease-progress-md ease-progress-primary">
   <div class="ease-progress-fill" style="width: 70%"></div>
@@ -26,6 +27,7 @@ A complete progress indicator collection built with the `ease-` naming conventio
 ```
 
 ### With Label
+
 ```html
 <div class="ease-progress-linear ease-progress-lg ease-progress-success">
   <div class="ease-progress-fill" style="width: 65%">
@@ -35,22 +37,32 @@ A complete progress indicator collection built with the `ease-` naming conventio
 ```
 
 ### Striped & Animated
+
 ```html
-<div class="ease-progress-linear ease-progress-md ease-progress-striped ease-progress-animated ease-progress-primary">
+<div
+  class="ease-progress-linear ease-progress-md ease-progress-striped ease-progress-animated ease-progress-primary"
+>
   <div class="ease-progress-fill" style="width: 50%"></div>
 </div>
 ```
 
 ### Indeterminate (Loading)
+
 ```html
-<div class="ease-progress-linear ease-progress-md ease-progress-indeterminate ease-progress-primary">
+<div
+  class="ease-progress-linear ease-progress-md ease-progress-indeterminate ease-progress-primary"
+>
   <div class="ease-progress-fill"></div>
 </div>
 ```
 
 ### Circular Progress
+
 ```html
-<div class="ease-progress-circular ease-progress-success" style="--ease-progress: 75">
+<div
+  class="ease-progress-circular ease-progress-success"
+  style="--ease-progress: 75"
+>
   <svg viewBox="0 0 100 100">
     <circle class="ease-circle-bg" cx="50" cy="50" r="42"></circle>
     <circle class="ease-circle-fill" cx="50" cy="50" r="42"></circle>
@@ -60,6 +72,7 @@ A complete progress indicator collection built with the `ease-` naming conventio
 ```
 
 ### Stepped Progress
+
 ```html
 <div class="ease-progress-stepped">
   <div class="ease-step ease-step-done">
@@ -84,51 +97,57 @@ A complete progress indicator collection built with the `ease-` naming conventio
 ## 🎨 Available Classes
 
 ### Linear
-| Class | Description |
-|-------|-------------|
-| `ease-progress-linear` | Container |
-| `ease-progress-fill` | Filled portion |
-| `ease-progress-label` | Optional text label |
+
+| Class                  | Description         |
+| ---------------------- | ------------------- |
+| `ease-progress-linear` | Container           |
+| `ease-progress-fill`   | Filled portion      |
+| `ease-progress-label`  | Optional text label |
 
 ### Sizes
-| Class | Height |
-|-------|--------|
-| `ease-progress-sm` | 6px |
-| `ease-progress-md` | 12px |
-| `ease-progress-lg` | 22px |
+
+| Class              | Height |
+| ------------------ | ------ |
+| `ease-progress-sm` | 6px    |
+| `ease-progress-md` | 12px   |
+| `ease-progress-lg` | 22px   |
 
 ### Themes
-| Class | Color |
-|-------|-------|
+
+| Class                   | Color            |
+| ----------------------- | ---------------- |
 | `ease-progress-primary` | Purple (default) |
-| `ease-progress-success` | Green |
-| `ease-progress-warning` | Yellow |
-| `ease-progress-error` | Red |
+| `ease-progress-success` | Green            |
+| `ease-progress-warning` | Yellow           |
+| `ease-progress-error`   | Red              |
 
 ### Modifiers
-| Class | Effect |
-|-------|--------|
-| `ease-progress-striped` | Diagonal stripes overlay |
-| `ease-progress-animated` | Animates the stripes |
+
+| Class                         | Effect                    |
+| ----------------------------- | ------------------------- |
+| `ease-progress-striped`       | Diagonal stripes overlay  |
+| `ease-progress-animated`      | Animates the stripes      |
 | `ease-progress-indeterminate` | Endless loading animation |
 
 ### Circular
-| Class | Description |
-|-------|-------------|
+
+| Class                    | Description                               |
+| ------------------------ | ----------------------------------------- |
 | `ease-progress-circular` | Container (use `--ease-progress` CSS var) |
-| `ease-circle-bg` | Background ring |
-| `ease-circle-fill` | Progress ring |
-| `ease-circle-text` | Centered percent text |
+| `ease-circle-bg`         | Background ring                           |
+| `ease-circle-fill`       | Progress ring                             |
+| `ease-circle-text`       | Centered percent text                     |
 
 ### Stepped
-| Class | Description |
-|-------|-------------|
-| `ease-progress-stepped` | Container |
-| `ease-step` | Each step |
-| `ease-step-circle` | The number circle |
-| `ease-step-line` | Connector line |
-| `ease-step-done` | Completed step (green) |
-| `ease-step-active` | Current step (pulsing) |
+
+| Class                   | Description            |
+| ----------------------- | ---------------------- |
+| `ease-progress-stepped` | Container              |
+| `ease-step`             | Each step              |
+| `ease-step-circle`      | The number circle      |
+| `ease-step-line`        | Connector line         |
+| `ease-step-done`        | Completed step (green) |
+| `ease-step-active`      | Current step (pulsing) |
 
 ---
 
@@ -141,12 +160,13 @@ Override CSS variables to match your theme:
   --ease-primary: #7c3aed;
   --ease-success: #10b981;
   --ease-warning: #f59e0b;
-  --ease-error:   #ef4444;
-  --ease-track:   #2f2f4a;
+  --ease-error: #ef4444;
+  --ease-track: #2f2f4a;
 }
 ```
 
 For circular progress, set the percentage via the `--ease-progress` CSS variable:
+
 ```html
 <div class="ease-progress-circular" style="--ease-progress: 65">...</div>
 ```

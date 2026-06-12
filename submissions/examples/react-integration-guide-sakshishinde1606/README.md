@@ -10,3 +10,4 @@ First, install the core library using your preferred package manager. Run this c
 
 ```bash
 npm install easemotion-css
+```

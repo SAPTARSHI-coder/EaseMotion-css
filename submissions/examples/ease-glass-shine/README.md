@@ -11,8 +11,10 @@ The utility achieves premium visual weight completely on decoupled GPU thread ti
 - **Universal Com-posability:** Operates as a layout-agnostic utility wrapper that can be applied to buttons, dark mode blocks, text spaces, or images without interrupting default layout structures.
 
 ## File Manifest
+
 - `demo.html`: Independent interactive preview sandbox space.
 - `style.css`: Raw CSS animation overrides documentation.
 
 ## By
+
 Pari Dubey

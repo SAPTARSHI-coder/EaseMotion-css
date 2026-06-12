@@ -1,8 +1,8 @@
 (function () {
-  'use strict';
+  "use strict";
 
-  var revealClass = 'ease-reveal';
-  var activeClass = 'ease-reveal-active';
+  var revealClass = "ease-reveal";
+  var activeClass = "ease-reveal-active";
 
   function isCentered(el) {
     var rect = el.getBoundingClientRect();
@@ -11,10 +11,12 @@
   }
 
   // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
   if (prefersReducedMotion) return;
 
-  var supportsObserver = 'IntersectionObserver' in window;
+  var supportsObserver = "IntersectionObserver" in window;
 
   if (supportsObserver) {
     var observer = new IntersectionObserver(
@@ -30,7 +32,7 @@
     );
 
     var ready = function () {
-      var els = document.querySelectorAll('.' + revealClass);
+      var els = document.querySelectorAll("." + revealClass);
       Array.prototype.forEach.call(els, function (el) {
         if (isCentered(el)) {
           el.classList.add(activeClass);
@@ -40,21 +42,21 @@
       });
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', ready);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", ready);
     } else {
       ready();
     }
   } else {
     var readyFallback = function () {
-      var els = document.querySelectorAll('.' + revealClass);
+      var els = document.querySelectorAll("." + revealClass);
       Array.prototype.forEach.call(els, function (el) {
         el.classList.add(activeClass);
       });
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', readyFallback);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", readyFallback);
     } else {
       readyFallback();
     }

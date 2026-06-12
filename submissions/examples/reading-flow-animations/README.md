@@ -13,6 +13,7 @@ It adds three subtle reading-focused animation classes:
 ## Usage
 
 ### Reveal text sections
+
 ```html
 <section class="ease-reading-reveal">
   <h2>Getting Started</h2>
@@ -21,6 +22,7 @@ It adds three subtle reading-focused animation classes:
 ```
 
 ### Highlight important notes
+
 ```html
 <div class="ease-reading-highlight">
   This feature requires version 2.0 or later.
@@ -28,6 +30,7 @@ It adds three subtle reading-focused animation classes:
 ```
 
 ### Reading progress indicator
+
 ```html
 <div class="ease-reading-progress"></div>
 ```

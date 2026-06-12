@@ -10,11 +10,11 @@ Pulsing opacity loader — a solid colored circle that fades in/out. A simpler a
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-loader-pulse` | Default pulsing loader |
-| `ease-loader-pulse-sm` | Small variant |
-| `ease-loader-pulse-lg` | Large variant |
+| Class                  | Description            |
+| ---------------------- | ---------------------- |
+| `ease-loader-pulse`    | Default pulsing loader |
+| `ease-loader-pulse-sm` | Small variant          |
+| `ease-loader-pulse-lg` | Large variant          |
 
 ## Notes
 

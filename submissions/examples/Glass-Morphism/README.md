@@ -12,4 +12,5 @@ Developers clone the component structures into their design layouts. The `.glass
 <div class="glass-card">
   <div class="card-badge">UI/UX Component</div>
   <h2>Glass Morphic Shimmer Features</h2>
-  </div>
+</div>
+```

@@ -11,4 +11,4 @@ Provides line-height utility classes: leading-none (1), leading-tight (1.25), le
 
 ## Why is it useful?
 
-Line-height control is essential for typographic rhythm. These utilities bring the existing CSS variables (--ease-leading-*) into easy-to-use class form.
+Line-height control is essential for typographic rhythm. These utilities bring the existing CSS variables (--ease-leading-\*) into easy-to-use class form.

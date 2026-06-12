@@ -7,14 +7,20 @@ Demonstrates container query animations using `@container` — where animation s
 ## How is it used?
 
 ```css
-.container { container-type: inline-size; }
+.container {
+  container-type: inline-size;
+}
 
 @container (min-width: 400px) {
-  .child { animation: fast-pulse 1.5s infinite; }
+  .child {
+    animation: fast-pulse 1.5s infinite;
+  }
 }
 
 @container (max-width: 399px) {
-  .child { animation: slow-pulse 3s infinite; }
+  .child {
+    animation: slow-pulse 3s infinite;
+  }
 }
 ```
 

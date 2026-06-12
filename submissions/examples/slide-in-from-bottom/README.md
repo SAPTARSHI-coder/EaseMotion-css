@@ -10,9 +10,9 @@ Entrance animation that slides an element in from the top (-100% Y offset) with 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-slide-in-from-top` | Slide from top |
+| Class                       | Description       |
+| --------------------------- | ----------------- |
+| `ease-slide-in-from-top`    | Slide from top    |
 | `ease-slide-in-from-bottom` | Slide from bottom |
 
 ## Notes

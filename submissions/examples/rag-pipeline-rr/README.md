@@ -7,13 +7,9 @@ Visualizes how Retrieval-Augmented Generation (RAG) systems process user queries
 ## How is it used?
 
 ```html
-<div class="stage vector">
-    Vector Database
-</div>
+<div class="stage vector">Vector Database</div>
 
-<div class="stage llm">
-    Large Language Model
-</div>
+<div class="stage llm">Large Language Model</div>
 ```
 
 ## Why is it useful?

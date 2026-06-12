@@ -19,9 +19,7 @@ A composable click ripple effect for interactive elements. Add `.ease-ripple` to
 ```html
 <button class="ease-btn ease-ripple">Click me</button>
 
-<div class="ease-card ease-ripple">
-  Clickable card content
-</div>
+<div class="ease-card ease-ripple">Clickable card content</div>
 
 <li class="ease-ripple">Menu item</li>
 ```
@@ -46,10 +44,10 @@ A composable click ripple effect for interactive elements. Add `.ease-ripple` to
 
 ## CSS Variables
 
-| Variable                  | Default        | Description                     |
-|---------------------------|----------------|---------------------------------|
-| `--ease-ripple-color`     | `currentColor` | Colour of the ripple circle     |
-| `--ease-ripple-duration`  | `0.5s`         | Animation duration              |
+| Variable                 | Default        | Description                 |
+| ------------------------ | -------------- | --------------------------- |
+| `--ease-ripple-color`    | `currentColor` | Colour of the ripple circle |
+| `--ease-ripple-duration` | `0.5s`         | Animation duration          |
 
 ---
 

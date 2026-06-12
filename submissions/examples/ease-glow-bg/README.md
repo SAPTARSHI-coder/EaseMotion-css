@@ -1,14 +1,8 @@
 \# ease-glow-bg
 
-
-
 Glow background entrance animation for cards and containers.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Speed |
 
@@ -26,17 +20,8 @@ Glow background entrance animation for cards and containers.
 
 | `ease-glow-bg-colored` | Rainbow colored glow | 1.5s |
 
-
-
 \## Usage
 
-
-
 ```html
-
-<div class="ease-glow-bg">
-
-&#x20;   Content glows on entrance
-
-</div>
-
+<div class="ease-glow-bg">&#x20; Content glows on entrance</div>
+```

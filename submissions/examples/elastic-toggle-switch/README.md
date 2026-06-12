@@ -4,9 +4,10 @@
 A pure CSS toggle switch component that uses a custom `cubic-bezier` transition to create a satisfying, bouncy, and elastic sliding effect when toggled on or off.
 
 **How is it used?**
+
 ```html
 <label class="elastic-toggle">
-  <input type="checkbox" class="elastic-toggle-input">
+  <input type="checkbox" class="elastic-toggle-input" />
   <div class="elastic-toggle-track">
     <div class="elastic-toggle-knob"></div>
   </div>

@@ -20,3 +20,4 @@ Additionally, this example directory acts as a bug patch to eliminate stacking c
 interactive-card-showcase-fix/
 ├── demo.html    # Interactive sandbox playground testing overflows and layered menus
 └── style.css    # Clean CSS workspace containing design tokens and containment fixes
+```

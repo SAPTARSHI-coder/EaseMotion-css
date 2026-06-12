@@ -9,9 +9,7 @@ Adds a smooth scale-and-fade entrance animation that makes elements appear with 
 Apply the animation class to any element:
 
 ```html
-<div class="pop-in">
-  Content
-</div>
+<div class="pop-in">Content</div>
 ```
 
 3. Why is it useful?

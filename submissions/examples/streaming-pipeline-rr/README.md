@@ -7,13 +7,9 @@ Visualizes how real-time events flow from producers through streaming infrastruc
 ## How is it used?
 
 ```html
-<div class="node broker">
-    Kafka Event Broker
-</div>
+<div class="node broker">Kafka Event Broker</div>
 
-<div class="node processor">
-    Stream Processing Engine
-</div>
+<div class="node processor">Stream Processing Engine</div>
 ```
 
 ## Why is it useful?

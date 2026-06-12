@@ -12,11 +12,11 @@ The entire effect is driven by CSS `@keyframes` and `transform: rotate()`. No Ja
 
 There are three built-in speed variants:
 
-| Class | Duration | Best for |
-|---|---|---|
-| `swing-badge` / `swing-quick` | 0.65s | Small elements — badges, labels, pills |
-| `swing-button` / `swing-hover` | 0.85s | Medium elements — buttons, links, nav items |
-| `swing-card` / `swing-slow` | 1.3s | Large elements — cards, tiles, signboards |
+| Class                          | Duration | Best for                                    |
+| ------------------------------ | -------- | ------------------------------------------- |
+| `swing-badge` / `swing-quick`  | 0.65s    | Small elements — badges, labels, pills      |
+| `swing-button` / `swing-hover` | 0.85s    | Medium elements — buttons, links, nav items |
+| `swing-card` / `swing-slow`    | 1.3s     | Large elements — cards, tiles, signboards   |
 
 ---
 
@@ -67,17 +67,17 @@ Two semantic aliases are available for contexts where the class name should desc
 
 ### Available classes at a glance
 
-| Class | Speed | Notes |
-|---|---|---|
-| `swing-hover` | Default | Generic utility — apply to anything |
-| `swing-hover swing-quick` | Quick | Speed modifier |
-| `swing-hover swing-slow` | Slow | Speed modifier |
-| `swing-button` | Default | Semantic wrapper for buttons / links |
-| `swing-card` | Slow | Semantic wrapper for cards / tiles |
-| `swing-badge` | Quick | Semantic wrapper for badges / pills |
-| `swing-nav-item` | Quick | Semantic wrapper for navigation items |
-| `pendulum-effect` | Default | Expressive alias for swing-hover |
-| `hanging-element` | Slow | Adds a decorative string pseudo-element |
+| Class                     | Speed   | Notes                                   |
+| ------------------------- | ------- | --------------------------------------- |
+| `swing-hover`             | Default | Generic utility — apply to anything     |
+| `swing-hover swing-quick` | Quick   | Speed modifier                          |
+| `swing-hover swing-slow`  | Slow    | Speed modifier                          |
+| `swing-button`            | Default | Semantic wrapper for buttons / links    |
+| `swing-card`              | Slow    | Semantic wrapper for cards / tiles      |
+| `swing-badge`             | Quick   | Semantic wrapper for badges / pills     |
+| `swing-nav-item`          | Quick   | Semantic wrapper for navigation items   |
+| `pendulum-effect`         | Default | Expressive alias for swing-hover        |
+| `hanging-element`         | Slow    | Adds a decorative string pseudo-element |
 
 ---
 
@@ -115,7 +115,7 @@ The stylesheet includes a `prefers-reduced-motion` media query that disables all
 
 ### The physics model
 
-A real pendulum swings through arcs that get progressively smaller because energy is lost to air resistance and friction — a process called *damping*. CSS cannot simulate physics equations, so the keyframes encode a hand-tuned approximation of that decay curve:
+A real pendulum swings through arcs that get progressively smaller because energy is lost to air resistance and friction — a process called _damping_. CSS cannot simulate physics equations, so the keyframes encode a hand-tuned approximation of that decay curve:
 
 ```
 Angle sequence (degrees):  0 → -18 → +13 → -9 → +6 → -3.5 → +1.8 → -0.8 → 0
@@ -174,4 +174,4 @@ All modern browsers. The `@keyframes` and `transform` properties used here have 
 
 ---
 
-*EaseMotion — handcrafted CSS animation primitives.*
+_EaseMotion — handcrafted CSS animation primitives._

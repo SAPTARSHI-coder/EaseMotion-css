@@ -9,9 +9,7 @@ Creates a smooth fade-in and upward entrance animation for elements using pure C
 ## How is it used?
 
 ```html
-<div class="em-reveal-scroll">
-  Content
-</div>
+<div class="em-reveal-scroll">Content</div>
 ```
 
 ---

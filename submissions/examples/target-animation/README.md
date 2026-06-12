@@ -12,8 +12,14 @@ Animates sections when they become the URL target using the CSS `:target` pseudo
 }
 
 @keyframes fade-slide-in {
-  from { opacity: 0; translate: 0 -20px; }
-  to   { opacity: 1; translate: 0 0; }
+  from {
+    opacity: 0;
+    translate: 0 -20px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
 }
 ```
 

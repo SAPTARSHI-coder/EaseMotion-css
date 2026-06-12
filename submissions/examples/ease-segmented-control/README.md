@@ -19,9 +19,27 @@ A horizontally connected button group where one option is always selected. Commo
 
 ```html
 <div class="ease-segmented-control" role="radiogroup" aria-label="View options">
-  <button class="ease-segmented-control__option ease-segmented-control__option--active" role="radio" aria-checked="true">Day</button>
-  <button class="ease-segmented-control__option" role="radio" aria-checked="false">Week</button>
-  <button class="ease-segmented-control__option" role="radio" aria-checked="false">Month</button>
+  <button
+    class="ease-segmented-control__option ease-segmented-control__option--active"
+    role="radio"
+    aria-checked="true"
+  >
+    Day
+  </button>
+  <button
+    class="ease-segmented-control__option"
+    role="radio"
+    aria-checked="false"
+  >
+    Week
+  </button>
+  <button
+    class="ease-segmented-control__option"
+    role="radio"
+    aria-checked="false"
+  >
+    Month
+  </button>
 </div>
 ```
 
@@ -29,25 +47,57 @@ A horizontally connected button group where one option is always selected. Commo
 
 ```html
 <!-- Small -->
-<div class="ease-segmented-control ease-segmented-control--sm" role="radiogroup">...</div>
+<div
+  class="ease-segmented-control ease-segmented-control--sm"
+  role="radiogroup"
+>
+  ...
+</div>
 
 <!-- Large -->
-<div class="ease-segmented-control ease-segmented-control--lg" role="radiogroup">...</div>
+<div
+  class="ease-segmented-control ease-segmented-control--lg"
+  role="radiogroup"
+>
+  ...
+</div>
 
 <!-- Pills (fully rounded) -->
-<div class="ease-segmented-control ease-segmented-control--pills" role="radiogroup">...</div>
+<div
+  class="ease-segmented-control ease-segmented-control--pills"
+  role="radiogroup"
+>
+  ...
+</div>
 
 <!-- Outline (underline indicator instead of filled) -->
-<div class="ease-segmented-control ease-segmented-control--outline" role="radiogroup">...</div>
+<div
+  class="ease-segmented-control ease-segmented-control--outline"
+  role="radiogroup"
+>
+  ...
+</div>
 
 <!-- Auto width (content-based sizing) -->
-<div class="ease-segmented-control ease-segmented-control--auto" role="radiogroup">...</div>
+<div
+  class="ease-segmented-control ease-segmented-control--auto"
+  role="radiogroup"
+>
+  ...
+</div>
 ```
 
 ### Disabled option
 
 ```html
-<button class="ease-segmented-control__option ease-segmented-control__option--disabled" role="radio" aria-checked="false" disabled>Pro</button>
+<button
+  class="ease-segmented-control__option ease-segmented-control__option--disabled"
+  role="radio"
+  aria-checked="false"
+  disabled
+>
+  Pro
+</button>
 ```
 
 ---
@@ -55,7 +105,7 @@ A horizontally connected button group where one option is always selected. Commo
 ## Browser Support
 
 | Browser | Supported |
-|---------|-----------|
+| ------- | --------- |
 | Chrome  | Yes       |
 | Firefox | Yes       |
 | Safari  | Yes       |

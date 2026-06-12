@@ -1,14 +1,8 @@
 \# ease-gallery
 
-
-
 Responsive image gallery grid component with hover zoom effect.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -30,11 +24,7 @@ Responsive image gallery grid component with hover zoom effect.
 
 | `ease-gallery-wide` | Wide item for masonry |
 
-
-
 \## Features
-
-
 
 \- 🖼️ Responsive CSS grid layout
 
@@ -46,35 +36,28 @@ Responsive image gallery grid component with hover zoom effect.
 
 \- 📱 Mobile responsive
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic Gallery -->
 
 <div class="ease-gallery">
+  &#x20;
+  <div class="ease-gallery-item">
+    &#x20;
+    <div class="ease-gallery-image">🖼️</div>
 
-&#x20;   <div class="ease-gallery-item">
+    &#x20;
+    <div class="ease-gallery-caption">Caption</div>
 
-&#x20;       <div class="ease-gallery-image">🖼️</div>
-
-&#x20;       <div class="ease-gallery-caption">Caption</div>
-
-&#x20;   </div>
-
+    &#x20;
+  </div>
 </div>
-
-
 
 <!-- Masonry Gallery -->
 
 <div class="ease-gallery-masonry">
-
-&#x20;   <div class="ease-gallery-item ease-gallery-tall">...</div>
-
+  &#x20;
+  <div class="ease-gallery-item ease-gallery-tall">...</div>
 </div>
-
+```

@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring cloud spending, resource utiliza
 
 ```html
 <div class="resource-card warning">
-    <h3>Database Cluster</h3>
+  <h3>Database Cluster</h3>
 </div>
 ```
 

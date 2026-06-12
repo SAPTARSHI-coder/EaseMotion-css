@@ -7,9 +7,7 @@ Creates a realistic heartbeat-style animation using a double-pulse rhythm follow
 ## How is it used?
 
 ```html
-<div class="heartbeat-element">
-  Content
-</div>
+<div class="heartbeat-element">Content</div>
 ```
 
 ## Why is it useful?

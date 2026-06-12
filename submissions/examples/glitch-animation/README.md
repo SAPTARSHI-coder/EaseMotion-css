@@ -13,12 +13,12 @@ The effect replicates classic **CRT signal corruption**: horizontal scanline sli
 
 Three complementary animations run simultaneously on different timers so they never sync — keeping the motion feeling organic rather than mechanically looped:
 
-| Animation | Applied to | What it does |
-|---|---|---|
-| `glitch-shift` | `::before` / `::after` | Slides the RGB ghost layers left/right |
+| Animation         | Applied to             | What it does                                   |
+| ----------------- | ---------------------- | ---------------------------------------------- |
+| `glitch-shift`    | `::before` / `::after` | Slides the RGB ghost layers left/right         |
 | `glitch-clip-a/b` | `::before` / `::after` | Cuts each layer to a different horizontal band |
-| `glitch-distort` | Host element | Brief `skewX` + `translateX` tape-warp burst |
-| `glitch-flicker` | Host element / accents | Opacity fluctuation, CRT power-wobble feel |
+| `glitch-distort`  | Host element           | Brief `skewX` + `translateX` tape-warp burst   |
+| `glitch-flicker`  | Host element / accents | Opacity fluctuation, CRT power-wobble feel     |
 
 ---
 
@@ -36,18 +36,16 @@ The **data-text** attribute is required — pseudo-elements read it with `conten
 
 ```html
 <!-- data-text must match the element's inner text exactly -->
-<h1 class="glitch-text glitch-title" data-text="SYSTEM ERROR">
-  SYSTEM ERROR
-</h1>
+<h1 class="glitch-text glitch-title" data-text="SYSTEM ERROR">SYSTEM ERROR</h1>
 ```
 
 ### 3. Size variants
 
-| Class | Description |
-|---|---|
-| `glitch-title` | Large display heading (`clamp(3rem, 10vw, 7rem)`) |
-| `glitch-subtitle` | Section heading (`clamp(1.4rem, 4vw, 2.4rem)`) |
-| `glitch-label` | Small caps UI label (`clamp(0.9rem, 2vw, 1.2rem)`) |
+| Class             | Description                                        |
+| ----------------- | -------------------------------------------------- |
+| `glitch-title`    | Large display heading (`clamp(3rem, 10vw, 7rem)`)  |
+| `glitch-subtitle` | Section heading (`clamp(1.4rem, 4vw, 2.4rem)`)     |
+| `glitch-label`    | Small caps UI label (`clamp(0.9rem, 2vw, 1.2rem)`) |
 
 ### 4. `glitch-effect` — for non-text elements
 
@@ -61,7 +59,7 @@ When you want the distortion on a **button, box, or image** without the RGB spli
 
 ```html
 <!-- Glassmorphism card with hover scan-line -->
-<div class="cyber-card"> ... </div>
+<div class="cyber-card">...</div>
 
 <!-- Left-bordered info strip, 4 colour variants -->
 <div class="neon-panel">...</div>
@@ -78,8 +76,10 @@ When you want the distortion on a **button, box, or image** without the RGB spli
 ### 6. Combine with colour utilities
 
 ```html
-<h2 class="glitch-text glitch-subtitle text-cyan"  data-text="UPLINK">UPLINK</h2>
-<h2 class="glitch-text glitch-subtitle text-magenta" data-text="OFFLINE">OFFLINE</h2>
+<h2 class="glitch-text glitch-subtitle text-cyan" data-text="UPLINK">UPLINK</h2>
+<h2 class="glitch-text glitch-subtitle text-magenta" data-text="OFFLINE">
+  OFFLINE
+</h2>
 ```
 
 ---
@@ -154,6 +154,7 @@ glitch-animation/
 ## Browser support
 
 All modern browsers. Requires support for:
+
 - `clip-path` (Chrome 55+, Firefox 54+, Safari 13.1+)
 - CSS custom properties
 - `@keyframes` / `animation`

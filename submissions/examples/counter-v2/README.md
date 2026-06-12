@@ -20,17 +20,17 @@ Animated number count-up using CSS `@property`, `counter()`, and `animation-time
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-counter` | Animates on page load |
+| Class                 | Description                                       |
+| --------------------- | ------------------------------------------------- |
+| `ease-counter`        | Animates on page load                             |
 | `ease-counter-scroll` | Scroll-triggered via `animation-timeline: view()` |
-| `ease-counter-fast` | 0.8s duration |
-| `ease-counter-slow` | 3.5s duration |
+| `ease-counter-fast`   | 0.8s duration                                     |
+| `ease-counter-slow`   | 3.5s duration                                     |
 
 ## Delay Variants (for staggered groups)
 
-| Class | Delay |
-|---|---|
+| Class            | Delay |
+| ---------------- | ----- |
 | `ease-delay-100` | 100ms |
 | `ease-delay-200` | 200ms |
 | `ease-delay-300` | 300ms |
@@ -39,9 +39,9 @@ Animated number count-up using CSS `@property`, `counter()`, and `animation-time
 
 ## Custom Property
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-counter-to` | `100` | Target number to count up to |
+| Property            | Default | Description                  |
+| ------------------- | ------- | ---------------------------- |
+| `--ease-counter-to` | `100`   | Target number to count up to |
 
 ## Browser Support
 

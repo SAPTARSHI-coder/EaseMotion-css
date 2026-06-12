@@ -42,31 +42,32 @@ A general-purpose progress bar component with animated fill states. Suitable for
 ### Sizes
 
 ```html
-<div class="ease-progress ease-progress-sm">...</div>  <!-- 4px track -->
-<div class="ease-progress">...</div>                     <!-- 8px track (default) -->
-<div class="ease-progress ease-progress-lg">...</div>   <!-- 14px track -->
+<div class="ease-progress ease-progress-sm">...</div>
+<!-- 4px track -->
+<div class="ease-progress">...</div>
+<!-- 8px track (default) -->
+<div class="ease-progress ease-progress-lg">...</div>
+<!-- 14px track -->
 ```
 
 ### Striped
 
 ```html
-<div class="ease-progress ease-progress-striped">
-  ...
-</div>
+<div class="ease-progress ease-progress-striped">...</div>
 ```
 
 ### Indeterminate (loading state)
 
 ```html
-<div class="ease-progress ease-progress-indeterminate">
-  ...
-</div>
+<div class="ease-progress ease-progress-indeterminate">...</div>
 ```
 
 ### Combined
 
 ```html
-<div class="ease-progress ease-progress-success ease-progress-striped ease-progress-lg">
+<div
+  class="ease-progress ease-progress-success ease-progress-striped ease-progress-lg"
+>
   ...
 </div>
 ```

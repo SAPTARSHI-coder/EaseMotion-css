@@ -5,6 +5,7 @@ A JavaScript polyfill fallback for the `.ease-scroll-progress` component when `a
 ## The Problem
 
 The `animation-timeline: scroll()` CSS API is not supported in:
+
 - Firefox (all versions)
 - Safari < 15.4
 - Older Chromium-based browsers
@@ -26,20 +27,36 @@ This example demonstrates two layers of fallback:
 
 <script>
   (function () {
-    if (window.CSS && CSS.supports && CSS.supports('animation-timeline', 'scroll()')) return;
+    if (
+      window.CSS &&
+      CSS.supports &&
+      CSS.supports("animation-timeline", "scroll()")
+    )
+      return;
 
     var ticking = false;
-    var bar = document.getElementById('progress-bar');
+    var bar = document.getElementById("progress-bar");
 
     function update() {
-      var p = Math.min(window.scrollY / (document.documentElement.scrollHeight - window.innerHeight), 1);
-      bar.style.transform = 'scaleX(' + p + ')';
+      var p = Math.min(
+        window.scrollY /
+          (document.documentElement.scrollHeight - window.innerHeight),
+        1
+      );
+      bar.style.transform = "scaleX(" + p + ")";
       ticking = false;
     }
 
-    window.addEventListener('scroll', function () {
-      if (!ticking) { requestAnimationFrame(update); ticking = true; }
-    }, { passive: true });
+    window.addEventListener(
+      "scroll",
+      function () {
+        if (!ticking) {
+          requestAnimationFrame(update);
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
     update();
   })();
 </script>

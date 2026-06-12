@@ -32,3 +32,4 @@ submissions/examples/card-cta-buttons/
 ├── animation-first.html
 ├── human-readable.html
 └── zero-config.html
+```

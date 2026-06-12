@@ -4,26 +4,26 @@ CSS-only glitch animation — creates digital distortion like corrupted video si
 
 ## Files
 
-| File | Description |
-|------|-------------|
+| File                        | Description      |
+| --------------------------- | ---------------- |
 | 📄 [demo.html](./demo.html) | Interactive demo |
-| 🎨 [style.css](./style.css) | Glitch styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 🎨 [style.css](./style.css) | Glitch styles    |
+| 📖 [README.md](./README.md) | Documentation    |
 
 ## Classes
 
-| Class | Intensity | Speed |
-|-------|-----------|-------|
-| `ease-text-glitch` | Normal | 1.5s |
-| `ease-text-glitch-subtle` | Subtle | 2s |
-| `ease-text-glitch-heavy` | Heavy | 0.8s |
-| `ease-text-glitch-fast` | Normal | 0.5s |
-| `ease-text-glitch-slow` | Normal | 3s |
-| `ease-text-glitch-hover` | Normal | On hover |
-| `ease-text-glitch-red` | Normal | 1.5s |
-| `ease-text-glitch-green` | Normal | 1.5s |
-| `ease-text-glitch-blue` | Normal | 1.5s |
-| `ease-text-glitch-neon` | Normal | 1.5s |
+| Class                     | Intensity | Speed    |
+| ------------------------- | --------- | -------- |
+| `ease-text-glitch`        | Normal    | 1.5s     |
+| `ease-text-glitch-subtle` | Subtle    | 2s       |
+| `ease-text-glitch-heavy`  | Heavy     | 0.8s     |
+| `ease-text-glitch-fast`   | Normal    | 0.5s     |
+| `ease-text-glitch-slow`   | Normal    | 3s       |
+| `ease-text-glitch-hover`  | Normal    | On hover |
+| `ease-text-glitch-red`    | Normal    | 1.5s     |
+| `ease-text-glitch-green`  | Normal    | 1.5s     |
+| `ease-text-glitch-blue`   | Normal    | 1.5s     |
+| `ease-text-glitch-neon`   | Normal    | 1.5s     |
 
 ## Usage
 
@@ -40,4 +40,5 @@ CSS-only glitch animation — creates digital distortion like corrupted video si
 <h2 class="ease-text-glitch-neon">Neon Glitch</h2>
 
 <!-- Hover trigger -->
-<h2 class="ease-text-glitch-hover">Hover to Glitch</h2> 
+<h2 class="ease-text-glitch-hover">Hover to Glitch</h2>
+```

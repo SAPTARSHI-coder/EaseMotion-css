@@ -3,6 +3,7 @@
 1. **What does this do?** Provides contextual alert banners in 4 types (info, success, warning, error) with icon, title, message, optional close button, 3 size variants (sm, base, lg), a banner (full-width) mode, and a CSS-only dismissible variant using a hidden checkbox — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <div class="alert alert-info" role="alert">
      <div class="alert-icon">ℹ</div>
@@ -15,7 +16,7 @@
 
    <!-- Dismissible -->
    <div class="alert-dismissible">
-     <input type="checkbox" id="dismiss-me" class="alert-dismiss-input">
+     <input type="checkbox" id="dismiss-me" class="alert-dismiss-input" />
      <div class="alert alert-warning" role="alert">...</div>
    </div>
    ```

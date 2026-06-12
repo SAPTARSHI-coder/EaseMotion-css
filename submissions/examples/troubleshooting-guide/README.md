@@ -14,23 +14,23 @@ The goal is to help users quickly identify and resolve setup, configuration, and
 
 #### Symptoms
 
-* Animation classes are applied but no animation is visible.
-* Elements remain static after page load.
-* Expected transitions do not occur.
+- Animation classes are applied but no animation is visible.
+- Elements remain static after page load.
+- Expected transitions do not occur.
 
 #### Possible Causes
 
-* Incorrect animation class name.
-* Animation duration set to zero.
-* Conflicting CSS rules overriding animations.
-* Missing stylesheet import.
+- Incorrect animation class name.
+- Animation duration set to zero.
+- Conflicting CSS rules overriding animations.
+- Missing stylesheet import.
 
 #### Solution
 
-* Verify the animation class name.
-* Confirm EaseMotion CSS is properly loaded.
-* Inspect the element using browser developer tools.
-* Check for conflicting styles.
+- Verify the animation class name.
+- Confirm EaseMotion CSS is properly loaded.
+- Inspect the element using browser developer tools.
+- Check for conflicting styles.
 
 ---
 
@@ -38,21 +38,21 @@ The goal is to help users quickly identify and resolve setup, configuration, and
 
 #### Symptoms
 
-* Animation classes have no effect.
-* Browser developer tools show missing stylesheet resources.
+- Animation classes have no effect.
+- Browser developer tools show missing stylesheet resources.
 
 #### Possible Causes
 
-* Incorrect import path.
-* Missing build configuration.
-* Stylesheet not included in the project entry file.
+- Incorrect import path.
+- Missing build configuration.
+- Stylesheet not included in the project entry file.
 
 #### Solution
 
-* Verify the CSS file path.
-* Confirm the stylesheet is included in the project.
-* Restart the development server after configuration changes.
-* Check browser network logs for loading errors.
+- Verify the CSS file path.
+- Confirm the stylesheet is included in the project.
+- Restart the development server after configuration changes.
+- Check browser network logs for loading errors.
 
 ---
 
@@ -60,20 +60,20 @@ The goal is to help users quickly identify and resolve setup, configuration, and
 
 #### Symptoms
 
-* Animations work in development but fail in production.
-* Build process removes animation-related classes.
+- Animations work in development but fail in production.
+- Build process removes animation-related classes.
 
 #### Possible Causes
 
-* CSS optimization removing unused classes.
-* Incorrect framework configuration.
-* Missing content paths in build tooling.
+- CSS optimization removing unused classes.
+- Incorrect framework configuration.
+- Missing content paths in build tooling.
 
 #### Solution
 
-* Verify build tool settings.
-* Ensure animation classes are included in scanned content files.
-* Test production builds locally before deployment.
+- Verify build tool settings.
+- Ensure animation classes are included in scanned content files.
+- Test production builds locally before deployment.
 
 ---
 
@@ -81,46 +81,46 @@ The goal is to help users quickly identify and resolve setup, configuration, and
 
 #### Symptoms
 
-* Animations behave differently across browsers.
-* Some animation effects fail to render.
+- Animations behave differently across browsers.
+- Some animation effects fail to render.
 
 #### Possible Causes
 
-* Unsupported CSS features.
-* Older browser versions.
-* Browser-specific rendering differences.
+- Unsupported CSS features.
+- Older browser versions.
+- Browser-specific rendering differences.
 
 #### Solution
 
-* Test across multiple browsers.
-* Use standard CSS animation properties.
-* Review browser compatibility documentation.
-* Provide graceful fallbacks when necessary.
+- Test across multiple browsers.
+- Use standard CSS animation properties.
+- Review browser compatibility documentation.
+- Provide graceful fallbacks when necessary.
 
 ---
 
 ## Accessibility Considerations
 
-* Respect user motion preferences using `prefers-reduced-motion`.
-* Avoid excessive or distracting animation effects.
-* Ensure content remains usable when animations are disabled.
+- Respect user motion preferences using `prefers-reduced-motion`.
+- Avoid excessive or distracting animation effects.
+- Ensure content remains usable when animations are disabled.
 
 ---
 
 ## Benefits
 
-* Faster debugging and issue resolution.
-* Reduced support requests.
-* Improved developer onboarding experience.
-* Better overall documentation quality.
+- Faster debugging and issue resolution.
+- Reduced support requests.
+- Improved developer onboarding experience.
+- Better overall documentation quality.
 
 ---
 
 ## Files Included
 
-* `demo.html`
-* `style.css`
-* `README.md`
+- `demo.html`
+- `style.css`
+- `README.md`
 
 ---
 

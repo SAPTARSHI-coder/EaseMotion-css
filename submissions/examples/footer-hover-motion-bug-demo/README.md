@@ -13,6 +13,7 @@ Open `demo.html` in a browser. Enable `prefers-reduced-motion: reduce` in your O
 WCAG 2.1 SC 2.3.3 requires all animations AND movements to be eliminated under reduced motion. An instant jump is still a movement.
 
 The fix should be applied to `components/footer.css`:
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-footer-links a,

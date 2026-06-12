@@ -13,6 +13,5 @@ Creates a smooth ripple animation that spreads outward when a user clicks an ele
 ## Usage
 
 ```html
-<button class="ease-ripple">
-  Click me
-</button>
+<button class="ease-ripple">Click me</button>
+```

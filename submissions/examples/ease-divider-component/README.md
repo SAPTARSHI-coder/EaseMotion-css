@@ -4,11 +4,11 @@ Lightweight divider utilities: horizontal rule, text-labeled divider, and vertic
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-divider` | Horizontal rule with styling |
-| `ease-divider-text` | Divider with centered label text (e.g. "or") |
-| `ease-divider-vertical` | Vertical inline separator |
+| Class                   | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| `ease-divider`          | Horizontal rule with styling                 |
+| `ease-divider-text`     | Divider with centered label text (e.g. "or") |
+| `ease-divider-vertical` | Vertical inline separator                    |
 
 ## Usage
 

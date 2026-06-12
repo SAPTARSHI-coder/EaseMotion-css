@@ -9,7 +9,9 @@ Demonstrates the CSS `light-dark()` color function — a single declaration that
 Set `color-scheme` on the root, then use `light-dark()` anywhere:
 
 ```css
-:root { color-scheme: light dark; }
+:root {
+  color-scheme: light dark;
+}
 
 body {
   background: light-dark(#f1f5f9, #0f172a);

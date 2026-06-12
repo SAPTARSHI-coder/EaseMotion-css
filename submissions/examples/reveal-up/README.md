@@ -10,13 +10,13 @@ Scroll reveal direction variant that starts with translateY(40px) hidden state. 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-reveal-up` | Reveal from below (translateY 40px) |
-| `ease-reveal-down` | Reveal from above (translateY -40px) |
-| `ease-reveal-left` | Reveal from right (translateX -40px) |
-| `ease-reveal-right` | Reveal from left (translateX 40px) |
-| `ease-reveal-scale` | Reveal with scale(0.9) |
+| Class               | Description                          |
+| ------------------- | ------------------------------------ |
+| `ease-reveal-up`    | Reveal from below (translateY 40px)  |
+| `ease-reveal-down`  | Reveal from above (translateY -40px) |
+| `ease-reveal-left`  | Reveal from right (translateX -40px) |
+| `ease-reveal-right` | Reveal from left (translateX 40px)   |
+| `ease-reveal-scale` | Reveal with scale(0.9)               |
 
 ## Notes
 

@@ -27,10 +27,10 @@ Card displaying a QR code image (or placeholder) with title, description, and sc
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-radius-md` | 8px |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-lg`       | 12px      |
+| `--ease-radius-md`       | 8px       |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

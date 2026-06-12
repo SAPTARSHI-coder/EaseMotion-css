@@ -19,12 +19,8 @@ Pure CSS tooltip component using `data-tooltip` attribute and pseudo-elements.
 ## Usage
 
 ```html
-&lt;!-- Default position (top) --&gt;
-&lt;button class="tooltip-pr" data-tooltip="Tooltip text"&gt;
-  Hover Me
-&lt;/button&gt;
-
-&lt;!-- Specific position --&gt;
-&lt;button class="tooltip-pr" data-tooltip="Bottom tooltip" data-tooltip-pos="bottom"&gt;
-  Bottom
-&lt;/button&gt;
+&lt;!-- Default position (top) --&gt; &lt;button class="tooltip-pr"
+data-tooltip="Tooltip text"&gt; Hover Me &lt;/button&gt; &lt;!-- Specific
+position --&gt; &lt;button class="tooltip-pr" data-tooltip="Bottom tooltip"
+data-tooltip-pos="bottom"&gt; Bottom &lt;/button&gt;
+```

@@ -22,15 +22,14 @@ Customer testimonial card with quote, avatar, star rating, and hover effect.
 ## Usage
 
 ```html
-&lt;div class="testimonial-pr"&gt;
-  &lt;span class="testimonial-pr-quote-mark"&gt;"&lt;/span&gt;
-  &lt;div class="testimonial-pr-stars"&gt;★★★★★&lt;/div&gt;
-  &lt;p class="testimonial-pr-text"&gt;"Quote text here..."&lt;/p&gt;
-  &lt;div class="testimonial-pr-footer"&gt;
-    &lt;div class="testimonial-pr-avatar-placeholder"&gt;AB&lt;/div&gt;
-    &lt;div class="testimonial-pr-info"&gt;
-      &lt;div class="testimonial-pr-name"&gt;Name&lt;/div&gt;
-      &lt;div class="testimonial-pr-role"&gt;Role&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+&lt;div class="testimonial-pr"&gt; &lt;span
+class="testimonial-pr-quote-mark"&gt;"&lt;/span&gt; &lt;div
+class="testimonial-pr-stars"&gt;★★★★★&lt;/div&gt; &lt;p
+class="testimonial-pr-text"&gt;"Quote text here..."&lt;/p&gt; &lt;div
+class="testimonial-pr-footer"&gt; &lt;div
+class="testimonial-pr-avatar-placeholder"&gt;AB&lt;/div&gt; &lt;div
+class="testimonial-pr-info"&gt; &lt;div
+class="testimonial-pr-name"&gt;Name&lt;/div&gt; &lt;div
+class="testimonial-pr-role"&gt;Role&lt;/div&gt; &lt;/div&gt; &lt;/div&gt;
 &lt;/div&gt;
+```

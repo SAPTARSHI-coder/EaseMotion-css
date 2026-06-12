@@ -10,12 +10,12 @@ The Interactive Component Playground provides a lightweight environment for lear
 
 Users can:
 
-* Write and edit HTML
-* Write and edit CSS
-* View changes instantly in a live preview
-* Switch between pre-built templates
-* Copy generated code
-* Download their creations as standalone HTML files
+- Write and edit HTML
+- Write and edit CSS
+- View changes instantly in a live preview
+- Switch between pre-built templates
+- Copy generated code
+- Download their creations as standalone HTML files
 
 No external dependencies are required.
 
@@ -25,54 +25,54 @@ No external dependencies are required.
 
 ### Live Preview
 
-* Real-time rendering of HTML and CSS
-* Instant visual feedback while editing
+- Real-time rendering of HTML and CSS
+- Instant visual feedback while editing
 
 ### HTML Editor
 
-* Dedicated HTML editing area
-* Beginner-friendly interface
+- Dedicated HTML editing area
+- Beginner-friendly interface
 
 ### CSS Editor
 
-* Dedicated CSS editing area
-* Immediate styling updates
+- Dedicated CSS editing area
+- Immediate styling updates
 
 ### Run Button
 
-* Manually refresh and render the preview
+- Manually refresh and render the preview
 
 ### Reset Button
 
-* Restore the default component template
+- Restore the default component template
 
 ### Copy HTML
 
-* Copy the current HTML code to the clipboard
+- Copy the current HTML code to the clipboard
 
 ### Download HTML
 
-* Export the current project as a standalone HTML file
+- Export the current project as a standalone HTML file
 
 ### Template Selector
 
 Includes pre-built templates:
 
-* Button Component
-* Card Component
-* Alert Component
+- Button Component
+- Card Component
+- Alert Component
 
 ### Responsive Design
 
-* Desktop support
-* Tablet support
-* Mobile-friendly layout
+- Desktop support
+- Tablet support
+- Mobile-friendly layout
 
 ### Accessibility
 
-* Keyboard-accessible controls
-* Clear focus states
-* Readable editor layout
+- Keyboard-accessible controls
+- Clear focus states
+- Readable editor layout
 
 ---
 
@@ -82,12 +82,12 @@ The Interactive Component Playground aligns with the EaseMotion CSS philosophy o
 
 Benefits include:
 
-* Encourages hands-on learning through experimentation
-* Provides immediate visual feedback for component customization
-* Makes documentation more interactive and engaging
-* Helps developers prototype components before implementation
-* Demonstrates EaseMotion CSS utilities and styling patterns in a practical environment
-* Requires no external dependencies, keeping the experience lightweight and accessible
+- Encourages hands-on learning through experimentation
+- Provides immediate visual feedback for component customization
+- Makes documentation more interactive and engaging
+- Helps developers prototype components before implementation
+- Demonstrates EaseMotion CSS utilities and styling patterns in a practical environment
+- Requires no external dependencies, keeping the experience lightweight and accessible
 
 This feature enhances the documentation experience while remaining consistent with EaseMotion CSS's focus on usability and developer productivity.
 
@@ -109,9 +109,9 @@ submissions/
 
 ## Technologies Used
 
-* HTML5
-* CSS3
-* Vanilla JavaScript
+- HTML5
+- CSS3
+- Vanilla JavaScript
 
 No frameworks or external libraries are required.
 
@@ -139,9 +139,9 @@ in any modern web browser.
 
 ### Export Your Work
 
-* Click **Copy HTML** to copy the code.
-* Click **Download HTML** to save the component locally.
-* Click **Reset** to restore the default template.
+- Click **Copy HTML** to copy the code.
+- Click **Download HTML** to save the component locally.
+- Click **Reset** to restore the default template.
 
 ---
 
@@ -165,9 +165,9 @@ A notification component for displaying messages and status updates.
 
 Tested in:
 
-* Google Chrome
-* Mozilla Firefox
-* Microsoft Edge
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
 
 Compatible with most modern browsers supporting ES6 JavaScript.
 
@@ -177,14 +177,14 @@ Compatible with most modern browsers supporting ES6 JavaScript.
 
 Potential future improvements include:
 
-* JavaScript Editor
-* Local Storage Auto Save
-* Fullscreen Preview Mode
-* Syntax Highlighting
-* Additional Component Templates
-* Theme Customization
-* Import/Export Project Files
-* Component Sharing Features
+- JavaScript Editor
+- Local Storage Auto Save
+- Fullscreen Preview Mode
+- Syntax Highlighting
+- Additional Component Templates
+- Theme Customization
+- Import/Export Project Files
+- Component Sharing Features
 
 ---
 

@@ -39,15 +39,15 @@ The **Smooth Center Reveal** effect animates a container from `scale(0.95)` + `o
 ### Toggle Visibility
 
 ```js
-card.classList.toggle('hidden');
+card.classList.toggle("hidden");
 ```
 
 ## Keyframes
 
-| Keyframe | Property | Value |
-|----------|----------|-------|
-| `0%` | `opacity` / `transform` | `0` / `scale(0.95)` |
-| `100%` | `opacity` / `transform` | `1` / `scale(1)` |
+| Keyframe | Property                | Value               |
+| -------- | ----------------------- | ------------------- |
+| `0%`     | `opacity` / `transform` | `0` / `scale(0.95)` |
+| `100%`   | `opacity` / `transform` | `1` / `scale(1)`    |
 
 ## Card Themes
 

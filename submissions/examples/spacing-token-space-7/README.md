@@ -24,25 +24,57 @@ section padding and component rhythm. Without the token, developers hardcode
 ### The fix (maintainer action)
 
 **`core/variables.css`** — add after `--ease-space-6`:
+
 ```css
---ease-space-7:  1.75rem;  /* 28px */
+--ease-space-7: 1.75rem; /* 28px */
 ```
 
 **`core/utilities.css`** — add the corresponding utility classes:
+
 ```css
-.ease-gap-7      { gap:     var(--ease-space-7); }
-.ease-padding-7  { padding: var(--ease-space-7); }
-.ease-margin-7   { margin:  var(--ease-space-7); }
-.ease-pt-7       { padding-top:    var(--ease-space-7); }
-.ease-pb-7       { padding-bottom: var(--ease-space-7); }
-.ease-pl-7       { padding-left:   var(--ease-space-7); }
-.ease-pr-7       { padding-right:  var(--ease-space-7); }
-.ease-px-7       { padding-left: var(--ease-space-7); padding-right:  var(--ease-space-7); }
-.ease-py-7       { padding-top:  var(--ease-space-7); padding-bottom: var(--ease-space-7); }
-.ease-mt-7       { margin-top:    var(--ease-space-7); }
-.ease-mb-7       { margin-bottom: var(--ease-space-7); }
-.ease-mx-7       { margin-left: var(--ease-space-7); margin-right:  var(--ease-space-7); }
-.ease-my-7       { margin-top:  var(--ease-space-7); margin-bottom: var(--ease-space-7); }
+.ease-gap-7 {
+  gap: var(--ease-space-7);
+}
+.ease-padding-7 {
+  padding: var(--ease-space-7);
+}
+.ease-margin-7 {
+  margin: var(--ease-space-7);
+}
+.ease-pt-7 {
+  padding-top: var(--ease-space-7);
+}
+.ease-pb-7 {
+  padding-bottom: var(--ease-space-7);
+}
+.ease-pl-7 {
+  padding-left: var(--ease-space-7);
+}
+.ease-pr-7 {
+  padding-right: var(--ease-space-7);
+}
+.ease-px-7 {
+  padding-left: var(--ease-space-7);
+  padding-right: var(--ease-space-7);
+}
+.ease-py-7 {
+  padding-top: var(--ease-space-7);
+  padding-bottom: var(--ease-space-7);
+}
+.ease-mt-7 {
+  margin-top: var(--ease-space-7);
+}
+.ease-mb-7 {
+  margin-bottom: var(--ease-space-7);
+}
+.ease-mx-7 {
+  margin-left: var(--ease-space-7);
+  margin-right: var(--ease-space-7);
+}
+.ease-my-7 {
+  margin-top: var(--ease-space-7);
+  margin-bottom: var(--ease-space-7);
+}
 ```
 
 ### How is it used?

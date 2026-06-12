@@ -6,7 +6,7 @@ using nth-child animation-delay offsets.
 
 **How is it used?**
 <span class="ease-wave">
-  <span>E</span><span>a</span><span>s</span><span>e</span>
+<span>E</span><span>a</span><span>s</span><span>e</span>
 </span>
 
 <div class="ease-wave-icons">

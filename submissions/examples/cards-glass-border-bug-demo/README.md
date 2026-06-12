@@ -10,7 +10,7 @@ Line 135 uses `border: 1px solid rgba(255, 255, 255, 0.3)` instead of `var(--eas
 ## Expected
 
 ```css
-border: 1px solid var(--ease-glass-border, rgba(255, 255, 255, 0.20));
+border: 1px solid var(--ease-glass-border, rgba(255, 255, 255, 0.2));
 ```
 
 ## Demo

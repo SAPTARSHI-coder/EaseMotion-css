@@ -17,5 +17,8 @@ To target code listings cleanly within documentation pages, utilize this parent 
   <div class="code-header">
     <span class="language-label">JavaScript</span>
   </div>
-  <pre class="docs-code"><code>console.log("Clipboard Utility Connected!");</code></pre>
+  <pre
+    class="docs-code"
+  ><code>console.log("Clipboard Utility Connected!");</code></pre>
 </div>
+```

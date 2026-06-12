@@ -73,13 +73,13 @@ and related tokens when integrating into `core/`.
 
 ## Files
 
-| File        | Purpose                              |
-|-------------|--------------------------------------|
-| `style.css` | Raw CSS — shimmer + pulse keyframes, four utility classes |
+| File        | Purpose                                                       |
+| ----------- | ------------------------------------------------------------- |
+| `style.css` | Raw CSS — shimmer + pulse keyframes, four utility classes     |
 | `demo.html` | Self-contained demo with toggle between loading/loaded states |
-| `README.md` | This file                            |
+| `README.md` | This file                                                     |
 
 ---
 
-*Proposed ease-\* names (maintainer decides):*
+_Proposed ease-\* names (maintainer decides):_
 `ease-skeleton` · `ease-skeleton-text` · `ease-skeleton-circle` · `ease-skeleton-pulse`

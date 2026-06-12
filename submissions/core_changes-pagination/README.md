@@ -3,6 +3,7 @@
 1. **What does this do?** Provides a pure CSS pagination component for navigating between pages, with size variants (sm, base, lg), shape variants (default squared, rounded pill-style), ellipsis support, prev/next buttons, and active page highlighting — all with zero JavaScript.
 
 2. **How is it used?**
+
    ```html
    <nav aria-label="pagination" class="pagination">
      <a href="#" class="pagination-prev">‹ Prev</a>

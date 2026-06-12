@@ -10,12 +10,12 @@ The header link pointed to `#components`, but the page had no element with `id="
 
 Other header links worked because their targets already existed:
 
-| Link | Target ID | Status |
-|------|-----------|--------|
-| Getting Started | `#getting-started` | Works |
-| Utilities | `#utilities` | Works |
-| Animations | `#animations` | Works |
-| Components | `#components` | **Broken** (missing anchor) |
+| Link            | Target ID          | Status                      |
+| --------------- | ------------------ | --------------------------- |
+| Getting Started | `#getting-started` | Works                       |
+| Utilities       | `#utilities`       | Works                       |
+| Animations      | `#animations`      | Works                       |
+| Components      | `#components`      | **Broken** (missing anchor) |
 
 ## The fix
 
@@ -25,7 +25,9 @@ Other header links worked because their targets already existed:
 ```html
 <section id="components" class="docs-section">
   <h2 class="docs-h2">Components</h2>
-  <p class="docs-p">Reusable UI building blocks — buttons, cards, scroll progress, and more.</p>
+  <p class="docs-p">
+    Reusable UI building blocks — buttons, cards, scroll progress, and more.
+  </p>
 </section>
 ```
 

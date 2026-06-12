@@ -10,11 +10,11 @@ Adds a glowing drop-shadow effect on hover using `filter: drop-shadow()`. Unlike
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-hover-glow` | Default purple glow on hover |
-| `ease-hover-glow-sm` | Subtle smaller glow |
-| `ease-hover-glow-lg` | Stronger larger glow |
+| Class                | Description                  |
+| -------------------- | ---------------------------- |
+| `ease-hover-glow`    | Default purple glow on hover |
+| `ease-hover-glow-sm` | Subtle smaller glow          |
+| `ease-hover-glow-lg` | Stronger larger glow         |
 
 ## Notes
 

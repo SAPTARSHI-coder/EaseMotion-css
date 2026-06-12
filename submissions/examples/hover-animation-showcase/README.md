@@ -22,7 +22,7 @@ Open `demo.html` in a browser and hover over each element to see the animations.
 
 ## Features
 
-* Pure CSS
-* Beginner-friendly
-* No JavaScript required
-* Easy to customize
+- Pure CSS
+- Beginner-friendly
+- No JavaScript required
+- Easy to customize

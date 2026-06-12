@@ -1,14 +1,8 @@
 \# ease-float-label
 
-
-
 Floating label input — label floats above input on focus or when content is filled.
 
-
-
 \## Files
-
-
 
 | File | Description |
 
@@ -20,11 +14,7 @@ Floating label input — label floats above input on focus or when content is fi
 
 | \[README.md](./README.md) | Documentation |
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -42,19 +32,13 @@ Floating label input — label floats above input on focus or when content is fi
 
 | `ease-float-warning` | Warning color variant |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="float-group">
+  &#x20;
+  <input type="text" id="name" placeholder=" " class="ease-float-input" />
 
-&#x20;   <input type="text" id="name" placeholder=" " class="ease-float-input">
-
-&#x20;   <label for="name" class="ease-float-label">Full Name</label>
-
+  &#x20; <label for="name" class="ease-float-label">Full Name</label>
 </div>
-
+```

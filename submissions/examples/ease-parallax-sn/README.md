@@ -1,9 +1,11 @@
 # Ease Parallax Sn
 
 ## What does this do?
+
 A CSS-only parallax scrolling utility that creates depth effects using 3D perspective transforms — no JavaScript required.
 
 ## How is it used?
+
 ```html
 <div class="parallax-container">
   <div class="parallax-section">
@@ -24,6 +26,7 @@ A CSS-only parallax scrolling utility that creates depth effects using 3D perspe
 ```
 
 Custom depth via inline style:
+
 ```html
 <div class="parallax-layer" style="--parallax-depth: -150">
   <!-- Custom scroll speed ratio -->
@@ -31,4 +34,5 @@ Custom depth via inline style:
 ```
 
 ## Why is it useful?
+
 Parallax scrolling adds visual depth and immersion to landing pages, hero sections, and storytelling layouts. This implementation is purely CSS-based (using `perspective` and `transform-style: preserve-3d`), meaning zero JavaScript overhead, optimal performance, and no scroll event listeners. It respects `prefers-reduced-motion` and disables on mobile screens, making it fully accessible.

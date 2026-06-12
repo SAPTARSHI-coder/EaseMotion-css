@@ -10,8 +10,8 @@ Glow exit animation where the box-shadow glow dissipates as the element fades ou
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                   | Description              |
+| ----------------------- | ------------------------ |
 | `ease-glow-shadow-exit` | Default glow shadow exit |
 
 ## Notes

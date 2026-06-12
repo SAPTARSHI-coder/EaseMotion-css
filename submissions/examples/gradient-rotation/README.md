@@ -10,8 +10,8 @@ Animated gradient background rotation. Applies a moving background-position grad
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                    | Description                         |
+| ------------------------ | ----------------------------------- |
 | `ease-gradient-rotation` | Default gradient rotation (3s loop) |
 
 ## Notes

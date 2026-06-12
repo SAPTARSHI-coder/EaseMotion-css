@@ -11,8 +11,8 @@ semantic glow token set in `core/variables.css`.
 
 ```css
 --ease-glow-primary: 0 0 16px rgba(108, 99, 255, 0.45);
---ease-glow-success: 0 0 16px rgba(34,  197, 94,  0.45);
---ease-glow-danger:  0 0 16px rgba(239, 68,  68,  0.45);
+--ease-glow-success: 0 0 16px rgba(34, 197, 94, 0.45);
+--ease-glow-danger: 0 0 16px rgba(239, 68, 68, 0.45);
 /* --ease-glow-warning ← missing */
 ```
 
@@ -36,14 +36,18 @@ The RGBA value is derived directly from `--ease-color-warning: #f59e0b`
 
 ```html
 <!-- Warning glow card -->
-<div class="ease-card ease-card-accent-warning"
-     style="box-shadow: var(--ease-glow-warning);">
+<div
+  class="ease-card ease-card-accent-warning"
+  style="box-shadow: var(--ease-glow-warning);"
+>
   Low disk space — please clean up.
 </div>
 
 <!-- Warning glow button -->
-<button class="ease-btn ease-btn-hover"
-        style="box-shadow: var(--ease-glow-warning); background: var(--ease-color-warning); color: #fff;">
+<button
+  class="ease-btn ease-btn-hover"
+  style="box-shadow: var(--ease-glow-warning); background: var(--ease-color-warning); color: #fff;"
+>
   Confirm risky action
 </button>
 ```

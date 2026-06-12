@@ -16,16 +16,10 @@ A minimal, CSS-only dot loader with three dots pulsing in sequence.
 ## Usage
 
 ```html
-&lt;!-- Standalone loader --&gt;
-&lt;div class="loader-pr"&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;!-- Custom color --&gt;
-&lt;div class="loader-pr" style="--loader-color: #f97316;"&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-  &lt;div class="dot"&gt;&lt;/div&gt;
-&lt;/div&gt;
+&lt;!-- Standalone loader --&gt; &lt;div class="loader-pr"&gt; &lt;div
+class="dot"&gt;&lt;/div&gt; &lt;div class="dot"&gt;&lt;/div&gt; &lt;div
+class="dot"&gt;&lt;/div&gt; &lt;/div&gt; &lt;!-- Custom color --&gt; &lt;div
+class="loader-pr" style="--loader-color: #f97316;"&gt; &lt;div
+class="dot"&gt;&lt;/div&gt; &lt;div class="dot"&gt;&lt;/div&gt; &lt;div
+class="dot"&gt;&lt;/div&gt; &lt;/div&gt;
+```

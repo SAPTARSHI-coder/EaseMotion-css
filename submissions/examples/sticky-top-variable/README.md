@@ -11,7 +11,10 @@ per-element inline — no extra class or custom CSS required.
 `core/utilities.css` line 161:
 
 ```css
-.ease-sticky { position: sticky; top: 0; }
+.ease-sticky {
+  position: sticky;
+  top: 0;
+}
 ```
 
 `top: 0` is hardcoded. Any page with a fixed navbar (the most common real-world
@@ -23,10 +26,16 @@ which defeats the purpose of a utility-first framework.
 
 ```css
 /* BEFORE */
-.ease-sticky { position: sticky; top: 0; }
+.ease-sticky {
+  position: sticky;
+  top: 0;
+}
 
 /* AFTER */
-.ease-sticky { position: sticky; top: var(--ease-sticky-top, 0); }
+.ease-sticky {
+  position: sticky;
+  top: var(--ease-sticky-top, 0);
+}
 ```
 
 And in `core/variables.css` (optional but recommended for discoverability):

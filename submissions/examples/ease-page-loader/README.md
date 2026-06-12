@@ -68,17 +68,17 @@ The implementation follows EaseMotion's core philosophy exactly:
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--loader-color` | `var(--ease-color-primary)` | Accent color for spinner, dots, bar |
-| `--loader-color-track` | `var(--ease-color-neutral-200)` | Spinner ring track color |
-| `--loader-bg` | `var(--ease-color-surface)` | Overlay background |
-| `--loader-exit-delay` | `1.8s` | Time overlay stays visible before fading |
-| `--loader-exit-speed` | `400ms` | Duration of the fade-out |
-| `--loader-spin-speed` | `0.8s` | Spinner rotation speed |
-| `--loader-pulse-speed` | `var(--ease-speed-slow)` | Dot pulse cycle duration |
-| `--loader-size` | `48px` | Spinner diameter |
-| `--loader-thickness` | `4px` | Spinner border width |
+| Property               | Default                         | Description                              |
+| ---------------------- | ------------------------------- | ---------------------------------------- |
+| `--loader-color`       | `var(--ease-color-primary)`     | Accent color for spinner, dots, bar      |
+| `--loader-color-track` | `var(--ease-color-neutral-200)` | Spinner ring track color                 |
+| `--loader-bg`          | `var(--ease-color-surface)`     | Overlay background                       |
+| `--loader-exit-delay`  | `1.8s`                          | Time overlay stays visible before fading |
+| `--loader-exit-speed`  | `400ms`                         | Duration of the fade-out                 |
+| `--loader-spin-speed`  | `0.8s`                          | Spinner rotation speed                   |
+| `--loader-pulse-speed` | `var(--ease-speed-slow)`        | Dot pulse cycle duration                 |
+| `--loader-size`        | `48px`                          | Spinner diameter                         |
+| `--loader-thickness`   | `4px`                           | Spinner border width                     |
 
 ## Tech Stack
 

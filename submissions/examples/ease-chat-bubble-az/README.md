@@ -1,9 +1,11 @@
 # Chat Bubble Component
 
 ### What does this do?
+
 Adds `ease-chat-bubble-az` — a chat message component with sent/received alignment, avatars, sender names, timestamps, read status indicators, intelligent grouping, and date dividers.
 
 ### How is it used?
+
 The maintainer should copy `style.css` into `components/chat-bubble.css` and import it.
 
 ```html
@@ -27,7 +29,9 @@ The maintainer should copy `style.css` into `components/chat-bubble.css` and imp
       <div class="ease-chat-bubble-text-az">Reply message</div>
       <div class="ease-chat-bubble-meta-az">
         <span class="ease-chat-bubble-time-az">2:16 PM</span>
-        <svg class="ease-chat-bubble-status-az read"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg class="ease-chat-bubble-status-az read">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
       </div>
     </div>
   </div>
@@ -35,6 +39,7 @@ The maintainer should copy `style.css` into `components/chat-bubble.css` and imp
 ```
 
 ### Why is it useful?
+
 1. **Sent/received alignment** — `.sent` class right-aligns the bubble with primary color fill
 2. **Smart grouping** — consecutive messages from the same sender collapse avatar and meta, adjust the bubble tail radius
 3. **Read status** — inline checkmark icon with `.read` class for blue double-check

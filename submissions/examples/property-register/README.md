@@ -8,7 +8,7 @@ Demonstrates the CSS `@property` at-rule, which registers typed custom propertie
 
 ```css
 @property --angle {
-  syntax: '<angle>';
+  syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
@@ -19,7 +19,9 @@ Demonstrates the CSS `@property` at-rule, which registers typed custom propertie
 }
 
 @keyframes spin {
-  to { --angle: 360deg; }
+  to {
+    --angle: 360deg;
+  }
 }
 ```
 

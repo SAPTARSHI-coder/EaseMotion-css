@@ -1,14 +1,8 @@
 \# ease-word-by-word
 
-
-
 Text animates one word at a time with staggered delay.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Per-word delay |
 
@@ -28,11 +22,7 @@ Text animates one word at a time with staggered delay.
 
 | `ease-word-by-word-scroll` | Scroll triggered | N/A |
 
-
-
 \## Variables
-
-
 
 | Variable | Default | Description |
 
@@ -42,25 +32,16 @@ Text animates one word at a time with staggered delay.
 
 | `--ease-word-duration` | 0.4s | Animation duration |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic word by word -->
 
 <div class="ease-word-by-word">Your text here</div>
 
-
-
 <!-- Custom delay -->
 
 <div class="ease-word-by-word" style="--ease-word-delay: 150ms;">
-
-&#x20;   Custom delay
-
+  &#x20; Custom delay
 </div>
-
+```

@@ -7,13 +7,23 @@ Animates the CSS `sepia()` filter — cycling from full color (0) to vintage sep
 ## How is it used?
 
 ```css
-.element { filter: sepia(0); transition: filter 0.3s; }
-.element:hover { filter: sepia(1); }
+.element {
+  filter: sepia(0);
+  transition: filter 0.3s;
+}
+.element:hover {
+  filter: sepia(1);
+}
 
 /* Or with keyframes */
 @keyframes sepia-cycle {
-  0%, 100% { filter: sepia(0); }
-  50%      { filter: sepia(1); }
+  0%,
+  100% {
+    filter: sepia(0);
+  }
+  50% {
+    filter: sepia(1);
+  }
 }
 ```
 

@@ -3,7 +3,8 @@
 **What does this do?**  
 Creates a hover effect where a soft colored shadow appears to orbit around a card or button while the element lifts gently.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <article class="shadow-rotate-card">
   <span class="shadow-rotate-kicker">Analytics</span>

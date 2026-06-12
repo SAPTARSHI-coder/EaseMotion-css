@@ -3,7 +3,8 @@
 **What does this do?**  
 Fades and slides elements up dynamically as they scroll into view using native CSS scroll timelines without any JavaScript.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <!-- Apply the utility class to any element to reveal it on scroll -->
 <div class="ease-card ease-scroll-reveal">

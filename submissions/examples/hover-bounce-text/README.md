@@ -10,12 +10,12 @@ Bouncy hover animation for text elements. Adds playful vertical bounce with scal
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                    | Description                |
+| ------------------------ | -------------------------- |
 | `ease-hover-bounce-text` | Default bounce (6px, 0.5s) |
-| `ease-bounce-fast` | Fast bounce (0.25s) |
-| `ease-bounce-slow` | Slow bounce (0.8s) |
-| `ease-bounce-lg` | Big bounce (12px) |
+| `ease-bounce-fast`       | Fast bounce (0.25s)        |
+| `ease-bounce-slow`       | Slow bounce (0.8s)         |
+| `ease-bounce-lg`         | Big bounce (12px)          |
 
 ## Notes
 

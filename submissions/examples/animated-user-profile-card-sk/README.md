@@ -9,6 +9,7 @@ A modern, highly performant SaaS-style User Profile Card component built using *
 This component provides a premium profile card wrapper displaying a banner backdrop, circular avatar, identity headers, description bio, metrics analytics, socials, and CTAs.
 
 ### Key Animations & Visual Features
+
 1. **Pulsing Avatar Glow**: The avatar circle features a continuous pulsing gradient glow ring. Hovering over the card scales and rotates the avatar slightly.
 2. **Scrolling Gradient Banner**: The card header features a slowly scrolling, colorful gradient background banner to add a touch of modern motion.
 3. **Card Hover Lift**: Hovering over the card rises it by `8px` and expands its dropshadow size.
@@ -20,17 +21,18 @@ This component provides a premium profile card wrapper displaying a banner backd
 ## 2. How is it used?
 
 ### HTML Structure
+
 The interactive follow feature works by wrapping a hidden checkbox trigger preceding the profile card element:
 
 ```html
 <!-- Hidden State Trigger -->
-<input type="checkbox" id="follow-toggle" class="follow-checkbox">
+<input type="checkbox" id="follow-toggle" class="follow-checkbox" />
 
 <!-- Profile Card Wrapper -->
 <div class="profile-card">
   <!-- Scrolling Banner -->
   <div class="card-banner"></div>
-  
+
   <!-- Avatar Initial -->
   <div class="avatar-container">
     <div class="avatar-ring">
@@ -40,12 +42,16 @@ The interactive follow feature works by wrapping a hidden checkbox trigger prece
 
   <!-- User Bio Details -->
   <h2>Jane Doe</h2>
-  
+
   <!-- Stats Section -->
   <div class="stats-container">
     <div class="stat-item">
       <!-- data-attributes populate default and incremented values -->
-      <span class="stat-value followers-count" data-default="12,482" data-active="12,483"></span>
+      <span
+        class="stat-value followers-count"
+        data-default="12,482"
+        data-active="12,483"
+      ></span>
       <span class="stat-label">Followers</span>
     </div>
   </div>
@@ -53,14 +59,24 @@ The interactive follow feature works by wrapping a hidden checkbox trigger prece
   <!-- Action Labels -->
   <div class="actions-container">
     <!-- label targets the checkbox -->
-    <label for="follow-toggle" class="card-btn btn-follow" tabindex="0" role="checkbox">
-      <span class="follow-btn-text" data-default="Follow" data-active="Following"></span>
+    <label
+      for="follow-toggle"
+      class="card-btn btn-follow"
+      tabindex="0"
+      role="checkbox"
+    >
+      <span
+        class="follow-btn-text"
+        data-default="Follow"
+        data-active="Following"
+      ></span>
     </label>
   </div>
 </div>
 ```
 
 ### CSS Counter & Follow Logic
+
 We leverage pseudo-elements with `content: attr(...)` definitions to toggle active text content based on the checked checkbox state:
 
 ```css

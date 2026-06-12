@@ -8,7 +8,7 @@ Provides a governance-focused dashboard for monitoring AI model risk, compliance
 
 ```html
 <div class="risk-card high">
-    <h3>Drift Risk</h3>
+  <h3>Drift Risk</h3>
 </div>
 ```
 

@@ -4,19 +4,19 @@ Rubber band stretch effect on click — element squashes and stretches like a ru
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| 📄 [demo.html](./demo.html) | Interactive demo |
+| File                        | Description        |
+| --------------------------- | ------------------ |
+| 📄 [demo.html](./demo.html) | Interactive demo   |
 | 🎨 [style.css](./style.css) | Rubber band styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 📖 [README.md](./README.md) | Documentation      |
 
 ## Classes
 
-| Class | Duration |
-|-------|----------|
-| `ease-rubber-band` | 0.4 seconds |
+| Class                   | Duration     |
+| ----------------------- | ------------ |
+| `ease-rubber-band`      | 0.4 seconds  |
 | `ease-rubber-band-fast` | 0.25 seconds |
-| `ease-rubber-band-slow` | 0.6 seconds |
+| `ease-rubber-band-slow` | 0.6 seconds  |
 
 ## Animation Sequence
 
@@ -35,4 +35,5 @@ Rubber band stretch effect on click — element squashes and stretches like a ru
 <button class="ease-rubber-band-slow">Slow</button>
 
 <!-- On any element -->
-<img class="ease-rubber-band" src="icon.svg" alt="Icon">
+<img class="ease-rubber-band" src="icon.svg" alt="Icon" />
+```

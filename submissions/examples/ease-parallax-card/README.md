@@ -11,7 +11,10 @@ A beautiful, high-performance, responsive card component built entirely using **
     <div class="ease-card-content">
       <span class="ease-card-badge">Tag</span>
       <h3 class="ease-card-title">Card Header</h3>
-      <p class="ease-card-desc">Your contextual framework summary block data description goes here.</p>
+      <p class="ease-card-desc">
+        Your contextual framework summary block data description goes here.
+      </p>
     </div>
   </div>
 </div>
+```

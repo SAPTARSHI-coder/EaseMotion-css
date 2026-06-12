@@ -7,11 +7,19 @@ Demonstrates negative `animation-delay` — a technique that starts an animation
 ## How is it used?
 
 ```css
-.dot { animation: bounce 0.6s ease-in-out infinite; }
-.dot:nth-child(1) { animation-delay: -0.15s; }
-.dot:nth-child(2) { animation-delay: -0.30s; }
+.dot {
+  animation: bounce 0.6s ease-in-out infinite;
+}
+.dot:nth-child(1) {
+  animation-delay: -0.15s;
+}
+.dot:nth-child(2) {
+  animation-delay: -0.3s;
+}
 /* or with a custom property: */
-.dot { animation-delay: calc(var(--i) * -0.15s); }
+.dot {
+  animation-delay: calc(var(--i) * -0.15s);
+}
 ```
 
 ## Why is it useful?

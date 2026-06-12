@@ -8,7 +8,7 @@ Provides a centralized interface for coordinating incident response activities, 
 
 ```html
 <div class="incident-card severity-critical">
-    <h3>Payment Gateway Outage</h3>
+  <h3>Payment Gateway Outage</h3>
 </div>
 ```
 

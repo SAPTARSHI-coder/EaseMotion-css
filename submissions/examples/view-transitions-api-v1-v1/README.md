@@ -9,7 +9,7 @@ Demonstrates the CSS View Transitions API — a browser API that captures a scre
 Assign a `view-transition-name` to elements that should animate independently, then wrap DOM changes in `startViewTransition()`:
 
 ```js
-document.startViewTransition(function() {
+document.startViewTransition(function () {
   // Make your DOM changes here
   listView.hidden = true;
   detailView.hidden = false;

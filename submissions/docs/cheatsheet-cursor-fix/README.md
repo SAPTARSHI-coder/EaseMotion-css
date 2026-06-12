@@ -4,20 +4,20 @@ Documentation submission that corrects phantom cursor utility entries in `docs/c
 
 ## Phantom Classes Found
 
-| Class | Listed in cheatsheet | Defined in `core/utilities.css` |
-| --- | --- | --- |
-| `ease-cursor-crosshair` | Yes — `docs/cheatsheet.html` line 143 | **No** |
-| `ease-cursor-grab` | Yes — `docs/cheatsheet.html` line 144 | **No** |
+| Class                   | Listed in cheatsheet                  | Defined in `core/utilities.css` |
+| ----------------------- | ------------------------------------- | ------------------------------- |
+| `ease-cursor-crosshair` | Yes — `docs/cheatsheet.html` line 143 | **No**                          |
+| `ease-cursor-grab`      | Yes — `docs/cheatsheet.html` line 144 | **No**                          |
 
 Evidence from `core/utilities.css` (lines 343–345): only `.ease-cursor-pointer`, `.ease-cursor-default`, and `.ease-cursor-not-allowed` are shipped. Users copying `ease-cursor-crosshair` or `ease-cursor-grab` from the cheatsheet see no effect.
 
 ## Shipped Cursor Utilities
 
-| Class | CSS Property | Value | Notes |
-| --- | --- | --- | --- |
-| `.ease-cursor-pointer` | `cursor` | `pointer` | Use on links, buttons, and interactive controls |
-| `.ease-cursor-default` | `cursor` | `default` | Resets pointer inheritance on nested elements |
-| `.ease-cursor-not-allowed` | `cursor` | `not-allowed` | Use on disabled buttons and blocked actions |
+| Class                      | CSS Property | Value         | Notes                                           |
+| -------------------------- | ------------ | ------------- | ----------------------------------------------- |
+| `.ease-cursor-pointer`     | `cursor`     | `pointer`     | Use on links, buttons, and interactive controls |
+| `.ease-cursor-default`     | `cursor`     | `default`     | Resets pointer inheritance on nested elements   |
+| `.ease-cursor-not-allowed` | `cursor`     | `not-allowed` | Use on disabled buttons and blocked actions     |
 
 ## Maintainer Decision Required
 

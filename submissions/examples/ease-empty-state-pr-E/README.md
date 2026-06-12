@@ -15,37 +15,35 @@ Renders a centered, animated empty state card with an icon, title, description, 
 ```html
 <!-- Basic structure -->
 <div class="empty-state empty-state--search">
-
   <div class="empty-state-icon-wrap">
     <div class="empty-state-icon">🔍</div>
   </div>
 
   <h2 class="empty-state-title">No results found</h2>
-  <p class="empty-state-desc">
-    Try different keywords or clear your filters.
-  </p>
+  <p class="empty-state-desc">Try different keywords or clear your filters.</p>
 
   <div class="empty-state-actions">
-    <button class="empty-state-btn empty-state-btn--primary">Try a new search</button>
+    <button class="empty-state-btn empty-state-btn--primary">
+      Try a new search
+    </button>
     <button class="empty-state-link">Clear all filters</button>
   </div>
-
 </div>
 ```
 
 ### Modifier classes
 
-| Class                   | Description                                   |
-|-------------------------|-----------------------------------------------|
-| `empty-state--search`   | Purple accent — no search results             |
-| `empty-state--inbox`    | Green accent — empty inbox                    |
-| `empty-state--favs`     | Amber accent — no favourites                  |
+| Class                 | Description                       |
+| --------------------- | --------------------------------- |
+| `empty-state--search` | Purple accent — no search results |
+| `empty-state--inbox`  | Green accent — empty inbox        |
+| `empty-state--favs`   | Amber accent — no favourites      |
 
 ---
 
 ## 3. Why is it useful?
 
-Empty states are one of the most-overlooked UI moments. A blank screen feels broken; a well-designed empty state turns the moment into an invitation to act — exactly what EaseMotion CSS's philosophy describes: *"An empty screen is an invitation to act."*
+Empty states are one of the most-overlooked UI moments. A blank screen feels broken; a well-designed empty state turns the moment into an invitation to act — exactly what EaseMotion CSS's philosophy describes: _"An empty screen is an invitation to act."_
 
 This component follows the framework's core principles:
 
@@ -56,14 +54,14 @@ This component follows the framework's core principles:
 
 ### Animations included
 
-| Animation           | Trigger           | Effect                                       |
-|---------------------|-------------------|----------------------------------------------|
-| `em-fade-up`        | Card entrance     | Slides up + fades in, staggered per card     |
-| `em-scale-in`       | Icon entrance     | Scales from 72% with bounce easing           |
-| `em-icon-float`     | Icon — looping    | Gentle vertical float (3.6 s period)         |
-| `em-icon-pulse-ring`| Icon ring — loop  | Expanding ring fades out                     |
-| `em-shimmer`        | Top border        | Gradient sweeps left → right                 |
-| `em-dot-bounce`     | Search dots       | Three bouncing dots (staggered)              |
+| Animation            | Trigger          | Effect                                   |
+| -------------------- | ---------------- | ---------------------------------------- |
+| `em-fade-up`         | Card entrance    | Slides up + fades in, staggered per card |
+| `em-scale-in`        | Icon entrance    | Scales from 72% with bounce easing       |
+| `em-icon-float`      | Icon — looping   | Gentle vertical float (3.6 s period)     |
+| `em-icon-pulse-ring` | Icon ring — loop | Expanding ring fades out                 |
+| `em-shimmer`         | Top border       | Gradient sweeps left → right             |
+| `em-dot-bounce`      | Search dots      | Three bouncing dots (staggered)          |
 
 ---
 
@@ -78,4 +76,4 @@ ease-empty-state-pr-E/
 
 ---
 
-*Submitted for EaseMotion CSS — GSSoC 2026*
+_Submitted for EaseMotion CSS — GSSoC 2026_

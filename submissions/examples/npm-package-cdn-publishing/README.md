@@ -29,22 +29,28 @@ The following fields should be added to the existing `package.json`:
 After publishing to npm, developers can use EaseMotion CSS via:
 
 **jsDelivr CDN:**
+
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css"
+/>
 ```
 
 **unpkg CDN:**
+
 ```html
 <link rel="stylesheet" href="https://unpkg.com/easemotion-css/easemotion.css" />
 ```
 
 **npm install + bundler import:**
+
 ```js
 // In Vite, webpack, or any bundler
-import 'easemotion-css';
+import "easemotion-css";
 // or granular:
-import 'easemotion-css/core/variables.css';
-import 'easemotion-css/core/animations.css';
+import "easemotion-css/core/variables.css";
+import "easemotion-css/core/animations.css";
 ```
 
 ## Why is it useful?

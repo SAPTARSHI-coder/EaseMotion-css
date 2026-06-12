@@ -22,10 +22,11 @@ Replace `height: 200px` with `aspect-ratio` and `height: auto`.
 Expose a CSS variable so developers can override the ratio per card.
 
 **Before (buggy):**
+
 ```css
 .ease-card-image .ease-card-img {
   width: 100%;
-  height: 200px;     /* distorts on wide cards */
+  height: 200px; /* distorts on wide cards */
   object-fit: cover;
   display: block;
   border-radius: var(--ease-radius-lg) var(--ease-radius-lg) 0 0;
@@ -33,6 +34,7 @@ Expose a CSS variable so developers can override the ratio per card.
 ```
 
 **After (fixed):**
+
 ```css
 .ease-card-image .ease-card-img {
   width: 100%;
@@ -53,10 +55,14 @@ Expose a CSS variable so developers can override the ratio per card.
 <div class="ease-card ease-card-image">...</div>
 
 <!-- Custom 4:3 -->
-<div class="ease-card ease-card-image" style="--ease-card-img-ratio: 4/3">...</div>
+<div class="ease-card ease-card-image" style="--ease-card-img-ratio: 4/3">
+  ...
+</div>
 
 <!-- Square -->
-<div class="ease-card ease-card-image" style="--ease-card-img-ratio: 1/1">...</div>
+<div class="ease-card ease-card-image" style="--ease-card-img-ratio: 1/1">
+  ...
+</div>
 ```
 
 ---

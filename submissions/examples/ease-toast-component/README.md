@@ -18,8 +18,9 @@ A modern, responsive, and highly customizable **Toast Notification Component** b
 
 1. Copy `style.css` into your project directory.
 2. Link it in your HTML:
+
 ```html
-<link rel="stylesheet" href="path/to/ease-toast-component/style.css">
+<link rel="stylesheet" href="path/to/ease-toast-component/style.css" />
 ```
 
 ---
@@ -31,32 +32,38 @@ A standard toast notification card is composed of the following selectors:
 ```html
 <!-- Fixed Placement Wrapper -->
 <div class="ease-toast-container top-right">
-  
   <!-- Toast Card (Slide-In entry class applied) -->
   <div class="ease-toast success anim-slide-right">
-    
     <!-- Icon Placeholder -->
     <div class="ease-toast-icon">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+      <svg viewBox="0 0 24 24">
+        <path
+          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+        />
+      </svg>
     </div>
-    
+
     <!-- Text Content -->
     <div class="ease-toast-content">
       <div class="ease-toast-title">File Saved</div>
-      <div class="ease-toast-message">Your work is synced to cloud storage.</div>
+      <div class="ease-toast-message">
+        Your work is synced to cloud storage.
+      </div>
     </div>
-    
+
     <!-- Optional Action Button -->
     <button class="ease-toast-action">Undo</button>
-    
+
     <!-- Close Cross Button -->
     <button class="ease-toast-close">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      <svg viewBox="0 0 24 24">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
     </button>
-    
+
     <!-- Optional Progress Timer -->
     <div class="ease-toast-progress"></div>
-    
   </div>
 </div>
 ```
@@ -66,6 +73,7 @@ A standard toast notification card is composed of the following selectors:
 ## Reference & Modifier Classes
 
 ### Position Placements (applied to `.ease-toast-container`)
+
 - `.top-right`: Top right corner.
 - `.top-left`: Top left corner.
 - `.bottom-right`: Bottom right corner.
@@ -74,6 +82,7 @@ A standard toast notification card is composed of the following selectors:
 - `.bottom-center`: Bottom centered, slides up.
 
 ### Themes & Variants (applied to `.ease-toast`)
+
 - `.success`: Green theme.
 - `.error`: Red theme.
 - `.warning`: Yellow theme.
@@ -86,6 +95,7 @@ A standard toast notification card is composed of the following selectors:
 - `.dark`: Midnight black card.
 
 ### Transition Animations
+
 - `.anim-slide-right`: Entry slide from right.
 - `.anim-slide-left`: Entry slide from left.
 - `.anim-slide-bottom`: Entry slide from bottom.

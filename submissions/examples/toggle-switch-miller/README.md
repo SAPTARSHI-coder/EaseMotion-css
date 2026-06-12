@@ -4,9 +4,10 @@
    A fully CSS-driven toggle switch with a smooth spring-eased sliding animation on state change.
 
 2. **How is it used?**
+
    ```html
    <label class="toggle">
-     <input type="checkbox">
+     <input type="checkbox" />
      <span class="toggle-track">
        <span class="toggle-knob"></span>
      </span>

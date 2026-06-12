@@ -40,6 +40,7 @@ The gallery showcases exactly eight distinct UI cards:
 All component details are structured using CSS Variables in the stylesheet, making updates straightforward.
 
 ### 1. Theme Configuration
+
 Modify the colors directly inside `:root` (for Light mode) and `@media (prefers-color-scheme: dark)` (for Dark mode) in `style.css`:
 
 ```css
@@ -53,13 +54,16 @@ Modify the colors directly inside `:root` (for Light mode) and `@media (prefers-
 ```
 
 ### 2. Modifying Modal Transitions
+
 To change the modal dialog entrance from a scale-bounce to a slide-up, adjust the transform properties:
 
 ```css
 /* In style.css */
 .ease-modal-box {
   transform: translateY(30px); /* Starts 30px lower */
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
 }
 
 .ease-modal-input:checked ~ .ease-modal-overlay .ease-modal-box {
@@ -68,6 +72,7 @@ To change the modal dialog entrance from a scale-bounce to a slide-up, adjust th
 ```
 
 ### 3. Adding Tooltip Directions
+
 To add custom directions or modify existing positions, change the absolute offsets of `.ease-tooltip-box`:
 
 ```css

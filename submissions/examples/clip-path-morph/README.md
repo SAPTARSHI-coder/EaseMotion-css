@@ -12,9 +12,15 @@ Animates `clip-path` to smoothly morph between geometric shapes (circle, diamond
 }
 
 @keyframes morph {
-  0%   { clip-path: circle(50%); }
-  50%  { clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
-  100% { clip-path: circle(50%); }
+  0% {
+    clip-path: circle(50%);
+  }
+  50% {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+  100% {
+    clip-path: circle(50%);
+  }
 }
 ```
 

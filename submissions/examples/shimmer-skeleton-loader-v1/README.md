@@ -7,13 +7,14 @@ A premium, modern SaaS-style card placeholder featuring a smooth shimmer animati
 ## 📷 Screenshots
 
 > [!NOTE]
-> *Screenshots Placeholder: Insert demo preview screenshots showing the loading (skeleton) state and the loaded (live content) state.*
+> _Screenshots Placeholder: Insert demo preview screenshots showing the loading (skeleton) state and the loaded (live content) state._
 
 ---
 
 ## 💡 How It Works
 
 This component uses a modern CSS layout pattern to handle content loading states smoothly without causing layout shifts (CLS):
+
 1. **Stacking Context**: Both the `.skeleton-card` and `.content-card` are placed inside a single `.card-wrapper` container. By applying `display: grid` to the wrapper and mapping both children to `grid-area: 1 / 1`, they overlap exactly in the same grid cell.
 2. **State Transition**: The loading state is managed by a class (`.is-loaded`) on the grid container. When active, it cross-fades the cards by transitioning their `opacity`, `transform` (translating the content card up slightly for a fluid entry), and `visibility`.
 3. **Hardware Acceleration**: The skeleton shimmer animation utilizes CSS background positioning translation with a `linear-gradient` to avoid layout redraws, ensuring a smooth 60fps animation.
@@ -44,14 +45,18 @@ To use this loader pattern, arrange the skeleton and content card siblings insid
   <!-- 2. Live Content Card (Revealed after loading) -->
   <article class="content-card">
     <div class="card-image-wrapper">
-      <img src="path/to/image.jpg" alt="Artwork Description" class="card-image">
+      <img
+        src="path/to/image.jpg"
+        alt="Artwork Description"
+        class="card-image"
+      />
     </div>
     <div class="card-body">
       <h2 class="card-title"><a href="#">Card Title</a></h2>
       <p class="card-text">Card description content goes here...</p>
     </div>
     <div class="card-footer">
-      <img src="path/to/avatar.jpg" alt="Author" class="card-avatar">
+      <img src="path/to/avatar.jpg" alt="Author" class="card-avatar" />
       <div class="card-meta">
         <span class="card-author">Author Name</span>
         <span class="card-date">Date</span>
@@ -62,8 +67,9 @@ To use this loader pattern, arrange the skeleton and content card siblings insid
 ```
 
 Toggle the state by adding `.is-loaded` to the parent container:
+
 ```javascript
-document.querySelector('.demo-grid').classList.add('is-loaded');
+document.querySelector(".demo-grid").classList.add("is-loaded");
 ```
 
 ---

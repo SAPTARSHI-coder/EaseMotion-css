@@ -8,8 +8,8 @@ Provides a cybersecurity-focused dashboard for monitoring risk scores, threat fe
 
 ```html
 <div class="card risk">
-    <h2>82</h2>
-    <span>Risk Score</span>
+  <h2>82</h2>
+  <span>Risk Score</span>
 </div>
 ```
 

@@ -1,12 +1,8 @@
 \# Issue 1565: HTML Validation Note
 
-
-
 \## What this addresses
 
 This note documents the HTML validation issue reported in `docs/index.html`.
-
-
 
 \## Suggested fix
 
@@ -16,9 +12,6 @@ This note documents the HTML validation issue reported in `docs/index.html`.
 
 \- Validate HTML after documentation changes to avoid lint/build failures.
 
-
-
 \## Why this is useful
 
 Valid documentation HTML prevents contributor PRs from failing because of unrelated pre-existing markup errors.
-

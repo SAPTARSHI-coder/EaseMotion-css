@@ -10,14 +10,14 @@ Cyberpunk-style text glitch effect using `::before` and `::after` pseudo-element
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-glitch` | Default glitch on hover |
-| `ease-glitch-loop` | Infinite looping glitch |
-| `ease-glitch-subtle` | Low-intensity glitch |
-| `ease-glitch-hard` | High-intensity glitch |
-| `ease-glitch-cyan` | Cyan/red channel split |
-| `ease-glitch-red` | Red/cyan channel split |
+| Class                | Description             |
+| -------------------- | ----------------------- |
+| `ease-glitch`        | Default glitch on hover |
+| `ease-glitch-loop`   | Infinite looping glitch |
+| `ease-glitch-subtle` | Low-intensity glitch    |
+| `ease-glitch-hard`   | High-intensity glitch   |
+| `ease-glitch-cyan`   | Cyan/red channel split  |
+| `ease-glitch-red`    | Red/cyan channel split  |
 
 ## Notes
 

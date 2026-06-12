@@ -6,8 +6,8 @@ A lightweight animated analytics visualization that recreates a GitHub-style sta
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Self-contained analytics showcase featuring an animated star history chart rendered entirely with SVG.
-* `style.css` — Scoped styling layer responsible for layout, typography, entrance transitions, and chart presentation.
+- `demo.html` — Self-contained analytics showcase featuring an animated star history chart rendered entirely with SVG.
+- `style.css` — Scoped styling layer responsible for layout, typography, entrance transitions, and chart presentation.
 
 ## 🚀 Key Visualization Mechanics
 
@@ -27,10 +27,10 @@ A highlighted tracking dot follows the active position of the line as it is draw
 
 Chart elements appear in a deliberate sequence:
 
-* Repository title and icon
-* Legend information
-* Chart container
-* Animated growth curve
+- Repository title and icon
+- Legend information
+- Chart container
+- Animated growth curve
 
 This staggered reveal improves visual hierarchy and creates a more engaging onboarding experience.
 
@@ -44,12 +44,12 @@ All visualization logic, styling, and rendering remain fully contained within th
 
 ## 🎯 Use Cases
 
-* GitHub repository growth visualizations
-* Dashboard onboarding screens
-* Analytics landing pages
-* SaaS metrics showcases
-* Product launch statistics
-* Contribution history presentations
+- GitHub repository growth visualizations
+- Dashboard onboarding screens
+- Analytics landing pages
+- SaaS metrics showcases
+- Product launch statistics
+- Contribution history presentations
 
 ## ✨ Why It Fits EaseMotion CSS
 

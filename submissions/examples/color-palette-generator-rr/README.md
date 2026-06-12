@@ -8,7 +8,7 @@ Displays interactive color palettes and gradient previews using modern card-base
 
 ```html
 <div class="color-card purple">
-    <span>#7C3AED</span>
+  <span>#7C3AED</span>
 </div>
 ```
 

@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring vector collections, embeddings, 
 
 ```html
 <div class="collection-card healthy">
-    <h3>Product Embeddings</h3>
+  <h3>Product Embeddings</h3>
 </div>
 ```
 

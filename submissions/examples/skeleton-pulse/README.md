@@ -10,11 +10,11 @@ Pulsing opacity skeleton loading placeholder. A fundamental pattern for improvin
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-skeleton-pulse` | Default opacity pulse skeleton |
-| `ease-skeleton-pulse-fast` | Faster pulse variation |
-| `ease-skeleton-pulse-slow` | Slower pulse variation |
+| Class                      | Description                    |
+| -------------------------- | ------------------------------ |
+| `ease-skeleton-pulse`      | Default opacity pulse skeleton |
+| `ease-skeleton-pulse-fast` | Faster pulse variation         |
+| `ease-skeleton-pulse-slow` | Slower pulse variation         |
 
 ## Notes
 

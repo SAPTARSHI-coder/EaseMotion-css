@@ -1,4 +1,3 @@
- 
 # Magnetic Cursor Hover Interaction
 
 Magnetic hover interaction — elements move toward cursor position on hover, creating a modern interactive feel.
@@ -11,13 +10,13 @@ Magnetic hover interaction — elements move toward cursor position on hover, cr
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
-| `ease-magnetic-cursor` | Moves toward cursor (scale 1.03, translateY -4px) |
-| `ease-magnetic-subtle` | Subtle pull |
-| `ease-magnetic-strong` | Strong pull |
-| `ease-magnetic-up/down/left/right` | Directional pull |
-| `ease-magnetic-fast/slow` | Speed variants |
+| Class                              | Effect                                            |
+| ---------------------------------- | ------------------------------------------------- |
+| `ease-magnetic-cursor`             | Moves toward cursor (scale 1.03, translateY -4px) |
+| `ease-magnetic-subtle`             | Subtle pull                                       |
+| `ease-magnetic-strong`             | Strong pull                                       |
+| `ease-magnetic-up/down/left/right` | Directional pull                                  |
+| `ease-magnetic-fast/slow`          | Speed variants                                    |
 
 ## Usage
 
@@ -31,3 +30,4 @@ Magnetic hover interaction — elements move toward cursor position on hover, cr
 <!-- Different directions -->
 <div class="ease-magnetic-up">Pulls up</div>
 <div class="ease-magnetic-right">Pulls right</div>
+```

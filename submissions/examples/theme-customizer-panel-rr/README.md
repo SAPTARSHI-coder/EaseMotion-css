@@ -8,8 +8,8 @@ Provides an interactive theme customization panel that allows users to preview a
 
 ```html
 <div class="colors">
-    <span class="color purple"></span>
-    <span class="color blue"></span>
+  <span class="color purple"></span>
+  <span class="color blue"></span>
 </div>
 ```
 

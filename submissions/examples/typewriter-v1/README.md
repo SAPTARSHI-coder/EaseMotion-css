@@ -10,20 +10,20 @@ Pure CSS typewriter text reveal animation using `steps()` and `width` keyframes.
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-typewriter` | Default typewriter with cursor blink |
-| `ease-typewriter-no-cursor` | No blinking cursor |
-| `ease-typewriter-fast` | Fast typing speed |
-| `ease-typewriter-slow` | Slow typing speed |
-| `ease-typewriter-mono` | Monospace font (terminal style) |
-| `ease-delay-100` to `ease-delay-500` | Staggered start delays |
+| Class                                | Description                          |
+| ------------------------------------ | ------------------------------------ |
+| `ease-typewriter`                    | Default typewriter with cursor blink |
+| `ease-typewriter-no-cursor`          | No blinking cursor                   |
+| `ease-typewriter-fast`               | Fast typing speed                    |
+| `ease-typewriter-slow`               | Slow typing speed                    |
+| `ease-typewriter-mono`               | Monospace font (terminal style)      |
+| `ease-delay-100` to `ease-delay-500` | Staggered start delays               |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-type-chars` | `20` | Number of characters to reveal |
+| Property            | Default | Description                    |
+| ------------------- | ------- | ------------------------------ |
+| `--ease-type-chars` | `20`    | Number of characters to reveal |
 
 ## Submission
 

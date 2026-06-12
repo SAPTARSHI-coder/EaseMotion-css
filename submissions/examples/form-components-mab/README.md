@@ -53,6 +53,7 @@ Add the corresponding class names directly to your markup:
 EaseMotion CSS lacks built-in styles for form controls, forcing developers to implement styling manually. Forms are the foundation of interactive web apps. This submission solves that gap by providing a ready-to-use form component suite.
 
 Key highlights:
+
 - **Design Token Integration**: Dynamically leverages spacing, color, and border-radius tokens.
 - **Micro-Animations**: Uses fluid `cubic-bezier` timing curves for focus states, toggles, checkbox scales, and floating label slides.
 - **Accessibility (A11y)**: Fully supports keyboard focus indicators (`:focus-visible`), outlines, and disabled states.

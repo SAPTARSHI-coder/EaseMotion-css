@@ -6,12 +6,12 @@ A horizontally scrollable image/content carousel with CSS `scroll-snap`, navigat
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Slide (default) | `.ease-carousel--slide` | Scroll-snap horizontal scrolling |
-| Fade | `.ease-carousel--fade` | Cross-fade transition between slides |
-| Peek | `.ease-carousel--peek` | Shows edges of adjacent slides |
-| Auto-play | `.ease-carousel--auto` | Auto-advances on a timer, pauses on hover |
+| Variant         | Class                   | Description                               |
+| --------------- | ----------------------- | ----------------------------------------- |
+| Slide (default) | `.ease-carousel--slide` | Scroll-snap horizontal scrolling          |
+| Fade            | `.ease-carousel--fade`  | Cross-fade transition between slides      |
+| Peek            | `.ease-carousel--peek`  | Shows edges of adjacent slides            |
+| Auto-play       | `.ease-carousel--auto`  | Auto-advances on a timer, pauses on hover |
 
 ## How is it used?
 
@@ -19,25 +19,69 @@ Basic slide carousel:
 
 ```html
 <div class="ease-carousel ease-carousel--slide">
-  <div class="ease-carousel__track" role="region" aria-roledescription="carousel">
-    <div class="ease-carousel__slide" role="group" aria-roledescription="slide" aria-label="1 of 3">
-      <img src="image1.jpg" alt="Description">
+  <div
+    class="ease-carousel__track"
+    role="region"
+    aria-roledescription="carousel"
+  >
+    <div
+      class="ease-carousel__slide"
+      role="group"
+      aria-roledescription="slide"
+      aria-label="1 of 3"
+    >
+      <img src="image1.jpg" alt="Description" />
     </div>
-    <div class="ease-carousel__slide" role="group" aria-roledescription="slide" aria-label="2 of 3">
-      <img src="image2.jpg" alt="Description">
+    <div
+      class="ease-carousel__slide"
+      role="group"
+      aria-roledescription="slide"
+      aria-label="2 of 3"
+    >
+      <img src="image2.jpg" alt="Description" />
     </div>
-    <div class="ease-carousel__slide" role="group" aria-roledescription="slide" aria-label="3 of 3">
-      <img src="image3.jpg" alt="Description">
+    <div
+      class="ease-carousel__slide"
+      role="group"
+      aria-roledescription="slide"
+      aria-label="3 of 3"
+    >
+      <img src="image3.jpg" alt="Description" />
     </div>
   </div>
 
-  <button class="ease-carousel__arrow ease-carousel__arrow--prev" aria-label="Previous slide">&#8249;</button>
-  <button class="ease-carousel__arrow ease-carousel__arrow--next" aria-label="Next slide">&#8250;</button>
+  <button
+    class="ease-carousel__arrow ease-carousel__arrow--prev"
+    aria-label="Previous slide"
+  >
+    &#8249;
+  </button>
+  <button
+    class="ease-carousel__arrow ease-carousel__arrow--next"
+    aria-label="Next slide"
+  >
+    &#8250;
+  </button>
 
   <div class="ease-carousel__dots" role="tablist" aria-label="Slide navigation">
-    <button class="ease-carousel__dot ease-carousel__dot--active" role="tab" aria-selected="true" aria-label="Slide 1"></button>
-    <button class="ease-carousel__dot" role="tab" aria-selected="false" aria-label="Slide 2"></button>
-    <button class="ease-carousel__dot" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+    <button
+      class="ease-carousel__dot ease-carousel__dot--active"
+      role="tab"
+      aria-selected="true"
+      aria-label="Slide 1"
+    ></button>
+    <button
+      class="ease-carousel__dot"
+      role="tab"
+      aria-selected="false"
+      aria-label="Slide 2"
+    ></button>
+    <button
+      class="ease-carousel__dot"
+      role="tab"
+      aria-selected="false"
+      aria-label="Slide 3"
+    ></button>
   </div>
 
   <div class="ease-carousel__progress">
@@ -49,7 +93,10 @@ Basic slide carousel:
 Auto-play with custom interval:
 
 ```html
-<div class="ease-carousel ease-carousel--slide ease-carousel--auto" data-ease-interval="3000">
+<div
+  class="ease-carousel ease-carousel--slide ease-carousel--auto"
+  data-ease-interval="3000"
+>
   ...
 </div>
 ```

@@ -16,9 +16,9 @@ A dock-style navigation component inspired by desktop operating systems. Icons m
 
 ```html
 <nav class="dock">
-    <a href="#" class="dock-item">🏠</a>
-    <a href="#" class="dock-item">📁</a>
-    <a href="#" class="dock-item">📧</a>
+  <a href="#" class="dock-item">🏠</a>
+  <a href="#" class="dock-item">📁</a>
+  <a href="#" class="dock-item">📧</a>
 </nav>
 ```
 

@@ -10,16 +10,16 @@ Blob shape-morphing animation via `border-radius` keyframes. Zero JavaScript req
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-morph-purple` | Purple → pink gradient blob |
-| `ease-morph-ocean` | Cyan → blue gradient blob |
-| `ease-morph-sunset` | Orange → pink gradient blob |
-| `ease-morph-forest` | Green → teal gradient blob |
-| `ease-morph-fast` | 3s animation duration |
-| `ease-morph-slow` | 12s animation duration |
-| `ease-morph-pause` | Pauses morphing on hover |
-| `ease-morph-alt` | Alternate animation direction |
+| Class               | Description                   |
+| ------------------- | ----------------------------- |
+| `ease-morph-purple` | Purple → pink gradient blob   |
+| `ease-morph-ocean`  | Cyan → blue gradient blob     |
+| `ease-morph-sunset` | Orange → pink gradient blob   |
+| `ease-morph-forest` | Green → teal gradient blob    |
+| `ease-morph-fast`   | 3s animation duration         |
+| `ease-morph-slow`   | 12s animation duration        |
+| `ease-morph-pause`  | Pauses morphing on hover      |
+| `ease-morph-alt`    | Alternate animation direction |
 
 ## Submission
 

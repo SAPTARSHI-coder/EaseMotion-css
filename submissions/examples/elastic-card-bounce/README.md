@@ -7,9 +7,7 @@ Creates a spring-like elastic bounce effect when a user hovers over a card.
 **How is it used?**
 
 ```html
-<div class="elastic-card">
-  Content
-</div>
+<div class="elastic-card">Content</div>
 ```
 
 **Why is it useful?**

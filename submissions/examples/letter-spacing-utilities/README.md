@@ -4,22 +4,22 @@ A lightweight collection of CSS letter-spacing utility classes that provide prec
 
 ## Features
 
-* Pure CSS implementation
-* Human-readable utility class names following EaseMotion conventions
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
-* Ideal for typography-driven designs and responsive text styling
-* Aligns with design system best practices
+- Pure CSS implementation
+- Human-readable utility class names following EaseMotion conventions
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
+- Ideal for typography-driven designs and responsive text styling
+- Aligns with design system best practices
 
 ## Available Classes
 
-| Class | Letter Spacing | Use Case |
-| ------- | ------- | ------- |
-| `ease-tracking-tight` | -0.025em | Condensed, modern, headline-style text |
-| `ease-tracking-normal` | 0em | Default, body text, standard readability |
-| `ease-tracking-wide` | 0.05em | Subtle emphasis, luxury brand aesthetics |
-| `ease-tracking-widest` | 0.1em | Dramatic spacing, brand headlines, display text |
+| Class                  | Letter Spacing | Use Case                                        |
+| ---------------------- | -------------- | ----------------------------------------------- |
+| `ease-tracking-tight`  | -0.025em       | Condensed, modern, headline-style text          |
+| `ease-tracking-normal` | 0em            | Default, body text, standard readability        |
+| `ease-tracking-wide`   | 0.05em         | Subtle emphasis, luxury brand aesthetics        |
+| `ease-tracking-widest` | 0.1em          | Dramatic spacing, brand headlines, display text |
 
 ## Usage
 
@@ -30,10 +30,14 @@ A lightweight collection of CSS letter-spacing utility classes that provide prec
 <h1 class="ease-tracking-tight">Bold Headline</h1>
 
 <!-- Normal spacing for body text -->
-<p class="ease-tracking-normal">Body copy remains readable with standard letter spacing.</p>
+<p class="ease-tracking-normal">
+  Body copy remains readable with standard letter spacing.
+</p>
 
 <!-- Wide spacing for subtle emphasis -->
-<p class="ease-tracking-wide">Luxury product descriptions often use wider tracking.</p>
+<p class="ease-tracking-wide">
+  Luxury product descriptions often use wider tracking.
+</p>
 
 <!-- Widest spacing for dramatic effect -->
 <h2 class="ease-tracking-widest">FEATURED</h2>
@@ -48,9 +52,7 @@ A lightweight collection of CSS letter-spacing utility classes that provide prec
 </h1>
 
 <!-- Use with padding for styled tags or badges -->
-<span class="ease-tracking-wide ease-padding-2 ease-rounded">
-  EXCLUSIVE
-</span>
+<span class="ease-tracking-wide ease-padding-2 ease-rounded"> EXCLUSIVE </span>
 ```
 
 ### Responsive Letter Spacing
@@ -67,13 +69,13 @@ The utilities use static values; for responsive behavior, combine with media que
 
 ## Browser Support
 
-| Browser | Supported | Notes |
-| :--- | :---: | :--- |
-| **Chrome** | ✅ | Full support |
-| **Firefox** | ✅ | Full support |
-| **Safari** | ✅ | Full support |
-| **Edge** | ✅ | Full support |
-| **Internet Explorer 11** | ✅ | Basic support (letter-spacing property) |
+| Browser                  | Supported | Notes                                   |
+| :----------------------- | :-------: | :-------------------------------------- |
+| **Chrome**               |    ✅     | Full support                            |
+| **Firefox**              |    ✅     | Full support                            |
+| **Safari**               |    ✅     | Full support                            |
+| **Edge**                 |    ✅     | Full support                            |
+| **Internet Explorer 11** |    ✅     | Basic support (letter-spacing property) |
 
 ## Why is it Useful?
 

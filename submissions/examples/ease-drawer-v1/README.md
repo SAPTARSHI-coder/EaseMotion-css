@@ -6,16 +6,16 @@ A slide-in side panel (drawer) that opens from any edge of the viewport — left
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Left | `.ease-drawer--left` | Slides from left edge (default) |
-| Right | `.ease-drawer--right` | Slides from right edge |
-| Top | `.ease-drawer--top` | Slides down from top |
-| Bottom | `.ease-drawer--bottom` | Slides up from bottom |
-| Small | `.ease-drawer--sm` | 240px width / 200px height |
-| Default | *(none)* | 320px width / 300px height |
-| Large | `.ease-drawer--lg` | 480px width / 450px height |
-| Full | `.ease-drawer--full` | 100% width or height |
+| Variant | Class                  | Description                     |
+| ------- | ---------------------- | ------------------------------- |
+| Left    | `.ease-drawer--left`   | Slides from left edge (default) |
+| Right   | `.ease-drawer--right`  | Slides from right edge          |
+| Top     | `.ease-drawer--top`    | Slides down from top            |
+| Bottom  | `.ease-drawer--bottom` | Slides up from bottom           |
+| Small   | `.ease-drawer--sm`     | 240px width / 200px height      |
+| Default | _(none)_               | 320px width / 300px height      |
+| Large   | `.ease-drawer--lg`     | 480px width / 450px height      |
+| Full    | `.ease-drawer--full`   | 100% width or height            |
 
 ## How is it used?
 
@@ -37,7 +37,7 @@ A slide-in side panel (drawer) that opens from any edge of the viewport — left
 Toggle via `.ease-drawer--open` class on the container:
 
 ```js
-document.getElementById('my-drawer').classList.add('ease-drawer--open');
+document.getElementById("my-drawer").classList.add("ease-drawer--open");
 ```
 
 ## JavaScript dependency

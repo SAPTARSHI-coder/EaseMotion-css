@@ -11,7 +11,9 @@ maintainer to apply to `core/utilities.css`.
 `core/utilities.css` line 238 currently reads:
 
 ```css
-.ease-border-primary { border-color: var(--ease-color-primary); }
+.ease-border-primary {
+  border-color: var(--ease-color-primary);
+}
 ```
 
 `border-color` has no visual effect unless `border-style` is also set (it defaults to
@@ -23,10 +25,14 @@ modifier in the file.
 
 ```css
 /* BEFORE — line 238 of core/utilities.css */
-.ease-border-primary { border-color: var(--ease-color-primary); }
+.ease-border-primary {
+  border-color: var(--ease-color-primary);
+}
 
 /* AFTER — replace with the full shorthand */
-.ease-border-primary { border: 1px solid var(--ease-color-primary); }
+.ease-border-primary {
+  border: 1px solid var(--ease-color-primary);
+}
 ```
 
 This makes `.ease-border-primary` consistent with `.ease-border` and `.ease-border-2`,
@@ -43,7 +49,11 @@ After the fix, developers can use `.ease-border-primary` standalone:
 </div>
 
 <!-- Composable with size modifier -->
-<input class="ease-border-primary ease-rounded" type="text" placeholder="Primary border input">
+<input
+  class="ease-border-primary ease-rounded"
+  type="text"
+  placeholder="Primary border input"
+/>
 ```
 
 ### Why is it useful?

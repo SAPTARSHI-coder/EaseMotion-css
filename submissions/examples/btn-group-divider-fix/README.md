@@ -9,7 +9,7 @@ Inside `.ease-btn-group`, the separator between buttons was hardcoded as:
 
 ```css
 .ease-btn-group .ease-btn:not(:last-child) {
-  border-right-width: 1px;  /* ❌ mismatches the 2px outer border */
+  border-right-width: 1px; /* ❌ mismatches the 2px outer border */
 }
 ```
 
@@ -54,5 +54,6 @@ Developers can now override the divider width for specific groups:
 4. The **Custom Override** group shows the variable in action at 3px
 
 ## Files
+
 - `style.css` — the fix with CSS variable
 - `demo.html` — three groups: buggy, fixed, and custom override demo
