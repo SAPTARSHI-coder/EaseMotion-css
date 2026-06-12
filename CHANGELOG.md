@@ -9,7 +9,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-- Entrance animations `ease-slide-left` and `ease-slide-right` — horizontal siblings of `ease-slide-up` / `ease-slide-down`, completing the directional slide set (24px offset, fade-in, conflict guards via `:not()`)
+- Entrance animations `ease-slide-in-left` and `ease-slide-in-right` — horizontal siblings of `ease-slide-up` / `ease-slide-down`, completing the directional slide set (24px offset, fade-in)
 
 ---
 
@@ -49,7 +49,7 @@ EaseMotion CSS v1.0.0 is the first public release of the framework. This version
 
 - `core/utilities.css` — 80+ layout and styling utilities
   - Display: `ease-block`, `ease-flex`, `ease-grid`, `ease-hidden`
-  - Flexbox: `ease-center`, `ease-flex-col`, `ease-items-*`, `ease-justify-*`
+  - Flexbox: `ease-center`, `ease-flex-col`, `ease-items-*`, `ease-self-*`, `ease-justify-*`
   - Grid: `ease-grid-cols-1/2/3/4`, `ease-grid-auto`
   - Gap, padding, margin scales
   - Width/height, container, positioning, overflow
