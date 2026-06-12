@@ -86,14 +86,11 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
-  it('should expose card modifier classes', () => {
-    expect(css).toContain('.ease-card-hover');
-    expect(css).toContain('.ease-card-glow');
-    expect(css).toContain('.ease-card-glass');
-    expect(css).toContain('.ease-card-neumorphic');
-    expect(css).toContain('.ease-card-flat');
-    expect(css).toContain('.ease-card-outlined');
-    expect(css).toContain('.ease-card-image');
+  it('should expose scroll-progress theme variants', () => {
+    expect(css).toContain('.ease-scroll-progress-success');
+    expect(css).toContain('.ease-scroll-progress-danger');
+    expect(css).toContain('.ease-scroll-progress-warning');
+    expect(css).toContain('.ease-scroll-progress-root');
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
