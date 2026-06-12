@@ -12,7 +12,8 @@
     if (hash) {
       // Find overlay by hash (pure CSS `:target` fallback)
       try {
-        const overlay = document.querySelector(hash + '.ease-modal-overlay');
+        const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
+        const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
         if (overlay) {
           body.style.overflow = 'hidden';
           overlay.classList.add('is-active');
@@ -42,7 +43,8 @@
     if (!hash) return;
 
     try {
-      const overlay = document.querySelector(hash + '.ease-modal-overlay');
+      const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
+      const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
       if (!overlay) return;
 
       // Escape key to close
