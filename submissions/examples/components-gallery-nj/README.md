@@ -1,24 +1,50 @@
-# Components Gallery
+# Components Gallery Showcase
 
 ## What does this do?
 
-Provides a component showcase page with live button and card demos.
+A documentation-style component gallery that showcases button and card components with live previews and copyable HTML snippets.
 
 ## Features
 
 - Live button examples
 - Live card examples
 - Dark mode toggle
+- Mobile responsive layout
 - Copyable HTML snippets
-- Responsive grid layout
+- Beginner-friendly documentation page
+
+## Included Components
+
+### Buttons
+- Primary
+- Success
+- Danger
+- Outline
+- Ghost
+- Link
+- Small
+- Large
+- XL
+- Pill
+- Disabled
+- Active
+
+### Cards
+- Base
+- Shadow
+- Glass
+- Accent
+- Outlined
+- Compact
+- Stat
 
 ## Usage
 
-Open `demo.html` in a browser.
+Open `demo.html` directly in a browser.
 
 ## Why is it useful?
 
-Helps developers quickly preview component styles and copy example HTML for use in projects.
+Developers can preview components visually and copy HTML examples quickly, similar to a documentation site.
 
 ## Browser Support
 
