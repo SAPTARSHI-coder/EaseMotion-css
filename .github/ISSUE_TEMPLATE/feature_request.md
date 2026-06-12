@@ -1,9 +1,10 @@
 ---
 name: Feature Request
-about: Propose a new utility, animation, or component for Flow CSS
+about: Propose a new utility, animation, or component for EaseMotion CSS
 title: "[FEATURE] Your feature name here"
-labels: submission, needs-review
+labels: ''
 assignees: ''
+
 ---
 
 ## Feature Name
@@ -18,9 +19,9 @@ assignees: ''
 
 ---
 
-## Why is this useful for Flow CSS?
+## Why is this useful for EaseMotion CSS?
 
-<!-- Explain how this fits the Flow CSS design philosophy: human-readable, animation-first, composable. -->
+<!-- Explain how this fits the EaseMotion CSS design philosophy: human-readable, animation-first, composable. -->
 
 ---
 
@@ -36,7 +37,7 @@ assignees: ''
 
 ## CSS Snippet
 
-<!-- Paste your raw CSS. You do NOT need to use flow- naming yet — the maintainer handles that. -->
+<!-- Paste your raw CSS. You do NOT need to use ease- naming yet — the maintainer handles that. -->
 
 ```css
 /* Paste your CSS here */
@@ -52,6 +53,10 @@ assignees: ''
 
 ## Checklist
 
-- [ ] This feature does not duplicate an existing Flow CSS class
+- [ ] This feature does not duplicate an existing EaseMotion CSS class
 - [ ] I understand my naming will be standardized by the maintainer
 - [ ] I will submit code inside `submissions/examples/` only — not in `core/` or `components/`
+
+---
+
+> **Tip:** You can discuss your feature ideas and get feedback from other developers on our official [Discord Server](https://discord.gg/hWSdGrccBU) before submitting an issue.
