@@ -163,7 +163,7 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 ---
 
-## What is EaseMotion CSS? 
+## What is EaseMotion CSS? ✨
 
 EaseMotion CSS is a curated, animation-first CSS framework where class names read like plain English. It is designed for developers who want expressive motion and clean HTML without a build tool or complex configuration.
 
@@ -188,7 +188,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where class names rea
 
 ---
 
-## Why EaseMotion CSS? 
+## Why EaseMotion CSS? 🆚
 
 EaseMotion CSS is designed to make modern UI development simpler, faster, and more expressive. Instead of combining multiple tools for styling, layout, and animations, developers can use a single lightweight framework with readable class names and built-in motion utilities.
 
