@@ -1,38 +1,11 @@
-# CSS-Only Tabs
+# CSS-only Tabs Component
 
-## What does this do?
-A fully functional tab navigation component powered entirely by hidden radio buttons and CSS — zero JavaScript required.
+A responsive tabs component built with semantic HTML and pure CSS. It allows users to switch between related content panels without JavaScript by using radio inputs, labels, and sibling selectors.
 
-## How is it used?
-Wrap radio inputs, label nav, and content panels inside a container:
+The component includes horizontal tab buttons, active tab styling, focus-visible states, smooth panel transitions, and a mobile-friendly stacked layout. It can be used for documentation examples, pricing details, product information, feature sections, or settings-style interfaces.
 
-```html
-<div class="tabs-container">
-  <input type="radio" name="tabs" id="tab-1" checked>
-  <input type="radio" name="tabs" id="tab-2">
+## Why is this useful for EaseMotion CSS?
 
-  <nav class="tab-nav">
-    <label class="tab-label" for="tab-1">Tab 1</label>
-    <label class="tab-label" for="tab-2">Tab 2</label>
-  </nav>
+Tabs are a common UI pattern for organizing related content without taking up too much space. A CSS-only tabs component fits EaseMotion CSS because it is lightweight, human-readable, animation-friendly, and composable with other utility classes.
 
-  <div class="tab-panels">
-    <section class="tab-panel">Content 1</section>
-    <section class="tab-panel">Content 2</section>
-  </div>
-</div>
-```
-
-## Why is it useful?
-Tabs are one of the most fundamental UI patterns on the web, yet EaseMotion CSS had no tab component. This submission fills that gap with a pure-CSS solution that features smooth fade + slide transitions, an animated active-state indicator, responsive mobile stacking, and `prefers-reduced-motion` support — fully aligned with the framework's no-JS philosophy.
-
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
-
-## Preview
-Open `demo.html` directly in your browser to see the effect.
-
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to `ease-*` convention before merging
+It is also roadmap-aligned with the project’s interest in CSS-only components like accordions and tabs.
