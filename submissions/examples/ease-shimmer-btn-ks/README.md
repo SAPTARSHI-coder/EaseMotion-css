@@ -1,19 +1,25 @@
-# Shimmer Sweeping Button
+# Diagonal Shimmer Swipe
 
-## 1. What does this do?
+## What does this do?
+Sweeps a diagonal semi-transparent light/shimmer gradient across the button background on hover.
 
-This adds a diagonal light/shimmer beam overlay that sweeps across the button surface from left to right when hovered.
-
-## 2. How is it used?
-
-Add the class to any standard button or anchor element styled as a button:
+## How is it used?
+Add the class to your button:
 
 ```html
-<button class="shimmer-btn">Click Me</button>
-<button class="shimmer-btn success">Success</button>
-<button class="shimmer-btn danger">Danger</button>
+<button class="shimmer-btn">Get Started</button>
 ```
 
-## 3. Why is it useful?
+## Why is it useful?
+It provides a subtle, premium interactive highlight that draws attention and guides the user to a primary call-to-action button without needing complex keyframes or heavy JS.
 
-It aligns with EaseMotion CSS's philosophy by using clean, performance-optimized CSS linear-gradient transitions rather than JS canvas effects to create a highly responsive and satisfying interactive button feedback.
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
