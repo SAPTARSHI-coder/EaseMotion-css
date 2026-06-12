@@ -76,9 +76,9 @@ Write UI like you describe it in English. No build steps. No memorizing shorthan
 
 ### Animation Iterations
 
-Looping animations in EaseMotion CSS (for example: `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and the `.ease-typewriter-loop`) now respect a global CSS custom property: `--ease-animation-iterations`.
+Looping ### Duration Helpers in EaseMotion CSS (for example: `.ease-bounce`, `.ease-pulse`, `.ease-rotate`, `.ease-ping`, and the `.ease-typewriter-loop`) now respect a global CSS custom property: `--ease-animation-iterations`.
 
-The default remains `infinite` so existing behavior is unchanged. To run looping animations a fixed number of times, override the variable in your project:
+The default remains `infinite` so existing behavior is unchanged. To run looping ### Duration Helpers a fixed number of times, override the variable in your project:
 
 ```css
 :root {
@@ -134,11 +134,11 @@ Most people simply forget. This is your reminder. 😊
 
 ## Browser Compatibility 🌐
 
-EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
+EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS ### Duration Helpers, Flexbox, CSS Grid, transforms, transitions, and keyframe ### Duration Helpers.
 
 <div align="center">
 
-| Browser | Minimum Version | `backdrop-filter` | `aspect-ratio` | CSS variables | Animations | Notes |
+| Browser | Minimum Version | `backdrop-filter` | `aspect-ratio` | CSS variables | ### Duration Helpers | Notes |
 |---------|-----------------|-------------------|----------------|---------------|------------|-------|
 | Chrome  | 49+ | Supported | Supported | Supported | Supported | |
 | Firefox | 31+ | Supported | Supported | Supported | Supported | |
@@ -177,7 +177,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where **class names r
 |---|:---:|:---:|:---:|
 | Setup | Write from scratch | Build step + config | **Link one file** |
 | Readability | ✅ High | ❌ Low (`px-4 flex gap-x-2`) | ✅ **High** (`ease-center`) |
-| Animations | ⚙️ Manual | 🔸 Minimal | ✅ **First-class** |
+| ### Duration Helpers | ⚙️ Manual | 🔸 Minimal | ✅ **First-class** |
 | Zero config | ✅ | ❌ | ✅ |
 | Quality control | You | You | ✅ **Curated by maintainer** |
 | CDN ready | N/A | ❌ | ✅ **Yes** |
@@ -261,7 +261,7 @@ Or in CSS / PostCSS / Sass:
 <!-- Core (always required — load in this exact order) -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/### Duration Helpers.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
 
 <!-- Components — add only what you use -->
@@ -332,10 +332,10 @@ Every class in the framework has passed through this process. The curation is wh
 
 ## Usage & Examples 💡
 
-### Animations
+### ### Duration Helpers
 
 ```html
-<!-- Entrance animations (fire on page load) -->
+<!-- Entrance ### Duration Helpers (fire on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
 <h3 class="ease-slide-in-left">Slide left</h3>
@@ -349,7 +349,7 @@ Every class in the framework has passed through this process. The curation is wh
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
-
+```
 ### Duration Helpers
 
 ```html
@@ -404,7 +404,6 @@ Then simply add `.ease-reveal` along with an animation class:
   This animates when scrolled into view!
 </div>
 ```
-
 
 ### Hover Effects
 
