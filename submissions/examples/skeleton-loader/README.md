@@ -1,85 +1,120 @@
-# Skeleton Loader
+# ease-drawer
 
-Submission for EaseMotion CSS — resolves [Issue #2667](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/2667)
+Submission for EaseMotion CSS — resolves [Issue #2739](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/2739)
 
 ---
 
 ## 1. What does this do?
 
-Adds shimmer and pulse loading placeholder classes that visually fill the
-space where content will appear, giving users instant layout feedback while
-data is being fetched.
+Adds a CSS-only animated slide-in side panel (drawer / off-canvas panel).
+Uses the checkbox hack — a hidden `<input type="checkbox">` paired with
+`<label>` elements — so the drawer opens and closes with zero JavaScript.
+
+Supports four directions (left, right, top, bottom), three width sizes,
+a backdrop overlay, a close button, and structured header/body/footer regions.
 
 ---
 
 ## 2. How is it used?
 
-Apply the class directly to any block-level element in place of real content.
-Size it with `width` and `height` (inline or via your own layout classes):
+### Minimal example (left drawer)
 
 ```html
-<!-- Block placeholder (image, card, banner) -->
-<div class="skeleton" style="width: 100%; height: 160px;"></div>
+<!-- 1. Hidden toggle checkbox -->
+<input type="checkbox" id="my-drawer" class="ease-drawer-toggle" />
 
-<!-- Text line placeholder -->
-<span class="skeleton-text" style="width: 75%;"></span>
-<span class="skeleton-text" style="width: 100%;"></span>
-<span class="skeleton-text" style="width: 50%;"></span>
+<!-- 2. Click-outside overlay -->
+<label for="my-drawer" class="ease-drawer-overlay"></label>
 
-<!-- Avatar / icon placeholder -->
-<span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
+<!-- 3. Drawer panel -->
+<div class="ease-drawer">
+  <label for="my-drawer" class="ease-drawer-close">✕</label>
+  <div class="ease-drawer-header">Menu</div>
+  <div class="ease-drawer-body">
+    <!-- your content here -->
+  </div>
+  <div class="ease-drawer-footer">Footer</div>
+</div>
 
-<!-- Pulse variant (softer, no sweep) -->
-<div class="skeleton-pulse" style="width: 100%; height: 160px;"></div>
+<!-- 4. Open button -->
+<label for="my-drawer" class="ease-btn ease-btn-primary">☰ Open</label>
 ```
 
-**Profile card example:**
+### Direction variants
 
 ```html
-<div style="display: flex; gap: 0.75rem; align-items: center;">
-  <span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
-    <span class="skeleton-text" style="width: 60%;"></span>
-    <span class="skeleton-text" style="width: 40%;"></span>
-  </div>
-</div>
+<!-- Slide from right -->
+<div class="ease-drawer ease-drawer-right">...</div>
+
+<!-- Slide from top -->
+<div class="ease-drawer ease-drawer-top">...</div>
+
+<!-- Slide from bottom -->
+<div class="ease-drawer ease-drawer-bottom">...</div>
+```
+
+### Width modifiers (left/right drawers only)
+
+```html
+<div class="ease-drawer ease-drawer-sm">...</div>   <!-- 220px -->
+<div class="ease-drawer">...</div>                   <!-- 300px default -->
+<div class="ease-drawer ease-drawer-lg">...</div>   <!-- 420px -->
+<div class="ease-drawer ease-drawer-full">...</div> <!-- 100vw -->
 ```
 
 ---
 
 ## 3. Why is it useful?
 
-Skeleton loaders are a first-class animation pattern — the entire effect is
-driven by a single `@keyframes` shimmer sweep or opacity pulse. There is no
-JavaScript, no dependencies, and no build step required. This aligns directly
-with EaseMotion CSS's core philosophy of making animations first-class through
-simple, readable class names.
+Drawers are one of the most common UI patterns — navigation menus, shopping
+carts, filter panels, contact forms, announcement panels. Every major design
+system ships one. EaseMotion CSS has no drawer component yet.
 
-Unlike a generic spinner, a skeleton preserves the layout of the real content,
-so there is no layout shift when data loads. Frameworks like Chakra UI, Vuetify,
-and MUI all ship skeleton loaders because developers reach for them constantly.
-EaseMotion CSS should too.
+This implementation is:
 
-The shimmer uses `background-position` animation (GPU-composited) so it is
-performant even on many elements simultaneously. The pulse variant uses
-`opacity` animation — equally cheap, and a good choice when the shimmer sweep
-feels too intense for the context.
+- **Zero JavaScript** — pure CSS checkbox hack, works in all browsers
+- **Composable** — direction and width modifiers stack freely
+- **Accessible-friendly** — overlay click closes the drawer naturally
+- **Token-aware** — uses `--ease-color-surface` and `--ease-color-text`
+  so it inherits the project's existing dark mode variables
+- **Animation-correct** — uses `cubic-bezier(0.4, 0, 0.2, 1)` (Material
+  motion standard) for a smooth, non-linear slide
+- **Reduced-motion safe** — transitions disabled when user prefers it
 
-Dark mode is handled automatically via `@media (prefers-color-scheme: dark)`.
-The maintainer can replace the hard-coded hex values with `--ease-color-surface`
-and related tokens when integrating into `core/`.
+---
+
+## Classes
+
+| Class | Purpose |
+|---|---|
+| `.ease-drawer-toggle` | Hidden checkbox (the state controller) |
+| `.ease-drawer-overlay` | Semi-transparent backdrop (label, click to close) |
+| `.ease-drawer` | Panel — slides from left by default |
+| `.ease-drawer-right` | Modifier — slides from right |
+| `.ease-drawer-top` | Modifier — slides from top |
+| `.ease-drawer-bottom` | Modifier — slides from bottom |
+| `.ease-drawer-sm` | Width 220px |
+| `.ease-drawer-lg` | Width 420px |
+| `.ease-drawer-full` | Width 100vw |
+| `.ease-drawer-close` | ✕ close button (label targeting the checkbox) |
+| `.ease-drawer-header` | Titled top region |
+| `.ease-drawer-body` | Scrollable content region |
+| `.ease-drawer-footer` | Action region at bottom |
 
 ---
 
 ## Files
 
-| File        | Purpose                              |
-|-------------|--------------------------------------|
-| `style.css` | Raw CSS — shimmer + pulse keyframes, four utility classes |
-| `demo.html` | Self-contained demo with toggle between loading/loaded states |
-| `README.md` | This file                            |
+| File | Purpose |
+|---|---|
+| `style.css` | Full drawer component — all classes + dark mode + reduced-motion |
+| `demo.html` | 5 demos: nav menu, cart, filters, announcement, contact form |
+| `README.md` | This file |
 
 ---
 
-*Proposed ease-\* names (maintainer decides):*
-`ease-skeleton` · `ease-skeleton-text` · `ease-skeleton-circle` · `ease-skeleton-pulse`
+Proposed `ease-*` names (maintainer decides):
+`ease-drawer`, `ease-drawer-right`, `ease-drawer-top`, `ease-drawer-bottom`,
+`ease-drawer-sm`, `ease-drawer-lg`, `ease-drawer-full`, `ease-drawer-toggle`,
+`ease-drawer-overlay`, `ease-drawer-close`, `ease-drawer-header`,
+`ease-drawer-body`, `ease-drawer-footer`
