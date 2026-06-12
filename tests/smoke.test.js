@@ -8,6 +8,44 @@ describe('EaseMotion-css Smoke Tests', () => {
   let document;
   let css;
 
+  const renderTabs = (count, activeIndex = 0) => {
+    const root = document.createElement('div');
+    const tabs = Array.from({ length: count }, (_, index) => {
+      const checked = index === activeIndex ? ' checked' : '';
+
+      return `
+        <div class="ease-tab">
+          <input
+            class="ease-tab-input"
+            type="radio"
+            name="test-tabs-${count}"
+            id="test-tabs-${count}-${index}"
+            ${checked}
+          />
+          <label
+            class="ease-tab-label"
+            for="test-tabs-${count}-${index}"
+            role="tab"
+          >
+            Tab ${index + 1}
+          </label>
+          <div class="ease-tab-panel" role="tabpanel">
+            Panel ${index + 1}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    root.innerHTML = `
+      <div class="ease-tabs">
+        <div class="ease-tabs-nav" role="tablist">${tabs}</div>
+      </div>
+    `;
+    document.body.appendChild(root);
+
+    return root;
+  };
+
   beforeAll(() => {
     const coreDir = resolve(__dirname, '../core');
     const componentsDir = resolve(__dirname, '../components');
@@ -119,6 +157,74 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-overlay');
     expect(css).toContain('.ease-modal');
     expect(css).toContain('.ease-modal-header');
+  });
+
+  it('should not limit tabs with hardcoded nth-of-type selectors', () => {
+    expect(css).not.toContain('.ease-tab-input:nth-of-type');
+    expect(css).not.toContain('.ease-tab-label:nth-of-type');
+    expect(css).not.toContain('.ease-tab-panel:nth-of-type');
+    expect(css).not.toContain('translateX(500%)');
+  });
+
+  it.each([1, 2, 6, 8, 10])(
+    'should map checked tabs to labels and panels for %i tab(s)',
+    (count) => {
+      const root = renderTabs(count, count - 1);
+      const activeTabs = root.querySelectorAll(
+        '.ease-tab:has(> .ease-tab-input:checked)'
+      );
+      const activeLabels = root.querySelectorAll(
+        '.ease-tab:has(> .ease-tab-input:checked) > .ease-tab-label'
+      );
+      const activePanels = root.querySelectorAll(
+        '.ease-tab:has(> .ease-tab-input:checked) > .ease-tab-panel'
+      );
+
+      expect(root.querySelectorAll('.ease-tab')).toHaveLength(count);
+      expect(activeTabs).toHaveLength(1);
+      expect(activeLabels).toHaveLength(1);
+      expect(activePanels).toHaveLength(1);
+      expect(activeLabels[0].textContent).toContain(`Tab ${count}`);
+      expect(activePanels[0].textContent).toContain(`Panel ${count}`);
+    }
+  );
+
+  it('should change the active tab without tab-count-specific selectors', () => {
+    const root = renderTabs(10, 0);
+    const inputs = root.querySelectorAll('.ease-tab-input');
+
+    inputs[0].checked = false;
+    inputs[8].checked = true;
+
+    const activeLabel = root.querySelector(
+      '.ease-tab:has(> .ease-tab-input:checked) > .ease-tab-label'
+    );
+    const activePanel = root.querySelector(
+      '.ease-tab:has(> .ease-tab-input:checked) > .ease-tab-panel'
+    );
+
+    expect(activeLabel.textContent).toContain('Tab 9');
+    expect(activePanel.textContent).toContain('Panel 9');
+  });
+
+  it('should keep radio semantics for keyboard navigation and accessibility', () => {
+    const root = renderTabs(8, 0);
+    const inputs = root.querySelectorAll('.ease-tab-input');
+    const labels = root.querySelectorAll('.ease-tab-label');
+
+    inputs.forEach((input, index) => {
+      expect(input.type).toBe('radio');
+      expect(input.name).toBe('test-tabs-8');
+      expect(labels[index].getAttribute('for')).toBe(input.id);
+    });
+  });
+
+  it('should use a scalable active-label underline indicator', () => {
+    expect(css).toContain('.ease-tab-label::after');
+    expect(css).toContain(
+      '.ease-tab:has(> .ease-tab-input:checked) > .ease-tab-label::after'
+    );
+    expect(css).not.toContain('.ease-tab-underline { transform');
   });
   
   it('should not have duplicate @keyframes definitions', () => {
