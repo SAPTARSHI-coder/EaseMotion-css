@@ -14,25 +14,33 @@ if (process.env.GITHUB_ACTIONS === "true") {
   try {
     const baseBranch = process.env.GITHUB_BASE_REF || "main";
     execSync(`git fetch origin ${baseBranch} --depth=1`, { stdio: "ignore" });
-    
-    const changedFiles = execSync(`git diff --name-only origin/${baseBranch}`, { encoding: "utf8" })
+
+    const changedFiles = execSync(`git diff --name-only origin/${baseBranch}`, {
+      encoding: "utf8",
+    })
       .split("\n")
-      .map(f => f.trim())
+      .map((f) => f.trim())
       .filter(Boolean);
-      
-    const affectsBundle = changedFiles.some(file => 
-      file === "easemotion.css" ||
-      file.startsWith("core/") ||
-      file.startsWith("components/") ||
-      file.startsWith("easemotion/")
+
+    const affectsBundle = changedFiles.some(
+      (file) =>
+        file === "easemotion.css" ||
+        file.startsWith("core/") ||
+        file.startsWith("components/") ||
+        file.startsWith("easemotion/")
     );
 
     if (!affectsBundle) {
-      console.log("No core, component, or entrypoint files modified. Skipping bundle validation.");
+      console.log(
+        "No core, component, or entrypoint files modified. Skipping bundle validation."
+      );
       process.exit(0);
     }
   } catch (err) {
-    console.warn("Could not determine changed files from git diff, running full validation:", err.message);
+    console.warn(
+      "Could not determine changed files from git diff, running full validation:",
+      err.message
+    );
   }
 }
 
@@ -52,10 +60,12 @@ if (build.error || build.status !== 0) {
 
 const rebuiltBundle = await readFile(bundlePath, "utf8");
 
-if (originalBundle !== rebuiltBundle) {
+const normalize = (str) => str.replace(/\r\n/g, "\n");
+
+if (normalize(originalBundle) !== normalize(rebuiltBundle)) {
   await writeFile(bundlePath, originalBundle, "utf8");
   throw new Error(
-    `${path.relative(rootDir, bundlePath)} is stale. Run \`npm run build\` and commit the regenerated bundle.`,
+    `${path.relative(rootDir, bundlePath)} is stale. Run \`npm run build\` and commit the regenerated bundle.`
   );
 }
 
