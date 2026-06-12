@@ -30,3 +30,4 @@ Open `demo.html` directly in your browser to see the new
 ## Contribution Notes
 - Pure CSS addition
 - Respects `prefers-reduced-motion`
+<!-- refreshed -->
