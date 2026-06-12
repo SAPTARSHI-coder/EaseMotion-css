@@ -1,47 +1,45 @@
 # ease-typewriter
 
-> Pure CSS typewriter animation for EaseMotion CSS
-
-## What it does
-
-Reveals text character-by-character with a blinking cursor using only CSS.
-No JavaScript. No libraries. Zero dependencies.
+Typewriter text reveal animation using CSS steps() and width keyframes. Zero JavaScript required.
 
 ## Usage
 
-    <span class="ease-typewriter" style="--ease-typewriter-steps: 13;">
-      Hello, World!
-    </span>
+```html
+<p class="ease-typewriter" style="--ease-typewriter-steps: 13;">Hello, World!</p>
+```
 
-Set --ease-typewriter-steps to the character count of your text.
-
-## Class Reference
+## Variants
 
 | Class | Description |
 |---|---|
-| ease-typewriter | Base class, default speed, blinking pipe cursor |
-| ease-typewriter-fast | Faster typing speed |
-| ease-typewriter-slow | Slower typing speed |
-| ease-typewriter-no-cursor | No cursor shown |
-| ease-typewriter-underscore | Underscore cursor instead of pipe |
+| `ease-typewriter` | Default one-shot typewriter reveal |
+| `ease-typewriter-loop` | Types and deletes infinitely |
+| `ease-typewriter-no-cursor` | Reveal without cursor |
+| `ease-typewriter-cursor-only` | Blinking cursor only |
+| `ease-typewriter-fast` | Fast 800ms reveal |
+| `ease-typewriter-slow` | Slow 4s reveal |
+| `ease-typewriter-cursor-primary` | Indigo cursor |
+| `ease-typewriter-cursor-white` | White cursor |
+| `ease-typewriter-cursor-green` | Green cursor |
+| `ease-delay-100` | 100ms start delay |
+| `ease-delay-200` | 200ms start delay |
+| `ease-delay-300` | 300ms start delay |
+| `ease-delay-500` | 500ms start delay |
 
-## Staggered sequence
+## Custom Properties
 
-    <span class="ease-typewriter">Line one.</span>
-    <span class="ease-typewriter ease-delay-200">Line two.</span>
-    <span class="ease-typewriter ease-delay-400">Line three.</span>
+| Property | Default | Description |
+|---|---|---|
+| `--ease-typewriter-steps` | 30 | Set to character count of your text |
 
-## CSS Variables used
+## Notes
 
-| Token | Role |
-|---|---|
-| --ease-color-primary | Cursor color |
-| --ease-speed-slow | Default typing duration |
-| --ease-speed-medium | Fast variant duration |
-| --ease-typewriter-steps | Character count, set per element |
+- Set `--ease-typewriter-steps` to match your text length for smooth stepping
+- Use delay variants for staggered multi-line effects
+- Works best on monospace fonts
 
-## Browser support
+## Submission
 
-Full cross-browser support. No experimental APIs used.
-
-Submitted under MIT License · EaseMotion CSS · 2026
+- **Author:** sudha09-git
+- **Issue:** #3815
+- **Files:** style.css, demo.html, README.md
