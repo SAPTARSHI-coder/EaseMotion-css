@@ -1,13 +1,32 @@
-# Pure CSS Tooltip
+# CSS-Only Tooltip with Arrow
 
-## 1. What does this do?
-A pure CSS tooltip that appears on hover with an arrow pointing to the trigger element. Supports four positions: top, bottom, left, right.
+A pure CSS tooltip that appears on hover using `::before` and `::after` pseudo-elements. No JavaScript required.
 
-## 2. How is it used?
-Add the `.tooltip-btn` class and a position modifier (`.tooltip-top`, `.tooltip-bottom`, `.tooltip-left`, `.tooltip-right`). Set the tooltip text via `data-tooltip`.
+## Demo
+
+Open `demo.html` in your browser to see:
+- Top, bottom, left, right positions
+- Button, text, and icon triggers
+- Long content wrapping
+- Dark theme variant
+
+## Usage
+
 ```html
-<button class="tooltip-btn tooltip-top" data-tooltip="Hello">Hover</button>
-```
+&lt;!-- Basic tooltip (top position, default) --&gt;
+&lt;button class="tooltip" data-tooltip="Tooltip text here"&gt;Hover Me&lt;/button&gt;
 
-## 3. Why is it useful?
-Zero JavaScript tooltip using `attr()` and `::after`/`::before` pseudo-elements. The entrance animation is smooth and the arrow always points correctly. Respects `prefers-reduced-motion`.
+&lt;!-- Bottom position --&gt;
+&lt;button class="tooltip tooltip-bottom" data-tooltip="Appears below"&gt;Hover Me&lt;/button&gt;
+
+&lt;!-- Left position --&gt;
+&lt;span class="tooltip tooltip-left" data-tooltip="Appears to left"&gt;Hover Me&lt;/span&gt;
+
+&lt;!-- Right position --&gt;
+&lt;div class="tooltip tooltip-right" data-tooltip="Appears to right"&gt;Hover Me&lt;/div&gt;
+
+&lt;!-- Color variants --&gt;
+&lt;button class="tooltip tooltip-dark" data-tooltip="Dark theme"&gt;Dark&lt;/button&gt;
+&lt;button class="tooltip tooltip-light" data-tooltip="Light theme"&gt;Light&lt;/button&gt;
+&lt;button class="tooltip tooltip-error" data-tooltip="Error!"&gt;Error&lt;/button&gt;
+&lt;button class="tooltip tooltip-success" data-tooltip="Success!"&gt;Success&lt;/button&gt;
