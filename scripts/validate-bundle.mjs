@@ -36,7 +36,9 @@ if (process.env.GITHUB_ACTIONS === "true") {
   }
 }
 
-const originalBundle = await readFile(bundlePath, "utf8").catch(() => "");
+const originalBundle = await readFile(bundlePath, "utf8")
+  .then((data) => data.replace(/\r\n/g, "\n"))
+  .catch(() => "");
 const build = spawnSync(process.execPath, ["scripts/build-minified-css.mjs"], {
   cwd: rootDir,
   encoding: "utf8",
@@ -50,7 +52,7 @@ if (build.error || build.status !== 0) {
   process.exit(build.status ?? 1);
 }
 
-const rebuiltBundle = await readFile(bundlePath, "utf8");
+const rebuiltBundle = (await readFile(bundlePath, "utf8")).replace(/\r\n/g, "\n");
 
 if (originalBundle !== rebuiltBundle) {
   await writeFile(bundlePath, originalBundle, "utf8");
