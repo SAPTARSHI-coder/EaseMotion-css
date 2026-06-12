@@ -1,9 +1,17 @@
-# Keyboard Key Styling Component (`.ease-kbd`)
+# Keyboard Key Styling Component
 
-A lightweight, pure-CSS keyboard key layout presentation style delivering dynamic 3D physical mechanical button click interaction properties.
+A CSS-only mechanical keycap component featuring a fluid pressed downward motion layout.
 
 ## Features
-- Scalable, elastic padding constraints (`em` metric values) adapting gracefully to adjacent paragraph sizes.
-- Clean 3D structural boundaries leveraging offset `border-bottom-width` rendering layers.
-- Fast active translation mechanics (`translateY(2px)`) creating instant user keypress feedback.
-- Bundled with a specialized dark environment context selector (`.ease-kbd-dark`).
+- Mechanical "pressed" animation effect using CSS transitions.
+- Automatic `+` symbol generation for keyboard shortcuts.
+- Support for both Light and Dark themes.
+
+## Usage
+1. Link the `style.css` file in your HTML `<head>`.
+2. Use the following structure for your shortcuts:
+   ```html
+   <span class="shortcut">
+       <kbd class="ease-kbd">Ctrl</kbd>
+       <kbd class="ease-kbd">C</kbd>
+   </span>
