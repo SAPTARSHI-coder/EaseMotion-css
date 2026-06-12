@@ -63,15 +63,19 @@ jobs:
           PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
-          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName)
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels)
           is_draft=$(echo "$pr_data" | jq -r '.isDraft')
           head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
           head_ref=$(echo "$pr_data" | jq -r '.headRefName')
+          pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
+          pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
           
           echo "prNum=$PR_NUM" >> $GITHUB_OUTPUT
           echo "isDraft=$is_draft" >> $GITHUB_OUTPUT
           echo "headRepo=$head_repo" >> $GITHUB_OUTPUT
           echo "headRef=$head_ref" >> $GITHUB_OUTPUT
+          echo "title=$pr_title" >> $GITHUB_OUTPUT
+          echo "labels=$pr_labels" >> $GITHUB_OUTPUT
           
           echo "PR Number: $PR_NUM"
           echo "Is Draft: $is_draft"
@@ -95,11 +99,11 @@ jobs:
           has_core_changes=false
           
           for file in $files; do
-            if [[ "$file" =~ ^submissions/ ]]; then
+            if [[ "$file" =~ ^submissions/examples/ || "$file" =~ ^submissions/docs/ || "$file" == "submissions/README.md" ]]; then
               has_submissions=true
-            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" ]]; then
+            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" && "$file" != "easemotion.css" && "$file" != "easemotion.min.css" ]]; then
               has_core_changes=true
-              echo "Core change detected: $file"
+              echo "Core change or invalid path detected: $file"
             fi
           done
           
@@ -111,19 +115,22 @@ jobs:
       # Step 2.5: Block Auto-Merge for Invalid Changes
       - name: Block Auto-Merge for Invalid Changes
         if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           
           if [ "$has_submissions" != "true" ]; then
             echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
-            echo "Only pull requests introducing new submissions or examples can be auto-merged."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the \`submissions/\` directory. Contributors must place their submissions under \`submissions/examples/your-feature-name/\`. Thank you!" --repo ${{ github.repository }}
             exit 1
           fi
           
           if [ "$has_core_changes" = "true" ]; then
             echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
-            echo "Core changes require manual review and approval by the repository owner."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the \`submissions/\` directory. Thank you!" --repo ${{ github.repository }}
             exit 1
           fi
 
@@ -143,6 +150,8 @@ jobs:
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
+          PR_LABELS: ${{ steps.pr-metadata.outputs.labels }}
         run: |
           # 1. Setup git configuration
           git config user.name "github-actions[bot]"
@@ -177,8 +186,9 @@ jobs:
               git commit -m "chore: resolve easemotion.min.css merge conflict"
               echo "Conflict resolved and committed."
             else
-              echo "PR has source code conflicts. Aborting merge."
+              echo "PR has source code conflicts. Closing PR..."
               git merge --abort
+              gh pr close ${{ steps.pr-metadata.outputs.prNum }} --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has source code conflicts with the main branch. Please pull the latest changes, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
               exit 1
             fi
           else
@@ -199,15 +209,23 @@ jobs:
           if [ "$has_submissions" = "true" ]; then
             files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
             
-            # Extract unique component folders under submissions/examples/ or submissions/
+            # Extract unique component folders under submissions/examples/ or submissions/docs/
             folders=$(for file in $files; do
               if [[ "$file" =~ ^submissions/examples/ ]]; then
                 echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
-              elif [[ "$file" =~ ^submissions/ ]]; then
-                echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+              elif [[ "$file" =~ ^submissions/docs/ ]]; then
+                echo "submissions/docs/$(echo "$file" | cut -d'/' -f3)"
               fi
             done | sort -u)
             
+            # Check if PR is a bug fix or update
+            is_fix=false
+            if [[ "$PR_TITLE" =~ ^[Ff]ix: || "$PR_TITLE" =~ ^[Ff]ix\( || "$PR_TITLE" =~ ^[Cc]hore: || "$PR_LABELS" =~ "bug" || "$PR_LABELS" =~ "fix" ]]; then
+              is_fix=true
+            fi
+            echo "PR Title: $PR_TITLE"
+            echo "Is Bug Fix/Update: $is_fix"
+
             for folder_path in $folders; do
               echo "Evaluating folder $folder_path..."
               
@@ -228,22 +246,26 @@ jobs:
               folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
               
               if [ -n "$folder_in_main" ]; then
-                echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
-                
-                i=1
-                while true; do
-                  candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
-                  if [ -z "$candidate_in_main" ]; then
-                    break
-                  fi
-                  i=$((i+1))
-                done
-                
-                new_name="${folder_name}-v${i}"
-                echo "Renaming $folder_path to $parent_dir/$new_name"
-                
-                git mv "$folder_path" "$parent_dir/$new_name"
-                renamed_any=true
+                if [ "$is_fix" = "true" ]; then
+                  echo "Folder $folder_path already exists in main branch, but PR is marked as a fix/update. Skipping rename."
+                else
+                  echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
+                  
+                  i=1
+                  while true; do
+                    candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                    if [ -z "$candidate_in_main" ]; then
+                      break
+                    fi
+                    i=$((i+1))
+                  done
+                  
+                  new_name="${folder_name}-v${i}"
+                  echo "Renaming $folder_path to $parent_dir/$new_name"
+                  
+                  git mv "$folder_path" "$parent_dir/$new_name"
+                  renamed_any=true
+                fi
               else
                 echo "Folder $folder_path is safe — no name collision in main."
               fi
@@ -325,7 +347,8 @@ jobs:
             done < <(echo "$response" | jq -c '.check_runs[]')
             
             if [ "$any_failed" = "true" ]; then
-              echo "One or more checks failed. Aborting merge."
+              echo "One or more checks failed. Closing PR..."
+              gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running \`npm test\` and \`npm run lint\`, and submit a new Pull Request. Thank you!" --repo ${{ github.repository }}
               exit 1
             fi
             
@@ -366,15 +389,27 @@ jobs:
             exit 0
           fi
           
-          # Try to merge and catch already-merged/in-progress scenarios
+          # Try to merge
           if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
             echo "PR successfully merged."
           else
             exit_code=$?
             echo "Merge command failed: $merge_output"
-            # If the error indicates that the merge is already in progress, or it was merged concurrently, we treat it as success.
-            if echo "$merge_output" | grep -qE "Merge already in progress|already merged|HTTP 405"; then
-              echo "Merge already in progress or already completed. Treating as success."
+            
+            # If the error is due to base branch modification (out of date), trigger branch update
+            if echo "$merge_output" | grep -q "Base branch was modified"; then
+              echo "Base branch has moved. Attempting to update PR branch..."
+              if update_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/update-branch 2>&1); then
+                echo "Successfully triggered PR branch update. PR checks will run again."
+              else
+                echo "Failed to update PR branch: $update_output"
+              fi
+              exit 1
+            fi
+            
+            # If the error indicates that the merge is already in progress, we treat it as success.
+            if echo "$merge_output" | grep -qE "Merge already in progress"; then
+              echo "Merge already in progress. Treating as success."
               exit 0
             else
               echo "Failed to merge PR #$PR_NUM."
