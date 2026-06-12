@@ -1,23 +1,36 @@
 # Ease Toggle Switch
 
-## What it does
-
-An iOS-style animated toggle switch built using pure CSS.
-
-## How to use
-
-```html
-<input type="checkbox" id="toggle" class="ease-toggle md">
-<label for="toggle"></label>
-```
+A zero-JavaScript toggle switch component for EaseMotion CSS.
 
 ## Features
 
-* Pure CSS (no JavaScript)
-* Smooth sliding knob animation
-* Track color transition
-* Available in 3 sizes: small, medium, large
+- Pure CSS implementation
+- Uses the `:checked` pseudo-class
+- Smooth sliding animation
+- Accessible focus state
+- Supports `prefers-reduced-motion`
+- Reusable for settings and forms
 
-## Why it fits EaseMotion CSS
+## Usage
 
-Follows a clean, animation-first approach with simple class usage and smooth transitions.
+```html
+<label class="ease-toggle">
+  <input type="checkbox" class="ease-toggle-input">
+  <span class="ease-toggle-slider"></span>
+  Enable Notifications
+</label>
+```
+
+## CSS Variables
+
+```css
+--ease-color-primary: #6c63ff;
+--ease-toggle-speed: 0.3s;
+```
+
+## Accessibility
+
+- Uses native checkbox inputs
+- Keyboard accessible
+- Includes focus-visible styling
+- Supports reduced-motion preferences
