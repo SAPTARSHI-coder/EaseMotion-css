@@ -1,8 +1,9 @@
 """
 Build the contributor wall HTML for README.md.
 Reads /tmp/contributors.json, replaces content between
-<!-- CONTRIBUTOR-WALL-START --> and <!-- CONTRIBUTOR-WALL-END --> markers.
+and markers.
 """
+
 import json
 import re
 import sys
@@ -10,8 +11,8 @@ import sys
 COLS = 12
 INPUT = "/tmp/contributors.json"
 README = "README.md"
-START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
-END_MARKER = "<!-- CONTRIBUTOR-WALL-END -->"
+START_MARKER = ""
+END_MARKER = ""
 
 
 def build_wall(contributors):
@@ -49,7 +50,8 @@ def build_wall(contributors):
 
 
 def main():
-    with open(INPUT) as f:
+    # FIXED: Added explicit utf-8 encoding to prevent UnicodeDecodeError on platform runners
+    with open(INPUT, "r", encoding="utf-8") as f:
         contributors = json.load(f)
 
     if not contributors:
@@ -61,8 +63,10 @@ def main():
     with open(README, "r", encoding="utf-8") as f:
         content = f.read()
 
+    # FIXED: Added \s* boundaries before and after .*? to gracefully handle
+    # empty lines, whitespace modifications, or OS-dependent \r\n line breaks.
     pattern = re.compile(
-        rf"{re.escape(START_MARKER)}.*?{re.escape(END_MARKER)}",
+        rf"{re.escape(START_MARKER)}\s*.*?\s*{re.escape(END_MARKER)}",
         re.DOTALL,
     )
 
@@ -75,7 +79,9 @@ def main():
     with open(README, "w", encoding="utf-8") as f:
         f.write(updated)
 
-    print(f"Done — {len(contributors)} contributors written across {-(-len(contributors) // COLS)} rows.")
+    print(
+        f"Done — {len(contributors)} contributors written across {-(-len(contributors) // COLS)} rows."
+    )
 
 
 if __name__ == "__main__":
