@@ -1,83 +1,124 @@
 # Animated Project Status Dashboard Widget
 
-An interactive, premium project status dashboard widget with smooth load progress animations, pulsing status badges, task statistics highlights, and assignee team stacks. Designed for modern SaaS platforms, project managers, and admin panels.
+An interactive, premium dashboard widget displaying project health, completion progress, task statistics, team avatar stacks, and upcoming deadlines. Implemented with smooth entrance animations, ambient accent glows, progress fills, and overlapping hover expansions. Built entirely with pure HTML and CSS.
 
-## What does this do?
-This component provides a compact project status display featuring:
-- **Card Hover Elevation**: Elevates the card (`translateY(-8px)`) and expands its shadow on hover.
-- **Dynamic Status Glows**: Casts a soft ambient color glow around the card matching the project status (`On Track`, `At Risk`, or `Completed`).
-- **CSS Load Progress Animation**: Animates the progress bar fill from `0%` to its target width on page load with pure CSS keyframes.
-- **Pulsing Status Badges**: Emits a continuous, pulsing radar signal behind the badge.
-- **Micro-interaction Hover Scaling**: Lifts and scales statistics metrics (`scale(1.05)`) when hovered.
-- **Visual Alert States**: Highlights overdue tasks with warnings (e.g., Crimson/Amber glows).
-- **Overlapping Avatar Stack**: Displays assignee profiles that expand slightly on widget hover.
-- **Glossy Sheen Reflection**: Sweeps a soft gloss sheet across the card face on hover.
+## Key Features
 
-## How is it used?
-Integrate the widget template into your dashboard layout:
+- **Card Hover Elevation**: Raises the widget (`translateY(-8px)`) and adds a soft matched radial box-shadow glow corresponding to the status color (`track`, `risk`, or `done`).
+- **Accent Highlighting**: Features a top indicator bar that expands on hover, alongside a glossy diagonal sweep reflection traveling across the glassmorphism card.
+- **Pulsing Status Signals**: Status badges (`On Track`, `At Risk`, `Completed`) emit a continuous pulsing radar ring to convey real-time system alerts.
+- **CSS Load-In Progress Fills**: Fills the progress bar (`.progress-fill`) smoothly on page load from `0%` to the target percentage style using GPU-optimized keyframe animations.
+- **Task Breakdown Hover**: Individual task columns scale up and expand slightly (`translateY(-4px) scale(1.05)`) on hover, highlighting completion metrics.
+- **Warning States**: Emphasizes pending (Amber) and overdue (Crimson) tasks with border transitions and glows on metric hovers.
+- **Overlapping Avatar Stack**: Displays assignee initial bubbles that fan out slightly on card hover. Individual avatars translate up on mouseover.
+- **Responsive Layout**: Designed with a flexible grid that flows columns on desktop and collapses into clean vertical widgets on mobile.
+
+## File Structure
+
+```text
+submissions/examples/animated-project-status-dashboard-widget/
+├── demo.html
+├── style.css
+└── README.md
+```
+
+## HTML Structure
 
 ```html
-<!-- Example of On Track Project Widget -->
 <div class="project-widget status-track">
-  <div class="widget-header">
+  <!-- Widget Header -->
+  <div class="project-header">
     <h3>Website Redesign</h3>
-    <span class="status-badge">On Track</span>
+    <span class="status-badge on-track">On Track</span>
   </div>
 
+  <!-- Description -->
+  <p class="project-desc">Revamp the corporate landing page with modern visual aesthetics.</p>
+
+  <!-- Progress Bar -->
   <div class="progress-section">
     <div class="progress-bar">
-      <div class="progress-fill"></div>
+      <div class="progress-fill" style="--percent: 78%;"></div>
     </div>
-
-    <span class="progress-text">78%</span>
   </div>
 
-  <div class="stats">
-    <div class="stat">
+  <!-- Progress Stats -->
+  <div class="project-stats">
+    <span>78% Complete</span>
+  </div>
+
+  <!-- Task Breakdown -->
+  <div class="task-breakdown">
+    <div class="stat-col">
       <strong>24</strong>
       <span>Completed</span>
     </div>
-
-    <div class="stat">
-      <strong>8</strong>
+    <div class="stat-col pending">
+      <strong>6</strong>
       <span>Pending</span>
     </div>
-
-    <div class="stat">
+    <div class="stat-col overdue">
       <strong>2</strong>
       <span>Overdue</span>
+    </div>
+  </div>
+
+  <!-- Widget Footer -->
+  <div class="widget-footer">
+    <div class="team-section">
+      <span class="footer-label">Team</span>
+      <div class="team-avatars">
+        <img class="avatar" alt="Sarah Chen" src="data:image/svg+xml;utf8,...">
+        <img class="avatar" alt="Alex Rivera" src="data:image/svg+xml;utf8,...">
+      </div>
+    </div>
+    <div class="project-deadline">
+      <span>June 20</span>
     </div>
   </div>
 </div>
 ```
 
-### Accents & Themes
-Modify the theme by changing the class modifiers on the `.project-widget` container:
-- **On Track**: Add `status-track` to the widget (Green accent, `--percent` resolves to `78%` by default or customized).
-- **At Risk**: Add `status-risk` to the widget (Amber accent, `--percent` resolves to `45%`).
-- **Completed**: Add `status-done` to the widget (Indigo accent, `--percent` resolves to `100%`).
+## CSS Customizations
 
-To custom-define the progress bar percentage dynamically, set the `--percent` CSS variable on the progress bar element:
-```html
-<div class="progress-fill" style="--percent: 60%;"></div>
+Customize colors, borders, and animations via variables defined inside `style.css`:
+
+```css
+:root {
+  /* Cards */
+  --w-widget-bg: rgba(30, 41, 59, 0.4);
+  --w-widget-hover-bg: rgba(30, 41, 59, 0.7);
+  
+  /* Status Colors */
+  --w-color-track: #10b981;
+  --w-color-risk: #f59e0b;
+  --w-color-done: #8b5cf6;
+  --w-color-alert: #ef4444;
+  
+  /* Radii */
+  --w-radius: 18px;
+}
 ```
 
-## Why is it useful?
-Status indicators are central components in analytical UI design. This widget:
-1. **Drives engagement**: Replaces static, dull charts with dynamic, fluid indicators.
-2. **Encourages immediate action**: Highlights warning and overdue statistics to call for user action.
-3. **Ensures high compatibility**: Uses pure HTML and CSS, rendering without JavaScript dependencies.
+### Theme & Badge States
 
-## Tech Stack
-- HTML5
-- CSS3 (Vanilla Custom Properties, Keyframe Animations, Grid, Flexbox)
-- Inline SVGs (No external image network requests required)
+Set the correct combination of container class modifiers and badge classes:
+- **On Track**: Add `status-track` to the widget, and use `status-badge on-track` inside the header.
+- **At Risk**: Add `status-risk` to the widget, and use `status-badge at-risk` inside the header.
+- **Completed**: Add `status-done` to the widget, and use `status-badge completed` inside the header.
 
-## Preview
-To see the widgets in action:
-1. Open the [demo.html](file:///c:/Users/LENOVO/Desktop/GSSoC/Ease%20Motion/EaseMotion-css-gssoc/submissions/examples/animated-project-status-dashboard-widget/demo.html) directly in any modern web browser.
-2. Hover over widgets, stat blocks, and assignee avatars to trigger micro-interactions.
+Change the progress fill target dynamically by setting the style property:
+```html
+<div class="progress-fill" style="--percent: 85%;"></div>
+```
 
-## Contribution Notes
-- Class names correspond to GSSoC contribution requirements.
-- The project maintainer will refactor selectors to the `ease-*` prefix during repository integration.
+## How to View
+
+1. Navigate to `submissions/examples/animated-project-status-dashboard-widget/`.
+2. Open `demo.html` in any web browser to preview micro-interactions and grids.
+3. Shrink the browser window to see the dashboard widget columns reflow for mobile devices.
+
+## Contribution Standards
+
+- Submit code within the target folder only; do not modify parent directories.
+- Selectors will be refactored by the repository maintainer to follow the GSSoC `ease-*` naming prefix conventions upon integration.
