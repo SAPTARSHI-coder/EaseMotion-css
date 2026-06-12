@@ -1,24 +1,37 @@
-# mix-blend-mode Animation
+# Mix Blend Mode
 
-## What does this do?
+## What does it do?
+A pure-CSS demo showing the `mix-blend-mode` property for blending elements with their background — no JavaScript required.
 
-Demonstrates CSS `mix-blend-mode` animations — a shape cycles through 7 blend modes (difference, screen, multiply, overlay, hue, color-dodge, normal) against a colorful gradient background, and text uses `difference` mode to invert itself against a moving gradient.
+## Features
+- **multiply** — darkens overlapping areas
+- **screen** — lightens overlapping areas
+- **overlay** — combined multiply/screen effect
+- **difference** — inverts based on color difference
+- **exclusion** — similar to difference with softer contrast
 
-## How is it used?
+## Blend Modes
+| Mode | Behavior |
+|------|----------|
+| `multiply` | Darkens — black stays black, white is transparent |
+| `screen` | Lightens — white stays white, black is transparent |
+| `overlay` | Combines multiply and screen based on base color |
+| `difference` | Inverts based on color difference |
+| `exclusion` | Similar to difference, lower contrast |
 
+## Usage
 ```css
-.element {
-  animation: blend-cycle 8s step-start infinite;
-}
-
-@keyframes blend-cycle {
-  0%  { mix-blend-mode: normal; }
-  25% { mix-blend-mode: difference; }
-  50% { mix-blend-mode: screen; }
-  75% { mix-blend-mode: multiply; }
+.overlay-text {
+  mix-blend-mode: difference;
+  color: white;
 }
 ```
 
-## Why is it useful?
+## Browser Support
+- `mix-blend-mode` — Chrome 41+, Firefox 32+, Safari 8+
 
-`mix-blend-mode` creates visually rich, artistic effects that are impossible with standard CSS alone — and animating between blend modes opens creative possibilities for backgrounds, text overlays, and image galleries. Understanding blend modes helps developers create polished, design-forward UI without SVG filters or canvas, fitting EaseMotion CSS's philosophy of powerful, readable CSS.
+## Tech Stack
+- HTML + CSS only, no JavaScript
+
+## Preview
+Open `demo.html` directly in browser.
