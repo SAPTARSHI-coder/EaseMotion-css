@@ -1,16 +1,11 @@
-# CSS-Only Tooltip
+# CSS-only Tooltip Component
 
-**What does this do?**
-This component provides a floating text box that appears with a smooth slide-up and fade-in animation when a user hovers over an element, created entirely without JavaScript.
+A lightweight tooltip component built with pure HTML and CSS. It shows helpful text when a user hovers over or focuses on an element.
 
-**How is it used?**
-Add the `tooltip-container` class to any element and provide the tooltip text using the `data-tooltip` attribute.
+The tooltip supports multiple placement variants such as top, right, bottom, and left. It includes smooth fade/slide animation, keyboard focus support, and a reduced-motion fallback for better accessibility.
 
-```html
-<button class="tooltip-container" data-tooltip="Click here to save your changes">
-  Save Changes
-</button>
-```
+## Why is this useful for EaseMotion CSS?
 
-**Why is it useful?**
-Tooltips are essential for modern UI/UX to explain icons, buttons, or truncated text without cluttering the screen. Doing this entirely in CSS keeps the framework lightweight and performant, and the built-in animation aligns perfectly with EaseMotion's animation-first philosophy.
+Tooltips are a common UI pattern for buttons, icons, form labels, settings, and documentation examples. A CSS-only tooltip fits EaseMotion CSS perfectly because it is human-readable, animation-first, lightweight, and composable without requiring JavaScript.
+
+This feature also aligns with the roadmap mention of tooltip components.
