@@ -1,0 +1,116 @@
+name: Inactivity Unassigner
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Runs every 2 hours
+  workflow_dispatch: # Allows manual sweep
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  unassign-inactive:
+    name: Unassign Inactive Claims
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan and Clean Inactive Issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const UNASSIGN_HOURS = 24;
+            
+            console.log('Fetching all open PRs in the repository...');
+            let openPRs = [];
+            let prPage = 1;
+            while (true) {
+              const { data: prs } = await github.rest.pulls.list({
+                owner, repo, state: 'open', per_page: 100, page: prPage
+              });
+              if (!prs || prs.length === 0) break;
+              openPRs = openPRs.concat(prs);
+              if (prs.length < 100) break;
+              prPage++;
+            }
+            console.log(`Found ${openPRs.length} open PRs.`);
+
+            console.log('Fetching all open issues...');
+            let issues = [];
+            let issuePage = 1;
+            while (true) {
+              const { data: list } = await github.rest.issues.listForRepo({
+                owner, repo, state: 'open', per_page: 100, page: issuePage
+              });
+              if (!list || list.length === 0) break;
+              issues = issues.concat(list);
+              if (list.length < 100) break;
+              issuePage++;
+            }
+            
+            console.log(`Found ${issues.length} open issues/PRs. Scanning for assignments...`);
+            
+            for (const issue of issues) {
+              if (issue.pull_request) continue; // Skip Pull Requests
+              if (!issue.assignees || issue.assignees.length === 0) continue; // Skip unassigned issues
+              
+              console.log(`Scanning Issue #${issue.number}: "${issue.title}"`);
+              
+              // Fetch timeline events to find when each assignee was assigned
+              const { data: events } = await github.rest.issues.listEvents({
+                owner, repo, issue_number: issue.number, per_page: 100
+              });
+              
+              for (const assignee of issue.assignees) {
+                const user = assignee.login;
+                
+                // Find the latest assignment event for this user
+                const assignEvents = events.filter(e => e.event === 'assigned' && e.assignee && e.assignee.login === user);
+                if (assignEvents.length === 0) {
+                  console.log(`  No assign event found for user @${user}. Skipping.`);
+                  continue;
+                }
+                
+                const lastAssignEvent = assignEvents[assignEvents.length - 1];
+                const assignedAt = new Date(lastAssignEvent.created_at);
+                const now = new Date();
+                const diffTime = Math.abs(now - assignedAt);
+                const diffHours = diffTime / (1000 * 60 * 60);
+                
+                console.log(`  User @${user} assigned at ${lastAssignEvent.created_at} (${diffHours.toFixed(1)} hours ago)`);
+                
+                if (diffHours >= UNASSIGN_HOURS) {
+                  console.log(`  Threshold reached for @${user}. Checking for active pull requests matching issue #${issue.number}...`);
+                  
+                  // Check if this user has any open PR referencing this issue number
+                  const hasReferencingPR = openPRs.some(pr => {
+                    if (pr.user.login !== user) return false;
+                    const searchStr = `${pr.title || ''} ${pr.body || ''}`.toLowerCase();
+                    const regex = new RegExp(`(?:\\b|#)${issue.number}\\b`);
+                    return regex.test(searchStr);
+                  });
+                  
+                  if (hasReferencingPR) {
+                    console.log(`  Keep assignment: User @${user} has an open PR referencing #${issue.number}. Skipping unassignment.`);
+                  } else {
+                    console.log(`  Unassigning @${user} from Issue #${issue.number} due to 1 day inactivity...`);
+                    
+                    // Unassign the user
+                    await github.rest.issues.removeAssignees({
+                      owner, repo, issue_number: issue.number, assignees: [user]
+                    });
+                    
+                    // Comment on the issue
+                    await github.rest.issues.createComment({
+                      owner, repo, issue_number: issue.number,
+                      body: `⚠️ **Stale Assignment Cleanup:** @${user}, it has been more than 24 hours (1 day) since you were assigned to this issue and no open pull request referencing this issue was found. To keep the project moving, you have been unassigned.\n\nIf you are still working on this, feel free to claim it again when you are ready to open a pull request!\n\n> 🔓 **Status:** This issue is now open and available for anyone to claim by commenting \`/claim\`. 🚀`
+                    });
+                    
+                    console.log(`  Successfully unassigned and commented.`);
+                  }
+                }
+              }
+            }
+            console.log('Cleanup scan complete!');
