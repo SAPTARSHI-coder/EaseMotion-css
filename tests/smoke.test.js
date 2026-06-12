@@ -86,6 +86,13 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
+  it('should expose scroll-progress theme variants', () => {
+    expect(css).toContain('.ease-scroll-progress-success');
+    expect(css).toContain('.ease-scroll-progress-danger');
+    expect(css).toContain('.ease-scroll-progress-warning');
+    expect(css).toContain('.ease-scroll-progress-root');
+  });
+
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');

@@ -32,3 +32,9 @@ Interactive image with positioned hotspot markers that reveal tooltip content on
 | `--ease-color-primary` | #6366f1 |
 | `--ease-color-neutral-800` | #1f2937 |
 | `--ease-font-sans` | system-ui |
+
+## Notes
+
+Note: Class names use `-az` contributor suffix. These must be renamed to drop the suffix (e.g. `.ease-image-hotspot-az` → `.ease-image-hotspot`) before this submission can be integrated into core.
+
+Demo uses inline SVG data URIs for the workspace image. No network connection required.
