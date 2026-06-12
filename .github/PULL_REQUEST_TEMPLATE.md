@@ -72,3 +72,5 @@
 > **Reminder:** Only the repository maintainer may merge pull requests.  
 > Do not self-merge, even if you have write access.  
 > Maximum **2 active assigned issues** per contributor — unassign extras before opening a PR.
+> 
+> **Tip:** Once you open your PR, feel free to showcase your design or component in the `#showcase` channel on our official [Discord Server](https://discord.gg/hWSdGrccBU)!
