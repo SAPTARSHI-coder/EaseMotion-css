@@ -1,14 +1,31 @@
-# Sandbox Layout Fix: CSS Grid Track Row Height Reflow Optimization
+# Grid Row Collapse Fix Utility
 
-## Overview
-A structural rendering fix for multi-tier grid dashboards to address grid row height miscalculations, block track caching loops, and remove dead visual whitespace artifacts on Mozilla Firefox.
+## What does this do?
 
-## 📁 Sandbox Configuration Files
-* `demo.html` — Interactive dashboard template tracking active collapse state shifts across stacked grid boxes.
-* `style.css` — Scoped layout sheet implementing explicit grid track rules linked back to core framework assets.
+This utility resolves dynamic implicit grid row height collapse and overlapping card layout bugs in iOS Safari/WebKit. It overrides WebKit height measurement failures by applying strict, content-driven auto-row limits.
 
-## 🐛 The Bug Resolved
-Previously, nesting collapsible user-interface containers inside a CSS Grid layout configured with dynamic track rows (`grid-template-rows: auto 1fr`) caused systemic rendering issues on Firefox. When a module inside the upper cell row collapsed to hide its contents, the Gecko engine failed to trigger a structural height recalculation loop for the tracking cell. This left a massive dead white gap at the center of the viewport dashboard.
+## How is it used?
 
-## 🛠️ The Solution
-The grid track mechanics are optimized. By replacing the loose `auto` parameters with an explicit `minmax(0, max-content)` matrix gate, the layout engine receives crystal-clear instructions to shrink row heights down to $0\text{px}$ when interior child elements minimize. Content toggling is handled over explicit custom `max-height` transition lanes to ensure smooth, cross-browser layout recalculations.
+Attach the row guard layout class to grid containers that contain dynamic or fluid row sizes:
+
+```html
+<div class="ease-grid-row-guard">
+  <div class="grid-item">Row 1 item content...</div>
+  <div class="grid-item">Row 2 item content...</div>
+</div>
+```
+
+## Why is it useful?
+
+- **Prevents WebKit Height Collapse**: iOS Safari occasionally fails to calculate `repeat(N, minmax(0, 1fr))` constraints when dynamic inner elements scale, collapsing rows to 0px.
+- **Content-Locked Bounds**: Combines `grid-template-rows: auto` and `grid-auto-rows: minmax(min-content, max-content)` to lock rendering boundaries to fit actual inner text blocks.
+- **Stops Card Overlapping**: Preserves layout separation and gap properties under narrow mobile layouts.
+
+## Tech Stack
+
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+
+Open `demo.html` directly in your browser to inspect the side-by-side diagnostic cards and computed layout properties.
