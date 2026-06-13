@@ -1,78 +1,134 @@
 /**
  * MacOS Liquid Hover Dock Engine
- * Calculates the distance of the mouse to each dock item and dynamically adjusts 
- * its width and height to create a smooth, authentic magnification effect.
+ * Adheres to dynamic distance tracking and smooth scaling curves.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const dockContainer = document.getElementById('dock');
-    const dockItems = document.querySelectorAll('.dock-item');
+    const dockItems = Array.from(document.querySelectorAll('.dock-item'));
+    const tooltip = document.getElementById('dock-tooltip');
     
-    // Base sizes
-    const baseSize = 54;
-    const maxSize = 86; // Maximum size an item can reach
-    const maxDistance = 150; // The radius of effect around the cursor
+    let isHoveringDock = false;
 
     dockContainer.addEventListener('mousemove', (e) => {
-        // Iterate through each dock item
-        dockItems.forEach(item => {
-            // Get the center X position of the item
-            const itemRect = item.getBoundingClientRect();
-            const itemCenterX = itemRect.left + (itemRect.width / 2);
-            
-            // Calculate absolute distance from mouse X to item center X
-            const distance = Math.abs(e.clientX - itemCenterX);
-            
-            // If the mouse is within the radius of effect
-            if (distance < maxDistance) {
-                // Calculate scale factor using a bell curve (cosine interpolation)
-                // 1 means exact center, 0 means outside maxDistance
-                const scaleFactor = (Math.cos((distance / maxDistance) * Math.PI) + 1) / 2;
-                
-                // Calculate new size
-                const newSize = baseSize + ((maxSize - baseSize) * scaleFactor);
-                
-                // Apply dynamic size
-                item.style.width = `${newSize}px`;
-                item.style.height = `${newSize}px`;
-                
-                // Scale up the icon inside proportionally
-                const svg = item.querySelector('svg');
-                if(svg) {
-                    const iconBase = 24;
-                    const iconMax = 40;
-                    const newIconSize = iconBase + ((iconMax - iconBase) * scaleFactor);
-                    svg.style.width = `${newIconSize}px`;
-                    svg.style.height = `${newIconSize}px`;
-                }
-                
-                // Add margins so the dock expands outwards instead of overlapping
-                const marginFactor = 10 * scaleFactor;
-                item.style.margin = `0 ${marginFactor}px`;
+        isHoveringDock = true;
+        
+        requestAnimationFrame(() => {
+            if (!isHoveringDock) return;
 
+            // 1. Mobile Responsiveness sizes
+            const isMobile = window.innerWidth <= 600;
+            const baseSize = isMobile ? 44 : 60;
+            const baseSvg = isMobile ? 24 : 32;
+            const baseFont = isMobile ? 18 : 24;
+            
+            const baseScale = 1;
+            const maxScale = 1.6;
+            const maxDistance = isMobile ? 120 : 200;
+
+            let hoveredItem = null;
+            let closestDist = Infinity;
+
+            dockItems.forEach(item => {
+                // Remove transition while tracking to eliminate lag completely
+                item.style.transition = 'none';
+                const svg = item.querySelector('svg');
+                if(svg) svg.style.transition = 'none';
+                const calText = item.querySelector('.calendar-text');
+                if(calText) calText.style.transition = 'none';
+
+                const rect = item.getBoundingClientRect();
+                const itemCenterX = rect.left + (rect.width / 2);
+                const distance = Math.abs(e.clientX - itemCenterX);
+                
+                if (distance < maxDistance) {
+                    const normalizedDist = distance / maxDistance;
+                    const scaleFactor = (Math.cos(normalizedDist * Math.PI) + 1) / 2;
+                    
+                    const currentScale = baseScale + ((maxScale - baseScale) * scaleFactor);
+                    const marginFactor = (isMobile ? 10 : 16) * scaleFactor; 
+
+                    item.style.width = `${baseSize * currentScale}px`;
+                    item.style.height = `${baseSize * currentScale}px`;
+                    item.style.margin = `0 ${marginFactor}px`;
+                    
+                    if (svg) {
+                        svg.style.width = `${baseSvg * currentScale}px`;
+                        svg.style.height = `${baseSvg * currentScale}px`;
+                    }
+                    if (calText) {
+                        calText.style.fontSize = `${baseFont * currentScale}px`;
+                    }
+
+                    if (distance < closestDist && distance < (rect.width / 2)) {
+                        closestDist = distance;
+                        hoveredItem = item;
+                    }
+                } else {
+                    resetItemDimensions(item, baseSize, baseSvg, baseFont);
+                }
+            });
+
+            if (hoveredItem && !isMobile) {
+                const title = hoveredItem.getAttribute('data-title');
+                if (tooltip.textContent !== title) tooltip.textContent = title;
+                
+                const itemRect = hoveredItem.getBoundingClientRect();
+                const wrapperRect = document.querySelector('.macos-dock-wrapper').getBoundingClientRect();
+                const relativeLeft = itemRect.left - wrapperRect.left + (itemRect.width / 2);
+                
+                tooltip.style.left = `${relativeLeft}px`;
+                tooltip.classList.add('show');
             } else {
-                // Reset if outside distance
-                resetItem(item);
+                tooltip.classList.remove('show');
             }
         });
     });
 
-    // Reset everything smoothly when mouse leaves the dock entirely
     dockContainer.addEventListener('mouseleave', () => {
+        isHoveringDock = false;
+        
+        const isMobile = window.innerWidth <= 600;
+        const baseSize = isMobile ? 44 : 60;
+        const baseSvg = isMobile ? 24 : 32;
+        const baseFont = isMobile ? 18 : 24;
+
         dockItems.forEach(item => {
-            resetItem(item);
+            // Restore smooth transitions for when the cursor leaves the dock
+            const transitionCSS = 'width 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), margin 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            item.style.transition = transitionCSS;
+            
+            const svg = item.querySelector('svg');
+            if(svg) svg.style.transition = transitionCSS;
+            
+            const calText = item.querySelector('.calendar-text');
+            if(calText) calText.style.transition = 'font-size 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            
+            resetItemDimensions(item, baseSize, baseSvg, baseFont);
         });
+        tooltip.classList.remove('show');
     });
 
-    function resetItem(item) {
+    dockItems.forEach(item => {
+        item.addEventListener('mousedown', () => item.classList.add('active-click'));
+        item.addEventListener('mouseup', () => item.classList.remove('active-click'));
+        item.addEventListener('mouseleave', () => item.classList.remove('active-click'));
+    });
+
+    function resetItemDimensions(item, baseSize, baseSvg, baseFont) {
         item.style.width = `${baseSize}px`;
         item.style.height = `${baseSize}px`;
         item.style.margin = `0 0px`;
         
         const svg = item.querySelector('svg');
-        if(svg) {
-            svg.style.width = `24px`;
-            svg.style.height = `24px`;
+        if (svg) {
+            svg.style.width = `${baseSvg}px`;
+            svg.style.height = `${baseSvg}px`;
+        }
+        
+        const calText = item.querySelector('.calendar-text');
+        if (calText) {
+            calText.style.fontSize = `${baseFont}px`;
         }
     }
 });
