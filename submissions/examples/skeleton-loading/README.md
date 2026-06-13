@@ -1,39 +1,16 @@
-# Skeleton Loading
+# CSS-only Skeleton Loading States
 
-## What does this do?
+A pure CSS framework for creating animated placeholder layouts while data is loading. It provides two highly optimized animation states (Pulse and Shimmer) using native CSS keyframes and variables.
 
-Displays animated placeholder blocks while content is loading — two variants: a moving shimmer highlight (`skeleton-shimmer`) and a gentle opacity pulse (`skeleton-pulse`).
+## Files
+- `demo.html` - Interactive demonstration showing both a pulsing skeleton card and a shimmering skeleton card.
+- `style.css` - The CSS implementation defining the keyframes, gradient sweeps, and shape classes.
 
----
+## Details
+Skeleton screens are crucial for modern UX, improving perceived performance while reducing user frustration during loading times. 
 
-## How is it used?
+This component offers two animation styles:
+1. **Pulse (`.ease-skeleton`)**: The default style. A lightweight, simple opacity animation from `0.5` to `1`.
+2. **Shimmer (`.ease-skeleton-shimmer`)**: A more dynamic effect. By applying `.ease-skeleton-shimmer` to a parent container, all child `.ease-skeleton` elements switch their animation to a sweeping linear gradient. This is achieved by stretching the `background-size` to `400%` and animating the `background-position`.
 
-Add `.skeleton` to any block element to give it the base placeholder style, then add a variant class:
-
-```html
-<!-- Shimmer variant -->
-<div class="skeleton skeleton-image skeleton-shimmer"></div>
-<div class="skeleton skeleton-line skeleton-line--wide skeleton-shimmer"></div>
-
-<!-- Pulse variant -->
-<div class="skeleton skeleton-avatar skeleton-pulse"></div>
-<div class="skeleton skeleton-line skeleton-line--medium skeleton-pulse"></div>
-```
-
-Available shape helpers:
-
-| Class | Description |
-|---|---|
-| `skeleton-image` | Full-width 160px image band |
-| `skeleton-avatar` | 40px circular avatar |
-| `skeleton-line` | Short text-line bar |
-| `skeleton-line--full` | 100% width |
-| `skeleton-line--wide` | 75% width |
-| `skeleton-line--medium` | 55% width |
-| `skeleton-line--narrow` | 35% width |
-
----
-
-## Why is it useful?
-
-Skeleton screens reduce perceived load time by showing the shape of content before data arrives. This implementation is pure CSS — no JavaScript, no dependencies. It fits EaseMotion CSS's animation-first philosophy: a keyframe animation (`skeleton-shimmer` or `skeleton-pulse`) does all the work, and the effect is composable on any element.
+Both styles automatically adapt to dark mode using the `prefers-color-scheme` media query and the core `var(--ease-color-neutral-700)` tokens.
