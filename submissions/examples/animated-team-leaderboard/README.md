@@ -1,30 +1,35 @@
-# Animated Team Leaderboard
+# Premium Animated Team Leaderboard
 
-## What does this do?
-An animated leaderboard with rank badges, score bars, and a top 3 podium — all with CSS-driven fill animations.
+A highly polished, interactive, and animation-first Team Performance Leaderboard component. Designed with a modern SaaS aesthetic inspired by platforms like Linear, ClickUp, and Asana, this component features a split-view layout featuring a 3D-esque podium for top tiers alongside detail-rich metric rows for the remaining field.
 
-## How is it used?
-Structure the podium and rank rows as shown:
+Built with **pure HTML and CSS**, it is completely self-contained, responsive, and framework-independent.
 
-    <div class="podium">
-      <div class="podium-item podium--gold">...</div>
-    </div>
-    <div class="leaderboard">
-      <div class="rank-row rank--gold">...</div>
-    </div>
+---
 
-Podium modifiers: `podium--gold`, `--silver`, `--bronze`. Rank modifiers: `rank--gold`, `--silver`, `--bronze`.
+## 🛠️ Key Architectural & Animation Features
 
-## Why is it useful?
-Ideal for gaming dashboards, competition results, and team performance tracking — engages users with animated progress feedback.
+### 1. Kinetic Spring Micro-Interactions
+Standard linear transitions often feel mechanical and flat. This component utilizes a custom high-frequency spring curve (`cubic-bezier(0.34, 1.65, 0.4, 1)`) to handle card entries and interactive hover states. When hovered, cards and rows subtly lift, scale, and cast an organic shadow mimicking physical elevation.
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+### 2. Calculated Staggered Entry Pipeline
+Rather than popping onto the screen simultaneously, components utilize a progressive loading sequence driven by CSS Custom Properties (`--stagger`). 
+* The podium reveals itself in an ergonomic `2nd -> 1st -> 3rd` order to center user focus on the winner.
+* The ranking rows cascade downward sequentially using automated mathematical animation delays (`calc(var(--stagger) * 0.08s)`).
 
-## Preview
-Open demo.html directly in your browser to see the effect.
+### 3. Native Dark Mode Integration
+The component includes a fully native, semantic dark mode layer utilizing the `prefers-color-scheme` media query. It maps fluidly across high-contrast depth tones without needing a single line of JavaScript or class toggles.
 
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+### 4. Precision Fill Keyframes
+Progress tracks don't rely on basic width transitions. The data tracks parse individual inline structural logic (`--width` and `--height`) to trigger hardware-accelerated rendering transforms (`scaleX` and `scaleY`), ensuring ultra-smooth 60fps filling animations on page load.
+
+### 5. Intentional Accessibility Design
+Includes a rigorous fallback system for users with vestibular system sensitivities. Under `prefers-reduced-motion: reduce`, all spring elements, loading delays, cascading animations, and keyframe loops gracefully scale back into instant, accessible high-fidelity static layouts.
+
+---
+
+## 📁 Submission Layout
+```text
+submissions/examples/animated-team-performance-leaderboard/
+├── demo.html     # High-fidelity dashboard markup & layout
+├── style.css     # Production-grade variables, animations, and design tokens
+└── README.md     # Component documentation
