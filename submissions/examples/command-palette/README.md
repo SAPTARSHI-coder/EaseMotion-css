@@ -1,29 +1,31 @@
-# Animation: Command Palette
+# Command Palette
 
-A command palette component inspired by modern developer tools such as VS Code, Cursor, and Linear. Commands appear with a staggered entrance animation inside a modal-style panel.
+## What does this do?
+A command palette modal with search input and categorized command list items with keyboard shortcut hints — pure CSS `:target`.
 
-## Features
+## How is it used?
+Link to the palette ID to open:
 
-- Pure CSS animation
-- Modal-style command palette
-- Staggered command reveal
-- Keyboard shortcut badges
-- Hover interactions
-- Responsive layout
-- Reduced motion support
-- No JavaScript required
+    <a href="#cmd-palette" class="btn">Open Palette</a>
 
-## Usage
+Define the palette overlay:
 
-```html
-<div class="command-item">
-    <span>Open File</span>
-    <kbd>⌘P</kbd>
-</div>
-```
+    <div id="cmd-palette" class="cmd-overlay">
+      <div class="cmd-palette" role="dialog">...</div>
+    </div>
 
-Commands animate into view and respond to hover interactions.
+Commands are grouped by `cmd-group` sections with `cmd-item` entries.
 
 ## Why is it useful?
+Provides a familiar command-palette UX (like VS Code or GitHub) using only CSS — great for dashboards, admin panels, and power-user interfaces.
 
-Command palettes are widely used in developer tools, dashboards, and productivity applications. This component provides a visually engaging way to showcase actions and shortcuts while maintaining a clean interface.
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
