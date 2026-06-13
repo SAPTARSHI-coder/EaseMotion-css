@@ -1,19 +1,25 @@
 # Magnetic Button Hover
 
-## Description
+## What does this do?
+Buttons that visually "pull" toward the cursor on hover using CSS perspective transforms, creating a magnetic attraction effect.
 
-A button that subtly follows the cursor when hovered.
+## How is it used?
+Add the `mag-btn` class to any `<button>` or `<a>` element:
 
-## Files
+    <button class="mag-btn mag-btn--primary">Click Me</button>
 
-- demo.html
-- style.css
-- script.js
+Variants: `mag-btn--primary`, `--secondary`, `--accent`, `--outline`, `--ghost`, `--pill`. Size: `mag-btn--lg`.
 
-## Usage
+## Why is it useful?
+Adds a playful, tactile hover interaction that makes buttons feel responsive — great for landing pages, call-to-action sections, and interactive UI.
 
-Open demo.html in a browser and hover over the button.
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
 
-## Browser Support
+## Preview
+Open demo.html directly in your browser to see the effect.
 
-Chrome, Firefox, Edge, Safari
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
