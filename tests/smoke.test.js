@@ -58,6 +58,16 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   });
 
+  it('should have dark mode variables via prefers-color-scheme', () => {
+    expect(css).toContain('@media (prefers-color-scheme: dark)');
+    expect(css).toContain('--ease-color-surface: #141e33');
+  });
+
+  it('should have dark mode variables via [data-theme="dark"] selector', () => {
+    expect(css).toContain('[data-theme="dark"]');
+    expect(css).toContain('--ease-color-bg:      #0b1121');
+  });
+
   it('should have component classes defined', () => {
     const sheet = document.styleSheets[0];
     
