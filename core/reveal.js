@@ -10,6 +10,10 @@
     return rect.top < vh * 0.85 && rect.bottom > 0;
   }
 
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
   var supportsObserver = 'IntersectionObserver' in window;
 
   if (supportsObserver) {
