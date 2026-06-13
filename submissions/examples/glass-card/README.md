@@ -1,12 +1,17 @@
-# Glowing Button Animation
+# Glassmorphism Card Example
 
-## What does this do?
-Creates a glowing emphasis animation for buttons using pure CSS. The glow effect pulses smoothly around the button to attract attention to important actions such as sign-ups, purchases, submissions, or featured calls-to-action.
+This example demonstrates a reusable `glass-card` component using only CSS and HTML.
 
-## How is it used?
-Simply apply the `glow-button` class to your button element.
+## What it includes
+- `demo.html` — simple page with two example cards
+- `style.css` — core `.glass-card` styles and demo page styling
+
+## Usage
+Copy the CSS for `.glass-card` into your project and wrap content:
 
 ```html
-<button class="glow-button">
-  Get Started
-</button>
+<article class="glass-card">
+  <header>...</header>
+  <div>...</div>
+  <footer>...</footer>
+</article>
