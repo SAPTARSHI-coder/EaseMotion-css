@@ -1,33 +1,46 @@
-# Liquid Fluid Magnetic Button
+# Magnetic Button Effect
 
-## What does this do?
+A button that subtly follows the cursor position on hover using CSS transforms and lightweight JavaScript. Gives a premium, interactive feel.
 
-This component implements a pure CSS button with an organic, liquid "gooey" blending effect on hover. When hovered, the button scales up slightly, and a secondary-colored fluid bubble expands from the center, merging smoothly with the main button body.
+## Demo
 
-## How is it used?
+Open `demo.html` in your browser to see:
+- Default magnetic button
+- Glow variant with neon shadow
+- Circular icon button
+- Large and small sizes
+- Outline style
+- Link-style icon button
 
-Wrap the button and its expanding droplet in the liquid blend wrapper:
+## Usage
 
 ```html
-<div class="ease-liquid-blend-wrapper">
-  <button class="ease-magnetic-btn">
-    <span class="ease-btn-text-shield">Button Text</span>
-    <span class="ease-fluid-drop"></span>
-  </button>
-</div>
-```
+&lt;!-- Basic magnetic button --&gt;
+&lt;button class="magnetic-btn" data-magnetic&gt;
+  &lt;span&gt;Hover Me&lt;/span&gt;
+&lt;/button&gt;
 
-## Why is it useful?
+&lt;!-- With glow effect --&gt;
+&lt;button class="magnetic-btn magnetic-glow" data-magnetic&gt;
+  &lt;span&gt;Glow&lt;/span&gt;
+&lt;/button&gt;
 
-- **Zero JS Event Listeners**: Achieves fluid, organic morphs using native CSS transitions, saving scripting execution overhead.
-- **Organic Blending Filter**: Combines CSS `blur` and high `contrast` on the container element to force adjacent colors to blend organically like droplets.
-- **Isolate Text Distortion**: The `.ease-btn-text-shield` utilizes z-indexing and color contrast to ensure the text remains legible and is not warped by the filter.
+&lt;!-- Circular --&gt;
+&lt;button class="magnetic-btn magnetic-circle" data-magnetic&gt;
+  &lt;span&gt;+&lt;/span&gt;
+&lt;/button&gt;
 
-## Tech Stack
+&lt;!-- Large --&gt;
+&lt;button class="magnetic-btn magnetic-large" data-magnetic&gt;
+  &lt;span&gt;Large&lt;/span&gt;
+&lt;/button&gt;
 
-- HTML
-- CSS (no frameworks, no JavaScript)
+&lt;!-- Outline --&gt;
+&lt;button class="magnetic-btn magnetic-outline" data-magnetic&gt;
+  &lt;span&gt;Outline&lt;/span&gt;
+&lt;/button&gt;
 
-## Preview
-
-Open `demo.html` directly in your browser to test the interactive gooey blending transitions inside the showcase panel.
+&lt;!-- Color variants --&gt;
+&lt;button class="magnetic-btn magnetic-green" data-magnetic&gt;Green&lt;/button&gt;
+&lt;button class="magnetic-btn magnetic-red" data-magnetic&gt;Red&lt;/button&gt;
+&lt;button class="magnetic-btn magnetic-orange" data-magnetic&gt;Orange&lt;/button&gt;
