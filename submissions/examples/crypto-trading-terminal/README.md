@@ -1,44 +1,26 @@
 # Crypto Trading Terminal
 
-## Feature Name
-Crypto Trading Terminal
-
----
-
-## Description
 A professional trading dashboard inspired by Binance, Coinbase, TradingView, and Bybit.
 
-The interface combines a market watchlist, trading chart visualization, portfolio overview, and trading controls into a cohesive application layout. It demonstrates how complex financial interfaces can be built using only HTML and CSS while maintaining clarity, responsiveness, and accessibility.
+## Features
 
-The design focuses on information density, visual hierarchy, and dashboard composition patterns commonly used in modern fintech applications.
+- Market watchlist panel
+- Trading chart visualization
+- Portfolio summary section
+- Buy and Sell controls
+- Responsive dashboard layout
+- Hover interactions
+- Pure HTML and CSS
 
----
+## Files
 
-## Key Highlights
+- demo.html
+- style.css
+- README.md
 
-- Market watchlist panel  
-- Trading chart visualization  
-- Portfolio summary section  
-- Buy and Sell action controls  
-- Financial dashboard layout  
-- Responsive design  
-- Hover interactions and chart animations  
-- Reduced motion accessibility support  
-- No JavaScript required  
+## Inspiration
 
----
-
-## Why is this useful for EaseMotion CSS?
-
-Financial and analytics applications represent some of the most demanding interface designs in modern web development.
-
-This example aligns with EaseMotion CSS because it demonstrates:
-
-- Real-world dashboard composition  
-- Human-readable UI structures  
-- Information-dense layouts  
-- Animation-first visual feedback  
-- Reusable panel and card patterns  
-- Responsive application shells  
-
-It provides developers with a practical reference for building fintech products, analytics platforms, monitoring systems, and professional dashboards.
+- Binance
+- Coinbase
+- TradingView
+- Bybit
