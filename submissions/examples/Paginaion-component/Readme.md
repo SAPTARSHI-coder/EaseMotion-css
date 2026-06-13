@@ -2,7 +2,7 @@
 
 A fully CSS-only, lightweight, and highly polished pagination component for navigating between pages.
 
-This feature includes:
+This feature includes:-
 
 - Previous and next buttons
 - Numbered page links
