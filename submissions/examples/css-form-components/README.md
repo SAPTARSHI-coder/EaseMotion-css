@@ -1,32 +1,30 @@
 # CSS Form Components
 
-**What does this do?**
-This adds beautiful, accessible, custom-styled form components to EaseMotion CSS, completing the v1.1 roadmap goal. It includes styled text inputs, checkboxes, and radio buttons using pure CSS and zero JavaScript.
+## What does this do?
+Animated form components including text inputs, custom checkboxes, radio buttons, select dropdown, and textarea — all with focus transitions.
 
-**How is it used?**
+## How is it used?
+Use the provided form classes within a `<form>` element:
 
-**1. Text Inputs**
-```html
-<input type="text" class="ease-input" placeholder="Enter your name">
-```
+    <input class="field-input" type="text">
+    <label class="checkbox-label">
+      <input class="field-checkbox" type="checkbox">
+      <span class="checkbox-custom"></span>
+      Option
+    </label>
 
-**2. Checkboxes**
-```html
-<label class="ease-checkbox-wrapper">
-  <input type="checkbox" class="ease-checkbox-input">
-  <span class="ease-checkbox-box"></span>
-  Remember me
-</label>
-```
+Available inputs: `field-input`, `field-textarea`, `field-select`, `field-checkbox` (+ `.checkbox-custom`), `field-radio` (+ `.radio-custom`).
 
-**3. Radio Buttons**
-```html
-<label class="ease-radio-wrapper">
-  <input type="radio" name="plan" class="ease-radio-input">
-  <span class="ease-radio-circle"></span>
-  Premium Plan
-</label>
-```
+## Why is it useful?
+Provides a polished, accessible form experience with minimal markup — great for sign-ups, surveys, and contact forms.
 
-**Why is it useful?**
-Default browser form controls are notoriously hard to style and look different across operating systems. This submission provides a consistent, premium design language for forms that perfectly matches the `EaseMotion CSS` philosophy. The checkboxes and radio buttons use the `:checked` pseudo-class for smooth, accessible micro-animations.
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
