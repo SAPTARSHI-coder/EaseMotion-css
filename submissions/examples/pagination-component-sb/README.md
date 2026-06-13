@@ -11,7 +11,6 @@ This feature includes:
 - Smooth hover and keyboard focus-visible styles
 - An ellipsis item for long page ranges
 - A compact, mobile-friendly layout
-- Dark mode compatibility
 
 ## Why is this useful for EaseMotion CSS?
 
