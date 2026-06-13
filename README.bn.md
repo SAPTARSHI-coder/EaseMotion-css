@@ -18,7 +18,7 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
 [![GitHub Forks](https://flat.badgen.net/github/forks/SAPTARSHI-coder/EaseMotion-css?color=22c55e&icon=github&label=forks)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
-[![GitHub Contributors](https://img.shields.io/badge/contributors-270-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![GitHub Contributors](https://img.shields.io/badge/contributors-299-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
 [![Merged PRs](https://img.shields.io/badge/merged%20PRs-1595-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
 [![Closed Issues](https://img.shields.io/badge/closed%20issues-1156-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
 [![Open PRs](https://flat.badgen.net/github/open-prs/SAPTARSHI-coder/EaseMotion-css?color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
@@ -580,7 +580,7 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 | 📦 **npm প্যাকেজ**      | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css)                                                  |
 | 🌐 **CDN**              | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css)                                                       |
 | 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                           |
-| 💬 **ডিসকর্ড সার্ভার**  | [ডিসকর্ড-এ জয়েন করো](https://discord.gg/hWSdGrccBU)                                                                   |
+| 💬 **ডিসকর্ড সার্ভার (ঐচ্ছিক)**  | [ডিসকর্ড-এ জয়েন করো (ঐচ্ছিক)](https://discord.gg/hWSdGrccBU)                                                                   |
 
 </div>
 
