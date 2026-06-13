@@ -1,24 +1,23 @@
-# Keyboard Key Display Component
+# Keyboard Key Display
 
-A lightweight CSS component for displaying keyboard shortcuts in a clean, readable format.
+## What does this do?
+Styled keyboard key cap components using the <kbd> element for displaying keyboard shortcuts and key combinations with a realistic 3D key appearance.
 
----
+## How is it used?
+Add the class to any HTML element:
 
-## ✨ Features
+    <kbd class="keycap">Ctrl</kbd><span class="plus">+</span><kbd class="keycap">C</kbd>
 
-- Styled `<kbd>` keycaps
-- Supports multi-key shortcuts (Ctrl + C style)
-- Clean inline shortcut grouping
-- Lightweight and reusable
+## Why is it useful?
+Provides a clean, accessible way to display keyboard shortcuts in documentation, settings pages, and tooltips. The key cap styling makes shortcuts immediately recognizable.
 
----
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
 
-## 🚀 Usage
+## Preview
+Open demo.html directly in your browser to see the effect.
 
-Wrap keys inside `.shortcut`:
-
-```html
-<span class="shortcut">
-  <kbd class="ease-kbd">Ctrl</kbd>
-  <kbd class="ease-kbd">C</kbd>
-</span>
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
