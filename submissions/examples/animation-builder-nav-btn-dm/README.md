@@ -20,3 +20,11 @@ In the navigation header element (e.g. `<ul class="docs-header-links">` or `<nav
 </ul>
 ```
 
+## Why is it useful?
+
+EaseMotion CSS values speed, accessibility, and frictionless utility. The Animation Builder is the central tool for customizing, chaining, and copying animated class combinations in real time. Positioning it front-and-center in the global top header navigation as an explicit call-to-action significantly improves the developer experience by removing redundant clicks and highlighting core visual capabilities immediately.
+
+## Tech Stack
+
+- HTML
+- CSS (pure CSS, responsive, supports light and dark themes)
