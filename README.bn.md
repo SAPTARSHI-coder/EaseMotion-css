@@ -580,7 +580,7 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 | 📦 **npm প্যাকেজ**      | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css)                                                  |
 | 🌐 **CDN**              | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css)                                                       |
 | 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                           |
-| 💬 **ডিসকর্ড সার্ভার**  | [ডিসকর্ড-এ জয়েন করো](https://discord.gg/hWSdGrccBU)                                                                   |
+| 💬 **ডিসকর্ড সার্ভার (ঐচ্ছিক)**  | [ডিসকর্ড-এ জয়েন করো (ঐচ্ছিক)](https://discord.gg/hWSdGrccBU)                                                                   |
 
 </div>
 
