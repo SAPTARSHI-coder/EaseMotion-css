@@ -16,7 +16,6 @@ Open `index.html` in any modern browser.
 - ✅ Disabled state support
 - ✅ First/Last edge links option
 - ✅ Rounded style variant
-- ✅ Dark mode support (`prefers-color-scheme`)
 - ✅ Responsive — adapts to small screens
 - ✅ Accessible — proper ARIA labels
 
