@@ -1,31 +1,26 @@
 # Glassmorphism Card
 
 ## What does this do?
-A pure CSS glassmorphism card component with a frosted glass surface, animated gradient glow border on hover, and a staggered fade-in entrance animation.
+A frosted glass card component with backdrop-filter blur, semi-transparent background, and subtle border. The card lifts on hover.
 
 ## How is it used?
+Add the class to any HTML element:
 
-```html
-<div class="glass-card">
-  <div class="glass-card__inner">
-    <span class="glass-card__icon">🚀</span>
-    <h3 class="glass-card__title">Card Title</h3>
-    <p class="glass-card__text">Card description goes here.</p>
-    <a href="#" class="glass-card__btn">Action</a>
-  </div>
-</div>
-```
-
-The demo background (`.glass-demo-bg`) is only needed to showcase the frosted glass effect — in real use, any dark or colourful background works.
-
-Multiple cards automatically stagger their entrance animations via `:nth-child` delays.
+    <div class="glass-card-single">
+      <h3>Title</h3>
+      <p>Content here.</p>
+    </div>
 
 ## Why is it useful?
+Provides a premium glassmorphism aesthetic for UI elements like profile cards, feature panels, and overlay content. Works over any background.
 
-Glassmorphism is one of the most sought-after modern UI effects. This component fits EaseMotion CSS's philosophy in three ways:
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
 
-1. **Animation-first** — the glow border animates on hover using a `@keyframes` gradient rotation; the entrance uses a custom `glassEntrance` keyframe.
-2. **Human-readable** — class names describe what they are: `glass-card`, `glass-card__inner`, `glass-card__btn`.
-3. **Zero dependencies** — works by opening `demo.html` directly in a browser. No build step, no JavaScript.
+## Preview
+Open demo.html directly in your browser to see the effect.
 
-The `-webkit-mask` trick used for the animated border avoids extra DOM elements and keeps the HTML clean.
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
