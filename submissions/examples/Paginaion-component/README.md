@@ -18,3 +18,4 @@ This feature includes:-
 Pagination is a core navigation pattern for any content-heavy interface, including blogs, data tables, documentation sites, product listings, and dynamic dashboards.
 
 Adding this component ensures EaseMotion CSS can handle complex navigation structures right out of the box. Keeping with its philosophy of zero-dependency, animation-first, and highly readable CSS implementations, this component empowers developers to drop in beautiful, accessible pagination with zero Javascript overhead.
+
