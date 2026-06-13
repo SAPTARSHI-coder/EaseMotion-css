@@ -1,11 +1,28 @@
-# Skeleton Loading Shimmer
+# Animated Skeleton Loader Component
 
-A modern CSS utility class that creates a sweeping shimmer effect across placeholder shapes. This mimics data loading and provides a much better perceived performance than standard loading spinners.
+## 1. What does this do?
+An animated skeleton placeholder utility component that creates a smooth shimmer loading effect for content cards, avatars, titles, and text blocks.
 
-## Features
-- **Zero JavaScript**: The animation is purely CSS-driven using `@keyframes` and `linear-gradient`.
-- **Flexible Shapes**: Easily configurable for avatars, titles, and multiline content by just adding the `.skeleton` class to your placeholder structure.
-- **Modern Look**: Employs an elegant sweeping animation often seen in large-scale modern applications.
+## 2. How is it used?
+Apply the base `.skeleton` class along with size modifiers to build custom skeleton cards:
 
-## Why it fits EaseMotion
-Skeleton loaders are a modern UI standard. This fits the "animation-first" vibe perfectly by focusing on micro-interactions and perceived performance, all achievable with simple utility classes without relying on complex JavaScript libraries.
+```html
+<!-- Avatar Circle -->
+<div class="skeleton skeleton-avatar"></div>
+
+<!-- Title Line -->
+<div class="skeleton skeleton-title"></div>
+
+<!-- Text Content Lines -->
+<div class="skeleton skeleton-text"></div>
+<div class="skeleton skeleton-text" style="width: 80%"></div>
+
+<!-- Large Media Image Block -->
+<div class="skeleton skeleton-card"></div>
+
+<!-- Button block -->
+<div class="skeleton skeleton-btn"></div>
+```
+
+## 3. Why is it useful?
+It provides a zero-dependency, pure CSS layout loading placeholder pattern that improves perceived app performance and visual transition smoothness without requiring external JavaScript libraries or bundles.
