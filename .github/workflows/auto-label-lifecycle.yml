@@ -98,6 +98,23 @@ jobs:
               console.log('Comment posted.');
             };
 
+            // Helper to get difficulty level based on text content
+            const getDifficultyLevel = (textContent, currentLabels) => {
+              const existingLevel = currentLabels.find(l => 
+                ['level:beginner', 'level:intermediate', 'level:advanced', 'level:critical'].includes(l)
+              );
+              if (existingLevel) return existingLevel;
+
+              if (textContent.includes('critical') || textContent.includes('urgent') || textContent.includes('security') || textContent.includes('severity:critical') || textContent.includes('broken')) {
+                return 'level:critical';
+              } else if (textContent.includes('advanced') || textContent.includes('complex') || textContent.includes('hard') || textContent.includes('performance') || textContent.includes('architecture') || textContent.includes('optimize')) {
+                return 'level:advanced';
+              } else if (textContent.includes('good first') || textContent.includes('easy') || textContent.includes('beginner') || textContent.includes('simple') || textContent.includes('typo') || textContent.includes('docs') || textContent.includes('documentation')) {
+                return 'level:beginner';
+              }
+              return 'level:intermediate';
+            };
+
             // ==========================================
             // 1. CLOSED lifecycle state
             // ==========================================
@@ -106,7 +123,16 @@ jobs:
                 const isMerged = item.merged || false;
                 if (isMerged) {
                   await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
+                  const title = item.title || '';
+                  const body = item.body || '';
+                  const textContent = `${title} ${body}`.toLowerCase();
+                  const levelLabel = getDifficultyLevel(textContent, currentLabels);
+                  
+                  const allLevels = ['level:beginner', 'level:intermediate', 'level:advanced', 'level:critical'];
+                  const levelsToRemove = allLevels.filter(l => l !== levelLabel);
+                  await removeLabels(levelsToRemove);
+
+                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved', levelLabel]);
                   await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
                 } else {
                   await removeLabels(['accepted', 'integrated']);
@@ -116,7 +142,16 @@ jobs:
               } else {
                 // Issue closed
                 await removeLabels(['gssoc:invalid']);
-                await addLabels(['accepted']);
+                const title = item.title || '';
+                const body = item.body || '';
+                const textContent = `${title} ${body}`.toLowerCase();
+                const levelLabel = getDifficultyLevel(textContent, currentLabels);
+
+                const allLevels = ['level:beginner', 'level:intermediate', 'level:advanced', 'level:critical'];
+                const levelsToRemove = allLevels.filter(l => l !== levelLabel);
+                await removeLabels(levelsToRemove);
+
+                await addLabels(['accepted', 'GSSoC-26', 'gssoc:approved', levelLabel]);
                 await addComment(`🔒 **Issue Resolved & Closed.**\n\nThis issue has been marked as **accepted** and successfully resolved. Thanks for participating! ✨`);
               }
             }
@@ -144,7 +179,7 @@ jobs:
 
               const computedLabels = ['GSSoC-26', 'gssoc:approved'];
               if (!isPR) {
-                computedLabels.push('good first issue', 'help wanted');
+                computedLabels.push('help wanted');
               } else {
                 computedLabels.push('type:feature');
               }
@@ -161,10 +196,16 @@ jobs:
                 computedLabels.push('enhancement');
               }
 
-              if (textContent.includes('good first') || textContent.includes('easy')) {
+              const levelLabel = getDifficultyLevel(textContent, currentLabels);
+              
+              const allLevels = ['level:beginner', 'level:intermediate', 'level:advanced', 'level:critical'];
+              const levelsToRemove = allLevels.filter(l => l !== levelLabel);
+              await removeLabels(levelsToRemove);
+
+              computedLabels.push(levelLabel);
+
+              if (levelLabel === 'level:beginner' && !isPR) {
                 computedLabels.push('good first issue');
-              } else {
-                computedLabels.push('level:intermediate');
               }
 
               if (isPR) {
