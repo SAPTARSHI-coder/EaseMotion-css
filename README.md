@@ -149,15 +149,13 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 <div align="center">
 
-| Browser | Core Minimum | `backdrop-filter` | `aspect-ratio` | CSS Variables | Animations | Notes |
-| ------- | ------------ | ----------------- | -------------- | ------------- | ---------- | ----- |
-| Chrome  | 49+          | 76+               | 88+            | 49+           | 43+        |       |
-| Firefox | 31+          | 103+              | 89+            | 31+           | 16+        |       |
-| Safari  | 9.1+         | 9.1+ (`-webkit-`) | 15.0+          | 9.1+          | 9.0+       |       |
-| Edge    | 15+          | 79+               | 88+            | 15+           | 12+        |       |
-| Opera   | 36+          | 63+               | 74+            | 36+           | 30+        |       |
-
-> **Note on Modern Features:** While the core framework supports older browsers, visual effects like `backdrop-filter` and layout properties like `aspect-ratio` require newer browsers. Consult [caniuse.com](https://caniuse.com/) for detailed support history.
+| Browser | Minimum Version | `backdrop-filter`                                 | `aspect-ratio` | CSS variables | Animations | Notes     |
+| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- | --- |
+| Chrome  | 49+             | Supported                                         | Supported      | Supported     | Supported  |           |
+| Firefox | 31+             | Supported                                         | Supported      | Supported     | Supported  |           |
+| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  | Supported |     |
+| Edge    | 15+             | Supported                                         | Supported      | Supported     | Supported  |           |
+| Opera   | 36+             | Supported                                         | Supported      | Supported     | Supported  |           |
 
 </div>
 
@@ -953,7 +951,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 <tr><td align="center"><a href="https://github.com/Krithikakannan"><img src="https://avatars.githubusercontent.com/Krithikakannan?s=64" width="52" height="52" alt="Krithikakannan" style="border-radius:50%;margin:4px"/><br/><sub><b>Krithikakannan</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Krish0703-irl"><img src="https://avatars.githubusercontent.com/Krish0703-irl?s=64" width="52" height="52" alt="Krish0703-irl" style="border-radius:50%;margin:4px"/><br/><sub><b>Krish0703-irl</b></sub><br/><sub>1 commits</sub></a></td></tr>
 </table>
 
-_Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)_
+*Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
 
 </div>
 <!-- CONTRIBUTOR-WALL-END -->
