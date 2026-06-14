@@ -401,6 +401,13 @@ Every class in the framework has passed through this process. The curation is wh
 ---
 
 ## Usage & Examples 💡
+## Usage
+
+### Development
+Use the non-minified version for debugging and development:
+
+```html
+<link rel="stylesheet" href="easemotion.css" />
 
 ### Animations
 
