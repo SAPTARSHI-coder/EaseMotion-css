@@ -1,32 +1,15 @@
 # Scroll Progress Indicator
 
-## What it does
+A fixed progress bar at the top of the viewport that fills as the user scrolls down the page. Uses a small JavaScript snippet to calculate scroll percentage and update the bar width. The bar uses a gradient from indigo to purple.
 
-Shows a progress bar at the top of the page that fills as the user scrolls down.
+## EaseMotion CSS classes used
 
-## How to use it
+None. This example uses plain CSS for all styling.
 
-<div class="ease-scroll-progress"></div>
+## How to run
 
-<script>
-window.addEventListener('scroll', function() {
-    var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-    var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    var scrolled = (winScroll / height) * 100;
-    document.querySelector('.ease-scroll-progress').style.width = scrolled + '%';
-});
-</script>
+Open `demo.html` in a browser and scroll down. The bar at the top fills proportionally.
 
-## Variants
+## Accessibility notes
 
-- ease-scroll-progress-thick - 6px height
-- ease-scroll-progress-glow - Neon glow effect
-- ease-scroll-progress-rounded - Rounded corners
-- ease-scroll-progress-static - No transition smoothing
-
-## Why it fits EaseMotion CSS
-
-- Minimal JavaScript
-- Smooth width transitions
-- Gradient fill color
-- Fixed positioning
+Reduced motion disables the width transition for smoother visual experience.
