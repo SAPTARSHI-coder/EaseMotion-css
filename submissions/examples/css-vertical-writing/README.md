@@ -1,9 +1,17 @@
-# CSS Vertical Writing Example
+# CSS Text Orientation Vertical Writing Example
 
-This example demonstrates CSS vertical text orientation using:
+This example demonstrates:
 
 - writing-mode
 - text-orientation
 - text-combine-upright
 
-Used for vertical text layouts commonly found in East Asian typography.
+Features:
+- Vertical writing layout
+- Upright text orientation
+- Combined upright text using text-combine-upright
+
+Files included:
+- demo.html
+- style.css
+- README.md
