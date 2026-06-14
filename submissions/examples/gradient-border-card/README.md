@@ -1,21 +1,16 @@
-# Gradient Border Glow Card
+# Animated Gradient Border Card
 
-A responsive card component featuring an animated gradient border glow effect.
+A premium card component with an animated gradient border. Two variants are shown: a rotating conic gradient border using the `@property` rule, and a shifting linear gradient border. The gradient is rendered on a `::before` pseudo-element behind the card content.
 
-## Features
+## EaseMotion CSS classes used
 
-- Pure CSS
-- Animated gradient border
-- Responsive layout
-- No JavaScript required
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-## Usage
+## How to run
 
-```html
-<div class="gradient-card">
-  <h2>Gradient Border Card</h2>
-  <p>Your content here</p>
-</div>
-```
+Open `demo.html` in a browser. Each card displays a continuously animated gradient border.
 
-The border glow is created using a pseudo-element with an animated gradient background.
+## Accessibility notes
+
+The animated border is purely decorative. Reduced motion disables the animation.
