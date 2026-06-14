@@ -1,20 +1,16 @@
 # Timeline Component
 
-A responsive vertical timeline component for displaying chronological events such as:
+A vertical timeline component with a connecting line and circular markers. Each timeline entry has a date, title, and description, displayed in a card format. The vertical line runs on the left with indigo-colored dot markers indicating each event.
 
-- Education
-- Work Experience
-- Project Milestones
-- Product Roadmaps
+## EaseMotion CSS classes used
 
-## Files
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-- demo.html
-- style.css
+## How to run
 
-## Features
+Open `demo.html` in a browser. The timeline displays a sequential set of project milestones.
 
-- Responsive design
-- Smooth entrance animation
-- Hover interaction
-- Lightweight CSS-only implementation
+## Accessibility notes
+
+The timeline uses semantic HTML with headings and paragraphs for clear content hierarchy.
