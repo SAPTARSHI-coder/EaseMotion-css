@@ -55,9 +55,9 @@
 
       // Tab trap
       if (e.key === 'Tab') {
-        const focusableElements = overlay.querySelectorAll(
+        const focusableElements = Array.from(overlay.querySelectorAll(
           'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
-        );
+        )).filter(el => el.offsetWidth > 0 || el.offsetHeight > 0);
         if (focusableElements.length === 0) {
           e.preventDefault();
           return;
