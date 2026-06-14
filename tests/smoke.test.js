@@ -28,8 +28,9 @@ const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
 const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
 const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
 const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
+const forms = readFileSync(resolve(componentsDir, 'forms.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + forms;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -128,6 +129,17 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-header');
   });
   
+  it('should have form component classes defined', () => {
+    expect(css).toContain('.ease-field');
+    expect(css).toContain('.ease-field-label');
+    expect(css).toContain('.ease-input');
+    expect(css).toContain('.ease-textarea');
+    expect(css).toContain('.ease-select');
+    expect(css).toContain('.ease-input-success');
+    expect(css).toContain('.ease-input-danger');
+    expect(css).toContain('.ease-input-warning');
+  });
+
   it('should not have duplicate @keyframes definitions', () => {
     const keyframeCounts = {};
     const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
