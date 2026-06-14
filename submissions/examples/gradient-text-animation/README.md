@@ -1,22 +1,10 @@
-# Gradient Text Animation Documentation
+# Gradient Text Animation
 
 ### What does this do?
-Provides a complete, self-contained example and documentation for the `.ease-gradient-text-animated` utility class, which applies a rotating multi-color gradient animation to any text element.
+Demonstrates three animated gradient techniques using `background-clip: text` — Rainbow Cycling (multi-stop gradient that rotates position across the text), Shimmer Sweep (a narrow highlight band that moves diagonally), and Gradient Shift (two colors slowly cross-fading through intermediate stops). All effects are self-contained with no external dependencies.
 
 ### How is it used?
-Apply the class to any text element:
-
-```html
-<h1 class="ease-gradient-text-animated">Animated Gradient Heading</h1>
-```
-
-The animation uses a linear gradient (135°) cycling through primary and secondary theme colors with a 3-second infinite loop. Customize by overriding CSS variables:
-
-- **Speed**: Change the animation duration (e.g. `5s` instead of `3s`).
-- **Colors**: Redefine `--ease-color-primary` and `--ease-color-secondary`.
-- **Reduced Motion**: Animation is automatically disabled when the user has `prefers-reduced-motion: reduce` enabled, falling back to a static gradient.
-
-Open `demo.html` directly in a browser to see the effect.
+Open `demo.html` in any modern browser. Each heading uses a distinct CSS class — `grad-rainbow`, `grad-shimmer`, or `grad-shift` — applied to any text element. The animations loop infinitely and respect `prefers-reduced-motion` by falling back to a static gradient. Font sizes use `clamp()` for responsive scaling.
 
 ### Why is it useful?
-The `.ease-gradient-text-animated` utility is one of the most visually striking classes in EaseMotion CSS, but it currently lacks dedicated documentation. This submission provides a ready-to-integrate demo and explanation that the maintainer can promote to the official docs site, helping new users discover and use the utility correctly.
+Gradient text animations are a popular visual enhancement for hero sections, headers, and branding elements. This example provides three distinct, production-ready implementations that developers can drop into their projects, complete with accessibility fallbacks and responsive sizing. It also serves as a reference for combining `background-clip: text` with CSS animations.
