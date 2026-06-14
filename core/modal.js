@@ -1,91 +1,102 @@
 (function () {
   'use strict';
 
-  function checkModal() {
+  let lastFocusedElement = null;
+
+  function getActiveOverlay() {
     const hash = window.location.hash;
+    if (!hash) return null;
+
+    try {
+      const selector = '#' + CSS.escape(hash.substring(1));
+      return document.querySelector(selector + '.ease-modal-overlay');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function focusFirstElement(modal) {
+    const focusable = modal.querySelectorAll(
+      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusable.length) {
+      focusable[0].focus();
+    } else {
+      modal.setAttribute('tabindex', '-1');
+      modal.focus();
+    }
+  }
+
+  function trapFocus(overlay, e) {
+    const focusableElements = overlay.querySelectorAll(
+      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (!focusableElements.length) return;
+
+    const first = focusableElements[0];
+    const last = focusableElements[focusableElements.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  function checkModal() {
     const body = document.body;
 
-    // Remove active class from all overlays just in case
     const overlays = document.querySelectorAll('.ease-modal-overlay');
     overlays.forEach((overlay) => overlay.classList.remove('is-active'));
 
-    if (hash) {
-      // Find overlay by hash (pure CSS `:target` fallback)
-      try {
-        const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
-        const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
-        if (overlay) {
-          body.style.overflow = 'hidden';
-          overlay.classList.add('is-active');
+    const overlay = getActiveOverlay();
 
-          const modal = overlay.querySelector('.ease-modal');
-          if (modal) {
-            modal.setAttribute('tabindex', '-1');
-            modal.focus();
-          }
-          return;
-        }
-      } catch (e) {
-        // Invalid selector, ignore
+    if (overlay) {
+      body.style.overflow = 'hidden';
+      overlay.classList.add('is-active');
+
+      const modal = overlay.querySelector('.ease-modal');
+
+      if (modal) {
+        lastFocusedElement = document.activeElement;
+        focusFirstElement(modal);
+      }
+    } else {
+      body.style.overflow = '';
+
+      // restore focus when modal closes
+      if (lastFocusedElement) {
+        lastFocusedElement.focus();
+        lastFocusedElement = null;
       }
     }
-
-    // If no active modal is found
-    body.style.overflow = '';
   }
 
-  // Setup event listeners for hash changes (opening/closing via anchors)
+  // hash change listener
   window.addEventListener('hashchange', checkModal);
 
-  // Setup keyboard trap and escape key
+  // keyboard handling
   document.addEventListener('keydown', function (e) {
-    const hash = window.location.hash;
-    if (!hash) return;
+    const overlay = getActiveOverlay();
+    if (!overlay) return;
 
-    try {
-      const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
-      const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
-      if (!overlay) return;
+    // ESC closes modal
+    if (e.key === 'Escape') {
+      window.location.hash = '';
+      return;
+    }
 
-      // Escape key to close
-      if (e.key === 'Escape') {
-        window.location.hash = ''; // This will trigger hashchange and close the modal
-        return;
-      }
-
-      // Tab trap
-      if (e.key === 'Tab') {
-        const focusableElements = overlay.querySelectorAll(
-          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
-        );
-        if (focusableElements.length === 0) {
-          e.preventDefault();
-          return;
-        }
-
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
-
-        if (e.shiftKey) {
-          // Shift + Tab
-          if (document.activeElement === firstElement || document.activeElement === overlay.querySelector('.ease-modal')) {
-            e.preventDefault();
-            lastElement.focus();
-          }
-        } else {
-          // Tab
-          if (document.activeElement === lastElement) {
-            e.preventDefault();
-            firstElement.focus();
-          }
-        }
-      }
-    } catch (e) {
-      // Invalid selector, ignore
+    // TAB trap
+    if (e.key === 'Tab') {
+      trapFocus(overlay, e);
     }
   });
 
-  // Run on load
+  // init
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', checkModal);
   } else {
