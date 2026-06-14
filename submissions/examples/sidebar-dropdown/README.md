@@ -1,31 +1,31 @@
-# Collapsible Sidebar Navigation
+# Pro Collapsible Sidebar Navigation
 
-A documentation-style sidebar with collapsible navigation groups and smooth expand/collapse animations.
+A modern, documentation-style sidebar featuring advanced CSS Grid expand/collapse animations, built-in theming, and premium micro-interactions.
 
 ## Features
 
-- Collapsible navigation sections
-- Smooth expand/collapse transitions
-- Rotating arrow indicator
-- Active navigation state
-- Documentation-style layout
-- No external dependencies
-- Responsive-friendly structure
+- **Dynamic Height Animations:** Uses modern CSS Grid (`0fr` to `1fr`) for buttery smooth expand/collapse transitions without hardcoded pixel heights.
+- **Light & Dark Mode:** Built-in theming engine powered by CSS Custom Properties (`:root` variables) and a `data-theme` attribute toggle.
+- **Premium UI/UX:** Features subtle hover translations, custom scrollbar styling, and floating active-state markers.
+- **Scalable Icons:** Uses animated SVG chevrons instead of basic text characters for perfect alignment and scaling.
+- **Zero Dependencies:** Built entirely with vanilla HTML, CSS, and minimal JavaScript.
+- **Documentation-Ready Layout:** Designed specifically for developer portals, docs, and dashboards.
 
 ## Usage
 
-Open `demo.html` in a browser.
-
-Click any section heading to expand or collapse its navigation links.
+1. Ensure both `index.html` and `style.css` are saved in the same directory.
+2. Open `index.html` in your web browser.
+3. Click any section heading to smoothly expand or collapse its navigation links.
+4. Click the theme toggle button in the sidebar header to switch between Light and Dark modes.
 
 ## Files
 
-- `demo.html` – Demo implementation
-- `style.css` – Styling and animations
+- `index.html` – The HTML structure, SVG icons, and vanilla JavaScript accordion/theme logic.
+- `style.css` – CSS variables, layout, custom scrollbar, and modern grid animations.
 
 ## Inspiration
 
-This example is designed for documentation websites and developer portals where navigation can become lengthy as content grows.
+This layout is inspired by top-tier developer portals and documentation websites (like Stripe, Tailwind, or Next.js) where navigation can become lengthy and requires elegant, readable categorization. 
 
 ## Notes
 
