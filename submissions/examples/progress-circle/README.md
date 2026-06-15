@@ -1,13 +1,50 @@
-# Circular Progress Indicator
+# ease-progress-circle
 
-## 1. What does this do?
-Shows a circular progress indicator using SVG `circle` with animated `stroke-dashoffset` controlled by a `--progress` CSS custom property.
+Animated circular progress indicator using SVG `stroke-dashoffset` animation. Zero JavaScript required.
 
-## 2. How is it used?
-Set `--progress` (0–100) on the `.progress-circle` element. Customize the color with `--color`.
+## Usage
+
 ```html
-<div class="progress-circle" style="--progress: 75; --color: #22c55e">...</div>
+<div class="ease-progress-circle ease-progress-circle-primary"
+     style="--ease-circle-circumference: 283; --ease-circle-offset: 71;">
+  <svg width="100" height="100" viewBox="0 0 100 100">
+    <circle class="ease-progress-circle__track" cx="50" cy="50" r="45"/>
+    <circle class="ease-progress-circle__fill" cx="50" cy="50" r="45"/>
+  </svg>
+  <span class="ease-progress-circle__label">75%</span>
+</div>
 ```
 
-## 3. Why is it useful?
-A lightweight, fully customizable progress indicator that animates smoothly via CSS transitions. Color and value are set through CSS custom properties, making it easy to integrate with JavaScript or server-rendered values.
+## Calculating offset
+
+offset = circumference × (1 - percentage/100)
+For r=45: circumference = 2 × π × 45 ≈ 283
+
+| Progress | Offset |
+|---|---|
+| 25% | 212 |
+| 50% | 141 |
+| 75% | 71 |
+| 90% | 28 |
+| 100% | 0 |
+
+## Variants
+
+| Class | Description |
+|---|---|
+| `ease-progress-circle-primary` | Indigo fill |
+| `ease-progress-circle-success` | Green fill |
+| `ease-progress-circle-danger` | Red fill |
+| `ease-progress-circle-warning` | Orange fill |
+| `ease-progress-circle-info` | Cyan fill |
+| `ease-progress-circle-sm` | Small 60px size |
+| `ease-progress-circle-lg` | Large 140px size |
+| `ease-progress-circle-fast` | 600ms animation |
+| `ease-progress-circle-slow` | 3s animation |
+| `ease-progress-circle-dark` | Dark track variant |
+
+## Submission
+
+- **Author:** sudha09-git
+- **Issue:** #3860
+- **Files:** `style.css`, `demo.html`
