@@ -1,44 +1,63 @@
-\# ease-spinner
+# ease-spinner
 
+Submission for Issue #3848
 
+## What this adds
 
-CSS-only circular spin loader for loading states.
+CSS component for circular loading spinners using CSS border
+and rotate animation. Zero JavaScript required.
 
+## Classes
 
+### Base
+| Class | Description |
+|---|---|
+| `ease-spinner` | Base circular spinner (32px, green) |
 
-\## Classes
+### Size Variants
+| Class | Size |
+|---|---|
+| `ease-spinner--xs` | 14px |
+| `ease-spinner--sm` | 20px |
+| `ease-spinner` | 32px (default) |
+| `ease-spinner--lg` | 48px |
+| `ease-spinner--xl` | 64px |
 
+### Color Variants
+| Class | Color |
+|---|---|
+| `ease-spinner--primary` | Green |
+| `ease-spinner--white` | White |
+| `ease-spinner--dark` | Dark slate |
+| `ease-spinner--success` | Green (#22c55e) |
+| `ease-spinner--danger` | Red |
+| `ease-spinner--accent` | Blue |
 
+### Special Variants
+| Class | Description |
+|---|---|
+| `ease-spinner--dual` | Dual counter-rotating rings |
+| `ease-spinner--fast` | 0.4s spin speed |
+| `ease-spinner--slow` | 1.4s spin speed |
 
-| Class | Speed | Size | Color |
-
-|-------|-------|------|-------|
-
-| `ease-spinner` | 1s | 40px | Primary |
-
-| `ease-spinner-fast` | 0.5s | 40px | Primary |
-
-| `ease-spinner-slow` | 2s | 40px | Primary |
-
-| `ease-spinner-small` | 1s | 20px | Primary |
-
-| `ease-spinner-large` | 1s | 60px | Primary |
-
-| `ease-spinner-success` | 1s | 40px | Green |
-
-| `ease-spinner-white` | 1s | 40px | White |
-
-
-
-\## Usage
-
-
+## Usage
 
 ```html
+<!-- Default -->
+<span class="ease-spinner ease-spinner--primary"></span>
 
-<div class="ease-spinner"></div>
+<!-- Large dual ring -->
+<span class="ease-spinner ease-spinner--dual ease-spinner--lg"></span>
 
-<div class="ease-spinner-fast"></div>
+<!-- Small white spinner (e.g. inside a button) -->
+<span class="ease-spinner ease-spinner--sm ease-spinner--white"></span>
+```
 
-<div class="ease-spinner-small"></div>
+## Accessibility
 
+Respects `prefers-reduced-motion` — spin animation falls back
+to a gentle opacity pulse with no rotation.
+
+## Theme Support
+
+Supports `data-theme="neon"`, `data-theme="dracula"`, `data-theme="dark"`.
