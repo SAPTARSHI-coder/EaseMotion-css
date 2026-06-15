@@ -8,23 +8,31 @@ def validate():
     
     # Test 1: Check CSS file syntax
     css_file = Path('components/masonry.css')
+    css_content = ''
+
     if not css_file.exists():
         errors.append('❌ masonry.css not found')
     else:
         css_content = css_file.read_text()
+
         brace_count = css_content.count('{') - css_content.count('}')
+
         if brace_count == 0:
             print('✓ CSS Brace Balance: OK')
         else:
             errors.append(f'❌ CSS Brace Balance: {brace_count}')
-    
     # Test 2: Check if masonry is imported in main bundle
-    main_css = Path('easemotion.css').read_text()
-    if '@import "./components/masonry.css"' in main_css:
-        print('✓ Masonry imported in bundle: OK')
+    main_css_file = Path('easemotion.css')
+
+    if not main_css_file.exists():
+        errors.append('❌ easemotion.css not found')
     else:
-        errors.append('❌ Masonry not imported in easemotion.css')
-    
+        main_css = main_css_file.read_text()
+
+        if '@import "./components/masonry.css"' in main_css:
+            print('✓ Masonry imported in bundle: OK')
+        else:
+            errors.append('❌ Masonry not imported in easemotion.css')
     # Test 3: Check doc file
     doc_file = Path('docs/masonry-layout-guide.md')
     if doc_file.exists():
