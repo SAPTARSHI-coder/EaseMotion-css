@@ -21,6 +21,28 @@ All three files are required. Missing any one of them will result in the PR bein
 
 ---
 
+## 📢 Contribution Policy Update
+
+All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+
+To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+
+**Example:**
+*   `ease-hover-sap`
+*   `ease-tabs-ak`
+*   `ease-card-pr`
+
+This ensures:
+*   Unambiguous component naming,
+*   Preservation of every contributor’s work,
+*   Conflict-free merges,
+*   Easier maintenance and review workflow,
+*   Support for parallel implementations of similar ideas.
+
+The project encourages creative variations and parallel implementations rather than overwriting existing contributor work.
+
+---
+
 ## Step-by-Step Workflow
 
 1. Pick one approved issue or one small effect idea.
@@ -195,3 +217,15 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 Open a **Feature Request** issue first to confirm the idea fits EaseMotion CSS. This saves you from building something that gets rejected. Small additions (a new animation, a hover effect) rarely need pre-approval. New component systems should be discussed first.
 
 → [Open a Feature Request](../../issues/new?template=feature_request.md)
+
+## Getting Started
+
+This library provides simple CSS-based animations that can be applied using utility classes.
+
+---
+
+### Installation
+
+```bash
+npm install ease-motion-css
+```
