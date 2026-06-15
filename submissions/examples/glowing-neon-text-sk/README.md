@@ -48,4 +48,8 @@ The provided `style.css` also includes `.neon-btn` styling to match the text eff
 ```html
 <button class="ease-btn neon-btn">Get Started</button>
 ```
-You can control the button's blur effect via `--neon-btn-blur` and `--neon-btn-hover-blur`.
+You can control the button's blur effect via `--neon-btn-blur` and `--neon-btn-hover-blur`
+
+
+## Contributed by
+- Man1ac-1773
