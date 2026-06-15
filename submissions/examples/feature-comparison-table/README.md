@@ -1,13 +1,16 @@
 # Feature Comparison Table
 
-## What does this do?
+A clean pricing feature comparison table with three tiers: Free, Pro, and Enterprise. Features include project count, storage, team members, API access, and priority support. Each row highlights on hover. Checkmarks and crosses indicate feature availability.
 
-Creates a responsive feature comparison table for comparing plans, products, or services.
+## EaseMotion CSS classes used
 
-## How is it used?
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-Use a standard HTML table structure with feature rows and plan columns.
+## How to run
 
-## Why is it useful?
+Open `demo.html` in a browser to view the comparison table.
 
-Feature comparison tables help users quickly understand differences between plans and are widely used in SaaS, product, and subscription-based websites.
+## Accessibility notes
+
+The table uses standard `<table>`, `<th>`, and `<td>` elements for proper screen reader navigation. Checkmarks and crosses are text characters, not images.
