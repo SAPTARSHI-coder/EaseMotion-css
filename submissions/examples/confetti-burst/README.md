@@ -1,18 +1,16 @@
-# Confetti Celebration Burst
+# Animated Confetti Burst
 
-A CSS-only confetti particle burst effect triggered on click or hover. Perfect for success states, achievements, celebrations, and delightful interactions.
+A confetti celebration animation that fires 80 colorful pieces on load and on button click. Each confetti piece has a random color, size, shape (square or circle), rotation, and fall speed. Pieces are removed from the DOM after the animation completes.
 
-## Demo
+## EaseMotion CSS classes used
 
-Open `demo.html` in your browser and click the buttons to see:
-- Default confetti burst (50 particles)
-- Success color palette
-- Party mode (larger, longer, more gravity)
-- Mini burst (20 smaller particles)
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-## Usage
+## How to run
 
-### JavaScript-Triggered (Recommended)
+Open `demo.html` in a browser. Click the "Celebrate Again" button to trigger another burst.
 
-```html
-&lt;button class="confetti-trigger" onclick="triggerConfetti(this)"&gt;Celebrate!&lt;/button&gt;
+## Accessibility notes
+
+The confetti is purely decorative and entirely hidden when `prefers-reduced-motion: reduce` is active.
