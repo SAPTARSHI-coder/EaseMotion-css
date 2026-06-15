@@ -220,7 +220,7 @@ These boundaries help maintain a simple, human-readable design language.
 
 ## Community Vision
 
-EaseMotion CSS aims to grow through thoughtful community collaboration.
+EaseMotion CSS aims to grow through thoughtful community collaboration. To support this, we have set up our official **[Discord Server](https://discord.gg/hWSdGrccBU)** where developers can connect, discuss design systems, seek guidance on submissions, and collaborate on the roadmap.
 
 Contributors are encouraged to:
 
