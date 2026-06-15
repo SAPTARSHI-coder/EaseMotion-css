@@ -15,7 +15,7 @@
         const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
         const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
         if (overlay) {
-          body.style.overflow = 'hidden';
+          body.classList.add('ease-modal-open');
           overlay.classList.add('is-active');
 
           const modal = overlay.querySelector('.ease-modal');
@@ -31,7 +31,7 @@
     }
 
     // If no active modal is found
-    body.style.overflow = '';
+    body.classList.remove('ease-modal-open');
   }
 
   // Setup event listeners for hash changes (opening/closing via anchors)
