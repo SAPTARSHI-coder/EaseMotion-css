@@ -7,6 +7,8 @@ A responsive animated breadcrumb navigation component built using pure HTML and 
 - Animated active states
 - Hover underline effects
 - Icon separators
+- Keyboard-friendly focus interactions
+- ARIA breadcrumb accessibility support
 - Responsive layouts
 - Smooth transitions and hover animations
 - Pure CSS implementation
