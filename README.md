@@ -401,17 +401,17 @@ Every class in the framework has passed through this process. The curation is wh
 ---
 
 ## Usage & Examples 💡
+
 ## Usage
 
 ### Development
+
 Use the non-minified version for debugging and development:
 
-```html
+````html
 <link rel="stylesheet" href="easemotion.css" />
 
-### Animations
-
-```html
+### Animations ```html
 <!-- Entrance animations (run on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
@@ -424,7 +424,7 @@ Use the non-minified version for debugging and development:
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
-```
+````
 
 ### Duration Helpers
 
@@ -905,16 +905,16 @@ The project encourages creative variations and parallel implementations rather t
 
 <div align="center">
 
-| Platform                | Link                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 🐛 **Bug Reports**      | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)          |
-| 💡 **Feature Requests** | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
-| 🔀 **Pull Requests**    | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                              |
-| 📖 **Documentation**    | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/)                                           |
-| 📦 **npm Package**      | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css)                                         |
-| 🌐 **CDN**              | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css)   |
-| 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                   |
-| 💬 **Discord Server (Optional)**   | [Join Discord (Optional)](https://discord.gg/hWSdGrccBU)                                                                 |
+| Platform                         | Link                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 🐛 **Bug Reports**               | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)          |
+| 💡 **Feature Requests**          | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
+| 🔀 **Pull Requests**             | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                              |
+| 📖 **Documentation**             | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/)                                           |
+| 📦 **npm Package**               | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css)                                         |
+| 🌐 **CDN**                       | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css)   |
+| 🏆 **GSSoC 2026**                | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                   |
+| 💬 **Discord Server (Optional)** | [Join Discord (Optional)](https://discord.gg/hWSdGrccBU)                                                      |
 
 </div>
 
@@ -961,7 +961,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 <tr><td align="center"><a href="https://github.com/NiteshSingh3228"><img src="https://avatars.githubusercontent.com/NiteshSingh3228?s=64" width="52" height="52" alt="NiteshSingh3228" style="border-radius:50%;margin:4px"/><br/><sub><b>NiteshSingh3228</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Nish232003"><img src="https://avatars.githubusercontent.com/Nish232003?s=64" width="52" height="52" alt="Nish232003" style="border-radius:50%;margin:4px"/><br/><sub><b>Nish232003</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Neha134-gif"><img src="https://avatars.githubusercontent.com/Neha134-gif?s=64" width="52" height="52" alt="Neha134-gif" style="border-radius:50%;margin:4px"/><br/><sub><b>Neha134-gif</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/nityanara"><img src="https://avatars.githubusercontent.com/nityanara?s=64" width="52" height="52" alt="nityanara" style="border-radius:50%;margin:4px"/><br/><sub><b>nityanara</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/EchoOfCode"><img src="https://avatars.githubusercontent.com/EchoOfCode?s=64" width="52" height="52" alt="EchoOfCode" style="border-radius:50%;margin:4px"/><br/><sub><b>EchoOfCode</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Malusnow"><img src="https://avatars.githubusercontent.com/Malusnow?s=64" width="52" height="52" alt="Malusnow" style="border-radius:50%;margin:4px"/><br/><sub><b>Malusnow</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/maheshbhojane1"><img src="https://avatars.githubusercontent.com/maheshbhojane1?s=64" width="52" height="52" alt="maheshbhojane1" style="border-radius:50%;margin:4px"/><br/><sub><b>maheshbhojane1</b></sub><br/><sub>1 commits</sub></a></td></tr>
 </table>
 
-*Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
+_Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)_
 
 </div>
 <!-- CONTRIBUTOR-WALL-END -->
@@ -1019,6 +1019,31 @@ Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first 
 
 </div>
 
-## Accessibility
+## Accessibility ♿
 
-EaseMotion CSS supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion and reduce animation-related discomfort. When enabled at the operating system level, animations and transitions are minimized to provide a more accessible experience.
+EaseMotion CSS natively supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion. This prevents discomfort, dizziness, or vestibular triggers caused by animation-heavy interfaces.
+
+### What it does automatically:
+
+- **Reduces durations:** All animation and transition durations are reduced to near-zero (`0.01ms`), causing elements to snap instantly into place.
+- **Prevents loops:** Infinite looping animations (like `bounce`, `pulse`, `rotate`, `float`, and `marquee`) are automatically restricted to run only once (`1` iteration).
+- **Cleans up hover states:** Hover-triggered transforms are bypassed to keep elements static and readable.
+- **Preserves layout and visibility:** Element positions, sizes, and states are fully preserved during reduced motion.
+- **Avoids affecting layout utility classes:** The accessibility selectors specifically target only the motion-based utilities without touching layout-only classes (like `.ease-block` or `.ease-flex`).
+
+### How to use it:
+
+No extra classes or javascript code are required! It works completely out of the box. The framework automatically adapts when the user has enabled "Reduce Motion" in their operating system accessibility settings.
+
+### Custom CSS integration:
+
+If you write custom animations or hover effects, you can use EaseMotion's variables to automatically benefit from the built-in reduced motion system:
+
+```css
+.my-custom-element {
+  /* Automatically drops to 0.01ms duration and 1 iteration count when reduced motion is preferred! */
+  animation: my-animation var(--ease-speed-slow) var(--ease-ease)
+    var(--ease-animation-iterations);
+  transition: all var(--ease-speed-fast) var(--ease-ease);
+}
+```
