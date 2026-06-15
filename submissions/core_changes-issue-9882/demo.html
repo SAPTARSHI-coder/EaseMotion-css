@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Issue #9882 — CSS Source Map Demo</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 2rem; }
+    h1 { margin-bottom: 0.25rem; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; }
+    section { margin-bottom: 3rem; }
+    h2 { color: #a78bfa; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+    .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .card h3 { margin-top: 0; }
+    code { background: #0f172a; padding: 0.1rem 0.4rem; border-radius: 4px; color: #a78bfa; }
+    .comparison { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .comparison > div { flex: 1; min-width: 300px; }
+    .before-box { border-left: 3px solid #ef4444; background: #450a0a; padding: 1rem; border-radius: 0 8px 8px 0; }
+    .after-box  { border-left: 3px solid #22c55e; background: #052e16; padding: 1rem; border-radius: 0 8px 8px 0; }
+    .file-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .file-card { background: #1e293b; border-radius: 8px; padding: 1rem; border: 1px solid #334155; }
+    .file-card h3 { margin: 0 0 0.5rem; font-size: 1rem; color: #a78bfa; }
+    .file-card pre { background: #0f172a; padding: 0.75rem; border-radius: 6px; font-size: 0.75rem; margin: 0; overflow-x: auto; }
+    .diagram { background: #1e293b; border-radius: 12px; padding: 2rem; text-align: center; }
+    .diagram svg { max-width: 100%; }
+  </style>
+</head>
+<body>
+  <h1>Issue #9882: Source Map Generation</h1>
+  <p class="subtitle">Trace minified CSS back to original source files in DevTools</p>
+
+  <section>
+    <h2>Before vs After</h2>
+    <div class="comparison">
+      <div>
+        <div class="before-box">
+          <strong>Before:</strong><br><br>
+          <code>npm run build</code> produces only <code>easemotion.min.css</code><br><br>
+          Chrome DevTools shows: <code>easemotion.min.css:1</code><br>
+          <small>No way to know which source file contains the rule</small>
+        </div>
+      </div>
+      <div>
+        <div class="after-box">
+          <strong>After:</strong><br><br>
+          <code>npm run build</code> produces <code>easemotion.min.css</code> + <code>easemotion.min.css.map</code><br><br>
+          Chrome DevTools shows: <code>core/animations.css:42</code><br>
+          <small>Clickable link to original source file and line</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Files to Modify</h2>
+    <div class="file-grid">
+      <div class="file-card">
+        <h3>build-minified-css.mjs</h3>
+        <pre>// Current: custom regex minifier
+// Change:  use csso with sourceMap:true
+
+function minifyCss(css) {
+  return minify(css, {
+    filename: "easemotion.css",
+    sourceMap: true,
+  });
+}
+
+// Write .css and .map
+const result = minifyCss(fullCss);
+await writeFile("easemotion.min.css",
+  result.css + "\n/*# sourceMappingURL=..." */
+);
+await writeFile("easemotion.min.css.map",
+  JSON.stringify(result.map)
+);</pre>
+      </div>
+      <div class="file-card">
+        <h3>validate-bundle.mjs</h3>
+        <pre>// Add after CSS staleness check:
+// Validate .map file
+
+const map = JSON.parse(rebuiltMap);
+if (map.version !== 3) throw Error();
+if (!map.sources.length) throw Error();
+if (!map.mappings.length) throw Error();</pre>
+      </div>
+      <div class="file-card">
+        <h3>validate-pack.mjs</h3>
+        <pre>// Add to required[]
+const required = [
+  ...
+  "easemotion.min.css.map",
+  ...
+];</pre>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Source Map Structure</h2>
+    <div class="card">
+      <pre>{
+  "version": 3,
+  "sources": [
+    "core/variables.css",
+    "core/base.css",
+    "core/animations.css",
+    "core/utilities.css",
+    "components/buttons.css",
+    "components/cards.css",
+    ...
+  ],
+  "names": [],
+  "mappings": "AAAA,AACC,...",
+  "file": "easemotion.min.css"
+}</pre>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verification Steps</h2>
+    <ol style="list-style:none;padding:0;">
+      <li style="padding:0.5rem 0;border-bottom:1px solid #334155;">
+        <strong>1.</strong> Run <code>npm run build</code>
+      </li>
+      <li style="padding:0.5rem 0;border-bottom:1px solid #334155;">
+        <strong>2.</strong> Confirm <code>ls easemotion.min.css*</code> shows both files
+      </li>
+      <li style="padding:0.5rem 0;border-bottom:1px solid #334155;">
+        <strong>3.</strong> Run <code>node scripts/validate-bundle.mjs</code> — no errors
+      </li>
+      <li style="padding:0.5rem 0;border-bottom:1px solid #334155;">
+        <strong>4.</strong> Open page in Chrome, inspect element → Styles panel shows source filenames
+      </li>
+    </ol>
+  </section>
+</body>
+</html>
