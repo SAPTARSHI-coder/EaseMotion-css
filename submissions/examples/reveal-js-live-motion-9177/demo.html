@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>reveal.js Live Motion Fix — Issue #9177</title>
+  <link rel="stylesheet" href="../../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--ease-font-sans, system-ui, sans-serif);
+      background: var(--ease-color-bg, #f8fafc);
+      color: var(--ease-color-text, #1e293b);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    h1 {
+      font-size: var(--ease-text-2xl, 1.5rem);
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .sub {
+      font-size: var(--ease-text-sm, 0.875rem);
+      color: var(--ease-color-muted, #64748b);
+      margin-bottom: 2rem;
+    }
+
+    .hint {
+      background: var(--ease-color-neutral-100, #f1f5f9);
+      border-left: 4px solid var(--ease-color-primary, #6c63ff);
+      border-radius: 0 var(--ease-radius-md, 0.5rem) var(--ease-radius-md, 0.5rem) 0;
+      padding: 0.9rem 1.1rem;
+      font-size: var(--ease-text-sm, 0.875rem);
+      line-height: 1.65;
+      margin-bottom: 2rem;
+    }
+
+    .hint strong { display: block; margin-bottom: 0.2rem; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      font-size: var(--ease-text-sm, 0.875rem);
+      font-weight: 600;
+      border: 2px solid var(--ease-color-danger, #ef4444);
+      border-radius: var(--ease-radius-full, 9999px);
+      background: transparent;
+      color: var(--ease-color-danger, #ef4444);
+      cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
+    }
+
+    .btn-toggle.reduced {
+      background: var(--ease-color-danger, #ef4444);
+      color: #fff;
+    }
+
+    .btn-reset {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1.1rem;
+      font-size: var(--ease-text-sm, 0.875rem);
+      font-weight: 600;
+      border: 2px solid var(--ease-color-neutral-300, #cbd5e1);
+      border-radius: var(--ease-radius-full, 9999px);
+      background: transparent;
+      color: var(--ease-color-muted, #64748b);
+      cursor: pointer;
+      transition: background 150ms ease, color 150ms ease;
+    }
+
+    .btn-reset:hover { background: var(--ease-color-neutral-100, #f1f5f9); }
+
+    .section-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .section-row { grid-template-columns: 1fr; }
+    }
+
+    .section-label {
+      font-size: var(--ease-text-sm, 0.875rem);
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tag-broken { background: var(--ease-color-danger, #ef4444); color: #fff; }
+    .tag-fixed  { background: var(--ease-color-success, #22c55e); color: #fff; }
+
+    .log {
+      margin-top: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--ease-color-muted, #64748b);
+      font-family: var(--ease-font-mono, monospace);
+      min-height: 1.4rem;
+    }
+
+    .log .anim { color: var(--ease-color-danger, #ef4444); font-weight: 700; }
+    .log .stop { color: var(--ease-color-success, #22c55e); font-weight: 700; }
+
+    code {
+      background: var(--ease-color-neutral-100, #f1f5f9);
+      color: var(--ease-color-primary-dark, #4b44cc);
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0b1121; }
+      .hint { background: rgba(108,99,255,0.1); }
+      code { background: #1e293b; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>reveal.js Live Motion Fix</h1>
+    <p class="sub">Issue #9177 — <code>prefers-reduced-motion</code> checked once at load — live changes ignored</p>
+
+    <div class="hint">
+      <strong>How to use this demo:</strong>
+      Both panels start with motion allowed. Click
+      <strong>Enable Reduce Motion (mid-session)</strong> to simulate a user
+      turning on Reduce Motion after the page loaded.
+      Then scroll inside each panel and watch whether new items animate in.
+      The <strong>Broken</strong> observer keeps animating.
+      The <strong>Fixed</strong> observer stops immediately.
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="btn-toggle" id="motion-btn" onclick="toggleMotion()">
+        Enable Reduce Motion (mid-session)
+      </button>
+      <button class="btn-reset" onclick="resetDemo()">Reset demo</button>
+      <span id="motion-indicator" class="motion-indicator motion-off">
+        Motion: allowed
+      </span>
+    </div>
+
+    <!-- Side-by-side panels -->
+    <div class="section-row">
+
+      <!-- BROKEN -->
+      <div>
+        <div class="section-label">
+          <span class="tag tag-broken">Broken</span>
+          Snapshot — one-time check
+        </div>
+        <div class="demo-scroll" id="scroll-broken">
+          <div style="height:320px;display:flex;align-items:flex-end;padding-bottom:0.5rem;color:var(--ease-color-muted);font-size:0.75rem;">
+            ↓ Scroll down to reveal items
+          </div>
+          <!-- Items injected by JS below -->
+        </div>
+        <div class="log" id="log-broken">Waiting for scroll...</div>
+      </div>
+
+      <!-- FIXED -->
+      <div>
+        <div class="section-label">
+          <span class="tag tag-fixed">Fixed</span>
+          Live listener — disconnects on change
+        </div>
+        <div class="demo-scroll" id="scroll-fixed">
+          <div style="height:320px;display:flex;align-items:flex-end;padding-bottom:0.5rem;color:var(--ease-color-muted);font-size:0.75rem;">
+            ↓ Scroll down to reveal items
+          </div>
+          <!-- Items injected by JS below -->
+        </div>
+        <div class="log" id="log-fixed">Waiting for scroll...</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    // ── Shared state ─────────────────────────────────────────
+    var simulatedReducedMotion = false;
+
+    // ── Build reveal items in both containers ─────────────────
+    function buildItems(containerId, count) {
+      var container = document.getElementById(containerId);
+      var placeholder = container.querySelector('div');
+      for (var i = 0; i < count; i++) {
+        var item = document.createElement('div');
+        item.className = 'demo-reveal-item';
+        item.textContent = 'Reveal item ' + (i + 1) + ' — slides up when entering view';
+        item.dataset.index = i;
+        container.appendChild(item);
+      }
+    }
+
+    buildItems('scroll-broken', 8);
+    buildItems('scroll-fixed', 8);
+
+    // ─────────────────────────────────────────────────────────
+    // BROKEN observer — one-time snapshot (replicates reveal.js bug)
+    // The reduced motion state is captured once and never updated.
+    // ─────────────────────────────────────────────────────────
+    var brokenObserver = null;
+    var brokenReducedMotion = simulatedReducedMotion; // snapshot at setup time
+
+    function setupBrokenObserver() {
+      // Simulates: const prefersReducedMotion = window.matchMedia(...).matches;
+      // if (prefersReducedMotion) return;
+      if (brokenReducedMotion) return; // one-time gate — never revisited
+
+      brokenObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-active');
+            document.getElementById('log-broken').innerHTML =
+              '<span class="anim">▶ Animation playing</span> — motion preference ignored';
+            brokenObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, root: document.getElementById('scroll-broken') });
+
+      var items = document.querySelectorAll('#scroll-broken .demo-reveal-item');
+      items.forEach(function (el) { brokenObserver.observe(el); });
+    }
+
+    setupBrokenObserver();
+
+    // ─────────────────────────────────────────────────────────
+    // FIXED observer — stores mql, listens for live changes
+    // ─────────────────────────────────────────────────────────
+    var fixedObserver = null;
+
+    // Simulates: var mql = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // In the demo we use a fake mql backed by simulatedReducedMotion.
+    var fakeMql = {
+      matches: false,
+      listeners: [],
+      addEventListener: function (type, fn) {
+        if (type === 'change') this.listeners.push(fn);
+      },
+      dispatchChange: function (newMatches) {
+        this.matches = newMatches;
+        this.listeners.forEach(function (fn) { fn({ matches: newMatches }); });
+      }
+    };
+
+    function startFixedObserver() {
+      if (!('IntersectionObserver' in window)) return;
+
+      fixedObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-active');
+            document.getElementById('log-fixed').innerHTML =
+              '<span class="anim">▶ Animation playing</span>';
+            fixedObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, root: document.getElementById('scroll-fixed') });
+
+      var items = document.querySelectorAll('#scroll-fixed .demo-reveal-item');
+      items.forEach(function (el) {
+        if (!el.classList.contains('is-active')) {
+          fixedObserver.observe(el);
+        }
+      });
+    }
+
+    function stopFixedObserver() {
+      if (fixedObserver) {
+        fixedObserver.disconnect();
+        fixedObserver = null;
+        document.getElementById('log-fixed').innerHTML =
+          '<span class="stop">■ Observer disconnected</span> — no new animations';
+      }
+    }
+
+    // Live change listener — this is the fix
+    fakeMql.addEventListener('change', function (e) {
+      if (e.matches) {
+        stopFixedObserver();
+      } else {
+        startFixedObserver();
+      }
+    });
+
+    // Initial setup
+    if (!fakeMql.matches) {
+      startFixedObserver();
+    }
+
+    // ── Toggle button ─────────────────────────────────────────
+    function toggleMotion() {
+      simulatedReducedMotion = !simulatedReducedMotion;
+
+      var btn = document.getElementById('motion-btn');
+      var ind = document.getElementById('motion-indicator');
+
+      if (simulatedReducedMotion) {
+        btn.textContent = 'Disable Reduce Motion';
+        btn.classList.add('reduced');
+        ind.textContent = 'Motion: REDUCE';
+        ind.className = 'motion-indicator motion-on';
+
+        // Broken: does nothing — brokenReducedMotion was set at startup
+        document.getElementById('log-broken').innerHTML =
+          '<span class="anim">▶ Still animating</span> — preference change not heard';
+
+        // Fixed: fires the live change event
+        fakeMql.dispatchChange(true);
+      } else {
+        btn.textContent = 'Enable Reduce Motion (mid-session)';
+        btn.classList.remove('reduced');
+        ind.textContent = 'Motion: allowed';
+        ind.className = 'motion-indicator motion-off';
+
+        document.getElementById('log-broken').textContent = 'Waiting for scroll...';
+
+        // Fixed: fires the live change event — restarts observer
+        fakeMql.dispatchChange(false);
+        document.getElementById('log-fixed').textContent = 'Observer restarted — scroll to reveal';
+      }
+    }
+
+    // ── Reset button ─────────────────────────────────────────
+    function resetDemo() {
+      // Reset motion state
+      if (simulatedReducedMotion) toggleMotion();
+
+      // Clear all active classes
+      document.querySelectorAll('.demo-reveal-item').forEach(function (el) {
+        el.classList.remove('is-active');
+      });
+
+      // Rebuild broken observer
+      if (brokenObserver) { brokenObserver.disconnect(); brokenObserver = null; }
+      brokenReducedMotion = false;
+      setupBrokenObserver();
+
+      // Rebuild fixed observer
+      stopFixedObserver();
+      startFixedObserver();
+
+      document.getElementById('log-broken').textContent = 'Waiting for scroll...';
+      document.getElementById('log-fixed').textContent = 'Waiting for scroll...';
+
+      // Scroll both panels back to top
+      document.getElementById('scroll-broken').scrollTop = 0;
+      document.getElementById('scroll-fixed').scrollTop = 0;
+    }
+  </script>
+</body>
+</html>
