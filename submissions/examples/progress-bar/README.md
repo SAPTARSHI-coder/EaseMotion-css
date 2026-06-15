@@ -1,49 +1,30 @@
-# ease-progress
+# Progress Bar Component
 
-> Animated progress bar component for EaseMotion CSS
+Animated progress bars with striped fill, gradient colors, circular/radial variant, and indeterminate loading state. Pure CSS.
 
-## What it does
+## Demo
 
-A pure CSS progress bar driven by a single CSS custom property.
-No JavaScript needed to set the value — just update --ease-progress-value inline.
+Open `demo.html` in any modern browser.
+
+## Features
+
+- ✅ **Pure CSS** — zero JavaScript
+- ✅ **CSS variables** — `--progress` controls fill amount
+- ✅ **Striped fill** — diagonal stripe pattern
+- ✅ **Animated stripes** — moving stripe animation
+- ✅ **Gradient** — animated rainbow gradient
+- ✅ **Contextual colors** — success, warning, error
+- ✅ **Circular/radial** — SVG-based circle progress
+- ✅ **Indeterminate** — infinite loading animation
+- ✅ **Multi-step** — step indicator for wizards
+- ✅ **Dark theme** — included `.progress-bar--dark`
+- ✅ **Accessible** — proper ARIA attributes
 
 ## Usage
 
-    <div class="ease-progress">
-      <div class="ease-progress-fill" style="--ease-progress-value: 65%;"></div>
-    </div>
+### Basic
 
-## Class Reference
-
-| Class | Description |
-|---|---|
-| ease-progress | Track container |
-| ease-progress-fill | Animated fill bar |
-| ease-progress-xs | 4px height |
-| ease-progress-sm | 8px height |
-| ease-progress-lg | 20px height |
-| ease-progress-xl | 28px height |
-| ease-progress-success | Green fill |
-| ease-progress-warning | Amber fill |
-| ease-progress-danger | Red fill |
-| ease-progress-shimmer | Animated shimmer effect |
-| ease-progress-striped | Moving stripe pattern |
-
-## CSS Variables
-
-| Token | Role |
-|---|---|
-| --ease-progress-value | Fill width, set per element (e.g. 75%) |
-| --ease-color-primary | Default fill color |
-| --ease-color-surface | Track background |
-| --ease-speed-slow | Fill transition duration |
-| --ease-ease-out | Fill transition easing |
-
-## Browser support
-
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| CSS custom properties | yes | yes | yes | yes |
-| color-mix() | yes | yes | yes | yes |
-
-Submitted under MIT License · EaseMotion CSS · 2026
+```html
+&lt;div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"&gt;
+  &lt;div class="progress-bar__fill" style="--progress: 75%;"&gt;&lt;/div&gt;
+&lt;/div&gt;

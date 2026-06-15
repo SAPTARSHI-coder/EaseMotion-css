@@ -1,9 +1,18 @@
 // tell commentoer how to use bot commands
 module.exports = async ({ github, context }) => {
-  //Guard clauses: Ignore PRs, Bots, and closed issues
+  //Guard clauses: Ignore PRs and Bots
   if (context.payload.issue.pull_request) return;
   if (context.payload.comment.user.type === 'Bot') return;
-  if (context.payload.issue.state === 'closed') return;
+
+  const { owner, repo } = context.repo;
+  const issueNumber = context.payload.issue.number;
+
+  // Fetch the latest issue state to prevent race conditions on closed issues
+  const { data: issue } = await github.rest.issues.get({
+    owner, repo, issue_number: issueNumber
+  });
+
+  if (issue.state === 'closed') return;
 
   const commentBody = context.payload.comment.body.toLowerCase();
 
@@ -48,8 +57,7 @@ module.exports = async ({ github, context }) => {
   // Gather context variables
   const commenter = context.payload.comment.user.login;
   const issueAuthor = context.payload.issue.user.login;
-  const { owner, repo } = context.repo;
-  const issueNumber = context.payload.issue.number;
+
 
   // Check if the commenter is already assigned
   const assignees = context.payload.issue.assignees.map(a => a.login.toLowerCase());
