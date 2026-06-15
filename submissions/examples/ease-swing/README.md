@@ -1,32 +1,45 @@
-# ease-swing (pendulum-style)
+# ease-swing
 
-## What does this do?
-Adds a pendulum-style swing effect where the element rotates from the top center. Includes both a one-time swing and a continuous swinging version.
+A pendulum-style swinging animation utility for EaseMotion CSS. Creates a playful, physics-inspired swing from the top of an element, ideal for notification bells, hanging badges, and decorative icons.
 
-## How is it used?
-Add one of the classes to an element:
+Resolves: https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/5726
 
-`<div class="swing-once">One-Shot Swing</div>
+## What it does
 
-<div class="swing-loop">Continuous Swing</div>
+Rotates an element back and forth from its top-center pivot point with decaying amplitude, simulating the natural motion of a hanging or pivoting object.
 
-You can also change the swing angle using:
+## How to use it
 
-:root {
-  --ease-swing-angle: 15deg;
-}`
+```html
+<!-- One-shot swing (fires once on load or when class is applied) -->
+<span class="ease-swing">&#128276;</span>
 
-## Why is it useful?
-This effect can be used for decorative elements, notifications, badges, icons, or any UI element that needs a bit of motion to attract attention. The one-shot version works well for interactions, while the continuous version can be used to keep focus on important content.
+<!-- Looping swing (continuous animation) -->
+<span class="ease-swing-loop">&#128276;</span>
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+<!-- Hover-triggered swing -->
+<span class="ease-hover-swing">Hover me</span>
+```
 
-## Preview
+## Classes
 
-Open `demo.html` directly in your browser. Hover over **One-Shot Swing** to see the animation, while **Continuous Swing** runs continuously.
+| Class | Role |
+|---|---|
+| `ease-swing` | Runs the swing animation once. |
+| `ease-swing-loop` | Runs the swing animation in a continuous loop. |
+| `ease-hover-swing` | Triggers the swing on hover or keyboard focus. |
 
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+## Implementation notes
+
+All three variants set `transform-origin: top center` to simulate a natural pivot at the top of the element. `display: inline-block` is required for the transform to apply (inline elements do not transform).
+
+## Why it fits EaseMotion CSS
+
+- Swing/pendulum animations are a commonly requested micro-interaction for notification icons, hanging tags, and decorative UI elements.
+- Three variants (one-shot, loop, hover) cover the most common use cases without extra configuration.
+- Pure CSS — no JavaScript needed to trigger.
+- Fully accessible: respects `prefers-reduced-motion`.
+
+## Browser support
+
+Works in all modern browsers (Chrome, Firefox, Edge, Safari).
