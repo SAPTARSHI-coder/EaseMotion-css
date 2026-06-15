@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  let previousActiveElement = null;
+
   function checkModal() {
     const hash = window.location.hash;
     const body = document.body;
@@ -15,6 +17,9 @@
         const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
         const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
         if (overlay) {
+          if (!previousActiveElement || !document.activeElement.closest('.ease-modal')) {
+            previousActiveElement = document.activeElement;
+          }
           body.style.overflow = 'hidden';
           overlay.classList.add('is-active');
 
@@ -32,6 +37,11 @@
 
     // If no active modal is found
     body.style.overflow = '';
+    
+    if (previousActiveElement) {
+      previousActiveElement.focus();
+      previousActiveElement = null;
+    }
   }
 
   // Setup event listeners for hash changes (opening/closing via anchors)
