@@ -38,3 +38,6 @@ You can easily tweak the slider's appearance by adjusting these variables at the
 - The slider container implements `role="slider"`.
 - It keeps `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` attributes updated automatically.
 - Smooth CSS transitions are disabled via a `@media (prefers-reduced-motion: reduce)` block to ensure compliance with user OS-level accessibility preferences.
+
+## Contributed by 
+- Man1ac-1773
