@@ -1,30 +1,26 @@
-# CSS-only Accordion Component
+# CSS-Only Animated Accordion
 
-## What does this do?
-A lightweight accordion component built with semantic HTML and pure CSS. It lets users expand and collapse content sections without JavaScript, using the native `<details>` and `<summary>` elements.
+This submission adds a pure CSS, interactive Accordion component to the EaseMotion framework.
 
-## How is it used?
-Add the class to any HTML element:
+## Features
+- **Zero JavaScript:** Relies entirely on the hidden checkbox hack (`:checked`).
+- **Smooth Height Transitions:** Uses modern CSS Grid (`grid-template-rows: 0fr -> 1fr`) to overcome the traditional `height: auto` transition limitation.
+- **Accessible:** Uses `.ease-sr-only` to ensure screen reader compatibility, and implements `:focus-visible` to support keyboard navigation (Tab & Space).
+- **Animated Icons:** Icons automatically rotate using `transform` when the accordion is expanded.
+
+## Usage
 
 ```html
-<div class="accordion">
-  <details class="accordion-item">
-    <summary class="accordion-trigger">Question</summary>
-    <div class="accordion-content">Answer</div>
-  </details>
+<div class="ease-accordion">
+  <input type="checkbox" id="faq-1" class="ease-accordion-trigger ease-sr-only">
+  <label for="faq-1" class="ease-accordion-header">
+    <span>Question</span>
+    <div class="ease-accordion-icon">⬇️</div>
+  </label>
+  <div class="ease-accordion-content">
+    <div class="ease-accordion-inner">
+      <p>Answer text goes here.</p>
+    </div>
+  </div>
 </div>
 ```
-
-## Why is it useful?
-This fits EaseMotion CSS because it is human-readable, animation-first, and composable. Developers often need accordions for FAQs and docs, and a CSS-only version keeps the library lightweight while still feeling interactive.
-
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
-
-## Preview
-Open demo.html directly in your browser to see the effect.
-
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
