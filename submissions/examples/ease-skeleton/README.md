@@ -1,35 +1,23 @@
-# ease-skeleton
+# ⚡ EaseMotion CSS — Performance Skeleton Components
 
-Pure CSS skeleton loading animation with shimmer effect.
-No JavaScript — only CSS custom properties and @keyframes.
+A highly optimized, hardware-accelerated **Pure CSS Skeleton Loading Module**. This package delivers fluid content-placeholder states without relying on heavy JavaScript dependencies or runtime blocking, preserving a premium user experience while components fetch asynchronous data.
 
-## Usage
+---
+
+## 🚀 Key Architectural Improvements
+
+* 📦 **Dynamic Token Architecture:** Re-mapped to system-level variables supporting fluid **Light and Dark mode transitions** out of the box.
+* 🏎️ **GPU-Accelerated Rendering:** Added `will-change: background-position` context bounds to eliminate composite-layer layout shifting.
+* 📐 **Ergonomic Shimmer Angle:** Upgraded the legacy vertical axis map to a premium `110deg` tracking slice, making layout loading feel faster and more physical.
+* ♿ **Accessibility Compliant:** Built-in automatic fallback to a non-animated layout state when a visitor enables structural `@media (prefers-reduced-motion)` machine specifications.
+
+---
+
+## 📖 Framework Component Usage
+
+Drop basic skeleton primitives into your UI layout markup to quickly mock up your component structural dimensions.
 
 ```html
 <span class="ease-skeleton"></span>
-```
 
-## Variants
-
-| Class | Description |
-|---|---|
-| `ease-skeleton--circle` | Circle shape (avatar) |
-| `ease-skeleton--rounded` | Pill shape |
-| `ease-skeleton--rect` | No border radius |
-| `ease-skeleton--sm/md/lg/xl` | Size variants |
-
-## CSS Variables
-
-| Variable | Default | Description |
-|---|---|---|
-| `--ease-base` | #1e293b | Base color |
-| `--ease-shine` | #334155 | Shimmer highlight |
-| `--ease-radius` | 6px | Border radius |
-| `--ease-duration` | 1.5s | Animation speed |
-| `--ease-width` | 100% | Width |
-| `--ease-height` | 16px | Height |
-
-## How it works
-`linear-gradient` with `background-size: 200%` creates the shimmer.
-`ease-shimmer` keyframe moves `background-position` from -200% to 200%
-— pure CSS, zero JavaScript.
+<span class="ease-skeleton ease-skeleton--rounded" style="--ease-width: 65%; --ease-height: 14px;"></span>
