@@ -1,27 +1,16 @@
 # Animated Gradient Border
 
-## What it does
+Cards with a spinning conic gradient border effect achieved via a pseudo-element with `mask-composite: exclude`. The gradient cycles through indigo, pink, and amber. A reverse variant is also shown. On reduced motion, the animation stops and shows a static indigo border.
 
-Creates a rotating gradient border around any element. The gradient continuously moves around the border.
+## EaseMotion CSS classes used
 
-## How to use it
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-<div class="ease-gradient-border">
-    <div class="ease-gradient-border-inner">Your content</div>
-</div>
+## How to run
 
-## Variants
+Open `demo.html` in a browser to see the animated gradient borders spin.
 
-- ease-gradient-fast - 1.5s rotation
-- ease-gradient-slow - 6s rotation
-- ease-gradient-rainbow - Multi-color rainbow
-- ease-gradient-fire - Orange/red fire colors
-- ease-gradient-ocean - Blue/teal ocean colors
-- ease-gradient-border-static - No animation (static gradient)
+## Accessibility notes
 
-## Why it fits EaseMotion CSS
-
-- Pure CSS, zero JavaScript
-- GPU-accelerated background-position
-- Multiple color schemes
-- Respects prefers-reduced-motion
+The border is a purely decorative pseudo-element. Reduced motion disables the spin animation.
