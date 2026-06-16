@@ -276,3 +276,7 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 **Saptarshi Sadhu**  
 GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
+## Contribution Checkpoints
+- Review community styling updates inside standard design specifications.
+- Verify class declarations against baseline CSS structure rules.
+- 
