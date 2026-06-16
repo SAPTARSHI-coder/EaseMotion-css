@@ -1,24 +1,65 @@
-# Pulse Glow Button Effect
+# Aurora Pulse Glow Button Showcase
 
-## 1. What does this do?
-An animated button overlay effect that creates a rhythmic pulsing glow around call-to-action buttons.
+Issue: [#10382](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/10382)
 
-## 2. How is it used?
-Add the base `.btn-pulse-glow` class to your button, optionally stacking color and speed modifiers:
+Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
+
+## Features
+
+- Pure CSS implementation
+- Soft pulse glow animation
+- Smooth hover transitions
+- Multiple color variants
+- Multiple button sizes
+- Responsive demo
+- No JavaScript required
+- Lightweight and reusable
+
+## Usage
 
 ```html
-<!-- Default Cyan Glow -->
-<button class="btn-pulse-glow">Explore</button>
-
-<!-- Success Green Glow -->
-<button class="btn-pulse-glow-success">Confirm</button>
-
-<!-- Danger Red Glow (Fast Speed) -->
-<button class="btn-pulse-glow-danger btn-pulse-fast">Delete</button>
-
-<!-- Slow Ambient Glow -->
-<button class="btn-pulse-glow btn-pulse-slow">Ambient</button>
+<button class="ease-hover-pulse-glow">
+  Click Me
+</button>
 ```
 
-## 3. Why is it useful?
-It provides a declarative, zero-dependency, pure CSS micro-interaction that draws user attention to critical calls-to-action using themeable shadows and custom timing overrides.
+## Variants
+
+```html
+<button class="ease-hover-pulse-glow">
+  Default
+</button>
+
+<button class="ease-hover-pulse-glow glow-purple">
+  Purple
+</button>
+
+<button class="ease-hover-pulse-glow glow-green">
+  Green
+</button>
+
+<button class="ease-hover-pulse-glow glow-pink">
+  Pink
+</button>
+```
+
+## Main Class
+
+```css
+.ease-hover-pulse-glow
+```
+
+## Why It Fits EaseMotion CSS
+
+- Human-readable class naming
+- Animation-first philosophy
+- Lightweight implementation
+- Reusable interaction pattern
+- Easy customization
+- Modern hover effects
+
+## Files
+
+- demo.html
+- style.css
+- README.md
