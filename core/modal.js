@@ -26,7 +26,7 @@
           return;
         }
       } catch (e) {
-        // Invalid selector, ignore
+        window.location.hash = ''; // Clear invalid hash
       }
     }
 
@@ -36,6 +36,25 @@
 
   // Setup event listeners for hash changes (opening/closing via anchors)
   window.addEventListener('hashchange', checkModal);
+
+  // Setup backdrop click listener to close modal
+  document.addEventListener('click', function (e) {
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    try {
+      const escapedHashSelector = '#' + CSS.escape(hash.substring(1));
+      const overlay = document.querySelector(escapedHashSelector + '.ease-modal-overlay');
+      if (!overlay || !overlay.classList.contains('is-active')) return;
+
+      if (e.target === overlay) {
+        window.location.hash = ''; // Clear hash = close modal properly
+        e.preventDefault();
+      }
+    } catch (e) {
+      // Invalid selector, ignore
+    }
+  }, true); // Capture phase
 
   // Setup keyboard trap and escape key
   document.addEventListener('keydown', function (e) {

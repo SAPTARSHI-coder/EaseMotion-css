@@ -16,6 +16,10 @@ permissions:
   pull-requests: write
   contents: write
 
+concurrency:
+  group: auto-merge-submissions
+  cancel-in-progress: false
+
 jobs:
   gather-prs:
     name: Gather PRs to Process
@@ -392,12 +396,31 @@ jobs:
           fi
           
           # Try to merge
-          if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
-            echo "PR successfully merged."
-          else
-            exit_code=$?
-            echo "Merge command failed: $merge_output"
-            
+          success=false
+          for i in {1..4}; do
+            echo "Merge attempt $i..."
+            if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
+              echo "PR successfully merged."
+              success=true
+              break
+            else
+              exit_code=$?
+              echo "Merge attempt $i failed: $merge_output"
+              
+              if echo "$merge_output" | grep -qE "Merge already in progress"; then
+                echo "Merge already in progress. Treating as success."
+                success=true
+                break
+              fi
+              
+              if [ $i -lt 4 ]; then
+                echo "Waiting 5 seconds before retry..."
+                sleep 5
+              fi
+            fi
+          done
+
+          if [ "$success" = "false" ]; then
             # If the error is due to base branch modification (out of date), trigger branch update
             if echo "$merge_output" | grep -q "Base branch was modified"; then
               echo "Base branch has moved. Attempting to update PR branch..."
@@ -407,14 +430,9 @@ jobs:
                 echo "Failed to update PR branch: $update_output"
               fi
               exit 1
-            fi
-            
-            # If the error indicates that the merge is already in progress, we treat it as success.
-            if echo "$merge_output" | grep -qE "Merge already in progress"; then
-              echo "Merge already in progress. Treating as success."
-              exit 0
             else
-              echo "Failed to merge PR #$PR_NUM."
+              echo "Failed to merge PR #$PR_NUM after all retries."
               exit $exit_code
             fi
           fi
+
