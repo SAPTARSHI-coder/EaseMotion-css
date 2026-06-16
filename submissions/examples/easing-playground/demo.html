@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Easing Playground — EaseMotion CSS Submission</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="playground-wrapper">
+
+  <h1 class="playground-title">⚡ Easing Playground</h1>
+  <p class="playground-subtitle">
+    Preview and compare easing animations in real time. Select an easing, adjust duration, and watch it go.
+  </p>
+
+  <!-- Controls -->
+  <div class="playground-controls">
+    <div class="control-group">
+      <label>Easing Function</label>
+      <select class="easing-selector" id="easing-select">
+        <option value="linear">linear</option>
+        <option value="ease">ease</option>
+        <option value="ease-in" selected>ease-in</option>
+        <option value="ease-out">ease-out</option>
+        <option value="ease-in-out">ease-in-out</option>
+        <option value="cubic-bezier(0.34,1.56,0.64,1)">ease-spring (bounce)</option>
+        <option value="cubic-bezier(0.68,-0.55,0.27,1.55)">ease-elastic</option>
+        <option value="cubic-bezier(0.87,0,0.13,1)">ease-expo</option>
+        <option value="cubic-bezier(0.36,0.07,0.19,0.97)">ease-shake</option>
+        <option value="steps(6,end)">steps(6)</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label>Duration: <span class="duration-display" id="duration-display">800ms</span></label>
+      <input type="range" class="duration-slider" id="duration-slider" min="200" max="2000" step="100" value="800" />
+    </div>
+
+    <div class="control-group">
+      <label>&nbsp;</label>
+      <button class="play-btn" id="play-btn">▶ Play</button>
+    </div>
+  </div>
+
+  <!-- Main demo track -->
+  <div class="playground-track">
+    <div class="track-label">Animation Preview</div>
+    <div class="track-rail" id="main-rail">
+      <div class="playground-card" id="demo-card">Motion</div>
+    </div>
+  </div>
+
+  <!-- Easing curve canvas -->
+  <div class="curve-section">
+    <h3>Easing Curve</h3>
+    <canvas id="curve-canvas" width="320" height="160"></canvas>
+  </div>
+
+  <!-- Quick easing grid -->
+  <div class="easing-grid" id="easing-grid"></div>
+
+  <!-- Compare mode -->
+  <div class="compare-section">
+    <h3>Compare All Easings</h3>
+    <div id="compare-container"></div>
+    <button class="compare-btn" id="compare-btn">▶ Run All</button>
+  </div>
+
+</div>
+
+<script>
+  const EASINGS = [
+    { label: 'linear',       value: 'linear',                                color: '#60a5fa' },
+    { label: 'ease',         value: 'ease',                                  color: '#34d399' },
+    { label: 'ease-in',      value: 'ease-in',                               color: '#f87171' },
+    { label: 'ease-out',     value: 'ease-out',                              color: '#fbbf24' },
+    { label: 'ease-in-out',  value: 'ease-in-out',                          color: '#a78bfa' },
+    { label: 'spring',       value: 'cubic-bezier(0.34,1.56,0.64,1)',       color: '#f472b6' },
+    { label: 'elastic',      value: 'cubic-bezier(0.68,-0.55,0.27,1.55)',   color: '#fb923c' },
+    { label: 'expo',         value: 'cubic-bezier(0.87,0,0.13,1)',          color: '#38bdf8' },
+    { label: 'steps(6)',     value: 'steps(6,end)',                          color: '#4ade80' },
+  ];
+
+  const select = document.getElementById('easing-select');
+  const slider = document.getElementById('duration-slider');
+  const display = document.getElementById('duration-display');
+  const playBtn = document.getElementById('play-btn');
+  const card = document.getElementById('demo-card');
+  const rail = document.getElementById('main-rail');
+  const canvas = document.getElementById('curve-canvas');
+  const ctx = canvas.getContext('2d');
+
+  let isForward = true;
+  let isAnimating = false;
+
+  // Update duration display
+  slider.addEventListener('input', () => {
+    display.textContent = slider.value + 'ms';
+  });
+
+  // Play animation
+  function playAnimation() {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const easing = select.value;
+    const duration = parseInt(slider.value);
+    const railWidth = rail.offsetWidth;
+    const cardWidth = card.offsetWidth;
+    const maxX = railWidth - cardWidth - 8;
+    const targetX = isForward ? maxX : 0;
+
+    card.style.transition = `left ${duration}ms ${easing}`;
+    card.style.left = targetX + 'px';
+    isForward = !isForward;
+
+    setTimeout(() => { isAnimating = false; }, duration + 50);
+  }
+
+  playBtn.addEventListener('click', playAnimation);
+  select.addEventListener('change', () => {
+    drawCurve(select.value);
+    updateActiveChip(select.value);
+  });
+
+  // Easing curve drawing
+  function cubicBezierPoint(p0, p1, p2, p3, t) {
+    const u = 1 - t;
+    return u*u*u*p0 + 3*u*u*t*p1 + 3*u*t*t*p2 + t*t*t*p3;
+  }
+
+  function drawCurve(easingValue) {
+    const w = canvas.width, h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Grid
+    ctx.strokeStyle = '#1f2937';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      ctx.beginPath();
+      ctx.moveTo(i * w/4, 0);
+      ctx.lineTo(i * w/4, h);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, i * h/4);
+      ctx.lineTo(w, i * h/4);
+      ctx.stroke();
+    }
+
+    // Diagonal reference
+    ctx.strokeStyle = '#374151';
+    ctx.beginPath();
+    ctx.moveTo(0, h); ctx.lineTo(w, 0);
+    ctx.stroke();
+
+    // Parse cubic-bezier
+    const match = easingValue.match(/cubic-bezier\(([^)]+)\)/);
+    let x1=0.25, y1=0.1, x2=0.25, y2=1.0;
+
+    if (match) {
+      const parts = match[1].split(',').map(Number);
+      [x1, y1, x2, y2] = parts;
+    } else {
+      const presets = {
+        'linear':      [0, 0, 1, 1],
+        'ease':        [0.25, 0.1, 0.25, 1],
+        'ease-in':     [0.42, 0, 1, 1],
+        'ease-out':    [0, 0, 0.58, 1],
+        'ease-in-out': [0.42, 0, 0.58, 1],
+      };
+      if (presets[easingValue]) [x1, y1, x2, y2] = presets[easingValue];
+    }
+
+    // Draw curve
+    const pad = 20;
+    const cw = w - pad*2, ch = h - pad*2;
+
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+
+    for (let i = 0; i <= 100; i++) {
+      const t = i / 100;
+      const cx = cubicBezierPoint(0, x1, x2, 1, t);
+      const cy = cubicBezierPoint(0, y1, y2, 1, t);
+      const px = pad + cx * cw;
+      const py = h - pad - cy * ch;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Control point handles
+    if (!easingValue.startsWith('steps')) {
+      ctx.strokeStyle = '#4b5563';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(pad + x1*cw, h - pad - y1*ch);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(pad + cw, pad);
+      ctx.lineTo(pad + x2*cw, h - pad - y2*ch);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Dots
+      [[x1,y1],[x2,y2]].forEach(([x,y]) => {
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath();
+        ctx.arc(pad + x*cw, h - pad - y*ch, 5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+
+  // Build easing grid
+  const grid = document.getElementById('easing-grid');
+  EASINGS.forEach(e => {
+    const chip = document.createElement('div');
+    chip.className = 'easing-chip';
+    chip.dataset.value = e.value;
+    chip.innerHTML = `
+      <div class="chip-preview">
+        <div class="chip-dot" id="dot-${e.label}"></div>
+      </div>
+      <div class="chip-label">${e.label}</div>
+    `;
+    chip.addEventListener('click', () => {
+      select.value = e.value;
+      drawCurve(e.value);
+      updateActiveChip(e.value);
+      animateChip(e.label, e.value, e.color);
+    });
+    grid.appendChild(chip);
+  });
+
+  function updateActiveChip(value) {
+    document.querySelectorAll('.easing-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.value === value);
+    });
+  }
+
+  function animateChip(label, easing, color) {
+    const dot = document.getElementById(`dot-${label}`);
+    if (!dot) return;
+    const duration = parseInt(slider.value);
+    dot.style.transition = 'none';
+    dot.style.left = '5px';
+    dot.style.background = color;
+    setTimeout(() => {
+      dot.style.transition = `left ${duration}ms ${easing}`;
+      dot.style.left = 'calc(100% - 15px)';
+      setTimeout(() => {
+        dot.style.transition = `left ${duration}ms ${easing}`;
+        dot.style.left = '5px';
+      }, duration + 100);
+    }, 50);
+  }
+
+  // Build compare rows
+  const compareContainer = document.getElementById('compare-container');
+  EASINGS.forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'compare-row';
+    row.innerHTML = `
+      <span class="compare-tag">${e.label}</span>
+      <div class="compare-rail">
+        <div class="compare-dot" id="cmp-${e.label}" style="background:${e.color}"></div>
+      </div>
+    `;
+    compareContainer.appendChild(row);
+  });
+
+  document.getElementById('compare-btn').addEventListener('click', () => {
+    const duration = parseInt(slider.value);
+    EASINGS.forEach(e => {
+      const dot = document.getElementById(`cmp-${e.label}`);
+      dot.style.transition = 'none';
+      dot.style.left = '0';
+      setTimeout(() => {
+        dot.style.transition = `left ${duration}ms ${e.value}`;
+        dot.style.left = 'calc(100% - 30px)';
+      }, 50);
+    });
+  });
+
+  // Init
+  drawCurve(select.value);
+  updateActiveChip(select.value);
+</script>
+</body>
+</html>

@@ -1,44 +1,33 @@
 # Toast Notification Component
 
-### What does this do?
-This submission adds a stackable, auto-dismissing toast notification component (`.ease-toast`) that slides in from the screen edge and collapses vertically upon exit.
+Styled toast notifications with slide-in animation and variants for success, error, warning, and info.
 
----
+## Demo
 
-### How is it used?
+Open `demo.html` in your browser and click the buttons to trigger different toast types.
 
-Place `.ease-toast` elements inside a fixed `.ease-toast-container` wrapper (usually positioned top-right or bottom-right):
+## Usage
 
 ```html
-<div class="ease-toast-container">
-  <!-- Success Toast -->
-  <div class="ease-toast ease-toast-success">
-    <span>Database sync complete!</span>
-  </div>
-</div>
-```
+&lt;!-- Toast container (fixed position) --&gt;
+&lt;div class="toast-container" id="toastContainer"&gt;&lt;/div&gt;
 
-#### Theme Modifiers
-- **Success Accent**: `.ease-toast-success`
-- **Danger Accent**: `.ease-toast-danger`
-- **Warning Accent**: `.ease-toast-warning`
-- **Info Accent**: `.ease-toast-info`
+&lt;!-- Success toast --&gt;
+&lt;div class="toast toast-success"&gt;
+  &lt;div class="toast-icon"&gt;✓&lt;/div&gt;
+  &lt;div class="toast-content"&gt;
+    &lt;div class="toast-title"&gt;Success&lt;/div&gt;
+    &lt;div class="toast-message"&gt;Your changes have been saved.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;button class="toast-close"&gt;✕&lt;/button&gt;
+&lt;/div&gt;
 
-#### Custom CSS Variables Configuration
-You can customize the toast appearance dynamically:
-
-```css
-.my-custom-toast {
-  --toast-bg: #090c14;
-  --toast-color: #f8fafc;
-  --toast-accent: #a855f7; /* Custom purple accent border */
-}
-```
-
----
-
-### Why does it fit EaseMotion CSS?
-
-A dynamic toast notification is a key UI pattern missing from the components library. 
-
-This implementation provides both the entry slide-in transition and the auto-dismiss exit collapse sequence in **pure CSS** (using a delayed exit animation with `animation-fill-mode: forwards`). It requires zero JavaScript runtime for animation logic, supporting EaseMotion's philosophy of highly performant, lightweight, and human-readable styling.
+&lt;!-- Error toast --&gt;
+&lt;div class="toast toast-error"&gt;
+  &lt;div class="toast-icon"&gt;✕&lt;/div&gt;
+  &lt;div class="toast-content"&gt;
+    &lt;div class="toast-title"&gt;Error&lt;/div&gt;
+    &lt;div class="toast-message"&gt;Something went wrong.&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;button class="toast-close"&gt;✕&lt;/button&gt;
+&lt;/div&gt;

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scratch-Off Reveal Ticket – EaseMotion CSS</title>
+  <meta name="description" content="Interactive scratch-off lottery ticket using HTML Canvas with CSS animations for the prize reveal." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Scratch-Off Reveal Ticket</h1>
+  <p>Scratch the gold surface to reveal your prize!</p>
+
+  <div class="tickets">
+    <div class="ticket" id="ticket1">
+      <div class="ticket-prize" id="prize1">
+        <div class="prize-icon" style="display:none">🏆</div>
+        <div class="prize-amount" style="display:none">$500</div>
+        <div class="prize-label" style="display:none">You Won!</div>
+      </div>
+      <canvas class="scratch-layer" id="canvas1" width="280" height="180"></canvas>
+      <div class="ticket-footer">
+        <span class="ticket-id">TKT-2024-0417</span>
+        <span>EaseMotion Lottery</span>
+      </div>
+    </div>
+
+    <div class="ticket" id="ticket2">
+      <div class="ticket-prize" id="prize2">
+        <div class="prize-icon" style="display:none">🎁</div>
+        <div class="prize-amount" style="display:none">Free Play</div>
+        <div class="prize-label" style="display:none">Try Again!</div>
+      </div>
+      <canvas class="scratch-layer" id="canvas2" width="280" height="180"></canvas>
+      <div class="ticket-footer">
+        <span class="ticket-id">TKT-2024-0418</span>
+        <span>EaseMotion Lottery</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="scratch-progress">
+    <div class="scratch-track"><div class="scratch-fill" id="scratchFill1"></div></div>
+    <div class="scratch-hint" id="scratchHint1">Scratch to reveal · 0% uncovered</div>
+  </div>
+
+  <button class="btn-reset" id="btnReset">↺ Reset Tickets</button>
+
+  <script>
+    function initScratch(canvasId, prizeId, fillId, hintId, ticketId) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      const prize = document.getElementById(prizeId);
+      const fill = document.getElementById(fillId);
+      const hint = document.getElementById(hintId);
+      const ticket = document.getElementById(ticketId);
+      let isScratching = false;
+      let revealed = false;
+
+      function drawScratchSurface() {
+        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        grad.addColorStop(0, '#c8941a');
+        grad.addColorStop(0.3, '#f5d060');
+        grad.addColorStop(0.6, '#d4af37');
+        grad.addColorStop(1, '#b8860b');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Texture dots
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        for (let i = 0; i < 600; i++) {
+          ctx.beginPath();
+          ctx.arc(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            Math.random() * 2, 0, Math.PI * 2
+          );
+          ctx.fill();
+        }
+
+        // Label
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.font = 'bold 13px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('✦ SCRATCH HERE ✦', canvas.width / 2, canvas.height / 2 - 6);
+        ctx.font = '11px Inter, sans-serif';
+        ctx.fillText('Reveal your prize', canvas.width / 2, canvas.height / 2 + 14);
+      }
+
+      function scratch(x, y) {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+        checkProgress();
+      }
+
+      function checkProgress() {
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let transparent = 0;
+        for (let i = 3; i < data.length; i += 4) {
+          if (data[i] < 128) transparent++;
+        }
+        const pct = Math.round((transparent / (canvas.width * canvas.height)) * 100);
+        if (fill) fill.style.width = Math.min(pct, 100) + '%';
+        if (hint) hint.textContent = `Scratch to reveal · ${Math.min(pct,100)}% uncovered`;
+        if (pct > 55 && !revealed) {
+          revealed = true;
+          revealPrize();
+        }
+      }
+
+      function revealPrize() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ticket.classList.add('revealed');
+        prize.querySelectorAll('[style*="display:none"]').forEach(el => {
+          el.style.display = '';
+        });
+        if (hint) hint.textContent = '🎉 Fully revealed!';
+      }
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const src = e.touches ? e.touches[0] : e;
+        return {
+          x: (src.clientX - rect.left) * (canvas.width / rect.width),
+          y: (src.clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      canvas.addEventListener('mousedown', e => { isScratching = true; const p = getPos(e); scratch(p.x, p.y); });
+      canvas.addEventListener('mousemove', e => { if (!isScratching) return; const p = getPos(e); scratch(p.x, p.y); });
+      canvas.addEventListener('mouseup', () => isScratching = false);
+      canvas.addEventListener('mouseleave', () => isScratching = false);
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); isScratching = true; const p = getPos(e); scratch(p.x, p.y); }, {passive:false});
+      canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!isScratching) return; const p = getPos(e); scratch(p.x, p.y); }, {passive:false});
+      canvas.addEventListener('touchend', () => isScratching = false);
+
+      drawScratchSurface();
+      return { reset: () => {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        revealed = false;
+        ticket.classList.remove('revealed');
+        prize.querySelectorAll('div').forEach(el => el.style.display = 'none');
+        if (fill) fill.style.width = '0%';
+        if (hint) hint.textContent = 'Scratch to reveal · 0% uncovered';
+        drawScratchSurface();
+      }};
+    }
+
+    const t1 = initScratch('canvas1','prize1','scratchFill1','scratchHint1','ticket1');
+    const t2 = initScratch('canvas2','prize2',null,null,'ticket2');
+
+    document.getElementById('btnReset').addEventListener('click', () => {
+      t1.reset(); t2.reset();
+    });
+  </script>
+</body>
+</html>
