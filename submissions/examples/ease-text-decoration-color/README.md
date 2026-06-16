@@ -1,16 +1,16 @@
 # ease-text-decoration-color
 
-Controls the `text-decoration-color` CSS property to change underline/overline/line-through color.
+CSS utility classes for the `text-decoration-color` property.
 
 ## Usage
 
 ```html
-<div class="...">Content</div>
+<div class="ease-text-decoration-color-example">Content</div>
 ```
 
 ## Classes
 
-See the CSS file for the full list of available classes.
+See `style.css` for the full list of available classes.
 
 ## Demo
 
