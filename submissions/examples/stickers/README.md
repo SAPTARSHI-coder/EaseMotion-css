@@ -4,6 +4,7 @@ A high-performance, hardware-accelerated sticky navigation header designed for m
 
 ## Features
 - **Sticky Positioning:** Stays fixed at the top of the viewport during scroll.
+- 
 - **Glassmorphism:** Uses `backdrop-filter` for a premium, translucent effect.
 - **Performance Optimized:** - Forced layer promotion via `will-change`.
     - Stability patches for legacy Safari rendering.
