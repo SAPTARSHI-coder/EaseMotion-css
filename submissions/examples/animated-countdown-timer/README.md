@@ -1,15 +1,16 @@
-# Animted Countdown Timer
+# Animated Countdown Timer
 
-A countdown timer with flip-card style digit animations and blinking seperators. The digits animate smoothly as the timer counts down.
+A countdown timer starting from 10 seconds with Start/Pause and Reset controls. The number displays with tabular-nums for stable width. When the timer reaches zero, the number turns green and pulses three times. The Start button toggles between Start and Pause.
 
 ## EaseMotion CSS classes used
 
-None. This example uses plain CSS animations.
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
 ## How to run
 
-Open `demo.html` in a browser.
+Open `demo.html` in a browser. Click Start to begin, Pause to pause, Reset to reset to 10.
 
-## Accesibility notes
+## Accessibility notes
 
-Supports reduced motion preferences by disabling animations when requested by the user.
+Both buttons are `<button>` elements with descriptive text. The countdown value is displayed as visible text.
