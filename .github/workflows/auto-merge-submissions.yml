@@ -16,6 +16,10 @@ permissions:
   pull-requests: write
   contents: write
 
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   gather-prs:
     name: Gather PRs to Process
@@ -161,7 +165,10 @@ jobs:
           git remote add upstream "https://github.com/${{ github.repository }}.git" || true
           git fetch upstream main
           
-          # 3. Attempt to merge upstream/main to sync branch and handle conflicts
+          # 3. Save initial commit SHA to check if history changes
+          BEFORE_SHA=$(git rev-parse HEAD)
+          
+          # 4. Attempt to merge upstream/main to sync branch and handle conflicts
           echo "Attempting to merge upstream/main into PR branch..."
           if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
             echo "Merge conflict detected. Analyzing conflicted files..."
@@ -195,12 +202,12 @@ jobs:
             echo "Merged upstream/main successfully with no conflicts."
           fi
           
-          # 4. Setup and run build (to ensure the minified CSS bundle is fully compiled)
+          # 5. Setup and run build (to ensure the minified CSS bundle is fully compiled)
           echo "Rebuilding minified bundle..."
           npm ci
           npm run build
           
-          # 5. Check naming collisions (only if it has submissions)
+          # 6. Check naming collisions (only if it has submissions)
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           
@@ -231,20 +238,14 @@ jobs:
             for folder_path in $folders; do
               echo "Evaluating folder $folder_path..."
               
-              # GUARD 1: Skip if this folder no longer exists on disk.
-              # The PR files API lists files from ALL commits (including already-renamed ones).
-              # Only process folders that are actually present in the current checkout.
               if [ ! -d "$folder_path" ]; then
                 echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
                 continue
               fi
               
-              # Extract parent directory and folder name
               parent_dir=$(dirname "$folder_path")
               folder_name=$(basename "$folder_path")
               
-              # GUARD 2: Use exact-name matching against git ls-tree output to check existence in main.
-              # This prevents false positives from prefix-based path collisions.
               folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
               
               if [ -n "$folder_in_main" ]; then
@@ -274,15 +275,21 @@ jobs:
             done
           fi
           
-          # 6. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
-          # We check if local HEAD is ahead of the remote tracking branch or has unstaged changes
-          git diff --quiet origin/${{ steps.pr-metadata.outputs.headRef }} || push_needed=true
-          stale_bundle=$(git status --porcelain easemotion.min.css)
+          # 7. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
+          push_needed=false
+          if [ "$BEFORE_SHA" != "$(git rev-parse HEAD)" ]; then
+            push_needed=true
+            echo "Changes detected: Local commit SHA changed (merge or conflict resolution)."
+          fi
           
-          if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
-            echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            push_needed=true
+            echo "Changes detected: Uncommitted files or staged renames found."
+          fi
+          
+          if [ "$push_needed" = "true" ]; then
+            echo "Changes detected. Pushing back to PR..."
             git add -A
-            # Commit only if there are staged/unstaged changes
             if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             fi
@@ -392,12 +399,31 @@ jobs:
           fi
           
           # Try to merge
-          if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
-            echo "PR successfully merged."
-          else
-            exit_code=$?
-            echo "Merge command failed: $merge_output"
-            
+          success=false
+          for i in {1..4}; do
+            echo "Merge attempt $i..."
+            if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
+              echo "PR successfully merged."
+              success=true
+              break
+            else
+              exit_code=$?
+              echo "Merge attempt $i failed: $merge_output"
+              
+              if echo "$merge_output" | grep -qE "Merge already in progress"; then
+                echo "Merge already in progress. Treating as success."
+                success=true
+                break
+              fi
+              
+              if [ $i -lt 4 ]; then
+                echo "Waiting 5 seconds before retry..."
+                sleep 5
+              fi
+            fi
+          done
+
+          if [ "$success" = "false" ]; then
             # If the error is due to base branch modification (out of date), trigger branch update
             if echo "$merge_output" | grep -q "Base branch was modified"; then
               echo "Base branch has moved. Attempting to update PR branch..."
@@ -407,14 +433,9 @@ jobs:
                 echo "Failed to update PR branch: $update_output"
               fi
               exit 1
-            fi
-            
-            # If the error indicates that the merge is already in progress, we treat it as success.
-            if echo "$merge_output" | grep -qE "Merge already in progress"; then
-              echo "Merge already in progress. Treating as success."
-              exit 0
             else
-              echo "Failed to merge PR #$PR_NUM."
+              echo "Failed to merge PR #$PR_NUM after all retries."
               exit $exit_code
             fi
           fi
+
