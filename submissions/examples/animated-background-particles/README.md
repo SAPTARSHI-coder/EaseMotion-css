@@ -1,30 +1,16 @@
 # Animated Background Particles
 
-## What it does
+A full-screen Canvas-based particle system with floating dots connected by lines when they are close. Particles gently repel from the mouse cursor. Runs on a dark navy background with indigo-colored dots and connection lines.
 
-Floating particle system with connecting lines between nearby particles and mouse repulsion interaction.
+## EaseMotion CSS classes used
 
-## How to use it
+- `ease-flex` — content centering
+- `ease-center` — vertical and horizontal centering
 
-<canvas id="particleCanvas" class="ease-particle-bg"></canvas>
+## How to run
 
-## Features
+Open `demo.html` in a browser. Move the mouse to push particles away.
 
-- 80+ floating particles
-- Lines connect nearby particles
-- Mouse repulsion effect
-- Adjustable particle count
-- 60fps performance
+## Accessibility notes
 
-## Controls
-
-- More Particles - Add 20 particles
-- Less Particles - Remove 20 particles
-- Reset - Back to 80 particles
-
-## Why it fits EaseMotion CSS
-
-- Canvas-based animation
-- Interactive mouse response
-- Particle connections
-- Smooth performance
+The particles are purely decorative and do not convey information. Reduced motion hides the canvas entirely.
