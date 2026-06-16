@@ -1,46 +1,45 @@
 # ease-typewriter
 
-A CSS-only typewriter text reveal animation for EaseMotion CSS.
+Typewriter text reveal animation using CSS steps() and width keyframes. Zero JavaScript required.
 
-## What it does
-
-Reveals text character by character using the CSS `steps()` timing function, `overflow: hidden`, and `width` animation — no JavaScript required. An optional blinking cursor is added via a `::after`-style `border-right` animation.
-
-## Classes
-
-| Class | Effect |
-|---|---|
-| `.typewriter` | Typing reveal only |
-| `.typewriter-cursor` | Typing reveal + blinking `|` cursor |
-
-## Customization
-
-Control the typing speed with a CSS variable:
-
-```css
-/* Default is 3s */
---ease-typewriter-speed: 2s;
-```
-
-## HTML Usage
+## Usage
 
 ```html
-<!-- Basic -->
-<h1 class="typewriter">Building backends has never been easier.</h1>
-
-<!-- With cursor -->
-<h1 class="typewriter-cursor">Hello, World!</h1>
-
-<!-- Custom speed inline -->
-<h1 class="typewriter-cursor" style="--ease-typewriter-speed: 1.5s;">Fast!</h1>
+<p class="ease-typewriter" style="--ease-typewriter-steps: 13;">Hello, World!</p>
 ```
+
+## Variants
+
+| Class | Description |
+|---|---|
+| `ease-typewriter` | Default one-shot typewriter reveal |
+| `ease-typewriter-loop` | Types and deletes infinitely |
+| `ease-typewriter-no-cursor` | Reveal without cursor |
+| `ease-typewriter-cursor-only` | Blinking cursor only |
+| `ease-typewriter-fast` | Fast 800ms reveal |
+| `ease-typewriter-slow` | Slow 4s reveal |
+| `ease-typewriter-cursor-primary` | Indigo cursor |
+| `ease-typewriter-cursor-white` | White cursor |
+| `ease-typewriter-cursor-green` | Green cursor |
+| `ease-delay-100` | 100ms start delay |
+| `ease-delay-200` | 200ms start delay |
+| `ease-delay-300` | 300ms start delay |
+| `ease-delay-500` | 500ms start delay |
+
+## Custom Properties
+
+| Property | Default | Description |
+|---|---|---|
+| `--ease-typewriter-steps` | 30 | Set to character count of your text |
 
 ## Notes
 
-- The element must be `display: inline-block` or `block` (set automatically by the class)
-- `white-space: nowrap` is required and already set in the class
-- Works alongside existing EaseMotion utilities like `ease-delay-*` and `ease-fade-in`
+- Set `--ease-typewriter-steps` to match your text length for smooth stepping
+- Use delay variants for staggered multi-line effects
+- Works best on monospace fonts
 
-## Related Issue
+## Submission
 
-[#3010](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/3010)
+- **Author:** sudha09-git
+- **Issue:** #3815
+- **Files:** style.css, demo.html, README.md
