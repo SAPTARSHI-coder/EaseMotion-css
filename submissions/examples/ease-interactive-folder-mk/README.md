@@ -18,3 +18,6 @@ This adds a physical, 3D-looking file folder component. When hovered, the front 
 
 ### Why is it useful?
 It provides a delightful micro-interaction that makes the UI feel tactile and alive. It uses `perspective`, `transform-origin`, and `z-index` layering creatively to build a 3D object without any JavaScript, fitting perfectly into EaseMotion CSS's animation-first ethos.
+
+### Contributed by 
+- Man1ac-1773
