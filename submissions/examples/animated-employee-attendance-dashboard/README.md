@@ -1,74 +1,149 @@
-# Animated Employee Attendance Dashboard
+# Workforce Attendance Dashboard Showcase
 
-## What does this do?
+Issue: [#10683](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/10683)
 
-This component is an animated HR workforce and employee attendance dashboard that visualizes daily clock-in/out statuses, weekly presence schedules, shift work hours, leave balances (PTO, sick leave, personal time), and an animated circular SVG attendance progress ring using pure HTML and CSS.
+Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
 
-## How is it used?
+## Overview
 
-The component structure is self-contained and modular. Below is an example structure of the dashboard elements and styling classes:
+The Workforce Attendance Dashboard Showcase is a modern HR analytics interface built entirely with HTML and CSS. It demonstrates how attendance metrics, employee summaries, leave balances, working hours, and attendance trends can be presented through an animation-first dashboard experience.
+
+The component is inspired by workforce management platforms such as BambooHR, Workday, Zoho People, Gusto, Rippling, and ADP.
+
+## Features
+
+- Pure HTML and CSS implementation
+- Animated attendance progress ring
+- Employee profile summary section
+- Attendance percentage visualization
+- Weekly attendance overview chart
+- Leave balance dashboard cards
+- Working hours statistics
+- Attendance status badges
+- Hover elevation effects
+- Glassmorphism-inspired dashboard styling
+- Responsive layout
+- Self-contained demo
+
+## Usage
+
+Include the dashboard structure from `demo.html` and the accompanying styles from `style.css`.
+
+Example component:
 
 ```html
-<div class="eead-card">
-  <header class="eead-header">
-    <h1 class="eead-title">Workforce Attendance Portal</h1>
-    <div class="eead-status-badge">
-      <span class="eead-pulse-dot" aria-hidden="true"></span>
-      <span>Workspace Connected</span>
-    </div>
-  </header>
-
-  <div class="eead-grid">
-    <!-- Main Info Column -->
-    <section class="eead-left-col">
-      <div class="eead-panel eead-profile-card">
-        <div class="eead-avatar-wrapper">
-          <div class="eead-avatar">SJ</div>
-          <div class="eead-avatar-badge"></div>
-        </div>
-        <div class="eead-progress-gauge">
-          <svg class="eead-progress-ring" width="140" height="140">
-            <circle
-              class="eead-progress-ring-bg"
-              stroke="rgba(255,255,255,0.06)"
-              stroke-width="10"
-              fill="transparent"
-              r="58"
-              cx="70"
-              cy="70"
-            />
-            <circle
-              class="eead-progress-ring-fill"
-              stroke="url(#eead-ring-grad)"
-              stroke-width="10"
-              fill="transparent"
-              r="58"
-              cx="70"
-              cy="70"
-              style="--eead-ring-pct: 96;"
-            />
-          </svg>
-        </div>
-      </div>
-    </section>
+<div class="attendance-ring">
+  <div class="ring-inner">
+    96%
   </div>
 </div>
 ```
 
-## Why is it useful?
+Employee profile section:
 
-It provides a professional, production-ready attendance visualization interface for HR management portals, workforce scheduling tools, and corporate dashboards with zero JavaScript dependencies. By using pure CSS variables, keyframe animations for progress gauges, responsive grid reflowing, and custom `:focus-visible` outlines, it delivers smooth visual design and accessibility matching the EaseMotion CSS guidelines.
+```html
+<div class="profile-card">
+  <div class="profile-top">
+    <div class="avatar">AJ</div>
+  </div>
+</div>
+```
 
-## Tech Stack
+## Main Dashboard Sections
 
-- HTML5 (Semantic HR structure, tabindex accessibility hooks)
-- CSS3 (Custom keyframe animations, SVG circular offset dasharrays, CSS Grid/Flexbox layouts, media query overrides for responsiveness and reduced-motion states)
+### Employee Profile
 
-## Preview
+Displays:
 
-Open [demo.html](file:///c:/Users/LENOVO/Desktop/GSSoC/Ease%20Motion/EaseMotion-css-gssoc/submissions/examples/animated-employee-attendance-dashboard/demo.html) directly in your browser to see the effect.
+- Employee avatar
+- Name and designation
+- Attendance percentage
+- Total hours worked
 
-## Contribution Notes
+### Attendance Progress Ring
 
-- Class naming uses the `eead-` prefix to prevent collision.
-- Maintainers will standardize classes to the `ease-*` convention before merge.
+Displays:
+
+- Attendance percentage
+- Animated circular progress visualization
+- Performance indicator
+
+### Weekly Attendance Overview
+
+Displays:
+
+- Daily attendance bars
+- Weekly attendance trends
+- Animated progress bars
+
+### Leave Balance
+
+Displays:
+
+- Annual leave
+- Sick leave
+- Casual leave
+
+### Working Hours Statistics
+
+Displays:
+
+- Daily average hours
+- Weekly working hours
+- Monthly working hours
+
+### Attendance Status
+
+Displays:
+
+- Present status
+- Remote status
+- Leave status
+
+## Main Classes
+
+```css
+.dashboard
+.profile-card
+.attendance-ring
+.week-bars
+.leave-grid
+.hours-grid
+.status-badge
+```
+
+## Why It Fits EaseMotion CSS
+
+- Demonstrates practical HR dashboard UI patterns
+- Uses animation-first interactions
+- Encourages reusable component architecture
+- Uses human-readable class names
+- Provides a production-ready workforce management component
+- Showcases responsive dashboard design patterns
+- Demonstrates modern business application interfaces
+
+## Files
+
+```text
+submissions/examples/animated-employee-attendance-dashboard/
+├── demo.html
+├── style.css
+└── README.md
+```
+
+## Browser Compatibility
+
+- Chrome
+- Firefox
+- Edge
+- Safari
+
+## Technologies Used
+
+- HTML5
+- CSS3
+- CSS Grid
+- Flexbox
+- CSS Animations
+- Conic Gradients
+- Responsive Design Principles
