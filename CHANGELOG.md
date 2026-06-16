@@ -10,7 +10,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Entrance animations `ease-slide-in-left` and `ease-slide-in-right` — horizontal siblings of `ease-slide-up` / `ease-slide-down`, completing the directional slide set (24px offset, fade-in)
-- Reusable collapsible sidebar navigation example for dashboard interfaces, including smooth transitions, icon-only states, and mobile responsiveness.
 
 ---
 
