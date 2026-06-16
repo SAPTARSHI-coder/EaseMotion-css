@@ -1,29 +1,11 @@
 # Animated Gradient Text Wave
 
-## Description
-
-A flowing animated gradient effect applied to heading text.
-
-## Features
-
-- Pure CSS animation
-- Smooth flowing gradient
-- Lightweight implementation
-- Ideal for hero sections
-
-## Files
-
-- demo.html
-- style.css
-- script.js
+A modern text animation where a colorful gradient continuously flows across heading text, creating a smooth wave-like movement.
 
 ## Usage
+```html
+<h1 class="gradient-wave-text">EaseMotion CSS</h1>
+```
 
-Open demo.html in any browser.
-
-## Browser Support
-
-- Chrome
-- Firefox
-- Edge
-- Safari
+## Why EaseMotion CSS?
+Purely CSS-based, animation-first, human-readable, zero dependencies. Ideal for hero sections and landing pages.
