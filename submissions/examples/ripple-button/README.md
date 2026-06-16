@@ -1,32 +1,65 @@
-# Material Design Ripple Button Effect
+# Aurora Ripple Button Showcase
 
-A radial ripple expansion effect on button click, emanating from the click point with a radial gradient expansion. Pure CSS animation triggered by minimal JavaScript.
+Issue: #10387
 
-## Demo
+Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
 
-Open `demo.html` in your browser and click any button to see the ripple effect emanate from the cursor position.
+## Features
+
+- Pure CSS implementation
+- Ripple-style interaction effect
+- No JavaScript required
+- Multiple color themes
+- Responsive demo
+- Card action examples
+- Keyboard accessible
+- Lightweight and reusable
 
 ## Usage
 
 ```html
-&lt;!-- Basic ripple button --&gt;
-&lt;button class="ripple-btn"&gt;Click Me&lt;/button&gt;
+<button class="ease-ripple-btn">
+  Click Me
+</button>
+```
 
-&lt;!-- Color variants --&gt;
-&lt;button class="ripple-btn ripple-primary"&gt;Primary&lt;/button&gt;
-&lt;button class="ripple-btn ripple-success"&gt;Success&lt;/button&gt;
-&lt;button class="ripple-btn ripple-danger"&gt;Danger&lt;/button&gt;
-&lt;button class="ripple-btn ripple-dark"&gt;Dark&lt;/button&gt;
+## Color Variants
 
-&lt;!-- Outline variant --&gt;
-&lt;button class="ripple-btn ripple-outline"&gt;Outline&lt;/button&gt;
+```html
+<button class="ease-ripple-btn">
+  Default
+</button>
 
-&lt;!-- Size variants --&gt;
-&lt;button class="ripple-btn ripple-large"&gt;Large&lt;/button&gt;
-&lt;button class="ripple-btn ripple-small"&gt;Small&lt;/button&gt;
+<button class="ease-ripple-btn ripple-purple">
+  Purple
+</button>
 
-&lt;!-- Icon button --&gt;
-&lt;button class="ripple-btn ripple-icon"&gt;+&lt;/button&gt;
+<button class="ease-ripple-btn ripple-green">
+  Green
+</button>
 
-&lt;!-- Rounded pill --&gt;
-&lt;button class="ripple-btn ripple-rounded"&gt;Rounded&lt;/button&gt;
+<button class="ease-ripple-btn ripple-pink">
+  Pink
+</button>
+```
+
+## Main Class
+
+```css
+.ease-ripple-btn
+```
+
+## Why It Fits EaseMotion CSS
+
+- Human-readable class names
+- Animation-first philosophy
+- Reusable UI interaction pattern
+- Lightweight CSS-only implementation
+- Easy customization
+- Practical real-world usage
+
+## Files
+
+- demo.html
+- style.css
+- README.md
