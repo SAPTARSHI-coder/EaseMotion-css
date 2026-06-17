@@ -1,0 +1,1 @@
+A section divider with a decorative clipped wave shape and an animated gradient that flows between two content areas. The top and bottom sections feature distinct dark backgrounds, while the divider transitions smoothly. Built entirely with pure CSS.
