@@ -86,6 +86,13 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-sidebar');
   });
 
+  it('should expose scroll-progress theme variants', () => {
+    expect(css).toContain('.ease-scroll-progress-success');
+    expect(css).toContain('.ease-scroll-progress-danger');
+    expect(css).toContain('.ease-scroll-progress-warning');
+    expect(css).toContain('.ease-scroll-progress-root');
+  });
+
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
     expect(css).toContain('.ease-btn-loading');
     expect(css).toContain('font-size: 0');
@@ -120,7 +127,54 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal');
     expect(css).toContain('.ease-modal-header');
   });
-  
+
+  it('should have dark mode variables via prefers-color-scheme', () => {
+    expect(css).toContain('@media (prefers-color-scheme: dark)');
+    expect(css).toContain('--ease-color-surface: #141e33');
+  });
+
+  it('should have dark mode variables via [data-theme="dark"] selector', () => {
+    expect(css).toContain('[data-theme="dark"]');
+    expect(css).toContain('--ease-color-bg:      #0b1121');
+  });
+
+  it("should override ease-reveal under prefers-reduced-motion: reduce", () => {
+    const sheet = document.styleSheets[0];
+    let foundMediaRule = false;
+    let foundEaseRevealInMedia = false;
+
+    const findMediaRules = (rules) => {
+      let result = [];
+      for (const rule of rules) {
+        if (rule.media) {
+          result.push(rule);
+        }
+        if (rule.cssRules) {
+          result.push(...findMediaRules(rule.cssRules));
+        }
+      }
+      return result;
+    };
+
+    const mediaRules = findMediaRules(sheet.cssRules);
+
+    for (const rule of mediaRules) {
+      if (rule.media.mediaText.includes("prefers-reduced-motion: reduce")) {
+        foundMediaRule = true;
+        for (const subRule of rule.cssRules) {
+          if (subRule.selectorText === ".ease-reveal") {
+            foundEaseRevealInMedia = true;
+            expect(subRule.style.opacity).toBe("1");
+            expect(subRule.style.transform).toBe("none");
+            expect(subRule.style.transition).toBe("none");
+          }
+        }
+      }
+    }
+    expect(foundMediaRule).toBe(true);
+    expect(foundEaseRevealInMedia).toBe(true);
+  });
+
   it('should not have duplicate @keyframes definitions', () => {
     const keyframeCounts = {};
     const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
