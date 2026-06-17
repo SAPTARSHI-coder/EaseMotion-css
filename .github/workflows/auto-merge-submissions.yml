@@ -142,7 +142,7 @@ jobs:
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
         if: steps.pr-metadata.outputs.isDraft != 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
           ref: ${{ steps.pr-metadata.outputs.headRef }}
@@ -283,8 +283,16 @@ jobs:
             echo "Changes detected: modified or untracked files found in working directory."
           fi
           
-          if [ "$push_needed" = "true" ]; then
-            echo "Changes detected. Pushing back to PR..."
+          # Only push back to the branch if the PR is from the SAME repo (not a fork).
+          # GITHUB_TOKEN cannot write to fork repositories — attempting to do so crashes the job
+          # and leaves the PR permanently stuck open.
+          IS_FORK=false
+          if [ "${{ steps.pr-metadata.outputs.headRepo }}" != "${{ github.repository }}" ]; then
+            IS_FORK=true
+          fi
+          
+          if [ "$push_needed" = "true" ] && [ "$IS_FORK" = "false" ]; then
+            echo "Changes detected and PR is from same repo. Pushing back to PR branch..."
             git add -A
             if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
@@ -292,8 +300,11 @@ jobs:
             git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
             echo "Pushed updates back to PR branch."
             echo "exitEarly=true" >> $GITHUB_OUTPUT
+          elif [ "$push_needed" = "true" ] && [ "$IS_FORK" = "true" ]; then
+            echo "PR is from a fork — skipping push (GITHUB_TOKEN cannot write to forks). Proceeding to merge directly."
+            echo "exitEarly=false" >> $GITHUB_OUTPUT
           else
-            echo "No changes, stale bundle, or naming conflicts detected."
+            echo "No changes detected. Proceeding to merge."
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
