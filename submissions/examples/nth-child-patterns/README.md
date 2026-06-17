@@ -1,33 +1,23 @@
-# :nth-child Patterns
+# :nth-child() Patterns
 
-## What does it do?
-A pure-CSS demo showing `:nth-child()` An+B selector patterns for targeting elements by position — no JavaScript required.
+## What does this do?
+Demonstrates visual patterns and staggered animations using CSS :nth-child() selectors.
 
-## Features
-- **odd / even** — alternating row styling with `:nth-child(odd/even)`
-- **Every 3rd** — `:nth-child(3n)` targets every third element
-- **Offset patterns** — `:nth-child(3n+1)` starts from element 1
-- **First N elements** — `:nth-child(-n+4)` targets the first 4
-- **From end** — `:nth-last-child(-n+2)` targets last 2 elements
+## How is it used?
+Apply nth-child selectors to grid items:
 
-## Usage
-```css
-/* Alternating rows */
-tr:nth-child(even) { background: #f5f5f5; }
+    .grid .item:nth-child(3n) { background: blue; }
 
-/* Every third item */
-li:nth-child(3n) { color: red; }
-
-/* First three items */
-li:nth-child(-n+3) { font-weight: bold; }
-```
-
-## Browser Support
-- `:nth-child()` — Chrome 1+, Firefox 3.5+, Safari 3.2+
-- `:nth-last-child()` — Chrome 1+, Firefox 3.5+, Safari 3.2+
+## Why is it useful?
+Creates alternating/staggered visual patterns without JavaScript for grids and lists.
 
 ## Tech Stack
-- HTML + CSS only, no JavaScript
+- HTML
+- CSS (no frameworks, no JavaScript)
 
 ## Preview
-Open `demo.html` directly in browser.
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
