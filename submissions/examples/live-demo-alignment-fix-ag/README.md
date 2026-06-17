@@ -21,3 +21,14 @@ Apply flex styling to navigation list items and disable wrap on the navigation c
 </ul>
 ```
 
+```css
+.docs-header-links {
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.docs-header-links li {
+  display: flex;
+  align-items: center;
+}
+```
