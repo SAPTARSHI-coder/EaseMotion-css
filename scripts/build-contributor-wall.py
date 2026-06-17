@@ -3,6 +3,8 @@ Build the contributor wall HTML for README.md.
 Reads /tmp/contributors.json, replaces content between
 <!-- CONTRIBUTOR-WALL-START --> and <!-- CONTRIBUTOR-WALL-END --> markers.
 """
+
+import html
 import json
 import re
 import sys
@@ -14,13 +16,26 @@ START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
 END_MARKER = "<!-- CONTRIBUTOR-WALL-END -->"
 
 
+def sanitize_login(login):
+    """
+    Allow only valid GitHub username characters:
+    letters, numbers and hyphens.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9-]+", login):
+        return None
+
+    return html.escape(login, quote=True)
+
+
 def build_wall(contributors):
     rows = []
     for i in range(0, len(contributors), COLS):
         row = contributors[i : i + COLS]
         cells = ""
         for c in row:
-            login = c["login"]
+            login = sanitize_login(c["login"])
+            if not login:
+                continue
             count = c["contributions"]
             cells += (
                 f'<td align="center">'
