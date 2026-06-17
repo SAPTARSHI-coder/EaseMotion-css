@@ -1,19 +1,23 @@
-# CSS text-wrap: balance &amp; pretty
+# Text Wrap Balance
 
 ## What does this do?
-
-Compares CSS `text-wrap: normal`, `text-wrap: balance`, and `text-wrap: pretty` side by side. A resizable container lets you see how each mode re-wraps the same content at different widths.
+Demonstrates `text-wrap: balance` which balances text across multiple lines for improved readability.
 
 ## How is it used?
+Add `text-wrap: balance` to any text element:
 
-```css
-.wrap-normal  { text-wrap: normal; }   /* default */
-.wrap-balance { text-wrap: balance; }   /* equalises line lengths */
-.wrap-pretty  { text-wrap: pretty; }    /* prevents orphans */
-```
-
-A range slider updates the container width, and the three columns reflow in real time. A mobile breakstack stacks the columns vertically on small screens.
+    p { text-wrap: balance; }
 
 ## Why is it useful?
+Improves heading and text block aesthetics by preventing orphaned words and uneven line breaks.
 
-Default text-wrapping often leaves ragged right edges with awkward orphaned words. `text-wrap: balance` creates visually even lines ideal for headings, while `text-wrap: pretty` polishes the last line of paragraphs by avoiding single-word orphans. Both properties improve typographic quality with a single CSS declaration — no JavaScript line-counting needed.
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
