@@ -1,19 +1,13 @@
 # Liquid Fill Button
 
-## Description
-
-A button hover effect where a liquid-like background rises from the bottom.
-
-## Files
-
-- demo.html
-- style.css
-- script.js
+A button with a liquid wave fill effect on hover. The background rises from bottom to top using a `::before` pseudo-element with a `border-radius` transition for the wavy feel.
 
 ## Usage
 
-Open demo.html in a browser and hover over the button.
+```html
+<button class="liquid-btn">Hover Me</button>
+```
 
-## Browser Support
+## Why it fits EaseMotion CSS
 
-Chrome, Firefox, Edge, Safari
+Showcases pseudo-element animations and smooth cubic-bezier transitions — core EaseMotion CSS animation patterns applied to a common UI component.
