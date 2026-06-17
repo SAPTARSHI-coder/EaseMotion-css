@@ -7,6 +7,7 @@ A premium, glassmorphism sticky navigation header engineered for high-performanc
 * **GPU promoted layers:** Uses `will-change` and 3D transforms (`translateZ(0)`) to ensure ultra-smooth scrolling performance even with high-diffusion backdrop blurs.
 * **Glassmorphism design:** A sleek modern aesthetic using subtle translucent backgrounds, border masks, and a high-diffusion backdrop blur filter.
 * **A11y Optimized:** Includes full `:focus-visible` keyboard focus indicators, making the interface completely navigable via the `Tab` key for assistive technologies.
+* **Mobile Responsive:** Gracefully collapses into a centered column layout on smaller viewports (under 640px) to prevent navigation wrapping or collision.
 
 ## 📂 Submission Files
 
