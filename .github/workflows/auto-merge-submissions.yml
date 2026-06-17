@@ -15,7 +15,6 @@ on:
 permissions:
   pull-requests: write
   contents: write
-  issues: write
 
 concurrency:
   group: auto-merge-${{ github.event.pull_request.number || github.run_id }}
@@ -31,7 +30,7 @@ jobs:
       - name: List open PRs
         id: list-prs
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           event_name="${{ github.event_name }}"
           
@@ -63,7 +62,7 @@ jobs:
       - name: Resolve PR Metadata
         id: pr-metadata
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           PR_NUM=${{ matrix.pr }}
           
@@ -92,7 +91,7 @@ jobs:
         id: check-files
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Checking files modified in PR #$PR_NUM..."
@@ -106,7 +105,7 @@ jobs:
           for file in $files; do
             if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
-            elif [[ "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" && "$file" != "easemotion.css" && "$file" != "easemotion.min.css" ]]; then
+            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" && "$file" != "easemotion.css" && "$file" != "easemotion.min.css" ]]; then
               has_core_changes=true
               echo "Core change detected: $file"
             fi
@@ -121,7 +120,7 @@ jobs:
       - name: Block Auto-Merge for Invalid Changes
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
@@ -146,7 +145,7 @@ jobs:
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
           ref: ${{ steps.pr-metadata.outputs.headRef }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       # Step 4: Resolve conflicts, compile bundle, and push updates
@@ -154,7 +153,7 @@ jobs:
         id: rename-check
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
           PR_LABELS: ${{ steps.pr-metadata.outputs.labels }}
         run: |
@@ -162,8 +161,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 2. Add upstream remote and fetch main branch
-          git remote add upstream "https://github.com/${{ github.repository }}.git" || true
+          # 2. Add upstream remote and fetch main branch with authentication token
+          git remote add upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" || \
+          git remote set-url upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git fetch upstream main
           
           # 3. Save initial commit SHA to check if history changes
@@ -278,22 +278,60 @@ jobs:
           
           # 7. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
           push_needed=false
-          if [ -n "$(git status --porcelain)" ]; then
+          if [ "$BEFORE_SHA" != "$(git rev-parse HEAD)" ]; then
             push_needed=true
-            echo "Changes detected: modified or untracked files found in working directory."
+            echo "Changes detected: Local commit SHA changed (merge or conflict resolution)."
+          fi
+          
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            push_needed=true
+            echo "Changes detected: Uncommitted files or staged renames found."
+          fi
+          
+          # Only push back to the branch if the PR is from the SAME repo (not a fork).
+          # GITHUB_TOKEN/BOT_PAT cannot write to fork repositories unless authorized.
+          IS_FORK=false
+          if [ "${{ steps.pr-metadata.outputs.headRepo }}" != "${{ github.repository }}" ]; then
+            IS_FORK=true
           fi
           
           if [ "$push_needed" = "true" ]; then
-            echo "Changes detected. Pushing back to PR..."
             git add -A
             if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             fi
-            git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
-            echo "Pushed updates back to PR branch."
-            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            
+            if [ "$IS_FORK" = "false" ]; then
+              echo "Changes detected and PR is from same repo. Pushing back to PR branch..."
+              git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
+              echo "Pushed updates back to PR branch."
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected and PR is from a fork. Pushing directly to upstream main..."
+              git push upstream HEAD:main
+              echo "Directly pushed updates to upstream main."
+              
+              # Label the PR as integrated and accepted before closing
+              echo "Labeling PR #$PR_NUM as integrated..."
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+                -d '{"labels":["integrated","accepted","GSSoC-26","gssoc:approved"]}'
+              
+              # Add comment and close the PR on GitHub since we merged it by pushing directly
+              echo "Adding merge comment on PR #$PR_NUM..."
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+                -d '{"body":"🎉 **Pull Request Merged!** Your submission has been integrated into the framework! Since this PR is from a fork and required folder renaming or build updates, it has been merged directly into the `main` branch. Thank you for contributing! 🎉"}'
+              
+              echo "Closing PR #$PR_NUM..."
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+                -d '{"state":"closed"}'
+              
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "No changes, stale bundle, or naming conflicts detected."
+            echo "No changes, stale bundle, or naming conflicts detected. Proceeding to merge."
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
@@ -302,7 +340,7 @@ jobs:
         id: wait-checks
         if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
@@ -382,7 +420,7 @@ jobs:
       - name: Merge PR
         if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Merging PR #$PR_NUM..."
@@ -394,9 +432,28 @@ jobs:
             exit 0
           fi
           
+          # Poll mergeable status to ensure GitHub has computed it and it's not null
+          echo "Checking PR mergeable status..."
+          mergeable_status="null"
+          for k in {1..12}; do
+            mergeable_status=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json mergeable --jq '.mergeable')
+            echo "PR mergeable status: $mergeable_status (attempt $k)"
+            if [ "$mergeable_status" != "null" ] && [ -n "$mergeable_status" ]; then
+              break
+            fi
+            echo "Mergeable status is unknown (null). Waiting 5 seconds..."
+            sleep 5
+          done
+
+          if [ "$mergeable_status" = "false" ]; then
+            echo "PR has merge conflicts. Closing PR..."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has merge conflicts with the main branch. Please pull the latest main, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
+            exit 1
+          fi
+
           # Try to merge
           success=false
-          for i in {1..4}; do
+          for i in {1..5}; do
             echo "Merge attempt $i..."
             if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
               echo "PR successfully merged."
@@ -412,9 +469,9 @@ jobs:
                 break
               fi
               
-              if [ $i -lt 4 ]; then
-                echo "Waiting 5 seconds before retry..."
-                sleep 5
+              if [ $i -lt 5 ]; then
+                echo "Waiting 8 seconds before retry..."
+                sleep 8
               fi
             fi
           done
