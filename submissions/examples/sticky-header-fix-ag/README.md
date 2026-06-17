@@ -7,3 +7,11 @@ Keeps the top navigation header stuck to the top of the viewport (`position: sti
 ## How is it used?
 
 Apply a sticky position and top constraint to your navigation container, making sure no parent element overrides its display/positioning styles:
+
+```html
+<header class="docs-header">
+  <nav class="nav-links">
+    <!-- Links here -->
+  </nav>
+</header>
+```
