@@ -17,8 +17,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: auto-merge-submissions
-  cancel-in-progress: false
+  group: auto-merge-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   gather-prs:
@@ -161,11 +161,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 2. Add upstream remote and fetch main branch
-          git remote add upstream "https://github.com/${{ github.repository }}.git" || true
+          # 2. Add upstream remote and fetch main branch with authentication token
+          git remote add upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" || \
+          git remote set-url upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
           git fetch upstream main
           
-          # 3. Attempt to merge upstream/main to sync branch and handle conflicts
+          # 3. Save initial commit SHA to check if history changes
+          BEFORE_SHA=$(git rev-parse HEAD)
+          
+          # 4. Attempt to merge upstream/main to sync branch and handle conflicts
           echo "Attempting to merge upstream/main into PR branch..."
           if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
             echo "Merge conflict detected. Analyzing conflicted files..."
@@ -199,12 +203,12 @@ jobs:
             echo "Merged upstream/main successfully with no conflicts."
           fi
           
-          # 4. Setup and run build (to ensure the minified CSS bundle is fully compiled)
+          # 5. Setup and run build (to ensure the minified CSS bundle is fully compiled)
           echo "Rebuilding minified bundle..."
           npm ci
           npm run build
           
-          # 5. Check naming collisions (only if it has submissions)
+          # 6. Check naming collisions (only if it has submissions)
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           
@@ -235,20 +239,14 @@ jobs:
             for folder_path in $folders; do
               echo "Evaluating folder $folder_path..."
               
-              # GUARD 1: Skip if this folder no longer exists on disk.
-              # The PR files API lists files from ALL commits (including already-renamed ones).
-              # Only process folders that are actually present in the current checkout.
               if [ ! -d "$folder_path" ]; then
                 echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
                 continue
               fi
               
-              # Extract parent directory and folder name
               parent_dir=$(dirname "$folder_path")
               folder_name=$(basename "$folder_path")
               
-              # GUARD 2: Use exact-name matching against git ls-tree output to check existence in main.
-              # This prevents false positives from prefix-based path collisions.
               folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
               
               if [ -n "$folder_in_main" ]; then
@@ -278,23 +276,52 @@ jobs:
             done
           fi
           
-          # 6. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
-          # We check if local HEAD is ahead of the remote tracking branch or has unstaged changes
-          git diff --quiet origin/${{ steps.pr-metadata.outputs.headRef }} || push_needed=true
-          stale_bundle=$(git status --porcelain easemotion.min.css)
+          # 7. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
+          push_needed=false
+          if [ "$BEFORE_SHA" != "$(git rev-parse HEAD)" ]; then
+            push_needed=true
+            echo "Changes detected: Local commit SHA changed (merge or conflict resolution)."
+          fi
           
-          if [ "$push_needed" = "true" ] || [ "$renamed_any" = "true" ] || [ -n "$stale_bundle" ]; then
-            echo "Changes detected (merged commits, stale bundle or renamed folders). Pushing back to PR..."
+          if ! git diff --quiet || ! git diff --cached --quiet; then
+            push_needed=true
+            echo "Changes detected: Uncommitted files or staged renames found."
+          fi
+          
+          # Only push back to the branch if the PR is from the SAME repo (not a fork).
+          # GITHUB_TOKEN/BOT_PAT cannot write to fork repositories unless authorized.
+          IS_FORK=false
+          if [ "${{ steps.pr-metadata.outputs.headRepo }}" != "${{ github.repository }}" ]; then
+            IS_FORK=true
+          fi
+          
+          if [ "$push_needed" = "true" ]; then
             git add -A
-            # Commit only if there are staged/unstaged changes
             if ! git diff --cached --quiet || ! git diff --quiet; then
               git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
             fi
-            git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
-            echo "Pushed updates back to PR branch."
-            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            
+            if [ "$IS_FORK" = "false" ]; then
+              echo "Changes detected and PR is from same repo. Pushing back to PR branch..."
+              git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
+              echo "Pushed updates back to PR branch."
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected and PR is from a fork. Pushing directly to upstream main..."
+              git push upstream HEAD:main
+              echo "Directly pushed updates to upstream main."
+              
+              # Label the PR as integrated and accepted before closing
+              echo "Labeling PR #$PR_NUM as integrated..."
+              gh pr edit $PR_NUM --add-label "integrated,accepted,GSSoC-26,gssoc:approved" --repo ${{ github.repository }}
+              
+              # Close the PR on GitHub since we merged it by pushing directly
+              echo "Closing PR #$PR_NUM as merged..."
+              gh pr close $PR_NUM --comment "🎉 **Pull Request Merged!** Your submission has been integrated into the framework! Since this PR is from a fork and required folder renaming or build updates, it has been merged directly into the \`main\` branch. Thank you for contributing! 🎉" --repo ${{ github.repository }}
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "No changes, stale bundle, or naming conflicts detected."
+            echo "No changes, stale bundle, or naming conflicts detected. Proceeding to merge."
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
@@ -395,9 +422,28 @@ jobs:
             exit 0
           fi
           
+          # Poll mergeable status to ensure GitHub has computed it and it's not null
+          echo "Checking PR mergeable status..."
+          mergeable_status="null"
+          for k in {1..12}; do
+            mergeable_status=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json mergeable --jq '.mergeable')
+            echo "PR mergeable status: $mergeable_status (attempt $k)"
+            if [ "$mergeable_status" != "null" ] && [ -n "$mergeable_status" ]; then
+              break
+            fi
+            echo "Mergeable status is unknown (null). Waiting 5 seconds..."
+            sleep 5
+          done
+
+          if [ "$mergeable_status" = "false" ]; then
+            echo "PR has merge conflicts. Closing PR..."
+            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has merge conflicts with the main branch. Please pull the latest main, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
+            exit 1
+          fi
+
           # Try to merge
           success=false
-          for i in {1..4}; do
+          for i in {1..5}; do
             echo "Merge attempt $i..."
             if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
               echo "PR successfully merged."
@@ -413,9 +459,9 @@ jobs:
                 break
               fi
               
-              if [ $i -lt 4 ]; then
-                echo "Waiting 5 seconds before retry..."
-                sleep 5
+              if [ $i -lt 5 ]; then
+                echo "Waiting 8 seconds before retry..."
+                sleep 8
               fi
             fi
           done
