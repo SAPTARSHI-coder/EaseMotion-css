@@ -1,13 +1,23 @@
 # Neon Glow Text
 
-## 1. What does this do?
-Displays text with an animated neon glow effect using multiple layered `text-shadow` values and a pulsing brightness animation.
+## What does this do?
+Text with animated neon glow effects using CSS text-shadow with pulsing intensity.
 
-## 2. How is it used?
-Add the `.neon-text` class to any heading and a color variant class (`.neon-pink`, `.neon-cyan`, `.neon-green`) to choose the glow color.
-```html
-<h1 class="neon-text neon-cyan">GLOW</h1>
-```
+## How is it used?
+Add class `neon-text` with a color variant:
 
-## 3. Why is it useful?
-Creates a striking neon sign aesthetic with zero JavaScript. Each color variant is independently customizable via `text-shadow`. Respects `prefers-reduced-motion` and degrades gracefully to plain white text.
+    <span class="neon-text neon-blue">BLUE</span>
+
+## Why is it useful?
+Eye-catching neon effects for hero sections, badges, and night-mode UI.
+
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript)
+
+## Preview
+Open demo.html directly in your browser to see the effect.
+
+## Contribution Notes
+- Class naming was handled by the contributor
+- Maintainer will rename to ease-* convention before merging
