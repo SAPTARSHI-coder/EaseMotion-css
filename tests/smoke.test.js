@@ -28,8 +28,9 @@ const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
 const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
 const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
 const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
+    const commandPalette = readFileSync(resolve(componentsDir, 'command-palette.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -126,8 +127,57 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-overlay');
     expect(css).toContain('.ease-modal');
     expect(css).toContain('.ease-modal-header');
+    expect(css).toContain('.ease-command-palette-overlay');
+    expect(css).toContain('.ease-command-palette');
   });
-  
+
+  it('should have dark mode variables via prefers-color-scheme', () => {
+    expect(css).toContain('@media (prefers-color-scheme: dark)');
+    expect(css).toContain('--ease-color-surface: #141e33');
+  });
+
+  it('should have dark mode variables via [data-theme="dark"] selector', () => {
+    expect(css).toContain('[data-theme="dark"]');
+    expect(css).toContain('--ease-color-bg:      #0b1121');
+  });
+
+  it("should override ease-reveal under prefers-reduced-motion: reduce", () => {
+    const sheet = document.styleSheets[0];
+    let foundMediaRule = false;
+    let foundEaseRevealInMedia = false;
+
+    const findMediaRules = (rules) => {
+      let result = [];
+      for (const rule of rules) {
+        if (rule.media) {
+          result.push(rule);
+        }
+        if (rule.cssRules) {
+          result.push(...findMediaRules(rule.cssRules));
+        }
+      }
+      return result;
+    };
+
+    const mediaRules = findMediaRules(sheet.cssRules);
+
+    for (const rule of mediaRules) {
+      if (rule.media.mediaText.includes("prefers-reduced-motion: reduce")) {
+        foundMediaRule = true;
+        for (const subRule of rule.cssRules) {
+          if (subRule.selectorText === ".ease-reveal") {
+            foundEaseRevealInMedia = true;
+            expect(subRule.style.opacity).toBe("1");
+            expect(subRule.style.transform).toBe("none");
+            expect(subRule.style.transition).toBe("none");
+          }
+        }
+      }
+    }
+    expect(foundMediaRule).toBe(true);
+    expect(foundEaseRevealInMedia).toBe(true);
+  });
+
   it('should not have duplicate @keyframes definitions', () => {
     const keyframeCounts = {};
     const keyframeRegex = /@keyframes\s+([^\s{]+)/g;
