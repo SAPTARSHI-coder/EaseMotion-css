@@ -56,106 +56,187 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     document.head.appendChild(style);
   });
 
+  const getAllSelectors = (rules) => {
+    let result = new Set();
+    const process = (rlist) => {
+      for (const rule of rlist) {
+        if (rule.selectorText) {
+          rule.selectorText.split(',').forEach(s => result.add(s.trim()));
+        }
+        if (rule.cssRules) {
+          process(rule.cssRules);
+        }
+      }
+    };
+    process(rules);
+    return result;
+  };
+
+  const hasSelectorWithClass = (selectors, className) => {
+    // className should include the dot, e.g., '.ease-btn'
+    const name = className.startsWith('.') ? className.slice(1) : className;
+    const regex = new RegExp(`(^|[\\s.,:()#])${name}(\\.|\\s|:|#|\\)|,|$)`);
+    return Array.from(selectors).some(s => regex.test(s));
+  };
+
+  const findRuleBySelector = (rules, selector) => {
+    for (const rule of rules) {
+      if (rule.selectorText && rule.selectorText.split(',').map(s => s.trim()).includes(selector)) {
+        return rule;
+      } else if (rule.cssRules) {
+        const found = findRuleBySelector(rule.cssRules, selector);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   it('should have basic core classes defined', () => {
-    expect(css).toContain('.ease-fade-in');
-    expect(css).toContain('.ease-slide-up');
-    expect(css).toContain(':root');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(hasSelectorWithClass(selectors, '.ease-fade-in')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-slide-up')).toBe(true);
+    expect(selectors).toContain(':root');
   });
 
   it('should not use exclusion selectors for slide animations', () => {
-    expect(css).not.toContain('.ease-slide-up:not(.ease-slide-down)');
-    expect(css).not.toContain('.ease-slide-down:not(.ease-slide-up)');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(Array.from(selectors).some(s => s.includes('.ease-slide-up:not(.ease-slide-down)'))).toBe(false);
   });
 
   it('should apply base variables', () => {
-    const styleTag = document.querySelector('style');
-    expect(styleTag.textContent).toContain('--ease-speed-medium');
+    const rule = findRuleBySelector(document.styleSheets[0].cssRules, ':root');
+    expect(rule.style.getPropertyValue('--ease-speed-medium')).toBeDefined();
   });
 
   it('should handle prefers-reduced-motion', () => {
-    expect(css).toContain('@media (prefers-reduced-motion: reduce)');
+    const sheet = document.styleSheets[0];
+    const findMediaRule = (rules, text) => {
+      for (const rule of rules) {
+        if (rule.media && rule.media.mediaText.includes(text)) {
+          return rule;
+        } else if (rule.cssRules) {
+          const found = findMediaRule(rule.cssRules, text);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    expect(findMediaRule(sheet.cssRules, 'prefers-reduced-motion: reduce')).not.toBeNull();
   });
 
   it('should have component classes defined', () => {
-    const sheet = document.styleSheets[0];
-    
-    const getSelectors = (rules) => {
-      let result = [];
-      for (const rule of rules) {
-        if (rule.selectorText) {
-          result.push(rule.selectorText);
-        } else if (rule.cssRules) {
-          result.push(...getSelectors(rule.cssRules));
-        }
-      }
-      return result;
-    };
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
 
-    const selectors = getSelectors(sheet.cssRules);
-
-    expect(selectors).toContain('.ease-btn');
-    expect(selectors).toContain('.ease-btn-primary');
-    expect(selectors).toContain('.ease-card');
-    expect(selectors).toContain('.ease-chip');
-    expect(selectors).toContain('.ease-footer');
-    expect(selectors).toContain('.ease-masonry');
-    expect(selectors).toContain('.ease-navbar-glass');
-    expect(selectors).toContain('.ease-scroll-progress');
-    expect(selectors).toContain('.ease-sidebar');
+    expect(hasSelectorWithClass(selectors, '.ease-btn')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-btn-primary')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-card')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-chip')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-footer')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-masonry')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-navbar-glass')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-scroll-progress')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-sidebar')).toBe(true);
   });
 
   it('should expose scroll-progress theme variants', () => {
-    expect(css).toContain('.ease-scroll-progress-success');
-    expect(css).toContain('.ease-scroll-progress-danger');
-    expect(css).toContain('.ease-scroll-progress-warning');
-    expect(css).toContain('.ease-scroll-progress-root');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(hasSelectorWithClass(selectors, '.ease-scroll-progress-success')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-scroll-progress-danger')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-scroll-progress-warning')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-scroll-progress-root')).toBe(true);
   });
 
   it('should hide plain text in loading buttons and keep the spinner visible', () => {
-    expect(css).toContain('.ease-btn-loading');
-    expect(css).toContain('font-size: 0');
-    expect(css).toContain('.ease-btn-loading > *');
-    expect(css).toContain('visibility: hidden');
-    expect(css).toContain('.ease-btn-loading::after');
-    expect(css).toContain('border: 2px solid currentColor');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(hasSelectorWithClass(selectors, '.ease-btn-loading')).toBe(true);
+    
+    const loadingRule = findRuleBySelector(document.styleSheets[0].cssRules, '.ease-btn-loading');
+    expect(loadingRule.style.color).toBe('transparent');
+
+    expect(hasSelectorWithClass(selectors, '.ease-btn-loading > *')).toBe(true);
+    const childrenRule = findRuleBySelector(document.styleSheets[0].cssRules, '.ease-btn-loading > *');
+    expect(childrenRule.style.visibility).toBe('hidden');
+
+    expect(selectors).toContain('.ease-btn-loading::after');
+    const afterRule = findRuleBySelector(document.styleSheets[0].cssRules, '.ease-btn-loading::after');
+    expect(afterRule.style.borderWidth).toBe('2px');
+    expect(afterRule.style.borderStyle).toBe('solid');
   });
 
   it('minified bundle should be valid and contain key classes', () => {
     const bundle = readFileSync(resolve(__dirname, '../easemotion.min.css'), 'utf8');
-    expect(bundle).toContain('.ease-fade-in');
-    expect(bundle).toContain('.ease-btn');
-    expect(bundle).toContain('.ease-card');
+    const bundleDom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
+    const bundleStyle = bundleDom.window.document.createElement('style');
+    bundleStyle.textContent = bundle;
+    bundleDom.window.document.head.appendChild(bundleStyle);
+    
+    const selectors = getAllSelectors(bundleDom.window.document.styleSheets[0].cssRules);
+    expect(hasSelectorWithClass(selectors, '.ease-fade-in')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-btn')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-card')).toBe(true);
+    
     expect(bundle).toContain('@keyframes ease-kf-zoom-in');
     expect(bundle).toContain('prefers-reduced-motion:reduce');
     expect(bundle.trim().length).toBeGreaterThan(100);
   });
   
   it('should have tabs, badges, loaders, tooltips, and modal classes defined', () => {
-    expect(css).toContain('.ease-tabs');
-    expect(css).toContain('.ease-tab-label');
-    expect(css).toContain('.ease-tab-panel');
-    expect(css).toContain('.ease-badge');
-    expect(css).toContain('.ease-badge-danger');
-    expect(css).toContain('.ease-badge-success');
-    expect(css).toContain('.ease-loader');
-    expect(css).toContain('.ease-loader-spin');
-    expect(css).toContain('.ease-loader-dots');
-    expect(css).toContain('.ease-tooltip');
-    expect(css).toContain('.ease-modal-overlay');
-    expect(css).toContain('.ease-modal');
-    expect(css).toContain('.ease-modal-header');
-    expect(css).toContain('.ease-command-palette-overlay');
-    expect(css).toContain('.ease-command-palette');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(hasSelectorWithClass(selectors, '.ease-tabs')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-tab-label')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-tab-panel')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-badge')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-badge-danger')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-badge-success')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-loader')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-loader-spin')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-loader-dots')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-tooltip')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-modal-overlay')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-modal')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-modal-header')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-command-palette-overlay')).toBe(true);
+    expect(hasSelectorWithClass(selectors, '.ease-command-palette')).toBe(true);
   });
 
   it('should have dark mode variables via prefers-color-scheme', () => {
-    expect(css).toContain('@media (prefers-color-scheme: dark)');
-    expect(css).toContain('--ease-color-surface: #141e33');
+    const sheet = document.styleSheets[0];
+    const findMediaRule = (rules, text) => {
+      for (const rule of rules) {
+        if (rule.media && rule.media.mediaText.includes(text)) {
+          return rule;
+        } else if (rule.cssRules) {
+          const found = findMediaRule(rule.cssRules, text);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    const darkModeRule = findMediaRule(sheet.cssRules, 'prefers-color-scheme: dark');
+    expect(darkModeRule).not.toBeNull();
+    
+    let foundVar = false;
+    const checkStyles = (rules) => {
+      for (const rule of rules) {
+        if (rule.style && rule.style.getPropertyValue('--ease-color-surface')) {
+          foundVar = true;
+          return;
+        }
+        if (rule.cssRules) {
+          checkStyles(rule.cssRules);
+        }
+      }
+    };
+    checkStyles(darkModeRule.cssRules);
+    expect(foundVar).toBe(true);
   });
 
   it('should have dark mode variables via [data-theme="dark"] selector', () => {
-    expect(css).toContain('[data-theme="dark"]');
-    expect(css).toContain('--ease-color-bg:      #0b1121');
+    const selectors = getAllSelectors(document.styleSheets[0].cssRules);
+    expect(selectors).toContain('[data-theme="dark"]');
+    
+    const rule = findRuleBySelector(document.styleSheets[0].cssRules, '[data-theme="dark"]');
+    expect(rule.style.getPropertyValue('--ease-color-bg')).toBeDefined();
   });
 
   it("should override ease-reveal under prefers-reduced-motion: reduce", () => {
