@@ -32,3 +32,7 @@ Apply flex styling to navigation list items and disable wrap on the navigation c
   align-items: center;
 }
 ```
+
+## Why is it useful?
+
+It keeps the user interface clean and visually aligned when mixing standard inline link text and block/inline-flex styled components (like custom primary action buttons) in the header navigation bar, preventing navigation elements from wrapping and overflowing the header layout on smaller screens.
