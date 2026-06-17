@@ -1,0 +1,1 @@
+A shimmer skeleton loading card for blog posts or content previews. Use it as a placeholder while real content loads. Creates a polished loading experience with animated gradient shimmer across image, text, and avatar regions.
