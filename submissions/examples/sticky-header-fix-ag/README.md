@@ -24,3 +24,7 @@ Apply a sticky position and top constraint to your navigation container, making 
   background-color: var(--header-bg);
 }
 ```
+
+## Why is it useful?
+
+It provides continuous access to navigation links and site actions (like the theme toggle and search elements), reducing friction for users browsing extensive documentation and improving overall usability.
