@@ -13,8 +13,8 @@ A premium, reusable glassmorphic login form built using **EaseMotion CSS**. This
 ## How to Use
 1. Include `easemotion.css` in your project.
 2. Use the `.ease-card-glass` class for your form container.
-3. Apply the custom styles provided in `styles.css` for the specific glassmorphic look.
+3. Apply the custom styles provided in `style.css` for the specific glassmorphic look.
 
 ## Directory Structure
-- `index.html`: The markup for the login form.
-- `styles.css`: Custom glassmorphism and animation styles.
+- `demo.html`: The markup for the login form.
+- `style.css`: Custom glassmorphism and animation styles.
