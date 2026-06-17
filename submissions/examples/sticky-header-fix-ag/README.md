@@ -15,3 +15,12 @@ Apply a sticky position and top constraint to your navigation container, making 
   </nav>
 </header>
 ```
+
+```css
+.docs-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background-color: var(--header-bg);
+}
+```
