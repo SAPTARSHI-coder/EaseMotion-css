@@ -1,0 +1,1 @@
+A centered empty-state component with a large icon, heading, descriptive text, and a call-to-action button. Hovering the card triggers a bounce animation on the icon and a glow effect on the button. Built with pure CSS for a dark-themed interface.
