@@ -1,30 +1,50 @@
 # Progress Bar Component
 
-Animated progress bars with striped fill, gradient colors, circular/radial variant, and indeterminate loading state. Pure CSS.
+**Implements:** #6581
 
-## Demo
+---
 
-Open `demo.html` in any modern browser.
+## Overview
 
-## Features
+A flexible progress bar component supporting determinate (value-based)
+and indeterminate (loading) states, with color variants for success
+and danger contexts.
 
-- ✅ **Pure CSS** — zero JavaScript
-- ✅ **CSS variables** — `--progress` controls fill amount
-- ✅ **Striped fill** — diagonal stripe pattern
-- ✅ **Animated stripes** — moving stripe animation
-- ✅ **Gradient** — animated rainbow gradient
-- ✅ **Contextual colors** — success, warning, error
-- ✅ **Circular/radial** — SVG-based circle progress
-- ✅ **Indeterminate** — infinite loading animation
-- ✅ **Multi-step** — step indicator for wizards
-- ✅ **Dark theme** — included `.progress-bar--dark`
-- ✅ **Accessible** — proper ARIA attributes
+## Classes
 
-## Usage
+| Class | Effect |
+|-------|--------|
+| `.ease-progress` | Track/container element |
+| `.ease-progress-bar` | Filled bar, set width inline for determinate progress |
+| `.ease-progress-bar-success` | Green variant |
+| `.ease-progress-bar-danger` | Red variant |
+| `.ease-progress-indeterminate` | Animated sliding bar for unknown-duration loading |
 
-### Basic
+## How to Use
 
 ```html
-&lt;div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"&gt;
-  &lt;div class="progress-bar__fill" style="--progress: 75%;"&gt;&lt;/div&gt;
-&lt;/div&gt;
+<!-- Determinate -->
+<div class="ease-progress" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+  <div class="ease-progress-bar" style="width: 65%;"></div>
+</div>
+
+<!-- Indeterminate -->
+<div class="ease-progress" role="progressbar">
+  <div class="ease-progress-bar ease-progress-indeterminate"></div>
+</div>
+```
+
+## How to Test
+
+1. Open `demo.html` in any modern browser
+2. Observe the three determinate bars at different widths and colors
+3. Observe the indeterminate bar sliding continuously
+
+## Browser Support
+
+| Browser | Minimum Version |
+|---------|----------------|
+| Chrome  | 80+            |
+| Firefox | 80+            |
+| Safari  | 14+            |
+| Edge    | 80+            |
