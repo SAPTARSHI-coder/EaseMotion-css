@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var CSS_LIMIT = 20; // CSS supports up to 20 tabs natively
+  var CSS_LIMIT = 30; // CSS supports up to 30 tabs natively
 
   function initializeTabs() {
     // Find all tab components

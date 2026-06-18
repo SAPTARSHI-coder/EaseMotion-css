@@ -130,6 +130,15 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(bundle.trim().length).toBeGreaterThan(100);
   });
   
+  it('should support up to 30 tabs in the CSS', () => {
+    // Check if the CSS contains rules for the 30th tab in all sections
+    expect(css).toContain('.ease-tab-input:nth-of-type(30):focus-visible');
+    expect(css).toContain('.ease-tab-input:nth-of-type(30):checked ~ .ease-tabs-nav .ease-tab-label:nth-of-type(30)');
+    expect(css).toContain('.ease-tab-input:nth-of-type(30):checked ~ .ease-tabs-nav .ease-tab-underline { transform: translateX(2900%); }');
+    expect(css).toContain('.ease-tab-input:nth-of-type(30):checked ~ .ease-tabs-content .ease-tab-panel:nth-of-type(30)');
+    expect(css).toContain('.ease-tabs-auto .ease-tab-input:nth-of-type(30):checked ~ .ease-tabs-nav .ease-tab-label:nth-of-type(30)');
+  });
+
   it('should have tabs, badges, loaders, tooltips, and modal classes defined', () => {
     expect(css).toContain('.ease-tabs');
     expect(css).toContain('.ease-tab-label');
