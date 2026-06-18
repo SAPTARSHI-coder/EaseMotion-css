@@ -26,3 +26,12 @@ Style list items inside navigation bars to center their children vertically, and
   display: flex;
   align-items: center;
 }
+
+.docs-header-links a {
+  white-space: nowrap;
+}
+```
+
+## Why is it useful?
+
+It prevents navigation text links (especially multi-word items) from wrapping onto two lines when space is limited, which ruins the vertical flow, and ensures all text and button components sit perfectly aligned along a single horizontal axis.
