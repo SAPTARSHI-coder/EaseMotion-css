@@ -1,23 +1,30 @@
-# Subgrid Layout Demo
+# EaseMotion Subgrid Layout Demo
 
-## What does this do?
-Demonstrates CSS subgrid where card header/body/footer rows align across items with different content lengths.
+This example demonstrates how to use the modern CSS `subgrid` feature in conjunction with EaseMotion CSS framework tokens and animation utilities to create a perfectly aligned grid of cards.
 
-## How is it used?
-Set `grid-template-rows: subgrid` on children with `grid-row: span <N>`:
+## Why use Subgrid?
+When building card grids, varying content lengths often cause headers, bodies, or footers to misalign. Traditional fixes involved setting fixed heights or using complex nested flexbox layouts.
 
-    .child { display: grid; grid-template-rows: subgrid; grid-row: span 3; }
+CSS Subgrid solves this natively:
+```css
+.parent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
 
-## Why is it useful?
-Ensures consistent row alignment in grid cards with varying content.
+.card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3; /* Spans across 3 rows defined by its internal content structure */
+}
+```
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+## Features Demonstrated
+1. **Vertical Alignment**: The title, body, and footer of all three cards align perfectly across the horizontal axis, regardless of the text length inside each section.
+2. **EaseMotion Variables**: Uses core tokens like `var(--ease-color-primary)`, `var(--ease-space-6)`, and `var(--ease-shadow-md)`.
+3. **Entrance Animations**: Cards utilize the `.ease-slide-up` class with staggered `animation-delay` for a smooth initial load.
+4. **Accessibility**: Includes a `@media (prefers-reduced-motion: reduce)` block to disable hover transforms and respect user system settings.
 
-## Preview
-Open demo.html directly in your browser to see the effect.
-
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+## How to View
+Open `demo.html` in your browser.
+*(Note: CSS subgrid is supported in all modern browsers: Chrome 117+, Firefox 71+, Safari 17+)*
