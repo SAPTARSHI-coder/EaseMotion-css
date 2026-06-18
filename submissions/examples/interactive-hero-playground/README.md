@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Interactive Asymmetric Hero Playground Section
 
 A dark-themed hero landing section showcasing EaseMotion CSS animations at the viewport entry point. Asymmetric 3-column layout with live micro-animations.
@@ -54,3 +55,25 @@ A dark-themed hero landing section showcasing EaseMotion CSS animations at the v
 - `prefers-reduced-motion`: all ambient animations disabled
 
 Closes #12387
+=======
+# Interactive Asymmetric Hero Playground
+
+An advanced landing stage layout structure mapping real-time mouse viewport coordinates onto high-performance 3D CSS structural matrices without causing redraw layout thrashing.
+
+## Visual Elements
+- **Asymmetric Two-Column Grid:** Clean layout partitions isolating text summaries from canvas areas.
+- **Perspective Coordinate Boundaries:** Interactive parent wrappers providing projection space depth limits.
+- **Ambient Vector Glow Map:** Interactive mouse-tracking layers using high-performance filter composition blends.
+
+## Usage Layout Structure
+```html
+<div class="ease-hero-viewport">
+  <div class="ease-hero-content"> ... </div>
+  <div class="ease-hero-playground-canvas">
+    <div class="ease-asymmetric-card"> ... </div>
+  </div>
+</div>
+```
+
+Closes #12444
+>>>>>>> Stashed changes
