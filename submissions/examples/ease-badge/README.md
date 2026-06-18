@@ -1,13 +1,43 @@
-# Badge Component (#249)
+# Animated Notification Badge (.ease-badge)
 
-### What does this do?
-This submission adds a brand new CSS component (`ease-badge`) to the framework for rendering small tags, labels, and notification counts. 
+A pure CSS, animation-focused notification badge component featuring a pulsing "ping" indicator. Perfect for avatars, icons, and live activity statuses.
 
-### How is it used?
-The maintainer should copy the contents of `style.css` into a new file located at `components/badges.css` and import it into the main framework payload. 
+## Features
+- **Pure CSS**: Zero JavaScript dependencies.
+- **Pulsing Animation**: Smooth scale + opacity "ping" effect.
+- **Variants**: Supports both small dots (`.ease-badge--dot`) and numeric counts (`.ease-badge--count`).
+- **Positioning**: Built-in utilities for top-right corner placement.
+- **Customizable**: Control colors, sizes, and speeds via CSS variables.
 
-Developers use it by applying `.ease-badge` to a span element, optionally alongside a color modifier (`.ease-badge-primary`, `.ease-badge-success`, `.ease-badge-danger`, `.ease-badge-warning`) and/or the `.ease-badge-pill` shape modifier.
+## Usage
 
-### Why is it useful?
-1. **Context-Aware Scaling:** By utilizing `em` units for padding and font-size instead of rigid `rem` or `px`, the badge automatically perfectly proportions itself relative to its parent container. Whether you put a badge inside a giant `<h1>` or a tiny `<button>`, it scales flawlessly without needing extra utility classes.
-2. **Accessible by Default:** Taking lessons from Issue #381, these badges map the bright primary/success/danger/warning background colors against `--ease-color-neutral-900` text to mathematically guarantee WCAG AA 4.5:1 contrast compliance.
+### Basic Pulsing Dot
+```html
+<div class="ease-badge-wrapper">
+  <div class="icon">🔔</div>
+  <span class="ease-badge ease-badge--dot ease-badge--ping ease-badge--top-right"></span>
+</div>
+```
+
+### Notification Count
+```html
+<div class="ease-badge-wrapper">
+  <button class="ease-btn">Messages</button>
+  <span class="ease-badge ease-badge--count ease-badge--top-right">5</span>
+</div>
+```
+
+## CSS Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ease-badge-color` | `var(--ease-color-danger)` | Background color of the badge |
+| `--ease-badge-size` | `0.5rem` | Size of the dot variant |
+| `--ease-badge-ping-speed` | `1.5s` | Duration of the pulsing animation |
+
+## Classes
+- `.ease-badge`: Base badge class.
+- `.ease-badge--dot`: Dot variant.
+- `.ease-badge--count`: Count variant with padding and font-size.
+- `.ease-badge--ping`: Adds the pulsing animation.
+- `.ease-badge--top-right`: Positions the badge at the top-right of a `.ease-badge-wrapper`.
+- `.ease-badge--success`, `--warning`, `--primary`, `--info`: Color variants.
