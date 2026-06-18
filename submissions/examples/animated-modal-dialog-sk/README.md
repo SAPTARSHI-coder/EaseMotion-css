@@ -1,1 +1,12 @@
-A pure CSS modal dialog that appears with a smooth scale and opacity animation using the `:target` pseudo-class. The backdrop has a blur effect, and the card slides in from the center with a spring-like cubic-bezier curve. Fully respects `prefers-reduced-motion` and opens directly from the filesystem with no JavaScript or external dependencies.
+# animated-modal-dialog-sk
+
+Modal dialog powered by the `:target` pseudo-class (no JavaScript). An overlay backdrop with `backdrop-filter: blur` sits behind a centered modal card containing a title, content, and close button. The modal slides in from below with a smooth animation.
+
+**Features:**
+- `:target`-based show/hide (pure CSS)
+- Blurred backdrop overlay
+- Slide-in entrance animation
+- Centered dialog layout
+- Close via button, close icon, or clicking outside (backdrop)
+
+Created by @saurabhhhcodes
