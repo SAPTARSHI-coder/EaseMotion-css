@@ -1,27 +1,22 @@
-# Stepper/Wizard Component
+# Replace Hardcoded outline-offset with CSS Variable
 
 ## What does this do?
-Multi-step progress indicator for forms, onboarding, and checkout flows. Horizontal and vertical layouts with completed (checkmark), active (highlighted), and pending (dimmed) states.
+Replaces hardcoded `outline-offset` values in `components/buttons.css` with CSS variable `--ease-outline-offset` so the outline offset updates globally.
 
 ## How is it used?
-```html
-<nav class="ease-stepper ease-stepper-horizontal" role="navigation">
-  <div class="ease-step ease-step-completed">
-    <div class="ease-step-indicator">&#10003;</div>
-    <div class="ease-step-label">Cart</div>
-  </div>
-  <div class="ease-step ease-step-active" aria-current="step">
-    <div class="ease-step-indicator">2</div>
-    <div class="ease-step-label">Payment</div>
-  </div>
-  <div class="ease-step ease-step-pending">
-    <div class="ease-step-indicator">3</div>
-    <div class="ease-step-label">Confirm</div>
-  </div>
-</nav>
+```css
+:root {
+  --ease-outline-offset: 2px;
+}
+```
+Override per scope:
+```css
+.dark-mode {
+  --ease-outline-offset: 4px;
+}
 ```
 
 ## Why is it useful?
-Fills missing stepper/wizard component with horizontal/vertical layouts, connecting lines that fill on completion, animated transitions, ARIA navigation support, and dark mode.
+Hardcoded values break design system consistency. Using a CSS variable allows global updates, theme overrides, and accessibility adjustments without editing component files. Falls back to `2px` when undefined.
 
-Fixes #12452
+Fixes #12453
