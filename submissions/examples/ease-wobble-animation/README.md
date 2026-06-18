@@ -1,23 +1,60 @@
-# Wobble Animation
+# ease-wobble — Left-Right Wobble with Rotation
 
-This example demonstrates the usage of the `ease-wobble` animation utility.
+Combines `translateX` oscillation with `rotate` for a playful, character-like wobble. Distinct from `ease-shake` (pure translateX, no rotation) and `ease-wobble-horizontal` (pure translateX, no rotation, faster).
 
-## Description
+## Difference from ease-shake
 
-The `ease-wobble` utility class combines horizontal translations with minor rotational shifts to create a "jelly-like" squishy effect.
+| | `.ease-shake` | `.ease-wobble` |
+|--|--------------|----------------|
+| Transform | `translateX` only | `translateX` + `rotate` |
+| Rotation | None | ±5° (configurable) |
+| Duration | 0.5s | 0.7s |
+| Feel | Urgent, error | Playful, character |
 
-It is highly effective for bringing character to your UI, specifically when interacting with playful elements, reward badges, or highlighting an active state without the harshness of a standard "shake" animation.
+## Classes
+
+| Class | Duration | Distance | Angle |
+|-------|----------|----------|-------|
+| `.ease-wobble` | 0.7s | 8px | ±5° |
+| `+ .ease-wobble-fast` | 0.4s | 8px | ±5° |
+| `+ .ease-wobble-slow` | 1.2s | 8px | ±5° |
+| `+ .ease-wobble-strong` | 0.7s | 16px | ±10° |
+
+## CSS Custom Properties
+
+| Token | Default | Description |
+|-------|---------|-------------|
+| `--ease-wobble-duration` | `0.7s` | Animation duration |
+| `--ease-wobble-distance` | `8px` | TranslateX distance |
+| `--ease-wobble-angle` | `5deg` | Rotation angle |
 
 ## Usage
 
-Include the `style.css` containing the animation, then apply the class to your HTML element.
-
 ```html
-<div class="ease-wobble">
-  Jelly!
+<!-- Trigger on click -->
+<div id="avatar" onclick="
+  const el = document.getElementById('avatar');
+  el.classList.remove('ease-wobble');
+  void el.offsetWidth;
+  el.classList.add('ease-wobble');
+">🐧</div>
+
+<!-- Custom amplitude -->
+<div class="ease-wobble" style="--ease-wobble-distance: 20px; --ease-wobble-angle: 12deg;">
+  Big wobble
 </div>
 ```
 
-## Preview
+## Use cases
 
-Open `demo.html` in your browser to test out the wobble animation on a sample interactive box.
+- Avatar/character click feedback
+- Notification bell animation
+- Playful button interactions
+- Game character reactions
+- Mascot animations
+
+## Accessibility
+
+`animation-duration` reduced to `1ms` when `prefers-reduced-motion: reduce` is set.
+
+Closes #11852
