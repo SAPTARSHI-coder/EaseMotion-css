@@ -172,6 +172,15 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           conflict_resolved=false
           
+          # 1.5 Fresh PR state check to handle concurrent closures
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          PR_STATE=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$PR_STATE" = "CLOSED" ] || [ "$PR_STATE" = "MERGED" ]; then
+            echo "PR state is $PR_STATE. Skipping build and push."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
           # 2. Add upstream remote and fetch main branch with authentication token
           git remote add upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" || \
           git remote set-url upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
@@ -477,10 +486,13 @@ jobs:
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Merging PR #$PR_NUM..."
           
-          # Check if already merged
+          # Check if already merged or closed
           state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
           if [ "$state" = "MERGED" ]; then
             echo "PR #$PR_NUM is already merged."
+            exit 0
+          elif [ "$state" = "CLOSED" ]; then
+            echo "PR #$PR_NUM is closed. Skipping merge."
             exit 0
           fi
           
