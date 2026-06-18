@@ -43,14 +43,17 @@ async function handleClaim({ github, context }) {
     return;
   }
 
+  if (!context.payload.issue || !Array.isArray(context.payload.issue.assignees)) return;
+  if (!Array.isArray(context.payload.issue.labels)) return;
+
   const currentAssignees = context.payload.issue.assignees.map((a) =>
-    a.login.toLowerCase()
+    String(a.login || "").toLowerCase()
   );
   const issueLabels = context.payload.issue.labels.map((l) =>
-    l.name.toLowerCase()
+    String(l.name || "").toLowerCase()
   );
-  const issueTitle = (context.payload.issue.title || "").toLowerCase();
-  const issueBody = (context.payload.issue.body || "").toLowerCase();
+  const issueTitle = String(context.payload.issue.title || "").toLowerCase();
+  const issueBody = String(context.payload.issue.body || "").toLowerCase();
 
   const isSubmissionIssue =
     issueLabels.some(

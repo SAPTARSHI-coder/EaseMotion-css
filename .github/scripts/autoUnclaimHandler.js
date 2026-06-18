@@ -15,7 +15,9 @@ async function handleUnclaim({ github, context }) {
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
+  if (!context.payload.issue || !Array.isArray(context.payload.issue.assignees)) return;
+
+  const currentAssignees = context.payload.issue.assignees.map((a) => String(a.login || "").toLowerCase());
 
   if (!currentAssignees.includes(commenter.toLowerCase())) {
     await github.rest.issues.createComment({
