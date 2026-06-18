@@ -1,21 +1,17 @@
-# CSS dynamic-range HDR
+# CSS Dynamic Range HDR Demo
 
 ## Overview
-This example demonstrates the CSS `@media (dynamic-range: high)` media query for detecting and styling content on High Dynamic Range (HDR) displays. It also covers `color-gamut` queries for wider color spaces like Display P3.
+Demonstrates using `@media (dynamic-range: high)` to detect HDR-capable displays and serve enhanced wide-gamut colors via `oklch()` and `color(display-p3)`, with graceful SDR fallbacks.
 
 ## Features
-- **`dynamic-range`** — detects if the output device supports high dynamic range (combined high contrast, deep black, and wide color gamut)
-- **`color-gamut`** — detects the approximate range of colors supported (srgb, p3, rec2020)
-- **`oklch()` / `oklab()`** — perceptually uniform color spaces that shine on HDR displays
-- **Progressive enhancement** — SDR fallback with HDR-enhanced colors for capable displays
+- **`@media (dynamic-range: high)`** — detects HDR displays for enhanced color output
+- **`color-gamut: p3`** — detects P3 color space support alongside HDR
+- **`oklch()` colors** — perceptually uniform wide-gamut color space
+- **`color(display-p3)`** — Display P3 for in-gamut HDR colors
+- **Graceful degradation** — SDR displays receive sRGB-safe fallback colors outside the media query
 
 ## How to Use
-1. Use `@media (dynamic-range: high)` to serve enhanced colors to HDR displays
-2. Pair with `@media (color-gamut: p3)` for even wider color coverage
-3. Use `oklch()` colors which map better to HDR luminance ranges than sRGB
-
-## Browser Support
-- Chrome 98+
-- Edge 98+
-- Safari 15.4+
-- Firefox 100+
+1. Define base colors in `oklch()` targeting all displays
+2. Wrap enhanced versions inside `@media (dynamic-range: high)` for HDR
+3. Use `@supports (color: color(display-p3 1 0 0))` for P3 support detection
+4. Add subtle glow effects inside the HDR query for added luminance depth
