@@ -1,29 +1,31 @@
 # ease-skeleton
 
-## What does this do?
-Provides a set of CSS-only skeleton loading components with a smooth shimmer effect to enhance perceived performance during content loading.
+A shimmer-style loading placeholder component for EaseMotion CSS.
 
-## How is it used?
-Apply the `.ease-skeleton` base class along with a variant class for the desired shape.
+## Features
+
+- Pure CSS animation (no JavaScript)
+- Variants: text, avatar, image, card
+- CSS variables for customization
+- `prefers-reduced-motion` support
+- Framework-agnostic
+
+## Usage
 
 ```html
-<!-- Text Skeleton -->
-<div class="ease-skeleton ease-skeleton--text"></div>
-
-<!-- Avatar Skeleton -->
-<div class="ease-skeleton ease-skeleton--avatar"></div>
-
-<!-- Card Skeleton -->
-<div class="ease-skeleton ease-skeleton--card"></div>
+<div class="ease-skeleton ease-skeleton-text"></div>
+<div class="ease-skeleton ease-skeleton-avatar"></div>
+<div class="ease-skeleton ease-skeleton-image"></div>
 ```
 
-### Available Classes
-| Class | Description |
-|-------|-------------|
-| `.ease-skeleton` | Base skeleton styles and shimmer animation |
-| `.ease-skeleton--text` | Placeholder for a line of text |
-| `.ease-skeleton--avatar` | Placeholder for profile pictures or circles |
-| `.ease-skeleton--card` | Placeholder for large content blocks or images |
+## CSS Variables
 
-## Why is it useful?
-Skeleton screens improve user experience by providing immediate visual feedback that content is coming, reducing user frustration during wait times. These utilities are pure CSS, zero-dependency, and automatically adapt to light and dark modes.
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ease-skeleton-base` | `#e2e8f0` | Base color |
+| `--ease-skeleton-highlight` | `#f1f5f9` | Highlight color |
+| `--ease-skeleton-speed` | `1.5s` | Animation speed |
+
+## Demo
+
+Open `demo.html` in a browser to see the component in action.
