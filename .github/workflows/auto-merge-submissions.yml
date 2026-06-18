@@ -128,13 +128,23 @@ jobs:
           
           if [ "$has_submissions" != "true" ]; then
             echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
-            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the \`submissions/\` directory. Contributors must place their submissions under \`submissions/examples/your-feature-name/\`. Thank you!" --repo ${{ github.repository }}
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the `submissions/` directory. Contributors must place their submissions under `submissions/examples/your-feature-name/`. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
             exit 1
           fi
           
           if [ "$has_core_changes" = "true" ]; then
             echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
-            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the \`submissions/\` directory. Thank you!" --repo ${{ github.repository }}
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the `submissions/` directory. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
             exit 1
           fi
 
@@ -160,6 +170,16 @@ jobs:
           # 1. Setup git configuration
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          conflict_resolved=false
+          
+          # 1.5 Fresh PR state check to handle concurrent closures
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          PR_STATE=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$PR_STATE" = "CLOSED" ] || [ "$PR_STATE" = "MERGED" ]; then
+            echo "PR state is $PR_STATE. Skipping build and push."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           
           # 2. Add upstream remote and fetch main branch with authentication token
           git remote add upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" || \
@@ -193,10 +213,16 @@ jobs:
               git add easemotion.min.css
               git commit -m "chore: resolve easemotion.min.css merge conflict"
               echo "Conflict resolved and committed."
+              conflict_resolved=true
             else
               echo "PR has source code conflicts. Closing PR..."
               git merge --abort
-              gh pr close ${{ steps.pr-metadata.outputs.prNum }} --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has source code conflicts with the main branch. Please pull the latest changes, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/${{ steps.pr-metadata.outputs.prNum }}/comments" \
+                -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it has source code conflicts with the main branch. Please pull the latest changes, resolve conflicts locally, and open a new Pull Request. Thank you!"}'
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/${{ steps.pr-metadata.outputs.prNum }}" \
+                -d '{"state":"closed"}'
               exit 1
             fi
           else
@@ -276,16 +302,17 @@ jobs:
             done
           fi
           
-          # 7. Check if anything changed (renamed folders, merged commits, or updated easemotion.min.css)
-          push_needed=false
-          if [ "$BEFORE_SHA" != "$(git rev-parse HEAD)" ]; then
-            push_needed=true
-            echo "Changes detected: Local commit SHA changed (merge or conflict resolution)."
+          # 7. Check if anything changed (renamed folders, resolved conflicts, or build changes)
+          build_changed=false
+          if ! git diff --quiet easemotion.min.css easemotion.css; then
+            build_changed=true
+            echo "Build changes detected in CSS files."
           fi
-          
-          if ! git diff --quiet || ! git diff --cached --quiet; then
+
+          push_needed=false
+          if [ "$renamed_any" = "true" ] || [ "$conflict_resolved" = "true" ] || [ "$build_changed" = "true" ]; then
             push_needed=true
-            echo "Changes detected: Uncommitted files or staged renames found."
+            echo "Changes detected: renamed_any=$renamed_any, conflict_resolved=$conflict_resolved, build_changed=$build_changed"
           fi
           
           # Only push back to the branch if the PR is from the SAME repo (not a fork).
@@ -308,8 +335,37 @@ jobs:
               echo "exitEarly=true" >> $GITHUB_OUTPUT
             else
               echo "Changes detected and PR is from a fork. Pushing directly to upstream main..."
-              git push upstream HEAD:main
-              echo "Directly pushed updates to upstream main."
+              
+              success=false
+              for attempt in {1..5}; do
+                echo "Attempting to push to upstream main (attempt $attempt)..."
+                if git push upstream HEAD:main; then
+                  echo "Successfully pushed to upstream main."
+                  success=true
+                  break
+                else
+                  echo "Push failed. Fetching latest upstream main and rebasing/merging..."
+                  git fetch upstream main
+                  if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
+                    echo "Merge conflict during push retry. Aborting retry."
+                    git merge --abort
+                    break
+                  fi
+                  # Re-build and commit any resolved conflict or re-compiled files
+                  npm run build
+                  git add -A
+                  if ! git diff --cached --quiet || ! git diff --quiet; then
+                    git commit --amend --no-edit || git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
+                  fi
+                  echo "Retrying push in 5 seconds..."
+                  sleep 5
+                fi
+              done
+              
+              if [ "$success" = "false" ]; then
+                echo "Failed to push updates to upstream main after all retries."
+                exit 1
+              fi
               
               # Label the PR as integrated and accepted before closing
               echo "Labeling PR #$PR_NUM as integrated..."
@@ -391,7 +447,12 @@ jobs:
             
             if [ "$any_failed" = "true" ]; then
               echo "One or more checks failed. Closing PR..."
-              gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running \`npm test\` and \`npm run lint\`, and submit a new Pull Request. Thank you!" --repo ${{ github.repository }}
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+                -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running `npm test` and `npm run lint`, and submit a new Pull Request. Thank you!"}'
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+                -d '{"state":"closed"}'
               exit 1
             fi
             
@@ -425,10 +486,13 @@ jobs:
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Merging PR #$PR_NUM..."
           
-          # Check if already merged
+          # Check if already merged or closed
           state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
           if [ "$state" = "MERGED" ]; then
             echo "PR #$PR_NUM is already merged."
+            exit 0
+          elif [ "$state" = "CLOSED" ]; then
+            echo "PR #$PR_NUM is closed. Skipping merge."
             exit 0
           fi
           
@@ -447,7 +511,12 @@ jobs:
 
           if [ "$mergeable_status" = "false" ]; then
             echo "PR has merge conflicts. Closing PR..."
-            gh pr close $PR_NUM --comment "🔒 **Pull Request Closed:** This PR has been automatically closed because it has merge conflicts with the main branch. Please pull the latest main, resolve conflicts locally, and open a new Pull Request. Thank you!" --repo ${{ github.repository }}
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it has merge conflicts with the main branch. Please pull the latest main, resolve conflicts locally, and open a new Pull Request. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
             exit 1
           fi
 
