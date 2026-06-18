@@ -1,56 +1,77 @@
-# ease-aurora
+# ease-aurora — Aurora Borealis Background Utility
 
-## What does this do?
+**Fixes:** Issue #11901
 
-Applies a smooth, looping Aurora Borealis / Northern Lights animated background using pure CSS gradient keyframes — no JavaScript, no SVG, no dependencies.
+## Overview
 
-## How is it used?
-Markup
-
-
-<!-- Basic aurora background -->
+A pure CSS background animation that creates a soft, shifting "Northern Lights" (Aurora Borealis) effect. It uses multiple layered `radial-gradient` backgrounds that move slowly across the element while simultaneously performing a hue rotation, resulting in a dreamy and atmospheric visual experience.
+
+## Usage
+
+```html
+<!-- Hero Section — dreamy background -->
 <section class="ease-aurora">
-  <h1>Hero Section</h1>
+  <h1>Welcome to the Future</h1>
 </section>
 
-<!-- Speed variants -->
-<div class="ease-aurora ease-aurora-slow">Gentle, slow aurora</div>
-<div class="ease-aurora ease-aurora-fast">Energetic, fast aurora</div>
+<!-- Portfolio Card — purple variant -->
+<div class="card ease-aurora ease-aurora-purple">
+  <h3>Creative Portfolio</h3>
+</div>
 
-<!-- Color theme variants -->
-<div class="ease-aurora ease-aurora-green">Green dominant</div>
-<div class="ease-aurora ease-aurora-purple">Purple dominant</div>
-<div class="ease-aurora ease-aurora-blue">Blue dominant</div>
+<!-- Fast Aurora -->
+<div class="ease-aurora ease-aurora-fast">Energetic Lights</div>
+```
 
-<!-- Works on images and any block element -->
-<img class="ease-aurora" src="photo.jpg" alt="Profile" 
-     style="width:120px; height:120px; border-radius:50%;" />
+## Variants
 
-### Class Reference
+| Class                 | Description                                    |
+| --------------------- | ---------------------------------------------- |
+| `.ease-aurora`        | Default 10s cycle, green/blue/purple (default) |
+| `.ease-aurora-slow`   | Duration `15s` for a very gentle drift         |
+| `.ease-aurora-fast`   | Duration `6s` for more active motion           |
+| `.ease-aurora-green`  | Green-dominant color palette                   |
+| `.ease-aurora-purple` | Purple-dominant color palette                  |
+| `.ease-aurora-blue`   | Blue-dominant color palette                    |
 
-|Class               |Description                             |
-|--------------------|----------------------------------------|
-|`ease-aurora`       |Base class — default 8s aurora animation|
-|`ease-aurora-slow`  |Gentle 16s animation                    |
-|`ease-aurora-fast`  |Energetic 4s animation                  |
-|`ease-aurora-green` |Green-dominant color theme              |
-|`ease-aurora-purple`|Purple-dominant color theme             |
-|`ease-aurora-blue`  |Blue-dominant color theme               |
-|`ease-aurora-pause` |Pauses animation on hover               |
+## Customization
 
-### CSS Custom Property
-CSS
-
-
-/* Override duration directly */
-.my-element {
-  --aurora-duration: 12s;
+You can fully customize the colors, background, and duration using CSS variables:
+
+```css
+.my-custom-aurora {
+  --ease-aurora-bg: #000;
+  --ease-aurora-color-1: rgba(255, 0, 0, 0.4);
+  --ease-aurora-color-2: rgba(255, 255, 0, 0.3);
+  --ease-aurora-color-3: rgba(0, 0, 255, 0.2);
+  --ease-aurora-duration: 12s;
 }
+```
 
-## Why is it useful?
+## Technical Implementation
 
-Aurora/northern-lights backgrounds are one of the most popular visual trends in modern UI — seen in hero sections, loading screens, and premium SaaS products. EaseMotion CSS currently has no ambient background animation utility.
+The effect is achieved by layering three large `radial-gradient` blobs and animating their `background-position` and `filter: hue-rotate()`. The `background-size` is set to `200% 200%` to allow for smooth movement within the bounds of the element.
 
-This fills that gap with a single readable class that produces a stunning, atmospheric visual using only background-size, background-position, and CSS @keyframes. It follows EaseMotion’s core philosophy: powerful visual result from one class, zero JavaScript, fully composable with existing utilities like ease-fade-in and ease-delay-*.
+## Accessibility
 
-Works on any block element: div, section, img, header.
+```css
+@media (prefers-reduced-motion: reduce) {
+  .ease-aurora {
+    animation: none !important;
+    background-size: 100% 100%;
+    filter: none !important;
+  }
+}
+```
+
+The animation and hue rotation are completely disabled for users who prefer reduced motion, falling back to a static gradient background.
+
+## Acceptance Criteria
+
+- [x] Multiple radial gradients moving slowly (3 layers included)
+- [x] Hue rotation (`0deg` to `360deg`)
+- [x] 8-12s cycle by default (`10s`)
+- [x] Configurable colors via CSS variables
+- [x] `prefers-reduced-motion` fallback included
+- [x] Zero JavaScript
+- [x] No `core/` or `components/` files modified
