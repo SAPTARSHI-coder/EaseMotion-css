@@ -54,7 +54,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 - [Why EaseMotion CSS?](#why-easemotion-css)
 - [Quick Start](#quick-start)
 - [Philosophy](#philosophy)
-- [Usage & Examples](#usage--examples)
+- [Usage and Examples](#usage-and-examples)
 - [Customization](#customization)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
@@ -68,7 +68,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 
 ---
 
-### 🚀 Quick Start
+### 🚀 Quick Setup
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -400,8 +400,7 @@ Every class in the framework has passed through this process. The curation is wh
 
 ---
 
-## Usage & Examples 💡
-## Usage
+## Usage and Examples 💡
 
 ### Development
 Use the non-minified version for debugging and development:
