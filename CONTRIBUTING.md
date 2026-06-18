@@ -125,6 +125,18 @@ Answer these three questions:
 
 ---
 
+### JavaScript files
+
+Current submissions should use only the required three-file structure:
+
+- `demo.html`
+- `style.css`
+- `README.md`
+
+Do not add `script.js`, generated assets, screenshots, or extra folders unless a maintainer explicitly asks for them on the issue.
+
+---
+
 ## Naming Rules
 
 | Who              | Rule                                                      |

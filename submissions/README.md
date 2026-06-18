@@ -19,6 +19,8 @@ submissions/examples/your-feature-name/
 
 All three files are required. Missing any one of them will result in the PR being asked to revise.
 
+Do not add `script.js`, images, generated assets, or nested folders unless a maintainer explicitly requests them. The default submission format is HTML + CSS + README only.
+
 ---
 
 ## 📢 Contribution Policy Update
