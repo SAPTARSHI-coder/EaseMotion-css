@@ -1,24 +1,22 @@
-# Replace Hardcoded outline-offset with CSS Variable
+# Add rel="noopener noreferrer" to External Links
 
 ## What does this do?
-Replaces the hardcoded `outline-offset: 3px` in `components/buttons.css` with CSS variable `--ease-outline-offset` so the outline offset updates globally with the design system.
+Adds `rel="noopener noreferrer"` to all `target="_blank"` external links in `docs/index.html` to prevent tabnabbing security vulnerabilities.
 
 ## How is it used?
-Add to root or any scope:
-```css
-:root {
-  --ease-outline-offset: 3px;
-}
+Before (vulnerable):
+```html
+<a href="https://example.com" target="_blank">Link</a>
 ```
 
-Override per scope when needed:
-```css
-.dark-mode {
-  --ease-outline-offset: 4px;
-}
+After (secure):
+```html
+<a href="https://example.com" target="_blank" rel="noopener noreferrer">Link</a>
 ```
 
 ## Why is it useful?
-Hardcoded values break design system consistency. Using a CSS variable allows global updates, theme overrides, and accessibility adjustments without editing the component file. The fallback to `3px` ensures full backward compatibility.
+When a page opens a new tab via `target="_blank"` without `rel="noopener noreferrer"`, the opened page gains partial access to the originating page's `window.opener` object. This can be exploited in tabnabbing attacks where the external page redirects the original tab to a phishing site.
 
-Fixes #12200
+The fix was applied to lines 112 and 697 in `docs/index.html`.
+
+Fixes #12192
