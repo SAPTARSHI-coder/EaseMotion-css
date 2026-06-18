@@ -1,22 +1,19 @@
-# Add rel="noopener noreferrer" to External Links
+# Remove Empty src="" Attribute on Image
 
 ## What does this do?
-Adds `rel="noopener noreferrer"` to all `target="_blank"` external links in `docs/index.html` to prevent tabnabbing security vulnerabilities.
+Removes the empty `src=""` attribute on an `<img>` element in `team-availability-board-zt/demo.html` and replaces it with text initials (RG), matching the convention used by other avatars in the same file.
 
 ## How is it used?
-Before (vulnerable):
+Before (line 36):
 ```html
-<a href="https://example.com" target="_blank">Link</a>
+<div class="avatar"><img src="" alt="" aria-hidden="true"></div>
 ```
-
-After (secure):
+After:
 ```html
-<a href="https://example.com" target="_blank" rel="noopener noreferrer">Link</a>
+<div class="avatar">RG</div>
 ```
 
 ## Why is it useful?
-When a page opens a new tab via `target="_blank"` without `rel="noopener noreferrer"`, the opened page gains partial access to the originating page's `window.opener` object. This can be exploited in tabnabbing attacks where the external page redirects the original tab to a phishing site.
+An empty `src=""` triggers a faulty browser request to the current directory, causing network errors and console warnings. Using text initials keeps the design consistent with the other avatars (AL, DN, OM, CI).
 
-The fix was applied to lines 112 and 697 in `docs/index.html`.
-
-Fixes #12192
+Fixes #12199
