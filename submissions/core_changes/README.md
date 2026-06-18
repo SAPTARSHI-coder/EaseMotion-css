@@ -1,36 +1,36 @@
-# CSS-only Dropdown / Menu Component
+# Rating / Star Component
 
 ## What does this do?
-Adds a CSS-only dropdown/menu component with hover and click variants, positioning modifiers, animations, dividers, and dark mode support. Uses `.ease-dropdown`, `.ease-dropdown-trigger`, `.ease-dropdown-menu`, and `.ease-dropdown-item` classes.
+Adds a star rating component with readonly display (supports decimal/half-star ratings like 3.5), interactive click-to-rate mode, size variants (sm, md, lg), and color variants (warning, success, danger).
 
 ## How is it used?
 ```html
-<div class="ease-dropdown">
-  <button class="ease-dropdown-trigger">
-    Trigger <span class="ease-dropdown-arrow">&#9662;</span>
-  </button>
-  <div class="ease-dropdown-menu">
-    <button class="ease-dropdown-item">Item</button>
-    <div class="ease-dropdown-divider"></div>
-    <button class="ease-dropdown-item">Other</button>
-  </div>
+<!-- Readonly display -->
+<div class="ease-rating ease-rating-readonly" data-rating="3.5">
+  <span class="ease-star">&#9733;</span>
+  <span class="ease-star">&#9733;</span>
+  <span class="ease-star">&#9733;</span>
+  <span class="ease-star">&#9733;</span>
+  <span class="ease-star">&#9733;</span>
+  <span class="ease-rating-value">3.5 / 5</span>
+</div>
+
+<!-- Interactive -->
+<div class="ease-rating ease-rating-interactive" data-rating="0">
+  <span class="ease-star" data-value="1">&#9733;</span>
+  <span class="ease-star" data-value="2">&#9733;</span>
+  ...
 </div>
 ```
 
-### Modifiers
-- `.ease-dropdown-right` — right-aligned dropdown
-- `.ease-dropdown-up` — opens upward
-- `.ease-dropdown-click` — click-to-open variant (requires JS)
-
 ## Why is it useful?
-EaseMotion CSS lacked a dropdown component essential for navigation menus, action menus, and context menus. This component provides:
-- **CSS-only hover variant** — works without JavaScript
-- **Click variant** — with keyboard navigation (Escape, Arrow keys, Enter/Space)
-- **4 positions** — default (bottom-left), right, up, with modifier classes
-- **Animations** — fade + slide on open/close
-- **Arrow rotation** — visual indicator rotates when open
-- **Dividers** — separate menu item groups
+EaseMotion CSS lacked a star rating component essential for reviews, product ratings, and feedback forms. This component provides:
+- **Display mode** — shows ratings with half-star support via CSS gradient clip
+- **Interactive mode** — hover preview + click to select, updates ARIA attributes
+- **3 sizes** — sm (16px), md (24px), lg (32px)
+- **Color variants** — primary/warning (default), success, danger
+- **Numeric display** — shows "X / 5" alongside stars
+- **Accessible** — `role="img"`, `aria-label`, `aria-valuenow`, `aria-valuemax`
 - **Dark mode** — adapts via `data-theme` CSS variables
-- **Reduced motion** — respects `prefers-reduced-motion`
 
-Fixes #12449
+Fixes #12450
