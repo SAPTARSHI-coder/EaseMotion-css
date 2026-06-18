@@ -28,8 +28,26 @@ const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
 const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
 const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
 const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
+    const commandPalette = readFileSync(resolve(componentsDir, 'command-palette.css'), 'utf8');
+    const viewTransitions = readFileSync(resolve(componentsDir, 'view-transitions.css'), 'utf8');
+    const toast = readFileSync(resolve(componentsDir, 'toast.css'), 'utf8');
+    const tag = readFileSync(resolve(componentsDir, 'tag.css'), 'utf8');
+    const skeleton = readFileSync(resolve(componentsDir, 'skeleton.css'), 'utf8');
+    const scrollGallery = readFileSync(resolve(componentsDir, 'scroll-gallery.css'), 'utf8');
+    const readMore = readFileSync(resolve(componentsDir, 'read-more.css'), 'utf8');
+    const progress = readFileSync(resolve(componentsDir, 'progress.css'), 'utf8');
+    const passwordStrength = readFileSync(resolve(componentsDir, 'password-strength.css'), 'utf8');
+    const pagination = readFileSync(resolve(componentsDir, 'pagination.css'), 'utf8');
+    const kbd = readFileSync(resolve(componentsDir, 'kbd.css'), 'utf8');
+    const fab = readFileSync(resolve(componentsDir, 'fab.css'), 'utf8');
+    const connectionStatus = readFileSync(resolve(componentsDir, 'connection-status.css'), 'utf8');
+    const compareTable = readFileSync(resolve(componentsDir, 'compare-table.css'), 'utf8');
+    const btnMagnetic = readFileSync(resolve(componentsDir, 'btn-magnetic.css'), 'utf8');
+    const breadcrumb = readFileSync(resolve(componentsDir, 'breadcrumb.css'), 'utf8');
+    const avatar = readFileSync(resolve(componentsDir, 'avatar.css'), 'utf8');
+    const announceBar = readFileSync(resolve(componentsDir, 'announce-bar.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -126,6 +144,8 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-overlay');
     expect(css).toContain('.ease-modal');
     expect(css).toContain('.ease-modal-header');
+    expect(css).toContain('.ease-command-palette-overlay');
+    expect(css).toContain('.ease-command-palette');
   });
 
   it('should have dark mode variables via prefers-color-scheme', () => {
