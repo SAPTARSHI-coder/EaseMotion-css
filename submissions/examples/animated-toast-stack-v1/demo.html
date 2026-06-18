@@ -90,7 +90,6 @@
       closeBtn.className = 'toast-close-btn';
       closeBtn.setAttribute('aria-label', 'Close Notification');
       closeBtn.textContent = '✕';
-      closeBtn.addEventListener('click', () => dismissToast(toast));
 
       const progressBar = document.createElement('div');
       progressBar.className = 'toast-progress-bar';
@@ -101,13 +100,20 @@
       toast.appendChild(progressBar);
 
       // Keep track of timeout state for hover pause
-      let duration = 5000; // 5 seconds
+      const duration = 5000; // 5 seconds
       let startTime = Date.now();
       let timeLeft = duration;
       let timeoutId = null;
-      let progressEl = toast.querySelector('.toast-progress-bar');
+
+      function clearTimer() {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      }
 
       function startTimer() {
+        clearTimer();
         startTime = Date.now();
         timeoutId = setTimeout(() => {
           dismissToast(toast);
@@ -115,37 +121,73 @@
       }
 
       function pauseTimer() {
-        clearTimeout(timeoutId);
+        clearTimer();
         timeLeft -= Date.now() - startTime;
         if (timeLeft < 0) timeLeft = 0;
       }
 
+      function handleCloseClick() {
+        dismissToast(toast);
+      }
+
+      function handleMouseEnter() {
+        if (toast.classList.contains('is-dismissing')) return;
+        pauseTimer();
+        toast.classList.add('is-paused');
+      }
+
+      function handleMouseLeave() {
+        if (toast.classList.contains('is-dismissing')) return;
+        toast.classList.remove('is-paused');
+        startTimer();
+      }
+
+      toast.cleanupToastListeners = () => {
+        clearTimer();
+        closeBtn.removeEventListener('click', handleCloseClick);
+        toast.removeEventListener('mouseenter', handleMouseEnter);
+        toast.removeEventListener('mouseleave', handleMouseLeave);
+      };
+
+      closeBtn.addEventListener('click', handleCloseClick);
+      toast.addEventListener('mouseenter', handleMouseEnter);
+      toast.addEventListener('mouseleave', handleMouseLeave);
+
       // Add to stack
       stack.appendChild(toast);
       startTimer();
-
-      // Hover Pause events
-      toast.addEventListener('mouseenter', () => {
-        pauseTimer();
-        toast.classList.add('is-paused');
-      });
-
-      toast.addEventListener('mouseleave', () => {
-        startTime = Date.now();
-        toast.classList.remove('is-paused');
-        startTimer();
-      });
     }
 
     function dismissToast(toast) {
       if (toast.classList.contains('is-dismissing')) return;
       toast.classList.add('is-dismissing');
+      toast.classList.remove('is-paused');
 
-      toast.addEventListener('animationend', (e) => {
-        if (e.animationName === 'ease-kf-toast-exit') {
-          toast.remove();
+      if (typeof toast.cleanupToastListeners === 'function') {
+        toast.cleanupToastListeners();
+      }
+
+      const fallbackTimer = setTimeout(removeToast, 450);
+
+      function handleAnimationEnd(e) {
+        if (e.target === toast && e.animationName === 'ease-kf-toast-exit') {
+          removeToast();
         }
-      });
+      }
+
+      function removeToast() {
+        clearTimeout(fallbackTimer);
+        toast.removeEventListener('animationend', handleAnimationEnd);
+
+        if (typeof toast.cleanupToastListeners === 'function') {
+          toast.cleanupToastListeners();
+          delete toast.cleanupToastListeners;
+        }
+
+        toast.remove();
+      }
+
+      toast.addEventListener('animationend', handleAnimationEnd);
     }
 
     document.querySelectorAll('.trigger-btn[data-type]').forEach(btn => {
