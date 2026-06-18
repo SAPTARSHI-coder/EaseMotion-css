@@ -1,207 +1,69 @@
-# Technical Specifications Manual
+# ML Experiment Intelligence Hub
 
-## Phase 62: ML Experiment Intelligence Hub
+## What does this do?
 
-Welcome to the flagship enterprise documentation for the **ML Experiment Intelligence Hub**. This manual contains detailed outlines of the architectural design decisions, UI layout composition strategies, responsive breakpoints, accessibility considerations, and pure-CSS transition implementations that govern this system.
+The ML Experiment Intelligence Hub is a premium enterprise dashboard for data scientists and ML engineers to track, compare, and analyze machine learning experiments. It provides a unified interface for monitoring training runs, comparing model metrics, detecting data drift, and surfacing intelligence insights — all built with pure CSS and powered by EaseMotion CSS animations.
 
----
+## Features
 
-## 1. Executive Summary & Objective
+- **Hero Dashboard** — Product branding with live status indicators, active experiment count, and staggered entrance animations.
+- **Experiment Tracking Panel** — Track experiment cards with training status (Training / Completed / Queued), dataset versions, model versions, run duration, and epoch progress bars.
+- **Metrics Comparison Area** — Visual comparison of Accuracy, Precision, Recall, and F1 Score with animated bar charts showing current best runs vs baselines.
+- **Data Drift Monitoring** — Monitor feature drift with PSI and KL divergence metrics. Categorized risk levels (High / Medium / Low) with color-coded alert cards.
+- **Experiment Timeline** — Chronological feed of training events, deployment milestones, retraining triggers, and AutoML sweeps with animated reveal effects.
+- **Intelligence Insights Panel** — Actionable recommendations, observations, performance summaries, and warnings surfaced from experiment data.
+- **Feature Distribution Summary** — Visual distribution bars for numerical, categorical, and text embedding features.
+- **Activity Feed** — Real-time event stream with color-coded status dots for experiment lifecycle events.
 
-### Objective
+## Design Highlights
 
-The core objective of **ML Experiment Intelligence Hub** is to build a premium, highly responsive engineering console demonstrating:
+- **Glassmorphism panels** with backdrop blur and subtle border glow on hover
+- **Dark enterprise theme** with deep navy background and cyan/green/purple accent palette
+- **Layered depth** through radial gradient backgrounds and floating accent orbs
+- **Professional typography hierarchy** using Inter for UI text and Fira Code for data/monospace values
+- **Consistent spacing** and alignment across all panel types and card styles
+- **Left-accent borders** on insight cards and drift alerts for scannable severity levels
 
-- High performance metrics tracking without expensive client-side script allocations.
-- A dark mode aesthetic with premium neon-accent visual cues.
-- Glassmorphic panels featuring robust CSS transitions.
-- Fully accessible layouts designed according to modern standards.
+## Animation Highlights
 
-### Business Value
+- **Staggered card reveals** using `fade-in-up` keyframes with progressive animation delays
+- **Timeline slide-in** reveals for chronological events
+- **Gradient motion** on the brand title for subtle brand presence
+- **Pulse dot** indicators on status badges for active system state
+- **Progress bar grow** animation on epoch tracking
+- **Bar chart grow** animation on metrics comparison bars with staggered baseline bars
+- **Hover elevation** effects on panels, experiment cards, and stat cards
+- **Floating accent orbs** with slow drift animation for ambient depth
+- All animations use `cubic-bezier(0.16, 1, 0.3, 1)` for a premium, non-distracting feel
 
-Enterprise platforms handling AI operations, space missions, cloud infrastructures, and risk compliance require dense, highly legible telemetry. Standard UI templates fall short because:
+## Responsive Behavior
 
-1. They lack a defined visual hierarchy, which tires operator vision.
-2. They trigger high styling recalculation costs when rendering numerous interactive widgets.
-3. They fail to scale properly on tablets, field devices, and control towers.
-   This showcase solves these pain points by using pure-CSS layout components and HSL colors.
+- **Desktop** (1200px+): Three-column grid layout with sidebar panels
+- **Tablet** (640px–1200px): Single-column stacked layout, 2-column stat grid
+- **Mobile** (640px–): Single-column layout with reduced padding and font sizes
 
----
+## Tech Stack
 
-## 2. Target Users & User Personas
+- HTML5 (semantic markup with `header`, `section`, `aside` elements)
+- CSS3 (custom properties, grid layout, flexbox, backdrop-filter, keyframe animations)
 
-This system is designed for multi-tier enterprise personnel who monitor complex telemetry lines:
+No JavaScript, no external frameworks, no build tools, no dependencies.
 
-### Persona A: The Principal Systems Architect (Focus: Technical Oversight)
+## File Structure
 
-- **Role**: Overlooks cluster topology stability, latency regressions, and integration performance.
-- **Pain Points**: Needs to spot operational anomalies instantly without sorting through verbose text log records.
-- **Usage**: Relies on the global telemetry charts and the color-coded state indicators to verify status values.
+```
+submissions/examples/ml-experiment-intel-bv/
+├── demo.html
+├── style.css
+└── README.md
+```
 
-### Persona B: The Operations Director (Focus: Strategy & Risk Compliance)
+## Usage
 
-- **Role**: Monitors service uptime trends, regulatory compliances, and vendor performance.
-- **Pain Points**: Requires unified, board-level reporting grids presenting key KPIs in a high-fidelity dashboard.
-- **Usage**: Views the metrics overview panel and exports metadata configuration records.
+Open `demo.html` directly in any modern browser:
 
----
+- **Desktop**: Three-column dashboard layout for maximum data density.
+- **Tablet / Mobile**: Single-column responsive layout adapts for smaller screens.
+- **Interactive exploration**: Hover over panels, cards, and metrics to see elevation effects and visual feedback.
 
-## 3. Comprehensive Navigation & UI Layout
-
-The interface uses a two-column sidebar layout suited for desktop layouts, adapting to single-column vertical flows on mobile environments.
-
-### Left Sidebar: Primary Navigation Controller
-
-- **System Logo**: Animated pulsing brand mark.
-- **Module Indicators**: Interactive list items highlighting:
-  - **Overview**: Core landing area.
-  - **Telemetry Monitor**: Graphic visualization streams.
-  - **Node Grid**: 20 structural sub-sections detailing cluster registries.
-  - **Performance Traces**: Progress allocations.
-  - **Settings**: System customizer panel.
-
-### Right Workspace Grid: Live Telemetry
-
-- **Header Bar**: Integrates descriptive titles alongside command actions.
-- **KPI Summary Grid**: Evaluates Efficiency, Thread Count, Mitigation Rate, and Network Latency.
-- **Visual Analytics Section**: Renders real-time telemetry line paths utilizing inline SVG structures.
-- **Operational Table Queue**: Tabulates incoming operations, workloads, and warning levels.
-- **Cluster Registry (20 Sections)**: Multi-panel grid showing worker loads and toggle switches.
-
----
-
-## 4. CSS Grid Layout & Styling Token Structure
-
-This dashboard uses custom HSL variables to maintain design consistency and theme flexibility:
-
-- **Primary Color (`--primary-hsl`)**: `hsl(260, 90%, 65%)` - Primary branding accents.
-- **Secondary Color (`--secondary-hsl`)**: `hsl(340, 85%, 55%)` - Secondary metrics lines.
-- **Accent Color (`--accent-hsl`)**: `hsl(200, 80%, 50%)` - Callouts and interactive states.
-- **Background Color (`--bg-dark`)**: `#07090e` - Dark background layout.
-- **Card Background (`--bg-card`)**: `rgba(14, 18, 28, 0.7)` - Glassmorphism panels.
-
-### CSS Rules:
-
-- **Glassmorphic Effect**:
-  ```css
-  .glass-panel {
-    background: rgba(14, 18, 28, 0.7);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  ```
-- **Hover Transitions**:
-  ```css
-  .glass-panel:hover {
-    transform: translateY(-3px);
-    border-color: rgba(255, 255, 255, 0.18);
-  }
-  ```
-
----
-
-## 5. Pure-CSS Motion & Keyframe Strategy
-
-Visual telemetry dashboards need to feel active and alive. We achieve this with subtle animations:
-
-- **Fade In Up**: Dashboard items fade into view from below on page load, avoiding sudden shifts:
-  ```css
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(30px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  ```
-- **Linear Path Reveal**: Telemetry paths use `stroke-dasharray` and `stroke-dashoffset` animations to draw charts smoothly.
-- **Pulsing Accents**: System logo glow and active beacons pulse slowly to draw attention to status zones.
-
----
-
-## 6. Accessibility & Keyboard Support Plan
-
-The design follows WCAG 2.1 AA accessibility rules:
-
-- **High Contrast**: Text colors maintain contrast ratios above 4.5:1 against the dark glass panels.
-- **ARIAL Landmarks**: Section regions are labeled with semantic tags (`<aside>`, `<main>`, `<header>`, `<section>`).
-- **Interactive States**: Interactive elements use active hover transformations and outline glows for keyboard tabbing indicators.
-- **Reduced Motion Support**: Focuses on static rendering options when system preferences flag reduced animation requirements.
-
----
-
-## 7. Responsive Breakpoint Plan
-
-- **Desktop (1200px and above)**: Full 2-column view with a 280px left sidebar and flexible right grid workspace.
-- **Tablet (768px to 1099px)**: Left sidebar hides into a collapsible layout system. Main content uses double-column card alignments.
-- **Mobile (below 768px)**: Standard single-column flow. The header controls stack vertically, and tables wrap horizontally to prevent content overflowing.
-
----
-
-## 8. Development Audit & Testing Checklist
-
-To prepare for production deployment, verify the following:
-
-- [x] Verify that `demo.html` opens in modern web browsers without console errors.
-- [x] Test responsiveness across mobile viewport simulations.
-- [x] Run Prettier to check spacing consistency.
-- [x] Confirm that pure-CSS animations render smoothly at 60 FPS.
-- [x] Check keyboard navigation tab flows across all interactive controllers.
-
----
-
-## Appendix Section 1: Telemetry Detail Matrix
-
-Continuous performance monitoring is crucial for maintaining system uptime. This section details our telemetry approach:
-
-- **Data Capture**: Ingestion pipelines route metrics to local caching layers.
-- **Metric Verification**: Checksums confirm data integrity before rendering.
-- **Load Management**: Renders inline SVG pathways instead of complex canvas libraries to keep client CPU utilization low.
-- **State Audits**: Periodic evaluations detect configuration drift and operational anomalies immediately.
-
----
-
-## Appendix Section 2: Telemetry Detail Matrix
-
-Continuous performance monitoring is crucial for maintaining system uptime. This section details our telemetry approach:
-
-- **Data Capture**: Ingestion pipelines route metrics to local caching layers.
-- **Metric Verification**: Checksums confirm data integrity before rendering.
-- **Load Management**: Renders inline SVG pathways instead of complex canvas libraries to keep client CPU utilization low.
-- **State Audits**: Periodic evaluations detect configuration drift and operational anomalies immediately.
-
----
-
-## Appendix Section 3: Telemetry Detail Matrix
-
-Continuous performance monitoring is crucial for maintaining system uptime. This section details our telemetry approach:
-
-- **Data Capture**: Ingestion pipelines route metrics to local caching layers.
-- **Metric Verification**: Checksums confirm data integrity before rendering.
-- **Load Management**: Renders inline SVG pathways instead of complex canvas libraries to keep client CPU utilization low.
-- **State Audits**: Periodic evaluations detect configuration drift and operational anomalies immediately.
-
----
-
-## Appendix Section 4: Telemetry Detail Matrix
-
-Continuous performance monitoring is crucial for maintaining system uptime. This section details our telemetry approach:
-
-- **Data Capture**: Ingestion pipelines route metrics to local caching layers.
-- **Metric Verification**: Checksums confirm data integrity before rendering.
-- **Load Management**: Renders inline SVG pathways instead of complex canvas libraries to keep client CPU utilization low.
-- **State Audits**: Periodic evaluations detect configuration drift and operational anomalies immediately.
-
----
-
-## Appendix Section 5: Telemetry Detail Matrix
-
-Continuous performance monitoring is crucial for maintaining system uptime. This section details our telemetry approach:
-
-- **Data Capture**: Ingestion pipelines route metrics to local caching layers.
-- **Metric Verification**: Checksums confirm data integrity before rendering.
-- **Load Management**: Renders inline SVG pathways instead of complex canvas libraries to keep client CPU utilization low.
-- **State Audits**: Periodic evaluations detect configuration drift and operational anomalies immediately.
+No build step, no server, no dependencies required.
