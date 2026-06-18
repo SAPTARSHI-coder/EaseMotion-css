@@ -54,7 +54,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 - [Why EaseMotion CSS?](#why-easemotion-css)
 - [Quick Start](#quick-start)
 - [Philosophy](#philosophy)
-- [Usage & Examples](#usage--examples)
+- [Usage and Examples](#usage-and-examples)
 - [Customization](#customization)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
@@ -68,7 +68,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 
 ---
 
-### 🚀 Quick Start
+### 🚀 Quick Setup
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -101,7 +101,7 @@ This will apply the iteration count to all looping animation utilities by defaul
 
 ---
 
-## Support the Project ⭐
+## Support the Project
 
 If EaseMotion CSS saves you time or helps your learning journey, please consider supporting it.
 
@@ -123,7 +123,7 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
-## Project Statistics 📊
+## Project Statistics
 
 <div align="center">
 
@@ -143,7 +143,7 @@ Most people simply forget. This is your reminder. 😊
 
 ---
 
-## Browser Compatibility 🌐
+## Browser Compatibility
 
 EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
@@ -163,7 +163,7 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 
 ---
 
-## What is EaseMotion CSS? ✨
+## What is EaseMotion CSS?
 
 EaseMotion CSS is a curated, animation-first CSS framework where class names read like plain English. It is designed for developers who want expressive motion and clean HTML without a build tool or complex configuration.
 
@@ -188,7 +188,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where class names rea
 
 ---
 
-## Why EaseMotion CSS? 🆚
+## Why EaseMotion CSS?
 
 |                 |    Vanilla CSS     |         Tailwind CSS         |      **EaseMotion CSS**      |
 | --------------- | :----------------: | :--------------------------: | :--------------------------: |
@@ -202,7 +202,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where class names rea
 
 ---
 
-## Quick Start ⚡
+## Quick Start
 
 ### Option 1 — CDN _(fastest, zero setup, recommended)_
 
@@ -351,7 +351,7 @@ Or in CSS / PostCSS / Sass:
 
 > ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
 
-## Philosophy 🧠
+## Philosophy
 
 EaseMotion CSS is not just a CSS library — it is a design language.
 
@@ -400,8 +400,7 @@ Every class in the framework has passed through this process. The curation is wh
 
 ---
 
-## Usage & Examples 💡
-## Usage
+## Usage and Examples
 
 ### Development
 Use the non-minified version for debugging and development:
@@ -664,7 +663,7 @@ Example showcase:
 
 ---
 
-## Customization ⚙️
+## Customization
 
 Override any CSS custom property to theme the entire framework — no Sass, no PostCSS, just CSS:
 
@@ -726,7 +725,7 @@ Yes. That is one of the core goals of EaseMotion CSS. You can use the CDN link o
 
 ---
 
-## File Structure 📂
+## File Structure
 
 ```
 easemotion-css/
@@ -771,7 +770,7 @@ easemotion-css/
 
 ---
 
-## Roadmap 🗺️
+## Roadmap
 
 > Track progress and vote on features via [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues).
 
@@ -794,7 +793,7 @@ easemotion-css/
 
 ---
 
-## Contributing 🤝
+## Contributing
 
 EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors submit raw ideas — the maintainer handles standardization, naming, and integration.
 
@@ -901,7 +900,7 @@ The project encourages creative variations and parallel implementations rather t
 
 ---
 
-## Community 💬
+## Community
 
 <div align="center">
 
@@ -922,7 +921,7 @@ The project encourages creative variations and parallel implementations rather t
 
 ---
 
-## Contributors 🏆
+## Contributors
 
 Everyone who has submitted a PR, opened an issue, or contributed an idea. This wall **regenerates automatically** on every push to main.
 
@@ -971,7 +970,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 
 ---
 
-## Maintainer 👤
+## Maintainer
 
 <div align="center">
 
@@ -987,7 +986,7 @@ EaseMotion CSS is designed, curated, and actively maintained by Saptarshi Sadhu.
 
 ---
 
-## Changelog 📜
+## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
@@ -995,7 +994,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
 ---
 
-## License ⚖️
+## License
 
 **MIT © 2026 Saptarshi Sadhu** — see [LICENSE](./LICENSE) for details.
 
