@@ -1,41 +1,65 @@
-# ease-tada animation
+# ease-tada — Dramatic Scale + Rotation Attention Seeker
 
-A celebratory scale-and-rotate wobble animation for success toasts, badge emphasis, and playful UI feedback.
+A punchy scale + rotation wobble animation that grabs attention — shrinks slightly, explodes outward with alternating rotations, then settles. Inspired by celebrate animations. Fast at 0.8s.
 
-## Class reference
+## Classes
 
-| Class | Trigger | Loop | Use Case |
-|-------|---------|------|----------|
-| `.ease-tada` | On class add / page load | No | Success toast, one-shot confirmation |
-| `.ease-tada-hover` | `:hover` | No | Interactive badge or button emphasis |
-| `.ease-tada-loop` | Automatic | Yes | Notification count, live status badge |
+| Class | Scale | Angle | Duration |
+|-------|-------|-------|----------|
+| `.ease-tada` | 1.1 | ±3° | 0.8s |
+| `.ease-tada` + `.ease-tada-sm` | 1.05 | ±1.5° | 0.8s |
+| `.ease-tada` + `.ease-tada-lg` | 1.2 | ±6° | 0.8s |
+| `.ease-tada` + `.ease-tada-repeat` | 1.1 | ±3° | 0.8s × 3 |
 
-## CSS variables
+## CSS Custom Properties
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-tada-duration` | `0.8s` | Total duration of the tada keyframe animation |
+| Token | Default | Description |
+|-------|---------|-------------|
+| `--ease-tada-duration` | `0.8s` | Animation duration |
+| `--ease-tada-scale` | `1.1` | Peak scale value |
+| `--ease-tada-angle` | `3deg` | Peak rotation angle |
 
-```css
-.success-toast {
-  --ease-tada-duration: 1s;
-}
-```
+## Acceptance Criteria
+
+- ✅ `scale(0.9)` → `scale(1.1)` + alternating rotations → settle at `scale(1)`
+- ✅ Fast and punchy — 0.8s default duration
+- ✅ Triggered by adding `.ease-tada` class
 
 ## Usage
 
 ```html
-<div class="toast ease-tada" role="status">
-  <span aria-hidden="true">✓</span>
-  <span>Payment successful!</span>
+<!-- Trigger on class add -->
+<div id="badge" class="my-badge">🏆 Achievement</div>
+<script>
+  const el = document.getElementById('badge');
+  el.classList.remove('ease-tada');
+  void el.offsetWidth; // reflow to retrigger
+  el.classList.add('ease-tada');
+</script>
+
+<!-- Dramatic version for achievements -->
+<div class="ease-tada ease-tada-lg">🎉 Level Up!</div>
+
+<!-- Repeat 3 times for persistent attention -->
+<div class="ease-tada ease-tada-repeat">New message!</div>
+
+<!-- Custom intensity -->
+<div class="ease-tada" style="--ease-tada-scale: 1.3; --ease-tada-angle: 8deg;">
+  Big tada
 </div>
 ```
 
-```html
-<span class="badge ease-tada-loop">3</span>
-<button class="ease-tada-hover">Celebrate</button>
-```
+## Use cases
 
-## Reduced motion
+- Achievement unlocks and success states
+- CTA button attention seeking
+- Emoji reactions
+- Notification badges
+- Like/favourite button feedback
+- Form submission success
 
-Inside `@media (prefers-reduced-motion: reduce)`, all tada animations are disabled and `transform` is reset. Users who enable Reduce Motion in their OS accessibility settings will see static elements with no celebratory motion.
+## Accessibility
+
+`animation-duration` reduced to `1ms` when `prefers-reduced-motion: reduce` is set.
+
+Closes #11855
