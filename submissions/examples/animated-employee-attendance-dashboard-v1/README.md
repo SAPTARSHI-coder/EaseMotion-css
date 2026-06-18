@@ -1,149 +1,61 @@
-# Workforce Attendance Dashboard Showcase
+# Animated Employee Attendance Dashboard
 
-Issue: [#10683](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/10683)
+A self-contained HR dashboard component built with pure HTML and CSS, using EaseMotion CSS utility classes for entrance animations and hover interactions.
 
-Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
+## Preview
 
-## Overview
-
-The Workforce Attendance Dashboard Showcase is a modern HR analytics interface built entirely with HTML and CSS. It demonstrates how attendance metrics, employee summaries, leave balances, working hours, and attendance trends can be presented through an animation-first dashboard experience.
-
-The component is inspired by workforce management platforms such as BambooHR, Workday, Zoho People, Gusto, Rippling, and ADP.
+Open `demo.html` directly in any modern browser — no build step required.
 
 ## Features
 
-- Pure HTML and CSS implementation
-- Animated attendance progress ring
-- Employee profile summary section
-- Attendance percentage visualization
-- Weekly attendance overview chart
-- Leave balance dashboard cards
-- Working hours statistics
-- Attendance status badges
-- Hover elevation effects
-- Glassmorphism-inspired dashboard styling
-- Responsive layout
-- Self-contained demo
+- Animated SVG progress rings (attendance, punctuality, avg hours)
+- Animated leave balance bars
+- Animated working hours bars
+- Weekly attendance day cards with status colours (present / late / absent)
+- Employee profile section with online status indicator
+- Status badges (Present, On Time)
+- Hover lift and grow interactions on all cards
+- Responsive layout — adapts to mobile screens
+- Dark theme with CSS custom properties
 
-## Usage
+## EaseMotion CSS classes used
 
-Include the dashboard structure from `demo.html` and the accompanying styles from `style.css`.
+| Class | Purpose |
+|---|---|
+| `ease-fade-in` | Dashboard entrance |
+| `ease-slide-up` | Section entrance with delay |
+| `ease-delay-100` to `ease-delay-400` | Staggered section reveals |
+| `ease-pulse` | Live indicator badge |
+| `ease-hover-lift` | Stat and leave cards |
+| `ease-hover-grow` | Weekly day cards |
 
-Example component:
+## File structure
 
-```html
-<div class="attendance-ring">
-  <div class="ring-inner">
-    96%
-  </div>
-</div>
 ```
-
-Employee profile section:
-
-```html
-<div class="profile-card">
-  <div class="profile-top">
-    <div class="avatar">AJ</div>
-  </div>
-</div>
-```
-
-## Main Dashboard Sections
-
-### Employee Profile
-
-Displays:
-
-- Employee avatar
-- Name and designation
-- Attendance percentage
-- Total hours worked
-
-### Attendance Progress Ring
-
-Displays:
-
-- Attendance percentage
-- Animated circular progress visualization
-- Performance indicator
-
-### Weekly Attendance Overview
-
-Displays:
-
-- Daily attendance bars
-- Weekly attendance trends
-- Animated progress bars
-
-### Leave Balance
-
-Displays:
-
-- Annual leave
-- Sick leave
-- Casual leave
-
-### Working Hours Statistics
-
-Displays:
-
-- Daily average hours
-- Weekly working hours
-- Monthly working hours
-
-### Attendance Status
-
-Displays:
-
-- Present status
-- Remote status
-- Leave status
-
-## Main Classes
-
-```css
-.dashboard
-.profile-card
-.attendance-ring
-.week-bars
-.leave-grid
-.hours-grid
-.status-badge
-```
-
-## Why It Fits EaseMotion CSS
-
-- Demonstrates practical HR dashboard UI patterns
-- Uses animation-first interactions
-- Encourages reusable component architecture
-- Uses human-readable class names
-- Provides a production-ready workforce management component
-- Showcases responsive dashboard design patterns
-- Demonstrates modern business application interfaces
-
-## Files
-
-```text
-submissions/examples/animated-employee-attendance-dashboard/
+animated-employee-attendance-dashboard/
 ├── demo.html
 ├── style.css
 └── README.md
 ```
 
-## Browser Compatibility
+## How to use
 
-- Chrome
-- Firefox
-- Edge
-- Safari
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
+<link rel="stylesheet" href="style.css" />
+```
 
-## Technologies Used
+Then copy the HTML structure from `demo.html` into your project.
 
-- HTML5
-- CSS3
-- CSS Grid
-- Flexbox
-- CSS Animations
-- Conic Gradients
-- Responsive Design Principles
+## Customisation
+
+All colours are CSS custom properties defined in `:root` inside `style.css`. Override any token to retheme the component:
+
+```css
+:root {
+  --clr-primary: #f97316;   /* swap accent colour */
+  --clr-bg: #ffffff;        /* light mode background */
+  --clr-surface: #f1f5f9;
+  --clr-text: #0f172a;
+}
+```
