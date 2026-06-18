@@ -32,4 +32,4 @@ Includes a `@media (prefers-reduced-motion: reduce)` fallback that instantly com
 - [x] `rotateY(0)` → `rotateY(90deg)`
 - [x] `backface-visibility: hidden`
 - [x] Pure CSS
-- [x] Added in `submissions/examples/ease-side-flip-out/`
+- [x] Added in `submissions/examples/ease-side-flip-out-sk/`
