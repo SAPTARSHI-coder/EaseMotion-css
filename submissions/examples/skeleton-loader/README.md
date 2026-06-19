@@ -1,27 +1,84 @@
-# Skeleton Loader — EaseMotion CSS Submission
+﻿# Skeleton Loader Components
 
-A pure CSS skeleton loader component with shimmer animation.
-No JavaScript. No dependencies.
+## Feature overview
+A modern CSS skeleton loader component set designed for loading states without JavaScript. Includes reusable skeleton styles for text, titles, avatars, cards, and responsive gallery layouts.
 
-## Classes
-
-| Class                  | Description                          |
-|------------------------|--------------------------------------|
-| `skeleton-card`        | Card-shaped container                |
-| `skeleton-avatar`      | Circular avatar placeholder          |
-| `skeleton-line`        | Full-width text line placeholder     |
-| `skeleton-line-short`  | ~60% width shorter line placeholder  |
-
-## Usage
+## Installation
+Copy `demo.html` and `style.css` into your project folder, then link the stylesheet:
 
 ```html
-<div class="skeleton-card">
-  <div class="skeleton-avatar"></div>
-  <div class="skeleton-line"></div>
-  <div class="skeleton-line skeleton-line-short"></div>
+<link rel="stylesheet" href="./style.css" />
+```
+
+## Usage examples
+
+### Base skeleton
+```html
+<div class="ease-skeleton ease-skeleton-text"></div>
+```
+
+### Title skeleton
+```html
+<div class="ease-skeleton ease-skeleton-title"></div>
+```
+
+### Avatar skeleton
+```html
+<div class="ease-skeleton ease-skeleton-avatar"></div>
+```
+
+### Card skeleton
+```html
+<article class="ease-skeleton-card" role="status" aria-busy="true">
+  <div class="ease-skeleton ease-skeleton-card-image"></div>
+  <div class="ease-skeleton ease-skeleton-title ease-skeleton-card-title"></div>
+  <div class="ease-skeleton ease-skeleton-text"></div>
+  <div class="ease-skeleton ease-skeleton-text" style="width: 75%;"></div>
+  <div class="ease-skeleton ease-skeleton-card-action"></div>
+</article>
+```
+
+### Gallery skeleton
+```html
+<div class="ease-skeleton-gallery" role="status" aria-busy="true">
+  <div class="ease-skeleton ease-skeleton-gallery-item"></div>
+  <div class="ease-skeleton ease-skeleton-gallery-item"></div>
+  <div class="ease-skeleton ease-skeleton-gallery-item"></div>
 </div>
 ```
 
-## Accessibility
+## Customization guide
+Customize the skeleton palette and animation speed using CSS variables.
 
-Shimmer animation is disabled for users with `prefers-reduced-motion` enabled.
+```css
+:root {
+  --ease-skeleton-base: #dbeafe;
+  --ease-skeleton-shimmer: #eff6ff;
+  --ease-skeleton-duration: 1.8s;
+}
+```
+
+Local overrides are also supported on any container:
+
+```html
+<div style="--ease-skeleton-base: #334155; --ease-skeleton-shimmer: #475569; --ease-skeleton-duration: 2s;">
+  <div class="ease-skeleton ease-skeleton-title"></div>
+</div>
+```
+
+## Accessibility notes
+- Use `aria-hidden="true"` on decorative placeholder blocks.
+- For loading regions, wrap skeleton content in a status container with `role="status"` and `aria-busy="true"`.
+- The shimmer and pulse animations are disabled when `prefers-reduced-motion: reduce` is active.
+
+## Screenshots
+- Add screenshot assets here after capturing the demo.
+
+## Browser support
+Supported in modern browsers that support CSS custom properties and animations.
+
+- Chrome
+- Edge
+- Firefox
+- Safari
+- Opera
