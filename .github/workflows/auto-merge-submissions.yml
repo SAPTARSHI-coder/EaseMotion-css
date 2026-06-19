@@ -67,12 +67,15 @@ jobs:
           PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
-          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels)
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions)
           is_draft=$(echo "$pr_data" | jq -r '.isDraft')
           head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
           head_ref=$(echo "$pr_data" | jq -r '.headRefName')
           pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
           pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
+          additions=$(echo "$pr_data" | jq -r '.additions')
+          deletions=$(echo "$pr_data" | jq -r '.deletions')
+          total_lines_changed=$((additions + deletions))
           
           echo "prNum=$PR_NUM" >> $GITHUB_OUTPUT
           echo "isDraft=$is_draft" >> $GITHUB_OUTPUT
@@ -80,11 +83,13 @@ jobs:
           echo "headRef=$head_ref" >> $GITHUB_OUTPUT
           echo "title=$pr_title" >> $GITHUB_OUTPUT
           echo "labels=$pr_labels" >> $GITHUB_OUTPUT
+          echo "totalLinesChanged=$total_lines_changed" >> $GITHUB_OUTPUT
           
           echo "PR Number: $PR_NUM"
           echo "Is Draft: $is_draft"
           echo "Head Repo: $head_repo"
           echo "Head Ref: $head_ref"
+          echo "Total Lines Changed: $total_lines_changed"
 
       # Step 2: Query GitHub API securely to check modified files
       - name: Get modified files
@@ -125,6 +130,7 @@ jobs:
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          total_lines_changed=${{ steps.pr-metadata.outputs.totalLinesChanged }}
           
           if [ "$has_submissions" != "true" ]; then
             echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
@@ -142,6 +148,89 @@ jobs:
             curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
               -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the `submissions/` directory. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          # Retrieve files and check status/deletions
+          combined_files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate | jq -s 'add')
+          
+          has_deletions=$(echo "$combined_files" | jq '[.[] | select(.deletions > 0)] | length > 0')
+          has_modified=$(echo "$combined_files" | jq '[.[] | select(.status != "added")] | length > 0')
+          
+          if [ "$has_deletions" = "true" ] || [ "$has_modified" = "true" ]; then
+            echo "❌ Auto-merge blocked: PR contains code deletions or modifies existing files."
+            
+            # Post warning ban notice comment
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            comment_body="⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️"$'\n\n'"Hi @${pr_author}! 👋"$'\n\n'"This PR has been identified as a violation of our repository code integrity policy:"$'\n'"- **No deletions are accepted on any code.**"$'\n'"- **No changes to existing code are allowed.**"$'\n\n'"All contributions must consist of new examples/documentation under newly created files/folders. Since your changes modify or delete existing code, this PR is closed and marked as **invalid**. Repeated violations will result in an immediate, permanent ban."
+            
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+              
+            # Add invalid and spam labels
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+              -d '{"labels":["invalid-submission","gssoc:invalid","spam"]}'
+              
+            # Close PR
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          # Extract filenames from JSON
+          files=$(echo "$combined_files" | jq -r '.[].filename')
+          
+          # Extract submission folders
+          folders=$(for file in $files; do
+            if [[ "$file" =~ ^submissions/examples/ ]]; then
+              echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+            elif [[ "$file" =~ ^submissions/docs/ ]]; then
+              echo "submissions/docs/$(echo "$file" | cut -d'/' -f3)"
+            elif [[ "$file" =~ ^submissions/ ]]; then
+              echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+            fi
+          done | sort -u)
+          
+          all_files_changed=true
+          if [ -z "$folders" ]; then
+            all_files_changed=false
+          fi
+          
+          for folder in $folders; do
+            req1="$folder/demo.html"
+            req2="$folder/style.css"
+            req3="$folder/README.md"
+            
+            # Check if each required file is in the list of changed files
+            if ! echo "$files" | grep -qFx "$req1" || ! echo "$files" | grep -qFx "$req2" || ! echo "$files" | grep -qFx "$req3"; then
+              all_files_changed=false
+              break
+            fi
+          done
+
+          if [ $total_lines_changed -lt 250 ] && [ "$all_files_changed" != "true" ]; then
+            echo "❌ Auto-merge blocked: PR failed strict modification rules ($total_lines_changed lines modified, and did not modify all 3 required files in the submission folder)."
+            
+            # Post warning ban notice comment
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            comment_body="⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️"$'\n\n'"Hi @${pr_author}! 👋"$'\n\n'"This PR has been identified as a potential exploit/low-effort contribution spam (it only modified $total_lines_changed lines of code and did not create or fully update all 3 required files: \`demo.html\`, \`style.css\`, and \`README.md\`)."$'\n\n'"To maintain a fair, high-quality, and robust contribution environment, **EaseMotion CSS enforces a strict minimum modification rule**:"$'\n'"- You must change **at least 250 lines of code** OR"$'\n'"- You must modify/create **all three required files** in your submission folder."$'\n\n'"**Zero-Tolerance Policy:** Low-effort PRs opened solely to accumulate points are considered spam. Your account has been flagged. Persistent violation of this rule will result in an immediate, permanent ban from this repository and GSSoC."$'\n\n'"This PR has been closed and marked as **invalid**."
+            
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+              
+            # Add invalid and spam labels
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+              -d '{"labels":["invalid-submission","gssoc:invalid","spam"]}'
+              
+            # Close PR
             curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
               -d '{"state":"closed"}'
