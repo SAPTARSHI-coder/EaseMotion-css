@@ -1,23 +1,19 @@
-# Scroll Driven Animations
+# Scroll-Driven Animation Utilities
 
-## What does this do?
-Demonstrates CSS `animation-timeline` and `view()` for scroll-driven animations without JavaScript.
+This feature introduces native CSS Scroll-Driven Animation utilities to `easemotion-css`, removing the dependency on external JS engines like GSAP for basic scroll-based styling.
 
-## How is it used?
-Set `animation-timeline: scroll(root)` or `animation-timeline: view()`:
+## 🚀 Utilities Included
 
-    .bar { animation: scale linear; animation-timeline: scroll(root); }
+| Class | CSS Property | Use Case |
+| :--- | :--- | :--- |
+| `.timeline-scroll` | `animation-timeline: scroll();` | Mapping animations to the structural scroll distance of a container. |
+| `.timeline-view` | `animation-timeline: view();` | Triggering / tracking animations as elements enter and cross the viewport. |
 
-## Why is it useful?
-Enables performant scroll-linked animations natively, without IntersectionObserver or scroll events.
+## 💻 How to Use
 
-## Tech Stack
-- HTML
-- CSS (scroll-driven animations)
+Combine any standard layout/motion keyframe class with a timeline utility:
 
-## Preview
-Open demo.html directly in your browser to see the effect.
-
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+```html
+<div class="motion-fade-in timeline-view">
+  <p>Look, Ma! No Javascript!</p>
+</div>
