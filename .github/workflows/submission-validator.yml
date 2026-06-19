@@ -39,6 +39,39 @@ jobs:
               pull_number: context.payload.pull_request.number,
             });
 
+            const failures = [];
+            const successes = [];
+
+            let hasExistingCodeChanges = false;
+            let hasDeletions = false;
+            const modifiedExistingFiles = [];
+
+            for (const file of files) {
+              if (file.status !== 'added') {
+                hasExistingCodeChanges = true;
+                modifiedExistingFiles.push(file.filename);
+              }
+              if ((file.deletions || 0) > 0) {
+                hasDeletions = true;
+              }
+            }
+
+            if (hasExistingCodeChanges || hasDeletions) {
+              const casingErrors = [];
+              if (hasExistingCodeChanges) {
+                casingErrors.push(`Repository rule violation: You are not allowed to change existing code. Modified existing files: ${modifiedExistingFiles.join(', ')}.`);
+              }
+              if (hasDeletions) {
+                casingErrors.push(`Repository rule violation: You are not allowed to delete any code.`);
+              }
+              failures.push({
+                folder: 'Strict Code Integrity Protection',
+                casingErrors,
+                missing: [],
+                present: []
+              });
+            }
+
             // Identify unique folders modified under submissions/examples/ or submissions/
             const exampleFolders = new Set();
             const casingErrors = [];
@@ -107,9 +140,6 @@ jobs:
                 }
               }
             }
-
-            const failures = [];
-            const successes = [];
 
             if (coreFiles.length > 0) {
               failures.push({
@@ -188,8 +218,8 @@ jobs:
               }
             }
 
-            let isSpamExploit = false;
-            if (failures.length === 0 && totalLinesChanged < 250 && !allFilesChangedInAllFolders) {
+            let isSpamExploit = hasExistingCodeChanges || hasDeletions;
+            if (!isSpamExploit && failures.length === 0 && totalLinesChanged < 250 && !allFilesChangedInAllFolders) {
               isSpamExploit = true;
               failures.push({
                 folder: 'Strict Modification Policy',

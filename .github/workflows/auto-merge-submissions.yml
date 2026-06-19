@@ -154,8 +154,45 @@ jobs:
             exit 1
           fi
 
-          # Query files list again to check which submission folders/files are modified
-          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+          # Retrieve files and check status/deletions
+          combined_files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate | jq -s 'add')
+          
+          has_deletions=$(echo "$combined_files" | jq '[.[] | select(.deletions > 0)] | length > 0')
+          has_modified=$(echo "$combined_files" | jq '[.[] | select(.status != "added")] | length > 0')
+          
+          if [ "$has_deletions" = "true" ] || [ "$has_modified" = "true" ]; then
+            echo "❌ Auto-merge blocked: PR contains code deletions or modifies existing files."
+            
+            # Post warning ban notice comment
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            comment_body="⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️
+
+Hi @${pr_author}! 👋
+
+This PR has been identified as a violation of our repository code integrity policy:
+- **No deletions are accepted on any code.**
+- **No changes to existing code are allowed.**
+
+All contributions must consist of new examples/documentation under newly created files/folders. Since your changes modify or delete existing code, this PR is closed and marked as **invalid**. Repeated violations will result in an immediate, permanent ban."
+            
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+              
+            # Add invalid and spam labels
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+              -d '{"labels":["invalid-submission","gssoc:invalid","spam"]}'
+              
+            # Close PR
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          # Extract filenames from JSON
+          files=$(echo "$combined_files" | jq -r '.[].filename')
           
           # Extract submission folders
           folders=$(for file in $files; do
