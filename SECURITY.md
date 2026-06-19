@@ -27,6 +27,18 @@ The primary security concern for a CSS framework is:
 
 ---
 
+## Out-of-Scope Items
+
+The following are out of scope for security reports and will not be considered vulnerabilities:
+- Issues in demo files, examples, or test suites unless they demonstrate a vulnerability in the core CSS framework itself.
+- Security vulnerabilities in third-party websites, systems, or CDN/provider infrastructures hosting EaseMotion CSS.
+- Theoretical vulnerabilities or best-practice reports without a working Proof of Concept (PoC) demonstrating practical impact.
+- Vulnerabilities that require physical access, root privileges, or local system command execution to exploit.
+- Attacks that rely on user-side browser bugs, outdated browsers, or misconfigured local client environments.
+- Self-XSS or social engineering attacks targeting maintainers or users.
+
+---
+
 ## Reporting a Vulnerability
 
 **Do not open a public GitHub issue for security vulnerabilities.**
@@ -127,6 +139,8 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full contribution policy.
 ---
 
 ## Acknowledgements
+
+We sincerely thank all security researchers and contributors who practice responsible disclosure. Your efforts play a crucial role in keeping the EaseMotion CSS community safe and secure.
 
 Responsible disclosure is appreciated and rewarded with:
 - Public credit in the security advisory
