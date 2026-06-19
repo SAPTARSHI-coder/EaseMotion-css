@@ -188,8 +188,37 @@ jobs:
                 }
               }
               
-              if (missing.length > 0) {
-                failures.push({ folder, missing, present });
+              const htmlErrors = [];
+              const demoPresent = present.some(p => p.file === 'demo.html');
+              if (demoPresent) {
+                const filePath = path.join(process.env.GITHUB_WORKSPACE, folder, 'demo.html');
+                if (fs.existsSync(filePath)) {
+                  try {
+                    const content = fs.readFileSync(filePath, 'utf8');
+                    const lines = content.split(/\r?\n/).filter(line => line.trim() !== '');
+                    if (lines.length <= 1) {
+                      htmlErrors.push("demo.html must be structured across multiple lines (not a single line of code).");
+                    }
+                    if (!/<!DOCTYPE\s+html/i.test(content)) {
+                      htmlErrors.push("demo.html must contain a `<!DOCTYPE html>` declaration.");
+                    }
+                    if (!/<html/i.test(content)) {
+                      htmlErrors.push("demo.html must contain a `<html>` tag.");
+                    }
+                    if (!/<head/i.test(content)) {
+                      htmlErrors.push("demo.html must contain a `<head>` tag.");
+                    }
+                    if (!/<body/i.test(content)) {
+                      htmlErrors.push("demo.html must contain a `<body>` tag.");
+                    }
+                  } catch (e) {
+                    htmlErrors.push(`Failed to read demo.html: ${e.message}`);
+                  }
+                }
+              }
+
+              if (missing.length > 0 || htmlErrors.length > 0) {
+                failures.push({ folder, missing, present, htmlErrors });
               } else {
                 successes.push({ folder, present });
               }
@@ -279,14 +308,22 @@ jobs:
 
               commentBody += `#### 📁 Folder: \`${fail.folder}\`\n\n`;
               
-              if (fail.missing.length > 0) {
+              if (fail.missing && fail.missing.length > 0) {
                 commentBody += `**Missing files:**\n`;
                 for (const missing of fail.missing) {
                   commentBody += `- ❌ \`${missing.file}\` - ${missing.purpose}\n`;
                 }
               }
               
-              if (fail.present.length > 0) {
+              if (fail.htmlErrors && fail.htmlErrors.length > 0) {
+                if (fail.missing && fail.missing.length > 0) commentBody += `\n`;
+                commentBody += `**HTML boilerplate / structure violations in \`demo.html\`:**\n`;
+                for (const err of fail.htmlErrors) {
+                  commentBody += `- ❌ ${err}\n`;
+                }
+              }
+              
+              if (fail.present && fail.present.length > 0) {
                 commentBody += `\n**Present files:**\n`;
                 for (const present of fail.present) {
                   commentBody += `- ✅ \`${present.file}\`\n`;
