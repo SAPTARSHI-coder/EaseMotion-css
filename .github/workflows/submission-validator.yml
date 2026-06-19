@@ -6,6 +6,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
   validate:
@@ -26,6 +27,7 @@ jobs:
         id: validate
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
@@ -44,6 +46,7 @@ jobs:
             const coreFiles = [];
 
             for (const file of files) {
+              if (file.status === 'removed') continue;
               const filename = file.filename;
               if (filename.startsWith('submissions/')) {
                 const parts = filename.split('/');
@@ -52,13 +55,13 @@ jobs:
                   let folderName;
                   let baseName;
                   
-                  if (parts[1] === 'examples' && parts.length >= 3) {
+                  if ((parts[1] === 'examples' || parts[1] === 'docs') && parts.length >= 3) {
                     folderPath = `${parts[0]}/${parts[1]}/${parts[2]}`;
                     folderName = parts[2];
                     if (parts.length === 4) {
                       baseName = parts[3];
                     }
-                  } else if (parts[1] !== 'examples') {
+                  } else if (parts[1] !== 'examples' && parts[1] !== 'docs') {
                     folderPath = `${parts[0]}/${parts[1]}`;
                     folderName = parts[1];
                     if (parts.length === 3) {
@@ -93,7 +96,13 @@ jobs:
                   }
                 }
               } else {
-                if (!filename.startsWith('docs/') && filename !== 'README.md' && filename !== 'LICENSE' && filename !== 'package.json') {
+                if (
+                  filename !== 'README.md' &&
+                  filename !== 'LICENSE' &&
+                  filename !== 'package.json' &&
+                  filename !== 'easemotion.css' &&
+                  filename !== 'easemotion.min.css'
+                ) {
                   coreFiles.push(filename);
                 }
               }
@@ -174,6 +183,7 @@ jobs:
         env:
           FAILURES_JSON: ${{ steps.validate.outputs.failures }}
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const failures = JSON.parse(process.env.FAILURES_JSON);
             
@@ -259,6 +269,7 @@ jobs:
         env:
           SUCCESSES_JSON: ${{ steps.validate.outputs.successes }}
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const successes = JSON.parse(process.env.SUCCESSES_JSON);
             
@@ -318,6 +329,7 @@ jobs:
         if: failure() && steps.validate.outputs.hasFailures == 'true'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             try {
               await github.rest.issues.addLabels({
@@ -331,10 +343,42 @@ jobs:
               console.log('⚠️ Could not add labels:', error.message);
             }
 
+      - name: Close Invalid PR
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const owner = context.repo.owner;
+              const repo = context.repo.repo;
+              const pullNumber = context.payload.pull_request.number;
+              
+              console.log(`Closing invalid PR #${pullNumber}...`);
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: pullNumber,
+                state: 'closed'
+              });
+              console.log('✅ PR successfully closed.');
+              
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pullNumber,
+                body: `🔒 **Pull Request Closed:** This PR has been automatically closed because it failed the repository's submission validation check.\n\nTo continue contributing, please address the errors shown in the validation summary comment above in your local branch, and open a new, clean Pull Request once resolved. Thank you!`
+              });
+              console.log('✅ Close comment posted.');
+            } catch (error) {
+              console.log('⚠️ Could not close PR or post comment:', error.message);
+            }
+
       - name: Remove Labels on Success
         if: success() && steps.validate.outputs.hasFailures == 'false'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             try {
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({
