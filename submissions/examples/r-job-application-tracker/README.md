@@ -1,22 +1,28 @@
-# Job Application Tracker Dashboard
+# Animated Job Application Tracker
 
-A responsive dashboard that helps users manage job applications, interview progress, recruiter contacts, deadlines, and career goals.
+A responsive dashboard for tracking job applications, interview stages, and recruitment progress.
 
 ## Features
 
-- Application statistics
-- Job application tracking
-- Interview timeline
-- Recruiter contact cards
-- Upcoming deadlines
-- Career analytics
-- Weekly goals
+- Application tracking cards
+- Progress indicators
+- Status badges
+- Timeline updates
 - Responsive layout
+- Pure HTML and CSS
 
-## File Structure
+## Files
 
-```text
-r-job-application-tracker/
-├── README.md
-├── demo.html
-└── style.css
+- demo.html
+- style.css
+
+## Usage
+
+Open `demo.html` directly in a browser.
+
+## Customization
+
+- Add more companies
+- Modify application stages
+- Change colors and animations
+- Extend timeline updates
