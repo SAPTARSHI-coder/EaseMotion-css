@@ -116,7 +116,11 @@ async function bundleCss(filePath, state) {
 
   while ((match = placeholderPattern.exec(bundled)) !== null) {
     chunks.push(bundled.slice(lastIndex, match.index));
-    chunks.push(bundleCss(match[1], state));
+    chunks.push(bundleCss(match[1], {
+      ...state,
+      stack: new Set(state.stack),
+      pathStack: [...state.pathStack]
+    }));
     lastIndex = placeholderPattern.lastIndex;
   }
 
