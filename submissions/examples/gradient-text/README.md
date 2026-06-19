@@ -1,28 +1,49 @@
-# Gradient Text Utility
+# Gradient Text
 
-A set of pure CSS utilities to add beautiful, animated gradient effects to text, as requested in Issue #2704.
+Submission for [issue #2704](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/2704) — adds a pure-CSS, zero-JavaScript utility for animated gradient text effects.
 
-## Overview
-This implementation provides the missing gradient text effects often seen in modern landing pages. It uses `background-clip: text` along with CSS gradients.
+## What it does
 
-## Available Classes
+Applies a gradient color fill to text using `background-clip: text`, with an optional animation modifier that smoothly shifts the gradient position, plus three ready-made color themes.
 
-- `.ease-gradient-text`: The base class. Applies a default purple-to-blue gradient.
-- `.ease-gradient-sunset`: Overrides the gradient with a warm orange/pink/purple hue.
-- `.ease-gradient-ocean`: Overrides the gradient with a cool cyan/blue/indigo hue.
-- `.ease-gradient-forest`: Overrides the gradient with a natural green/teal/emerald hue.
-- `.ease-gradient-text-animate`: Applies a continuous, smooth, shifting animation to the gradient position. Respects `prefers-reduced-motion: reduce`.
+## Classes
+
+| Class                    | Effect                                |
+| ------------------------ | -------------------------------------- |
+| `.gradient-text`         | Static purple → blue gradient on text  |
+| `.gradient-text-animate` | Modifier — smoothly shifting gradient  |
+| `.gradient-sunset`       | Orange → pink → purple gradient        |
+| `.gradient-ocean`        | Cyan → blue → indigo gradient          |
+| `.gradient-forest`       | Green → teal → emerald gradient        |
+
+`.gradient-text-animate` is a **modifier**: stack it with `.gradient-text` or any of the color variants to animate that theme.
 
 ## Usage
-Simply combine the base class with the desired theme and animation modifier:
 
 ```html
-<!-- Static Sunset -->
-<h1 class="ease-gradient-text ease-gradient-sunset">Sunset Glow</h1>
+<link rel="stylesheet" href="style.css" />
 
-<!-- Animated Ocean -->
-<h1 class="ease-gradient-text ease-gradient-ocean ease-gradient-text-animate">Ocean Waves</h1>
+<h1 class="gradient-text">Hello EaseMotion</h1>
+
+<h2 class="gradient-sunset gradient-text-animate">
+  Animated Gradient
+</h2>
 ```
 
-## Implementation Details
-The animation shifts the background position from `0% 50%` to `100% 50%` over 3 seconds. The `background-size` is enlarged to `200% 200%` to create the seamless fluid motion.
+## How it works
+
+The text color comes from a `background` gradient that is clipped to the text shape and made visible by setting `-webkit-text-fill-color` (and `color` as a fallback) to transparent.
+
+## Browser support
+
+`background-clip: text` is supported in all modern evergreen browsers. The `-webkit-` prefix is included for broader Safari/older-Chromium support. Browsers that don't support it fall back to the solid `color` value.
+
+## Accessibility
+
+The animation respects `prefers-reduced-motion: reduce`.
+
+## Files
+
+- `style.css` — the utility classes and keyframes
+- `demo.html` — live preview of every class and combination
+- `README.md` — this file
