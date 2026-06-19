@@ -1,34 +1,7 @@
-# QR Scanner Input
-
-A modern QR scanner input simulation built for EaseMotion CSS.
-
-## Features
-
-- Animated QR scan effect
-- Decoded text display
-- Scan history list
-- Copy-to-clipboard functionality
-- Responsive layout
-- Reduced motion accessibility support
-
-## Files
-
-- demo.html
-- style.css
-- README.md
+# QR Scanner Input Simulation
+A styled QR scanner interface with a laser animation, result display, and copy functionality.
 
 ## Usage
-
-```html
-<div class="scanner-box">
-  <div class="scan-line"></div>
-</div>
-```
-
-## Accessibility
-
-Supports:
-
-- Responsive design
-- Reduced motion preferences
-- Keyboard-accessible controls
+- The laser effect uses CSS keyframes.
+- Results can be copied to the clipboard.
+- Includes a basic history log.
