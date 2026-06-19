@@ -1,11 +1,20 @@
-# CSS-only Animated Tooltip
+# Pure-CSS Animated Tooltip Component
 
-A smooth animated tooltip powered entirely by CSS using `data-tooltip` attributes and `::before`/`::after` pseudo-elements.
+An isolated component submission implementing an ultra-lightweight, high-performance `.ease-tooltip-target` pattern. Displays micro-animated helper popups entirely via pure-CSS pseudo-elements.
 
-## Usage
+## Functional Mechanics
+
+- **Zero JS Lifecycle Dependency:** Avoids heavy positioning engine listeners (like Popper or Floating UI), completely freeing up main thread execution loops.
+- **Attribute String Injection:** Pulls string contents dynamically straight out of the HTML document markup via `content: attr(data-ease-tooltip)`. No redundant nested modal markup trees needed.
+- **A11y Navigation Bridging:** Tooltip states map to both cursor pointers (`:hover`) and alternative keyboard streams (`:focus-visible`, `:focus-within`), staying fully readable under assistive reader engines.
+- **Hardware-Accelerated Fluidity:** Uses specific 3D composite matrices (`translate3d`) paired with layer caching declarations (`will-change`) to ensure smooth 60fps entry animations.
+
+## Usage Layout Structure
 ```html
-<button class="css-tooltip" data-tooltip="Tooltip text here">Hover over me</button>
+
+<div class="ease-tooltip-target" data-ease-tooltip="Helpful info text strings">
+  <button>Hover Me</button>
+</div>
 ```
 
-## Why EaseMotion CSS?
-Pure CSS, animation-first, zero JS dependencies, human-readable class name, composable with any element.
+Closes #13304
