@@ -1,32 +1,64 @@
-# ease-swing animation
+# ease-swing — Pendulum Swing from Top Anchor
 
-Pendulum swing animation that oscillates an element around a top-center anchor point, like a hanging badge or ringing bell.
+A triggered pendulum swing animation using `transform-origin: top center`. Starts at `-15deg`, swings to `+15deg`, then diminishes to 0 via a 10-step geometric decay.
 
-## Class reference
+## Acceptance Criteria
 
-| Class | Rotation Range | Duration | Trigger |
-|-------|----------------|----------|---------|
-| `.ease-swing` | ±15° | 1.2s | Continuous loop |
-| `.ease-swing-small` | ±6° | 1.0s | Continuous loop |
-| `.ease-swing-large` | ±30° | 1.5s | Continuous loop |
-| `.ease-swing-hover` | ±15° | 0.8s × 3 | On `:hover` only |
+- ✅ `transform-origin: top center`
+- ✅ `rotate(-15deg)` → `rotate(15deg)` → settle at `0`
+- ✅ Diminishing oscillation (geometric decay across 10 keyframe steps)
+
+## Difference from ease-hang and ease-sway
+
+| | `ease-hang` | `ease-sway` | `ease-swing` |
+|--|-------------|-------------|--------------|
+| Motion | Continuous gentle sway | translateX + rotate | One-shot pendulum burst |
+| Trigger | Persistent class | Persistent class | Add class → plays once |
+| Feel | Ambient, decoration | Organic, plant-like | Physical, clock pendulum |
+
+## Classes
+
+| Class | Duration | Angle | Notes |
+|-------|----------|-------|-------|
+| `.ease-swing` | 1s | ±15° | Default one-shot |
+| `+ .ease-swing-fast` | 0.5s | ±15° | Quick snap |
+| `+ .ease-swing-slow` | 2s | ±15° | Lazy pendulum |
+| `+ .ease-swing-wide` | 1s | ±25° | Wide arc |
+| `.ease-swing-loop` | 1s | ±15° | Continuous infinite |
+
+## CSS Custom Properties
+
+| Token | Default | Description |
+|-------|---------|-------------|
+| `--ease-swing-duration` | `1s` | Animation duration |
+| `--ease-swing-angle` | `15deg` | Peak rotation angle |
 
 ## Usage
 
 ```html
-<div class="bell-mount"></div>
-<div class="bell-string"></div>
-<div class="bell ease-swing" aria-hidden="true"></div>
+<!-- Trigger on click -->
+<div id="sign" onclick="
+  const el = document.getElementById('sign');
+  el.classList.remove('ease-swing');
+  void el.offsetWidth;
+  el.classList.add('ease-swing');
+">🏪 Open</div>
+
+<!-- Continuous pendulum clock -->
+<div class="ease-swing-loop" style="--ease-swing-angle: 20deg;">🕰</div>
+
+<!-- Custom angle -->
+<div class="ease-swing" style="--ease-swing-angle: 45deg; --ease-swing-duration: 1.5s;">
+  Wide swing
+</div>
 ```
 
-```html
-<span class="badge ease-swing-small">New</span>
-```
+## Important: display: inline-block
 
-## Transform origin
+`.ease-swing` sets `display: inline-block`. `transform-origin` requires a non-inline element.
 
-Each class sets `transform-origin: top center` automatically, so the element swings from its top edge like a pendulum. You do not need to set transform-origin on a parent — the utility handles it on the animated element itself.
+## Accessibility
 
-## Reduced motion
+`animation-duration` reduced to `1ms` when `prefers-reduced-motion: reduce` is set.
 
-All swing animations are disabled inside `@media (prefers-reduced-motion: reduce)`. Users who enable Reduce Motion in their OS accessibility settings will see static elements with no swing animation.
+Closes #11851
