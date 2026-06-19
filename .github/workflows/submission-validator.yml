@@ -165,14 +165,52 @@ jobs:
               }
             }
 
+            // Strict rule check: min 250 lines of code or all files changed
+            let totalLinesChanged = 0;
+            for (const file of files) {
+              totalLinesChanged += (file.additions || 0) + (file.deletions || 0);
+            }
+
+            const changedFilesSet = new Set(files.map(f => f.filename));
+            let allFilesChangedInAllFolders = true;
+            if (exampleFolders.size === 0) {
+              allFilesChangedInAllFolders = false;
+            }
+            
+            for (const folder of exampleFolders) {
+              const req1 = `${folder}/demo.html`;
+              const req2 = `${folder}/style.css`;
+              const req3 = `${folder}/README.md`;
+              
+              if (!changedFilesSet.has(req1) || !changedFilesSet.has(req2) || !changedFilesSet.has(req3)) {
+                allFilesChangedInAllFolders = false;
+                break;
+              }
+            }
+
+            let isSpamExploit = false;
+            if (failures.length === 0 && totalLinesChanged < 250 && !allFilesChangedInAllFolders) {
+              isSpamExploit = true;
+              failures.push({
+                folder: 'Strict Modification Policy',
+                casingErrors: [
+                  `Repository rules violation: This PR modified only ${totalLinesChanged} lines of code and did not modify all 3 required files (demo.html, style.css, README.md) in the submission folder.`,
+                  `Under the strict rules, a PR must change at least 250 lines of code OR modify/create all three required files in the submission folder to prevent spam/low-effort exploits.`
+                ],
+                missing: [],
+                present: []
+              });
+            }
+
             // Store results for later steps
             core.setOutput('failures', JSON.stringify(failures));
             core.setOutput('successes', JSON.stringify(successes));
             core.setOutput('hasFailures', failures.length > 0);
+            core.setOutput('isSpamExploit', isSpamExploit ? 'true' : 'false');
 
             if (failures.length > 0) {
               console.log(`❌ Validation failed for ${failures.length} folder(s)`);
-              core.setFailed('PR is missing required submission files.');
+              core.setFailed('PR does not meet submission requirements.');
             } else {
               console.log(`✅ All ${successes.length} folder(s) validated successfully!`);
             }
@@ -332,13 +370,15 @@ jobs:
           github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             try {
+              const isSpam = '${{ steps.validate.outputs.isSpamExploit }}' === 'true';
+              const labels = isSpam ? ['gssoc:invalid', 'invalid-submission', 'spam'] : ['needs-files', 'invalid-submission'];
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                labels: ['needs-files', 'invalid-submission']
+                labels: labels
               });
-              console.log('✅ Added labels: needs-files, invalid-submission');
+              console.log('✅ Added labels:', labels);
             } catch (error) {
               console.log('⚠️ Could not add labels:', error.message);
             }
@@ -353,6 +393,8 @@ jobs:
               const owner = context.repo.owner;
               const repo = context.repo.repo;
               const pullNumber = context.payload.pull_request.number;
+              const prAuthor = context.payload.pull_request.user.login;
+              const isSpam = '${{ steps.validate.outputs.isSpamExploit }}' === 'true';
               
               console.log(`Closing invalid PR #${pullNumber}...`);
               await github.rest.pulls.update({
@@ -363,11 +405,25 @@ jobs:
               });
               console.log('✅ PR successfully closed.');
               
+              let commentBody;
+              if (isSpam) {
+                commentBody = `⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️\n\n` +
+                  `Hi @${prAuthor}! 👋\n\n` +
+                  `This PR has been identified as a potential exploit/low-effort contribution spam (it only modified a small number of lines and did not create or fully update all 3 required files: \`demo.html\`, \`style.css\`, and \`README.md\`).\n\n` +
+                  `To maintain a fair, high-quality, and robust contribution environment, **EaseMotion CSS enforces a strict minimum modification rule**:\n` +
+                  `- You must change **at least 250 lines of code** OR\n` +
+                  `- You must modify/create **all three required files** in your submission folder.\n\n` +
+                  `**Zero-Tolerance Policy:** Low-effort PRs opened solely to accumulate points are considered spam. Your account has been flagged. Persistent violation of this rule will result in an immediate, permanent ban from this repository and GSSoC.\n\n` +
+                  `This PR has been closed and marked as **invalid**.`;
+              } else {
+                commentBody = `🔒 **Pull Request Closed:** This PR has been automatically closed because it failed the repository's submission validation check.\n\nTo continue contributing, please address the errors shown in the validation summary comment above in your local branch, and open a new, clean Pull Request once resolved. Thank you!`;
+              }
+              
               await github.rest.issues.createComment({
                 owner,
                 repo,
                 issue_number: pullNumber,
-                body: `🔒 **Pull Request Closed:** This PR has been automatically closed because it failed the repository's submission validation check.\n\nTo continue contributing, please address the errors shown in the validation summary comment above in your local branch, and open a new, clean Pull Request once resolved. Thank you!`
+                body: commentBody
               });
               console.log('✅ Close comment posted.');
             } catch (error) {
@@ -387,10 +443,10 @@ jobs:
                 issue_number: context.payload.pull_request.number,
               });
               
-              const labelsToRemove = ['needs-files', 'invalid-submission'];
+              const labelsToRemove = ['needs-files', 'invalid-submission', 'gssoc:invalid', 'spam'];
               for (const label of labels) {
                 if (labelsToRemove.includes(label.name)) {
-                  await github.rest.issues.removeLabel({
+                   await github.rest.issues.removeLabel({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                     issue_number: context.payload.pull_request.number,
