@@ -1,22 +1,28 @@
 # Animated Toggle Switch
 
-A responsive animated toggle switch component built using pure HTML and CSS.
+## What does this do?
+A CSS-only animated toggle switch component built on a hidden checkbox input, with smooth knob transitions, three size variants, and a disabled state.
 
-## Features
+## How is it used?
+```html
+<label class="ease-toggle">
+  <input type="checkbox" class="ease-toggle-input" checked>
+  <span class="ease-toggle-track">
+    <span class="ease-toggle-thumb"></span>
+  </span>
+</label>
 
-- Animated switch transitions
-- Active and inactive states
-- Hover interactions
-- Responsive layouts
-- Smooth motion effects
-- Pure CSS implementation
+<!-- Size variants -->
+<label class="ease-toggle ease-toggle-sm">...</label>
+<label class="ease-toggle ease-toggle-lg">...</label>
 
-## Usage
+<!-- Disabled state -->
+<label class="ease-toggle disabled">
+  <input type="checkbox" class="ease-toggle-input" disabled>
+  ...
+</label>
+```
+Wrap a hidden checkbox with `.ease-toggle` + `.ease-toggle-input`, a `.ease-toggle-track` background, and a `.ease-toggle-thumb` knob. Add `checked` to the input for the on state. Use `.ease-toggle-sm` / `.ease-toggle-lg` for size variants and `.disabled` for the disabled state.
 
-Open `demo.html` in a browser to view the animated toggle switch component.
-
-## Files
-
-- `demo.html` → Toggle switch structure
-- `style.css` → Toggle styles and animations
-- `README.md` → Documentation
+## Why is it useful for EaseMotion CSS?
+Animated toggle switches are a high-demand UI pattern used in settings pages, forms, and dashboards. This component provides a pure CSS solution with smooth motion, accessible keyboard interaction, and consistent theming — fitting EaseMotion CSS's animation-first philosophy.
