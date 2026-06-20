@@ -145,15 +145,23 @@ Most people simply forget. This is your reminder. 😊
 
 ## Browser Compatibility
 
-EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
+EaseMotion CSS is built for modern evergreen browsers and relies on:
+
+- CSS3 custom properties
+- CSS animations
+- Flexbox
+- CSS Grid
+- transforms
+- transitions
+- keyframe animations
 
 <div align="center">
 
 | Browser | Minimum Version | `backdrop-filter`                                 | `aspect-ratio` | CSS variables | Animations | Notes     |
-| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- | --- |
+| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- |
 | Chrome  | 49+             | Supported                                         | Supported      | Supported     | Supported  |           |
 | Firefox | 31+             | Supported                                         | Supported      | Supported     | Supported  |           |
-| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  | Supported |     |
+| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  | Supported |
 | Edge    | 15+             | Supported                                         | Supported      | Supported     | Supported  |           |
 | Opera   | 36+             | Supported                                         | Supported      | Supported     | Supported  |           |
 
