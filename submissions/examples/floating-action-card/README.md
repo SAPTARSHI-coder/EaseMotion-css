@@ -1,24 +1,23 @@
 # Floating Action Card
 
-Issue: #ISSUE_NUMBER
+Issue: #7616
 
 Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
 
 ## Overview
 
-A modern floating action card component featuring smooth floating animations, glassmorphism styling, gradient action buttons, hover lift effects, and responsive layouts using pure HTML and CSS.
+A modern interactive floating action card component featuring smooth hover lift effects, enhanced shadow transitions, action button emphasis, and responsive layouts using pure HTML and CSS.
 
 ## Features
 
-- Floating card animation
-- Hover lift interaction
-- Floating action button
-- Glassmorphism design
-- Gradient glow background
-- Premium badge variant
-- Responsive layout
-- Pure HTML and CSS
-- No JavaScript required
+* Smooth hover lift effect
+* Enhanced shadow depth transition
+* Action button emphasis on hover
+* Responsive layout
+* Modern UI design
+* Pure HTML and CSS
+* Easy customization
+* No JavaScript required
 
 ## Usage
 
@@ -40,14 +39,14 @@ A modern floating action card component featuring smooth floating animations, gl
 
 ## Why It Fits EaseMotion CSS
 
-- Animation-first design
-- Human-readable class names
-- Reusable card component
-- Modern UI patterns
-- Lightweight implementation
+* Human-readable class names
+* Reusable card component
+* Modern UI patterns
+* Pure HTML and CSS implementation
+* Lightweight and framework independent
 
 ## Files
 
-- demo.html
-- style.css
-- README.md
+* demo.html
+* style.css
+* README.md
