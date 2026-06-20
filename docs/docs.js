@@ -117,25 +117,29 @@ if (targetMap.size > 0) {
 // ── Mobile Sidebar Toggle ────────────────────────────────
 document.addEventListener("DOMContentLoaded", function () {
   const sidebarToggle = document.getElementById("sidebarToggle");
+  const sidebarClose = document.getElementById("sidebarClose");
   const sidebar = document.getElementById("docsSidebar");
   const overlay = document.getElementById("sidebarOverlay");
+  const closeSidebar = () => {
+    if (sidebar) sidebar.classList.remove("open");
+    if (overlay) overlay.classList.remove("open");
+  };
   if (sidebarToggle && sidebar) {
     sidebarToggle.addEventListener("click", function (e) {
       e.stopPropagation();
       sidebar.classList.toggle("open");
       if (overlay) overlay.classList.toggle("open");
     });
+    if (sidebarClose) {
+      sidebarClose.addEventListener("click", closeSidebar);
+    }
     if (overlay) {
-      overlay.addEventListener("click", function () {
-        sidebar.classList.remove("open");
-        overlay.classList.remove("open");
-      });
+      overlay.addEventListener("click", closeSidebar);
     }
     sidebar.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
         if (window.innerWidth <= 768) {
-          sidebar.classList.remove("open");
-          if (overlay) overlay.classList.remove("open");
+          closeSidebar();
         }
       });
     });
