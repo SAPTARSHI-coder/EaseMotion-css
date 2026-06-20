@@ -347,6 +347,99 @@ By default, the value is `infinite`, preserving existing behavior.
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
 
+### Animation Timing Specification
+
+Each animation class uses configurable timing through CSS custom properties. The table below documents the default timing function, duration, and delay support for every animation class.
+
+#### Timing Function Tokens
+
+| Token                        | Value                                   | Usage                        |
+| ---------------------------- | --------------------------------------- | ---------------------------- |
+| `--ease-ease`                | `cubic-bezier(0.4, 0, 0.2, 1)`         | Default smooth ease-in-out   |
+| `--ease-ease-out`            | `cubic-bezier(0, 0, 0.2, 1)`           | Ping, card-lift              |
+| `--ease-ease-in`             | `cubic-bezier(0.4, 0, 1, 1)`           | Deceleration                 |
+| `--ease-ease-linear`         | `linear`                                | Rotate                       |
+| `--ease-ease-bounce`         | `cubic-bezier(0.34, 1.56, 0.64, 1)`    | Bounce-in, hover-grow        |
+
+#### Default Durations
+
+| Token                | Value    | Used By                        |
+| -------------------- | -------- | ------------------------------ |
+| `--ease-speed-fast`  | `150ms`  | Hover transitions, shrink      |
+| `--ease-speed-medium`| `300ms`  | All entrance & exit animations |
+| `--ease-speed-slow`  | `600ms`  | Shimmer sweep, hover-shimmer   |
+
+Override any token globally to retime every animation that uses it:
+```css
+:root {
+  --ease-speed-fast: 100ms;
+  --ease-speed-medium: 400ms;
+}
+```
+
+#### Per-Animation Defaults
+
+| Class                         | Default Duration | Timing Function           | Plays    | Delay Support |
+| ----------------------------- | ---------------- | ------------------------- | -------- | ------------- |
+| `.ease-fade-in`               | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-fade-out`              | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-up`              | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-down`            | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-left`         | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-right`        | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-from-top`     | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-from-bottom`  | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-from-left`    | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-slide-in-from-right`   | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-zoom-in`               | `--speed-medium` | `--ease-ease-bounce`      | Once     | Yes           |
+| `.ease-zoom-out`              | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-bounce-in`             | `--speed-medium` | `--ease-ease-bounce`      | Once     | Yes           |
+| `.ease-flip`                  | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-blur-to-focus`         | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+| `.ease-contract-image-entrance`| `--speed-medium` | `--ease-ease`            | Once     | Yes           |
+| `.ease-bounce`                | `1s`             | `cubic-bezier(0.8,0,1,1)` | Infinite | No            |
+| `.ease-pulse`                 | `2s`             | `--ease-ease`             | Infinite | No            |
+| `.ease-rotate`                | `1.2s`           | `linear`                  | Infinite | No            |
+| `.ease-ping`                  | `1s`             | `--ease-ease-out`         | Infinite | No            |
+| `.ease-shake`                 | `0.5s`           | `--ease-ease`             | Once     | No            |
+| `.ease-float`                 | `3s`             | `ease-in-out`             | Infinite | No            |
+| `.ease-typewriter-loop`       | `6s`             | `steps(12, end)`          | Infinite | No            |
+| `.ease-shimmer-sweep`         | `--speed-slow`   | `--ease-ease`             | Infinite | No            |
+| `.ease-gradient-rotation`     | `3s`             | `--ease-ease`             | Infinite | No            |
+| `.ease-expand-border-exit`    | `--speed-medium` | `--ease-ease`             | Once     | Yes           |
+
+#### Delay Helpers
+
+| Class                 | Delay      |
+| --------------------- | ---------- |
+| `.ease-delay-75`      | `75ms`     |
+| `.ease-delay-100`     | `100ms`    |
+| `.ease-delay-150`     | `150ms`    |
+| `.ease-delay-200`     | `200ms`    |
+| `.ease-delay-300`     | `300ms`    |
+| `.ease-delay-400`     | `400ms`    |
+| `.ease-delay-500`     | `500ms`    |
+| `.ease-delay-600`     | `600ms`    |
+| `.ease-delay-700`     | `700ms`    |
+| `.ease-delay-800`     | `800ms`    |
+| `.ease-delay-1000`    | `1000ms`   |
+
+In addition, scroll-reveal variants offer `--ease-reveal-delay-1` through `--ease-reveal-delay-5` (0.1s–0.5s).
+
+#### Duration Overrides
+
+Use these utility classes to change an animation's speed on the fly:
+
+| Class                 | Duration   |
+| --------------------- | ---------- |
+| `.ease-duration-fast` | `150ms`    |
+| `.ease-duration-medium`| `300ms`   |
+| `.ease-duration-slow` | `600ms`    |
+
+```html
+<div class="ease-slide-up ease-duration-slow">Slow entrance</div>
+<div class="ease-bounce ease-duration-fast">Fast bounce</div>
+```
 
 ### Hover Effects
 
