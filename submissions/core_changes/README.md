@@ -1,49 +1,22 @@
-# Responsive Breakpoint Utility Classes
+# Water Intake Fill Animation
 
-Adds responsive utility classes with breakpoint prefixes for building responsive layouts.
+This submission implements an animated water glass fill indicator for daily hydration tracking (Issue **#14027**).
 
-## Breakpoints
+## What It Does
 
-| Prefix | Min Width | Example |
-|--------|-----------|--------|
-| `sm` | 640px | `.ease-sm-flex` (already exists) |
-| `md` | 768px | `.ease-md-hidden` |
-| `lg` | 1024px | `.ease-lg-grid-cols-3` |
-| `xl` | 1280px | `.ease-xl-flex-row` |
-| `2xl` | 1536px | `.ease-2xl-w-1/2` |
+A glass-shaped element fills with water color representing hydration progress. The water level rises with a smooth spring-like transition and a wave animation on the surface.
 
-## Utility Categories
+## Features
 
-| Category | Classes |
-|----------|--------|
-| **Display** | `flex`, `grid`, `block`, `hidden`, `inline`, `inline-block` |
-| **Grid columns** | `grid-cols-1`, `grid-cols-2`, `grid-cols-3`, `grid-cols-4`, `grid-cols-6`, `grid-cols-12` |
-| **Flex direction** | `flex-row`, `flex-col`, `flex-wrap`, `flex-nowrap` |
-| **Gap** | `gap-0` through `gap-8` |
-| **Text alignment** | `text-left`, `text-center`, `text-right` |
-| **Width** | `w-1/2`, `w-1/3`, `w-2/3`, `w-1/4`, `w-3/4`, `w-full` |
-| **Order** | `order-first`, `order-1`, `order-2`, `order-3`, `order-last` |
-| **Alignment** | `items-center`, `items-start`, `items-end`, `justify-center`, `justify-between`, `justify-around`, `justify-end` |
+- Glass shape via `clip-path: polygon()` for tapered cup look
+- Water fill animates with `cubic-bezier(0.34, 1.56, 0.64, 1)` spring easing
+- Wave effect via animated `border-radius` keyframes
+- +250ml / +500ml buttons, preset dots (25/50/75/100%), reset
+- Real-time stats: ml consumed, goal, percentage
+- `prefers-reduced-motion` disables animations
 
-## Usage
+## Files
 
-```html
-<!-- 2 cols on md, 4 cols on lg -->
-<div class="ease-grid ease-md-grid-cols-2 ease-lg-grid-cols-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-  <div>4</div>
-</div>
-
-<!-- Hidden on mobile, flex on md+ -->
-<div class="ease-hidden ease-md-flex">
-  <span>Visible on md+</span>
-</div>
-```
-
-## Generation
-
-Classes are generated via CSS `@media (min-width: ...)` queries for each breakpoint. To regenerate, run the Python/SCSS build script in the submission source.
-
-Fixes #12460
+- `demo.html` — Interactive hydration tracker with glass, stats, controls
+- `style.css` — Glass shape, water fill, wave, responsive layout
+- `README.md` — This documentation
