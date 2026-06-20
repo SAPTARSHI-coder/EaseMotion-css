@@ -1,49 +1,42 @@
-# Responsive Breakpoint Utility Classes
+# Button Click Ripple Animation
 
-Adds responsive utility classes with breakpoint prefixes for building responsive layouts.
+This submission implements a material-inspired click ripple effect for buttons (Issue **#14189**).
 
-## Breakpoints
+## What It Does
 
-| Prefix | Min Width | Example |
-|--------|-----------|--------|
-| `sm` | 640px | `.ease-sm-flex` (already exists) |
-| `md` | 768px | `.ease-md-hidden` |
-| `lg` | 1024px | `.ease-lg-grid-cols-3` |
-| `xl` | 1280px | `.ease-xl-flex-row` |
-| `2xl` | 1536px | `.ease-2xl-w-1/2` |
+Adds a `.btn-ripple` modifier class that creates a circular ripple animation on click. The ripple starts at scale(0) with opacity 0.35 and scales up to scale(4) while fading to opacity 0 over 600ms.
 
-## Utility Categories
+## Variants
 
-| Category | Classes |
-|----------|--------|
-| **Display** | `flex`, `grid`, `block`, `hidden`, `inline`, `inline-block` |
-| **Grid columns** | `grid-cols-1`, `grid-cols-2`, `grid-cols-3`, `grid-cols-4`, `grid-cols-6`, `grid-cols-12` |
-| **Flex direction** | `flex-row`, `flex-col`, `flex-wrap`, `flex-nowrap` |
-| **Gap** | `gap-0` through `gap-8` |
-| **Text alignment** | `text-left`, `text-center`, `text-right` |
-| **Width** | `w-1/2`, `w-1/3`, `w-2/3`, `w-1/4`, `w-3/4`, `w-full` |
-| **Order** | `order-first`, `order-1`, `order-2`, `order-3`, `order-last` |
-| **Alignment** | `items-center`, `items-start`, `items-end`, `justify-center`, `justify-between`, `justify-around`, `justify-end` |
+| Class | Description |
+|-------|-------------|
+| `.btn-ripple` | Modifier — enables ripple effect on any button |
+| `.btn-primary` / `.btn-success` / `.btn-danger` | Color variants with ripple |
+| `.btn-outline` / `.btn-ghost` | Borderless/transparent variants |
+| `.btn-sm` / `.btn-lg` | Size variants |
+| `.btn-pill` | Fully rounded pill shape |
 
 ## Usage
 
 ```html
-<!-- 2 cols on md, 4 cols on lg -->
-<div class="ease-grid ease-md-grid-cols-2 ease-lg-grid-cols-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-  <div>4</div>
-</div>
-
-<!-- Hidden on mobile, flex on md+ -->
-<div class="ease-hidden ease-md-flex">
-  <span>Visible on md+</span>
-</div>
+<button class="btn btn-primary btn-ripple" onclick="createRipple(event)">
+  Click Me
+</button>
 ```
 
-## Generation
+Include the `createRipple(event)` JavaScript function and the `@keyframes ripple` animation.
 
-Classes are generated via CSS `@media (min-width: ...)` queries for each breakpoint. To regenerate, run the Python/SCSS build script in the submission source.
+## Files
 
-Fixes #12460
+- `demo.html` — Interactive demo with 8 button variant + ripple combinations
+- `style.css` — Button styles, ripple keyframes, variant classes, reduced-motion support
+- `README.md` — This documentation
+
+## Features
+
+- Material ripple animation on click
+- Works with all button variants (primary, success, danger, outline, ghost)
+- Works with all sizes (sm, lg) and shapes (pill)
+- Ripple originates at click coordinates
+- Auto-cleans up after animation completes
+- `prefers-reduced-motion` disables the ripple
