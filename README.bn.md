@@ -154,13 +154,13 @@ npm install easemotion-css
 তারপর HTML-এ:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
 ```
 
 অথবা CSS / PostCSS / Sass-এ:
 
 ```css
-@import "easemotion-css/easemotion.css";
+@import "easemotion-css/easemotion.min.css";
 ```
 
 ### অপশন ৩ — গ্রানুলার ইম্পোর্ট _(শুধু যা দরকার তা নাও)_
@@ -195,7 +195,34 @@ npm install easemotion-css
 />
 ```
 
-> ⚠️ **`variables.css` সবসময় আগে লোড করতে হবে।** অন্য সব মডিউল এর CSS কাস্টম প্রপার্টির উপর নির্ভরশীল।
+### অপশন ৪ — মডুলার অ্যানিমেশন ইম্পোর্ট _(শুধু যা দরকার তা লোড করো)_
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/variables.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/fade.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/slide.css"
+/>
+<!-- শুধু আপনার প্রয়োজনীয় অ্যানিমেশন ক্যাটাগরিগুলো যুক্ত করুন -->
+```
+
+### সম্পূর্ণ বান্ডেল (Full bundle)
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/all.css"
+/>
+```
+
+> ⚠️ **`easemotion/variables.css` অবশ্যই মডুলার অ্যানিমেশন ফাইলের আগে লোড করতে হবে।** এটি সমস্ত অ্যানিমেশন ক্যাটাগরি দ্বারা ব্যবহৃত শেয়ার্ড কাস্টম প্রপার্টি প্রদান করে।
 
 ---
 
@@ -503,7 +530,7 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 
 রেপো স্ট্যাবিলিটি, রিভিউ কোয়ালিটি এবং কন্ট্রিবিউশনের ন্যায্য বণ্টন বজায় রাখতে, EaseMotion CSS একটি নরম অবদানের সীমা (soft contribution limit) প্রবর্তন করছে:
 
-- কন্ট্রিবিউটররা প্রতিদিন সর্বোচ্চ **৭০টি পিআর (PR) জমা দিতে পারবেন**
+- কন্ট্রিবিউটররা প্রতিদিন সর্বোচ্চ **২৫টি পিআর (PR) জমা দিতে পারবেন**
 - গুণগত মান, মৌলিকত্ব, অ্যাক্সেসিবিলিটি এবং সঠিক টেস্টিং-এর ওপর মনোযোগ দিন
 - কম পরিশ্রমে তৈরি, পুনরাবৃত্তিমূলক বা স্বয়ংক্রিয়ভাবে তৈরি পিআর (PR) কোনো রিভিউ ছাড়াই বন্ধ করা হতে পারে
 
