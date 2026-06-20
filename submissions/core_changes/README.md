@@ -1,49 +1,53 @@
-# Responsive Breakpoint Utility Classes
+# Interactive Animation Playground
 
-Adds responsive utility classes with breakpoint prefixes for building responsive layouts.
+An interactive playground for experimenting with EaseMotion CSS animation classes in real time. Tweak duration, easing, delay, direction, and fill mode — then copy the generated code for use in your projects.
 
-## Breakpoints
+## Features
 
-| Prefix | Min Width | Example |
-|--------|-----------|--------|
-| `sm` | 640px | `.ease-sm-flex` (already exists) |
-| `md` | 768px | `.ease-md-hidden` |
-| `lg` | 1024px | `.ease-lg-grid-cols-3` |
-| `xl` | 1280px | `.ease-xl-flex-row` |
-| `2xl` | 1536px | `.ease-2xl-w-1/2` |
+- **Live Preview**: Side-by-side controls and preview panel
+- **30+ Animation Classes**: All entrance, attention, and special effect animations
+- **Element Picker**: Switch between card, button, image, and text elements
+- **Custom Timing**: Sliders for duration (0.1s–5s) and delay (0s–3s)
+- **Easing Functions**: Standard CSS easings plus bounce and spring curves
+- **Direction & Fill Mode**: Control animation playback direction and end state
+- **Infinite Loop Toggle**: Toggle looping on/off
+- **Code Export**: Auto-generated HTML+CSS snippet with copy-to-clipboard
+- **Shareable URLs**: Animation configuration is encoded in the URL hash
+- **Starter Presets**: 8 preset configurations for quick inspiration
+- **Responsive**: Works on desktop and tablet
 
-## Utility Categories
+## File Structure
 
-| Category | Classes |
-|----------|--------|
-| **Display** | `flex`, `grid`, `block`, `hidden`, `inline`, `inline-block` |
-| **Grid columns** | `grid-cols-1`, `grid-cols-2`, `grid-cols-3`, `grid-cols-4`, `grid-cols-6`, `grid-cols-12` |
-| **Flex direction** | `flex-row`, `flex-col`, `flex-wrap`, `flex-nowrap` |
-| **Gap** | `gap-0` through `gap-8` |
-| **Text alignment** | `text-left`, `text-center`, `text-right` |
-| **Width** | `w-1/2`, `w-1/3`, `w-2/3`, `w-1/4`, `w-3/4`, `w-full` |
-| **Order** | `order-first`, `order-1`, `order-2`, `order-3`, `order-last` |
-| **Alignment** | `items-center`, `items-start`, `items-end`, `justify-center`, `justify-between`, `justify-around`, `justify-end` |
-
-## Usage
-
-```html
-<!-- 2 cols on md, 4 cols on lg -->
-<div class="ease-grid ease-md-grid-cols-2 ease-lg-grid-cols-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-  <div>4</div>
-</div>
-
-<!-- Hidden on mobile, flex on md+ -->
-<div class="ease-hidden ease-md-flex">
-  <span>Visible on md+</span>
-</div>
+```
+submissions/core_changes/
+  demo.html         # Main playground page (HTML + CSS + JS)
+  style.css         # Playground-specific layout and component styles
+  README.md         # This file
 ```
 
-## Generation
+## How to Use
 
-Classes are generated via CSS `@media (min-width: ...)` queries for each breakpoint. To regenerate, run the Python/SCSS build script in the submission source.
+1. Open `demo.html` directly in any modern browser (no server required)
+2. Select an animation class from the dropdown
+3. Adjust duration, delay, easing, direction, and fill mode
+4. Toggle infinite loop for continuous playback
+5. Switch element type to see the animation on different elements
+6. Click any preset card for quick inspiration
+7. Copy the generated code snippet for use in your project
+8. Share your configuration via the URL (encoded in the hash)
 
-Fixes #12460
+## Animation Classes Covered
+
+| Category | Classes |
+|----------|---------|
+| **Entrance** | ease-fade-in, ease-fade-out, ease-slide-up, ease-slide-down, ease-slide-in-left, ease-slide-in-right, ease-slide-in-from-top, ease-slide-in-from-bottom, ease-slide-in-from-left, ease-slide-in-from-right, ease-slide-in-from-top-left, ease-slide-in-from-top-right, ease-slide-in-from-bottom-left, ease-slide-in-from-bottom-right, ease-bounce-in, ease-zoom-in, ease-zoom-out, ease-flip, ease-blur-to-focus |
+| **Attention** | ease-bounce, ease-rotate, ease-pulse, ease-wave, ease-ping, ease-shake, ease-float |
+| **Special** | ease-gradient-rotation, ease-shimmer-text |
+
+## Notes
+
+- The playground embeds its own keyframe definitions for self-containment and does not modify any core framework files
+- All CSS custom properties (`--anim-duration`, `--anim-easing`, etc.) are scoped to the demo
+- Compatible with Chrome, Firefox, Safari, and Edge
+
+Fixes #13894
