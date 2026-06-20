@@ -1,49 +1,34 @@
-# Responsive Breakpoint Utility Classes
+# .ease-card-glow Reduced Motion Fix
 
-Adds responsive utility classes with breakpoint prefixes for building responsive layouts.
+This submission fixes a bug where `.ease-card-glow` under `prefers-reduced-motion: reduce` sets `transition: none !important` but the hover box-shadow still fires instantly, causing a sudden flash (Issue **#14081**).
 
-## Breakpoints
+## The Bug
 
-| Prefix | Min Width | Example |
-|--------|-----------|--------|
-| `sm` | 640px | `.ease-sm-flex` (already exists) |
-| `md` | 768px | `.ease-md-hidden` |
-| `lg` | 1024px | `.ease-lg-grid-cols-3` |
-| `xl` | 1280px | `.ease-xl-flex-row` |
-| `2xl` | 1536px | `.ease-2xl-w-1/2` |
+Under reduced motion, the card sets `transition: none` but the hover rule `.ease-card-glow:hover { box-shadow: ... }` still applies — creating a 0ms snap from no-glow to full-glow, which is worse for motion-sensitive users than a gradual transition.
 
-## Utility Categories
+## The Fix
 
-| Category | Classes |
-|----------|--------|
-| **Display** | `flex`, `grid`, `block`, `hidden`, `inline`, `inline-block` |
-| **Grid columns** | `grid-cols-1`, `grid-cols-2`, `grid-cols-3`, `grid-cols-4`, `grid-cols-6`, `grid-cols-12` |
-| **Flex direction** | `flex-row`, `flex-col`, `flex-wrap`, `flex-nowrap` |
-| **Gap** | `gap-0` through `gap-8` |
-| **Text alignment** | `text-left`, `text-center`, `text-right` |
-| **Width** | `w-1/2`, `w-1/3`, `w-2/3`, `w-1/4`, `w-3/4`, `w-full` |
-| **Order** | `order-first`, `order-1`, `order-2`, `order-3`, `order-last` |
-| **Alignment** | `items-center`, `items-start`, `items-end`, `justify-center`, `justify-between`, `justify-around`, `justify-end` |
-
-## Usage
-
-```html
-<!-- 2 cols on md, 4 cols on lg -->
-<div class="ease-grid ease-md-grid-cols-2 ease-lg-grid-cols-4">
-  <div>1</div>
-  <div>2</div>
-  <div>3</div>
-  <div>4</div>
-</div>
-
-<!-- Hidden on mobile, flex on md+ -->
-<div class="ease-hidden ease-md-flex">
-  <span>Visible on md+</span>
-</div>
+```css
+@media (prefers-reduced-motion: reduce) {
+  .ease-card-glow:hover,
+  .ease-card-glow:focus-visible {
+    box-shadow: none;
+  }
+}
 ```
 
-## Generation
+This completely removes the glow effect on hover when reduced motion is preferred, avoiding any sudden visual change.
 
-Classes are generated via CSS `@media (min-width: ...)` queries for each breakpoint. To regenerate, run the Python/SCSS build script in the submission source.
+## Features
 
-Fixes #12460
+- Side-by-side comparison: broken (`transition: none`) vs fixed (`box-shadow: none` on hover)
+- Live reduced motion simulation toggle (no OS setting change needed)
+- Syntax-highlighted code block showing both fix options
+- Fully accessible with keyboard navigation
+- Respects native `prefers-reduced-motion` automatically
+
+## Files
+
+- `demo.html` — Side-by-side card comparison, fix explanation, live simulation toggle
+- `style.css` — Card styles, glow effects, reduced-motion overrides, code syntax highlighting
+- `README.md` — This documentation
