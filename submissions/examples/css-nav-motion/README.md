@@ -11,6 +11,8 @@ A collection of beautiful, pure CSS animated navigation menus for modern website
 4. **Gradient Fill** - Gradient background slide-in
 5. **Icon Menu** - Icon + label with bounce effect
 6. **Hamburger Menu** - Animated hamburger to X toggle
+7.6. **Hamburger Menu** - Animated hamburger to X toggle
+
 
 ## 📂 Files
 - `demo.html` - Main HTML structure
