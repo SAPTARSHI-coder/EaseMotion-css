@@ -1,33 +1,52 @@
-# Toast Notification Component
+# Animated Notification Toast
 
-Styled toast notifications with slide-in animation and variants for success, error, warning, and info.
+CSS-only animated toast notification component for EaseMotion-css.
 
-## Demo
+## Classes
 
-Open `demo.html` in your browser and click the buttons to trigger different toast types.
+### Variants
+| Class | Effect |
+|-------|--------|
+| `ease-toast-success` | Green theme for success messages |
+| `ease-toast-error` | Red theme for error messages |
+| `ease-toast-warning` | Yellow theme for warnings |
+| `ease-toast-info` | Blue theme for information |
+
+### Positions
+| Class | Position |
+|-------|----------|
+| `ease-toast-top-right` | Top right (default) |
+| `ease-toast-top-left` | Top left |
+| `ease-toast-bottom-right` | Bottom right |
+| `ease-toast-bottom-left` | Bottom left |
+| `ease-toast-top-center` | Top center |
+| `ease-toast-bottom-center` | Bottom center |
 
 ## Usage
 
 ```html
-&lt;!-- Toast container (fixed position) --&gt;
-&lt;div class="toast-container" id="toastContainer"&gt;&lt;/div&gt;
+<div class="ease-toast-container ease-toast-top-right">
+  <div class="ease-toast ease-toast-success">
+    ✓ Changes saved successfully!
+    <button class="ease-toast-close">✕</button>
+  </div>
+</div>
+```
 
-&lt;!-- Success toast --&gt;
-&lt;div class="toast toast-success"&gt;
-  &lt;div class="toast-icon"&gt;✓&lt;/div&gt;
-  &lt;div class="toast-content"&gt;
-    &lt;div class="toast-title"&gt;Success&lt;/div&gt;
-    &lt;div class="toast-message"&gt;Your changes have been saved.&lt;/div&gt;
-  &lt;/div&gt;
-  &lt;button class="toast-close"&gt;✕&lt;/button&gt;
-&lt;/div&gt;
+## Features
+- Slide-in from screen edge
+- Fade-out on dismiss
+- Auto-dismiss after 3s
+- Progress bar indicator
+- 4 variants, 6 positions
+- Minimal JS for auto-dismiss only
 
-&lt;!-- Error toast --&gt;
-&lt;div class="toast toast-error"&gt;
-  &lt;div class="toast-icon"&gt;✕&lt;/div&gt;
-  &lt;div class="toast-content"&gt;
-    &lt;div class="toast-title"&gt;Error&lt;/div&gt;
-    &lt;div class="toast-message"&gt;Something went wrong.&lt;/div&gt;
-  &lt;/div&gt;
-  &lt;button class="toast-close"&gt;✕&lt;/button&gt;
-&lt;/div&gt;
+## Customization
+```css
+:root {
+  --ease-toast-duration: 3s;
+  --ease-toast-bg: #1a202c;
+  --ease-toast-text: #ffffff;
+  --ease-toast-radius: 0.75rem;
+}
+```
