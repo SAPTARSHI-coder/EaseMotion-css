@@ -1,34 +1,39 @@
-# Animation: ease-button-error-state
+# Ease-button-error-state
 
-A small, accessible button error state that **shakes** and shows clear visual feedback.
+Button error state that **shakes** and shows a clear **red error UI**.
 
-## Description
+## What it includes
 
-This example demonstrates a reusable CSS pattern:
-- Add `.is-error` to a button to activate the error styling.
-- The button shakes via the `@keyframes easeButtonShake` keyframes.
-- `aria-invalid="true"` is applied while the error state is active.
-- Shake is disabled for users who prefer reduced motion.
+- `style.css`
+  - `.em-btn--error`: red border/background/text styles
+  - `@keyframes em-shake`: shake animation
+  - `.em-btn--error.em-shake`: combines error visuals + shake
+  - `prefers-reduced-motion` support
+- `demo.html`
+  - A working demo with a small script that toggles classes to reliably restart the shake animation.
 
-## Usage
+## How to use
 
-### HTML
-- Apply the `.ease-btn` class to your button.
-- Toggle `.is-error` when you want the error state.
+1. Add the base button class (or your own button styling):
 
-### JavaScript
-- In the demo, clicking **Trigger error state** sets `aria-invalid="true"`, adds `.is-error`, and removes both after ~1 second.
+```html
+<button class="em-btn" type="button">Trigger error</button>
+```
 
-## Acceptance Criteria
+2. Toggle classes to show error + shake:
 
-- Button shakes during error state
-  - Uses a dedicated `@keyframes` (`easeButtonShake`)
-  - Error state applies the shake animation and red visual styling
-- Button shows error styling
-  - Red border/glow and subtle background/text changes
-- Accessibility
-  - `aria-invalid="true"` while in error state
-  - Includes an `aria-live="polite"` message
-- Reduced motion
-  - `prefers-reduced-motion: reduce` disables the shake animation
+```js
+button.classList.add('em-btn--error', 'em-shake');
+```
+
+3. Remove shake after the animation (optional):
+
+```js
+button.classList.remove('em-shake');
+```
+
+## Notes
+
+- For repeated clicks, the demo removes and re-adds `em-shake` to restart the animation.
+- When `prefers-reduced-motion: reduce`, the shake animation is disabled.
 
