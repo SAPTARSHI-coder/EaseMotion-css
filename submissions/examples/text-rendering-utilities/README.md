@@ -1,46 +1,18 @@
-# ease-text-rendering — Text Rendering Utility Classes
+# Font Text-Rendering Optimization Utilities
 
-Utility classes for the `text-rendering` property, hinting the browser to prioritize speed, legibility, or geometric precision when rendering glyphs. No `text-rendering` declarations currently exist anywhere in `core/` or `components/`.
+An isolated typography utility package introducing system engine configuration modifiers (`.ease-text-render-auto`, `.ease-text-render-speed`, `.ease-text-render-legibility`, and `.ease-text-render-precision`) under issue #13837.
 
-## Classes
+## Functional Mechanics
 
-| Class | `text-rendering` |
-|-------|-------------------|
-| `.ease-text-rendering-auto` | `auto` |
-| `.ease-text-rendering-optimize-speed` | `optimizeSpeed` |
-| `.ease-text-rendering-optimize-legibility` | `optimizeLegibility` |
-| `.ease-text-rendering-geometric-precision` | `geometricPrecision` |
+- **The Problem:** Modern browsers make compromises based on block sizes when parsing text layouts. On large headlines or tracking logs, subtle kerning gaps or missing ligatures (like unlinked 'fi' structures) can make text look amateurish. Conversely, forcing deep legibility sweeps on infinite data dashboards unnecessarily slows down paint speeds.
+- **The Solution:** Interfaces directly with browser font engine pipelines via CSS `text-rendering` behaviors. Applying `.ease-text-render-legibility` enforces premium typography rendering rules on structural nodes, while `.ease-text-render-precision` prevents sub-pixel blurring during complex hardware scaling or transition loops.
 
-## Usage
-
+## Usage Layout Structure
 ```html
-<!-- Large dynamic/scrolling text -->
-<ul class="ease-text-rendering-optimize-speed">...</ul>
 
-<!-- Editorial heading with kerning + ligatures -->
-<h1 class="ease-text-rendering-optimize-legibility">Article Title</h1>
-
-<!-- SVG/data viz labels -->
-<text class="ease-text-rendering-geometric-precision">42.5%</text>
+<h1 class="hero-heading ease-text-render-legibility">
+  Affiliated Technical Solutions
+</h1>
 ```
 
-## When to use each class
-
-| Class | Best for |
-|-------|----------|
-| `.ease-text-rendering-auto` | Default, no opinion needed |
-| `.ease-text-rendering-optimize-speed` | Large scrolling lists, dynamic content |
-| `.ease-text-rendering-optimize-legibility` | Headings, logotypes, editorial copy |
-| `.ease-text-rendering-geometric-precision` | SVG text, data viz, precisely scaled UI |
-
-## Notes
-
-- No `text-rendering` declarations exist anywhere in `core/` or `components/` today
-- Effect is subtle and font/engine dependent — most visible with ligature-rich fonts
-- Supported in all modern browsers
-
-## Why it fits EaseMotion CSS
-
-EaseMotion CSS has no rendering-strategy control for text despite extensive typography utilities elsewhere. These classes complete the typography control system with a performance/legibility trade-off knob.
-
-Closes #11602
+Closes #13837
