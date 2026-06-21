@@ -31,3 +31,10 @@ Apply the `.demo-nav` and `.demo-nav-links a` styles using theme-aware CSS varia
   transition: color 0.3s ease;
 }
 
+.demo-nav-links a:hover,
+.demo-nav-links a.active {
+  color: var(--nav-link-active-text);
+  background: var(--nav-link-active-bg);
+}
+```
+
