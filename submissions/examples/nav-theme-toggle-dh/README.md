@@ -38,3 +38,6 @@ Apply the `.demo-nav` and `.demo-nav-links a` styles using theme-aware CSS varia
 }
 ```
 
+## Why is it useful?
+
+It ensures visual consistency and high polish across both light and dark themes, matching the core EaseMotion CSS philosophy of building fully accessible, premium, and seamless motion/styling experiences.
