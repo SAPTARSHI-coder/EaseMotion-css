@@ -1,0 +1,1 @@
+A CSS-only toggle switch built with a hidden checkbox and styled label that slides between ON and OFF states with a smooth spring animation. Each switch uses a custom `--toggle-hue` property for easy color variant creation. Respects `prefers-reduced-motion` and needs no JavaScript whatsoever.
