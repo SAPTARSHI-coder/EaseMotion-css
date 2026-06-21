@@ -1,0 +1,2 @@
+# Manual Scroll-Driven Parallax Implementation
+This manual submission implements a scroll-linked parallax effect for issue #15427. It uses native CSS `animation-timeline: scroll(root)` to bind vertical motion directly to the document scroll progress.
