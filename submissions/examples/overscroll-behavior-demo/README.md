@@ -1,11 +1,18 @@
-## What
+# CSS Overscroll Behavior Feature
 
-A two-panel layout (sidebar + main content) demonstrating `overscroll-behavior: contain` on the sidebar. When the sidebar's scroll reaches its boundary, the property prevents scroll chaining to the main page. A toggle button switches between `contain` and `auto` for side-by-side comparison.
+Submits scroll-boundary suppression utility architectures (`.ease-overscroll-none`, `.ease-overscroll-contain`) under issue #15436.
 
-## How
+## Functional Mechanics
 
-Set `overscroll-behavior: contain` on the scrollable sidebar container. JavaScript toggles it to `auto` (or removes the style) when the user unchecks the toggle. The main content area scrolls normally. Adding more items to the sidebar makes it scrollable so the effect can be felt — scrolling past the bottom of the sidebar either stops (contain) or scrolls the page behind it (auto).
+- **The Problem:** When a user scrolls inside a modal, a side-panel, or a chat window and hits the bottom, the browser automatically propagates the excess kinetic energy to the parent document. This causes the main website to jitter or scroll unexpectedly, breaking the UX of nested overlays and specialized content widgets.
+- **The Solution:** Scroll-chaining suppression. The `.ease-overscroll-none` utility applies `overscroll-behavior: none`. It effectively locks the scroll event within the boundaries of the local component, telling the browser engine to ignore scroll-chaining behavior entirely when the local boundary is reached.
 
-## Why
 
-Scroll chaining creates a confusing UX in interfaces with nested scroll areas — drawers, modals, chat sidebars, and code editors. `overscroll-behavior: contain` gives developers a clean, declarative way to isolate scroll boundaries without intercepting and blocking scroll events in JavaScript.
+
+## Usage Layout Structure
+```html
+<div class="modal-content ease-overscroll-none" style="overflow-y: auto;">
+  </div>
+```
+
+Closes #15436
