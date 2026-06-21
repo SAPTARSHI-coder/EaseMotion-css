@@ -26,3 +26,8 @@ Apply the `.demo-nav` and `.demo-nav-links a` styles using theme-aware CSS varia
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
+.demo-nav-links a {
+  color: var(--nav-link-color);
+  transition: color 0.3s ease;
+}
+
