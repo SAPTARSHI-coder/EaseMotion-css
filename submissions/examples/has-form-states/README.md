@@ -1,13 +1,22 @@
-# :has() Form States — Parent-Aware Validation
+# :has() Form States
 
-## What
+Demonstrates parent-aware form styling using the CSS `:has()` selector. Validation, focus, and checked states are handled purely in CSS without JavaScript validation classes.
 
-A form that uses the CSS `:has()` pseudo-class combined with `:user-invalid` to create parent-aware validation states. Three field groups (Name, Address, Preferences) each show group-level error messages and visual highlighting when any child field is invalid — without any JavaScript validation logic.
+## How it works
 
-## How
+- `.field:has(input:focus)` — highlights the label and field border when the input is focused.
+- `.field:has(input:invalid:not(:placeholder-shown))` — reveals the error icon and error helper text when validation fails after user interaction.
+- `.field:has(input:valid:not(:placeholder-shown))` — reveals the check icon and hides all helpers.
+- `.checkbox:has(input:checked)` — adds a background tint and custom checkmark to the entire label row.
+- `.field-group--checkbox:has(input:checked)` — clears error styling from a checkbox group once any box is checked.
+- `.field-group:has(:focus-visible)` — adds a glow border to the whole group on focus.
+- Icons (check/cross) toggle via `opacity` transitions controlled by `:has()`.
 
-Each `<fieldset>` has the selector `.form-group:has(:user-invalid)` which triggers a red border and box-shadow on the group when any contained field is in a `:user-invalid` state (the `:user-invalid` pseudo-class activates after the user has interacted with a field). The `.group-error` element inside transitions from hidden to visible using opacity and transform. Individual fields also show `:user-invalid` and `:user-valid` styling. A shake animation plays on invalid fields. The `prefers-reduced-motion` query disables all transitions and animations.
+## Key features
 
-## Why
-
-The `:has()` selector is a game-changer for form UX — it lets CSS read the state of child elements and adjust parent styling accordingly, something previously only possible with JavaScript. Combined with `:user-invalid`, forms can provide immediate, group-level feedback that is entirely CSS-driven, reducing JS complexity and improving accessibility out of the box.
+- Zero JavaScript for state management: all validation visuals use `:has()`.
+- Input states covered: default, focus, valid (user), invalid (user), checked.
+- Helper text smoothly transitions between default, error, and hidden.
+- Custom-styled checkboxes and radios with `:has(input:checked)` parent styling.
+- Dark theme with `#0a0f1e` background, `#e2e8f0` text.
+- `prefers-reduced-motion` disables all transitions globally.
