@@ -1,11 +1,11 @@
 ## What
 
-A CSS filter functions gallery showing eight distinct filter effects — blur, brightness, contrast, saturate, sepia, hue-rotate, invert, and grayscale — each applied to a separate image in a responsive grid. Hovering an image removes the filter to reveal the original for side-by-side comparison.
+An interactive gallery showcasing 11 CSS filter functions — `grayscale`, `sepia`, `blur`, `brightness`, `contrast`, `hue-rotate`, `saturate`, `invert`, `opacity`, and `drop-shadow` — plus three combined filter presets. A sample image area updates in real-time when filter buttons are clicked, and a reference grid shows each filter applied to a gradient swatch.
 
 ## How
 
-Each `.filter-card` has a `data-filter` attribute that drives a CSS selector (e.g., `[data-filter="blur"] img`). The default state applies the filter value (e.g., `filter: blur(4px)`) to the `<img>`. On hover, the filter is removed (`filter: blur(0)`) with a smooth `transition: filter 0.35s ease`. A "Hover to compare" hint fades in on hover. The grid uses `auto-fit` columns with `minmax(240px, 1fr)` for responsive sizing.
+Buttons with `data-filter` attributes map to CSS filter strings in a JavaScript object. Clicking a button applies `filter` directly to the `.image-frame` element via `style.filter`. The active button gets a visual highlight. The reference grid uses inline `style="filter: ..."` on each swatch for a static catalog. Combined filters (`grayscale-blur`, `sepia-contrast`, `hue-saturate`) demonstrate stacking multiple functions in one `filter` property.
 
 ## Why
 
-CSS filter functions provide hardware-accelerated visual effects that can transform images without altering source files. This gallery demonstrates each filter in isolation so users can compare before/after states. The hover-to-compare pattern is intuitive — seeing the filtered image first, then hovering to reveal the original, makes each filter's impact immediately clear.
+CSS filters provide powerful image processing effects without requiring JavaScript libraries or server-side processing. Understanding each filter function and their combined behavior enables developers to create visual effects, image editing tools, hover states, and accessibility features (like desaturating for distraction-free reading) entirely in the browser. This interactive format makes experimentation immediate and intuitive.
