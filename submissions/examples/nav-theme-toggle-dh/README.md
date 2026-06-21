@@ -19,3 +19,10 @@ Apply the `.demo-nav` and `.demo-nav-links a` styles using theme-aware CSS varia
 </nav>
 ```
 
+```css
+.demo-nav {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
