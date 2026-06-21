@@ -1,13 +1,19 @@
-# Scroll-Driven Parallax
+# CSS Scroll-Driven Parallax Feature
 
-## What
+Submits motion-utility architectures and scroll-linked synchronization sandboxes (`.ease-parallax-slow`) under issue #15427.
 
-A hero section with three parallax layers (sky, mountains, foreground) that move at different speeds while scrolling, creating a depth illusion. Each layer is a positioned `div` with its own scroll-driven animation using `animation-timeline: scroll()`.
+## Functional Mechanics
 
-## How
+- **The Problem:** Smooth parallax scrolling effects typically required complex JavaScript `scroll` event listeners. These methods are notorious for causing "scroll-jank" because they run on the main thread, often falling out of sync with the browser's paint cycles.
+- **The Solution:** Native CSS motion timelines. The `.ease-parallax-slow` utility leverages `animation-timeline: scroll()`. By binding the animation progress directly to the scroll offset of the container, the browser handles the motion interpolation on the compositor thread. This ensures perfect sync with the user's scroll speed, zero frame drops, and minimal performance overhead.
 
-The `layer-sky`, `layer-mountains`, and `layer-foreground` classes each declare `animation-timeline: scroll()` and `animation-range: 0 100vh`. The animation moves each layer vertically by a different amount: sky by 15vh, mountains by 30vh, and foreground by 60vh. This differential movement simulates depth. When `prefers-reduced-motion: reduce` is set, all layer animations are disabled and the hero content becomes sticky.
 
-## Why
 
-Scroll-driven parallax is a classic visual technique for adding polish and narrative to landing pages. The CSS Scroll-Driven Animations spec (`animation-timeline`) makes this possible without a single line of JS or IntersectionObserver boilerplate. It is declarative, composable, and hardware-accelerated, making it ideal for performant storytelling interfaces.
+## Usage Layout Structure
+```html
+<div class="ease-parallax-slow">
+  <img src="floating-asset.png" alt="Parallax Effect">
+</div>
+```
+
+Closes #15427
