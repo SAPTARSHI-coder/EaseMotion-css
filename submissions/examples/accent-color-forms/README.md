@@ -1,24 +1,13 @@
-# CSS accent-color Forms
+# Accent-Color Forms — CSS accent-color Demo
 
-## What does this do?
+Interactive demo of the CSS `accent-color` property applied to native form controls. A color picker and preset swatches let you dynamically change the accent color, instantly re-theming all controls without custom CSS overrides.
 
-Demonstrates CSS `accent-color` applied to native form controls — checkboxes, radio buttons, range sliders, progress bars, and switches (`role="switch"`). A color picker lets you dynamically change the accent color in real time.
+## Key CSS Concepts
 
-## How is it used?
+- **`accent-color`**: A single property that themes `<input type="checkbox">`, `<input type="radio">`, `<input type="range">`, `<progress>`, and `role="switch"` controls
+- **`color-mix()`**: Used in hover glow effects to blend swatch colors with transparency
+- **Native accessibility**: Form controls retain native focus rings, keyboard interaction, and form validation behavior
 
-```css
-:root { --accent: #6c63ff; }
+## Visual Style
 
-input[type="checkbox"],
-input[type="radio"],
-input[type="range"],
-progress {
-  accent-color: var(--accent);
-}
-```
-
-A JS color input sets `--accent` on the wrapper, and the browser re-themes all native controls instantly without custom CSS overrides.
-
-## Why is it useful?
-
-Before `accent-color`, custom-themed form controls required hiding native inputs and building custom checkboxes/radios with pseudo-elements, SVG, and complex CSS. With `accent-color`, a single property themes all native controls — lighter markup, better accessibility (native focus rings, form validation, keyboard interaction), and consistent behavior across platforms.
+Dark theme with a dynamic accent color that tints all form controls. Preset swatches (indigo, rose, emerald, amber, violet, cyan, pink) plus a custom color picker demonstrate how dramatically `accent-color` changes form appearance.
