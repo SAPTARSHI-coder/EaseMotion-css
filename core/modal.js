@@ -102,6 +102,12 @@
         const firstElement = focusableElements[0];
         const lastElement = focusableElements[focusableElements.length - 1];
 
+        if (!overlay.contains(document.activeElement)) {
+          e.preventDefault();
+          firstElement.focus();
+          return;
+        }
+
         if (e.shiftKey) {
           // Shift + Tab
           if (document.activeElement === firstElement || document.activeElement === overlay.querySelector('.ease-modal')) {
