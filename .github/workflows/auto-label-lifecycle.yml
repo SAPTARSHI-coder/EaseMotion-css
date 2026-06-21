@@ -146,7 +146,9 @@ jobs:
               const textContent = `${title} ${body}`.toLowerCase();
 
               const authorLower = itemAuthor.toLowerCase();
-              const isAdvanced = (authorLower === 'debosmita' || authorLower === 'debasmitabose0' || authorLower === 'kgfch2');
+              const additions = isPR ? (item.additions || 0) : 0;
+              const isPrLarge = isPR && (additions > 500);
+              const isAdvanced = (authorLower === 'debosmita' || authorLower === 'debasmitabose0' || authorLower === 'kgfch2') || currentLabels.includes('level:advanced') || isPrLarge;
 
               const computedLabels = [
                 'GSSoC-26',
@@ -182,6 +184,19 @@ jobs:
                     });
                     if (issue && issue.labels) {
                       issueLabels.push(...issue.labels.map(l => l.name.toLowerCase()));
+                      // If the PR has > 500 additions, make sure the linked issue is also level:advanced
+                      if (additions > 500) {
+                        const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
+                        const hasAdvanced = issue.labels.some(l => l.name === 'level:advanced');
+                        if (hasIntermediate || !hasAdvanced) {
+                          await github.rest.issues.removeLabel({
+                            owner, repo, issue_number: num, name: 'level:intermediate'
+                          }).catch(() => {});
+                          await github.rest.issues.addLabels({
+                            owner, repo, issue_number: num, labels: ['level:advanced']
+                          }).catch(() => {});
+                        }
+                      }
                     }
                   } catch (err) {
                     console.log(`Failed to fetch labels for issue #${num}: ${err.message}`);
