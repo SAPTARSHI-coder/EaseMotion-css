@@ -1,11 +1,7 @@
-## What
+# CSS field-sizing Auto-Growing Input
 
-A form UI demonstrating `field-sizing: content`, which makes `input` and `textarea` elements automatically resize their width and height to fit their content. The example includes a single-line input that grows horizontally and a textarea that grows vertically up to a `max-height` limit, alongside a fallback textarea that uses a scrollbar.
+1. **What does this do?** Demonstrates the `field-sizing: content` CSS property that makes text inputs, textareas, and selects automatically resize to fit their content.
 
-## How
+2. **How is it used?** Add `field-sizing: content` to any `<input>`, `<textarea>`, or `<select>` element. The element grows/shrinks based on its current value.
 
-Apply `field-sizing: content` to the form field, then set `min-height`/`max-height` (or `min-width`/`max-width`) to constrain growth. A `@supports (field-sizing: content)` guard applies the property only on supporting browsers. On unsupported browsers, `field-sizing: fixed` (the default) keeps the element at its specified size with `overflow-y: auto` for scrolling.
-
-## Why
-
-Developers have long hacked auto-growing inputs via JavaScript that observes scrollHeight or contentEditable tricks. `field-sizing: content` provides native, performant, and accessible auto-sizing directly in CSS — reducing bundle weight, eliminating layout flicker, and simplifying form UX with no JS.
+3. **Why is it useful?** Auto-growing inputs previously required JavaScript event listeners to sync width with content length. This property eliminates that boilerplate and gives native, performant content-based sizing.
