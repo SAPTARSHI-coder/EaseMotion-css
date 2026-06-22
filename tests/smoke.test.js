@@ -46,8 +46,9 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     const breadcrumb = readFileSync(resolve(componentsDir, 'breadcrumb.css'), 'utf8');
     const avatar = readFileSync(resolve(componentsDir, 'avatar.css'), 'utf8');
     const announceBar = readFileSync(resolve(componentsDir, 'announce-bar.css'), 'utf8');
+    const progressRing = readFileSync(resolve(componentsDir, 'progress-ring.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar + progressRing;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -146,6 +147,15 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-header');
     expect(css).toContain('.ease-command-palette-overlay');
     expect(css).toContain('.ease-command-palette');
+  });
+
+  it('should have progress-ring classes defined', () => {
+    expect(css).toContain('.ease-ring');
+    expect(css).toContain('.ease-ring-svg');
+    expect(css).toContain('.ease-ring-track');
+    expect(css).toContain('.ease-ring-fill');
+    expect(css).toContain('.ease-ring-label');
+    expect(css).toContain('.ease-ring-value');
   });
 
   it('should have dark mode variables via prefers-color-scheme', () => {
