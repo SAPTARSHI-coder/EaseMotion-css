@@ -150,10 +150,10 @@ EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom 
 <div align="center">
 
 | Browser | Minimum Version | `backdrop-filter`                                 | `aspect-ratio` | CSS variables | Animations | Notes     |
-| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- | --- |
+| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- |
 | Chrome  | 49+             | Supported                                         | Supported      | Supported     | Supported  |           |
 | Firefox | 31+             | Supported                                         | Supported      | Supported     | Supported  |           |
-| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  | Supported |     |
+| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  |Supported  |
 | Edge    | 15+             | Supported                                         | Supported      | Supported     | Supported  |           |
 | Opera   | 36+             | Supported                                         | Supported      | Supported     | Supported  |           |
 
