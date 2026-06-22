@@ -1,106 +1,61 @@
-# Modern Skeleton Loading Component
+# EaseMotion CSS - Skeleton Loading Utilities
 
-A professional, high-performance skeleton loading framework built with pure HTML and CSS. It provides realistic layouts for user profiles, media items, article cards, dashboard widgets, buttons, and progress indicators using a smooth, GPU-accelerated shimmer effect.
+A premium collection of CSS skeleton loading placeholder classes and micro-animations to improve the perceived performance and user experience of loading layouts.
 
----
+## Overview
 
-## 1. What does this do?
-This component renders lightweight visual placeholders (skeleton outlines) for content while it's loading. It features:
-- **GPU-Accelerated Shimmer**: Uses `transform: translateX` animations to ensure the loading effect runs at 60fps/120fps on the browser compositor thread, preventing paint overhead.
-- **Multiple Layout Presets**: Provides templates for Profile Cards, Media/Article Cards, and Dashboard Widgets.
-- **Customizable Shapes & Sizes**: Ready-made classes for circular avatars, text lines of varying widths, image containers, badges, and button shapes.
-- **Responsive Layout**: Designed to adapt perfectly to mobile, tablet, and desktop layouts.
-- **Light/Dark Mode Support**: Styled using CSS variables that automatically adapt to light and dark themes.
+This component implements skeleton placeholders with two animation flavors:
+- **Shimmering Gradient**: A linear-gradient animation that sweeps across the placeholder element from left to right.
+- **Pulsing Opacity**: A breathing opacity cycle transition.
 
----
+Both animations are optimized for hardware acceleration and adapt perfectly to dark mode preferences out-of-the-box.
 
-## 2. How is it used?
+## Classes Used
 
-Import the CSS file and structure your markup using the core skeleton elements:
+- `.em-skeleton`: Base placeholder style (light grey background, rounded corners, hidden overflows, inline-block layout). Enables the default shimmer animation overlay.
+- `.em-skeleton-pulse`: Toggles the fading breathing opacity animation instead of shimmer.
+- `.em-skeleton-avatar`: Rounded shape with fixed width/height matching profile avatars (48px).
+- `.em-skeleton-avatar-lg`: Large profile avatar variant (64px).
+- `.em-skeleton-title`: Wide text placeholder (60% width) for article headers.
+- `.em-skeleton-text`: Text line placeholder (0.875rem height).
+- `.em-skeleton-text-three-quarters`: Utility class specifying 75% width.
+- `.em-skeleton-text-half`: Utility class specifying 50% width.
+- `.em-skeleton-rect`: Rectangular layout placeholder (160px height) suited for cards and images.
+- `.em-skeleton-btn`: Rounded rectangle placeholder matching buttons.
+- `.em-skeleton-badge`: Oval capsule placeholder (12px radius) matching badge chips.
 
-```html
-<!-- Skeleton Card Container -->
-<div class="ease-skeleton-card">
-  
-  <!-- Header Row (Avatar + Column info) -->
-  <div class="ease-skeleton-row" style="margin-bottom: 20px;">
-    <!-- Circular Avatar Skeleton -->
-    <span class="ease-skeleton ease-skeleton-avatar"></span>
-    
-    <div class="ease-skeleton-col">
-      <!-- Medium Title Skeleton -->
-      <span class="ease-skeleton ease-skeleton-title w-7-12"></span>
-      <!-- Small Subtext Skeleton -->
-      <span class="ease-skeleton ease-skeleton-text w-4-12"></span>
-    </div>
-  </div>
-  
-  <!-- Card Content Lines -->
-  <div style="margin-bottom: 24px;">
-    <span class="ease-skeleton ease-skeleton-text w-full"></span>
-    <span class="ease-skeleton ease-skeleton-text w-11-12"></span>
-    <span class="ease-skeleton ease-skeleton-text w-7-12"></span>
-  </div>
-  
-  <!-- Pill Button Skeleton -->
-  <span class="ease-skeleton ease-skeleton-btn w-5-12"></span>
-  
-</div>
-```
+## Animation Details
 
-### Class Catalog
+Animations are driven by CSS `@keyframes`:
 
-| Class Name | Description |
-| :--- | :--- |
-| `.ease-skeleton-card` | Container card component with default borders, shadows, and paddings. |
-| `.ease-skeleton` | Base class that sets up the background color and applies the shimmer overlay. |
-| `.ease-skeleton-avatar` | Circular avatar block (defaults to `56px x 56px`). |
-| `.ease-skeleton-title` | Thicker block representing a title header line. |
-| `.ease-skeleton-text` | Thinner block representing standard body text lines. |
-| `.ease-skeleton-btn` | Button-shaped skeleton block with fully rounded pill corners. |
-| `.ease-skeleton-img` | Media placeholder block suitable for images, graphs, or cards. |
-| `.ease-skeleton-badge` | Small pill shape ideal for tags, labels, or statuses. |
-| `.ease-skeleton-row` | Layout flex container that displays elements in a row with default gap spacing. |
-| `.ease-skeleton-col` | Layout flex container that displays elements in a column. |
+- `@keyframes ease-skeleton-shimmer`: Translates a translucent linear-gradient mask from `-100%` to `100%` along the X-axis using GPU-accelerated transforms.
+- `@keyframes ease-skeleton-pulse`: Cycle opacity parameters between `0.4` and `1.0`.
 
-### Text Width Helpers
-To make paragraph blocks look natural, use the text width helpers:
-- `.w-full` (100%)
-- `.w-11-12` (91.6%)
-- `.w-10-12` (83.3%)
-- `.w-9-12` (75%)
-- `.w-8-12` (66.6%)
-- `.w-7-12` (58.3%)
-- `.w-6-12` (50%)
-- `.w-5-12` (41.6%)
-- `.w-4-12` (33.3%)
-- `.w-3-12` (25%)
-- `.w-2-12` (16.6%)
+## Customization Guide
 
-### Theme Customization
-You can easily customize the skeleton color palette by updating these CSS variables:
+Variables defined under the `:root` scope allow developers to customize skeleton colors, radii, and transition durations:
 
 ```css
 :root {
-  /* Customize radii */
-  --skeleton-radius-default: 8px;
-  
-  /* Customize colors */
-  --skeleton-bg: #e2e8f0;
-  --skeleton-shimmer-gradient: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  --em-skeleton-bg: #e4e4e7;                           /* Default base background */
+  --em-skeleton-shimmer-start: rgba(255, 255, 255, 0);   /* Shimmer gradient edges */
+  --em-skeleton-shimmer-mid: rgba(255, 255, 255, 0.6);   /* Shimmer gradient center highlight */
+  --em-skeleton-shimmer-end: rgba(255, 255, 255, 0);
+  --em-skeleton-pulse-low: 0.4;                         /* Pulse min opacity */
+  --em-skeleton-pulse-high: 1;                          /* Pulse max opacity */
+  --em-skeleton-duration-shimmer: 1.6s;                  /* Shimmer speed */
+  --em-skeleton-duration-pulse: 1.5s;                    /* Pulse speed */
+  --em-skeleton-radius: 6px;                            /* Rounded border radius */
 }
 ```
 
----
+## Accessibility Notes
 
-## 3. Why is it useful?
-1. **Reduces Perceived Wait Time**: Research shows that displaying a skeleton loading state instead of a spinner makes users perceive the application as loading faster and being more responsive.
-2. **Prevents Layout Shift (CLS)**: Skeletons preserve the structural layout of content before it loads. This avoids sudden jumps and page shifts when assets arrive, satisfying Core Web Vitals targets.
-3. **Pure CSS (No JS Overhead)**: Works instantly without relying on heavy client-side scripts or loading states.
-4. **Performance Optimized**: Traditional skeleton animations shift `background-position`, triggering continuous style recalculation and repaint cycles on the main thread. This component animates pseudo-elements using `transform: translateX`, meaning it runs entirely on the GPU compositor thread for maximum fluid performance.
-5. **Universal Layout Compatibility**: The modular class system allows developers to build any skeleton layout (Profile, E-Commerce, Dashboards, Articles) without writing custom styles.
+- **Aria Hidden**: All placeholders should contain `aria-hidden="true"` so that screen readers skip pronouncing empty visual placeholders while the content is loading.
+- **Live Regions**: When wrapping loading containers, use `aria-live="polite"` and `aria-busy="true"` on the parent layout to let assistive technologies know that data is dynamically fetching and updates are expected.
+- **Reduced Motion Support**: Respects system preferences. We suggest using `.em-skeleton-pulse` for users who prefer reduced motion.
+
+## Responsive Behavior
+
+- Fits inline inside blocks using relative widths (`%`) and fixed aspect containers (`em-skeleton-rect`, `em-skeleton-avatar`).
+- Flex and CSS grid wrapper layouts align placeholders dynamically across tablet and mobile viewports.
