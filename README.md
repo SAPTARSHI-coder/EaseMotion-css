@@ -145,21 +145,19 @@ Most people simply forget. This is your reminder. 😊
 
 ## Browser Compatibility
 
-EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
+EaseMotion CSS is built for modern evergreen browsers and relies on CSS custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
 
-<div align="center">
+| Browser | Minimum Version | Backdrop Filter                                   | Aspect Ratio | CSS Variables | Animations | Notes                                     |
+| ------- | --------------- | ------------------------------------------------- | ------------ | ------------- | ---------- | ----------------------------------------- |
+| Chrome  | 49+             | Supported                                         | Supported    | Supported     | Supported  | —                                         |
+| Firefox | 31+             | Supported                                         | Supported    | Supported     | Supported  | —                                         |
+| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported    | Supported     | Supported  | Requires vendor prefix for older versions |
+| Edge    | 15+             | Supported                                         | Supported    | Supported     | Supported  | —                                         |
+| Opera   | 36+             | Supported                                         | Supported    | Supported     | Supported  | —                                         |
 
-| Browser | Minimum Version | `backdrop-filter`                                 | `aspect-ratio` | CSS variables | Animations | Notes     |
-| ------- | --------------- | ------------------------------------------------- | -------------- | ------------- | ---------- | --------- | --- |
-| Chrome  | 49+             | Supported                                         | Supported      | Supported     | Supported  |           |
-| Firefox | 31+             | Supported                                         | Supported      | Supported     | Supported  |           |
-| Safari  | 9.1+            | Supported with `-webkit-backdrop-filter` fallback | Supported      | Supported     | Supported  | Supported |     |
-| Edge    | 15+             | Supported                                         | Supported      | Supported     | Supported  |           |
-| Opera   | 36+             | Supported                                         | Supported      | Supported     | Supported  |           |
+> **Note:** Internet Explorer (IE 11 and earlier) is not supported.
 
-</div>
-
-> Internet Explorer (IE 11 and earlier) is not supported.
+---
 
 ---
 
