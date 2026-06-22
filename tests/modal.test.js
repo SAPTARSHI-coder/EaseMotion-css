@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Simulate loading the core script
-const scriptPath = path.resolve(__dirname, '../../../core/modal.js');
+const scriptPath = path.resolve(__dirname, '../core/modal.js');
 let scriptCode = '';
 if (fs.existsSync(scriptPath)) {
   scriptCode = fs.readFileSync(scriptPath, 'utf-8');

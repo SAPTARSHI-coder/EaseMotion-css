@@ -3,7 +3,7 @@ import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 
-const scriptPath = path.resolve(__dirname, '../../../core/reveal.js');
+const scriptPath = path.resolve(__dirname, '../core/reveal.js');
 let scriptCode = '';
 if (fs.existsSync(scriptPath)) {
   scriptCode = fs.readFileSync(scriptPath, 'utf-8');
