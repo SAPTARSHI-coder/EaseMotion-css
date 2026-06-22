@@ -67,4 +67,4 @@ A vertical timeline with smooth entrance animations triggered on scroll. Zero de
 
 Adapts automatically via `prefers-color-scheme: dark` and `[data-theme="dark"]`.
 
-Closes #11472
+Closes #16131
