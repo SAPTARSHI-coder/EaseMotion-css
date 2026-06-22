@@ -1,42 +1,78 @@
-# ease-spotlight
+## ease-spotlight
 
-A CSS-first spotlight effect — dark overlay with a radial-gradient
-"torch" that follows the mouse cursor.
+**What does this do?**
+A cursor-aware radial spotlight effect that follows the mouse over dark 
+elements — revealing content with a dramatic light beam that fades in 
+on hover and disappears on mouse leave.
 
-## How it works
-- `@property` defines `--ease-x`, `--ease-y`, `--ease-radius`
-  as typed, animatable CSS custom properties
-- `radial-gradient(circle var(--ease-radius) at var(--ease-x) var(--ease-y))`
-  creates the spotlight hole dynamically
-- CSS `transition` on `--ease-x` and `--ease-y` gives smooth
-  cursor-follow feel
-- JS only sets two CSS variables on mousemove — all rendering is CSS
+**How is it used?**
+Add the class `spotlight` to any dark element:
 
-## Usage
 ```html
-<div class="ease-spotlight-scene">
-  <!-- your content here -->
-  <div class="ease-spotlight" id="spotlight"></div>
+<div class="spotlight">
+  <h2>Hover over me</h2>
+  <p>The light follows your cursor</p>
 </div>
-
-<script>
-  const scene = document.querySelector('.ease-spotlight-scene');
-  const overlay = document.getElementById('spotlight');
-
-  scene.addEventListener('mousemove', e => {
-    const r = scene.getBoundingClientRect();
-    overlay.style.setProperty('--ease-x',
-      ((e.clientX - r.left) / r.width * 100).toFixed(2) + '%');
-    overlay.style.setProperty('--ease-y',
-      ((e.clientY - r.top) / r.height * 100).toFixed(2) + '%');
-  });
-</script>
 ```
 
-## Variables
-| Variable        | Default | Description          |
-|-----------------|---------|----------------------|
-| `--ease-x`      | 50%     | Spotlight X position |
-| `--ease-y`      | 50%     | Spotlight Y position |
-| `--ease-radius` | 18%     | Spotlight size       |
-| `--ease-dark`   | 0.88    | Overlay darkness     |
+Add a color variant:
+
+```html
+<div class="spotlight spotlight-purple">Purple glow</div>
+<div class="spotlight spotlight-blue">Blue glow</div>
+<div class="spotlight spotlight-gold">Gold glow</div>
+<div class="spotlight spotlight-pink">Pink glow</div>
+<div class="spotlight spotlight-white">White glow</div>
+```
+
+Control spotlight size:
+
+```html
+<div class="spotlight spotlight-sm">Small spotlight</div>
+<div class="spotlight spotlight-lg">Large spotlight</div>
+```
+
+Customize with CSS variables:
+
+```css
+.my-element {
+  --spotlight-size: 400px;
+  --spotlight-color: rgba(124, 110, 247, 0.25);
+  --spotlight-duration: 0.2s;
+}
+```
+
+Add the JavaScript to activate cursor tracking:
+
+```js
+const spotlights = document.querySelectorAll('.spotlight');
+
+spotlights.forEach(el => {
+  el.addEventListener('mousemove', (e) => {
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    el.style.setProperty('--spotlight-x', `${x}px`);
+    el.style.setProperty('--spotlight-y', `${y}px`);
+  });
+
+  el.addEventListener('mouseleave', () => {
+    el.style.setProperty('--spotlight-x', '-999px');
+    el.style.setProperty('--spotlight-y', '-999px');
+  });
+});
+```
+
+**Why is it useful?**
+Unlike static hover effects, `ease-spotlight` tracks cursor position in 
+real time using CSS custom properties updated via JavaScript — the radial 
+gradient moves fluidly with the cursor. The `::before` pseudo-element 
+handles the light with zero extra HTML. Border color subtly brightens on 
+hover for extra polish. Supports `prefers-reduced-motion` for accessibility.
+
+Perfect for:
+- 🃏 Feature and pricing cards on landing pages
+- 🦸 Hero sections and banners
+- 🎨 Portfolio project showcases
+- 🌑 Any dark UI that needs depth and interactivity
+- ✨ Premium SaaS and product pages
