@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { transform } from "lightningcss";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -134,14 +135,11 @@ async function bundleCss(filePath, state) {
 }
 
 function minifyCss(css) {
-  return removeCSSComments(css)
-    .replace(/\r\n/g, "\n")
-    .replace(/\n+/g, "\n")
-    .replace(/\s+/g, " ")
-    .replace(/\s*([{}:;,>])\s*/g, "$1")
-    .replace(/;}/g, "}")
-    .replace(/\)\s+\{/g, "){")
-    .trim();
+  let result = transform({
+    code: Buffer.from(css),
+    minify: true,
+  });
+  return result.code.toString();
 }
 
 async function build() {
