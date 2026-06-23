@@ -53,10 +53,18 @@ if (build.error || build.status !== 0) {
 const rebuiltBundle = await readFile(bundlePath, "utf8");
 
 if (originalBundle !== rebuiltBundle) {
+  if (originalBundle === "") {
+    throw new Error(
+      `${path.relative(rootDir, bundlePath)} was missing. Run \`npm run build\` to create it.`,
+    );
+  }
   await writeFile(bundlePath, originalBundle, "utf8");
   throw new Error(
     `${path.relative(rootDir, bundlePath)} is stale. Run \`npm run build\` and commit the regenerated bundle.`,
   );
+} is stale. Run \`npm run build\` and commit the regenerated bundle.`,
+  );
 }
 
 console.log("easemotion.min.css is up to date.");
+
