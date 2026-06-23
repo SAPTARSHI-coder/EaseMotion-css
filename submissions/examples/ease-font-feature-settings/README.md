@@ -4,14 +4,8 @@ CSS utility classes for the `font-feature-settings` property.
 
 ## Usage
 
+Add any class to an HTML element:
+
 ```html
-<div class="ease-font-feature-settings-example">Content</div>
-```
-
-## Classes
-
-See `style.css` for the full list of available classes.
-
-## Demo
-
-Open `demo.html` to see the utility classes in action.
+<p class="ease-ffs-liga">fi fl ff</p>
+<p class="ease-ffs-tnum">1234567890</p>
