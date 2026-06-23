@@ -505,14 +505,6 @@ Applies a quick squish animation during hover, focus, and active interactions.
 <div class="ease-flex ease-flex-nowrap ease-gap-3">No wrap</div>
 <div class="ease-flex ease-flex-wrap-reverse ease-gap-3">Reverse wrap</div>
 
-<!-- Align self utilities -->
-<div class="ease-flex ease-items-stretch ease-gap-3">
-  <span class="ease-self-start">Start</span>
-  <span class="ease-self-center">Center</span>
-  <span class="ease-self-end">End</span>
-  <span class="ease-self-stretch">Stretch</span>
-</div>
-
 <!-- Responsive auto-fit grid (no media queries needed) -->
 <div class="ease-grid ease-grid-auto ease-gap-6">
   <div class="ease-card">Card 1</div>
