@@ -43,14 +43,14 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) =>
+  const currentAssignees = issue.assignees.map((a) =>
     a.login.toLowerCase()
   );
-  const issueLabels = context.payload.issue.labels.map((l) =>
+  const issueLabels = issue.labels.map((l) =>
     l.name.toLowerCase()
   );
-  const issueTitle = (context.payload.issue.title || "").toLowerCase();
-  const issueBody = (context.payload.issue.body || "").toLowerCase();
+  const issueTitle = (issue.title || "").toLowerCase();
+  const issueBody = (issue.body || "").toLowerCase();
 
   const isSubmissionIssue =
     issueLabels.some(
@@ -118,3 +118,4 @@ async function handleClaim({ github, context }) {
 }
 
 module.exports = { handleClaim };
+
