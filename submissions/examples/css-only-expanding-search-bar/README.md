@@ -1,15 +1,7 @@
 # CSS-Only Expanding Search Bar
 
-A smooth, animated expanding search bar component created using pure CSS.
-
-## Features
-- Pure CSS implementation
-- Smooth hover and focus transition
-- Responsive design
-- Clean and modern UI
+This is the implementation for `CSS-Only Expanding Search Bar`.
+Closes #17777.
 
 ## Usage
-Simply include the `style.css` and use the HTML structure from `demo.html`. No JavaScript is required.
-
-## Preview
-Open `demo.html` in your browser to view the component.
+Include the CSS and use the `.ease-expanding-search-bar` class to see the animation effect.
