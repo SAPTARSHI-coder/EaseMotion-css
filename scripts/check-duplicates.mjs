@@ -47,13 +47,16 @@ async function findDuplicates() {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        const cm = line.match(classPattern);
+                const cm = line.match(classPattern);
         if (cm) {
-          const className = cm[1];
-          if (!classes[className]) classes[className] = [];
-          const fileLoc = `${dir}/${entry.name}`;
-          if (!classes[className].some(loc => loc.startsWith(fileLoc + ":"))) {
-            classes[className].push(`${dir}/${entry.name}:${i + 1}`);
+          const allClasses = [...line.matchAll(/\.([a-zA-Z0-9_-]+)/g)];
+          for (const match of allClasses) {
+            const className = match[1];
+            if (!classes[className]) classes[className] = [];
+            const fileLoc = `${dir}/${entry.name}`;
+            if (!classes[className].some(loc => loc.startsWith(fileLoc + ":"))) {
+              classes[className].push(`${dir}/${entry.name}:${i + 1}`);
+            }
           }
         }
 
@@ -110,3 +113,4 @@ findDuplicates().catch((error) => {
   console.error('Duplicate check failed:', error);
   process.exitCode = 1;
 });
+
