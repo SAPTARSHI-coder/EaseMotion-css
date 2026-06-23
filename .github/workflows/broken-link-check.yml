@@ -1,0 +1,40 @@
+name: Broken Link Checker
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check links in docs directory
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: >-
+            --format detailed
+            --no-progress
+            --exclude-loopback
+            --docs/**/*.md
+            --docs/**/*.html
+            README.md
+        id: lychee
+
+      - name: Create issue on broken links
+        if: steps.lychee.outputs.exit_code != 0
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('lychee/out.md', 'utf8');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔗 Broken links detected in documentation',
+              body: `## Broken Links Report\n\nThe weekly link check found broken links in the docs.\n\n${report}\n\n---\n_Generated automatically by the Broken Link Checker workflow._`,
+              labels: ['docs', 'bug']
+            });
