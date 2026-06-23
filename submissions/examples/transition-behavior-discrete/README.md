@@ -1,27 +1,14 @@
-# transition-behavior: allow-discrete Demo
+# transition-behavior: allow-discrete
 
-## What does this do?
+Demonstrates `transition-behavior: allow-discrete` for animating discrete CSS properties like `display` and `overlay`, enabling smooth open/close transitions previously impossible with CSS alone.
 
-Demonstrates how `transition-behavior: allow-discrete` enables smooth animations on properties that are normally not animatable, such as `display` and `overlay`. Combined with `@starting-style`, it provides seamless entry and exit transitions for popovers and dialogs.
+## Features
 
-## How is it used?
+- Display transition (none ↔ block) with fade and slide
+- Overlay property transition for top-layer elements
+- Expandable dropdown menu with smooth open/close
+- Multi-property panel animating display, overlay, opacity, and transform simultaneously
 
-```css
-.element {
-  transition: opacity 0.3s, display 0.3s allow-discrete;
-}
+## Usage
 
-.element:popover-open {
-  opacity: 1;
-}
-
-@starting-style {
-  .element:popover-open {
-    opacity: 0;
-  }
-}
-```
-
-## Why is it useful?
-
-Before `allow-discrete`, entry/exit animations for popovers and dialogs required JavaScript workarounds. Now you can animate elements as they enter or leave the DOM, creating polished UX patterns — such as modals that fade in and slide up — completely in CSS.
+Open `demo.html` in a browser supporting `transition-behavior: allow-discrete` (Chrome 129+, Edge 129+). Click toggle buttons to see smooth transitions on discrete properties.
