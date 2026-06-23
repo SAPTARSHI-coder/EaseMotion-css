@@ -56,7 +56,7 @@ That is the only directory you should add or modify in your PR.
 
 To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
 
-- Contributors may submit up to **70 PRs per day**
+- Contributors may submit up to **25 PRs per day**
 - Focus on quality, originality, accessibility, and proper testing
 - Low-effort, repetitive, or mass-generated PRs may be closed without review
 
