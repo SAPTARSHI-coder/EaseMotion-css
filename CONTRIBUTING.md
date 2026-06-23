@@ -123,6 +123,19 @@ Answer these three questions:
 2. **How is it used?** — show the HTML class usage.
 3. **Why is it useful?** — explain how it fits EaseMotion CSS's philosophy.
 
+### ♿ Accessibility baseline
+
+If your demo is interactive — it contains a `<button>`, a link (`<a href>`), an `<input>`, `<select>`, or `<textarea>`, or your `style.css` defines a `:hover` rule — give keyboard users the same feedback that pointer users get. Define at least one `:focus` or `:focus-visible` state in `style.css`, mirroring your hover styling:
+
+```css
+.your-control:hover,
+.your-control:focus-visible {
+  /* same transform / animation / color */
+}
+```
+
+The submission validator posts a **non-blocking** advisory on pull requests whose interactive submissions have no focus state (WCAG 2.1 SC 2.4.7, Focus Visible). It will not reject your PR, but adding a focus state keeps the example gallery usable for the keyboard and screen-reader users who learn from it.
+
 ---
 
 ## Naming Rules
