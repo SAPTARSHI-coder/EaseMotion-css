@@ -1,12 +1,11 @@
 # prefers-reduced-transparency
 
-## Summary
-Demonstrates the `prefers-reduced-transparency` media query for accessibility, with glassmorphism effects that gracefully degrade to solid backgrounds when transparency is reduced.
-
-## Key Concepts
-- **`@media (prefers-reduced-transparency: reduce)`** detects when the user has enabled the OS-level "Reduce transparency" setting, allowing you to provide solid alternatives to glass and blur effects.
-- **Glassmorphism** uses `backdrop-filter: blur()` and semi-transparent `rgba()` backgrounds. These can cause readability issues for users who prefer reduced transparency.
-- **Fallback approach** removes `backdrop-filter`, sets fully opaque `background`, and adds visible borders so content remains distinguishable.
+Demonstrates the `prefers-reduced-transparency` media query for users who need less transparency. Shows glassmorphism cards, blur level comparisons, and overlay modals with solid fallback backgrounds.
 
 ## Usage
-Define your glass effects normally, then wrap solid fallback styles in `@media (prefers-reduced-transparency: reduce)`. Remove `backdrop-filter`, replace translucent backgrounds with opaque ones, and ensure adequate contrast.
+
+Open `demo.html` and enable reduce transparency in your OS settings (Windows: Settings > Personalization > Colors > Transparency Effects, macOS: Accessibility > Display > Reduce Transparency). Glass surfaces become solid, blur effects are removed, and overlays become opaque.
+
+## Browser Support
+
+`prefers-reduced-transparency` is supported in Chrome 118+, Edge 118+, Safari, and Firefox. The demo uses `backdrop-filter` for glass effects with `@media (prefers-reduced-transparency: reduce)` fallbacks. Dark theme `#0a0f1e` with `#e2e8f0` text.
