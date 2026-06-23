@@ -1,44 +1,23 @@
-# ease-pop
+﻿# ease-pop – Quick Pop Scale
 
-Submission for Issue #3868
+A fast, one‑shot attention grabber: the element scales up slightly and snaps back, drawing the user's eye without being obtrusive.
 
-## What this adds
+## EaseMotion classes used
+- **Layout:** ease-container, ease-flex, ease-items-center, ease-justify-center, ease-min-h-screen, ease-mx-auto
+- **Background:** ease-bg-gray-50
+- **Typography:** ease-text-3xl, ease-font-bold, ease-text-gray-500, ease-text-lg, ease-font-semibold, ease-text-sm, ease-text-gray-400, ease-text-gray-500
+- **Spacing:** ease-mb-4, ease-mb-8, ease-mt-2, ease-mt-6, ease-mt-8, ease-p-8
+- **Components:** ease-card, ease-btn, ease-btn-primary
+- **Hover:** ease-hover-scale-105
+- **Animation:** ease-fade-in, ease-delay-200, ease-delay-500, ease-transition
 
-A `ease-pop` CSS utility that scales an element from 0 → 1.1 → 1
-with a spring overshoot entrance — zero JavaScript required.
+## How it works
+- The element uses a @keyframes pop-attention that goes from scale(1) to scale(1.15) (or the value of --ease-pop-amount) and back to scale(1) over 0.3s.
+- The animation is triggered by adding the pop class via JavaScript and plays exactly once.
+- The class can be removed and re‑added to replay.
+- Respects prefers-reduced-motion.
 
-## Classes
-
-| Class | Description |
-|---|---|
-| `ease-pop` | Default spring pop (0 → 1.1 → 1) |
-| `ease-pop--subtle` | Gentle overshoot (0 → 1.03 → 1) |
-| `ease-pop--hard` | Strong overshoot (0 → 1.25 → 0.95 → 1) |
-| `ease-pop--fast` | 0.25s duration |
-| `ease-pop--slow` | 0.9s duration |
-
-## Usage
-
-```html
-<!-- Pops in -->
-<div class="ease-pop">Hello</div>
-
-<!-- Subtle pop -->
-<div class="ease-pop ease-pop--subtle">Hello</div>
-
-<!-- Hard overshoot, fast -->
-<div class="ease-pop ease-pop--hard ease-pop--fast">Hello</div>
-```
-
-## Cubic Bezier Values
-
-| Variant | Curve |
-|---|---|
-| Default | cubic-bezier(0.34, 1.56, 0.64, 1) |
-| Subtle  | cubic-bezier(0.22, 1, 0.36, 1) |
-| Hard    | cubic-bezier(0.34, 1.8, 0.64, 1) |
-
-## Accessibility
-
-Respects `prefers-reduced-motion` — falls back to a simple
-fade-in with no scale transform.
+## How to use
+1. Add the class pop-card to any element you want to highlight.
+2. Toggle the pop class to trigger the effect.
+3. Copy style.css into your project and ensure the path to easemotion.css is correct.
