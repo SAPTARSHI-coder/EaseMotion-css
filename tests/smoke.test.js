@@ -208,4 +208,35 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
       .map(([name]) => name);
     expect(duplicates).toEqual([]);
   });
+
+  it('should support combining animations simultaneously via variable-based animation composition', () => {
+    const sheet = document.styleSheets[0];
+    let fadeRule, slideRule;
+    
+    const findRules = (rules) => {
+      for (const rule of rules) {
+        if (rule.selectorText === '.ease-fade-in') {
+          fadeRule = rule;
+        } else if (rule.selectorText === '.ease-slide-up') {
+          slideRule = rule;
+        }
+        if (rule.cssRules) {
+          findRules(rule.cssRules);
+        }
+      }
+    };
+    
+    findRules(sheet.cssRules);
+    
+    expect(fadeRule).toBeDefined();
+    expect(slideRule).toBeDefined();
+    
+    expect(fadeRule.style.getPropertyValue('--ease-anim-fade')).toBe('ease-kf-fade-in');
+    expect(fadeRule.style.getPropertyValue('animation-name')).toContain('var(--ease-anim-fade');
+    expect(fadeRule.style.getPropertyValue('animation-name')).toContain('var(--ease-anim-slide');
+    
+    expect(slideRule.style.getPropertyValue('--ease-anim-slide')).toBe('ease-kf-slide-up');
+    expect(slideRule.style.getPropertyValue('animation-name')).toContain('var(--ease-anim-fade');
+    expect(slideRule.style.getPropertyValue('animation-name')).toContain('var(--ease-anim-slide');
+  });
 });
