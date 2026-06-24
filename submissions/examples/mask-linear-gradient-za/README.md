@@ -10,3 +10,5 @@ Using CSS mask-image with linear gradients to create smooth fade transitions on 
 ## Usage
 
 Open `demo.html` to see gradient mask effects in action.
+
+Closes #19197
