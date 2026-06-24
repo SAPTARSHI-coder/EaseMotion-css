@@ -1,16 +1,16 @@
-# Scroll-Driven Animations Demo
+# Scroll-Driven Animations · Scrollytelling Demo
 
-Six interactive demo cards showcasing CSS scroll-driven animations using `scroll-timeline`, `view-timeline`, `animation-range`, `@scroll-timeline`, and `@property` for animated counters.
+A narrative scrollytelling demo featuring six scenes powered purely by CSS scroll-driven animations (`scroll-timeline`, `view-timeline`, `animation-range`). No JavaScript.
 
-## Demos
+## Scenes
 
-1. **Scroll Progress Bar** — fixed progress bar that fills as the page scrolls (`scroll-timeline`)
-2. **Reveal Cards** — staggered slide-in as each card enters the viewport (`view-timeline`)
-3. **Color Shift** — background hue transitions from indigo → green → pink across the scroll range
-4. **Scale on Scroll** — conic gradient circle pulses in scale through the viewport
-5. **Scroll Counter** — counts from 0 to 100 using `@property` and `view-timeline`
-6. **Staggered Layers** — layered fade + scale reveal in sequence
+1. **Horizon Reveal** — a landscape rises from the bottom via scaleY driven by `view-timeline`
+2. **Parallax Drift** — tiles drift horizontally at staggered speeds creating parallax depth
+3. **Spiral Bloom** — a dot expands through concentric ring shadows and morphs into a square
+4. **Staggered Hops** — dots slide into view sequentially using per-element view timelines
+5. **Wave Rider** — a repeating gradient scrolls while an emoji surf slides across the viewport
+6. **Flux Meter** — five bars fill to their `--target` percentage using view-timeline animation
 
 ## Theme
 
-Dark indigo theme with light mode via `prefers-color-scheme` and reduced motion via `prefers-reduced-motion`.
+Neutral warm/ink palette with automatic dark mode via `prefers-color-scheme`. Reduced motion respected via `prefers-reduced-motion`.
