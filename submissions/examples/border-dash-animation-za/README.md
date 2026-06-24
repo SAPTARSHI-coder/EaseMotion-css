@@ -10,3 +10,5 @@ Two card demonstrations showing animated dashed border effects - one with marchi
 ## Usage
 
 Open `demo.html` to see animated dashed border effects.
+
+Closes #19195
