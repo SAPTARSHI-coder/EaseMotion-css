@@ -1,55 +1,27 @@
-# Quick Start Guide
+# Quick Start Guide for EaseMotion CSS
 
-## What does this do?
+## Overview
+A comprehensive quick start guide for new users to get started with EaseMotion CSS in under 5 minutes.
 
-Provides a proper Quick Start guide that takes developers from CDN link to first animation in under 2 minutes. Designed to be added to both `docs/index.html` and the README.
+## What's Included
+- Installation methods (CDN, npm)
+- Basic usage examples
+- Animation classes showcase
+- Components (buttons, cards)
+- Customization guide
+- Next steps
 
-## How is it used?
+## How to Use
+1. Open `demo.html` in any browser
+2. Browse through each section
+3. Try interactive examples
+4. Copy code snippets
 
-The guide follows three steps:
+## Files
+- `demo.html` - Interactive quick start guide
+- `style.css` - Additional styling
+- `README.md` - Documentation
 
-1. **Step 1: Add the CDN link** (1 line of HTML)
-2. **Step 2: Add a class to any element** (5 seconds)
-3. **Step 3: Common patterns** (hover, entrance, timing)
-
-### Step 1 — CDN Link
-
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
-```
-
-### Step 2 — Add a Class
-
-```html
-<h1 class="ease-fade-in">Hello, world!</h1>
-```
-
-### Step 3 — Common Patterns
-
-```html
-<!-- Entrance animation -->
-<div class="ease-slide-up">I slide up on load</div>
-
-<!-- Hover effect -->
-<button class="ease-hover-grow">I grow on hover</button>
-
-<!-- Staggered timing -->
-<p class="ease-fade-in ease-delay-100">First</p>
-<p class="ease-fade-in ease-delay-200">Second</p>
-<p class="ease-fade-in ease-delay-300">Third</p>
-
-<!-- Combine layout + animation -->
-<section class="ease-center ease-padding-8">
-  <h1 class="ease-slide-up">Build faster.</h1>
-  <button class="ease-btn ease-btn-primary ease-hover-grow ease-delay-200">
-    Get Started →
-  </button>
-</section>
-```
-
-## Why is it useful?
-
-- Currently missing from the docs — blocking adoption (reported by @richabishthps-ship-it)
-- New developers need a clear, fast path from zero to working animation
-- Reduces the barrier to entry for the framework
-- Aligns with EaseMotion CSS's "link one file and start building" philosophy
+## Submission Details
+- **Issue**: #436
+- **Contributor**: KRITIKA-l

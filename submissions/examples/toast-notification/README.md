@@ -1,44 +1,52 @@
-# Toast Notification Component
+# Animated Notification Toast
 
-### What does this do?
-This submission adds a stackable, auto-dismissing toast notification component (`.ease-toast`) that slides in from the screen edge and collapses vertically upon exit.
+CSS-only animated toast notification component for EaseMotion-css.
 
----
+## Classes
 
-### How is it used?
+### Variants
+| Class | Effect |
+|-------|--------|
+| `ease-toast-success` | Green theme for success messages |
+| `ease-toast-error` | Red theme for error messages |
+| `ease-toast-warning` | Yellow theme for warnings |
+| `ease-toast-info` | Blue theme for information |
 
-Place `.ease-toast` elements inside a fixed `.ease-toast-container` wrapper (usually positioned top-right or bottom-right):
+### Positions
+| Class | Position |
+|-------|----------|
+| `ease-toast-top-right` | Top right (default) |
+| `ease-toast-top-left` | Top left |
+| `ease-toast-bottom-right` | Bottom right |
+| `ease-toast-bottom-left` | Bottom left |
+| `ease-toast-top-center` | Top center |
+| `ease-toast-bottom-center` | Bottom center |
+
+## Usage
 
 ```html
-<div class="ease-toast-container">
-  <!-- Success Toast -->
+<div class="ease-toast-container ease-toast-top-right">
   <div class="ease-toast ease-toast-success">
-    <span>Database sync complete!</span>
+    ✓ Changes saved successfully!
+    <button class="ease-toast-close">✕</button>
   </div>
 </div>
 ```
 
-#### Theme Modifiers
-- **Success Accent**: `.ease-toast-success`
-- **Danger Accent**: `.ease-toast-danger`
-- **Warning Accent**: `.ease-toast-warning`
-- **Info Accent**: `.ease-toast-info`
+## Features
+- Slide-in from screen edge
+- Fade-out on dismiss
+- Auto-dismiss after 3s
+- Progress bar indicator
+- 4 variants, 6 positions
+- Minimal JS for auto-dismiss only
 
-#### Custom CSS Variables Configuration
-You can customize the toast appearance dynamically:
-
+## Customization
 ```css
-.my-custom-toast {
-  --toast-bg: #090c14;
-  --toast-color: #f8fafc;
-  --toast-accent: #a855f7; /* Custom purple accent border */
+:root {
+  --ease-toast-duration: 3s;
+  --ease-toast-bg: #1a202c;
+  --ease-toast-text: #ffffff;
+  --ease-toast-radius: 0.75rem;
 }
 ```
-
----
-
-### Why does it fit EaseMotion CSS?
-
-A dynamic toast notification is a key UI pattern missing from the components library. 
-
-This implementation provides both the entry slide-in transition and the auto-dismiss exit collapse sequence in **pure CSS** (using a delayed exit animation with `animation-fill-mode: forwards`). It requires zero JavaScript runtime for animation logic, supporting EaseMotion's philosophy of highly performant, lightweight, and human-readable styling.
