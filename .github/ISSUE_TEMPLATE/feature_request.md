@@ -1,9 +1,9 @@
 ---
-name: Feature Request
+name: "✨ Feature Request"
 about: Propose a new utility, animation, or component for EaseMotion CSS
 title: "[FEATURE] Your feature name here"
-labels: ''
-assignees: ''
+labels: 'GSSoC-26, good first issue, help wanted, level:beginner'
+assignees: 'SAPTARSHI-coder'
 
 ---
 
