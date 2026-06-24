@@ -10,3 +10,5 @@ A CSS-only gradient border card that reveals itself with a sweeping entrance ani
 ## Usage
 
 Open `demo.html` in a browser to see the gradient border animate into view and continuously shift colors.
+
+Closes #19189
