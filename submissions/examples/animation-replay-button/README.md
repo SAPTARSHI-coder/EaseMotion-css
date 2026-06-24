@@ -6,10 +6,13 @@ This example demonstrates how users can replay an animation without refreshing t
 
 ## Features
 
-- Replay button
-- Animation reset functionality
-- Simple interactive demo
-- Responsive layout
+- Replay button that restarts a CSS animation on click
+Animation reset using a forced reflow (remove class → reflow → re-add class)
+- Respects prefers-reduced-motion for users sensitive to motion
+Button disables itself during the animation to prevent overlapping replays
+- Visible keyboard focus state (:focus-visible)
+Screen-reader announcement via an aria-live status region
+- Simple, responsive, dependency-free layout
 
 ## How It Works
 
@@ -25,4 +28,4 @@ This restarts the animation immediately.
 
 ## Use Case
 
-Useful for documentation sites where users want to repeatedly observe animation behavior.
+Useful for documentation sites, component galleries, or design-system demos where users want to repeatedly preview an animation's behavior — in an accessible way that doesn't break for keyboard users, screen-reader users, or people with motion sensitivity.
