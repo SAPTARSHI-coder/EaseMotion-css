@@ -10,3 +10,5 @@ A spotlight effect that follows the cursor using CSS radial gradients and a smal
 ## Usage
 
 Open `demo.html` and move your cursor over the page to see the spotlight reveal content.
+
+Closes #19191
