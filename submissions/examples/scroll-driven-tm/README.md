@@ -1,60 +1,16 @@
-# Scroll Driven
+# Scroll-Driven Animations Demo
 
-A self-contained EaseMotion-css submission that demonstrates the `scroll driven` pattern using the framework's design tokens.
+Six interactive demo cards showcasing CSS scroll-driven animations using `scroll-timeline`, `view-timeline`, `animation-range`, `@scroll-timeline`, and `@property` for animated counters.
 
-## Features
+## Demos
 
-- Default `.scroll-driven` rule backed by `--ease-color-primary-alpha` and `--ease-color-primary-dark`
-- Four size variants (`-sm`, `-md`, `-lg`, `-xl`) using `--ease-space-*` and `--ease-radius-*` tokens
-- Six color variants (`-primary`, `-secondary`, `-success`, `-danger`, `-warning`, `-info`) that map directly to `--ease-color-*` tokens
-- Three shape variants (`-pill`, `-rounded`, `-square`) using `--ease-radius-*` tokens
-- Light variants (`-primary-light`, `-success-light`, `-danger-light`) using `--ease-color-*-alpha` tokens for subtle backgrounds
-- Hover, focus-visible, and active states animated with `--ease-speed-fast` + `--ease-ease-out`
-- Disabled state via `[disabled]` attribute selector
-- Full dark mode support via `prefers-color-scheme: dark`
-- Reduced-motion support via `prefers-reduced-motion: reduce`
-- Inline and block display helpers
+1. **Scroll Progress Bar** — fixed progress bar that fills as the page scrolls (`scroll-timeline`)
+2. **Reveal Cards** — staggered slide-in as each card enters the viewport (`view-timeline`)
+3. **Color Shift** — background hue transitions from indigo → green → pink across the scroll range
+4. **Scale on Scroll** — conic gradient circle pulses in scale through the viewport
+5. **Scroll Counter** — counts from 0 to 100 using `@property` and `view-timeline`
+6. **Staggered Layers** — layered fade + scale reveal in sequence
 
-## Usage
+## Theme
 
-```html
-<div class="scroll-driven scroll-driven-md scroll-driven-primary">
-  Hello world
-</div>
-```
-
-## Why is it useful?
-
-EaseMotion-css already provides a comprehensive token system (`--ease-color-*`, `--ease-space-*`, `--ease-radius-*`, `--ease-shadow-*`). This submission turns `scroll driven` into a composable class set so designers and engineers can mix and match variants without writing new CSS. Each rule references a real design token, so the entire pattern automatically respects the maintainer's design system decisions — including any future token additions.
-
-The submission also demonstrates two important EaseMotion patterns:
-
-1. **Token-first composition** — every visual property (`color`, `background`, `border-radius`, `padding`) comes from a `--ease-*` variable, never a hard-coded value.
-2. **Motion-respectful defaults** — `prefers-reduced-motion` zeros out transitions, and `prefers-color-scheme: dark` swaps the surface tokens for the dark palette.
-
-## Token reference
-
-| Variant | Token(s) used |
-| --- | --- |
-| Default | --ease-color-primary-alpha, --ease-color-primary-dark |
-| Primary | --ease-color-primary |
-| Secondary | --ease-color-secondary |
-| Success | --ease-color-success |
-| Danger | --ease-color-danger |
-| Warning | --ease-color-warning |
-| Info | --ease-color-info |
-| Sizes | --ease-space-*, --ease-radius-{sm,md,lg,xl} |
-| Shapes | --ease-radius-{sm,md,full} |
-| Motion | --ease-speed-fast, --ease-ease-out |
-
-## Accessibility
-
-- `:focus-visible` outline uses `--ease-color-primary` at 2px width for clear keyboard focus.
-- Disabled state halves opacity and disables pointer events.
-- Reduced-motion preference disables all transitions.
-
-## Files
-
-- `style.css` — All rules for `.scroll-driven` and variants, plus layout, dark mode, and reduced motion.
-- `demo.html` — Six interactive demo cards showing every variant in context.
-- `README.md` — This file.
+Dark indigo theme with light mode via `prefers-color-scheme` and reduced motion via `prefers-reduced-motion`.
