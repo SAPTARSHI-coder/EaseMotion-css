@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reduced Motion — Dynamic Fix Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Live Reduced-Motion Demo</h1>
+    <p>Reveal cards dynamically respond to <code>prefers-reduced-motion</code>. Toggle the preference below or change it in your OS — no reload needed.</p>
+  </header>
+
+  <div class="status-card" id="statusCard">
+    <span id="statusIcon">&#9888;</span>
+    <span id="statusText">Checking preference...</span>
+  </div>
+
+  <div class="toggle-area">
+    <button class="toggle-btn" id="toggleBtn">Simulate: Enable Reduced Motion</button>
+    <p style="margin-top:0.5rem;font-size:0.75rem;color:#94a3b8;">Click to override OS preference for this demo</p>
+  </div>
+
+  <div class="spacer">&#8595; Scroll down to see reveal cards &#8595;</div>
+
+  <div class="reveal-grid">
+    <div class="reveal-card" data-reveal>
+      <h3>Card One</h3>
+      <p>This card fades and slides up when it enters the viewport — unless reduced motion is preferred, in which case it appears immediately.</p>
+      <span class="tag">reveal</span>
+    </div>
+    <div class="reveal-card" data-reveal>
+      <h3>Card Two</h3>
+      <p>Change the toggle or OS setting while this card is on screen and watch it respond live without a refresh.</p>
+      <span class="tag">reveal</span>
+    </div>
+    <div class="reveal-card" data-reveal>
+      <h3>Card Three</h3>
+      <p>Enabling reduced motion reveals all remaining cards instantly. Disabling it resets them and re-initialises the IntersectionObserver.</p>
+      <span class="tag">reveal</span>
+    </div>
+    <div class="reveal-card" data-reveal>
+      <h3>Card Four</h3>
+      <p>This is the same behaviour proposed for <code>core/reveal.js</code> — a <code>matchMedia('change')</code> listener replaces the one-time static check.</p>
+      <span class="tag">reveal</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var statusCard = document.getElementById('statusCard');
+      var statusIcon = document.getElementById('statusIcon');
+      var statusText = document.getElementById('statusText');
+      var toggleBtn = document.getElementById('toggleBtn');
+
+      // Build our own motion media query
+      var motionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+      var overridden = null; // null = use OS, true/false = overridden
+
+      function getEffectivePreference() {
+        return overridden !== null ? overridden : motionMedia.matches;
+      }
+
+      function updateStatus() {
+        var reduced = getEffectivePreference();
+        if (reduced) {
+          statusCard.className = 'status-card reduced';
+          statusIcon.innerHTML = '&#9888;';
+          statusText.textContent = 'Reduced motion is ON — all reveal cards are visible immediately';
+          toggleBtn.textContent = 'Simulate: Disable Reduced Motion';
+        } else {
+          statusCard.className = 'status-card no-preference';
+          statusIcon.innerHTML = '&#9733;';
+          statusText.textContent = 'Reduced motion is OFF — reveal cards animate on scroll';
+          toggleBtn.textContent = 'Simulate: Enable Reduced Motion';
+        }
+      }
+
+      // ── Reveal logic (mirrors the proposed fix for core/reveal.js) ──
+      var revealClass = 'reveal-card';
+      var activeClass = 'visible';
+      var observer = null;
+
+      function revealAll() {
+        var els = document.querySelectorAll('.' + revealClass);
+        Array.prototype.forEach.call(els, function (el) {
+          el.classList.add(activeClass);
+        });
+        if (observer) {
+          observer.disconnect();
+          observer = null;
+        }
+      }
+
+      function observeRemaining() {
+        // Only observe cards that are NOT already visible
+        var els = document.querySelectorAll('.' + revealClass + ':not(.' + activeClass + ')');
+        Array.prototype.forEach.call(els, function (el) {
+          observer.observe(el);
+        });
+      }
+
+      function initReveal() {
+        if (getEffectivePreference()) {
+          revealAll();
+          return;
+        }
+
+        if ('IntersectionObserver' in window) {
+          observer = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add(activeClass);
+                observer.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.15 });
+
+          // Reveal already-visible cards, observe the rest
+          var els = document.querySelectorAll('.' + revealClass);
+          Array.prototype.forEach.call(els, function (el) {
+            var rect = el.getBoundingClientRect();
+            var vh = window.innerHeight;
+            if (rect.top < vh * 0.85 && rect.bottom > 0) {
+              el.classList.add(activeClass);
+            } else {
+              observer.observe(el);
+            }
+          });
+        } else {
+          revealAll();
+        }
+      }
+
+      function onPreferenceChange() {
+        if (getEffectivePreference()) {
+          revealAll();
+        } else {
+          // Reset all
+          var els = document.querySelectorAll('.' + revealClass);
+          Array.prototype.forEach.call(els, function (el) {
+            el.classList.remove(activeClass);
+          });
+          if (observer) {
+            observer.disconnect();
+            observer = null;
+          }
+          initReveal();
+        }
+        updateStatus();
+      }
+
+      // ── Override toggle ──
+      toggleBtn.addEventListener('click', function () {
+        if (getEffectivePreference()) {
+          overridden = false;
+        } else {
+          overridden = true;
+        }
+        onPreferenceChange();
+      });
+
+      // ── Listen for OS-level preference changes ──
+      motionMedia.addEventListener('change', function () {
+        // Only respond if not overridden
+        if (overridden === null) {
+          onPreferenceChange();
+        }
+      });
+
+      // ── Init ──
+      updateStatus();
+      initReveal();
+    })();
+  </script>
+</body>
+</html>
