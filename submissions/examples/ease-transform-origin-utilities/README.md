@@ -1,19 +1,34 @@
 # Transform Origin Utilities (`ease-transform-origin-utilities`)
 
-A demonstration of CSS `transform-origin` utilities, which allow developers to dictate the precise anchor point around which an element scales, rotates, or skews.
+This proposal introduces a robust set of CSS utility classes to manage the `transform-origin` property, targeted for integration into `core/utilities.css`.
 
-## 🚀 Features & EaseMotion Showcase
+## 📌 Feature Overview
 
-- **Fine-Grained Animation Control**: By default, CSS transforms happen from the `center` of an element. Using utilities like `.ease-origin-top-left`, you can make elements swing open like a door, scale down into a specific corner, or grow from the top edge.
-- **Visual Demo**: This demo includes visual "anchor dots" to show exactly where the element is pinned down during its hover transition.
+When utilizing standard CSS transforms (`rotate()`, `scale()`, etc.), the transform always occurs relative to the center of the element by default. These utility classes allow developers to change the anchor/pivot point of the transformation without writing custom CSS.
+Included classes:
+- `.origin-center` (default)
+- `.origin-top`
+- `.origin-top-right`
+- `.origin-right`
+- `.origin-bottom-right`
+- `.origin-bottom`
+- `.origin-bottom-left`
+- `.origin-left`
+- `.origin-top-left`
 
-## 🛠️ Usage
+## ⚙️ How to Use
 
-This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
+To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`. 
 
-To change where an element scales from:
+You can apply the proposed utilities to any element that has a `transform` applied to it. For example, to make a dropdown menu scale out from the top-right corner instead of the center:
+
 ```html
-<!-- Scales out from its top-left corner instead of the center -->
-<div class="ease-origin-top-left">
-  Hover me!
+<div class="dropdown-menu origin-top-right" style="transform: scale(0.5);">
+  <!-- Menu content -->
 </div>
+```
+
+*Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-transform-origin-utilities/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these classes to the core utility stylesheet.*
+
+## 🔗 Related Issue
+Closes Issue #16481
