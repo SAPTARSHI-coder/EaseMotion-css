@@ -145,7 +145,15 @@ Most people simply forget. This is your reminder. 😊
 
 ## Browser Compatibility
 
-EaseMotion CSS is built for modern evergreen browsers and relies on CSS3 custom properties, CSS animations, Flexbox, CSS Grid, transforms, transitions, and keyframe animations.
+EaseMotion CSS is built for modern evergreen browsers and relies on:
+
+- CSS3 custom properties
+- CSS animations
+- Flexbox
+- CSS Grid
+- Transforms
+- Transitions
+- Keyframe animations
 
 <div align="center">
 
