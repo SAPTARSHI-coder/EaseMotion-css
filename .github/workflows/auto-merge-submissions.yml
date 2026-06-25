@@ -105,20 +105,30 @@ jobs:
           files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
           
           has_submissions=false
+          has_docs_changes=false
           has_core_changes=false
+          docs_files_list=""
           
           for file in $files; do
             if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
-            elif [[ ! "$file" =~ ^docs/ && "$file" != "README.md" && "$file" != "LICENSE" && "$file" != "package.json" && "$file" != "easemotion.css" && "$file" != "easemotion.min.css" ]]; then
+            elif [[ "$file" =~ ^docs/ ]]; then
+              # docs/ is NOT a free pass — contributors must NOT modify docs/
+              has_docs_changes=true
+              docs_files_list="$docs_files_list $file"
+              echo "Docs change detected (NOT allowed): $file"
+            else
+              # Any other file outside submissions/ is a core change
               has_core_changes=true
               echo "Core change detected: $file"
             fi
           done
           
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
+          echo "hasDocsChanges=$has_docs_changes" >> $GITHUB_OUTPUT
           echo "hasCoreChanges=$has_core_changes" >> $GITHUB_OUTPUT
           echo "Has submission changes: $has_submissions"
+          echo "Has docs changes (blocked): $has_docs_changes"
           echo "Has core changes: $has_core_changes"
 
       # Step 2.5: Block Auto-Merge for Invalid Changes
@@ -128,6 +138,7 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          has_docs_changes="${{ steps.check-files.outputs.hasDocsChanges }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           total_lines_changed=${{ steps.pr-metadata.outputs.totalLinesChanged }}
@@ -136,7 +147,18 @@ jobs:
             echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
             curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
-              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the `submissions/` directory. Contributors must place their submissions under `submissions/examples/your-feature-name/`. Thank you!"}'
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the `submissions/` directory. Contributors must place their submissions under the `submissions/` directory (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`). Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          if [ "$has_docs_changes" = "true" ]; then
+            echo "❌ Auto-merge blocked: This PR modifies files in the docs/ directory."
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies files inside the `docs/` directory. The `docs/` folder is maintained by the core team only. Contributors must place their work exclusively inside `submissions/examples/your-feature-name/`. Thank you!"}'
             curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
               "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
               -d '{"state":"closed"}'
