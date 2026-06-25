@@ -1,42 +1,58 @@
-# Neon Glow Button
+# Neon Glow Button Animation
 
-Pure CSS neon glow button collection with 4 animated glow variants. Hover-based effects with zero JavaScript.
+## Overview
+
+A showcase of modern neon glow button animations using only HTML and CSS. Each button emits a soft neon glow on hover with smooth transitions, plus animated breathing glow variants and a ghost outline style — no JavaScript required.
 
 ## Features
 
-- **4 neon variants:**
-  - **Pulse Glow** (cyan) — animated pulsing box-shadow
-  - **Border Trace** (pink) — border cycles through neon shades with shifting glow
-  - **Shadow Burst** (green) — expanding shadow burst at mid-animation
-  - **Double Glow** (purple) — inner + outer glow with neon text-shadow
-- **Smooth hover effects** with `translateY(-2px)` lift
-- **Glowing borders** with animated colors and intensities
-- **Animated shadows** via `@keyframes` on box-shadow
-- **Responsive** padding on small screens
-- **Pure CSS, zero JavaScript**
-- **`prefers-reduced-motion`** support
+* Four color variants: indigo, pink, teal, amber
+* Hover-activated neon glow via box-shadow expansion
+* Breathing glow animation on select variants
+* Ghost outline variant with subtle hover tint
+* Smooth hover scale lift and active press
+* Monospace usage snippet section
+* Responsive layout
+* Reduced-motion accessibility
 
-## Files
+## Variants
 
-| File | Description |
-|------|-------------|
-| `demo.html` | 4 neon glow button variants |
-| `style.css` | All styles, keyframes, hover effects, reduced-motion |
-| `README.md` | This documentation |
+| Variant | Border | Hover Glow |
+|---------|--------|------------|
+| Indigo | `rgba(99, 102, 241, 0.2)` | Violet glow ring |
+| Pink | `rgba(236, 72, 153, 0.2)` | Pink glow ring |
+| Teal | `rgba(20, 184, 166, 0.2)` | Teal glow ring |
+| Amber | `rgba(245, 158, 11, 0.2)` | Amber glow ring |
 
-## Usage
+## Example Usage
 
 ```html
-<button class="neon-btn pulse-glow">Hover Me</button>
+<button class="neon-btn indigo">Indigo</button>
+<button class="neon-btn pink breathe-pink">Pulse</button>
+<button class="neon-btn ghost">Ghost</button>
 ```
 
-## Keyframes
+## Animation Behavior
 
-| Keyframe | Purpose |
-|----------|---------|
-| `pulseGlow` | Cyan glow intensity oscillates smoothly |
-| `borderTrace` | Pink border color and glow shift in a cycle |
-| `shadowBurst` | Green shadow expands and contracts |
-| `doubleGlow` | Purple inner + outer glow with text glow |
+1. Hover: border-color brightens, box-shadow expands from zero to a wide neon glow, button lifts with scale(1.04).
+2. Active: button scales down to 0.96 for a press effect.
+3. Breathing variants: box-shadow oscillates via a `breathe` keyframe on a 2.4s loop.
+
+## Accessibility
+
+The component respects `prefers-reduced-motion` by disabling the breathe animation and all button transitions. Color is not the sole indicator of state — hover is also indicated by border brightness and scale.
+
+## Browser Compatibility
+
+Compatible with modern browsers supporting CSS Animations, Transforms, Box-shadow, Transitions, and Media Queries.
+
+## Acceptance Criteria
+
+* Uses CSS keyframes.
+* Smooth and reusable animation.
+* Lightweight implementation.
+* Accessible design.
+* Easy integration into existing projects.
+* Consistent with EaseMotion CSS principles.
 
 Fixes #19166
