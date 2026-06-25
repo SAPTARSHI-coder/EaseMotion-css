@@ -1,29 +1,33 @@
 # CSS :has() Selector
 
-## What does this do?
-Demonstrates practical CSS `:has()` selector patterns — cards that adapt their layout based on content (image, tags, checkbox), live form validation without JavaScript, and interactive list styling — using EaseMotion CSS tokens.
+This submission demonstrates the CSS `:has()` selector — a parent selector and conditional pseudo-class — across four real-world patterns: card differentiation, form validation states, interactive checkboxes, and pricing card highlighting. Built with EaseMotion design tokens.
 
-## How is it used?
-Add `.has-card` for adaptive cards, `.has-form` + `.has-field` for auto-validating forms, or `.has-list` for interactive lists. The `:has()` selectors are in `style.css` and respond to child elements automatically.
+## Features
 
-```html
-<!-- Card adapts when it contains an image -->
-<div class="has-card">
-  <img src="..." alt="" />
-  <div class="has-body">
-    <h3>Title</h3>
-    <p>Description</p>
-  </div>
-</div>
+- **Card differentiation**: `:has(.card-img)` styles cards with images differently from those without
+- **Form validation**: `:has(input:invalid:not(:placeholder-shown))` shows error messages without JavaScript
+- **Interactive checkboxes**: `:has(input[type="checkbox"]:checked)` styles the parent list item when checked
+- **Pricing card highlight**: `:has(.badge-recommended)` scales and highlights the recommended plan
+- Uses `--ease-color-*` palette including `--ease-color-primary-alpha` and `--ease-color-danger-alpha`
+- `--ease-shadow-*` tokens for card elevation
+- `--ease-speed-fast` and `--ease-ease` for all transitions
+- Dark mode support via `prefers-color-scheme: dark`
+- Reduced motion support via `prefers-reduced-motion: reduce`
 
-<!-- Form validates via :has() — no JS needed -->
-<form class="has-form">
-  <div class="has-field">
-    <input type="email" required />
-    <span class="has-error">Valid email required</span>
-  </div>
-</form>
+## Usage
+
+```css
+/* Style a card differently if it contains an image */
+.card:has(.card-img) {
+  border: 2px solid var(--ease-color-primary);
+}
+
+/* Show error message when input is invalid */
+.form-group:has(input:invalid:not(:placeholder-shown)) .error-msg {
+  display: block;
+}
 ```
 
 ## Why is it useful?
-The `:has()` selector lets CSS respond to a parent's children — enabling container-aware styling, live validation feedback, and interactive states without JavaScript. These patterns make UI components more self-aware and reduce the need for conditional class toggling.
+
+The `:has()` selector solves the long-standing "parent selector" problem in CSS. It lets you write conditional styles based on children or previous siblings — patterns that previously required JavaScript. Powered by EaseMotion's `--ease-*` tokens for consistent spacing, color, and elevation across all :has() demo patterns.
