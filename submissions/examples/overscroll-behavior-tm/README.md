@@ -1,14 +1,26 @@
-# Sandbox Optimization: CSS Overscroll Behavior Control
+# Overscroll Behavior Utilities Proposal (`overscroll-behavior-tm`)
 
-## Overview
-A structural patch using the CSS `overscroll-behavior` property to control scroll chaining behavior — preventing the parent page from scrolling when an inner scrollable element reaches its boundary in chat interfaces, drawers, modals, and nested list containers.
+A proposal for `core/utilities.css` adding standard CSS overscroll behavior utility classes.
 
-## Sandbox Configuration Files
-* `demo.html` — Interactive testing canvas with outer page and inner scroll boxes to demonstrate chaining vs. containment.
-* `style.css` — Localized scroll modifier block applying overscroll-behavior variants linked back to framework core tokens.
+## 🚀 Features
 
-## The Bug Resolved
-When an inner scrollable container reaches its scroll limit, the browser propagates the scroll gesture to the nearest scrollable ancestor — the page body. This creates an unintended "scroll chaining" effect. In chat windows, drawers, and nested panels, users expecting the inner area to stop scrolling instead unintentionally scroll the entire page.
+- **Overscroll Behavior Utilities**: Classes to control what happens when you hit the boundary of a scrolling area.
+  - `.overscroll-auto`, `.overscroll-contain`, `.overscroll-none`
+  - Axis specific: `.overscroll-[x|y]-[auto|contain|none]`
 
-## The Solution
-Setting `overscroll-behavior: contain` on inner scroll containers intercepts the scroll chain at that element's boundary. The scroll gesture halts within the container. Combined with `overscroll-behavior: none` for full isolation (including disabling pull-to-refresh on mobile), the page-level scroll experience remains uninterrupted.
+## 🛠️ Usage
+
+Open `demo.html` in your browser. All code is contained within `style.css`. Scroll the inner container to the bottom to see `.overscroll-contain` prevent the parent page from scrolling!
+
+You apply this class to any scrollable container:
+
+```html
+<div class="overscroll-contain" style="overflow-y: scroll; height: 300px;">
+  <!-- Lots of content -->
+</div>
+```
+
+*Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`.*
+
+## 🔗 Related Issue
+Resolves Issue #19132
