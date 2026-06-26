@@ -1,11 +1,7 @@
-# Scroll-Driven Reveal
+# Scroll-Driven Image Reveal
 
-Explores CSS scroll-driven animations using `view-timeline` and `animation-timeline: view()`. Demonstrates fade, slide, scale, blur, rotate, flip, zoom, clip, and color reveal effects triggered by viewport visibility.
+1. **What does this do?** Six distinct scroll-driven reveal effects (fade, zoom, slide, blur, clip, flip) using the CSS `animation-timeline: view()` API with zero JavaScript.
 
-## Usage
+2. **How is it used?** Add `animation: name linear; animation-timeline: view(); animation-range: entry 0% entry 100%;` to any element with a registered `@keyframes` animation.
 
-Open `demo.html` and scroll down. The left comparison column stays static while right column items animate in. Below, ten different reveal effects demonstrate the variety possible with scroll-driven timelines.
-
-## Browser Support
-
-Scroll-driven animations are supported in Chrome 115+, Edge 115+, and are experimental elsewhere. The demo includes `prefers-reduced-motion` fallbacks that force elements to fully visible. Dark theme uses `#0a0f1e` background and `#e2e8f0` text.
+3. **Why is it useful?** Eliminates IntersectionObserver and scroll event listeners. Declarative, GPU-accelerated, and perfectly synchronized with the browser's scroll machinery.
