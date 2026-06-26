@@ -5,7 +5,7 @@
 >
 > Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
 >
-> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/*` or `submissions/docs/*`) will be reviewed and merged.
 >
 > This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
 >
@@ -47,7 +47,7 @@ This model exists to maintain quality, naming consistency, and design coherence 
 **One place only:**
 
 ```
-submissions/examples/your-feature-name/
+submissions/your-category/your-feature-name/ (e.g., submissions/examples/ or submissions/docs/)
 ```
 
 That is the only directory you should add or modify in your PR.
@@ -56,7 +56,7 @@ That is the only directory you should add or modify in your PR.
 
 To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
 
-- Contributors may submit up to **25 PRs per day**
+- Contributors may submit up to **150 PRs per day**
 - Focus on quality, originality, accessibility, and proper testing
 - Low-effort, repetitive, or mass-generated PRs may be closed without review
 
@@ -81,7 +81,7 @@ To keep the repository's git history clean and readable, contributors must follo
 
 ### 📢 Contribution Policy Update
 
-All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+All contributions are welcome and eligible for merge when submitted inside the `submissions/` folder (e.g., `submissions/examples/` or `submissions/docs/`) following the repository structure and guidelines.
 
 To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
 
@@ -153,7 +153,7 @@ These rules are enforced at PR review. Violations result in immediate close with
 ### ✅ Always do these
 
 ```
-- Add your feature inside submissions/examples/your-feature-name/
+- Add your feature inside the submissions/ directory (e.g., submissions/examples/your-feature-name/ or submissions/docs/your-feature-name/)
 - Include all three required files (demo.html, style.css, README.md)
 - Keep one PR focused on one feature
 - Fill out the PR template checklist completely
@@ -171,16 +171,16 @@ Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ## 🕑 Issue Cooldown Rule
 
-**Maximum 2 active assigned issues per contributor at any time.**
+**Maximum 25 active assigned issues per contributor at any time.**
 
 This rule exists to keep assignments fair and ensure active contributors can always pick up work.
 
 ### What this means
 
 ```
-✅ You have 0–1 active assignments → request a new issue freely
-✅ You have 2 active assignments  → finish or unassign one first
-❌ You have 2+ active assignments → new assignment requests will be declined
+✅ You have 0–24 active assignments → request a new issue freely
+✅ You have 25 active assignments  → finish or unassign one first
+❌ You have 25+ active assignments → new assignment requests will be declined
 ```
 
 ### Inactivity
@@ -195,7 +195,7 @@ If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer wi
 
 1. **Fork** this repository
 2. **Create a branch**: `git checkout -b feature/your-feature-name`
-3. **Add your files** inside `submissions/examples/your-feature-name/`
+3. **Add your files** inside the `submissions/` directory (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`)
 4. **Push** your branch and open a PR against `main`
 5. **Fill out** the PR template — every checkbox must be addressed
 6. **Wait** for maintainer review. Do not ping or bump. Reviews happen on a rolling basis.
@@ -216,7 +216,7 @@ EaseMotion CSS follows a strict **submission-first** pipeline. No PR should ever
 ```
 PR submitted
     ↓
-submissions/examples/ (contributor writes raw CSS here)
+submissions/ (contributor writes raw CSS here)
     ↓
 Maintainer tests it
     ↓
