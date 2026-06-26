@@ -53,6 +53,11 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 - [What is EaseMotion CSS?](#what-is-easemotion-css)
 - [Why EaseMotion CSS?](#why-easemotion-css)
 - [Quick Start](#quick-start)
+- [Framework Integration](#framework-integration)
+  - [React + Vite](#react--vite)
+  - [Next.js](#nextjs)
+  - [Vue / Svelte / Astro](#vue--svelte--astro)
+- [SCSS Integration](#scss-integration)
 - [Philosophy](#philosophy)
 - [Usage and Examples](#usage-and-examples)
 - [Customization](#customization)
@@ -350,6 +355,301 @@ Or in CSS / PostCSS / Sass:
 ```
 
 > ⚠️ **`easemotion/variables.css` must always load before modular animation files.** It provides the shared custom properties used by all animation categories.
+
+---
+
+## Framework Integration
+
+EaseMotion CSS is a pure CSS library — it works out of the box with every JavaScript framework by simply importing the stylesheet and applying class names to elements. Additionally, we ship a dedicated **React integration layer** to make animations even more declarative in JSX.
+
+---
+
+### React + Vite
+
+#### 1. Install EaseMotion CSS
+
+```bash
+npm install easemotion-css
+```
+
+#### 2. Import in your entry file
+
+```jsx
+// main.jsx or App.jsx
+import 'easemotion-css/easemotion.min.css';
+```
+
+#### 3. Use classes directly in JSX
+
+```jsx
+export default function HeroSection() {
+  return (
+    <div className="ease-center ease-fade-in">
+      <h1 className="ease-slide-up ease-delay-100">Build faster.</h1>
+      <p className="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
+      <button className="ease-btn ease-btn-primary ease-hover-grow ease-delay-300">
+        Get Started →
+      </button>
+    </div>
+  );
+}
+```
+
+#### 4. Use the `<Animate>` wrapper component _(optional — in `examples/react-vite/`)_
+
+We ship a React wrapper component that turns animation settings into declarative props:
+
+```jsx
+// Copy Animate.jsx from examples/react-vite/src/components/Animate.jsx
+import Animate from './components/Animate';
+
+export default function App() {
+  return (
+    <>
+      {/* Fade in with a 200ms delay */}
+      <Animate type="fade-in" delay={200}>
+        <div className="ease-card">Hello World</div>
+      </Animate>
+
+      {/* Staggered list items */}
+      {['A', 'B', 'C'].map((item, i) => (
+        <Animate key={item} type="slide-up" delay={i * 100} hover="lift">
+          <div className="ease-card">{item}</div>
+        </Animate>
+      ))}
+
+      {/* Animate on mount (React remounts = re-animates) */}
+      <Animate key={isOpen ? 'open' : 'closed'} type="zoom-in" duration={300}>
+        {isOpen && <Modal />}
+      </Animate>
+    </>
+  );
+}
+```
+
+**`<Animate>` Props Reference:**
+
+| Prop | Type | Default | Description |
+| ---- | ---- | ------- | ----------- |
+| `type` | `string` | — | EaseMotion animation name (e.g. `'fade-in'`, `'slide-up'`, `'zoom-in'`) |
+| `duration` | `'fast' \| 'medium' \| 'slow' \| number` | `'medium'` | Duration keyword or milliseconds |
+| `delay` | `number` | `0` | Delay in ms before animation starts |
+| `hover` | `string` | — | Hover effect class (e.g. `'lift'`, `'glow'`, `'scale'`) |
+| `tag` | `string` | `'div'` | HTML tag to render |
+| `className` | `string` | `''` | Additional CSS classes |
+
+#### 5. Run the showcase
+
+The full interactive playground lives in `examples/react-vite/`. Clone the repo and run:
+
+```bash
+cd examples/react-vite
+npm install
+npm run dev
+```
+
+> This opens a dark-mode dashboard with live animation controls, staggered demos, and a modal transition showcase.
+
+---
+
+### Next.js
+
+EaseMotion CSS is fully compatible with Next.js (App Router and Pages Router) since it is a static CSS file with no JavaScript dependencies.
+
+#### App Router (Next.js 13+)
+
+```jsx
+// app/layout.js — import once globally
+import 'easemotion-css/easemotion.min.css';
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+```jsx
+// app/page.js — use class names in Server Components
+export default function Page() {
+  return (
+    <main className="ease-center ease-fade-in">
+      <h1 className="ease-slide-up">Welcome</h1>
+    </main>
+  );
+}
+```
+
+#### Pages Router (Next.js 12 or earlier)
+
+```jsx
+// pages/_app.js
+import 'easemotion-css/easemotion.min.css';
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+```
+
+> **Tip:** EaseMotion CSS works in Server Components (`'use server'`) without any hydration issues since it adds no runtime JavaScript.
+
+---
+
+### Vue / Svelte / Astro
+
+Install via npm and import globally:
+
+```bash
+npm install easemotion-css
+```
+
+#### Vue 3
+
+```js
+// main.js
+import 'easemotion-css/easemotion.min.css';
+```
+
+```vue
+<!-- MyComponent.vue -->
+<template>
+  <div class="ease-fade-in ease-card">
+    <h2 class="ease-slide-up ease-delay-100">Hello Vue!</h2>
+  </div>
+</template>
+```
+
+#### Svelte / SvelteKit
+
+```js
+// src/app.js or +layout.svelte <script>
+import 'easemotion-css/easemotion.min.css';
+```
+
+```svelte
+<div class="ease-fade-in ease-card">
+  <h2 class="ease-slide-up ease-delay-100">Hello Svelte!</h2>
+</div>
+```
+
+#### Astro
+
+```js
+// src/layouts/Layout.astro
+import 'easemotion-css/easemotion.min.css';
+```
+
+Or via a `<link>` tag in the Astro layout:
+
+```astro
+<link rel="stylesheet" href="/node_modules/easemotion-css/easemotion.min.css" />
+```
+
+---
+
+## SCSS Integration
+
+EaseMotion CSS ships a **SCSS layer** under `scss/` that exposes animation tokens as SCSS variables and provides reusable mixins. This allows you to apply EaseMotion animations in your own SCSS stylesheets without adding extra classes to your HTML.
+
+### Setup
+
+Make sure you have Sass installed:
+
+```bash
+npm install --save-dev sass
+```
+
+Then import the SCSS package in your stylesheet:
+
+```scss
+// In your SCSS entry file
+@use 'easemotion-css/scss' as ease;
+```
+
+Or import individual partials:
+
+```scss
+@use 'easemotion-css/scss/variables' as *;
+@use 'easemotion-css/scss/mixins' as ease;
+```
+
+### Using the `animate()` mixin
+
+```scss
+.my-card {
+  // Apply fade-in with a 400ms duration and 200ms delay
+  @include ease.animate(ease-kf-fade-in, 400ms, $ease-in-out-cubic, 200ms);
+}
+
+.hero-title {
+  // Use shorthand named mixins
+  @include ease.slide-up($duration: 600ms, $delay: 100ms);
+}
+
+.cta-button {
+  @include ease.zoom-in($duration: $speed-fast);
+}
+```
+
+### Using the `transition()` mixin
+
+```scss
+.nav-item {
+  @include ease.transition(color, $duration: $speed-fast, $easing: $ease-out-cubic);
+
+  &:hover {
+    color: var(--ease-color-primary);
+  }
+}
+```
+
+### Available SCSS Tokens
+
+**Duration Tokens** (mapped to CSS custom properties):
+
+| SCSS Variable | CSS Variable | Value |
+| ------------- | ------------ | ----- |
+| `$speed-fast` | `--ease-speed-fast` | CSS var |
+| `$speed-medium` | `--ease-speed-medium` | CSS var |
+| `$speed-slow` | `--ease-speed-slow` | CSS var |
+
+**Easing Tokens**:
+
+| SCSS Variable | Value |
+| ------------- | ----- |
+| `$ease-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` |
+| `$ease-bounce` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| `$ease-in-out` | `cubic-bezier(0, 0, 0.2, 1)` |
+| `$ease-elastic` | Same as `$ease-bounce` |
+
+### Available SCSS Mixins
+
+| Mixin | Description |
+| ----- | ----------- |
+| `animate($name, $duration, $easing, $delay, $fill, $iteration)` | Base animation mixin |
+| `transition($property, $duration, $easing, $delay)` | CSS transition helper |
+| `fade-in(...)` | Applies `ease-kf-fade-in` animation |
+| `fade-out(...)` | Applies `ease-kf-fade-out` animation |
+| `slide-up(...)` | Applies `ease-kf-slide-up` animation |
+| `slide-down(...)` | Applies `ease-kf-slide-down` animation |
+| `zoom-in(...)` | Applies `ease-kf-zoom-in` animation |
+| `zoom-out(...)` | Applies `ease-kf-zoom-out` animation |
+
+### Build your SCSS
+
+```bash
+# Compile to CSS
+npx sass scss/_index.scss dist/easemotion.scss.css
+
+# Or use the npm script in the EaseMotion project
+npm run build:scss
+```
+
+> **Contributing SCSS issues:** We have 100+ open GSSoC-26 issues for expanding the SCSS layer — from new mixins to modular per-animation partials. Browse [`label:scss`](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is:open+label:scss) to find one.
+
+---
 
 ## Philosophy
 
@@ -713,7 +1013,7 @@ Tailwind is a utility-first framework built around short atomic class names and 
 
 ### Can I use it with React/Vue?
 
-Yes. EaseMotion CSS works with React, Vue, plain HTML, or any framework that renders standard `class` attributes. You can install it from npm, import the stylesheet, and use the classes directly in your components.
+Yes. EaseMotion CSS works with any framework that renders standard HTML `class` attributes — React, Vue, Svelte, Angular, Astro, Next.js, and more. Install from npm, import the stylesheet, and use the class names directly in your components. We also ship a dedicated React `<Animate>` wrapper component in `examples/react-vite/` — see the [Framework Integration](#framework-integration) section for details.
 
 ### How do I submit a new component?
 
@@ -742,6 +1042,25 @@ easemotion-css/
 │   ├── buttons.css             ← 6 variants, 4 sizes, pill, icon
 │   └── cards.css               ← 13 card variants
 │
+├── scss/                       ← SCSS INTEGRATION LAYER
+│   ├── _index.scss             ← entry point (@forward variables + mixins)
+│   ├── _variables.scss         ← SCSS animation tokens ($speed-*, $ease-*)
+│   └── _mixins.scss            ← reusable SCSS mixins (animate, hover-effect...)
+│
+├── examples/                   ← INTEGRATION SHOWCASES
+│   ├── demo.html               ← source interactive showcase
+│   ├── react-vite/             ← ⚛️ React + Vite integration showcase
+│   │   ├── src/
+│   │   │   ├── App.jsx         ← interactive animation playground
+│   │   │   ├── App.css         ← dark-mode dashboard styles
+│   │   │   └── components/
+│   │   │       └── Animate.jsx ← <Animate> React wrapper component
+│   │   └── package.json
+│   └── ...
+│
+├── docs/demo.html              ← deployed live demo page
+├── docs/index.html             ← full documentation site
+│
 ├── submissions/                ← CONTRIBUTOR AREA
 │   ├── README.md               ← full submission workflow
 │   └── examples/
@@ -749,10 +1068,6 @@ easemotion-css/
 │       ├── hover-shimmer/      ← [INTEGRATED] → ease-hover-shimmer
 │       ├── card-lift/          ← [INTEGRATED] → ease-card-lift
 │       └── button-glow/        ← pending review
-│
-├── examples/demo.html          ← source interactive showcase
-├── docs/demo.html              ← deployed live demo page
-├── docs/index.html             ← full documentation site
 │
 ├── .github/
 │   ├── CODEOWNERS
@@ -774,22 +1089,27 @@ easemotion-css/
 
 > Track progress and vote on features via [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues).
 
-| Feature                                               | Status             |
-| ----------------------------------------------------- | ------------------ |
-| ✅ Human-readable core utilities (80+)                | **Shipped — v1.0** |
-| ✅ Animation-first motion library (20+)               | **Shipped — v1.0** |
-| ✅ Curated contribution pipeline                      | **Shipped — v1.0** |
-| ✅ Component library (buttons, cards)                 | **Shipped — v1.0** |
-| ✅ npm package + jsDelivr CDN                         | **Shipped — v1.0** |
-| ✅ Full documentation site                            | **Shipped — v1.0** |
-| 🔜 Form components (inputs, checkboxes, toggles)      | **Planned — v1.1** |
-| 🔜 Dark mode token layer                              | **Planned — v1.1** |
-| 🔜 Modal & tooltip components                         | **Planned — v1.2** |
-| 🔜 Scroll-triggered animations (IntersectionObserver) | **Planned — v1.2** |
-| 🔜 Navigation components (navbar, sidebar)            | **Planned — v1.3** |
-| 🔜 CSS-only accordion & tabs                          | **Planned — v1.3** |
-| 🔜 Badge, tag, avatar, progress bar                   | **Planned — v1.3** |
-| 🔜 Theming CLI (generate custom token file)           | **Exploring**      |
+| Feature                                               | Status                    |
+| ----------------------------------------------------- | ------------------------- |
+| ✅ Human-readable core utilities (80+)                | **Shipped — v1.0**        |
+| ✅ Animation-first motion library (20+)               | **Shipped — v1.0**        |
+| ✅ Curated contribution pipeline                      | **Shipped — v1.0**        |
+| ✅ Component library (buttons, cards)                 | **Shipped — v1.0**        |
+| ✅ npm package + jsDelivr CDN                         | **Shipped — v1.0**        |
+| ✅ Full documentation site                            | **Shipped — v1.0**        |
+| ✅ React + Vite integration showcase                  | **Shipped — v1.1**        |
+| ✅ SCSS token layer (variables + mixins)              | **Shipped — v1.1**        |
+| 🚧 React component library (hooks + wrappers)         | **In Progress — v1.1**    |
+| 🚧 SCSS modular partials (per-animation modules)      | **In Progress — v1.1**    |
+| 🚧 Next.js App Router template                        | **In Progress — v1.1**    |
+| 🔜 Form components (inputs, checkboxes, toggles)      | **Planned — v1.2**        |
+| 🔜 Dark mode token layer                              | **Planned — v1.2**        |
+| 🔜 Modal & tooltip components                         | **Planned — v1.2**        |
+| 🔜 Scroll-triggered animations (IntersectionObserver) | **Planned — v1.2**        |
+| 🔜 Navigation components (navbar, sidebar)            | **Planned — v1.3**        |
+| 🔜 CSS-only accordion & tabs                          | **Planned — v1.3**        |
+| 🔜 Badge, tag, avatar, progress bar                   | **Planned — v1.3**        |
+| 🔜 Theming CLI (generate custom token file)           | **Exploring**             |
 
 ---
 
