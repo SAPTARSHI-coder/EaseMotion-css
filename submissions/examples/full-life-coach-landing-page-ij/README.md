@@ -1,7 +1,0 @@
-# Life Coach / Consultant Landing Page
-
-1. What does this do? A full landing page for a life coach named ClarityPath Coaching. Contains a warm hero with a coaching philosophy headline, three service offerings (private coaching, group coaching, self-paced courses), an about-the-coach section with credentials, client success story cards, a testimonials carousel, a free discovery call CTA, and a newsletter/resources signup section. All animations use EaseMotion CSS classes (ease-slide-up, ease-fade-in, ease-reveal-up, ease-card-hover, ease-hover-underline, etc.).
-
-2. How is it used? Open demo.html in any browser. The page uses EaseMotion's CSS framework via easemotion.css for all motion. The testimonials carousel uses a simple JS click handler on dots to slide the track. The reveal.js script triggers scroll-based entrance animations. Customize colors, copy, and images in style.css and demo.html to match a specific coach's brand.
-
-3. Why is it useful? Coaches and consultants need a professional online presence that communicates warmth, credibility, and transformation. This page provides a complete, responsive template that leverages EaseMotion's animation system for a polished feel without writing custom keyframes. It's ready to deploy with minimal customization.
