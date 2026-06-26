@@ -1,20 +1,28 @@
 # Container Query Cards
 
-## What does this do?
-Provides card components that adapt their layout via CSS `@container` queries — responding to their parent container's width rather than the viewport — using EaseMotion CSS tokens for colours, spacing, radii, and shadows.
+This submission demonstrates CSS Container Queries (`@container`) for creating truly responsive components that adapt based on their parent container's width, not the viewport. Uses EaseMotion's `--ease-*` design tokens throughout.
 
-## How is it used?
-Wrap cards in a `.cq-container` element. Add `.cq-card` for the base card, or `.cq-card-compact` / `.cq-card-featured` for variants. The card automatically adjusts layout at container widths of 400px and 600px.
+## Features
+
+- `container-type: inline-size` on parent wrappers creates a containment context
+- `@container` breakpoints switch cards from vertical to horizontal layout
+- Card grid that goes from 1 → 2 → 3 columns based on container width
+- Hover effects with `--ease-speed-medium` and `--ease-shadow-*` tokens
+- Tag badges, buttons, and text using `--ease-color-*` palette
+- Dark mode support via `prefers-color-scheme: dark`
+- Reduced motion fallback via `prefers-reduced-motion: reduce`
+
+## Usage
 
 ```html
-<div class="cq-container">
-  <div class="cq-card">
-    <div class="cq-icon">📦</div>
-    <h3>Title</h3>
-    <p>Description that reflows as the container grows.</p>
-  </div>
+<div class="card-wrapper" style="container-type: inline-size;">
+  <article class="cq-card">
+    <div class="cq-card-image">CQ</div>
+    <div class="cq-card-body">...</div>
+  </article>
 </div>
 ```
 
 ## Why is it useful?
-Container queries enable truly reusable components that adapt to wherever they're placed — sidebar, main content, or grid cell — without knowing the viewport size. This makes cards, panels, and widgets genuinely portable across layouts while maintaining consistent responsive behaviour.
+
+Container Queries solve the fundamental limitation of media queries: components can't know their context. With `@container`, the same card component adapts to a sidebar, a main column, or a full-width layout — all without writing component-specific CSS. Powered by EaseMotion's `--ease-space-*` spacing scale and `--ease-color-*` tokens.
