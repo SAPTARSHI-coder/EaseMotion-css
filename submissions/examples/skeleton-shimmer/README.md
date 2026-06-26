@@ -1,34 +1,13 @@
-# Pure CSS Skeleton Shimmer Loading Card
+# Skeleton Shimmer Loading Placeholder Component Sandbox
 
-## What does this do?
+## Overview
+An animation-first, content-aware skeleton loading overlay framework showcase. It provides mock UI blocks (profile lines, image frames, text paragraphs) running an infinite linear-gradient wave to mask layout transition states during background API calls.
 
-An animation-first, zero-JavaScript skeletal loading screen container that renders mock UI boxes with a smooth infinite sliding gradient shimmer wave effect.
+## 📁 Sandbox Configuration Files
+* `demo.html` — Multi-variant component presentation canvas displaying mock user profiles and image card blocks.
+* `style.css` — Performance-optimized background animation keyframes resolving paths out to root variables.
 
-## How is it used?
-
-1. Link the component stylesheet:
-   `<link rel="stylesheet" href="style.css">`
-2. Create the skeleton components stack wrapping each with the `.ease-shimmer` utility class:
-   ```html
-   <div class="ease-skeleton-card">
-     <div class="ease-skeleton-media ease-shimmer"></div>
-     <div class="ease-skeleton-title ease-shimmer"></div>
-     <div class="ease-skeleton-text ease-shimmer"></div>
-     <div class="ease-skeleton-button ease-shimmer"></div>
-   </div>
-   ```
-
-## Why is it useful?
-
-- **Zero JS Overhead**: Computes background gradient transition shifts completely on the GPU render layer.
-- **Improved UX**: Reduces perceived page load time by providing visual structure layout hints before real content finishes fetching.
-- **Flexible & Modular**: Individual skeleton sizing utility blocks can be rearranged to fit any target UI mockup layout.
-
-## Tech Stack
-
-- HTML
-- CSS (Pure CSS, no JS)
-
-## Preview
-
-Open `demo.html` directly in your browser to watch the shimmer wave loop sweep.
+## 🚀 Key Layout Mechanics
+1. **GPU-Bound Vector Sweeping:** Animating `background-position` properties triggers composition actions on independent graphics processing planes, avoiding costly layout invalidation calculations.
+2. **Flexible Mock Elements:** The mix of flexible avatar circles and geometric line blocks gives package developers the freedom to build layout-matched layouts that match final application interfaces.
+3. **Zero Runtime Bloat:** Replaces heavy, frame-dropping JavaScript tracking loops with a native CSS animation matrix that handles state layers automatically.
