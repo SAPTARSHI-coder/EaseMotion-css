@@ -672,3 +672,59 @@ jobs:
             fi
           fi
 
+      # Step 7: Close linked issues (GitHub API merge does NOT auto-close Closes #N keywords)
+      - name: Close Linked Issues
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+
+          # Confirm merge succeeded before touching issues
+          state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$state" != "MERGED" ]; then
+            echo "PR #$PR_NUM is not merged (state: $state). Skipping issue close."
+            exit 0
+          fi
+
+          # Extract PR body
+          pr_body=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json body --jq '.body // ""')
+
+          # Parse all issue numbers referenced by closing keywords (case-insensitive)
+          linked_issues=$(echo "$pr_body" | grep -ioE '(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#([0-9]+)' | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+
+          if [ -z "$linked_issues" ]; then
+            echo "No linked issues found in PR body. Nothing to close."
+            exit 0
+          fi
+
+          echo "Linked issues to close: $linked_issues"
+
+          for ISSUE_NUM in $linked_issues; do
+            echo "Closing issue #$ISSUE_NUM..."
+
+            issue_state=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUM --jq '.state' 2>/dev/null || echo "not_found")
+            if [ "$issue_state" = "closed" ]; then
+              echo "Issue #$ISSUE_NUM is already closed. Skipping."
+              continue
+            fi
+            if [ "$issue_state" = "not_found" ]; then
+              echo "Issue #$ISSUE_NUM not found. Skipping."
+              continue
+            fi
+
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            curl -s -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM/comments" \
+              -d "{\"body\":\"✅ **Issue resolved!** This issue was closed automatically after PR #${PR_NUM} by @${pr_author} was merged into \`main\`. Thank you for your contribution! 🎉\"}"
+
+            curl -s -X PATCH \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM" \
+              -d '{"state":"closed","state_reason":"completed"}'
+
+            echo "✅ Closed issue #$ISSUE_NUM"
+          done
