@@ -246,7 +246,7 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 
 Open a **Feature Request** issue first to confirm the idea fits EaseMotion CSS. This saves you from building something that gets rejected. Small additions (a new animation, a hover effect) rarely need pre-approval. New component systems should be discussed first.
 
-→ [Open a Feature Request](../../issues/new?template=feature_request.md)
+→ [Open a Feature Request](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md)
 
 ## Getting Started
 

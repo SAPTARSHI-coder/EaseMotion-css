@@ -173,6 +173,8 @@ These rules are enforced at PR review. Violations result in immediate close with
 
 For any non-trivial feature, **open a GitHub issue before coding**. Use the Feature Request template. This lets you confirm the idea fits EaseMotion CSS before investing time in the code.
 
+→ [Open a Feature Request](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md)
+
 Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ---
