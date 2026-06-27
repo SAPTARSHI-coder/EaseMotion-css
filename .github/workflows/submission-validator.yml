@@ -9,8 +9,43 @@ permissions:
   issues: write
 
 jobs:
+  detect-track:
+    name: Detect Submission Track
+    runs-on: ubuntu-latest
+    outputs:
+      is_react_scss_only: ${{ steps.detect.outputs.is_react_scss_only }}
+    steps:
+      - name: Check if PR is React/SCSS only (handled by dedicated validator)
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+
+          all_react_scss=true
+          any_file=false
+
+          for file in $files; do
+            any_file=true
+            if [[ "$file" != submissions/react/* && "$file" != submissions/scss/* ]]; then
+              all_react_scss=false
+              break
+            fi
+          done
+
+          if [ "$any_file" = "true" ] && [ "$all_react_scss" = "true" ]; then
+            echo "is_react_scss_only=true" >> $GITHUB_OUTPUT
+            echo "ℹ️ Pure React/SCSS PR — deferring to react-scss-validator.yml"
+          else
+            echo "is_react_scss_only=false" >> $GITHUB_OUTPUT
+            echo "✅ Standard HTML/CSS PR — proceeding with submission-validator"
+          fi
+
   validate:
     name: Validate Examples
+    needs: detect-track
+    if: needs.detect-track.outputs.is_react_scss_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository (Target Branch)
@@ -147,7 +182,7 @@ jobs:
             if (exampleFolders.size === 0) {
               failures.push({
                 folder: 'Submission Folder Protection',
-                casingErrors: ['This PR does not contain any additions inside the `submissions/` directory. Contributors must place their submissions under `submissions/examples/your-feature-name/`.'],
+                casingErrors: ['This PR does not contain any additions inside the `submissions/` directory. Contributors must place their submissions under the `submissions/` directory (e.g. `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`).'],
                 missing: [], present: []
               });
             }
@@ -303,7 +338,7 @@ jobs:
 
             commentBody += `### 📋 Required Structure\n`;
             commentBody += `\`\`\`\n`;
-            commentBody += `submissions/examples/your-feature-name/\n`;
+            commentBody += `submissions/your-category/your-feature-name/ (e.g., submissions/examples/ or submissions/docs/)\n`;
             commentBody += `├── demo.html     ← Interactive demo with DOCTYPE, html, head, body tags\n`;
             commentBody += `├── style.css     ← Your original CSS (not copy-pasted from a template)\n`;
             commentBody += `└── README.md     ← Brief description of your feature\n`;
