@@ -44,13 +44,18 @@ This model exists to maintain quality, naming consistency, and design coherence 
 
 ## Where to Contribute
 
-EaseMotion CSS has three distinct contribution tracks depending on your chosen technology stack. Your Pull Request **must only** add files inside the directory corresponding to your track:
+EaseMotion CSS has four distinct contribution subdirectories depending on your chosen track. Your Pull Request **must only** add files inside one of these subdirectories:
 
 | Track | Directory Path | Required Files | Target Issues | Validator Bot |
 |---|---|---|---|---|
-| **Standard (HTML/CSS)** | `submissions/examples/your-feature/`<br>`submissions/docs/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | General feature requests, animations, utility additions | `PR Submission Validator` |
+| **Standard (HTML/CSS)** | `submissions/examples/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | General feature requests, animations, utility additions | `PR Submission Validator` |
 | **React Integration** | `submissions/react/your-component/` | `YourComponent.jsx`<br>`README.md`<br>*(optional: `style.css`)* | Issues labeled `react` | `React & SCSS Submission Validator` |
 | **SCSS Integration** | `submissions/scss/your-mixin/` | `_your-mixin.scss`<br>`README.md` | Issues labeled `scss` | `React & SCSS Submission Validator` |
+| **Core & Docs Showcase** | `submissions/docs/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | Core framework bug fixes & documentation showcases | `PR Submission Validator` |
+
+> [!IMPORTANT]
+> **Strict Directory Structure Required**
+> The `submissions/` folder strictly contains only **4 subdirectories**: `examples/`, `react/`, `scss/`, and `docs/`. **Never add or create feature folders directly in the root of `submissions/`** (e.g. `submissions/your-feature/`). Any Pull Request adding files directly under `submissions/` root will be automatically closed as invalid by our validation bots.
 
 ### 📢 Contribution Rate Limit Update
 
@@ -147,19 +152,18 @@ These rules are enforced at PR review. Violations result in immediate close with
 ### ❌ Never do these
 
 ```
-- Edit any file in core/
-- Edit any file in components/
-- Modify docs/
-- Modify examples/
+- Create feature folders directly under submissions/ (e.g. submissions/your-feature/)
+- Edit any existing file in core/ or components/
+- Modify existing root docs/ or examples/
 - Merge your own pull request
 ```
 
 ### ✅ Always do these
 
 ```
-- Add your feature inside the submissions/ directory (e.g., submissions/examples/your-feature-name/ or submissions/docs/your-feature-name/)
-- Include all three required files (demo.html, style.css, README.md)
-- Keep one PR focused on one feature
+- Place your feature inside one of the 4 allowed subdirectories: submissions/examples/, submissions/react/, submissions/scss/, or submissions/docs/
+- Include all required files for your chosen track (e.g. demo.html, style.css, README.md)
+- Keep one PR focused on one feature/component/mixin
 - Fill out the PR template checklist completely
 ```
 
