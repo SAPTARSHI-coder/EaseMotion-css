@@ -37,7 +37,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 >
 > Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
 >
-> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/`, `submissions/react/`, or `submissions/scss/`) will be reviewed and merged.
 >
 > This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
 >
@@ -1015,9 +1015,9 @@ Tailwind is a utility-first framework built around short atomic class names and 
 
 Yes. EaseMotion CSS works with any framework that renders standard HTML `class` attributes — React, Vue, Svelte, Angular, Astro, Next.js, and more. Install from npm, import the stylesheet, and use the class names directly in your components. We also ship a dedicated React `<Animate>` wrapper component in `examples/react-vite/` — see the [Framework Integration](#framework-integration) section for details.
 
-### How do I submit a new component?
+### How do I submit a new component or utility?
 
-Open or claim an issue first for non-trivial ideas, then add your raw demo inside `submissions/examples/your-feature-name/` with `demo.html`, `style.css`, and `README.md`. The maintainer reviews it, standardizes naming, and integrates it into the framework if it fits the project.
+Open or claim an issue first, then submit your work under the appropriate track directory in `submissions/` (e.g., `submissions/examples/` for HTML/CSS, `submissions/react/` for React components, or `submissions/scss/` for SCSS mixins/tokens). The maintainer reviews your submission, standardizes names/tokens, and integrates it into the core framework.
 
 ### Does it work without a build step?
 
@@ -1120,10 +1120,11 @@ EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors sub
 ### ✅ What contributors do
 
 ```
-✅ Add a folder to submissions/examples/your-feature/
-✅ Include: demo.html + style.css + README.md
-✅ Use any class naming — no ease- prefix required
-✅ One feature per PR
+✅ Place submissions inside the correct track folder (submissions/examples/, submissions/react/, or submissions/scss/)
+✅ Include all required files (e.g. JSX + README for React, SCSS + README for SCSS, or HTML + CSS + README for Standard)
+✅ Follow the suffix naming rule (e.g. ease-component-yourid) to avoid name collisions
+✅ Squash commits to keep the repository history clean
+✅ One feature/component per PR
 ```
 
 ### ❌ What contributors do NOT do
@@ -1181,9 +1182,9 @@ To keep the repository's git history clean and readable, contributors must follo
 
 ### 📢 Contribution Policy Update
 
-All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+All contributions are welcome and eligible for merge when submitted inside the correct track folder under the `submissions/` directory following the repository guidelines.
 
-To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+To avoid naming conflicts and overlapping implementations, contributors must append a short unique identifier or abbreviation to their feature/component/mixin name.
 
 **Example:**
 
