@@ -44,13 +44,13 @@ This model exists to maintain quality, naming consistency, and design coherence 
 
 ## Where to Contribute
 
-**One place only:**
+EaseMotion CSS has three distinct contribution tracks depending on your chosen technology stack. Your Pull Request **must only** add files inside the directory corresponding to your track:
 
-```
-submissions/your-category/your-feature-name/ (e.g., submissions/examples/ or submissions/docs/)
-```
-
-That is the only directory you should add or modify in your PR.
+| Track | Directory Path | Required Files | Target Issues | Validator Bot |
+|---|---|---|---|---|
+| **Standard (HTML/CSS)** | `submissions/examples/your-feature/`<br>`submissions/docs/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | General feature requests, animations, utility additions | `PR Submission Validator` |
+| **React Integration** | `submissions/react/your-component/` | `YourComponent.jsx`<br>`README.md`<br>*(optional: `style.css`)* | Issues labeled `react` | `React & SCSS Submission Validator` |
+| **SCSS Integration** | `submissions/scss/your-mixin/` | `_your-mixin.scss`<br>`README.md` | Issues labeled `scss` | `React & SCSS Submission Validator` |
 
 ### 📢 Contribution Rate Limit Update
 
@@ -81,9 +81,9 @@ To keep the repository's git history clean and readable, contributors must follo
 
 ### 📢 Contribution Policy Update
 
-All contributions are welcome and eligible for merge when submitted inside the `submissions/` folder (e.g., `submissions/examples/` or `submissions/docs/`) following the repository structure and guidelines.
+All contributions are welcome and eligible for merge when submitted inside the `submissions/` folder following the repository structure and guidelines.
 
-To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component/mixin name.
 
 **Example:**
 
@@ -105,23 +105,27 @@ The project encourages creative variations and parallel implementations rather t
 
 ## What to Submit
 
-Your submission folder must contain exactly three files:
+Select your contribution track below to see exactly what files to include:
 
-### `demo.html` (required)
+### 1. Standard Track (HTML/CSS)
+Your submission folder under `submissions/examples/` or `submissions/docs/` must contain exactly three files:
+*   **`demo.html`**: A self-contained HTML demo. Must work by opening directly in a browser with no server, CDNs, or external frameworks.
+*   **`style.css`**: Your raw CSS. Write it however you like (no need to use `ease-` naming; the maintainer standardizes it).
+*   **`README.md`**: Must answer three questions:
+    1. What does this do? (one sentence)
+    2. How is it used? (show the HTML class usage)
+    3. Why is it useful? (explain how it fits EaseMotion's philosophy)
 
-A self-contained HTML demo. Must work by opening directly in a browser with no server. No CDN links, no external frameworks.
+### 2. React Track
+Your submission folder under `submissions/react/` must contain:
+*   **React component file (`.jsx` or `.tsx`)**: A real, working React component file containing your UI component. The component **must use EaseMotion CSS utility classes** (e.g. `className="ease-fade-in ease-hover-lift"`).
+*   **`README.md`**: Documentation containing a description of the component, a properties table (props reference), and a clear usage example block.
+*   **`style.css`** (optional): Any supplementary CSS styles scoped to this component.
 
-### `style.css` (required)
-
-Your raw CSS. Write it however you like — no need to follow the `ease-` naming convention. The maintainer handles all renaming and standardization.
-
-### `README.md` (required)
-
-Answer these three questions:
-
-1. **What does this do?** — one sentence.
-2. **How is it used?** — show the HTML class usage.
-3. **Why is it useful?** — explain how it fits EaseMotion CSS's philosophy.
+### 3. SCSS Track
+Your submission folder under `submissions/scss/` must contain:
+*   **SCSS partial file (`_your-mixin.scss`)**: A stylesheet partial containing your reusable mixin, variables, or functions. The SCSS should build upon EaseMotion's token variables or animation keyframes.
+*   **`README.md`**: Documentation explaining what the mixin does, listing its parameters, and providing an example of how to use it with `@include`.
 
 ---
 
