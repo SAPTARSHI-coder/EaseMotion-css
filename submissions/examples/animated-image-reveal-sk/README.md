@@ -1,1 +1,0 @@
-A CSS image reveal component with a circular clip-path that expands on hover. Use it for portfolio showcases, before/after comparisons, or gallery thumbnails. Creates a dramatic reveal effect without JavaScript.
