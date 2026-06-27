@@ -9,8 +9,43 @@ permissions:
   issues: write
 
 jobs:
+  detect-track:
+    name: Detect Submission Track
+    runs-on: ubuntu-latest
+    outputs:
+      is_react_scss_only: ${{ steps.detect.outputs.is_react_scss_only }}
+    steps:
+      - name: Check if PR is React/SCSS only (handled by dedicated validator)
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+
+          all_react_scss=true
+          any_file=false
+
+          for file in $files; do
+            any_file=true
+            if [[ "$file" != submissions/react/* && "$file" != submissions/scss/* ]]; then
+              all_react_scss=false
+              break
+            fi
+          done
+
+          if [ "$any_file" = "true" ] && [ "$all_react_scss" = "true" ]; then
+            echo "is_react_scss_only=true" >> $GITHUB_OUTPUT
+            echo "ℹ️ Pure React/SCSS PR — deferring to react-scss-validator.yml"
+          else
+            echo "is_react_scss_only=false" >> $GITHUB_OUTPUT
+            echo "✅ Standard HTML/CSS PR — proceeding with submission-validator"
+          fi
+
   validate:
     name: Validate Examples
+    needs: detect-track
+    if: needs.detect-track.outputs.is_react_scss_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository (Target Branch)
