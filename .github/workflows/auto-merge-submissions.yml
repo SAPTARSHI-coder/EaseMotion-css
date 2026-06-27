@@ -205,59 +205,7 @@ jobs:
             exit 1
           fi
 
-          # Extract filenames from JSON
-          files=$(echo "$combined_files" | jq -r '.[].filename')
-          
-          # Extract submission folders
-          folders=$(for file in $files; do
-            if [[ "$file" =~ ^submissions/examples/ ]]; then
-              echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
-            elif [[ "$file" =~ ^submissions/docs/ ]]; then
-              echo "submissions/docs/$(echo "$file" | cut -d'/' -f3)"
-            elif [[ "$file" =~ ^submissions/ ]]; then
-              echo "submissions/$(echo "$file" | cut -d'/' -f2)"
-            fi
-          done | sort -u)
-          
-          all_files_changed=true
-          if [ -z "$folders" ]; then
-            all_files_changed=false
-          fi
-          
-          for folder in $folders; do
-            req1="$folder/demo.html"
-            req2="$folder/style.css"
-            req3="$folder/README.md"
-            
-            # Check if each required file is in the list of changed files
-            if ! echo "$files" | grep -qFx "$req1" || ! echo "$files" | grep -qFx "$req2" || ! echo "$files" | grep -qFx "$req3"; then
-              all_files_changed=false
-              break
-            fi
-          done
 
-          if [ $total_lines_changed -lt 250 ] && [ "$all_files_changed" != "true" ]; then
-            echo "❌ Auto-merge blocked: PR failed strict modification rules ($total_lines_changed lines modified, and did not modify all 3 required files in the submission folder)."
-            
-            # Post warning ban notice comment
-            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
-            comment_body="⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️"$'\n\n'"Hi @${pr_author}! 👋"$'\n\n'"This PR has been identified as a potential exploit/low-effort contribution spam (it only modified $total_lines_changed lines of code and did not create or fully update all 3 required files: \`demo.html\`, \`style.css\`, and \`README.md\`)."$'\n\n'"To maintain a fair, high-quality, and robust contribution environment, **EaseMotion CSS enforces a strict minimum modification rule**:"$'\n'"- You must change **at least 250 lines of code** OR"$'\n'"- You must modify/create **all three required files** in your submission folder."$'\n\n'"**Zero-Tolerance Policy:** Low-effort PRs opened solely to accumulate points are considered spam. Your account has been flagged. Persistent violation of this rule will result in an immediate, permanent ban from this repository and GSSoC."$'\n\n'"This PR has been closed and marked as **invalid**."
-            
-            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
-              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
-              
-            # Add invalid and spam labels
-            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
-              -d '{"labels":["invalid-submission","gssoc:invalid","spam"]}'
-              
-            # Close PR
-            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
-              -d '{"state":"closed"}'
-            exit 1
-          fi
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
