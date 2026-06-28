@@ -4,16 +4,20 @@
 
 All PRs that modify `core/` or `components/` will be **closed without review**. Not negotiable.
 
+> [!IMPORTANT]
+> **Strict Directory Structure Required**
+> The `submissions/` directory strictly contains only **4 subdirectories**: `examples/`, `react/`, `scss/`, and `docs/`. **Never place or create feature folders directly in `submissions/your-feature/`**. Any PR creating folders directly in `submissions/` root will be automatically rejected and closed by validator bots.
+
 ---
 
 ## 📦 Submission Structure
 
-EaseMotion CSS has three distinct contribution tracks. Your folder structure depends on the track you choose:
+EaseMotion CSS has four distinct contribution subdirectories. Your folder structure depends on the track you choose:
 
 ### 1. Standard Track (HTML/CSS)
-For standard animations or doc showcase additions:
+For standard animations and CSS utility additions:
 ```
-submissions/examples/your-feature-name/   (or submissions/docs/)
+submissions/examples/your-feature-name/
 ├── demo.html       ← self-contained working demo (required)
 ├── style.css       ← your raw CSS (required)
 └── README.md       ← description: what, how, why (required)
@@ -34,6 +38,15 @@ For SCSS mixins and token utilities:
 submissions/scss/your-mixin-name/
 ├── _your-mixin.scss    ← SCSS partial/mixin file (required)
 └── README.md           ← Description, params and @include example (required)
+```
+
+### 4. Core & Docs Showcase Track
+For core bug fix demonstrations and documentation showcases:
+```
+submissions/docs/your-feature-name/
+├── demo.html       ← self-contained working demo (required)
+├── style.css       ← your raw CSS (required)
+└── README.md       ← description: what, how, why (required)
 ```
 
 ---
@@ -233,7 +246,7 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 
 Open a **Feature Request** issue first to confirm the idea fits EaseMotion CSS. This saves you from building something that gets rejected. Small additions (a new animation, a hover effect) rarely need pre-approval. New component systems should be discussed first.
 
-→ [Open a Feature Request](../../issues/new?template=feature_request.md)
+→ [Open a Feature Request](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md)
 
 ## Getting Started
 
