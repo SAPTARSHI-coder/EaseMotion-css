@@ -160,6 +160,9 @@ async function build() {
   await mkdir(path.dirname(outputFile), { recursive: true });
   await writeFile(outputFile, `${minifiedCss}\n`, "utf8");
 
+  const docsOutputFile = path.join(rootDir, "docs", "easemotion.min.css");
+  await writeFile(docsOutputFile, `${minifiedCss}\n`, "utf8");
+
   const summary = {
     entry: path.relative(rootDir, entryFile),
     output: path.relative(rootDir, outputFile),
@@ -172,6 +175,6 @@ async function build() {
 }
 
 build().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error('Build failed:', error);
   process.exitCode = 1;
 });

@@ -68,4 +68,4 @@ assignees: SAPTARSHI-coder
 
 ---
 
-> **Note:** Please do not open bug reports for contributions or feature ideas. Use the [Feature Request](?template=feature_request.md) template for those.
+> **Note:** Please do not open bug reports for contributions or feature ideas. Use the [Feature Request](?template=feature_request.md) template for those. If you have questions or need help, join our official [Discord Server](https://discord.gg/hWSdGrccBU).

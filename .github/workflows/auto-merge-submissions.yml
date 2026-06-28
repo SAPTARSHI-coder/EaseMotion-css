@@ -1,0 +1,678 @@
+name: Auto-Merge PRs
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 */3 * * *' # Runs every 3 hours to sweep and merge all open PRs
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to merge (leave blank to sweep and merge ALL open PRs)'
+        required: false
+        type: string
+
+permissions:
+  pull-requests: write
+  contents: write
+
+concurrency:
+  group: auto-merge-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  gather-prs:
+    name: Gather PRs to Process
+    runs-on: ubuntu-latest
+    outputs:
+      prs: ${{ steps.list-prs.outputs.prs }}
+    steps:
+      - name: List open PRs
+        id: list-prs
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          event_name="${{ github.event_name }}"
+          
+          if [ "$event_name" = "pull_request" ] || [ "$event_name" = "pull_request_target" ]; then
+            # Single PR from trigger
+            PR_LIST="[${{ github.event.pull_request.number }}]"
+          elif [ "$event_name" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.pr_number }}" ]; then
+            # Single PR from manual input
+            PR_LIST="[${{ github.event.inputs.pr_number }}]"
+          else
+            # Scheduled run or manual dispatch without input: fetch all open PR numbers
+            PR_LIST=$(gh pr list --state open --limit 1000 --repo ${{ github.repository }} --json number --jq '[.[].number]')
+          fi
+          
+          echo "PRs to process: $PR_LIST"
+          echo "prs=$PR_LIST" >> $GITHUB_OUTPUT
+
+  auto-merge:
+    name: Auto-Merge PR #${{ matrix.pr }}
+    needs: gather-prs
+    runs-on: ubuntu-latest
+    if: needs.gather-prs.outputs.prs != '[]' && needs.gather-prs.outputs.prs != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        pr: ${{ fromJSON(needs.gather-prs.outputs.prs) }}
+    steps:
+      # Step 1: Resolve PR Metadata
+      - name: Resolve PR Metadata
+        id: pr-metadata
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ matrix.pr }}
+          
+          # Fetch PR details using GH CLI
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions)
+          is_draft=$(echo "$pr_data" | jq -r '.isDraft')
+          head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
+          head_ref=$(echo "$pr_data" | jq -r '.headRefName')
+          pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
+          pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
+          additions=$(echo "$pr_data" | jq -r '.additions')
+          deletions=$(echo "$pr_data" | jq -r '.deletions')
+          total_lines_changed=$((additions + deletions))
+          
+          echo "prNum=$PR_NUM" >> $GITHUB_OUTPUT
+          echo "isDraft=$is_draft" >> $GITHUB_OUTPUT
+          echo "headRepo=$head_repo" >> $GITHUB_OUTPUT
+          echo "headRef=$head_ref" >> $GITHUB_OUTPUT
+          echo "title=$pr_title" >> $GITHUB_OUTPUT
+          echo "labels=$pr_labels" >> $GITHUB_OUTPUT
+          echo "totalLinesChanged=$total_lines_changed" >> $GITHUB_OUTPUT
+          
+          echo "PR Number: $PR_NUM"
+          echo "Is Draft: $is_draft"
+          echo "Head Repo: $head_repo"
+          echo "Head Ref: $head_ref"
+          echo "Total Lines Changed: $total_lines_changed"
+
+      # Step 2: Query GitHub API securely to check modified files
+      - name: Get modified files
+        id: check-files
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          echo "Checking files modified in PR #$PR_NUM..."
+          
+          # Retrieve the list of modified files in the PR
+          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+          
+          has_submissions=false
+          has_docs_changes=false
+          has_core_changes=false
+          docs_files_list=""
+          
+          for file in $files; do
+            if [[ "$file" =~ ^submissions/ ]]; then
+              has_submissions=true
+            elif [[ "$file" =~ ^docs/ ]]; then
+              # docs/ is NOT a free pass — contributors must NOT modify docs/
+              has_docs_changes=true
+              docs_files_list="$docs_files_list $file"
+              echo "Docs change detected (NOT allowed): $file"
+            else
+              # Any other file outside submissions/ is a core change
+              has_core_changes=true
+              echo "Core change detected: $file"
+            fi
+          done
+          
+          echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
+          echo "hasDocsChanges=$has_docs_changes" >> $GITHUB_OUTPUT
+          echo "hasCoreChanges=$has_core_changes" >> $GITHUB_OUTPUT
+          echo "Has submission changes: $has_submissions"
+          echo "Has docs changes (blocked): $has_docs_changes"
+          echo "Has core changes: $has_core_changes"
+
+      # Step 2.5: Block Auto-Merge for Invalid Changes
+      - name: Block Auto-Merge for Invalid Changes
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          has_docs_changes="${{ steps.check-files.outputs.hasDocsChanges }}"
+          has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          total_lines_changed=${{ steps.pr-metadata.outputs.totalLinesChanged }}
+          
+          if [ "$has_submissions" != "true" ]; then
+            echo "❌ Auto-merge blocked: This PR does not contain any file changes under the submissions/ directory."
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it does not contain any file changes under the `submissions/` directory. Contributors must place their submissions under the `submissions/` directory (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`). Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          if [ "$has_docs_changes" = "true" ]; then
+            echo "❌ Auto-merge blocked: This PR modifies files in the docs/ directory."
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies files inside the `docs/` directory. The `docs/` folder is maintained by the core team only. Contributors must place their work exclusively inside `submissions/examples/your-feature-name/`. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+          
+          if [ "$has_core_changes" = "true" ]; then
+            echo "❌ Auto-merge blocked: This PR modifies core framework or configuration files outside of submissions/."
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it modifies core framework or configuration files. Contributors are only allowed to modify files inside the `submissions/` directory. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          # Retrieve files and check status/deletions
+          combined_files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate | jq -s 'add')
+          
+          has_deletions=$(echo "$combined_files" | jq '[.[] | select(.deletions > 0)] | length > 0')
+          has_modified=$(echo "$combined_files" | jq '[.[] | select(.status != "added")] | length > 0')
+          
+          if [ "$has_deletions" = "true" ] || [ "$has_modified" = "true" ]; then
+            echo "❌ Auto-merge blocked: PR contains code deletions or modifies existing files."
+            
+            # Post warning ban notice comment
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            comment_body="⚠️ **CRITICAL WARNING / BAN NOTICE** ⚠️"$'\n\n'"Hi @${pr_author}! 👋"$'\n\n'"This PR has been identified as a violation of our repository code integrity policy:"$'\n'"- **No deletions are accepted on any code.**"$'\n'"- **No changes to existing code are allowed.**"$'\n\n'"All contributions must consist of new examples/documentation under newly created files/folders. Since your changes modify or delete existing code, this PR is closed and marked as **invalid**. Repeated violations will result in an immediate, permanent ban."
+            
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+              
+            # Add invalid and spam labels
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+              -d '{"labels":["invalid-submission","gssoc:invalid","spam"]}'
+              
+            # Close PR
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+
+
+      # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
+      - name: Checkout PR Branch
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ steps.pr-metadata.outputs.headRepo }}
+          ref: ${{ steps.pr-metadata.outputs.headRef }}
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # Step 4: Resolve conflicts, compile bundle, and push updates
+      - name: Compile and Rename Conflicting Folders
+        id: rename-check
+        if: steps.pr-metadata.outputs.isDraft != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
+          PR_LABELS: ${{ steps.pr-metadata.outputs.labels }}
+        run: |
+          # 1. Setup git configuration
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          conflict_resolved=false
+          
+          # 1.5 Fresh PR state check to handle concurrent closures
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          PR_STATE=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$PR_STATE" = "CLOSED" ] || [ "$PR_STATE" = "MERGED" ]; then
+            echo "PR state is $PR_STATE. Skipping build and push."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # 2. Add upstream remote and fetch main branch with authentication token
+          git remote add upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" || \
+          git remote set-url upstream "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          git fetch upstream main
+          
+          # 3. Save initial commit SHA to check if history changes
+          BEFORE_SHA=$(git rev-parse HEAD)
+          
+          # 4. Attempt to merge upstream/main to sync branch and handle conflicts
+          echo "Attempting to merge upstream/main into PR branch..."
+          if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
+            echo "Merge conflict detected. Analyzing conflicted files..."
+            
+            conflicted_files=$(git diff --name-only --diff-filter=U)
+            echo "Conflicted files: $conflicted_files"
+            
+            can_resolve=true
+            for file in $conflicted_files; do
+              if [ "$file" != "easemotion.min.css" ]; then
+                can_resolve=false
+                echo "Cannot auto-resolve conflict in source file: $file"
+              fi
+            done
+            
+            if [ "$can_resolve" = "true" ]; then
+              echo "Conflict is only in easemotion.min.css. Resolving automatically..."
+              git checkout --ours easemotion.min.css
+              npm ci
+              npm run build
+              git add easemotion.min.css
+              git commit -m "chore: resolve easemotion.min.css merge conflict"
+              echo "Conflict resolved and committed."
+              conflict_resolved=true
+            else
+              echo "PR has source code conflicts. Closing PR..."
+              git merge --abort
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/${{ steps.pr-metadata.outputs.prNum }}/comments" \
+                -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it has source code conflicts with the main branch. Please pull the latest changes, resolve conflicts locally, and open a new Pull Request. Thank you!"}'
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/${{ steps.pr-metadata.outputs.prNum }}" \
+                -d '{"state":"closed"}'
+              exit 1
+            fi
+          else
+            echo "Merged upstream/main successfully with no conflicts."
+          fi
+          
+          # 5. Setup and run build (to ensure the minified CSS bundle is fully compiled)
+          echo "Rebuilding minified bundle..."
+          npm ci
+          npm run build
+          
+          # 6. Check naming collisions (only if it has submissions)
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
+          
+          renamed_any=false
+          
+          if [ "$has_submissions" = "true" ]; then
+            files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+            
+            # Extract unique component folders under submissions/examples/, submissions/docs/, or submissions/
+            folders=$(for file in $files; do
+              if [[ "$file" =~ ^submissions/examples/ ]]; then
+                echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/docs/ ]]; then
+                echo "submissions/docs/$(echo "$file" | cut -d'/' -f3)"
+              elif [[ "$file" =~ ^submissions/ ]]; then
+                echo "submissions/$(echo "$file" | cut -d'/' -f2)"
+              fi
+            done | sort -u)
+            
+            # Check if PR is a bug fix or update
+            is_fix=false
+            if [[ "$PR_TITLE" =~ ^[Ff]ix: || "$PR_TITLE" =~ ^[Ff]ix\( || "$PR_TITLE" =~ ^[Cc]hore: || "$PR_LABELS" =~ "bug" || "$PR_LABELS" =~ "fix" ]]; then
+              is_fix=true
+            fi
+            echo "PR Title: $PR_TITLE"
+            echo "Is Bug Fix/Update: $is_fix"
+
+            for folder_path in $folders; do
+              echo "Evaluating folder $folder_path..."
+              
+              if [ ! -d "$folder_path" ]; then
+                echo "Folder $folder_path does not exist on disk (already renamed or deleted). Skipping."
+                continue
+              fi
+              
+              parent_dir=$(dirname "$folder_path")
+              folder_name=$(basename "$folder_path")
+              
+              folder_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}$" || true)
+              
+              if [ -n "$folder_in_main" ]; then
+                if [ "$is_fix" = "true" ]; then
+                  echo "Folder $folder_path already exists in main branch, but PR is marked as a fix/update. Skipping rename."
+                else
+                  echo "Folder $folder_path already exists in main branch! Finding next version suffix..."
+                  
+                  i=1
+                  while true; do
+                    candidate_in_main=$(git ls-tree -d upstream/main "$parent_dir/" | grep -E "[[:space:]]${parent_dir}/${folder_name}-v${i}$" || true)
+                    if [ -z "$candidate_in_main" ]; then
+                      break
+                    fi
+                    i=$((i+1))
+                  done
+                  
+                  new_name="${folder_name}-v${i}"
+                  echo "Renaming $folder_path to $parent_dir/$new_name"
+                  
+                  git mv "$folder_path" "$parent_dir/$new_name"
+                  renamed_any=true
+                fi
+              else
+                echo "Folder $folder_path is safe — no name collision in main."
+              fi
+            done
+          fi
+          
+          # 7. Check if anything changed (renamed folders, resolved conflicts, or build changes)
+          build_changed=false
+          if ! git diff --quiet easemotion.min.css easemotion.css; then
+            build_changed=true
+            echo "Build changes detected in CSS files."
+          fi
+
+          push_needed=false
+          if [ "$renamed_any" = "true" ] || [ "$conflict_resolved" = "true" ] || [ "$build_changed" = "true" ]; then
+            push_needed=true
+            echo "Changes detected: renamed_any=$renamed_any, conflict_resolved=$conflict_resolved, build_changed=$build_changed"
+          fi
+          
+          # Only push back to the branch if the PR is from the SAME repo (not a fork).
+          # GITHUB_TOKEN/BOT_PAT cannot write to fork repositories unless authorized.
+          IS_FORK=false
+          if [ "${{ steps.pr-metadata.outputs.headRepo }}" != "${{ github.repository }}" ]; then
+            IS_FORK=true
+          fi
+          
+          if [ "$push_needed" = "true" ]; then
+            git add -A
+            if ! git diff --cached --quiet || ! git diff --quiet; then
+              git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
+            fi
+            
+            if [ "$IS_FORK" = "false" ]; then
+              echo "Changes detected and PR is from same repo. Pushing back to PR branch..."
+              git push origin HEAD:${{ steps.pr-metadata.outputs.headRef }}
+              echo "Pushed updates back to PR branch."
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected and PR is from a fork. Pushing directly to upstream main..."
+              
+              success=false
+              for attempt in {1..5}; do
+                echo "Attempting to push to upstream main (attempt $attempt)..."
+                if git push upstream HEAD:main; then
+                  echo "Successfully pushed to upstream main."
+                  success=true
+                  break
+                else
+                  echo "Push failed. Fetching latest upstream main and rebasing/merging..."
+                  git fetch upstream main
+                  if ! git merge upstream/main -m "chore: merge upstream main to sync branch"; then
+                    echo "Merge conflict during push retry. Aborting retry."
+                    git merge --abort
+                    break
+                  fi
+                  # Re-build and commit any resolved conflict or re-compiled files
+                  npm run build
+                  git add -A
+                  if ! git diff --cached --quiet || ! git diff --quiet; then
+                    git commit --amend --no-edit || git commit -m "chore: auto-build bundle and resolve folder naming conflicts"
+                  fi
+                  echo "Retrying push in 5 seconds..."
+                  sleep 5
+                fi
+              done
+              
+              if [ "$success" = "false" ]; then
+                echo "Failed to push updates to upstream main after all retries."
+                exit 1
+              fi
+              
+              # Label the PR as integrated and accepted before closing
+              echo "Labeling PR #$PR_NUM as integrated..."
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/labels" \
+                -d '{"labels":["integrated","accepted","GSSoC-26","gssoc:approved"]}'
+              
+              # Add comment and close the PR on GitHub since we merged it by pushing directly
+              echo "Adding merge comment on PR #$PR_NUM..."
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+                -d '{"body":"🎉 **Pull Request Merged!** Your submission has been integrated into the framework! Since this PR is from a fork and required folder renaming or build updates, it has been merged directly into the `main` branch. Thank you for contributing! 🎉\n\n📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned."}'
+              
+              echo "Closing PR #$PR_NUM..."
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+                -d '{"state":"closed"}'
+              
+              echo "exitEarly=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "No changes, stale bundle, or naming conflicts detected. Proceeding to merge."
+            echo "exitEarly=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
+      - name: Wait for checks to pass
+        id: wait-checks
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          
+          # Fetch latest head commit SHA of the PR
+          SHA=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json headRefOid --jq '.headRefOid')
+          echo "Polling status of checks for commit $SHA..."
+          
+          start_time=$(date +%s)
+          while true; do
+            # Fetch check runs for this commit
+            response=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs)
+            
+            total_count=$(echo "$response" | jq -r '.total_count')
+            
+            # Read status and conclusion for other check runs
+            all_completed=true
+            any_failed=false
+            other_checks_exist=false
+            
+            while read -r run; do
+              [ -z "$run" ] && continue
+              name=$(echo "$run" | jq -r '.name')
+              status=$(echo "$run" | jq -r '.status')
+              conclusion=$(echo "$run" | jq -r '.conclusion')
+              html_url=$(echo "$run" | jq -r '.html_url')
+              
+              # Exclude the current auto-merge workflow from checks verification
+              # We exclude by matching the current run ID in html_url or matching workflow/job names
+              if [[ "$html_url" == *"/runs/$CURRENT_RUN_ID"* || \
+                    "$name" == *"Auto-Merge"* || \
+                    "$name" == *"auto-merge"* || \
+                    "$name" == *"Evaluate and Auto-Merge"* ]]; then
+                echo "Excluding check run: $name (status: $status)"
+                continue
+              fi
+              
+              other_checks_exist=true
+              if [ "$status" != "completed" ]; then
+                all_completed=false
+                echo "Pending check: $name (status: $status)"
+              fi
+              if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
+                any_failed=true
+                echo "Failed check: $name (conclusion: $conclusion)"
+              fi
+            done < <(echo "$response" | jq -c '.check_runs[]')
+            
+            if [ "$any_failed" = "true" ]; then
+              echo "One or more checks failed. Closing PR..."
+              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+                -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running `npm test` and `npm run lint`, and submit a new Pull Request. Thank you!"}'
+              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+                -d '{"state":"closed"}'
+              exit 1
+            fi
+            
+            if [ "$all_completed" = "true" ] && [ "$other_checks_exist" = "true" ]; then
+              echo "All checks completed successfully."
+              break
+            fi
+            
+            # If no other checks exist, check if we have waited more than 90 seconds
+            if [ "$other_checks_exist" = "false" ]; then
+              current_time=$(date +%s)
+              elapsed=$((current_time - start_time))
+              if [ $elapsed -gt 90 ]; then
+                echo "No other check runs detected after 90 seconds. Assuming no checks are required."
+                break
+              fi
+              echo "No other active checks found yet. Waiting to see if any are registered..."
+            else
+              echo "Checks are still running. Waiting..."
+            fi
+            
+            sleep 15
+          done
+
+      # Step 6: Merge the PR securely via the GitHub API
+      - name: Merge PR
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+          echo "Merging PR #$PR_NUM..."
+          
+          # Check if already merged or closed
+          state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$state" = "MERGED" ]; then
+            echo "PR #$PR_NUM is already merged."
+            exit 0
+          elif [ "$state" = "CLOSED" ]; then
+            echo "PR #$PR_NUM is closed. Skipping merge."
+            exit 0
+          fi
+          
+          # Poll mergeable status to ensure GitHub has computed it and it's not null
+          echo "Checking PR mergeable status..."
+          mergeable_status="null"
+          for k in {1..12}; do
+            mergeable_status=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json mergeable --jq '.mergeable')
+            echo "PR mergeable status: $mergeable_status (attempt $k)"
+            if [ "$mergeable_status" != "null" ] && [ -n "$mergeable_status" ]; then
+              break
+            fi
+            echo "Mergeable status is unknown (null). Waiting 5 seconds..."
+            sleep 5
+          done
+
+          if [ "$mergeable_status" = "false" ]; then
+            echo "PR has merge conflicts. Closing PR..."
+            curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
+              -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because it has merge conflicts with the main branch. Please pull the latest main, resolve conflicts locally, and open a new Pull Request. Thank you!"}'
+            curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
+              -d '{"state":"closed"}'
+            exit 1
+          fi
+
+          # Try to merge
+          success=false
+          for i in {1..5}; do
+            echo "Merge attempt $i..."
+            if merge_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/merge -f merge_method=merge 2>&1); then
+              echo "PR successfully merged."
+              success=true
+              break
+            else
+              exit_code=$?
+              echo "Merge attempt $i failed: $merge_output"
+              
+              if echo "$merge_output" | grep -qE "Merge already in progress"; then
+                echo "Merge already in progress. Treating as success."
+                success=true
+                break
+              fi
+              
+              if [ $i -lt 5 ]; then
+                echo "Waiting 8 seconds before retry..."
+                sleep 8
+              fi
+            fi
+          done
+
+          if [ "$success" = "false" ]; then
+            # If the error is due to base branch modification (out of date), trigger branch update
+            if echo "$merge_output" | grep -q "Base branch was modified"; then
+              echo "Base branch has moved. Attempting to update PR branch..."
+              if update_output=$(gh api -X PUT repos/${{ github.repository }}/pulls/$PR_NUM/update-branch 2>&1); then
+                echo "Successfully triggered PR branch update. PR checks will run again."
+              else
+                echo "Failed to update PR branch: $update_output"
+              fi
+              exit 1
+            else
+              echo "Failed to merge PR #$PR_NUM after all retries."
+              exit $exit_code
+            fi
+          fi
+
+      # Step 7: Close linked issues (GitHub API merge does NOT auto-close Closes #N keywords)
+      - name: Close Linked Issues
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
+
+          # Confirm merge succeeded before touching issues
+          state=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json state --jq '.state')
+          if [ "$state" != "MERGED" ]; then
+            echo "PR #$PR_NUM is not merged (state: $state). Skipping issue close."
+            exit 0
+          fi
+
+          # Extract PR body
+          pr_body=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json body --jq '.body // ""')
+
+          # Parse all issue numbers referenced by closing keywords (case-insensitive)
+          linked_issues=$(echo "$pr_body" | grep -ioE '(close[sd]?|fix(e[sd])?|resolve[sd]?):?\s+#([0-9]+)' | grep -oE '#[0-9]+' | tr -d '#' | sort -u)
+
+          if [ -z "$linked_issues" ]; then
+            echo "No linked issues found in PR body. Nothing to close."
+            exit 0
+          fi
+
+          echo "Linked issues to close: $linked_issues"
+
+          for ISSUE_NUM in $linked_issues; do
+            echo "Closing issue #$ISSUE_NUM..."
+
+            issue_state=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUM --jq '.state' 2>/dev/null || echo "not_found")
+            if [ "$issue_state" = "closed" ]; then
+              echo "Issue #$ISSUE_NUM is already closed. Skipping."
+              continue
+            fi
+            if [ "$issue_state" = "not_found" ]; then
+              echo "Issue #$ISSUE_NUM not found. Skipping."
+              continue
+            fi
+
+            pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
+            curl -s -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM/comments" \
+              -d "{\"body\":\"✅ **Issue resolved!** This issue was closed automatically after PR #${PR_NUM} by @${pr_author} was merged into \`main\`. Thank you for your contribution! 🎉\"}"
+
+            curl -s -X PATCH \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM" \
+              -d '{"state":"closed","state_reason":"completed"}'
+
+            echo "✅ Closed issue #$ISSUE_NUM"
+          done

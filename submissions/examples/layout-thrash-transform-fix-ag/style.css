@@ -1,0 +1,163 @@
+/*
+ * layout-thrash-transform-fix-ag
+ * Fix: Unnecessary layout thrashing caused by animating margin and padding
+ * Issue: #9826
+ *
+ * Animating `margin`, `padding`, `top`, `left`, `width`, or `height` triggers
+ * full layout recalculation on every frame (the most expensive rendering step).
+ *
+ * Fix: Replace all layout-triggering properties with `transform: translate()` 
+ * and `transform: scale()` which are composited by the GPU without layout.
+ */
+
+:root {
+  --thrash-duration: 0.45s;
+  --thrash-easing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ✅ CORRECT: animate with transform — zero layout cost */
+.lift-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2rem;
+  width: 180px;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border: 1px solid rgba(99,102,241,0.3);
+  color: #e2e8f0;
+  font-family: system-ui, sans-serif;
+  cursor: pointer;
+  will-change: transform, box-shadow;
+  transition:
+    transform var(--thrash-duration) var(--thrash-easing),
+    box-shadow var(--thrash-duration) var(--thrash-easing);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* ✅ Uses translateY — compositor only, no layout recalc */
+  .lift-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 24px 48px rgba(99, 102, 241, 0.35);
+  }
+}
+
+/* ✅ CORRECT: scale for grow effect */
+.grow-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 2rem;
+  width: 180px;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #064e3b, #065f46);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #e2e8f0;
+  font-family: system-ui, sans-serif;
+  cursor: pointer;
+  will-change: transform;
+  transition: transform var(--thrash-duration) var(--thrash-easing);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  /* ✅ Uses scale — no layout change */
+  .grow-card:hover {
+    transform: scale(1.07);
+  }
+}
+
+/* ❌ BAD PATTERN (shown for comparison — commented out):
+   .bad-card:hover {
+     margin-top: -10px;   ← triggers layout
+     padding: 2.5rem;     ← triggers layout  
+     width: 200px;        ← triggers layout
+   }
+*/
+
+/* Keyframe animations — transform only */
+@keyframes slideUpIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.lift-card, .grow-card {
+  animation: slideUpIn 0.5s ease both;
+}
+
+.grow-card {
+  animation-delay: 0.1s;
+}
+
+.card-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.card-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.card-hint {
+  font-size: 0.72rem;
+  opacity: 0.6;
+  text-align: center;
+}
+
+/* Demo layout */
+.demo-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: #070b12;
+  padding: 2rem;
+}
+
+h1 {
+  font-family: system-ui, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+}
+
+.description {
+  max-width: 520px;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+  color: #94a3b8;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.cards-row {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.perf-badge {
+  font-family: system-ui, sans-serif;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(74,222,128,0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lift-card, .grow-card {
+    animation: none;
+    transition: none;
+    will-change: auto;
+  }
+}

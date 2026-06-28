@@ -5,11 +5,20 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [v1.1.0] — 2026-06-28
 
-### Added
+### 🚀 Release Highlights
 
-- Entrance animations `ease-slide-left` and `ease-slide-right` — horizontal siblings of `ease-slide-up` / `ease-slide-down`, completing the directional slide set (24px offset, fade-in, conflict guards via `:not()`)
+#### Added
+- `.ease-text-underline-draw` — Animated left-to-right underline drawing on hover
+- `.ease-text-strikethrough-draw` — Animated strikethrough sweep across text
+- `.ease-text-gradient-flow` — Smooth 3-color looping text gradient animation
+- `.ease-ambient-glow` — Pulsing glowing ambient box-shadow background utility
+- `.ease-glass-card` — Glassmorphism card utility with backdrop blur and border styling
+
+#### Changed & Cleaned
+- Bumped package version to `1.1.0` and updated minified bundle builds
+- Streamlined `submissions/examples/` directory by pruning 152 redundant duplicate clone folders while maintaining clean representative submissions
 
 ---
 
@@ -49,7 +58,7 @@ EaseMotion CSS v1.0.0 is the first public release of the framework. This version
 
 - `core/utilities.css` — 80+ layout and styling utilities
   - Display: `ease-block`, `ease-flex`, `ease-grid`, `ease-hidden`
-  - Flexbox: `ease-center`, `ease-flex-col`, `ease-items-*`, `ease-justify-*`
+  - Flexbox: `ease-center`, `ease-flex-col`, `ease-items-*`, `ease-self-*`, `ease-justify-*`
   - Grid: `ease-grid-cols-1/2/3/4`, `ease-grid-auto`
   - Gap, padding, margin scales
   - Width/height, container, positioning, overflow

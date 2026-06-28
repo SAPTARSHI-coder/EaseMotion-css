@@ -475,25 +475,57 @@ class DocumentationSearch {
         div.dataset.index = index;
         div.role = "option";
 
-        // Highlight matching text
-        const highlightText = (text) => {
-            const regex = new RegExp(`(${query})`, "gi");
-            return text.replace(regex, '<span class="search-highlight">$1</span>');
+        // Securely highlight matching text without innerHTML
+        const appendHighlightedText = (container, text) => {
+            if (!query) {
+                container.textContent = text;
+                return;
+            }
+            // Escape regex special characters to prevent regex injection
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`(${escapedQuery})`, "gi");
+            const parts = text.split(regex);
+            
+            parts.forEach((part) => {
+                if (part.toLowerCase() === query.toLowerCase()) {
+                    const span = document.createElement('span');
+                    span.className = 'search-highlight';
+                    span.textContent = part;
+                    container.appendChild(span);
+                } else if (part) {
+                    container.appendChild(document.createTextNode(part));
+                }
+            });
         };
 
-        const titleMatch =
-            item.title.toLowerCase().includes(query) &&
-            item.title.toLowerCase().indexOf(query) !== -1;
-        const title = titleMatch ? highlightText(item.title) : item.title;
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'docs-search-result-title';
+        appendHighlightedText(titleDiv, item.title);
 
-        div.innerHTML = `
-      <div class="docs-search-result-title">${title}</div>
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-        <span class="docs-search-result-breadcrumb">${item.breadcrumb}</span>
-        <span class="docs-search-result-badge">${item.category}</span>
-      </div>
-      <div class="docs-search-result-preview">${item.content}</div>
-    `;
+        const metaDiv = document.createElement('div');
+        metaDiv.style.display = 'flex';
+        metaDiv.style.justifyContent = 'space-between';
+        metaDiv.style.alignItems = 'center';
+        metaDiv.style.gap = '0.5rem';
+
+        const breadcrumbSpan = document.createElement('span');
+        breadcrumbSpan.className = 'docs-search-result-breadcrumb';
+        breadcrumbSpan.textContent = item.breadcrumb;
+
+        const badgeSpan = document.createElement('span');
+        badgeSpan.className = 'docs-search-result-badge';
+        badgeSpan.textContent = item.category;
+
+        metaDiv.appendChild(breadcrumbSpan);
+        metaDiv.appendChild(badgeSpan);
+
+        const previewDiv = document.createElement('div');
+        previewDiv.className = 'docs-search-result-preview';
+        previewDiv.textContent = item.content;
+
+        div.appendChild(titleDiv);
+        div.appendChild(metaDiv);
+        div.appendChild(previewDiv);
 
         // Click handler for navigation
         div.addEventListener("click", () => {

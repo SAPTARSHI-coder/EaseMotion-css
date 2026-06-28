@@ -1,0 +1,3 @@
+1. What does this do? Splits text into individual characters or words wrapped in `<span>` elements and reveals them sequentially with staggered fade+slide animation on scroll.
+2. How is it used? Add `.text-reveal` to a text element. Call `initTextReveal(el, 'chars'|'words')` to split. The JS adds `.text-reveal--visible` when scrolled into view, triggering the staggered transition via CSS custom property `--index`.
+3. Why is it useful? Character/word-level text reveal adds a premium, storytelling feel to hero headlines and section titles — this implementation uses CSS `transition-delay` with `calc()` for staggering, requires no external libraries, and supports up/down/fade directions.
