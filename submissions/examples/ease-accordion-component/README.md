@@ -1,124 +1,123 @@
-# Modern CSS Accordion Component
+# Ease Accordion Component (Collapsible Content System)
 
-A lightweight, highly semantic, and fully accessible accordion component built using pure HTML and CSS. It supports smooth expanding and collapsing transitions, dark/light modes, keyboard navigation, and two modern layout styles (SaaS Cards and Minimal Dividers).
+The **Ease Accordion Component** provides a modular, lightweight, and highly performant collapsible layout system used to organize large amounts of information in expandable card blocks. It is commonly integrated inside Frequently Asked Questions (FAQ) hubs, developer consoles, dashboard settings sheets, and documentation portals.
 
----
-
-## 1. What does this do?
-This component provides interactive expandable/collapsible panels to present content (such as FAQs, metadata, settings, or documentation structures) cleanly. It features:
-- **Zero JavaScript**: Operates entirely via HTML input checkbox/radio hacks.
-- **Exclusive or Multi-Select Modes**: Supports closing other items when opening a new one (using `radio` buttons) or allowing multiple open panels at once (using `checkbox` inputs).
-- **Smooth Height Transitions**: Animates dynamic content heights using a smart `grid-template-rows: 0fr -> 1fr` CSS technique.
-- **Progressive Enhancement**: Ready for the native CSS `interpolate-size: allow-keywords` spec to animate `height: 0 -> auto` smoothly in supporting browsers.
-- **Keyboard Accessible & Screen Reader Friendly**: Toggle inputs remain focusable by keyboard (`Tab`, `Space`, `Enter`) and triggers use custom focus outline indicators.
-- **Modern Theme & Style Variants**: Adapts to dark/light color schemes automatically via CSS variables.
+This component aligns with **EaseMotion CSS** guidelines, utilizing the framework's core transition timings, borders, and shadows.
 
 ---
 
-## 2. How is it used?
+## Features
 
-### Layout A: SaaS FAQ Card Style (Exclusive Select)
-To construct an accordion where only one card is open at a time, use `<input type="radio">` with a shared `name` attribute:
+- **Smooth CSS Height Transitions:** Uses a modern CSS grid row interpolation trick (`grid-template-rows: 0fr -> 1fr`) to transition accordion heights dynamically without hardcoding arbitrary `max-height` values.
+- **Single or Multi-Open Modes:** Easily configure sections to collapse active siblings automatically (accordion mode) or toggle independently (collapsible list mode).
+- **Responsive Nesting:** Submenus nest inside outer content regions without clipping boundaries.
+- **Icon Support & Rotation:** Rotating carets indicate current open/close states.
+- **Accessible Structure:** Full compatibility for `aria-expanded` states and Arrow key header cycling for screen reader support.
+- **SaaS Aesthetic:** Modern clean card layout with soft shadows and borders.
 
-```html
-<div class="ease-accordion-group ease-accordion--card">
+---
+
+## CSS Variables (Customization Guide)
+
+Easily customize the accordion colors, border radius, and transitions globally or per-instance by adjusting these CSS custom properties:
+
+```css
+:root {
+  --ease-accordion-bg: var(--ease-color-surface, #ffffff);
+  --ease-accordion-border-color: var(--ease-color-neutral-200, #e2e8f0);
+  --ease-accordion-radius: var(--ease-radius-md, 8px);
+  --ease-accordion-shadow: var(--ease-shadow-sm);
   
-  <!-- Accordion Item 1 -->
-  <div class="ease-accordion-item">
-    <!-- Visually hidden input for toggling (uses type="radio" for exclusive selection) -->
-    <input type="radio" name="faq-group" id="faq-1" class="ease-accordion-toggle" checked>
-    
-    <!-- Trigger Header Label -->
-    <label for="faq-1" class="ease-accordion-trigger">
-      <span class="ease-accordion-title">How does billing work?</span>
-      <span class="ease-accordion-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </span>
-    </label>
-    
-    <!-- Height Transition Panel -->
-    <div class="ease-accordion-panel">
-      <div class="ease-accordion-content-wrapper">
-        <div class="ease-accordion-content">
-          <p>We bill you monthly based on your active seats...</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Accordion Item 2 -->
-  <div class="ease-accordion-item">
-    <input type="radio" name="faq-group" id="faq-2" class="ease-accordion-toggle">
-    <label for="faq-2" class="ease-accordion-trigger">
-      <span class="ease-accordion-title">Can I cancel anytime?</span>
-      <span class="ease-accordion-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </span>
-    </label>
-    <div class="ease-accordion-panel">
-      <div class="ease-accordion-content-wrapper">
-        <div class="ease-accordion-content">
-          <p>Yes, you can cancel your subscription at any point from your dashboard...</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
+  --ease-accordion-trigger-bg: transparent;
+  --ease-accordion-trigger-hover-bg: var(--ease-color-neutral-50, #f8fafc);
+  --ease-accordion-trigger-color: var(--ease-color-text, #1e293b);
+  
+  --ease-accordion-content-bg: transparent;
+  --ease-accordion-content-color: var(--ease-color-muted, #64748b);
+  
+  --ease-accordion-icon-color: var(--ease-color-primary, #6c63ff);
+  --ease-accordion-transition-speed: var(--ease-speed-medium, 300ms);
+}
 ```
 
-### Layout B: Minimal Divider Style (Multi-Open Select)
-To construct an accordion where multiple items can expand concurrently, use `<input type="checkbox">`:
+---
+
+## Accordion Variants
+
+### 1. Base Single Accordion Item HTML
+Below is the standard layout block:
 
 ```html
-<div class="ease-accordion-group ease-accordion--minimal">
-  
-  <div class="ease-accordion-item">
-    <input type="checkbox" id="item-1" class="ease-accordion-toggle">
-    <label for="item-1" class="ease-accordion-trigger">
-      <span class="ease-accordion-title">Is it responsive?</span>
-      <span class="ease-accordion-icon-plus"></span>
-    </label>
-    <div class="ease-accordion-panel">
-      <div class="ease-accordion-content-wrapper">
-        <div class="ease-accordion-content">
-          <p>Yes, layout scales from screen widths as small as 320px...</p>
-        </div>
+<!-- Add .is-open to .ease-accordion-item to keep it expanded by default -->
+<div class="ease-accordion-item">
+  <button class="ease-accordion-trigger" id="acc-trigger-1">
+    <span class="ease-accordion-trigger-heading">Item Title</span>
+    <span class="ease-accordion-icon">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </span>
+  </button>
+  <div class="ease-accordion-panel" role="region" aria-labelledby="acc-trigger-1">
+    <div class="ease-accordion-content">
+      <div class="ease-accordion-content-inner">
+        Your collapsible text or layouts go here...
       </div>
     </div>
   </div>
-
 </div>
 ```
 
 ---
 
-## Class Catalog
+### 2. FAQ Accordion (Single-Open Configuration)
+Binds sibling items together so that opening one section automatically closes the others. Set `data-multi-open="false"` on the container:
 
-| Class Name | Type | Description |
-| :--- | :--- | :--- |
-| `.ease-accordion-group` | Container | Main wrapper of the accordion list. |
-| `.ease-accordion-item` | Wrapper | Card container or divider row wrapper of a single accordion section. |
-| `.ease-accordion-toggle` | Input | Visually hidden form input containing the checkbox/radio logic. |
-| `.ease-accordion-trigger` | Label | Interactive title bar serving as the toggle click-target. |
-| `.ease-accordion-title` | Text | Font container inside the trigger. |
-| `.ease-accordion-panel` | Animation Wrapper | Animates grid layout row sizes to toggle height seamlessly. |
-| `.ease-accordion-content-wrapper` | Spacing Wrapper | Sets `min-height: 0` and `overflow: hidden` to clip content during animation. |
-| `.ease-accordion-content` | Content Box | Body container padding/spacing box holding the actual text/content. |
-| `.ease-accordion-icon` | Indicator | Chevron icon circular badge variant. |
-| `.ease-accordion-icon-plus` | Indicator | Pure-CSS plus-to-minus drawing icon. |
-| `.ease-accordion--card` | Variant Modifier | Displays cards individually with subtle borders, background fills, and shadows. |
-| `.ease-accordion--minimal` | Variant Modifier | Displays items in a clean documentation style separated by borders. |
+```html
+<div class="ease-accordion" id="faq-accordion" data-multi-open="false">
+  <!-- Include multiple .ease-accordion-item modules -->
+</div>
+```
+
+### 3. Settings Accordion (Multi-Open Configuration)
+Allows multiple sections to stay open at the same time. Set `data-multi-open="true"` on the container:
+
+```html
+<div class="ease-accordion" id="settings-accordion" data-multi-open="true">
+  <!-- Include multiple .ease-accordion-item modules -->
+</div>
+```
+
+### 4. Icon-based Accordion
+Add status icons next to titles inside triggers:
+
+```html
+<button class="ease-accordion-trigger">
+  <span class="ease-accordion-trigger-heading">
+    <span class="ease-accordion-trigger-icon">👤</span>
+    Profile Settings
+  </span>
+  <span class="ease-accordion-icon">...</span>
+</button>
+```
+
+### 5. Nested Accordions
+Insert a secondary `.ease-accordion` container inside the parent `.ease-accordion-content-inner` layout region:
+
+```html
+<div class="ease-accordion-content-inner">
+  Parent content text.
+  
+  <div class="ease-accordion" id="nested-accordion" data-multi-open="false">
+    <div class="ease-accordion-item">
+      <!-- Nested header & panel -->
+    </div>
+  </div>
+</div>
+```
 
 ---
 
-## 3. Why is it useful?
-1. **Zero JavaScript Overhead**: Native components run automatically without blocking the browser main thread, loading heavy JS libraries, or causing hydration delay in frameworks like React/Next.js.
-2. **Smooth Variable Height Animation**: Unlike basic CSS accordions that use a hardcoded `max-height` (which causes jerky and poorly-timed transitions), this component transitions `grid-template-rows` from `0fr` to `1fr`. This allows the panel to animate precisely to its content's natural height.
-3. **Double Layout Flexibility**: Provides two major visual themes. Cards are ideal for pricing tables and checkout FAQs; Minimal dividers are ideal for technical documents and sidebar navigations.
-4. **Interactive & Accessible Focus States**: Ensures users navigating with keyboards receive a highlighted, readable outline on active controls. Toggles respond perfectly to standard screen reader tab targets.
-5. **Dynamic Theme Customization**: Variables for fonts, animations, and active highlight colors are exposed at the `:root` level, enabling developers to integrate it with design systems in seconds.
+## Interactivity JavaScript Support
+
+To enable accordion click actions and keyboard focus cycling, include the script featured inside `demo.html` in your document. It dynamically listens to clicks on `.ease-accordion-trigger` elements, toggles `.is-open` classes, updates `aria-expanded` values, and maps `ArrowUp`, `ArrowDown`, `Home`, and `End` keystrokes.

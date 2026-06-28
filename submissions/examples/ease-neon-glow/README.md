@@ -1,17 +1,3 @@
-# Neon Glow Effect
+# Neon Glow
 
-## What does this do?
-
-Adds a pulsing neon glow animation around an element.
-
-## How is it used?
-
-```html
-<div class="neon-glow">
-  Neon content
-</div>
-```
-
-## Why is it useful?
-
-The effect creates a futuristic and eye-catching visual style that can be used for feature cards, call-to-action elements, banners, and highlighted content.
+A CSS-only neon sign text effect with pulsing glow animation. Multiple layered text-shadows create the neon tube appearance, while the opacity oscillation simulates the warm flicker of real neon signage for retro or cyberpunk aesthetics.
