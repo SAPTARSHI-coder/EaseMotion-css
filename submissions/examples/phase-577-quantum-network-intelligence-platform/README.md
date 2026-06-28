@@ -3,4 +3,4 @@
 Build enterprise networking dashboards for quantum communication.
 
 ## Implementation
-Advanced layout demonstrating modern responsive dashboard capabilities using glassmorphism and dynamically configurable themes. Designed with a futuristic scientific and quantum-computing aesthetic.
+Advanced layout demonstrating modern responsive dashboard capabilities using glassmorphism and dynamically configurable themes. Designed with an enterprise aesthetic.
