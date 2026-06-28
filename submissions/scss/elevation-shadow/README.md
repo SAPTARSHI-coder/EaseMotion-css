@@ -20,9 +20,9 @@ A reusable SCSS utility module providing configurable multi-layer box shadow mix
 Copy the `_multi-layer-box-shadow-elevation-scale-kk.scss` file into your SCSS project and import it:
 
 ```scss
-@import "multi-layer-box-shadow-elevation-scale-kk";
+@import "_elevation-shadow";
 // or
-@use "multi-layer-box-shadow-elevation-scale-kk";
+@use "_elevation-shadow";
 ```
 
 ---
