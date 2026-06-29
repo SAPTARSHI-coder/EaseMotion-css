@@ -10,7 +10,7 @@ A simple exit animation: the element slides to the left while fading out. Perfec
 - Animation: fade-in, delay-200, delay-500, exit
 
 ## RTL support
-- When the document uses dir="rtl", the .card.exit class automatically applies translateX(-40px) so the card slides left instead of right.
+- When the document uses dir="rtl", the .card.exit class automatically applies translateX(-50px) so the card slides left instead of right.
 This ensures the animation feels natural in Arabic and other RTL layouts.
 
 ## How it works
