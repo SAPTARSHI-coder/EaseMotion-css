@@ -2,7 +2,7 @@
 A simple exit animation: the element slides to the left while fading out. Perfect for dismissing items or confirming actions in right‑to‑left (RTL) interfaces such as Arabic websites.
 
 ## Classes used
-- Layout: container, flex-center, full-screen, text-center, btn-group
+- Layout: container, flex-center, full-screen, text-center,     btn-group
 - Background: bg-light
 - Typography: title, subtitle, card-title, card-sub, note
 - Components: card, btn, primary, secondary
@@ -21,5 +21,5 @@ This ensures the animation feels natural in Arabic and other RTL layouts.
 
 ## How to use
 - Add the class card to any dismissible element.
-- Toggle the class exit via JavaScript to animate the exit.
+- Toggle the class exit via JavaScript to animate the exit, this is for live usability/interactions.
 - Include the CSS rules in your project (either in style.css or inline in your HTML).
