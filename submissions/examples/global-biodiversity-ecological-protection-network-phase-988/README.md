@@ -4,14 +4,14 @@ A modern, eco-friendly, and highly futuristic environmental monitoring dashboard
 
 ## Project Overview
 
-This isolated demo simulates an international cyber-physical platform designed to monitor Earth's vital ecosystems, track endangered species, evaluate forest coverage, and generate AI-driven climate predictions. It utilizes the EaseMotion CSS philosophy to generate complex, hardware-accelerated 60fps animations—such as floating environmental particles (leaves/water), rippling background gradients, CSS-only radar ecosystem charts, and an animated predictive climate timeline—all without a single line of JavaScript.
+This isolated demo simulates an international cyber-physical platform designed to monitor Earth's vital ecosystems, track endangered species, evaluate forest coverage, and generate AI-driven climate predictions. It utilizes the EaseMotion CSS philosophy to generate complex, hardware-accelerated 60fps animations—such as floating environmental particles (leaves/water), flying bird migrations, rippling background gradients, CSS-only ecosystem donut/bar charts, and an animated predictive climate timeline—all without a single line of JavaScript.
 
 ## Features
 
 - **Pure HTML/CSS Engineering**: 100% vanilla HTML5 and CSS3. Zero JavaScript, zero frameworks (no Bootstrap/Tailwind), zero CDNs, and zero external image assets (utilizes styled HTML elements and nature emojis).
-- **Ecosystem Radar Chart**: A custom CSS radar chart representing global ecosystem health (Forests, Wetlands, Reefs) utilizing `clip-path` and `repeating-radial-gradient`.
-- **Climate Impact Timeline**: An animated, CSS-only area chart forecasting global temperature trends using `radial-gradient` data points and CSS borders.
-- **Eco-Friendly Aesthetics**: Deep navy backgrounds layered with soft forest green, sky blue, and emerald glassmorphism panels. Features slow-floating ambient gradient spheres in the background.
+- **Interactive World Conservation Panel**: Tracking active global zones including the Amazon Rainforest, Arctic, Great Barrier Reef, and Himalayas using animated CSS progress bars.
+- **CSS-only Analytics**: Featuring a comprehensive CSS-driven line chart (Species Recovery), bar chart (Deforestation Rates), animated Donut charts (Health indicators), a Timeline, and Biodiversity Heat Cards.
+- **Eco-Friendly Aesthetics**: Deep navy backgrounds layered with soft forest green, sky blue, and emerald glassmorphism panels. Features slow-floating ambient gradient spheres and flying bird silhouettes (`@keyframes fly`).
 - **Responsive Bento Grid**: Flawlessly adapts from a wide, multi-column environmental command center on desktop to a seamlessly scrollable telemetry feed on mobile viewports.
 
 ## Folder Structure
@@ -35,8 +35,8 @@ This project strictly adheres to the EaseMotion CSS framework's structural anima
 - `.ease-fade-in`: Smooth opacity transitions for HUD panel initialization.
 - `.ease-slide-up` / `.ease-slide-down` / `.ease-slide-right`: Directional entrance animations for the bento grid panels.
 - `.hover-lift` / `.hover-glow`: Interactive micro-animations translating the Y-axis and injecting emerald/sky blue border and box shadows on species cards.
-- `.blink-emerald` / `.blink-sky`: Subtle glowing alert animations for active AI sensor networks.
-- `@keyframes float-up` / `@keyframes ripple-anim`: Custom keyframe animations bringing life to the background through floating particles and rippling water-like textures.
+- `.blink-emerald` / `.pulse-indicator`: Subtle glowing alert animations for active AI sensor networks and timeline nodes.
+- `@keyframes float-up` / `@keyframes ripple-anim` / `@keyframes fly`: Custom keyframe animations bringing life to the background through floating particles, rippling water-like textures, and birds traversing the viewport.
 
 ## Browser Compatibility
 
