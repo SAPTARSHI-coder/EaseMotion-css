@@ -21,7 +21,7 @@ jobs:
             const prAuthor = context.payload.pull_request.user.login;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const DAILY_LIMIT = 70;
+            const DAILY_LIMIT = 150;
             
             console.log(`Checking PR count for author "${prAuthor}"...`);
             
@@ -45,12 +45,27 @@ jobs:
               console.log(`Found ${totalCount} PRs submitted by @${prAuthor} in the last 24 hours.`);
             } catch (err) {
               console.log(`Error calling search API: ${err.message}`);
-              // Fallback: list pulls and filter
-              const pulls = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 100 });
+              // Fallback: list pulls with pagination and filter
               const limitMs = Date.now() - 24 * 60 * 60 * 1000;
-              const matchingPulls = pulls.data.filter(p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs);
+              let page = 1;
+              let matchingPulls = [];
+
+              while (true) {
+                const pulls = await github.rest.pulls.list({
+                  owner, repo, state: 'all', per_page: 100, page
+                });
+                if (pulls.data.length === 0) break;
+
+                matchingPulls.push(...pulls.data.filter(
+                  p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs
+                ));
+
+                if (pulls.data.length < 100) break;
+                page++;
+              }
+
               totalCount = matchingPulls.length;
-              console.log(`Fallback: Found ${totalCount} PRs in last 100 items.`);
+              console.log(`Fallback: Found ${totalCount} PRs across ${page} page(s).`);
             }
             
             if (totalCount > DAILY_LIMIT) {
@@ -58,7 +73,7 @@ jobs:
               
               const commentBody = `### 🛑 Contribution Rate Limit Exceeded\n\n` +
                 `Hi @${prAuthor}! 👋\n\n` +
-                `To maintain repository stability, review quality, and a fair contribution distribution, EaseMotion CSS enforces a soft contribution limit of up to **70 PRs per day** per contributor.\n\n` +
+                `To maintain repository stability, review quality, and a fair contribution distribution, EaseMotion CSS enforces a soft contribution limit of up to **150 PRs per day** per contributor.\n\n` +
                 `It looks like you have submitted **${totalCount} pull requests** in the last 24 hours (including this one), which exceeds this limit.\n\n` +
                 `To ensure focus on quality, originality, and proper testing, we have automatically closed this pull request for now. Please wait until tomorrow or close some of your other active PRs before submitting new ones.\n\n` +
                 `Thank you for your understanding and cooperation! 🚀`;
