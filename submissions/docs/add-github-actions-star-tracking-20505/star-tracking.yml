@@ -1,0 +1,37 @@
+name: Track Stars and Forks
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Every Monday at 00:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch repository stats
+        run: |
+          mkdir -p stats
+          if [ ! -f stats/history.json ]; then
+            echo "[]" > stats/history.json
+          fi
+          
+          STARS=$(curl -s "https://api.github.com/repos/${{ github.repository }}" | jq '.stargazers_count')
+          FORKS=$(curl -s "https://api.github.com/repos/${{ github.repository }}" | jq '.forks_count')
+          DATE=$(date -I)
+          
+          # Append to json
+          cat stats/history.json | jq ". + [{\"date\": \"$DATE\", \"stars\": $STARS, \"forks\": $FORKS}]" > stats/history_tmp.json
+          mv stats/history_tmp.json stats/history.json
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add stats/history.json
+          git commit -m "chore: update repository stats" || echo "No changes to commit"
+          git push

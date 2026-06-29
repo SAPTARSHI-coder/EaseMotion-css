@@ -45,12 +45,27 @@ jobs:
               console.log(`Found ${totalCount} PRs submitted by @${prAuthor} in the last 24 hours.`);
             } catch (err) {
               console.log(`Error calling search API: ${err.message}`);
-              // Fallback: list pulls and filter
-              const pulls = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 100 });
+              // Fallback: list pulls with pagination and filter
               const limitMs = Date.now() - 24 * 60 * 60 * 1000;
-              const matchingPulls = pulls.data.filter(p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs);
+              let page = 1;
+              let matchingPulls = [];
+
+              while (true) {
+                const pulls = await github.rest.pulls.list({
+                  owner, repo, state: 'all', per_page: 100, page
+                });
+                if (pulls.data.length === 0) break;
+
+                matchingPulls.push(...pulls.data.filter(
+                  p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs
+                ));
+
+                if (pulls.data.length < 100) break;
+                page++;
+              }
+
               totalCount = matchingPulls.length;
-              console.log(`Fallback: Found ${totalCount} PRs in last 100 items.`);
+              console.log(`Fallback: Found ${totalCount} PRs across ${page} page(s).`);
             }
             
             if (totalCount > DAILY_LIMIT) {
