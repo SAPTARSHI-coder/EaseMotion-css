@@ -17,7 +17,7 @@ Provides a clean, reusable SCSS mixin to generate smooth, multi-layered box shad
 
 ## Usage Example
 ```scss
-@import "multi-layer-box-shadow-elevation-scale";
+@import "scss-multi-layer-box-shadow-elevation-scale";
 
 .card-elevation-2 {
   background: white;
