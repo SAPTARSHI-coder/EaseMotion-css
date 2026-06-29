@@ -1,0 +1,298 @@
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaseMotion - @Mention Autocomplete Dropdown</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📝 ease-mention-dropdown</h1>
+        <p>Type <kbd>@</kbd> in the input below to see mention autocomplete suggestions</p>
+
+        <!-- Mention Input -->
+        <div class="mention-wrapper">
+            <div class="input-container">
+                <textarea id="mentionInput" rows="4" placeholder="Type @ to mention someone..."></textarea>
+                <div id="mentionDropdown" class="mention-dropdown">
+                    <!-- Users will be rendered here by JavaScript -->
+                </div>
+            </div>
+            <div class="input-hint">
+                <span>💡 Try typing <kbd>@</kbd> to see suggestions</span>
+                <span class="key-hint">↑↓ to navigate · Enter to select · Esc to close</span>
+            </div>
+        </div>
+
+        <!-- Selected Mentions Display -->
+        <div class="selected-mentions">
+            <h3>Selected Mentions</h3>
+            <div id="selectedMentions" class="mention-tags">
+                <span class="empty-state">No mentions yet. Type @ in the textarea above.</span>
+            </div>
+        </div>
+
+        <!-- Usage Code -->
+        <div class="code-section">
+            <h2>Usage</h2>
+            <pre>&lt;div class="mention-wrapper"&gt;
+    &lt;div class="input-container"&gt;
+        &lt;textarea id="mentionInput"&gt;&lt;/textarea&gt;
+        &lt;div id="mentionDropdown" class="mention-dropdown"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+    // Initialize with users list
+    const users = [
+        { id: 1, name: 'Alice Johnson', username: 'alicej', avatar: '👩' },
+        // ...
+    ];
+    initMentionAutocomplete('mentionInput', 'mentionDropdown', users);
+&lt;/script&gt;</pre>
+        </div>
+
+        <div class="info">
+            <h3>📝 Mention Dropdown Features</h3>
+            <ul>
+                <li>🔍 Appears on <kbd>@</kbd> trigger in input</li>
+                <li>📋 Filtered list with avatar + username</li>
+                <li>✨ Highlighted matching text</li>
+                <li>⌨️ Keyboard navigation (↑↓ Enter Esc)</li>
+                <li>🎯 Smooth entrance animation</li>
+                <li>🏷️ Mention tags display</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Sample users data
+        const users = [
+            { id: 1, name: 'Alice Johnson', username: 'alicej', avatar: '👩' },
+            { id: 2, name: 'Bob Smith', username: 'bobsmith', avatar: '👨' },
+            { id: 3, name: 'Carol Williams', username: 'carolw', avatar: '👩' },
+            { id: 4, name: 'David Brown', username: 'davidb', avatar: '👨' },
+            { id: 5, name: 'Eva Martinez', username: 'evam', avatar: '👩' },
+            { id: 6, name: 'Frank Chen', username: 'frankc', avatar: '👨' },
+            { id: 7, name: 'Grace Lee', username: 'gracel', avatar: '👩' },
+            { id: 8, name: 'Henry Wilson', username: 'henryw', avatar: '👨' },
+        ];
+
+        let selectedIndex = -1;
+        let currentFilteredUsers = [];
+        let isDropdownOpen = false;
+
+        function highlightText(text, query) {
+            if (!query) return text;
+            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        function renderDropdown(filteredUsers, query) {
+            const dropdown = document.getElementById('mentionDropdown');
+            if (!filteredUsers.length || !query) {
+                dropdown.style.display = 'none';
+                isDropdownOpen = false;
+                return;
+            }
+
+            dropdown.innerHTML = filteredUsers.map((user, index) => `
+                <div class="mention-item ${index === selectedIndex ? 'selected' : ''}" 
+                     data-id="${user.id}" data-name="${user.name}" data-username="${user.username}">
+                    <span class="mention-avatar">${user.avatar}</span>
+                    <div class="mention-info">
+                        <span class="mention-name">${highlightText(user.name, query)}</span>
+                        <span class="mention-username">@${highlightText(user.username, query)}</span>
+                    </div>
+                </div>
+            `).join('');
+
+            dropdown.style.display = 'block';
+            isDropdownOpen = true;
+        }
+
+        function updateMentionsDisplay(mentions) {
+            const container = document.getElementById('selectedMentions');
+            if (!mentions.length) {
+                container.innerHTML = '<span class="empty-state">No mentions yet. Type @ in the textarea above.</span>';
+                return;
+            }
+            container.innerHTML = mentions.map(mention => `
+                <span class="mention-tag">
+                    ${mention.avatar} ${mention.name}
+                    <span class="remove-mention" data-id="${mention.id}">×</span>
+                </span>
+            `).join('') + `<span class="mention-count">${mentions.length} mention${mentions.length > 1 ? 's' : ''}</span>`;
+        }
+
+        function initMentionAutocomplete(inputId, dropdownId, usersList) {
+            const input = document.getElementById(inputId);
+            const dropdown = document.getElementById(dropdownId);
+            let selectedMentions = [];
+            let lastQuery = '';
+            let cursorPosition = 0;
+
+            function getMentionQuery(text, cursorPos) {
+                // Find @ at or before cursor
+                const beforeCursor = text.substring(0, cursorPos);
+                const atIndex = beforeCursor.lastIndexOf('@');
+                if (atIndex === -1) return null;
+                
+                // Check if there's a space after @ (to avoid matching email addresses)
+                const afterAt = text.substring(atIndex + 1, cursorPos);
+                if (afterAt.includes(' ')) return null;
+                
+                return { query: afterAt, startIndex: atIndex };
+            }
+
+            function updateDropdown() {
+                const text = input.value;
+                const cursorPos = input.selectionStart;
+                const mentionInfo = getMentionQuery(text, cursorPos);
+                
+                if (!mentionInfo) {
+                    dropdown.style.display = 'none';
+                    isDropdownOpen = false;
+                    selectedIndex = -1;
+                    return;
+                }
+
+                const { query, startIndex } = mentionInfo;
+                lastQuery = query;
+                
+                // Filter users
+                const filtered = usersList.filter(user => 
+                    user.name.toLowerCase().includes(query.toLowerCase()) ||
+                    user.username.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                currentFilteredUsers = filtered;
+                
+                if (filtered.length === 0) {
+                    dropdown.style.display = 'none';
+                    isDropdownOpen = false;
+                    return;
+                }
+
+                renderDropdown(filtered, query);
+            }
+
+            function selectUser(user) {
+                const text = input.value;
+                const cursorPos = input.selectionStart;
+                const mentionInfo = getMentionQuery(text, cursorPos);
+                
+                if (!mentionInfo) return;
+
+                const { startIndex } = mentionInfo;
+                const before = text.substring(0, startIndex);
+                const after = text.substring(cursorPos);
+                const mentionText = `@${user.username} `;
+                
+                input.value = before + mentionText + after;
+                input.focus();
+                const newCursorPos = before.length + mentionText.length;
+                input.setSelectionRange(newCursorPos, newCursorPos);
+                
+                // Add to selected mentions
+                if (!selectedMentions.find(m => m.id === user.id)) {
+                    selectedMentions.push(user);
+                    updateMentionsDisplay(selectedMentions);
+                }
+                
+                dropdown.style.display = 'none';
+                isDropdownOpen = false;
+                selectedIndex = -1;
+                
+                // Trigger input event
+                input.dispatchEvent(new Event('input'));
+            }
+
+            // Input events
+            input.addEventListener('input', () => {
+                updateDropdown();
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (!isDropdownOpen || currentFilteredUsers.length === 0) {
+                    // If pressing @ and dropdown is closed, open it
+                    if (e.key === '@') {
+                        setTimeout(updateDropdown, 10);
+                    }
+                    return;
+                }
+
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        selectedIndex = (selectedIndex + 1) % currentFilteredUsers.length;
+                        renderDropdown(currentFilteredUsers, lastQuery);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        selectedIndex = (selectedIndex - 1 + currentFilteredUsers.length) % currentFilteredUsers.length;
+                        renderDropdown(currentFilteredUsers, lastQuery);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (selectedIndex >= 0 && selectedIndex < currentFilteredUsers.length) {
+                            selectUser(currentFilteredUsers[selectedIndex]);
+                        }
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        dropdown.style.display = 'none';
+                        isDropdownOpen = false;
+                        selectedIndex = -1;
+                        break;
+                    case 'Tab':
+                        if (selectedIndex >= 0 && selectedIndex < currentFilteredUsers.length) {
+                            e.preventDefault();
+                            selectUser(currentFilteredUsers[selectedIndex]);
+                        }
+                        break;
+                }
+            });
+
+            // Click on dropdown items
+            dropdown.addEventListener('click', (e) => {
+                const item = e.target.closest('.mention-item');
+                if (!item) return;
+                const user = {
+                    id: parseInt(item.dataset.id),
+                    name: item.dataset.name,
+                    username: item.dataset.username,
+                    avatar: usersList.find(u => u.id === parseInt(item.dataset.id))?.avatar || '👤'
+                };
+                selectUser(user);
+            });
+
+            // Close dropdown on blur
+            input.addEventListener('blur', () => {
+                setTimeout(() => {
+                    dropdown.style.display = 'none';
+                    isDropdownOpen = false;
+                }, 200);
+            });
+
+            // Remove mention
+            document.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-mention')) {
+                    const id = parseInt(e.target.dataset.id);
+                    selectedMentions = selectedMentions.filter(m => m.id !== id);
+                    updateMentionsDisplay(selectedMentions);
+                }
+            });
+
+            // Initial render
+            updateMentionsDisplay(selectedMentions);
+            console.log('📝 Mention autocomplete initialized with', usersList.length, 'users');
+        }
+
+        // Initialize
+        initMentionAutocomplete('mentionInput', 'mentionDropdown', users);
+    </script>
+</body>
+</html>

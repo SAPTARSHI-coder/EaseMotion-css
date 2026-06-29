@@ -5,7 +5,7 @@
 >
 > Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
 >
-> For now, only self-contained submissions inside `submissions/examples/*` will be reviewed and merged.
+> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/*` or `submissions/docs/*`) will be reviewed and merged.
 >
 > This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
 >
@@ -44,19 +44,24 @@ This model exists to maintain quality, naming consistency, and design coherence 
 
 ## Where to Contribute
 
-**One place only:**
+EaseMotion CSS has four distinct contribution subdirectories depending on your chosen track. Your Pull Request **must only** add files inside one of these subdirectories:
 
-```
-submissions/examples/your-feature-name/
-```
+| Track | Directory Path | Required Files | Target Issues | Validator Bot |
+|---|---|---|---|---|
+| **Standard (HTML/CSS)** | `submissions/examples/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | General feature requests, animations, utility additions | `PR Submission Validator` |
+| **React Integration** | `submissions/react/your-component/` | `YourComponent.jsx`<br>`README.md`<br>*(optional: `style.css`)* | Issues labeled `react` | `React & SCSS Submission Validator` |
+| **SCSS Integration** | `submissions/scss/your-mixin/` | `_your-mixin.scss`<br>`README.md` | Issues labeled `scss` | `React & SCSS Submission Validator` |
+| **Core & Docs Showcase** | `submissions/docs/your-feature/` | `demo.html`<br>`style.css`<br>`README.md` | Core framework bug fixes & documentation showcases | `PR Submission Validator` |
 
-That is the only directory you should add or modify in your PR.
+> [!IMPORTANT]
+> **Strict Directory Structure Required**
+> The `submissions/` folder strictly contains only **4 subdirectories**: `examples/`, `react/`, `scss/`, and `docs/`. **Never add or create feature folders directly in the root of `submissions/`** (e.g. `submissions/your-feature/`). Any Pull Request adding files directly under `submissions/` root will be automatically closed as invalid by our validation bots.
 
 ### 📢 Contribution Rate Limit Update
 
 To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
 
-- Contributors may submit up to **70 PRs per day**
+- Contributors may submit up to **150 PRs per day**
 - Focus on quality, originality, accessibility, and proper testing
 - Low-effort, repetitive, or mass-generated PRs may be closed without review
 
@@ -81,9 +86,9 @@ To keep the repository's git history clean and readable, contributors must follo
 
 ### 📢 Contribution Policy Update
 
-All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+All contributions are welcome and eligible for merge when submitted inside the `submissions/` folder following the repository structure and guidelines.
 
-To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component/mixin name.
 
 **Example:**
 
@@ -105,23 +110,27 @@ The project encourages creative variations and parallel implementations rather t
 
 ## What to Submit
 
-Your submission folder must contain exactly three files:
+Select your contribution track below to see exactly what files to include:
 
-### `demo.html` (required)
+### 1. Standard Track (HTML/CSS)
+Your submission folder under `submissions/examples/` or `submissions/docs/` must contain exactly three files:
+*   **`demo.html`**: A self-contained HTML demo. Must work by opening directly in a browser with no server, CDNs, or external frameworks.
+*   **`style.css`**: Your raw CSS. Write it however you like (no need to use `ease-` naming; the maintainer standardizes it).
+*   **`README.md`**: Must answer three questions:
+    1. What does this do? (one sentence)
+    2. How is it used? (show the HTML class usage)
+    3. Why is it useful? (explain how it fits EaseMotion's philosophy)
 
-A self-contained HTML demo. Must work by opening directly in a browser with no server. No CDN links, no external frameworks.
+### 2. React Track
+Your submission folder under `submissions/react/` must contain:
+*   **React component file (`.jsx` or `.tsx`)**: A real, working React component file containing your UI component. The component **must use EaseMotion CSS utility classes** (e.g. `className="ease-fade-in ease-hover-lift"`).
+*   **`README.md`**: Documentation containing a description of the component, a properties table (props reference), and a clear usage example block.
+*   **`style.css`** (optional): Any supplementary CSS styles scoped to this component.
 
-### `style.css` (required)
-
-Your raw CSS. Write it however you like — no need to follow the `ease-` naming convention. The maintainer handles all renaming and standardization.
-
-### `README.md` (required)
-
-Answer these three questions:
-
-1. **What does this do?** — one sentence.
-2. **How is it used?** — show the HTML class usage.
-3. **Why is it useful?** — explain how it fits EaseMotion CSS's philosophy.
+### 3. SCSS Track
+Your submission folder under `submissions/scss/` must contain:
+*   **SCSS partial file (`_your-mixin.scss`)**: A stylesheet partial containing your reusable mixin, variables, or functions. The SCSS should build upon EaseMotion's token variables or animation keyframes.
+*   **`README.md`**: Documentation explaining what the mixin does, listing its parameters, and providing an example of how to use it with `@include`.
 
 ---
 
@@ -143,19 +152,18 @@ These rules are enforced at PR review. Violations result in immediate close with
 ### ❌ Never do these
 
 ```
-- Edit any file in core/
-- Edit any file in components/
-- Modify docs/
-- Modify examples/
+- Create feature folders directly under submissions/ (e.g. submissions/your-feature/)
+- Edit any existing file in core/ or components/
+- Modify existing root docs/ or examples/
 - Merge your own pull request
 ```
 
 ### ✅ Always do these
 
 ```
-- Add your feature inside submissions/examples/your-feature-name/
-- Include all three required files (demo.html, style.css, README.md)
-- Keep one PR focused on one feature
+- Place your feature inside one of the 4 allowed subdirectories: submissions/examples/, submissions/react/, submissions/scss/, or submissions/docs/
+- Include all required files for your chosen track (e.g. demo.html, style.css, README.md)
+- Keep one PR focused on one feature/component/mixin
 - Fill out the PR template checklist completely
 ```
 
@@ -165,22 +173,24 @@ These rules are enforced at PR review. Violations result in immediate close with
 
 For any non-trivial feature, **open a GitHub issue before coding**. Use the Feature Request template. This lets you confirm the idea fits EaseMotion CSS before investing time in the code.
 
+→ [Open a Feature Request](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md)
+
 Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ---
 
 ## 🕑 Issue Cooldown Rule
 
-**Maximum 2 active assigned issues per contributor at any time.**
+**Maximum 25 active assigned issues per contributor at any time.**
 
 This rule exists to keep assignments fair and ensure active contributors can always pick up work.
 
 ### What this means
 
 ```
-✅ You have 0–1 active assignments → request a new issue freely
-✅ You have 2 active assignments  → finish or unassign one first
-❌ You have 2+ active assignments → new assignment requests will be declined
+✅ You have 0–24 active assignments → request a new issue freely
+✅ You have 25 active assignments  → finish or unassign one first
+❌ You have 25+ active assignments → new assignment requests will be declined
 ```
 
 ### Inactivity
@@ -195,7 +205,7 @@ If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer wi
 
 1. **Fork** this repository
 2. **Create a branch**: `git checkout -b feature/your-feature-name`
-3. **Add your files** inside `submissions/examples/your-feature-name/`
+3. **Add your files** inside the `submissions/` directory (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`)
 4. **Push** your branch and open a PR against `main`
 5. **Fill out** the PR template — every checkbox must be addressed
 6. **Wait** for maintainer review. Do not ping or bump. Reviews happen on a rolling basis.
@@ -216,7 +226,7 @@ EaseMotion CSS follows a strict **submission-first** pipeline. No PR should ever
 ```
 PR submitted
     ↓
-submissions/examples/ (contributor writes raw CSS here)
+submissions/ (contributor writes raw CSS here)
     ↓
 Maintainer tests it
     ↓
