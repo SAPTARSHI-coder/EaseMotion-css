@@ -15,7 +15,7 @@ This ensures the animation feels natural in Arabic and other RTL layouts.
 
 ## How it works
 - The card starts at transform: translateX(0) and opacity: 1.
-- Adding the class .exit triggers a CSS transition that moves the card 40px to the left and fades it out over 0.3s with an ease‑in curve.
+- Adding the class .exit triggers a CSS transition that moves the card 50px to the left and fades it out over 0.3s with an ease‑in curve.
 - The Reset button removes .exit, instantly restoring the card.
 - With prefers-reduced-motion, the card simply disappears without sliding.
 
