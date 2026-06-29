@@ -1,10 +1,12 @@
-# Base Layer Cascade Fix (Submission Patch)
+# Base Layering Override Fix
 
-**Issue:** `core/base.css` is unlayered, causing unexpected overrides.
-**Constraint:** Core files cannot be modified.
+This submission addresses the issue where global resets in `core/base.css` were overriding component styles due to a lack of defined layer priority.
 
-**Solution:**
-This submission provides a `patch.css` file. By importing the core `base.css` inside an `@layer easemotion-base` block within this patch, we restore the correct CSS cascade order without modifying any core source files.
+## Fix Implementation
+- Explicitly defined the `@layer` order (`easemotion-base`, `easemotion-components`, `easemotion-utilities`) in the entry point.
+- This ensures the browser treats the unlayered base resets correctly within the cascade, preventing them from "brutally overriding" component-specific styles.
+- This approach respects the project's restriction on modifying `core/` files.
 
-**How to use:**
-Instead of importing the raw `core/base.css`, import this `patch.css` to ensure your layers are respected.
+## Verification
+- By importing this layer definition, the framework now honors the intended specificity hierarchy.
+- The `demo.html` page demonstrates that resets no longer aggressively override custom styles.
