@@ -128,6 +128,7 @@ jobs:
 
       # Step 2.5: Block Auto-Merge for Invalid Changes or Soft-Banned Users
       - name: Block Auto-Merge for Invalid Changes
+        id: block-check
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
@@ -211,7 +212,7 @@ jobs:
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
-        if: steps.pr-metadata.outputs.isDraft != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true'
         uses: actions/checkout@v5
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
@@ -222,7 +223,7 @@ jobs:
       # Step 4: Resolve conflicts, compile bundle, and push updates
       - name: Compile and Rename Conflicting Folders
         id: rename-check
-        if: steps.pr-metadata.outputs.isDraft != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
@@ -453,7 +454,7 @@ jobs:
       # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
       - name: Wait for checks to pass
         id: wait-checks
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           CURRENT_RUN_ID: ${{ github.run_id }}
@@ -532,7 +533,7 @@ jobs:
 
       # Step 6: Merge the PR securely via the GitHub API
       - name: Merge PR
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
@@ -616,7 +617,7 @@ jobs:
 
       # Step 7: Close linked issues (GitHub API merge does NOT auto-close Closes #N keywords)
       - name: Close Linked Issues
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
