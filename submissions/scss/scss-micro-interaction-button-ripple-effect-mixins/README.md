@@ -21,7 +21,7 @@ Provides a highly configurable, reusable SCSS mixin to add elegant, CSS-only mic
 
 ## Usage Example
 ```scss
-@import "micro-interaction-button-ripple-effect-mixins";
+@import "scss-micro-interaction-button-ripple-effect-mixins";
 
 .btn-primary {
   background-color: #3b82f6;
