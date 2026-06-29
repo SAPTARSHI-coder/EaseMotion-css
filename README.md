@@ -718,7 +718,7 @@ Yes. EaseMotion CSS works with React, Vue, plain HTML, or any framework that ren
 
 ### How do I submit a new component?
 
-Open or claim an issue first for non-trivial ideas, then add your raw demo inside `submissions/examples/your-feature-name/` with `demo.html`, `style.css`, and `README.md`. The maintainer reviews it, standardizes naming, and integrates it into the framework if it fits the project.
+Open or claim an issue first, then submit your work under the appropriate track directory in `submissions/` (e.g., `submissions/examples/` for HTML/CSS, `submissions/react/` for React components, `submissions/scss/` for SCSS mixins/tokens, or `submissions/docs/` for documentation showcases and core documentation contributions). The maintainer reviews your submission, standardizes names/tokens, and integrates it into the core framework.
 
 ### Does it work without a build step?
 
@@ -801,10 +801,15 @@ EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors sub
 ### ✅ What contributors do
 
 ```
-✅ Add a folder to submissions/examples/your-feature/
-✅ Include: demo.html + style.css + README.md
+✅ Add a folder to one of the valid contribution tracks:
+• submissions/examples/your-feature/
+• submissions/react/your-feature/
+• submissions/scss/your-feature/
+• submissions/docs/your-feature/
+✅ Include the required files for your chosen track
 ✅ Use any class naming — no ease- prefix required
 ✅ One feature per PR
+
 ```
 
 ### ❌ What contributors do NOT do
