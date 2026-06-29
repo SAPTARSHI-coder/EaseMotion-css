@@ -278,3 +278,33 @@ document.querySelectorAll('.copy-class-btn').forEach(btn => {
 
   drawParticles();
 })();
+
+// ── Global Search Filter ────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  const searchInput = document.getElementById("globalSearch");
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (e) => {
+    const query = e.target.value.toLowerCase().trim();
+
+    // Filter sidebar items
+    document.querySelectorAll(".sidebar-nav li").forEach(li => {
+      const text = li.textContent.toLowerCase();
+      if (query === "" || text.includes(query)) {
+        li.style.display = "";
+      } else {
+        li.style.display = "none";
+      }
+    });
+
+    // Filter table rows (animations, utilities)
+    document.querySelectorAll(".docs-table tbody tr").forEach(tr => {
+      const text = tr.textContent.toLowerCase();
+      if (query === "" || text.includes(query)) {
+        tr.style.display = "";
+      } else {
+        tr.style.display = "none";
+      }
+    });
+  });
+});
