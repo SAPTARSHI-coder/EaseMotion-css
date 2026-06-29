@@ -30,7 +30,7 @@ Provides clean, reusable SCSS mixins to generate flexible and robust Flexbox con
 
 ## Usage Example
 ```scss
-@import "flexbox-alignment-layout-utility-mixins";
+@import "scss-flexbox-alignment-layout-utility-mixins";
 
 .nav-bar {
   @include flex-layout(row, space-between, center, nowrap, 1.5rem);
