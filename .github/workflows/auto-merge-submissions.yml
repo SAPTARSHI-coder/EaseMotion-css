@@ -67,12 +67,13 @@ jobs:
           PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
-          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions)
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions,author)
           is_draft=$(echo "$pr_data" | jq -r '.isDraft')
           head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
           head_ref=$(echo "$pr_data" | jq -r '.headRefName')
           pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
           pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
+          pr_author=$(echo "$pr_data" | jq -r '.author.login')
           additions=$(echo "$pr_data" | jq -r '.additions')
           deletions=$(echo "$pr_data" | jq -r '.deletions')
           total_lines_changed=$((additions + deletions))
@@ -83,6 +84,7 @@ jobs:
           echo "headRef=$head_ref" >> $GITHUB_OUTPUT
           echo "title=$pr_title" >> $GITHUB_OUTPUT
           echo "labels=$pr_labels" >> $GITHUB_OUTPUT
+          echo "author=$pr_author" >> $GITHUB_OUTPUT
           echo "totalLinesChanged=$total_lines_changed" >> $GITHUB_OUTPUT
           
           echo "PR Number: $PR_NUM"
@@ -124,12 +126,19 @@ jobs:
           echo "Has docs changes (blocked): $has_docs_changes"
           echo "Has core changes: $has_core_changes"
 
-      # Step 2.5: Block Auto-Merge for Invalid Changes
+      # Step 2.5: Block Auto-Merge for Invalid Changes or Soft-Banned Users
       - name: Block Auto-Merge for Invalid Changes
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
+          author="${{ steps.pr-metadata.outputs.author }}"
+          if [[ "$author" == "xenon010101" || "$author" == "saidai-bhuvanesh" || "$author" == "tmdeveloper007" || "$author" == "desireddymohithreddy0925" ]]; then
+            echo "🔒 Soft-banned author (@$author) detected. Skipping auto-merge silently."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_docs_changes="${{ steps.check-files.outputs.hasDocsChanges }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
