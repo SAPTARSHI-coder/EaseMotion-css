@@ -1,87 +1,81 @@
 # Atmospheric Carbon Capture Grid Analytics Showcase
 
-A futuristic, dark-themed eco-tech single-page showcase demonstrating direct air capture metrics, scrubbing grids, and carbon mineralization pipelines. This contribution represents a responsive glassmorphic dashboard built using pure HTML5 and CSS3 animations.
+> **Issue:** [#1009](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/1009)
 
-## Project Overview
+## What does this do?
 
-The **Atmospheric Carbon Capture Grid Analytics** showcase is a simulated industrial control center tracking carbon scrubbers, air filtration volumes, net-negative power indexes, and subterranean basalt storage injection feeds. The layout utilizes rich green, cyan, and blue neon highlights on a translucent glass baseline to present data clearly.
+This is a futuristic, interactive single-page dashboard monitor for tracking global atmospheric carbon capture turbines, gas sensors, sequestration storage pools, and credit analytics entirely through HTML5 and CSS3.
+
+## How is it used?
+
+The showcase integrates the EaseMotion CSS library animations directly on HTML components using standard classes:
+
+```html
+<link rel="stylesheet" href="../../easemotion.css" />
+<!-- Showcase tags using the animation utility classes -->
+<header class="topbar ease-slide-in-from-top">...</header>
+<section class="hero-card ease-fade-in">...</section>
+<div class="metric-card ease-slide-up">...</div>
+```
+
+## Why is it useful?
+
+It demonstrates how complex eco-tech dashboard visuals, high-fidelity circular conic-gradient gauges, comparison tables, and progress indicators can be built at 60fps without the need for JavaScript, reinforcing EaseMotion's core philosophy of building lightweight, performant, and accessible motion stylesheets.
 
 ## Features
 
-- **Eco-Tech Aesthetics**: A curated forest green, emerald, and glowing cyan color scheme designed to mimic clean technology interfaces.
-- **Dynamic Vapor Background**: Rising atmospheric bubbles/particles simulated dynamically through hardware-accelerated CSS keyframe loops.
-- **Carbon Telemetry Statistics**: Real-time KPI summaries covering capture rate, filtration volume, net-negative power parity, and total sequestration.
-- **Analytics Visualization Panels**: Detailed glass cards plotting capture volatility charts (using pure CSS height variables) and active scrubber nodes.
-- **Pure CSS Circular Gauges**: Conic-gradient radial loops measuring capacity progress (Adsorption, Desorption, Pressure, and Grid Efficiency) without external JavaScript.
-- **Facility Telemetry Matrix**: High-contrast, interactive datatable contrasting regional arrays (Orca-1, Texas Aero-1, Zurich Sky-X).
-- **Mineralization Pipeline Timeline**: Operational phases illustrating the carbon sequestration lifecycle from intake to stone crystallization.
-- **Environmental Impact Metrics**: Progress bars indicating historical atmospheric PPM offsets and active volume metrics.
+- **Active Capture Turbine Schematic:** SVG visualizer mapping turbine cores with rotating fan blades and animated grid line flow paths.
+- **Facility Grid Diagnostic Boards:** Cards detailing Nordic, Pacific, Sahara, Amazon, Siberian, and Oceanic arrays with status indicators.
+- **CO₂ Capture Statistics Grid:** Six animated diagnostics cards for Capture Rate, Turbine Velocity, Storage Pressure, Filter Saturation, Grid Efficiency, and Carbon Credits.
+- **Air Quality Gauges:** CSS-only circular conic-gradient progress indicators displaying AQI, PM2.5, and humidity levels.
+- **Storage Analytics Charts:** A CSS-only bar graph showing daily sequestration volume in kilotons with interactive tooltips.
+- **Environmental Impact Metrics:** Panels displaying net global cooling offset ratios, credit indexes, and grid security state.
+- **Facility Comparison Benchmarks:** Responsive HTML compare table highlighting design capacity, current output, and active efficiency ratios.
+- **Operational Timeline logs:** Daily logs showing calibration events, sensor flushes, and grid synchronizations.
+- **Manual Calibrations CTAs:** Glassmorphic override center providing clear control buttons.
+- **Responsive Layout:** Adaptive styling using CSS Grid and flex structures to maintain aesthetic consistency across screen form-factors.
 
 ## Folder Structure
 
-```text
-submissions/examples/atmospheric-carbon-capture-grid-analytics-phase-1009/
-├── demo.html     # Semantic HTML5 dashboard layout
-├── style.css     # Modular stylesheet containing variables, styles, and keyframes
-└── README.md     # Project documentation
 ```
-
-## Technologies
-
-- **HTML5**: Structured semantic layout utilizing standard elements (`<header>`, `<main>`, `<section>`, `<article>`, `<table>`, and inline `<svg>`).
-- **CSS3**: Layout properties (Flexbox, Grid), custom CSS variables, and animation keyframes.
-- **Google Fonts**: Integration of `Plus Jakarta Sans` (for clean labels) and `Share Tech Mono` (for data values).
+submissions/examples/atmospheric-carbon-capture-grid-analytics-phase-1009/
+├── demo.html    # Showcase markup and turbine rotor SVG
+├── style.css    # Color tokens, visual templates, and custom CSS animations
+└── README.md    # Documentation and usage guide
+```
 
 ## Responsive Design
 
-The showcase dynamically reflows elements for optimal screen sizes:
+- **Desktop (Default):** Dual-column grid layouts for charts and gauges, side-by-side lists, and centered SVG turbine visualizers.
+- **Tablets (≤ 1024px):** Reflows columns to single stacks, rescales radial orbit shapes, and adjusts stats grid counts.
+- **Mobile (≤ 768px):** Adapts navigation bars, transitions circular progress panels to vertical lists, centers headers, and modifies table widths.
 
-- **Desktop (>1024px)**: 2-column hero with orbiting grid visual, 2-column analytics splits, 4-column progress circles, and a 5-step horizontal timeline.
-- **Tablet (768px - 1024px)**: Single-column centered layouts, vertical timeline nodes, and horizontal overflow scroll parameters for comparative databases.
-- **Mobile (<768px)**: Stretched layouts optimized for touch interaction, scaled typography, and stacked grid flows.
+## EaseMotion Animations Used
 
-## Animations Used
+- `ease-slide-in-from-top`: Applied to the main Sentinel header.
+- `ease-fade-in`: Applied to the hero showcase card, comparison table, timeline, CTA panel, and footer.
+- `ease-slide-up`: Applied to the six CO₂ capture statistics cards with custom staggered delays.
 
-Performance-tuned transitions configured via CSS keyframes:
+## Technologies
 
-- `fadeIn`: Fades elements into view on initialization.
-- `slideUp`: Raises card blocks smoothly with customized bezier curves.
-- `float`: Oscillates the central grid sphere visual to convey weightlessness.
-- `pulseGlow`: Twinkles indicator signals via shadow expansion keyframes.
-- `gradientShift`: Slides active highlight bands along the central grid model.
-- `shine`: Sweeps a light reflections line across card faces on hover.
-- `cardLift`: Elevates cards slightly while deepening drop shadows on hover.
-- `glowBorder`: Outlines card parameters with glowing green highlights on hover.
-- `rotateSlow`: Slowly rotates telemetry rings and scanning grids.
-- `floatUp`: Rises background bubbles at offset delays to represent vapor.
+- HTML5 (Semantic elements)
+- CSS3 (Variables, Grid, Flexbox, Keyframes, Custom Properties, SVGs)
+- EaseMotion CSS (Core utility animation rules)
 
-## EaseMotion Compatibility
+## Installation & Preview Instructions
 
-This project aligns with the core philosophy of **EaseMotion CSS**:
+1. Clone the repository.
+2. Navigate to: `submissions/examples/atmospheric-carbon-capture-grid-analytics-phase-1009/`
+3. Open `demo.html` in any web browser of your choice. No server, package manager, or compilation step is needed.
 
-1. **Separated Style & Action**: Employs utility modifiers (like `.glowBorder` and `.cardLift`) to stack transitions.
-2. **Reduced Motion Compatibility**: Honors system animation constraints.
-3. **Pure Static Pipeline**: Uses pure HTML/CSS state behaviors without scripts or network CDNs.
+## Browser Compatibility
 
-## Installation
+- Google Chrome (v85+)
+- Mozilla Firefox (v80+)
+- Safari (v14+)
+- Microsoft Edge (v85+)
+- Opera (v70+)
 
-To integrate this contribution into your local EaseMotion-css setup:
+## Author
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Hasini2706/EaseMotion-css.git
-   ```
-2. Navigate to the example showcase folder:
-   ```bash
-   cd EaseMotion-css/submissions/examples/atmospheric-carbon-capture-grid-analytics-phase-1009/
-   ```
-
-## Preview Instructions
-
-Preview the dashboard by opening `demo.html` in any modern web browser. You can also host the folder using a local web server (e.g. `npx serve` or Live Server) to preview the dashboard with local asset paths.
-
-## Contribution Notes
-
-- Scoped variables prevent global style leaks.
-- Focus rings are styled to maintain high-contrast keyboard navigation.
-- Accessible color ratios conform to GSSOC contributor guidelines.
+Open-source contribution to EaseMotion CSS.
