@@ -1,38 +1,39 @@
-# Counter Reset
+# Counter-Reset — EaseMotion-css Utility
 
-Creates or resets a CSS counter to a specified value for numbered lists.
+## Overview
 
-This submission demonstrates the `counter-reset` CSS property with multiple variants and interactive examples using EaseMotion's design token system.
-
-## Features
-
-- Multiple `counter-reset` variants demonstrated
-- Uses EaseMotion CSS design tokens for colors, spacing, and typography
-- Dark mode support via `prefers-color-scheme: dark`
-- Reduced motion support via `prefers-reduced-motion: reduce`
-- Responsive grid layout with CSS Grid and `auto-fit`
-- Smooth hover transitions using `cubic-bezier(0.4, 0, 0.2, 1)` easing
+This submission adds CSS `counter-reset` property utilities to the EaseMotion-css framework.
 
 ## Usage
 
-Apply the `counter-reset` class to any element:
-
 ```html
-<div class="counter-reset">
-  Your content here
-</div>
+<link rel="stylesheet" href="https://unpkg.com/easemotion-css@latest/submissions/examples/counter-reset-tm/style.css">
 ```
 
-## Tokens Used
+## Classes
 
-- `--ease-color-primary` — Primary accent (#6c63ff)
-- `--ease-color-neutral-50` through `--ease-color-neutral-900` — Neutral palette
-- `--ease-radius-*` — Border radius scale
-- `--ease-space-*` — Spacing scale
-- `--ease-shadow-*` — Shadow tokens
-- `--ease-font-sans` / `--ease-font-mono` — Typography
-- `--ease-text-*` — Type scale
+- `.counter-reset-section` — Section counter
+- `.counter-reset-page` — Page counter
+- `.counter-reset-figure-1` — Figure counter
+- `.counter-reset-item` — Item counter
+- `.counter-reset-step` — Step counter
 
-## Why it is useful
+## Dark Mode
 
-The `counter-reset` property is part of CSS's advanced layout and visual presentation capabilities. Using EaseMotion's token system ensures consistency with the framework's design language and enables dark mode and accessibility features to work automatically.
+All classes automatically adapt to dark mode via `prefers-color-scheme: dark` media query.
+
+## Reduced Motion
+
+All animations respect `prefers-reduced-motion: reduce` by collapsing transitions.
+
+## Framework Tokens
+
+These utilities use EaseMotion-css design tokens:
+- `--ease-primary`, `--ease-secondary`, `--ease-bg`, `--ease-surface`
+- `--ease-text`, `--ease-muted`, `--ease-border`
+- `--ease-space-*`, `--ease-radius`, `--ease-glow`
+- `--ease-transition-fast`, `--ease-transition-base`
+
+## Accessibility
+
+All utilities maintain WCAG 2.1 AA contrast ratios in both light and dark modes.
