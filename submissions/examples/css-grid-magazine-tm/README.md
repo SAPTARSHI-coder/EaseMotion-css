@@ -1,18 +1,30 @@
-# CSS Grid Magazine
+# CSS Grid Magazine Layout
 
-## What does this do?
-Provides a magazine-style CSS Grid layout system — hero sections with mixed-size cards, editor's pick grids with wide/tall/featured spans, and responsive article columns — using EaseMotion CSS tokens for colours, spacing, and typography.
+This submission demonstrates how CSS Grid's two-dimensional layout system can create rich editorial magazine-style web pages, using EaseMotion's design tokens for color, spacing, and typography.
 
-## How is it used?
-Add `.mag-grid` with a layout class (`.mag-hero`, `.mag-mixed`, `.mag-articles`, `.mag-compact`) then place `.mag-card` elements inside. Use `.mag-card-wide`, `.mag-card-tall`, `.mag-card-featured`, `.mag-card-compact` for size/emphasis variants.
+## Features
+
+- Three-column grid with featured story spanning two columns
+- Sidebar with stacked cards using flexbox alignment
+- Quick-links section with two-column grid
+- Article cards grid with tag badges
+- Responsive breakpoints using `--ease-space-*` tokens
+- Dark mode support using `--ease-color-neutral-*` tokens
+- Hover transitions with `--ease-speed-fast` and `--ease-ease`
+- Reduced motion support via `@media (prefers-reduced-motion: reduce)`
+
+## Usage
 
 ```html
-<div class="mag-grid mag-hero">
-  <div class="mag-card mag-card-featured">...</div>
-  <div class="mag-card">...</div>
-  <div class="mag-card">...</div>
+<div class="magazine-grid">
+  <header class="magazine-header">...</header>
+  <article class="featured-story">...</article>
+  <aside class="sidebar-story">
+    <div class="sidebar-card">...</div>
+  </aside>
 </div>
 ```
 
 ## Why is it useful?
-Magazine-style grids are a common pattern for content-heavy sites (news, blogs, portfolios). These classes provide a consistent, responsive system that adapts at 768px and 1024px breakpoints, supports mixed-size articles, and integrates with EaseMotion's design tokens for theming and accessibility.
+
+CSS Grid magazine layouts are a staple of modern web editorial design. This example uses `grid-template-columns: repeat(3, 1fr)` combined with `grid-column` spanning to create an asymmetric layout that guides the reader's eye — a technique directly supported by EaseMotion's `--ease-space-*` spacing scale and `--ease-color-*` palette.
