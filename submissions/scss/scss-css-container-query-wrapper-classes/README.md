@@ -27,7 +27,7 @@ Provides clean, reusable SCSS mixins and pre-generated wrapper classes to implem
 
 ## Usage Example
 ```scss
-@import "css-container-query-wrapper-classes";
+@import "scss-css-container-query-wrapper-classes";
 
 .card-grid {
   @include container-parent(inline-size, card-container);
