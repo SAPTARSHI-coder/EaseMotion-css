@@ -1,3 +1,0 @@
-1. What does this do? Provides container query utility classes using `container-type: inline-size` and `@container` breakpoints at 400px, 640px, and 800px, so components respond to their own container width rather than the viewport.
-2. How is it used? Add `container-type: inline-size` to a parent element, then use `@container` rules to style children at each breakpoint. The demo includes a card layout that switches column/row and a grid that adjusts column count.
-3. Why is it useful? Container queries are more modular than media queries — components adapt to wherever they are placed, making them truly reusable across different layout contexts without viewport dependencies.
