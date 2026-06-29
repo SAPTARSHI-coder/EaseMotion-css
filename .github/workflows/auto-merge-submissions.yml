@@ -101,15 +101,8 @@ jobs:
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Checking files modified in PR #$PR_NUM..."
           
-          # Retrieve the list of modified files in the PR
-          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-          
-          has_submissions=false
-          has_docs_changes=false
-          has_core_changes=false
-          docs_files_list=""
-          
-          for file in $files; do
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
             if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
             elif [[ "$file" =~ ^docs/ ]]; then
@@ -122,7 +115,7 @@ jobs:
               has_core_changes=true
               echo "Core change detected: $file"
             fi
-          done
+          done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
           
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
           echo "hasDocsChanges=$has_docs_changes" >> $GITHUB_OUTPUT
@@ -300,10 +293,8 @@ jobs:
           renamed_any=false
           
           if [ "$has_submissions" = "true" ]; then
-            files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-            
-            # Extract unique component folders under submissions/examples/, submissions/docs/, or submissions/
-            folders=$(for file in $files; do
+            folders=$(while IFS= read -r file; do
+              [ -z "$file" ] && continue
               if [[ "$file" =~ ^submissions/examples/ ]]; then
                 echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
               elif [[ "$file" =~ ^submissions/docs/ ]]; then
@@ -311,7 +302,7 @@ jobs:
               elif [[ "$file" =~ ^submissions/ ]]; then
                 echo "submissions/$(echo "$file" | cut -d'/' -f2)"
               fi
-            done | sort -u)
+            done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename') | sort -u)
             
             # Check if PR is a bug fix or update
             is_fix=false
