@@ -55,7 +55,7 @@ assignees: 'SAPTARSHI-coder'
 
 - [ ] This feature does not duplicate an existing EaseMotion CSS class
 - [ ] I understand my naming will be standardized by the maintainer
-- [ ] I will submit code inside `submissions/examples/` only — not in `core/` or `components/`
+- [ ] I will submit code inside `submissions/` only — not in `core/` or `components/`
 
 ---
 
