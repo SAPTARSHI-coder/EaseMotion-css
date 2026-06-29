@@ -260,14 +260,6 @@ EaseMotion CSS can also be loaded using alternative CDN providers.
 />
 ```
 
-### GitHub Raw CDN
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
-/>```
-
 > jsDelivr is recommended for production usage because it provides global caching and better reliability.
 
 ### Option 2 — npm
