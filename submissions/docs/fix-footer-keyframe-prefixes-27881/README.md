@@ -1,10 +1,10 @@
 # Footer Keyframe Namespace Collision Demo
 
-This demo reproduces the footer keyframe namespace collision described in **Issue #27881**.
+This documentation demo reproduces the footer keyframe namespace collision described in **Issue #27881** and demonstrates the proposed solution using framework-prefixed keyframe names.
 
 ## Issue
 
-The footer component currently uses generic global keyframe names:
+The footer component currently defines generic global keyframe names:
 
 ```css
 @keyframes float
@@ -18,27 +18,27 @@ animation: float 20s ease-in-out infinite;
 animation: heartbeat 1.5s ease-in-out infinite;
 ```
 
-Because CSS keyframes are global, these generic names can conflict with animations defined by an application or third-party library.
+Because CSS keyframes exist in the global animation namespace, generic names such as `float` and `heartbeat` can collide with animations defined by applications or third-party libraries.
 
 ## Proposed Fix
 
-Rename the footer keyframes using framework-prefixed names.
+Rename the footer keyframes to follow the existing EaseMotion CSS naming convention.
 
-**Before**
+### Before
 
 ```css
 @keyframes float
 @keyframes heartbeat
 ```
 
-**After**
+### After
 
 ```css
 @keyframes ease-kf-footer-float
 @keyframes ease-kf-footer-heartbeat
 ```
 
-Update the animation declarations accordingly:
+Update the corresponding animation declarations:
 
 ```css
 animation: ease-kf-footer-float 20s ease-in-out infinite;
@@ -47,20 +47,20 @@ animation: ease-kf-footer-heartbeat 1.5s ease-in-out infinite;
 
 ## Demo Files
 
-```
+```text
 README.md
 demo.html
 style.css
 ```
 
-* **demo.html** demonstrates the keyframe namespace collision and the proposed fix.
-* **style.css** includes both the current implementation (generic keyframes) and the proposed implementation (prefixed keyframes) for comparison.
+* **demo.html** demonstrates the namespace collision and the proposed prefixed keyframe solution.
+* **style.css** contains both the current implementation (generic keyframe names) and the proposed implementation (prefixed keyframe names) for comparison.
 
 ## Expected Result
 
-After introducing prefixed footer keyframes:
+After adopting the proposed keyframe names:
 
-* Footer animations behave exactly as before.
-* Generic keyframe namespace collisions are avoided.
+* Footer animations retain their existing visual behavior.
+* Generic keyframe namespace collisions are eliminated.
 * Footer animations are isolated from application and third-party CSS.
-* The framework follows the existing `ease-kf-*` naming convention without changing visual behavior.
+* The implementation follows the framework's existing `ease-kf-*` naming convention for improved consistency.
