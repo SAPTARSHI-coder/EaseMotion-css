@@ -19,19 +19,19 @@ Creates a parallax scrolling effect using only CSS — no JavaScript required. U
 
 ### Variants
 
-| Class | Effect |
-|---|---|
-| `.ease-parallax` | Container establishing 3D perspective |
-| `.ease-parallax-layer` | Base layer (default translateZ(0)) |
-| `.ease-parallax-slow` | Scrolls slower (further back) |
-| `.ease-parallax-slower` | Even slower (furthest back) |
-| `.ease-parallax-fast` | Scrolls faster (closer) |
+| Class                   | Effect                                |
+| ----------------------- | ------------------------------------- |
+| `.ease-parallax`        | Container establishing 3D perspective |
+| `.ease-parallax-layer`  | Base layer (default translateZ(0))    |
+| `.ease-parallax-slow`   | Scrolls slower (further back)         |
+| `.ease-parallax-slower` | Even slower (furthest back)           |
+| `.ease-parallax-fast`   | Scrolls faster (closer)               |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-parallax-perspective` | `1px` | Perspective value for depth |
+| Property                      | Default | Description                 |
+| ----------------------------- | ------- | --------------------------- |
+| `--ease-parallax-perspective` | `1px`   | Perspective value for depth |
 
 ## Why?
 

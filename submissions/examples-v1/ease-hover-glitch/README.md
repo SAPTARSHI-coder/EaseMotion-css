@@ -1,15 +1,18 @@
 # ease-hover-glitch
 
 ## What does it do?
+
 Element glitches with color channel separation on hover using \`::before\` and \`::after\` pseudo-elements — pure CSS, no JavaScript.
 
 ## Features
+
 - `::before` and `::after` clones shift horizontally on hover
 - Different translateX distances per clone
 - Red (left-shift) and blue (right-shift) color channels
 - Fast 0.2s animation that runs twice then stops
 
 ## Usage
+
 ```css
 .element {
   position: relative;
@@ -19,7 +22,8 @@ Element glitches with color channel separation on hover using \`::before\` and \
 .element::after {
   content: attr(data-text);
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   pointer-events: none;
   opacity: 0;
 }
@@ -36,11 +40,14 @@ Element glitches with color channel separation on hover using \`::before\` and \
 ```
 
 ## Browser Support
+
 - `::before`/`::after` + `@keyframes` — Chrome 26+, Firefox 16+, Safari 6.1+
 
 ## Tech Stack
+
 - HTML + CSS only, no JavaScript
 - Uses `data-text` attribute for pseudo-element content
 
 ## Preview
+
 Open `demo.html` directly in browser.

@@ -8,7 +8,7 @@ Provides a dashboard interface for evaluating AI systems against constitutional 
 
 ```html
 <div class="principle-card">
-    <h3>Privacy Protection</h3>
+  <h3>Privacy Protection</h3>
 </div>
 ```
 

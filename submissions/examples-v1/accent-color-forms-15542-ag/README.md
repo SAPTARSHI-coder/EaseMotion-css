@@ -15,6 +15,7 @@ The `accent-color` property solves this by allowing developers to set a custom t
 ## Target Elements
 
 `accent-color` affects the following elements in modern browsers:
+
 - `<input type="checkbox">`
 - `<input type="radio">`
 - `<input type="range">`

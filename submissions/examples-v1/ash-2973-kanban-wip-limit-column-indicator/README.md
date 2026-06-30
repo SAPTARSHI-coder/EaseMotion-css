@@ -22,9 +22,7 @@ A Kanban board column indicator showcasing Work-In-Progress (WIP) limits with vi
 ## Usage
 
 ```html
-<span class="wip warning">
-    5 / 5
-</span>
+<span class="wip warning"> 5 / 5 </span>
 ```
 
 ## Main Classes

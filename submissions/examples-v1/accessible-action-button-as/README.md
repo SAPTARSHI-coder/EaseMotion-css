@@ -10,7 +10,9 @@ An animated button whose hover animation (lift + color change) is mirrored on ke
 <link rel="stylesheet" href="style.css" />
 
 <button type="button" class="aab-button">Primary action</button>
-<button type="button" class="aab-button aab-button--subtle">Secondary action</button>
+<button type="button" class="aab-button aab-button--subtle">
+  Secondary action
+</button>
 <button type="button" class="aab-button" disabled>Disabled</button>
 ```
 

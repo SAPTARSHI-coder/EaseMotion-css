@@ -28,9 +28,7 @@ Ease Comet Trail is a reusable animation that simulates a glowing comet travelin
 ## Usage
 
 ```html
-<div class="comet">
-    ...
-</div>
+<div class="comet">...</div>
 ```
 
 ---

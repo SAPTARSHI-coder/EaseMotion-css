@@ -16,6 +16,7 @@ A documentation-style component gallery that showcases button and card component
 ## Included Components
 
 ### Buttons
+
 - Primary
 - Success
 - Danger
@@ -30,6 +31,7 @@ A documentation-style component gallery that showcases button and card component
 - Active
 
 ### Cards
+
 - Base
 - Shadow
 - Glass

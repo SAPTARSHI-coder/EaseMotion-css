@@ -6,7 +6,7 @@ This demo details accessibility and visual enhancements for the selected and dis
 
 ## The Visual Gap
 
-In basic stylesheet settings, selected chips have minimal contrast variations, making them difficult to distinguish from standard state chips. 
+In basic stylesheet settings, selected chips have minimal contrast variations, making them difficult to distinguish from standard state chips.
 
 Disabled chips also lack clear signals—they have fixed color profiles, keep default pointer cursors, and trigger interactive states, which leads to layout confusion.
 

@@ -8,6 +8,7 @@ Introduces the native system theme layout control token (`.ease-scheme-light`) u
 - **The Solution:** Constrains user-agent presentation rules. The `.ease-scheme-light` utility directly communicates with the operating system or browser shaper, forcing native scrollbars, inputs, and interactive widgets inside the node to render strictly using light-mode theme assets.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-scheme-light">
   <input type="date" />

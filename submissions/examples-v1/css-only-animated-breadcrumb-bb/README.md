@@ -29,10 +29,18 @@ Provides an animated breadcrumb navigation component with staggered entrance ani
 ### Variants
 
 ```html
-<ol class="breadcrumb breadcrumb--chevron">...</ol>
-<ol class="breadcrumb breadcrumb--slash">...</ol>
-<ol class="breadcrumb breadcrumb--pill">...</ol>
-<ol class="breadcrumb breadcrumb--compact">...</ol>
+<ol class="breadcrumb breadcrumb--chevron">
+  ...
+</ol>
+<ol class="breadcrumb breadcrumb--slash">
+  ...
+</ol>
+<ol class="breadcrumb breadcrumb--pill">
+  ...
+</ol>
+<ol class="breadcrumb breadcrumb--compact">
+  ...
+</ol>
 ```
 
 ## Why is it useful?

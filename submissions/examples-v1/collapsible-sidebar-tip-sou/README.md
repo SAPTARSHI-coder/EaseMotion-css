@@ -2,7 +2,7 @@
 
 A clean, accessible collapsible sidebar demo that includes a short usage tip below the heading so first-time users immediately understand how to interact with the component.
 
-This submission addresses issue **#2709** — *[FEATURE] Add usage tip to collapsible sidebar demo*.
+This submission addresses issue **#2709** — _[FEATURE] Add usage tip to collapsible sidebar demo_.
 
 ---
 
@@ -25,12 +25,16 @@ Drop the markup into any page and link `style.css`. The toggle is wired with a t
 </aside>
 
 <main class="main-content">
-  <button class="toggle-btn" id="toggleBtn" aria-label="Toggle sidebar">☰</button>
+  <button class="toggle-btn" id="toggleBtn" aria-label="Toggle sidebar">
+    ☰
+  </button>
 
   <h1>Collapsible Sidebar Demo</h1>
 
   <!-- The usage tip introduced by this submission -->
   <p class="usage-tip">
-    <strong>Tip:</strong> Click the <span class="tip-icon">☰</span> button to collapse or expand the sidebar.
+    <strong>Tip:</strong> Click the <span class="tip-icon">☰</span> button to
+    collapse or expand the sidebar.
   </p>
 </main>
+```

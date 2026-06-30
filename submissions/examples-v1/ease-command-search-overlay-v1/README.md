@@ -31,9 +31,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="overlay">
-...
-</div>
+<div class="overlay">...</div>
 ```
 
 ---

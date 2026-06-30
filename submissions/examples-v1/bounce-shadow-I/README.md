@@ -1,4 +1,3 @@
- 
 # Bounce Shadow Entrance Animation
 
 Bounce entrance effect with dynamic shadow changes — elements drop in with bounce and depth.
@@ -22,10 +21,11 @@ Bounce entrance effect with dynamic shadow changes — elements drop in with bou
 
 ```html
 <div class="ease-bounce-shadow">
-    <h3>Card Title</h3>
-    <p>Card content</p>
+  <h3>Card Title</h3>
+  <p>Card content</p>
 </div>
 
 <!-- Staggered entrance -->
 <div class="ease-bounce-shadow-delay-1">First</div>
 <div class="ease-bounce-shadow-delay-2">Second</div>
+```

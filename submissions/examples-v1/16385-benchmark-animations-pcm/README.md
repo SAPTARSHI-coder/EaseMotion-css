@@ -16,6 +16,7 @@ node scripts/benchmark-animations.mjs
 ```
 
 For CI, add to `.github/workflows/ci.yml`:
+
 ```yaml
 - name: Benchmark animations
   run: npx playwright install chromium && node scripts/benchmark-animations.mjs
@@ -25,26 +26,26 @@ For CI, add to `.github/workflows/ci.yml`:
 
 ### Benchmark Results (8 animations)
 
-| Animation | Property | Avg FPS | Min FPS | Frame Drops | Layout Thrash |
-|---|---|---|---|---|---|
-| `animate-fade` | `opacity` | 59.8 | 57 | 0.3% | None |
-| `animate-slide-in` | `transform: translateX` | 58.4 | 55 | 0.8% | None |
-| `animate-slide-up` | `transform: translateY` | 58.1 | 54 | 1.1% | None |
-| `animate-scale` | `transform: scale` | 57.6 | 53 | 1.4% | None |
-| `animate-spin` | `transform: rotate` | 53.8 | 48 | 2.8% | None |
-| `animate-pulse` | `opacity` | 59.2 | 56 | 0.5% | None |
-| `animate-shake` | `transform: translateX` | 56.7 | 51 | 1.9% | None |
-| `animate-bounce` | `transform: translateY` | 55.9 | 50 | 2.1% | None |
+| Animation          | Property                | Avg FPS | Min FPS | Frame Drops | Layout Thrash |
+| ------------------ | ----------------------- | ------- | ------- | ----------- | ------------- |
+| `animate-fade`     | `opacity`               | 59.8    | 57      | 0.3%        | None          |
+| `animate-slide-in` | `transform: translateX` | 58.4    | 55      | 0.8%        | None          |
+| `animate-slide-up` | `transform: translateY` | 58.1    | 54      | 1.1%        | None          |
+| `animate-scale`    | `transform: scale`      | 57.6    | 53      | 1.4%        | None          |
+| `animate-spin`     | `transform: rotate`     | 53.8    | 48      | 2.8%        | None          |
+| `animate-pulse`    | `opacity`               | 59.2    | 56      | 0.5%        | None          |
+| `animate-shake`    | `transform: translateX` | 56.7    | 51      | 1.9%        | None          |
+| `animate-bounce`   | `transform: translateY` | 55.9    | 50      | 2.1%        | None          |
 
 ### Layout Thrash Detection
 
-| Property | GPU Composited? | Benchmark Verdict |
-|---|---|---|
-| `opacity` | ✅ Yes | Pass |
-| `transform` | ✅ Yes | Pass |
-| `width` / `height` | ❌ No (reflow) | Fail |
-| `top` / `left` | ❌ No (reflow) | Fail |
-| `margin` | ❌ No (reflow) | Fail |
+| Property           | GPU Composited? | Benchmark Verdict |
+| ------------------ | --------------- | ----------------- |
+| `opacity`          | ✅ Yes          | Pass              |
+| `transform`        | ✅ Yes          | Pass              |
+| `width` / `height` | ❌ No (reflow)  | Fail              |
+| `top` / `left`     | ❌ No (reflow)  | Fail              |
+| `margin`           | ❌ No (reflow)  | Fail              |
 
 **Threshold**: Minimum average 30 FPS over 3-second measurement window.
 

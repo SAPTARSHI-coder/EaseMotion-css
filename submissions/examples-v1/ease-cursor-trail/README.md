@@ -49,7 +49,7 @@ const colors = [
   "#4dff88",
   "#4dc3ff",
   "#7a5cff",
-  "#ff4df2"
+  "#ff4df2",
 ];
 ```
 

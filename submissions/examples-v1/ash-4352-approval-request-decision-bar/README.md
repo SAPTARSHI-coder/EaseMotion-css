@@ -23,19 +23,15 @@ A responsive approval request component that presents pending approvals with req
 
 ```html
 <div class="decision-bar">
+  <div class="content">
+    <h2>Approval Request Pending</h2>
+  </div>
 
-    <div class="content">
-        <h2>Approval Request Pending</h2>
-    </div>
+  <div class="actions">
+    <button class="approve">Approve</button>
 
-    <div class="actions">
-
-        <button class="approve">Approve</button>
-
-        <button class="reject">Reject</button>
-
-    </div>
-
+    <button class="reject">Reject</button>
+  </div>
 </div>
 ```
 

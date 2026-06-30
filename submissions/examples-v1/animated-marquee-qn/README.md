@@ -1,13 +1,16 @@
 # Animated Marquee/Infinite Scroll
 
 ## Description
+
 A modern, seamless infinite scroll marquee component that creates a continuous horizontal scrolling effect. Perfect for showcasing client logos, technology stacks, testimonials, or announcements. It features smooth animations, fade edges for a polished look, pause-on-hover functionality, and support for both left-to-right and right-to-left directions. Built entirely with pure CSS using `@keyframes` and `transform`, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains two marquee examples - one with logo placeholders and one with technology badges.
 - `style.css`: Contains the infinite scroll animation, fade effects, hover interactions, and responsive design.
 
 ## How to use
+
 1. Open `demo.html` in your browser to see the smooth infinite scrolling effect.
 2. Copy the HTML and CSS into your project.
 3. **Structure:**
@@ -23,6 +26,7 @@ A modern, seamless infinite scroll marquee component that creates a continuous h
    - **Pause on Hover:** Remove the `:hover` rule if you don't want it to pause.
 
 ## Features
+
 - **Seamless Loop:** Duplicated content creates an infinite scroll effect
 - **Smooth Animation:** Hardware-accelerated `transform: translateX()` for performance
 - **Fade Edges:** Gradient masks create a polished, professional look
@@ -33,6 +37,7 @@ A modern, seamless infinite scroll marquee component that creates a continuous h
 - **Accessibility:** Respects `prefers-reduced-motion` user preference
 
 ## Technical Details
+
 - Uses `transform: translateX()` for smooth, GPU-accelerated animation
 - The `calc(-50% - 20px)` ensures the animation loops seamlessly
 - CSS `mask-image` creates the fade effect on edges
@@ -40,16 +45,19 @@ A modern, seamless infinite scroll marquee component that creates a continuous h
 - `flex-shrink: 0` prevents items from compressing
 
 ## Important: Duplicating Content
+
 For the seamless loop to work, you **must** duplicate your content:
+
 ```html
 <div class="marquee-track-qn">
-    <!-- Original items -->
-    <div class="marquee-item-qn">Item 1</div>
-    <div class="marquee-item-qn">Item 2</div>
-    <div class="marquee-item-qn">Item 3</div>
-    
-    <!-- Duplicate the same items -->
-    <div class="marquee-item-qn">Item 1</div>
-    <div class="marquee-item-qn">Item 2</div>
-    <div class="marquee-item-qn">Item 3</div>
+  <!-- Original items -->
+  <div class="marquee-item-qn">Item 1</div>
+  <div class="marquee-item-qn">Item 2</div>
+  <div class="marquee-item-qn">Item 3</div>
+
+  <!-- Duplicate the same items -->
+  <div class="marquee-item-qn">Item 1</div>
+  <div class="marquee-item-qn">Item 2</div>
+  <div class="marquee-item-qn">Item 3</div>
 </div>
+```

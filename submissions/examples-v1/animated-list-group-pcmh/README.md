@@ -6,18 +6,18 @@ List group component with staggered entrance animation, hover accent border, act
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Basic | `.ease-list-group` | Solid border container |
+| Variant  | Class                       | Description                     |
+| -------- | --------------------------- | ------------------------------- |
+| Basic    | `.ease-list-group`          | Solid border container          |
 | Bordered | `.ease-list-group-bordered` | Each item individually bordered |
-| Flush | `.ease-list-group-flush` | No outer border |
+| Flush    | `.ease-list-group-flush`    | No outer border                 |
 
 ## States
 
-| State | Behavior |
-|-------|----------|
-| Hover | Background tint + left primary border accent |
-| Active | Primary background tint + bold text |
+| State   | Behavior                                               |
+| ------- | ------------------------------------------------------ |
+| Hover   | Background tint + left primary border accent           |
+| Active  | Primary background tint + bold text                    |
 | Stagger | Each item fades in with incremental delay (50ms steps) |
 
 ## Usage

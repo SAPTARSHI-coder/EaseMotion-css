@@ -5,6 +5,7 @@ Welcome to the **Dark Mode Variables Override Guide**! This directory provides d
 ---
 
 ## 📋 Table of Contents
+
 1. [Core Design Token System](#1-core-design-token-system)
 2. [Automatic System Theme Detection](#2-automatic-system-theme-detection)
 3. [Manual User Interface Overrides](#3-manual-user-interface-overrides)
@@ -20,15 +21,15 @@ To support dark mode efficiently, avoid hardcoding hex/rgba values directly with
 
 Here is the recommended registry of `--ease-*` variables to override:
 
-| Custom Variable | Light Mode Value | Dark Mode Value | Target Elements | Contrast Target |
-| :--- | :--- | :--- | :--- | :---: |
-| `--ease-bg-base` | `#f9fafb` | `#030712` | Background backdrop | AAA |
-| `--ease-bg-surface` | `#ffffff` | `#0b0f19` | Cards, popups, inputs | AAA |
-| `--ease-bg-surface-hover` | `#f3f4f6` | `#111827` | Hovered rows/items | AAA |
-| `--ease-border-subtle` | `#e5e7eb` | `#1f2937` | Dividers, border borders | AA |
-| `--ease-text-primary` | `#111827` | `#f9fafb` | Primary text and headers | AAA |
-| `--ease-text-secondary` | `#4b5563` | `#9ca3af` | Secondary/details descriptions | AA |
-| `--ease-accent-primary` | `#8b5cf6` | `#a78bfa` | Main CTA buttons, active states | AA |
+| Custom Variable           | Light Mode Value | Dark Mode Value | Target Elements                 | Contrast Target |
+| :------------------------ | :--------------- | :-------------- | :------------------------------ | :-------------: |
+| `--ease-bg-base`          | `#f9fafb`        | `#030712`       | Background backdrop             |       AAA       |
+| `--ease-bg-surface`       | `#ffffff`        | `#0b0f19`       | Cards, popups, inputs           |       AAA       |
+| `--ease-bg-surface-hover` | `#f3f4f6`        | `#111827`       | Hovered rows/items              |       AAA       |
+| `--ease-border-subtle`    | `#e5e7eb`        | `#1f2937`       | Dividers, border borders        |       AA        |
+| `--ease-text-primary`     | `#111827`        | `#f9fafb`       | Primary text and headers        |       AAA       |
+| `--ease-text-secondary`   | `#4b5563`        | `#9ca3af`       | Secondary/details descriptions  |       AA        |
+| `--ease-accent-primary`   | `#8b5cf6`        | `#a78bfa`       | Main CTA buttons, active states |       AA        |
 
 ---
 
@@ -60,7 +61,7 @@ We can target users' operating system settings directly using the standard media
 
 ## 3. Manual User Interface Overrides
 
-While automatic system theme detection is a good starting point, users expect a manual toggle switch in the UI. 
+While automatic system theme detection is a good starting point, users expect a manual toggle switch in the UI.
 
 To prevent conflicts, configure your CSS variables to target the custom `data-theme` attribute on the root html node:
 
@@ -126,13 +127,18 @@ Place a tiny, synchronous blocker script at the very top of your `<head>` tag, b
 ```html
 <head>
   <script>
-    (function() {
-      const persistedTheme = localStorage.getItem('ease-theme');
+    (function () {
+      const persistedTheme = localStorage.getItem("ease-theme");
       if (persistedTheme) {
-        document.documentElement.setAttribute('data-theme', persistedTheme);
+        document.documentElement.setAttribute("data-theme", persistedTheme);
       } else {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+        document.documentElement.setAttribute(
+          "data-theme",
+          prefersDark ? "dark" : "light"
+        );
       }
     })();
   </script>
@@ -152,8 +158,12 @@ When changing variables globally, visual artifacts can arise inside pre-defined 
 2. **Animation Keyframes**: Animations should use custom properties rather than static values to blend correctly. For example:
    ```css
    @keyframes fadeColor {
-     from { background-color: var(--ease-bg-surface); }
-     to { background-color: var(--ease-bg-surface-hover); }
+     from {
+       background-color: var(--ease-bg-surface);
+     }
+     to {
+       background-color: var(--ease-bg-surface-hover);
+     }
    }
    ```
 3. **Interactive Testing Lab**: The accompanying `demo.html` includes test targets for four main visual animation styles:
@@ -169,6 +179,7 @@ When changing variables globally, visual artifacts can arise inside pre-defined 
 The accompanying `demo.html` contains a full live testing workbench.
 
 ### Interactive Features:
+
 1. **Dynamic Theme Switcher**: Toggle between light and dark settings manually.
 2. **Live Environment Status**: Monitor active properties and detection methods in real-time.
 3. **Variables Registry**: View swatches and active values for system-wide custom properties.

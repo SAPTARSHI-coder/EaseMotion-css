@@ -23,15 +23,11 @@ A responsive alert strip that highlights abnormal API or application usage with 
 
 ```html
 <div class="alert-strip">
+  <div class="content">
+    <h2>Usage Anomaly Detected</h2>
+  </div>
 
-    <div class="content">
-        <h2>Usage Anomaly Detected</h2>
-    </div>
-
-    <div class="stats">
-        ...
-    </div>
-
+  <div class="stats">...</div>
 </div>
 ```
 

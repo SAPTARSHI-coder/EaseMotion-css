@@ -5,6 +5,7 @@ Joint threat collaboration incident dashboard showing threat lists, sharing cont
 ---
 
 ## Features
+
 - **Joint Incident Log:** Grid tables rendering active partner data.
 - **Escalation Control:** Interactive button representing threat notifications.
 - **Clean styling:** Modern Rose Red theme structure.

@@ -1,4 +1,5 @@
 # EaseMotion — AI Automated Patent & Scientific Discovery Engine
+
 ### Showcase Phase #986
 
 A premium, futuristic landing page for a fictional AI-powered patent and
@@ -51,16 +52,17 @@ tile.
   drift behind every section.
 
 ### Animations implemented
-| Animation | Where it's used |
-|---|---|
-| Fade Up | Hero copy, timeline cards, pipeline/patent card entrance |
-| Float | Background gradient blobs (`float-blob`) |
-| Glow Pulse | Live-status dot, final ("Filed") timeline node |
-| Gradient Shift | Hero headline accent text |
-| Hover Lift | Pipeline cards, patent cards |
-| Soft Scale | Statistics cards entrance |
-| Animated Grid Background | Full-bleed drifting grid behind all content |
-| Moving Light Border | Patent Ledger cards + CTA panel (conic-gradient rotation) |
+
+| Animation                | Where it's used                                           |
+| ------------------------ | --------------------------------------------------------- |
+| Fade Up                  | Hero copy, timeline cards, pipeline/patent card entrance  |
+| Float                    | Background gradient blobs (`float-blob`)                  |
+| Glow Pulse               | Live-status dot, final ("Filed") timeline node            |
+| Gradient Shift           | Hero headline accent text                                 |
+| Hover Lift               | Pipeline cards, patent cards                              |
+| Soft Scale               | Statistics cards entrance                                 |
+| Animated Grid Background | Full-bleed drifting grid behind all content               |
+| Moving Light Border      | Patent Ledger cards + CTA panel (conic-gradient rotation) |
 
 All animations are GPU-friendly (`transform`/`opacity`/`background-position`
 only — no layout-triggering properties), and every animation respects
@@ -89,14 +91,14 @@ at the top of `style.css`:
 
 ```css
 :root {
-  --bg-0: #060912;       /* deepest background */
-  --bg-1: #0A0E1A;       /* base background */
-  --teal-500: #3DDC97;   /* primary signal color */
-  --amber-400: #F2B85C;  /* filing-stamp / secondary accent */
-  --violet-500: #6E6BF4; /* ambient blob accent */
+  --bg-0: #060912; /* deepest background */
+  --bg-1: #0a0e1a; /* base background */
+  --teal-500: #3ddc97; /* primary signal color */
+  --amber-400: #f2b85c; /* filing-stamp / secondary accent */
+  --violet-500: #6e6bf4; /* ambient blob accent */
 
-  --font-display: "Fraunces", serif;   /* headlines */
-  --font-body: "Inter", sans-serif;    /* UI copy */
+  --font-display: "Fraunces", serif; /* headlines */
+  --font-body: "Inter", sans-serif; /* UI copy */
   --font-mono: "JetBrains Mono", monospace; /* docket numbers, data */
 }
 ```

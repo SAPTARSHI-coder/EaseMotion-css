@@ -8,7 +8,7 @@ Converts a colored element to grayscale on hover using the CSS `filter: grayscal
 ```html
 <!-- Image or card -->
 <div class="grayscale-card">
-  <img src="photo.jpg" alt="City skyline">
+  <img src="photo.jpg" alt="City skyline" />
 </div>
 ```
 

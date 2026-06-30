@@ -4,12 +4,13 @@
 
 Utility classes for controlling browser autofill appearance on `<input>` elements. Browsers apply a default yellow background to autofilled fields, which often clashes with dark themes. These utilities let you remove or restyle the autofill overlay.
 
-| Class | Effect |
-|---|---|
-| `.ease-autofill-none` | Removes the default autofill background using a transparent `box-shadow` trick and infinite transition hack |
+| Class                  | Effect                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `.ease-autofill-none`  | Removes the default autofill background using a transparent `box-shadow` trick and infinite transition hack              |
 | `.ease-autofill-theme` | Replaces the autofill background with a custom color via `--ease-autofill-bg` and text color via `--ease-autofill-color` |
 
 Custom properties:
+
 - `--ease-autofill-bg` (default `#1e293b`) — background color for autofilled inputs
 - `--ease-autofill-color` (default `#e2e8f0`) — text color for autofilled inputs
 
@@ -19,8 +20,11 @@ Apply to any `<input>` element that may be autofilled:
 
 ```html
 <input class="ease-autofill-none" autocomplete="email" />
-<input class="ease-autofill-theme" autocomplete="name"
-       style="--ease-autofill-bg: #1e3a5f; --ease-autofill-color: #93c5fd;" />
+<input
+  class="ease-autofill-theme"
+  autocomplete="name"
+  style="--ease-autofill-bg: #1e3a5f; --ease-autofill-color: #93c5fd;"
+/>
 ```
 
 Override globally:

@@ -13,5 +13,7 @@ A demonstration of the `caret-color` CSS property, which allows developers to in
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To apply a custom caret color:
+
 ```html
-<input type="text" class="ease-caret-brand">
+<input type="text" class="ease-caret-brand" />
+```

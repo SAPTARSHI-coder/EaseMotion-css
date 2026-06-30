@@ -3,8 +3,8 @@ var sharedObserver = null;
 
 function getObserver(options) {
   if (!sharedObserver) {
-    sharedObserver = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
+    sharedObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
         var cb = observerMap.get(entry.target);
         if (cb) cb(entry);
       });
@@ -14,9 +14,9 @@ function getObserver(options) {
 }
 
 function observe(el, callback, options) {
-  options = options || { threshold: 0, rootMargin: '0px', once: true };
+  options = options || { threshold: 0, rootMargin: "0px", once: true };
   var observer = getObserver(options);
-  observerMap.set(el, function(entry) {
+  observerMap.set(el, function (entry) {
     if (entry.isIntersecting) {
       callback(entry);
       if (options.once !== false) unobserve(el);

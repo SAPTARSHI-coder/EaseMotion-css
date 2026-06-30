@@ -6,6 +6,7 @@ This proposal introduces a set of CSS utility classes to manage the `line-height
 
 These utilities provide developers with direct, granular control over vertical text rhythm (often referred to as "leading" in typography). This ensures text maintains legibility across different contexts like tight headings or loose paragraphs.
 Included classes:
+
 - `.leading-none` (1)
 - `.leading-tight` (1.25)
 - `.leading-snug` (1.375)
@@ -15,13 +16,15 @@ Included classes:
 
 ## ⚙️ How to Use
 
-To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`. 
+To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`.
 
 You can apply the proposed utilities to any text element (e.g., headings, paragraphs, spans):
 
 ```html
 <!-- Tight leading for a large heading -->
-<h1 class="leading-tight text-4xl">Breaking News Title That Might Span Multiple Lines</h1>
+<h1 class="leading-tight text-4xl">
+  Breaking News Title That Might Span Multiple Lines
+</h1>
 
 <!-- Relaxed leading for long-form reading content -->
 <p class="leading-relaxed">
@@ -29,7 +32,8 @@ You can apply the proposed utilities to any text element (e.g., headings, paragr
 </p>
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-line-height-utilities-proposal/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these classes to the core utility stylesheet.*
+_Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-line-height-utilities-proposal/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these classes to the core utility stylesheet._
 
 ## 🔗 Related Issue
+
 Closes Issue #16440

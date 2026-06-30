@@ -23,15 +23,11 @@ A responsive finance workflow component that visualizes each stage of an expense
 
 ```html
 <div class="step current">
+  <div class="circle">3</div>
 
-    <div class="circle">3</div>
-
-    <div class="content">
-
-        <h3>Finance Review</h3>
-
-    </div>
-
+  <div class="content">
+    <h3>Finance Review</h3>
+  </div>
 </div>
 ```
 

@@ -8,7 +8,8 @@ Displays dataset completeness, freshness, validity, and duplicate-rate quality s
 
 ```html
 <article class="score warn">
-  <span>78%</span><h2>Validity</h2>
+  <span>78%</span>
+  <h2>Validity</h2>
 </article>
 ```
 

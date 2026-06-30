@@ -14,7 +14,10 @@ titles readable in dark mode.
 
 ```css
 .ease-card-title {
-  color: var(--ease-color-neutral-900, #0f172a); /* near-black, no dark override */
+  color: var(
+    --ease-color-neutral-900,
+    #0f172a
+  ); /* near-black, no dark override */
 }
 ```
 

@@ -1,9 +1,11 @@
 # Ease Liquid Loader Orb
 
 ## Overview
+
 This feature introduces a liquid-style loader orb with morphing animation and gradient flow.
 
 ## ✨ Features
+
 - Shape morph animation
 - Gradient color movement
 - Breathing scale effect
@@ -13,3 +15,4 @@ This feature introduces a liquid-style loader orb with morphing animation and gr
 
 ```html
 <div class="orb"></div>
+```

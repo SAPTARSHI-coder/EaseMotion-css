@@ -8,8 +8,8 @@ An isolated user-interface utility package adding the `.ease-cursor-alias` token
 - **The Solution:** Applying `.ease-cursor-alias` overrides the system mouse matrix to render the OS-native shortcut modifier icon (typically an arrow accompanied by a small link ribbon symbol). This instantly communicates system intent purely through structural hover affordances.
 
 ## Usage Layout Structure
-```html
 
+```html
 <div class="dropzone-link-target ease-cursor-alias">
   <p>Drop to create workspace shortcut icon link</p>
 </div>

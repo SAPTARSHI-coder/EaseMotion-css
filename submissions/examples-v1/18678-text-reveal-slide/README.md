@@ -8,30 +8,28 @@ Elements begin slightly below their final position with reduced opacity and scal
 
 ## Features
 
-* Smooth fade-in effect
-* Upward slide transition
-* Subtle scale enhancement
-* Lightweight CSS-only implementation
-* Modern cubic-bezier easing
-* Accessibility support with reduced-motion preference
-* Reusable across different UI components
+- Smooth fade-in effect
+- Upward slide transition
+- Subtle scale enhancement
+- Lightweight CSS-only implementation
+- Modern cubic-bezier easing
+- Accessibility support with reduced-motion preference
+- Reusable across different UI components
 
 ## Use Cases
 
-* Hero section headings
-* Landing page content
-* Section titles
-* Feature cards
-* Call-to-action content
-* Portfolio websites
-* Product showcases
+- Hero section headings
+- Landing page content
+- Section titles
+- Feature cards
+- Call-to-action content
+- Portfolio websites
+- Product showcases
 
 ## Example Usage
 
 ```html
-<h1 class="text-reveal-slide">
-  Welcome to EaseMotion CSS
-</h1>
+<h1 class="text-reveal-slide">Welcome to EaseMotion CSS</h1>
 ```
 
 ## Animation Behavior
@@ -50,16 +48,16 @@ The animation includes support for users who prefer reduced motion through the `
 
 Compatible with all modern browsers supporting:
 
-* CSS Animations
-* CSS Transforms
-* CSS Keyframes
-* Media Queries
+- CSS Animations
+- CSS Transforms
+- CSS Keyframes
+- Media Queries
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and visually appealing motion.
-* Lightweight and reusable.
-* Accessible implementation.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS animation philosophy.
+- Uses CSS keyframes.
+- Smooth and visually appealing motion.
+- Lightweight and reusable.
+- Accessible implementation.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS animation philosophy.

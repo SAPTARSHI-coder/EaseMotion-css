@@ -3,6 +3,7 @@
 A complete, copy-paste ready full-page e-commerce template for an organic skincare and beauty subscription brand. Designed with a luxury minimalist aesthetic using standard layouts and verified EaseMotion CSS animation classes.
 
 ## Tech Stack
+
 - HTML
 - CSS (Vanilla layouts)
 - Standard EaseMotion CSS Framework classes (No custom `@keyframes` or keyframe animations)
@@ -40,4 +41,5 @@ This advanced template showcases the following core classes from EaseMotion CSS:
    - `.ease-delay-100`, `.ease-delay-200`, `.ease-delay-300`: Staggers the loading order of elements inside the hero section for a premium cinematic layout build.
 
 ## Preview
+
 Open `demo.html` directly in your browser. Hover over the pink Aura box in the hero section to watch the lid lift and products slide out!

@@ -15,9 +15,9 @@ Provides CSS counter utility classes for `counter-reset`, `counter-increment`, a
 
 ### Classes
 
-| Class | Property |
-|---|---|
-| `.ease-counter-reset` | `counter-reset: ease-counter` |
-| `.ease-counter-increment` | `counter-increment: ease-counter` |
-| `.ease-counter-before` | `content: counter(ease-counter)` + `::before` styling |
-| `.ease-counter-none` | `counter-increment: none` / `counter-reset: none` |
+| Class                     | Property                                              |
+| ------------------------- | ----------------------------------------------------- |
+| `.ease-counter-reset`     | `counter-reset: ease-counter`                         |
+| `.ease-counter-increment` | `counter-increment: ease-counter`                     |
+| `.ease-counter-before`    | `content: counter(ease-counter)` + `::before` styling |
+| `.ease-counter-none`      | `counter-increment: none` / `counter-reset: none`     |

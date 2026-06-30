@@ -34,6 +34,6 @@ Add the `open` attribute to a `<details>` element to have it expanded on page lo
 
 ### CSS Variable Reference
 
-| Variable | Default | Description |
-|---|---|---|
+| Variable               | Default | Description                    |
+| ---------------------- | ------- | ------------------------------ |
 | `--accordion-duration` | `0.35s` | Open/close transition duration |

@@ -18,28 +18,28 @@ Provides a lightweight, dependency-free, accessible rating input that works with
 
 ## Modifiers
 
-| Class | Effect |
-|---|---|
-| `ease-rating--sm` | Small size |
-| `ease-rating--lg` | Large size |
-| `ease-rating--xl` | Extra large size |
-| `ease-rating--red/blue/green/purple/pink/orange/teal` | Color variants |
-| `ease-rating--disabled` | Grayed out, no interaction |
-| `ease-rating--readonly` | No interaction, full color |
-| `ease-rating--animated` | Pop-in stagger animation on mount |
-| `ease-rating--bounce` | Bounce easing on hover |
-| `ease-rating--scale` | Scale up on hover |
-| `ease-rating--rotate` | Rotate + scale on hover |
-| `ease-rating--glow` | Drop-shadow glow on checked/hover |
-| `ease-rating--outline` | Empty stars, fill on check |
-| `ease-rating--heart` | Heart symbols |
-| `ease-rating--dark` | Dark background color scheme |
-| `ease-rating--no-animation` | Disable transitions |
-| `ease-rating--responsive` | Fluid size via `clamp()` |
-| `ease-rating--with-text` | Show numeric labels below stars |
-| `ease-rating--tooltip` | Show tooltip on hover |
-| `ease-rating--shadow` | Drop shadow filter |
-| `ease-rating--stagger` | Staggered animation delay per star |
+| Class                                                 | Effect                             |
+| ----------------------------------------------------- | ---------------------------------- |
+| `ease-rating--sm`                                     | Small size                         |
+| `ease-rating--lg`                                     | Large size                         |
+| `ease-rating--xl`                                     | Extra large size                   |
+| `ease-rating--red/blue/green/purple/pink/orange/teal` | Color variants                     |
+| `ease-rating--disabled`                               | Grayed out, no interaction         |
+| `ease-rating--readonly`                               | No interaction, full color         |
+| `ease-rating--animated`                               | Pop-in stagger animation on mount  |
+| `ease-rating--bounce`                                 | Bounce easing on hover             |
+| `ease-rating--scale`                                  | Scale up on hover                  |
+| `ease-rating--rotate`                                 | Rotate + scale on hover            |
+| `ease-rating--glow`                                   | Drop-shadow glow on checked/hover  |
+| `ease-rating--outline`                                | Empty stars, fill on check         |
+| `ease-rating--heart`                                  | Heart symbols                      |
+| `ease-rating--dark`                                   | Dark background color scheme       |
+| `ease-rating--no-animation`                           | Disable transitions                |
+| `ease-rating--responsive`                             | Fluid size via `clamp()`           |
+| `ease-rating--with-text`                              | Show numeric labels below stars    |
+| `ease-rating--tooltip`                                | Show tooltip on hover              |
+| `ease-rating--shadow`                                 | Drop shadow filter                 |
+| `ease-rating--stagger`                                | Staggered animation delay per star |
 
 ## Accessibility
 

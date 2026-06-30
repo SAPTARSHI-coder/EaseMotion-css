@@ -26,16 +26,12 @@ Pure CSS infinite marquee and scrolling text for EaseMotion CSS. No JavaScript, 
 **Important:** You must duplicate your content inside the track for a seamless loop.
 
 ```html
-&lt;div class="ease-marquee"&gt;
-  &lt;div class="ease-marquee-track"&gt;
-    &lt;!-- Original Content --&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 1&lt;/span&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 2&lt;/span&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 3&lt;/span&gt;
-    
-    &lt;!-- Duplicate Content (Required for seamless loop) --&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 1&lt;/span&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 2&lt;/span&gt;
-    &lt;span class="ease-marquee-item"&gt;Item 3&lt;/span&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="ease-marquee"&gt; &lt;div class="ease-marquee-track"&gt; &lt;!--
+Original Content --&gt; &lt;span class="ease-marquee-item"&gt;Item
+1&lt;/span&gt; &lt;span class="ease-marquee-item"&gt;Item 2&lt;/span&gt;
+&lt;span class="ease-marquee-item"&gt;Item 3&lt;/span&gt; &lt;!-- Duplicate
+Content (Required for seamless loop) --&gt; &lt;span
+class="ease-marquee-item"&gt;Item 1&lt;/span&gt; &lt;span
+class="ease-marquee-item"&gt;Item 2&lt;/span&gt; &lt;span
+class="ease-marquee-item"&gt;Item 3&lt;/span&gt; &lt;/div&gt; &lt;/div&gt;
+```

@@ -23,9 +23,7 @@ A responsive feature flag rollout meter for release dashboards that visualizes d
 
 ```html
 <div class="meter">
-
-    <div class="fill"></div>
-
+  <div class="fill"></div>
 </div>
 ```
 

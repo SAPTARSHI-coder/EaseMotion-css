@@ -14,51 +14,48 @@ README.md
 
 ### Standard Utilities
 
-| Class | CSS |
-|---------|---------|
-| `.caret-auto` | `caret-color: auto;` |
-| `.caret-transparent` | `caret-color: transparent;` |
-| `.caret-current` | `caret-color: currentColor;` |
+| Class                | CSS                          |
+| -------------------- | ---------------------------- |
+| `.caret-auto`        | `caret-color: auto;`         |
+| `.caret-transparent` | `caret-color: transparent;`  |
+| `.caret-current`     | `caret-color: currentColor;` |
 
 ### Color Utilities
 
-| Class | CSS |
-|---------|---------|
-| `.caret-blue` | `caret-color: #3b82f6;` |
-| `.caret-red` | `caret-color: #ef4444;` |
-| `.caret-green` | `caret-color: #22c55e;` |
+| Class           | CSS                     |
+| --------------- | ----------------------- |
+| `.caret-blue`   | `caret-color: #3b82f6;` |
+| `.caret-red`    | `caret-color: #ef4444;` |
+| `.caret-green`  | `caret-color: #22c55e;` |
 | `.caret-purple` | `caret-color: #a855f7;` |
 | `.caret-orange` | `caret-color: #f97316;` |
 | `.caret-yellow` | `caret-color: #eab308;` |
-| `.caret-pink` | `caret-color: #ec4899;` |
+| `.caret-pink`   | `caret-color: #ec4899;` |
 
 ## Usage
 
 ### Basic
 
 ```html
-<input class="caret-blue">
+<input class="caret-blue" />
 ```
 
 ### Current Text Color
 
 ```html
-<input class="caret-current">
+<input class="caret-current" />
 ```
 
 ### Hide Caret
 
 ```html
-<input class="caret-transparent">
+<input class="caret-transparent" />
 ```
 
 ## Example
 
 ```html
-<input
-    type="text"
-    class="input caret-purple"
-    placeholder="Type here">
+<input type="text" class="input caret-purple" placeholder="Type here" />
 ```
 
 ## Browser Support

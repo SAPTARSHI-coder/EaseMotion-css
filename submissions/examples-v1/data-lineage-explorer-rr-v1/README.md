@@ -7,9 +7,7 @@ Provides a visual interface for tracking data movement, dependencies, transforma
 ## How is it used?
 
 ```html
-<div class="node warehouse">
-    Data Warehouse
-</div>
+<div class="node warehouse">Data Warehouse</div>
 ```
 
 ## Why is it useful?

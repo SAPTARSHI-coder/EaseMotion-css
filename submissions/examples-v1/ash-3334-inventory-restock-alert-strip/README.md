@@ -24,11 +24,9 @@ A responsive inventory notification component that highlights low-stock products
 
 ```html
 <div class="alert-strip">
-
-    <div class="alert-content">
-        <h2>Low Stock Alert</h2>
-    </div>
-
+  <div class="alert-content">
+    <h2>Low Stock Alert</h2>
+  </div>
 </div>
 ```
 

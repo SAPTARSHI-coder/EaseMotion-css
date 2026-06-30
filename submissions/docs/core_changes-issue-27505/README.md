@@ -7,13 +7,13 @@ A React component for a multi-step progress indicator with completed/active/pend
 ## How is it used?
 
 ```jsx
-import StepperProgress from './StepperProgress';
+import StepperProgress from "./StepperProgress";
 
-<StepperProgress current={2} />
+<StepperProgress current={2} />;
 ```
 
 ### Props
 
-| Prop | Type | Default |
-|---|---|---|
-| current | number | 1 |
+| Prop    | Type   | Default |
+| ------- | ------ | ------- |
+| current | number | 1       |

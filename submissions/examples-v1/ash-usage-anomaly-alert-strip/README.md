@@ -24,9 +24,7 @@ A modern alert strip component designed to highlight abnormal usage spikes, unus
 ## Usage
 
 ```html
-<div class="alert-strip">
-  Usage anomaly detected
-</div>
+<div class="alert-strip">Usage anomaly detected</div>
 ```
 
 ## Main Classes

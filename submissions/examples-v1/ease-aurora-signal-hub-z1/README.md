@@ -6,12 +6,12 @@ A futuristic signal hub animation featuring rotating orbital rings, glowing conn
 
 ## Features
 
-* Dual rotating orbits
-* Animated energy core
-* Glowing signal nodes
-* Responsive layout
-* Lightweight CSS
-* Pure HTML & CSS
+- Dual rotating orbits
+- Animated energy core
+- Glowing signal nodes
+- Responsive layout
+- Lightweight CSS
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

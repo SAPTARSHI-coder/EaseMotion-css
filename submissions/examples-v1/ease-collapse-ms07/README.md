@@ -13,9 +13,7 @@ A pure CSS exit animation that smoothly collapses an element instead of removing
 ## Usage
 
 ```html
-<div class="ease-collapse">
-    Content
-</div>
+<div class="ease-collapse">Content</div>
 ```
 
 ## Effect

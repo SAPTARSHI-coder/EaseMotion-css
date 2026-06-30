@@ -1,4 +1,4 @@
-# ease-snap-*
+# ease-snap-\*
 
 ## What does this do?
 
@@ -27,20 +27,20 @@ Provides CSS scroll snap container utility classes (`ease-snap-x`, `ease-snap-y`
 
 ### Available Classes
 
-| Class | Purpose |
-|---|---|
-| `.ease-snap-x` | Horizontal scroll snap container |
-| `.ease-snap-y` | Vertical scroll snap container |
-| `.ease-snap-mandatory` | Strict snapping (always snaps) |
-| `.ease-snap-proximity` | Soft snapping (snaps when near) |
-| `.ease-snap-start` | Children align to start |
-| `.ease-snap-center` | Children align to center |
-| `.ease-snap-end` | Children align to end |
-| `.ease-snap-px` | Container scroll padding (left + right) |
-| `.ease-snap-py` | Container scroll padding (top + bottom) |
-| `.ease-snap-mx` | Children scroll margin (left + right) |
-| `.ease-snap-my` | Children scroll margin (top + bottom) |
-| `.ease-snap-no-bar` | Hides scrollbar for visual gallery mode |
+| Class                  | Purpose                                 |
+| ---------------------- | --------------------------------------- |
+| `.ease-snap-x`         | Horizontal scroll snap container        |
+| `.ease-snap-y`         | Vertical scroll snap container          |
+| `.ease-snap-mandatory` | Strict snapping (always snaps)          |
+| `.ease-snap-proximity` | Soft snapping (snaps when near)         |
+| `.ease-snap-start`     | Children align to start                 |
+| `.ease-snap-center`    | Children align to center                |
+| `.ease-snap-end`       | Children align to end                   |
+| `.ease-snap-px`        | Container scroll padding (left + right) |
+| `.ease-snap-py`        | Container scroll padding (top + bottom) |
+| `.ease-snap-mx`        | Children scroll margin (left + right)   |
+| `.ease-snap-my`        | Children scroll margin (top + bottom)   |
+| `.ease-snap-no-bar`    | Hides scrollbar for visual gallery mode |
 
 ### Strictness
 

@@ -16,11 +16,19 @@ This submission demonstrates the CSS `color-interpolation-tm` property with prac
 
 ```html
 <!-- Size variant -->
-<div class="color-interpolation-tm-card color-interpolation-tm-md color-interpolation-tm-primary">Content</div>
+<div
+  class="color-interpolation-tm-card color-interpolation-tm-md color-interpolation-tm-primary"
+>
+  Content
+</div>
 
 <!-- Color variants -->
-<div class="color-interpolation-tm-card color-interpolation-tm-success">Success</div>
-<div class="color-interpolation-tm-card color-interpolation-tm-danger">Danger</div>
+<div class="color-interpolation-tm-card color-interpolation-tm-success">
+  Success
+</div>
+<div class="color-interpolation-tm-card color-interpolation-tm-danger">
+  Danger
+</div>
 
 <!-- Interactive states -->
 <div class="color-interpolation-tm-card state-hover state-focus">Hover me</div>

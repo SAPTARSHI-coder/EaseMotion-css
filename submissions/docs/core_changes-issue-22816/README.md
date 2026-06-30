@@ -15,11 +15,13 @@ Adds a minimalist analog clock loader component (`ease-clock-loader`) with rotat
 ```
 
 Three sizes are available via modifier classes:
+
 - `.ease-clock-loader-sm` — 40px diameter
 - `.ease-clock-loader` — 64px diameter (default)
 - `.ease-clock-loader-lg` — 96px diameter
 
 Customise colours via CSS custom properties:
+
 ```css
 .ease-clock-loader {
   --ease-clock-border-color: #10b981;

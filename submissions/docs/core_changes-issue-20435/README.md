@@ -1,18 +1,20 @@
 # Core Changes Proposal: Issue #20435
 
 ## Feature Overview
+
 Issue #20435 requests an **Animated Scroll-Reveal Timeline Component** for EaseMotion CSS — a reusable vertical timeline with alternating cards, connecting line, and scroll-triggered entrance animations.
 
 ## Proposed Structure
 
-| Class / Element | Purpose |
-|-----------------|---------|
-| `.ease-timeline` | Container — vertical flex column with central line via `::before` |
-| `.ease-timeline-item` | Each milestone — contains dot, card, and alternating side |
-| `.ease-timeline-dot` | Circular indicator on the central line |
-| `.ease-timeline-content` | Card with heading, text, optional badge |
+| Class / Element          | Purpose                                                           |
+| ------------------------ | ----------------------------------------------------------------- |
+| `.ease-timeline`         | Container — vertical flex column with central line via `::before` |
+| `.ease-timeline-item`    | Each milestone — contains dot, card, and alternating side         |
+| `.ease-timeline-dot`     | Circular indicator on the central line                            |
+| `.ease-timeline-content` | Card with heading, text, optional badge                           |
 
 ## Behavior
+
 - **Desktop**: Items alternate left/right of the central line
 - **Tablet/Mobile**: Single column, all cards on one side
 - **Scroll reveal**: Each item fades+slides in as it enters the viewport
@@ -26,8 +28,8 @@ Issue #20435 requests an **Animated Scroll-Reveal Timeline Component** for EaseM
   --tl-color: #7c6cff;
   --tl-dot-size: 14px;
   --tl-line-width: 2px;
-  --tl-bg-card: rgba(255,255,255,0.05);
-  --tl-border: rgba(255,255,255,0.08);
+  --tl-bg-card: rgba(255, 255, 255, 0.05);
+  --tl-border: rgba(255, 255, 255, 0.08);
 }
 
 .ease-timeline {
@@ -39,7 +41,7 @@ Issue #20435 requests an **Animated Scroll-Reveal Timeline Component** for EaseM
 }
 
 .ease-timeline::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 50%;
   top: 0;
@@ -57,7 +59,9 @@ Issue #20435 requests an **Animated Scroll-Reveal Timeline Component** for EaseM
   width: 50%;
   opacity: 0;
   transform: translateX(-30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 
 .ease-timeline-item:nth-child(even) {
@@ -98,6 +102,7 @@ Issue #20435 requests an **Animated Scroll-Reveal Timeline Component** for EaseM
 ```
 
 ## Why this is submitted here
+
 Per CONTRIBUTING.md policy and Core Framework Protection, this component is proposed as a formal submission in `submissions/` rather than modifying `components/` directly.
 
 Fixes #20435

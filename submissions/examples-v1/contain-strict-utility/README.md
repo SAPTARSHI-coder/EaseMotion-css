@@ -8,9 +8,9 @@ Introduces the absolute rendering and layout containment optimization token (`.e
 - **The Solution:** Offloads tree-traversal calculation chains. The `.ease-contain-strict` utility applies `contain: strict` (combining `size`, `layout`, `style`, and `paint` rules). This treats the target container element as a completely independent layout island—guaranteeing that modifications inside this boundary box never leak out to penalize peripheral layout layers.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-contain-strict" style="width: 100%; height: 300px;">
-  </div>
+<div class="ease-contain-strict" style="width: 100%; height: 300px;"></div>
 ```
 
 Closes #15163

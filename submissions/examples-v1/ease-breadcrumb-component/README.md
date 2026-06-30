@@ -4,17 +4,17 @@ Lightweight breadcrumb navigation component with a customizable separator via CS
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-breadcrumb` | Wrapper `<ol>` or `<ul>` |
-| `ease-breadcrumb-item` | Each `<li>` item |
+| Class                  | Description              |
+| ---------------------- | ------------------------ |
+| `ease-breadcrumb`      | Wrapper `<ol>` or `<ul>` |
+| `ease-breadcrumb-item` | Each `<li>` item         |
 
 ## Customization
 
 Override the separator by setting `--ease-breadcrumb-sep`:
 
 ```html
-<ol class="ease-breadcrumb" style="--ease-breadcrumb-sep: '›'">
+<ol class="ease-breadcrumb" style="--ease-breadcrumb-sep: '›'"></ol>
 ```
 
 ## Usage

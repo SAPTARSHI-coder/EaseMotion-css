@@ -6,12 +6,12 @@ A futuristic loading animation featuring synchronized glowing cubes that morph i
 
 ## Features
 
-* Animated cube morphing
-* Staggered motion
-* Gradient glow
-* Glassmorphism container
-* Responsive layout
-* Pure HTML & CSS
+- Animated cube morphing
+- Staggered motion
+- Gradient glow
+- Glassmorphism container
+- Responsive layout
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

@@ -15,15 +15,16 @@ A modern, responsive website footer component with multiple columns, link groups
 - **Newsletter Form**: Email input with submit button
 
 ## File Structure
-ease-footer-pr/
-├── demo.html    # Complete demo page
-├── style.css    # Component styles
-└── README.md    # Documentation
 
+ease-footer-pr/
+├── demo.html # Complete demo page
+├── style.css # Component styles
+└── README.md # Documentation
 
 ## Usage
 
 Include the CSS file in your HTML:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
+```

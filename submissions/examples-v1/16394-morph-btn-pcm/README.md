@@ -36,7 +36,7 @@
     <span>Subscribe</span>
   </span>
   <span class="morph-btn-expanded-content">
-    <input class="morph-input" placeholder="your@email.com">
+    <input class="morph-input" placeholder="your@email.com" />
     <button class="morph-input-submit">Go</button>
   </span>
 </button>

@@ -23,12 +23,15 @@ This feature eliminates manual delay classes by applying progressive animation d
 ## Example variants
 
 ### Feature cards
+
 Use the default stagger container to sequence card entries with a moderate delay step.
 
 ### Navigation
+
 Use `ease-auto-stagger-fast` for quick menu reveal sequences.
 
 ### Timelines
+
 Use `ease-auto-stagger-slow` when you want more pronounced sequential pacing.
 
 ## Accessibility

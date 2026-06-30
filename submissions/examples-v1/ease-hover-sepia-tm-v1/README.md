@@ -7,7 +7,7 @@ Applies a warm, vintage sepia tone to elements on hover using CSS `filter: sepia
 
 ```html
 <div class="photo-card sepia-photo">
-  <img src="photo.jpg" alt="Vintage photo">
+  <img src="photo.jpg" alt="Vintage photo" />
 </div>
 ```
 

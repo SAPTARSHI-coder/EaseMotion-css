@@ -24,12 +24,18 @@ Easily adapt the stepper to precisely match your brand by modifying the CSS vari
 ```css
 :root {
   --step-active-bg: #3b82f6; /* Active step brand color */
-  --step-active-shadow: rgba(59, 130, 246, 0.4); /* Glow ring around active step */
-  
+  --step-active-shadow: rgba(
+    59,
+    130,
+    246,
+    0.4
+  ); /* Glow ring around active step */
+
   --step-completed-bg: #10b981; /* Success color */
   --connector-fill: #10b981; /* Connecting line success color */
 }
 ```
 
 ## Contributed by
+
 - Man1ac-1773

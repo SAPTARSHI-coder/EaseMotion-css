@@ -12,21 +12,21 @@ Run from the repository root.
 
 ## What It Checks
 
-| Check | Description |
-|-------|-------------|
+| Check        | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
 | Source files | Scans `css/` and `src/` directories for duration declarations |
-| Values | Extracts every distinct duration value (e.g. `0.3s`, `1s`) |
-| Frequency | Reports how often each value is used |
+| Values       | Extracts every distinct duration value (e.g. `0.3s`, `1s`)    |
+| Frequency    | Reports how often each value is used                          |
 
 ## Standardization Recommendation
 
-| Raw Value | Token | Notes |
-|-----------|-------|-------|
-| `0.2s` | `--ease-duration-fast` | Quick micro-interactions |
-| `0.3s` | `--ease-duration-normal` | Default UI transitions |
-| `0.5s` | `--ease-duration-slow` | Notable state changes |
-| `1s` | `--ease-duration-slower` | Substantial animations |
-| `≥2s` | Exception | Intentional for background/ambient effects |
+| Raw Value | Token                    | Notes                                      |
+| --------- | ------------------------ | ------------------------------------------ |
+| `0.2s`    | `--ease-duration-fast`   | Quick micro-interactions                   |
+| `0.3s`    | `--ease-duration-normal` | Default UI transitions                     |
+| `0.5s`    | `--ease-duration-slow`   | Notable state changes                      |
+| `1s`      | `--ease-duration-slower` | Substantial animations                     |
+| `≥2s`     | Exception                | Intentional for background/ambient effects |
 
 ## Documented Exceptions
 

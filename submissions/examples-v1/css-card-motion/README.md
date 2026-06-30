@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated cards for modern web interfaces.
 ## 🚀 Features
 
 ### Card Styles (10 types)
+
 1. **Classic Lift** - Simple lift effect with shadow
 2. **Gradient Border** - Animated rotating gradient border
 3. **Glassmorphism** - Frosted glass effect with blur
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated cards for modern web interfaces.
 10. **Morph Shape** - Card morphs border-radius on hover
 
 ### Animation Features
+
 - Lift and scale effects
 - Gradient animations
 - Glassmorphism blur
@@ -29,6 +31,7 @@ A collection of beautiful, pure CSS animated cards for modern web interfaces.
 - Shape morphing
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All card animations
 - `readme.md` - Documentation
@@ -36,10 +39,12 @@ A collection of beautiful, pure CSS animated cards for modern web interfaces.
 ## 🛠️ How to Use
 
 ### Basic Card
+
 ```html
 <div class="card classic">
-    <div class="card-icon">🚀</div>
-    <h3>Card Title</h3>
-    <p>Card description here.</p>
-    <button class="card-btn">Click Me</button>
+  <div class="card-icon">🚀</div>
+  <h3>Card Title</h3>
+  <p>Card description here.</p>
+  <button class="card-btn">Click Me</button>
 </div>
+```

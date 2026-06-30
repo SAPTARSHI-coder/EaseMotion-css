@@ -16,7 +16,6 @@ Link `style.css` in your page and drop in the markup below. Each `.leaderboard__
 
 ```html
 <section class="leaderboard">
-
   <!-- Champion card (#1) -->
   <article class="leaderboard__card leaderboard__card--champion">
     <div class="rank-ribbon rank-ribbon--gold"></div>
@@ -39,8 +38,17 @@ Link `style.css` in your page and drop in the markup below. Each `.leaderboard__
         <span class="card__score">98<small>%</small></span>
         <span class="card__trend card__trend--up">▲ 4.2%</span>
       </div>
-      <div class="progress-bar" role="progressbar" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100">
-        <div class="progress-bar__fill progress-bar__fill--gold" style="--pct: 98%"></div>
+      <div
+        class="progress-bar"
+        role="progressbar"
+        aria-valuenow="98"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <div
+          class="progress-bar__fill progress-bar__fill--gold"
+          style="--pct: 98%"
+        ></div>
       </div>
     </div>
 
@@ -69,8 +77,17 @@ Link `style.css` in your page and drop in the markup below. Each `.leaderboard__
         <span class="card__score">94<small>%</small></span>
         <span class="card__trend card__trend--up">▲ 2.1%</span>
       </div>
-      <div class="progress-bar" role="progressbar" aria-valuenow="94" aria-valuemin="0" aria-valuemax="100">
-        <div class="progress-bar__fill progress-bar__fill--silver" style="--pct: 94%"></div>
+      <div
+        class="progress-bar"
+        role="progressbar"
+        aria-valuenow="94"
+        aria-valuemin="0"
+        aria-valuemax="100"
+      >
+        <div
+          class="progress-bar__fill progress-bar__fill--silver"
+          style="--pct: 94%"
+        ></div>
       </div>
     </div>
 
@@ -78,32 +95,34 @@ Link `style.css` in your page and drop in the markup below. Each `.leaderboard__
       <span class="badge__dot"></span>Top Rated
     </div>
   </article>
-
 </section>
 ```
 
 ### Rank ribbon modifiers
-| Class | Use |
-|---|---|
-| `rank-ribbon--gold` | #1 — golden accent |
+
+| Class                 | Use                |
+| --------------------- | ------------------ |
+| `rank-ribbon--gold`   | #1 — golden accent |
 | `rank-ribbon--silver` | #2 — silver accent |
 | `rank-ribbon--bronze` | #3 — bronze accent |
 | `rank-ribbon--indigo` | #4+ — brand indigo |
 
 ### Progress bar fill modifiers
-| Class | Gradient |
-|---|---|
-| `progress-bar__fill--gold` | Gold → amber |
+
+| Class                        | Gradient                 |
+| ---------------------------- | ------------------------ |
+| `progress-bar__fill--gold`   | Gold → amber             |
 | `progress-bar__fill--silver` | Steel blue → light slate |
-| `progress-bar__fill--bronze` | Terracotta → peach |
-| `progress-bar__fill--indigo` | Indigo → violet |
+| `progress-bar__fill--bronze` | Terracotta → peach       |
+| `progress-bar__fill--indigo` | Indigo → violet          |
 
 ### Trend modifiers
-| Class | Meaning |
-|---|---|
-| `card__trend--up` | Green, rising |
-| `card__trend--down` | Red, falling |
-| `card__trend--neutral` | Muted, flat |
+
+| Class                  | Meaning       |
+| ---------------------- | ------------- |
+| `card__trend--up`      | Green, rising |
+| `card__trend--down`    | Red, falling  |
+| `card__trend--neutral` | Muted, flat   |
 
 ---
 

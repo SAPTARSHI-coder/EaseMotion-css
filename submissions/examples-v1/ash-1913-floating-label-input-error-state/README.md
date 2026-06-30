@@ -24,8 +24,8 @@ A modern floating label form input component with validation feedback and animat
 
 ```html
 <div class="input-group error">
-    <input type="email" placeholder=" ">
-    <label>Email Address</label>
+  <input type="email" placeholder=" " />
+  <label>Email Address</label>
 </div>
 ```
 

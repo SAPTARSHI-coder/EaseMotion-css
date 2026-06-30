@@ -23,17 +23,11 @@ A responsive payment risk assessment component that displays payment methods wit
 
 ```html
 <div class="method high">
+  <div class="info">
+    <h3>Virtual Card</h3>
+  </div>
 
-    <div class="info">
-
-        <h3>Virtual Card</h3>
-
-    </div>
-
-    <span class="badge">
-        High Risk
-    </span>
-
+  <span class="badge"> High Risk </span>
 </div>
 ```
 

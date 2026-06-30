@@ -7,7 +7,9 @@ Adds a CSS-only dropdown menu that fades, shifts, and scales into view when the 
 
 ```html
 <div class="dropdown">
-  <button class="dropdown-trigger" type="button" aria-haspopup="true">Resources</button>
+  <button class="dropdown-trigger" type="button" aria-haspopup="true">
+    Resources
+  </button>
   <div class="dropdown-menu" role="menu">
     <a href="#" role="menuitem">Motion recipes</a>
   </div>

@@ -28,18 +28,18 @@ Lightweight carousel with CSS scroll-snap, auto-play, navigation buttons, and do
 
 ## Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-carousel-container` | Wrapper for positioning |
-| `.ease-carousel` | Scroll-snap track |
-| `.ease-carousel-item` | Slide (100% width) |
-| `.ease-carousel-vertical` | Vertical orientation |
-| `.ease-carousel-btn` | Nav button |
-| `.ease-carousel-btn-prev` / `-next` | Direction |
-| `.ease-carousel-indicators` | Dot container |
-| `.ease-carousel-indicator` | Single dot |
-| `.ease-carousel-indicator-active` | Active dot |
-| `.ease-carousel-caption` | Text overlay |
+| Class                               | Purpose                 |
+| ----------------------------------- | ----------------------- |
+| `.ease-carousel-container`          | Wrapper for positioning |
+| `.ease-carousel`                    | Scroll-snap track       |
+| `.ease-carousel-item`               | Slide (100% width)      |
+| `.ease-carousel-vertical`           | Vertical orientation    |
+| `.ease-carousel-btn`                | Nav button              |
+| `.ease-carousel-btn-prev` / `-next` | Direction               |
+| `.ease-carousel-indicators`         | Dot container           |
+| `.ease-carousel-indicator`          | Single dot              |
+| `.ease-carousel-indicator-active`   | Active dot              |
+| `.ease-carousel-caption`            | Text overlay            |
 
 ## JS
 

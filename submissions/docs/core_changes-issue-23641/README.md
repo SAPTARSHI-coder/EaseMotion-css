@@ -5,6 +5,7 @@
 Fixes the tooltip component (`components/tooltips.css`) to prevent overflow when tooltips appear near viewport edges. Previously, tooltips near the right edge would extend beyond the viewport causing horizontal scrollbars.
 
 **CSS changes:**
+
 - Added `max-width: min(300px, 90vw)` to all tooltips
 - Added `overflow-wrap: break-word` and `word-break: break-word` for long text
 - Right-positioned tooltips (`data-position="right"`) near right edge: constrained to `calc(100vw - 100% - 2rem)`

@@ -23,17 +23,11 @@ A responsive sustainability dashboard component that visualizes carbon emissions
 
 ```html
 <div class="tracker">
-
-    <div class="ring">
-
-        <div class="inner">
-
-            <strong>74%</strong>
-
-        </div>
-
+  <div class="ring">
+    <div class="inner">
+      <strong>74%</strong>
     </div>
-
+  </div>
 </div>
 ```
 

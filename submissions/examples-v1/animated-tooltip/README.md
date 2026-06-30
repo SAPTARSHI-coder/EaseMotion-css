@@ -15,5 +15,6 @@ The showcase demonstrates three distinct tooltip hover/focus animation patterns 
 ## How to Preview
 
 To view the live demo:
+
 1. Open the file `demo.html` directly in any web browser of your choice.
 2. Hover or focus on any of the buttons to trigger the corresponding animated tooltip.

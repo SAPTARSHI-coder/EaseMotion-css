@@ -24,9 +24,7 @@ A modern DevOps observability dashboard showcasing service monitoring, deploymen
 ## Usage
 
 ```html
-<div class="metric-card">
-  Infrastructure Metrics
-</div>
+<div class="metric-card">Infrastructure Metrics</div>
 ```
 
 ## Main Classes

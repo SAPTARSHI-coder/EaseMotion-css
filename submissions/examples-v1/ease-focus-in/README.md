@@ -12,9 +12,7 @@ A smooth entrance animation that brings elements into view by transitioning from
 ## Usage
 
 ```html
-<div class="ease-focus-in">
-  Content
-</div>
+<div class="ease-focus-in">Content</div>
 ```
 
 ## CSS Variables

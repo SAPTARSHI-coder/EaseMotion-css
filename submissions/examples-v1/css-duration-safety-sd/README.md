@@ -16,7 +16,7 @@ This demo shows how to safely accept a user-provided animation duration before w
 The JavaScript validates input with a strict time-value allowlist before calling:
 
 ```js
-previewCard.style.setProperty('--ease-duration', safeDuration);
+previewCard.style.setProperty("--ease-duration", safeDuration);
 ```
 
 ## Why is it useful?

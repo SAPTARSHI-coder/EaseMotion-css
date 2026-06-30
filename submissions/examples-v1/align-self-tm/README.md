@@ -5,19 +5,19 @@ CSS `align-self` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.self-auto` | `align-self: auto;` |
-| `.self-start` | `align-self: flex-start;` |
-| `.self-center` | `align-self: center;` |
-| `.self-end` | `align-self: flex-end;` |
-| `.self-stretch` | `align-self: stretch;` |
-| `.self-baseline` | `align-self: baseline;` |
+| Class            | Declaration               |
+| ---------------- | ------------------------- |
+| `.self-auto`     | `align-self: auto;`       |
+| `.self-start`    | `align-self: flex-start;` |
+| `.self-center`   | `align-self: center;`     |
+| `.self-end`      | `align-self: flex-end;`   |
+| `.self-stretch`  | `align-self: stretch;`    |
+| `.self-baseline` | `align-self: baseline;`   |
 
 ## Responsive Variants
 
@@ -34,9 +34,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Align Self
-</div>
+<div class="util-class-dark">Dark mode Align Self</div>
 ```
 
 ## Reduced Motion
@@ -44,9 +42,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Align Self
-</div>
+<div class="util-class-nomotion">No motion Align Self</div>
 ```
 
 ## Framework Integration

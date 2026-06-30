@@ -6,12 +6,12 @@ A premium frosted code editor window featuring glassmorphism styling, animated s
 
 ## Features
 
-* Frosted glass editor
-* Animated syntax highlight
-* Gradient title bar accents
-* Responsive layout
-* Lightweight CSS animations
-* Pure HTML & CSS
+- Frosted glass editor
+- Animated syntax highlight
+- Gradient title bar accents
+- Responsive layout
+- Lightweight CSS animations
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

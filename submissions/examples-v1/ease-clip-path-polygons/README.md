@@ -15,4 +15,8 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
 
 ```html
 <!-- Simply apply the class to an element with width and height -->
-<div class="clip-path-polygon-hexagon" style="width: 100px; height: 100px; background: blue;"></div>
+<div
+  class="clip-path-polygon-hexagon"
+  style="width: 100px; height: 100px; background: blue;"
+></div>
+```

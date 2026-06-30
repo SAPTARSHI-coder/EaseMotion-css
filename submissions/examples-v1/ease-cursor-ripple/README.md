@@ -59,7 +59,7 @@ height: 20px;
 ### Ripple Color
 
 ```css
-border: 3px solid rgba(255,255,255,0.8);
+border: 3px solid rgba(255, 255, 255, 0.8);
 ```
 
 Examples:

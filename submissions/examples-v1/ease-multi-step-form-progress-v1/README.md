@@ -31,9 +31,7 @@ The demo showcases:
 ## Usage
 
 ```html
-<div class="progress">
-...
-</div>
+<div class="progress">...</div>
 ```
 
 ---

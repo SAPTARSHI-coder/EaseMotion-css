@@ -1,4 +1,5 @@
 # Color-Interpolation Utilities
+
 This submission introduces utilities to control the color interpolation space.
 
 - `.interpolate-srgb`: Standard sRGB color space.

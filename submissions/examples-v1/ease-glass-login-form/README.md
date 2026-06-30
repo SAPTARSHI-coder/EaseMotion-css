@@ -25,7 +25,7 @@
 
     <div class="ease-glass-form">
       <div class="ease-glass-form__card">
-        
+
         <div class="form-header">
           <h2>Welcome Back</h2>
           <p>Enter your credentials to access your account</p>
@@ -69,17 +69,18 @@
       <p>Wrap the component structures with <code>ease-glass-form</code> classes:</p>
       <div class="code-block">
         <pre><code>&lt;div class="ease-glass-form"&gt;
-  &lt;div class="ease-glass-form__card"&gt;
-    &lt;h2&gt;Welcome Back&lt;/h2&gt;
-    &lt;div class="ease-glass-form__field"&gt;
-      &lt;input type="email" required placeholder=" " /&gt;
-      &lt;label&gt;Email Address&lt;/label&gt;
-    &lt;/div&gt;
-    &lt;button class="ease-glass-form__btn"&gt;Sign In&lt;/button&gt;
-  &lt;/div&gt;
+
+&lt;div class="ease-glass-form**card"&gt;
+&lt;h2&gt;Welcome Back&lt;/h2&gt;
+&lt;div class="ease-glass-form**field"&gt;
+&lt;input type="email" required placeholder=" " /&gt;
+&lt;label&gt;Email Address&lt;/label&gt;
+&lt;/div&gt;
+&lt;button class="ease-glass-form\_\_btn"&gt;Sign In&lt;/button&gt;
+&lt;/div&gt;
 &lt;/div&gt;</code></pre>
-      </div>
-    </section>
+</div>
+</section>
 
     <footer class="footer">
       <p>Built with ⚡ EaseMotion CSS — Open Source UI Animation Library</p>

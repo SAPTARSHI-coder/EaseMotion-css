@@ -14,9 +14,7 @@ Centers content both horizontally and vertically using CSS Grid.
 ## Usage
 
 ```html
-<div class="place-items-center">
-  Centered Content
-</div>
+<div class="place-items-center">Centered Content</div>
 ```
 
 ## What it does

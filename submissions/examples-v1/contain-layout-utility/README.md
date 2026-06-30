@@ -8,9 +8,9 @@ Introduces the advanced DOM layout containment engine token (`.ease-contain-layo
 - **The Solution:** Offloads painting trees. The `.ease-contain-layout` class isolates the target element completely from the global layout tree. This guarantees that internal adjustments stay contained within the element's boundaries, cutting out costly global reflow loops.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-contain-layout">
-  </div>
+<div class="ease-contain-layout"></div>
 ```
 
 Closes #15159

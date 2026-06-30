@@ -15,20 +15,19 @@ To use this component, place the `.ease-modal-backdrop` anywhere in your HTML do
 
 ```html
 <div class="ease-modal-backdrop" id="my-modal">
-  
   <div class="ease-modal-confirm">
     <div class="ease-modal-header">
       <!-- Icon & Title -->
     </div>
-    
+
     <div class="ease-modal-body">
       <!-- Description text -->
     </div>
-    
+
     <div class="ease-modal-actions">
       <button class="ease-btn-cancel">Cancel</button>
       <button class="ease-btn-confirm">Delete</button>
     </div>
   </div>
-  
 </div>
+```

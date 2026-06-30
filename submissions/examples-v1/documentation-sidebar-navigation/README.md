@@ -16,12 +16,10 @@ A documentation-style sidebar navigation component inspired by GitBook, Docusaur
 
 ```html
 <details>
+  <summary>Components</summary>
 
-    <summary>Components</summary>
-
-    <a href="#">Buttons</a>
-    <a href="#">Cards</a>
-
+  <a href="#">Buttons</a>
+  <a href="#">Cards</a>
 </details>
 ```
 

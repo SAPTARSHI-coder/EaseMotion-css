@@ -24,15 +24,13 @@ A collection of animated hamburger menu icons that smoothly transform into a clo
 
 ```html
 <label class="menu-card">
-
-  <input type="checkbox">
+  <input type="checkbox" />
 
   <span class="hamburger">
     <span></span>
     <span></span>
     <span></span>
   </span>
-
 </label>
 ```
 

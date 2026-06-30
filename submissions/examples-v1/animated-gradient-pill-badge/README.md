@@ -24,9 +24,7 @@ A reusable animated pill badge utility featuring moving gradient borders, hover 
 ## Usage
 
 ```html
-<span class="gradient-pill">
-  New Feature
-</span>
+<span class="gradient-pill"> New Feature </span>
 ```
 
 ## Main Classes

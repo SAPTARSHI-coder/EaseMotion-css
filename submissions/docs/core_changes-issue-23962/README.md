@@ -5,12 +5,15 @@
 Utility classes for fine-grained control over the CSS `text-decoration` underline appearance. Three categories of classes are provided:
 
 **Offset** — distance from the baseline:
+
 - `.ease-underline-offset-1`, `.ease-underline-offset-2`, `.ease-underline-offset-3`, `.ease-underline-offset-4`, `.ease-underline-offset-auto`
 
 **Thickness** — line width:
+
 - `.ease-underline-thin` (1px), `.ease-underline-thick` (3px)
 
 **Style** — visual pattern:
+
 - `.ease-underline-wavy`, `.ease-underline-dotted`, `.ease-underline-dashed`
 
 ## How

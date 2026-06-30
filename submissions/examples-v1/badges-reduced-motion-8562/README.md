@@ -7,6 +7,7 @@ The badges component had a `.ease-badge-pulse` variant with a ping animation but
 ## Solution
 
 Added a `@media (prefers-reduced-motion: reduce)` block that:
+
 - Stops the `::after` ping animation entirely (`animation: none; display: none;`)
 - Replaces it with a static `box-shadow` ring as a subtle visual indicator
 

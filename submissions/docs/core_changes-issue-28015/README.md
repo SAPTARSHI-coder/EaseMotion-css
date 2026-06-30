@@ -13,14 +13,14 @@ Sets the `transform-origin` for an element — controls the point around which t
 
 ### Classes
 
-| Class | Value |
-|---|---|
-| `.ease-origin-center` | `center` |
-| `.ease-origin-top` | `top` |
-| `.ease-origin-top-left` | `top left` |
-| `.ease-origin-top-right` | `top right` |
-| `.ease-origin-bottom` | `bottom` |
-| `.ease-origin-bottom-left` | `bottom left` |
+| Class                       | Value          |
+| --------------------------- | -------------- |
+| `.ease-origin-center`       | `center`       |
+| `.ease-origin-top`          | `top`          |
+| `.ease-origin-top-left`     | `top left`     |
+| `.ease-origin-top-right`    | `top right`    |
+| `.ease-origin-bottom`       | `bottom`       |
+| `.ease-origin-bottom-left`  | `bottom left`  |
 | `.ease-origin-bottom-right` | `bottom right` |
-| `.ease-origin-left` | `left` |
-| `.ease-origin-right` | `right` |
+| `.ease-origin-left`         | `left`         |
+| `.ease-origin-right`        | `right`        |

@@ -20,15 +20,15 @@ Controls smooth vs. instant scrolling via `scroll-behavior`. Also provides scrol
 
 ### Classes
 
-| Class | Property |
-|---|---|
-| `.ease-scroll-auto` | `scroll-behavior: auto` |
-| `.ease-scroll-smooth` | `scroll-behavior: smooth` |
-| `.ease-snap-none` | `scroll-snap-type: none` |
-| `.ease-snap-x` | `scroll-snap-type: x mandatory` |
-| `.ease-snap-y` | `scroll-snap-type: y mandatory` |
-| `.ease-snap-both` | `scroll-snap-type: both mandatory` |
+| Class                  | Property                           |
+| ---------------------- | ---------------------------------- |
+| `.ease-scroll-auto`    | `scroll-behavior: auto`            |
+| `.ease-scroll-smooth`  | `scroll-behavior: smooth`          |
+| `.ease-snap-none`      | `scroll-snap-type: none`           |
+| `.ease-snap-x`         | `scroll-snap-type: x mandatory`    |
+| `.ease-snap-y`         | `scroll-snap-type: y mandatory`    |
+| `.ease-snap-both`      | `scroll-snap-type: both mandatory` |
 | `.ease-snap-proximity` | `scroll-snap-type: both proximity` |
-| `.ease-snap-start` | `scroll-snap-align: start` |
-| `.ease-snap-center` | `scroll-snap-align: center` |
-| `.ease-snap-end` | `scroll-snap-align: end` |
+| `.ease-snap-start`     | `scroll-snap-align: start`         |
+| `.ease-snap-center`    | `scroll-snap-align: center`        |
+| `.ease-snap-end`       | `scroll-snap-align: end`           |

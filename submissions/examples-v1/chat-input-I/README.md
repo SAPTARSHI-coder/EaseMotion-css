@@ -1,4 +1,3 @@
- 
 # Chat Message Input (ease-chat-input)
 
 Chat input field with character counter and animated send button state.
@@ -22,15 +21,16 @@ Chat input field with character counter and animated send button state.
 
 ```html
 <div class="chat-input-container">
-    <div class="chat-input-wrapper">
-        <textarea class="chat-input" id="chatInput" maxlength="500"></textarea>
-        <button class="send-btn" id="sendBtn">
-            <span class="send-icon">➤</span>
-        </button>
+  <div class="chat-input-wrapper">
+    <textarea class="chat-input" id="chatInput" maxlength="500"></textarea>
+    <button class="send-btn" id="sendBtn">
+      <span class="send-icon">➤</span>
+    </button>
+  </div>
+  <div class="input-footer">
+    <div class="character-counter" id="charCounter">
+      <span id="charCount">0</span> / 500
     </div>
-    <div class="input-footer">
-        <div class="character-counter" id="charCounter">
-            <span id="charCount">0</span> / 500
-        </div>
-    </div>
+  </div>
 </div>
+```

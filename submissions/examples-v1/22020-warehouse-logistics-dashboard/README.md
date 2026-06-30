@@ -8,14 +8,14 @@ A self-contained animated warehouse logistics and shipment tracking dashboard. D
 
 ## EaseMotion CSS Classes Showcased
 
-| Class | Applied To |
-|---|---|
-| `ease-fade-in-left` | Sidebar navigation, delivery timeline items, notification cards |
-| `ease-fade-in-down` | Topbar |
-| `ease-zoom-in` | Overview stat cards (staggered), quick action buttons |
-| `ease-fade-in-up` | Widget panels (staggered delays) |
-| `ease-fade-in-right` | Shipment progress rows, activity log entries |
-| `ease-fade-in` | Warehouse capacity fill bars |
+| Class                | Applied To                                                      |
+| -------------------- | --------------------------------------------------------------- |
+| `ease-fade-in-left`  | Sidebar navigation, delivery timeline items, notification cards |
+| `ease-fade-in-down`  | Topbar                                                          |
+| `ease-zoom-in`       | Overview stat cards (staggered), quick action buttons           |
+| `ease-fade-in-up`    | Widget panels (staggered delays)                                |
+| `ease-fade-in-right` | Shipment progress rows, activity log entries                    |
+| `ease-fade-in`       | Warehouse capacity fill bars                                    |
 
 ## Sections
 

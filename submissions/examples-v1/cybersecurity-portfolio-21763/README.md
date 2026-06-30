@@ -1,4 +1,5 @@
 # Cybersecurity Professional Portfolio
+
 A high-contrast, technical portfolio template for InfoSec and cybersecurity experts.
 
 - **Design**: Uses a terminal-inspired, dark, "hacker-chic" aesthetic that resonates with security operations centers (SOC) and engineering teams.

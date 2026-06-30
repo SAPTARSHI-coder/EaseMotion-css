@@ -26,3 +26,4 @@ Pure CSS avatar component for EaseMotion CSS with status indicators, groups, bad
 
 ```html
 &lt;div class="ease-avatar ease-avatar-md"&gt;AB&lt;/div&gt;
+```

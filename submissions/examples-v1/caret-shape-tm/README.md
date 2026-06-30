@@ -37,14 +37,14 @@ A comprehensive CSS utility class for **CSS caret-shape cursor shape utilities**
 
 This utility uses the EaseMotion CSS variable system:
 
-| Variable | Default Value |
-|----------|--------------|
-| `--ease-bg` | Background surface color |
-| `--ease-surface` | Card/surface background |
-| `--ease-primary` | Primary brand color |
-| `--ease-accent` | Accent highlight color |
-| `--ease-text` | Text color |
-| `--ease-border` | Border/divider color |
+| Variable         | Default Value            |
+| ---------------- | ------------------------ |
+| `--ease-bg`      | Background surface color |
+| `--ease-surface` | Card/surface background  |
+| `--ease-primary` | Primary brand color      |
+| `--ease-accent`  | Accent highlight color   |
+| `--ease-text`    | Text color               |
+| `--ease-border`  | Border/divider color     |
 
 ## Features
 

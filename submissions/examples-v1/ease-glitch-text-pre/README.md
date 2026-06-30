@@ -6,6 +6,7 @@ split and glitch distortion effect using CSS pseudo-elements
 and clip-path animations.
 
 **How is it used?**
+
 <h1 class="glitch-text" data-text="GLITCH">GLITCH</h1>
 <h1 class="glitch-heading" data-text="GLITCH">GLITCH</h1>
 <button class="glitch-btn" data-text="LAUNCH">LAUNCH</button>

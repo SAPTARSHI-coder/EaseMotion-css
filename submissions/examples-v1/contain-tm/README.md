@@ -18,9 +18,7 @@ This submission demonstrates the `contain` CSS property with multiple variants a
 Apply the `contain` class to any element:
 
 ```html
-<div class="contain">
-  Your content here
-</div>
+<div class="contain">Your content here</div>
 ```
 
 ## Tokens Used

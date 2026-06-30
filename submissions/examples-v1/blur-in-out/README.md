@@ -5,44 +5,59 @@ A set of premium animation utilities for introducing and dismissing elements wit
 ## Questions for Contributing Guide
 
 ### 1. What does this do?
+
 This submission adds hardware-accelerated blur entry and exit transition animations (`ease-blur-in` and `ease-blur-out`) that transition an element's filter blur state and opacity smoothly.
 
 ### 2. How is it used?
+
 Apply the `.ease-blur-in` class to animate an element from blurred/invisible to clear/visible on mount or reveal, or `.ease-blur-out` to transition it from clear/visible to blurred/invisible.
 
 ```html
-<div class="ease-blur-in">
-  This text transitions from blurred to sharp!
-</div>
+<div class="ease-blur-in">This text transitions from blurred to sharp!</div>
 ```
 
 ### 3. Why is it useful?
+
 Blur-reveal and blur-dismiss animations are standard in premium, high-end modern interfaces (like iOS overlay sheets, macOS dropdowns, and glassmorphic dashboards). They provide a highly refined visual depth cue that is softer and more modern than simple opacity fades.
 
 ---
 
 ## Class Reference
 
-| Class Name | Animation Target | Description |
-|------------|------------------|-------------|
-| `.ease-blur-in` | `@keyframes ease-blur-in` | Transition filter from `blur(10px)` to `blur(0)` and opacity from `0` to `1`. |
+| Class Name       | Animation Target           | Description                                                                   |
+| ---------------- | -------------------------- | ----------------------------------------------------------------------------- |
+| `.ease-blur-in`  | `@keyframes ease-blur-in`  | Transition filter from `blur(10px)` to `blur(0)` and opacity from `0` to `1`. |
 | `.ease-blur-out` | `@keyframes ease-blur-out` | Transition filter from `blur(0)` to `blur(10px)` and opacity from `1` to `0`. |
 
 ## Keyframes Reference
 
 ### `@keyframes ease-blur-in`
+
 ```css
 @keyframes ease-blur-in {
-  from { filter: blur(10px); opacity: 0; }
-  to   { filter: blur(0); opacity: 1; }
+  from {
+    filter: blur(10px);
+    opacity: 0;
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+  }
 }
 ```
 
 ### `@keyframes ease-blur-out`
+
 ```css
 @keyframes ease-blur-out {
-  from { filter: blur(0); opacity: 1; }
-  to   { filter: blur(10px); opacity: 0; }
+  from {
+    filter: blur(0);
+    opacity: 1;
+  }
+  to {
+    filter: blur(10px);
+    opacity: 0;
+  }
 }
 ```
 

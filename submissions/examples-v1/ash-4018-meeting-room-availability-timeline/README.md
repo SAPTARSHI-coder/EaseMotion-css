@@ -23,13 +23,11 @@ A responsive meeting room scheduling component that displays room availability a
 
 ```html
 <div class="slot booked">
+  <span>09:00</span>
 
-    <span>09:00</span>
+  <div class="bar"></div>
 
-    <div class="bar"></div>
-
-    <small>Booked</small>
-
+  <small>Booked</small>
 </div>
 ```
 

@@ -3,7 +3,8 @@
 **What does this do?**  
 Lifts a card element upward by 8px on hover while simultaneously deepening the drop shadow, creating a convincing 3D depth effect.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <div class="lift-card">
   <h3>Title</h3>

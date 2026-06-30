@@ -23,15 +23,9 @@ A futuristic cyber operations dashboard featuring neon-inspired styling, securit
 
 ```html
 <div class="dashboard">
+  <aside class="sidebar">...</aside>
 
-    <aside class="sidebar">
-        ...
-    </aside>
-
-    <main class="content">
-        ...
-    </main>
-
+  <main class="content">...</main>
 </div>
 ```
 

@@ -14,6 +14,5 @@ A pure CSS animated text gradient component using `background-clip: text` and an
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 ```html
-<h1 class="ease-text-gradient ease-text-gradient--cyber">
-  Animated Text
-</h1>
+<h1 class="ease-text-gradient ease-text-gradient--cyber">Animated Text</h1>
+```

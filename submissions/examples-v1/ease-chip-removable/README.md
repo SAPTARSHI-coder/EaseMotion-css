@@ -18,3 +18,4 @@ Use the `.ease-chip` container along with the `.ease-chip-close` button.
   <span class="ease-chip-text">Frontend</span>
   <button class="ease-chip-close" aria-label="Remove filter">&times;</button>
 </div>
+```

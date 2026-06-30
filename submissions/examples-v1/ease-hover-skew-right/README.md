@@ -12,9 +12,7 @@ A hover animation utility that skews an element slightly to the right.
 ## Usage
 
 ```html
-<div class="ease-hover-skew-right">
-  Hover Me
-</div>
+<div class="ease-hover-skew-right">Hover Me</div>
 ```
 
 ## CSS

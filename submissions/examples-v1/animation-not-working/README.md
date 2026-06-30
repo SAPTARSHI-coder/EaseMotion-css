@@ -10,7 +10,7 @@ Open `demo.html` and answer **Yes/No** to each question. Each path ends on the m
 
 ## Why is it useful?
 
-This is the exact sequence of questions a maintainer ends up asking in almost every "my animation isn't working" GitHub issue. Putting it in front of users *before* they file an issue should cut down on repeated, easily self-diagnosable reports.
+This is the exact sequence of questions a maintainer ends up asking in almost every "my animation isn't working" GitHub issue. Putting it in front of users _before_ they file an issue should cut down on repeated, easily self-diagnosable reports.
 
 ---
 

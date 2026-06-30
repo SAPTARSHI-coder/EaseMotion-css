@@ -3,9 +3,11 @@
 A simple accordion FAQ component.
 
 ## Features
-- Expand/collapse  
-- Simple UI  
-- JavaScript based  
+
+- Expand/collapse
+- Simple UI
+- JavaScript based
 
 ## Usage
+
 Click question to toggle answer.

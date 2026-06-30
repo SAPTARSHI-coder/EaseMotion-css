@@ -12,10 +12,10 @@ Long pages with hundreds of animated cards, list items, or gallery entries force
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                     |
+| ----------- | --------------------------------------------------------------------------- |
 | `demo.html` | Side-by-side comparison: 200 cards with/without content-visibility + timing |
-| `style.css` | Card styles, info cards, caveats |
+| `style.css` | Card styles, info cards, caveats                                            |
 
 ## Proposed Utility
 
@@ -28,12 +28,12 @@ Long pages with hundreds of animated cards, list items, or gallery entries force
 
 ## Best For
 
-| Use Case | Why |
-|----------|-----|
-| Long card lists | ~10x faster initial paint |
-| Image galleries | Only visible images render |
-| Blog feeds | Below-the-fold entries deferred |
-| Dashboard grids | Widgets off-screen don't paint |
+| Use Case        | Why                             |
+| --------------- | ------------------------------- |
+| Long card lists | ~10x faster initial paint       |
+| Image galleries | Only visible images render      |
+| Blog feeds      | Below-the-fold entries deferred |
+| Dashboard grids | Widgets off-screen don't paint  |
 
 ## Caveats
 
@@ -43,6 +43,6 @@ Long pages with hundreds of animated cards, list items, or gallery entries force
 
 ## Browser Support
 
-| Chrome | Firefox | Safari |
-|--------|---------|--------|
-| 85+ | 125+ | 17.5+ (flagged) |
+| Chrome | Firefox | Safari          |
+| ------ | ------- | --------------- |
+| 85+    | 125+    | 17.5+ (flagged) |

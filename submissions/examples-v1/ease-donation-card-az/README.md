@@ -8,7 +8,9 @@ Fundraising card with preset amount chips, custom amount input, progress bar, an
 <div class="ease-donation-card-az">
   <div class="ease-donation-header-az">
     <h2 class="ease-donation-title-az">Support our cause</h2>
-    <p class="ease-donation-desc-az">Your contribution helps us make a difference.</p>
+    <p class="ease-donation-desc-az">
+      Your contribution helps us make a difference.
+    </p>
   </div>
 
   <div class="ease-donation-progress-az">
@@ -16,7 +18,10 @@ Fundraising card with preset amount chips, custom amount input, progress bar, an
       <div class="ease-donation-progress-fill-az" style="width:68%;"></div>
     </div>
     <div class="ease-donation-progress-stats-az">
-      <span><span class="ease-donation-progress-raised-az">$12,400</span> raised</span>
+      <span
+        ><span class="ease-donation-progress-raised-az">$12,400</span>
+        raised</span
+      >
       <span>Goal: $18,000</span>
     </div>
   </div>
@@ -30,7 +35,11 @@ Fundraising card with preset amount chips, custom amount input, progress bar, an
 
   <div class="ease-donation-custom-az">
     <span class="ease-donation-currency-az">$</span>
-    <input class="ease-donation-input-az" type="number" placeholder="Custom amount" />
+    <input
+      class="ease-donation-input-az"
+      type="number"
+      placeholder="Custom amount"
+    />
   </div>
 
   <button class="ease-donation-btn-az">Donate Now</button>
@@ -49,12 +58,12 @@ Fundraising card with preset amount chips, custom amount input, progress bar, an
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-primary-dark` | #4f46e5 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                    | Default   |
+| --------------------------- | --------- |
+| `--ease-space-*`            | spacing   |
+| `--ease-radius-lg`          | 12px      |
+| `--ease-radius-md`          | 8px       |
+| `--ease-color-primary`      | #6366f1   |
+| `--ease-color-primary-dark` | #4f46e5   |
+| `--ease-color-neutral-*`    | grays     |
+| `--ease-font-sans`          | system-ui |

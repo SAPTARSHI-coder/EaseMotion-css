@@ -9,6 +9,7 @@
 In `components/avatar.css`, the `.ease-avatar-group-item` class is missing a `background-color` definition. When developers create text-based or initials-only avatars (e.g. `<div class="ease-avatar-group-item">JD</div>`), the text has `color: #fff` but the background is transparent. On a standard light page, this white text is completely invisible.
 
 Additionally, the avatar group uses several hardcoded color values:
+
 - `border: 2px solid white` on `.ease-avatar-group .ease-avatar`
 - `border: 2px solid white` on `.ease-avatar-group-count`
 - `background: #e2e8f0; color: #475569;` on `.ease-avatar-group-count`
@@ -45,8 +46,8 @@ Replace the hardcoded colors with the framework's existing design tokens and spe
 
 ## 📁 Submission Contents
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                             |
+| ----------- | ----------------------------------------------------------------------------------- |
 | `demo.html` | Interactive side-by-side demonstration of the bug vs. the fix in light & dark modes |
-| `style.css` | Raw CSS showing the proposed fix and demo page layout |
-| `README.md` | This documentation file |
+| `style.css` | Raw CSS showing the proposed fix and demo page layout                               |
+| `README.md` | This documentation file                                                             |

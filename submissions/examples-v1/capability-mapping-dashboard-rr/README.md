@@ -8,7 +8,7 @@ Provides a centralized interface for visualizing business capabilities, supporti
 
 ```html
 <div class="capability-card healthy">
-    <h3>Customer Management</h3>
+  <h3>Customer Management</h3>
 </div>
 ```
 

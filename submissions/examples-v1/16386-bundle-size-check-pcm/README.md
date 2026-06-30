@@ -33,17 +33,17 @@ jobs:
 
 ### Files
 
-| File | Purpose |
-|---|---|
-| `scripts/check-bundle-size.mjs` | Node.js script that measures raw + gzipped sizes |
-| `.github/workflows/bundle-size.yml` | CI workflow running on PR |
-| `baseline-sizes.json` | Stores current sizes for change tracking |
+| File                                | Purpose                                          |
+| ----------------------------------- | ------------------------------------------------ |
+| `scripts/check-bundle-size.mjs`     | Node.js script that measures raw + gzipped sizes |
+| `.github/workflows/bundle-size.yml` | CI workflow running on PR                        |
+| `baseline-sizes.json`               | Stores current sizes for change tracking         |
 
 ### Thresholds
 
-| File | Raw Limit | Gzip Limit |
-|---|---|---|
-| `easemotion.css` | 200 KB | 35 KB |
-| `easemotion.min.css` | 100 KB | 20 KB |
+| File                 | Raw Limit | Gzip Limit |
+| -------------------- | --------- | ---------- |
+| `easemotion.css`     | 200 KB    | 35 KB      |
+| `easemotion.min.css` | 100 KB    | 20 KB      |
 
 Fixes #16386

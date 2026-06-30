@@ -26,15 +26,19 @@ This feature adds lightweight animations for important UI elements:
 ## Recommended patterns
 
 ### Notification badges
+
 Use `<span class="ease-attention-pulse">New</span>` for status indicators and badge values. The pulse draws attention without overwhelming the surrounding UI.
 
 ### Call-to-action buttons
+
 Add `ease-attention` to a primary button to make a single interaction stand out. Avoid applying it to multiple CTAs at once.
 
 ### Form validation indicators
+
 Apply `ease-attention-ring` to inputs or form group wrappers when a field requires focus or corrective action. The ring effect is subtle and non-intrusive.
 
 ### Alert banners
+
 Use `ease-attention-soft` on alerts, banners, and cards when you want a low-key highlight that remains easy on the eyes.
 
 ## Accessibility

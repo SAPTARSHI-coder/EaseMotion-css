@@ -20,6 +20,7 @@ A futuristic, dark-themed responsive single-page showcase demonstrating myoelect
 This showcase leverages EaseMotion CSS's variables, layout components, and animation helpers as follows:
 
 ### 1. Variables & Design Tokens (Overridden in `style.css`)
+
 - **Theme Variables**:
   - `--ease-color-primary`: `#8b5cf6` (Cyber Violet accent lines and status controls)
   - `--ease-color-secondary`: `#06b6d4` (Bio-feedback Cyan telemetry elements)
@@ -31,12 +32,14 @@ This showcase leverages EaseMotion CSS's variables, layout components, and anima
   - Used `--ease-glass-bg` and `--ease-glass-border` configured to blend with cyberpunk neon highlights.
 
 ### 2. Composed Components
+
 - **Navbar**: Composed with `.ease-navbar-glass-sticky`, `.ease-navbar-glass`, `.ease-navbar-brand`, `.ease-navbar-menu`, and `.ease-navbar-item`.
 - **Buttons**: Combined standard state `.ease-btn`, sizing `.ease-btn-sm` / `.ease-btn-lg`, modifiers `.ease-btn-primary` / `.ease-btn-outline`, and hover transformations `.ease-btn-hover` / `.ease-squish-button`.
 - **Cards**: Layered with `.ease-card`, `.ease-card-glass` (for glassmorphism), `.ease-card-hover` (for smooth liftoff translation), `.ease-card-glow` (for subtle shadow glow on hover), and `.ease-card-stat` (for telemetry indicators).
 - **Tooltips**: Applied `.ease-tooltip` and `data-tooltip="..."` (with position overrides like `data-position="top"`) inside the schematic nodes for hover details.
 
 ### 3. Animations & Motion Utility Classes
+
 - **Looping Motions**:
   - `.ease-typewriter-loop`: Used in the hero header to cycle text between neural links and sensory calibration.
   - `.ease-ping`: Applied to status lights and neural hubs to simulate pulsing feedback loops.

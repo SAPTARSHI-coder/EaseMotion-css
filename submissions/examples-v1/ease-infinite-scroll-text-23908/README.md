@@ -18,14 +18,14 @@ GPU-accelerated infinite scrolling text using CSS `transform: translateX/Y()` wi
 </div>
 ```
 
-| Class | Effect |
-|-------|--------|
-| `ease-marquee-horizontal` | Left-to-right scroll |
-| `ease-marquee-vertical` | Bottom-to-top scroll |
-| `ease-marquee-reverse` | Reverse direction |
-| `ease-marquee-speed-fast` | 15s duration |
-| `ease-marquee-speed-slow` | 60s duration |
-| `ease-marquee-pause-hover` | Pause on hover |
+| Class                      | Effect               |
+| -------------------------- | -------------------- |
+| `ease-marquee-horizontal`  | Left-to-right scroll |
+| `ease-marquee-vertical`    | Bottom-to-top scroll |
+| `ease-marquee-reverse`     | Reverse direction    |
+| `ease-marquee-speed-fast`  | 15s duration         |
+| `ease-marquee-speed-slow`  | 60s duration         |
+| `ease-marquee-pause-hover` | Pause on hover       |
 
 Customize via `--ease-marquee-speed` and `--ease-marquee-gap`.
 

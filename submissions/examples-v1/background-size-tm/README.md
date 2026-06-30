@@ -18,9 +18,7 @@ This submission demonstrates the `background-size` CSS property with multiple va
 Apply the `background-size` class to any element:
 
 ```html
-<div class="background-size">
-  Your content here
-</div>
+<div class="background-size">Your content here</div>
 ```
 
 ## Tokens Used

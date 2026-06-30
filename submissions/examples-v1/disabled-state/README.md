@@ -14,8 +14,13 @@ Animates disabled form elements with pulsing opacity and glow effects — making
 }
 
 @keyframes pulse-disabled {
-  0%, 100% { opacity: 0.6; }
-  50%      { opacity: 0.45; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.45;
+  }
 }
 ```
 

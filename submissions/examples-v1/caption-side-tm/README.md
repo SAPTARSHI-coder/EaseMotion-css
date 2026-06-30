@@ -18,9 +18,7 @@ This submission demonstrates the `caption-side` CSS property with multiple varia
 Apply the `caption-side` class to any element:
 
 ```html
-<div class="caption-side">
-  Your content here
-</div>
+<div class="caption-side">Your content here</div>
 ```
 
 ## Tokens Used

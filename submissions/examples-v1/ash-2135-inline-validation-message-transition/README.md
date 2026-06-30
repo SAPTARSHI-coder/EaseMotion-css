@@ -25,13 +25,9 @@ A form validation component featuring animated inline feedback messages for erro
 
 ```html
 <div class="field error">
+  <input type="email" />
 
-  <input type="email">
-
-  <div class="validation-message">
-    Please enter a valid email.
-  </div>
-
+  <div class="validation-message">Please enter a valid email.</div>
 </div>
 ```
 

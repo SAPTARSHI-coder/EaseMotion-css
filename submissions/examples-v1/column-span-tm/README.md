@@ -18,9 +18,7 @@ This submission demonstrates the `column-span` CSS property with multiple varian
 Apply the `column-span` class to any element:
 
 ```html
-<div class="column-span">
-  Your content here
-</div>
+<div class="column-span">Your content here</div>
 ```
 
 ## Tokens Used

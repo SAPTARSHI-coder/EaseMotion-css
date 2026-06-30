@@ -22,19 +22,11 @@ A responsive conflict resolution component that helps users resolve autosave con
 
 ```html
 <div class="conflict">
+  <div class="version local">...</div>
 
-    <div class="version local">
-        ...
-    </div>
+  <div class="divider">VS</div>
 
-    <div class="divider">
-        VS
-    </div>
-
-    <div class="version remote">
-        ...
-    </div>
-
+  <div class="version remote">...</div>
 </div>
 ```
 

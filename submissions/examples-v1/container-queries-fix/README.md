@@ -40,11 +40,11 @@ the `.ease-container` class in `core/utilities.css`.
 ## Browser Support
 
 | Browser | Minimum Version |
-|---------|----------------|
-| Chrome  | 105+           |
-| Firefox | 110+           |
-| Safari  | 16+            |
-| Edge    | 105+           |
+| ------- | --------------- |
+| Chrome  | 105+            |
+| Firefox | 110+            |
+| Safari  | 16+             |
+| Edge    | 105+            |
 
 > Older browsers that do not support `container-type` will simply ignore the
 > property and fall back to standard block layout — no layout breakage occurs.

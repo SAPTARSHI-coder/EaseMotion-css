@@ -11,10 +11,18 @@ Adds a radar-inspired loading animation with a rotating sweep over concentric ci
 <div class="ease-radar-loader" aria-label="Loading"></div>
 
 <!-- Custom size and color -->
-<div class="ease-radar-loader" style="--ease-radar-size: 120px; --ease-radar-color: #6c63ff;" aria-label="Loading"></div>
+<div
+  class="ease-radar-loader"
+  style="--ease-radar-size: 120px; --ease-radar-color: #6c63ff;"
+  aria-label="Loading"
+></div>
 
 <!-- Fast speed -->
-<div class="ease-radar-loader" style="--ease-radar-speed: 1s;" aria-label="Loading"></div>
+<div
+  class="ease-radar-loader"
+  style="--ease-radar-speed: 1s;"
+  aria-label="Loading"
+></div>
 ```
 
 Open `demo.html` directly in a browser to see all variants in action.

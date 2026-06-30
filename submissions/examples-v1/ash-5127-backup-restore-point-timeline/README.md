@@ -23,13 +23,11 @@ A responsive backup restore timeline that displays available restore points in c
 
 ```html
 <div class="event completed">
+  <div class="dot"></div>
 
-    <div class="dot"></div>
-
-    <div class="content">
-        <h3>Today • 09:30 AM</h3>
-    </div>
-
+  <div class="content">
+    <h3>Today • 09:30 AM</h3>
+  </div>
 </div>
 ```
 

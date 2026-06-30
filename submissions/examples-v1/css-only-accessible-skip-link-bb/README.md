@@ -13,9 +13,9 @@ Add a skip link as the first element in your `<body>`, pointing to your main con
 ```html
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  
+
   <nav><!-- navigation --></nav>
-  
+
   <main id="main-content">
     <!-- main content -->
   </main>

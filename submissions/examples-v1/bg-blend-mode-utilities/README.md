@@ -14,10 +14,12 @@ An isolated styling package delivering comprehensive layout blend-mode primitive
 - `.ease-bg-blend-normal`: Resets compositing rules back to standard occlusion behavior layers.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-bg-blend-multiply" style="background-image: url(...); background-color: #2563eb;">
-  
-</div>
+<div
+  class="ease-bg-blend-multiply"
+  style="background-image: url(...); background-color: #2563eb;"
+></div>
 ```
 
 Closes #13481

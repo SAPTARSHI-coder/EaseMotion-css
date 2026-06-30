@@ -18,8 +18,7 @@ letters.forEach((char, i) => {
   el.textContent = char;
   const angle = i * angleStep;
   const yOffset = (i - (letters.length - 1) / 2) * VERTICAL_STEP * -1;
-  el.style.transform =
-    `translateY(${yOffset}px) rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+  el.style.transform = `translateY(${yOffset}px) rotateY(${angle}deg) translateZ(${RADIUS}px)`;
   ribbon.appendChild(el);
 });
 

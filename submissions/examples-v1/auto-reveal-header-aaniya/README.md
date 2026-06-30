@@ -4,11 +4,11 @@ Implements auto-hide and auto-show behavior for a top navigation header. The hea
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
-| `.docs-header` | Base fixed header with transition |
-| `.docs-header.hidden` | Header slides up out of view |
-| `.docs-header.visible` | Header slides back into view |
+| Class                  | Effect                            |
+| ---------------------- | --------------------------------- |
+| `.docs-header`         | Base fixed header with transition |
+| `.docs-header.hidden`  | Header slides up out of view      |
+| `.docs-header.visible` | Header slides back into view      |
 
 ## Usage
 
@@ -20,17 +20,17 @@ Implements auto-hide and auto-show behavior for a top navigation header. The hea
 
 ```js
 let lastScrollY = window.scrollY;
-const header = document.getElementById('docs-header');
+const header = document.getElementById("docs-header");
 
-window.addEventListener('scroll', () => {
+window.addEventListener("scroll", () => {
   const currentScrollY = window.scrollY;
 
   if (currentScrollY > lastScrollY && currentScrollY > 80) {
-    header.classList.add('hidden');
-    header.classList.remove('visible');
+    header.classList.add("hidden");
+    header.classList.remove("visible");
   } else {
-    header.classList.remove('hidden');
-    header.classList.add('visible');
+    header.classList.remove("hidden");
+    header.classList.add("visible");
   }
 
   lastScrollY = currentScrollY;
@@ -38,9 +38,11 @@ window.addEventListener('scroll', () => {
 ```
 
 ## Why this fits EaseMotion CSS
+
 Improves navigation accessibility on long documentation pages, reduces unnecessary scrolling, and keeps the interface clean by hiding the header only when it's not needed — all driven by a simple CSS transform transition.
 
 ## Features
+
 - Auto-hides header on scroll down
 - Auto-reveals header on any upward scroll
 - Smooth 0.3s transform transition

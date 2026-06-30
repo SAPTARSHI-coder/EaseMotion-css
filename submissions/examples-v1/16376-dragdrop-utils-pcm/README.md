@@ -30,8 +30,8 @@ Adds CSS utility classes for drag-and-drop visual states — draggable items, dr
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                |
+| ----------- | -------------------------------------------------------------------------------------- |
 | `demo.html` | Interactive demos: sortable list, file drop zone with validation, ghost clone tracking |
-| `style.css` | 7 utility classes + shake animation + demo styles |
-| `README.md` | This documentation |
+| `style.css` | 7 utility classes + shake animation + demo styles                                      |
+| `README.md` | This documentation                                                                     |

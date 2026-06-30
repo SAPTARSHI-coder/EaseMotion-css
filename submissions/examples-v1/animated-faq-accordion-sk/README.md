@@ -6,9 +6,10 @@ A modern, high-performance SaaS-style FAQ Accordion component built using **pure
 
 ## 1. What does this do?
 
-This component provides a fully interactive FAQ accordion layout that is grouped into categories (e.g., General & Product, Account & Billing). 
+This component provides a fully interactive FAQ accordion layout that is grouped into categories (e.g., General & Product, Account & Billing).
 
 ### Key Animations & Visual Features
+
 1. **Grid-Row Height Expansion**: Traditionally, CSS height transitions from `0` to `auto` do not work. We utilize a modern CSS Grid layout technique (`grid-template-rows: 0fr` transitioning to `1fr`) to reveal dynamic content heights smoothly.
 2. **Rotating Chevron Icon**: The SVG chevron indicator rotates 180 degrees when an accordion item is expanded.
 3. **Hover & Focus Effects**: Interactive elements highlight with subtle background changes and border colors on hover or keyboard focus.
@@ -19,21 +20,28 @@ This component provides a fully interactive FAQ accordion layout that is grouped
 ## 2. How is it used?
 
 ### HTML Setup
+
 Each accordion item consists of a hidden `<input type="checkbox">` trigger, a `<label>` trigger for the question header, and a transition wrapper for the answer:
 
 ```html
 <article class="faq-item">
   <!-- Hidden Checkbox -->
-  <input type="checkbox" id="faq-item-1" class="faq-toggle">
-  
+  <input type="checkbox" id="faq-item-1" class="faq-toggle" />
+
   <!-- Question Header (Label) -->
-  <label for="faq-item-1" class="faq-question" tabindex="0" role="button" aria-expanded="false">
+  <label
+    for="faq-item-1"
+    class="faq-question"
+    tabindex="0"
+    role="button"
+    aria-expanded="false"
+  >
     <span>What is EaseMotion CSS?</span>
     <svg class="faq-chevron" viewBox="0 0 24 24">
-      <polyline points="6 9 12 15 18 9"/>
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   </label>
-  
+
   <!-- Answer Wrapper (Animated Grid Container) -->
   <div class="faq-answer-wrapper">
     <div class="faq-answer-inner">
@@ -46,6 +54,7 @@ Each accordion item consists of a hidden `<input type="checkbox">` trigger, a `<
 ```
 
 ### CSS Transition Structure
+
 To animate the variable answer content height, we toggle the grid rows template inside the CSS:
 
 ```css
@@ -63,7 +72,9 @@ To animate the variable answer content height, we toggle the grid rows template 
 .faq-answer-content {
   padding: 0 1.5rem;
   opacity: 0;
-  transition: opacity 0.3s ease, padding 0.35s ease;
+  transition:
+    opacity 0.3s ease,
+    padding 0.35s ease;
 }
 
 /* Expand content when checkbox is toggled checked */

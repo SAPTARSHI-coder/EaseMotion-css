@@ -28,7 +28,9 @@ if (themeBtn) {
 
 // ── Active nav link tracking ─────────────────────────────
 const navLi = document.querySelectorAll(".sidebar-nav a");
-const headerLi = document.querySelectorAll(".docs-header-links a:not(.ease-btn)");
+const headerLi = document.querySelectorAll(
+  ".docs-header-links a:not(.ease-btn)"
+);
 const allLinks = [...navLi, ...headerLi];
 const targetMap = new Map();
 allLinks.forEach((link) => {
@@ -59,12 +61,24 @@ function cacheTargetPositions() {
 
 function activateId(activeId) {
   navLi.forEach((link) => {
-    link.classList.toggle("active", link.getAttribute("href") === `#${activeId}`);
+    link.classList.toggle(
+      "active",
+      link.getAttribute("href") === `#${activeId}`
+    );
   });
   headerLi.forEach((link) => {
     const href = link.getAttribute("href");
-    const isComponentSubItem = ["buttons", "cards", "scroll-progress", "forms", "components"].includes(activeId);
-    link.classList.toggle("active", href === `#${activeId}` || (href === "#components" && isComponentSubItem));
+    const isComponentSubItem = [
+      "buttons",
+      "cards",
+      "scroll-progress",
+      "forms",
+      "components",
+    ].includes(activeId);
+    link.classList.toggle(
+      "active",
+      href === `#${activeId}` || (href === "#components" && isComponentSubItem)
+    );
   });
 }
 
@@ -159,60 +173,64 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   window.addEventListener("scroll", updateProgress, { passive: true });
-  btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+  btn.addEventListener("click", () =>
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  );
 })();
 
 // ── Copy to Clipboard ────────────────────────────────────
-document.querySelectorAll('.copy-class-btn').forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const codeEl = btn.parentElement.querySelector('code');
+document.querySelectorAll(".copy-class-btn").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const codeEl = btn.parentElement.querySelector("code");
     if (!codeEl) return;
     const text = codeEl.textContent.trim();
     try {
-      const ta = document.createElement('textarea');
+      const ta = document.createElement("textarea");
       ta.value = text;
-      ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+      ta.style.cssText = "position:fixed;top:-9999px;opacity:0";
       document.body.appendChild(ta);
       ta.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(ta);
       const orig = btn.textContent;
-      btn.textContent = '✓ Copied!';
-      btn.classList.add('copied');
+      btn.textContent = "✓ Copied!";
+      btn.classList.add("copied");
       setTimeout(() => {
         btn.textContent = orig;
-        btn.classList.remove('copied');
+        btn.classList.remove("copied");
       }, 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   });
 });
 
 // ── Floating Particle Canvas Background ──────────────────
 (() => {
-  const canvas = document.getElementById('particle-canvas');
+  const canvas = document.getElementById("particle-canvas");
   if (!canvas) return;
-  
+
   // Disable floating particles animation if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
   if (prefersReducedMotion) return;
 
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   let particles = [];
   let mouse = { x: -1000, y: -1000 };
 
   function resize() {
-    canvas.width  = window.innerWidth;
+    canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
   resize();
-  window.addEventListener('resize', resize);
-  window.addEventListener('mousemove', e => {
+  window.addEventListener("resize", resize);
+  window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
   });
-  window.addEventListener('mouseleave', () => {
+  window.addEventListener("mouseleave", () => {
     mouse.x = -1000;
     mouse.y = -1000;
   });
@@ -239,10 +257,10 @@ document.querySelectorAll('.copy-class-btn').forEach(btn => {
     particles.forEach((p, i) => {
       const dx = mouse.x - p.x;
       const dy = mouse.y - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
+      const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 120) {
-        p.vx += dx / dist * 0.015;
-        p.vy += dy / dist * 0.015;
+        p.vx += (dx / dist) * 0.015;
+        p.vy += (dy / dist) * 0.015;
       }
       p.vx *= 0.98;
       p.vy *= 0.98;
@@ -250,7 +268,7 @@ document.querySelectorAll('.copy-class-btn').forEach(btn => {
       p.y += p.vy;
 
       if (p.x < 0) p.x = canvas.width;
-      if (p.x > canvas.width)  p.x = 0;
+      if (p.x > canvas.width) p.x = 0;
       if (p.y < 0) p.y = canvas.height;
       if (p.y > canvas.height) p.y = 0;
 
@@ -266,7 +284,7 @@ document.querySelectorAll('.copy-class-btn').forEach(btn => {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(q.x, q.y);
-          ctx.strokeStyle = `rgba(108,99,255,${(1 - d/100) * 0.12})`;
+          ctx.strokeStyle = `rgba(108,99,255,${(1 - d / 100) * 0.12})`;
           ctx.lineWidth = 0.6;
           ctx.stroke();
         }

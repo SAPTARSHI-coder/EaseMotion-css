@@ -4,12 +4,12 @@ A pseudo-element sweeper that uses `mix-blend-mode: difference` to invert all co
 
 ## Variants
 
-| Variant | Trigger | Blend mode |
-|---------|---------|------------|
-| Hover sweep | `:hover` | `difference` |
-| Auto sweep | `@keyframes` infinite | `difference` |
-| Exclusion sweep | `:hover` | `exclusion` (softer) |
-| Isolation demo | `:hover` | `difference` — shows broken vs correct |
+| Variant         | Trigger               | Blend mode                             |
+| --------------- | --------------------- | -------------------------------------- |
+| Hover sweep     | `:hover`              | `difference`                           |
+| Auto sweep      | `@keyframes` infinite | `difference`                           |
+| Exclusion sweep | `:hover`              | `exclusion` (softer)                   |
+| Isolation demo  | `:hover`              | `difference` — shows broken vs correct |
 
 ## How it works
 
@@ -21,7 +21,7 @@ A pseudo-element sweeper that uses `mix-blend-mode: difference` to invert all co
 }
 
 .sweep-card::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -110%;
@@ -37,12 +37,18 @@ A pseudo-element sweeper that uses `mix-blend-mode: difference` to invert all co
 .sweep-hover::after {
   transition: left 0.65s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.sweep-hover:hover::after { left: 150%; }
+.sweep-hover:hover::after {
+  left: 150%;
+}
 
 /* auto loop variant */
 @keyframes ease-blend-sweep {
-  0%   { left: -110%; }
-  100% { left: 150%; }
+  0% {
+    left: -110%;
+  }
+  100% {
+    left: 150%;
+  }
 }
 .sweep-auto::after {
   animation: ease-blend-sweep 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
@@ -68,8 +74,12 @@ Both modes require `isolation: isolate` on the parent.
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  .sweep-auto::after { animation: none; }
+  .sweep-auto::after {
+    animation: none;
+  }
   .sweep-hover::after,
-  .sweep-exclusion::after { transition: none; }
+  .sweep-exclusion::after {
+    transition: none;
+  }
 }
 ```

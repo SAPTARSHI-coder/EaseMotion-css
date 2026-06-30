@@ -6,20 +6,20 @@
 
 ```js
 // tests/specificity.test.js
-const { JSDOM } = require('jsdom');
-const fs = require('fs');
-const css = fs.readFileSync('dist/easemotion.css', 'utf8');
+const { JSDOM } = require("jsdom");
+const fs = require("fs");
+const css = fs.readFileSync("dist/easemotion.css", "utf8");
 
-test('utilities override components', () => {
+test("utilities override components", () => {
   const dom = new JSDOM('<!DOCTYPE html><div class="card bg-override"></div>', {
-    runScripts: 'dangerously'
+    runScripts: "dangerously",
   });
-  const style = dom.window.document.createElement('style');
+  const style = dom.window.document.createElement("style");
   style.textContent = css;
   dom.window.document.head.appendChild(style);
-  const el = dom.window.document.querySelector('.card');
+  const el = dom.window.document.querySelector(".card");
   const bg = dom.window.getComputedStyle(el).background;
-  expect(bg).toContain('rgb(34, 197, 94)'); // green from utilities layer
+  expect(bg).toContain("rgb(34, 197, 94)"); // green from utilities layer
 });
 ```
 
@@ -27,14 +27,14 @@ test('utilities override components', () => {
 
 ### Test Cases
 
-| Test | Assertion |
-|---|---|
-| Utilities override components | `.bg-override` beats `.card` background |
-| Components override base | Component `color` beats base `color` |
-| Unlayered wins over all | Styles outside `@layer` beat any layered style |
-| `!important` audit | Only used in reduced-motion and justified utilities |
-| Same-specificity tie-break | Layer order decides when specificity is equal |
-| Justified `!important` | `.bg-primary` uses `!important` acceptably |
+| Test                          | Assertion                                           |
+| ----------------------------- | --------------------------------------------------- |
+| Utilities override components | `.bg-override` beats `.card` background             |
+| Components override base      | Component `color` beats base `color`                |
+| Unlayered wins over all       | Styles outside `@layer` beat any layered style      |
+| `!important` audit            | Only used in reduced-motion and justified utilities |
+| Same-specificity tie-break    | Layer order decides when specificity is equal       |
+| Justified `!important`        | `.bg-primary` uses `!important` acceptably          |
 
 ### Layer Order
 

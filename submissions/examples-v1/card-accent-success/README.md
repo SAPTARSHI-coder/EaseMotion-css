@@ -10,10 +10,10 @@ Card variant with a 4px green left border accent for success/confirmation states
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-accent-success` | Green left accent border |
-| `ease-card-accent-danger` | Red left accent border |
+| Class                      | Description               |
+| -------------------------- | ------------------------- |
+| `ease-card-accent-success` | Green left accent border  |
+| `ease-card-accent-danger`  | Red left accent border    |
 | `ease-card-accent-warning` | Yellow left accent border |
 
 ## Notes

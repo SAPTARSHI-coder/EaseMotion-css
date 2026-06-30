@@ -6,12 +6,12 @@ A futuristic status matrix featuring glowing indicators, animated pulses, and gl
 
 ## Features
 
-* Animated status indicators
-* Glassmorphism cards
-* Responsive grid layout
-* Smooth hover interaction
-* Lightweight implementation
-* Pure HTML & CSS
+- Animated status indicators
+- Glassmorphism cards
+- Responsive grid layout
+- Smooth hover interaction
+- Lightweight implementation
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

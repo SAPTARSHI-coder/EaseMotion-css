@@ -21,12 +21,12 @@ The loop variant wraps the sweep + a pause into a single longer keyframe cycle u
 
 ## Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-btn-shimmer` | Shine sweep on `:hover` |
+| Class                    | Effect                               |
+| ------------------------ | ------------------------------------ |
+| `.ease-btn-shimmer`      | Shine sweep on `:hover`              |
 | `.ease-btn-shimmer-loop` | Continuous shimmer — no hover needed |
-| `.ease-btn-shimmer-gold` | Golden glare variant |
-| `.ease-btn-shimmer-slow` | Slow 1.5s sweep |
+| `.ease-btn-shimmer-gold` | Golden glare variant                 |
+| `.ease-btn-shimmer-slow` | Slow 1.5s sweep                      |
 
 `.ease-btn-shimmer-gold` and `.ease-btn-shimmer-slow` are modifiers — stack them with `.ease-btn-shimmer` or `.ease-btn-shimmer-loop`.
 
@@ -67,11 +67,11 @@ The loop variant wraps the sweep + a pause into a single longer keyframe cycle u
 
 ```css
 .my-btn {
-  --shimmer-duration:   1s;                        /* sweep speed        */
-  --shimmer-color:      rgba(255, 255, 255, 0.6);  /* glare opacity      */
-  --shimmer-angle:      -15deg;                    /* skew angle         */
-  --shimmer-width:      40%;                       /* glare strip width  */
-  --shimmer-loop-gap:   3s;                        /* pause between loops*/
+  --shimmer-duration: 1s; /* sweep speed        */
+  --shimmer-color: rgba(255, 255, 255, 0.6); /* glare opacity      */
+  --shimmer-angle: -15deg; /* skew angle         */
+  --shimmer-width: 40%; /* glare strip width  */
+  --shimmer-loop-gap: 3s; /* pause between loops*/
 }
 ```
 

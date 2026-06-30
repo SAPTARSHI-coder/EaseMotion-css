@@ -19,13 +19,13 @@ A floating action button (FAB) that expands into a radial or vertical list of se
 
 ### Variants
 
-| Class | Description |
-|---|---|
-| `.ease-speed-dial` | Container |
-| `.ease-speed-dial-fab` | Main toggle button |
-| `.ease-speed-dial-actions` | Action items container |
-| `.ease-speed-dial-action` | Individual action |
-| `.ease-speed-dial-up` | Actions above FAB (default) |
-| `.ease-speed-dial-down` | Actions below FAB |
-| `.ease-speed-dial-left` | Actions to the left |
-| `.ease-speed-dial-right` | Actions to the right |
+| Class                      | Description                 |
+| -------------------------- | --------------------------- |
+| `.ease-speed-dial`         | Container                   |
+| `.ease-speed-dial-fab`     | Main toggle button          |
+| `.ease-speed-dial-actions` | Action items container      |
+| `.ease-speed-dial-action`  | Individual action           |
+| `.ease-speed-dial-up`      | Actions above FAB (default) |
+| `.ease-speed-dial-down`    | Actions below FAB           |
+| `.ease-speed-dial-left`    | Actions to the left         |
+| `.ease-speed-dial-right`   | Actions to the right        |

@@ -16,8 +16,8 @@ A premium feature showcase component that arranges cards in a 3D perspective lay
 
 ```html
 <div class="feature-card">
-    <h3>Performance</h3>
-    <p>Optimized animations and utilities.</p>
+  <h3>Performance</h3>
+  <p>Optimized animations and utilities.</p>
 </div>
 ```
 

@@ -12,7 +12,7 @@ A robust, reusable drag-and-drop visual feedback pattern perfectly suited for Ka
 
 ## Usage
 
-1. Copy the HTML structure from `demo.html`. 
+1. Copy the HTML structure from `demo.html`.
 2. Ensure your draggable items have the `draggable="true"` attribute and a unique `id` so the JavaScript can track them properly.
 3. Define your drop zones by adding the `.drop-zone` class to the container elements.
 4. Include `style.css` for the visual feedback states.
@@ -32,4 +32,5 @@ Easily adapt the colors to match your brand's theme by editing the CSS variables
 ```
 
 ## Contributed by
+
 - Man1ac-1773

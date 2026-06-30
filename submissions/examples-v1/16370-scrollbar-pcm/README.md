@@ -26,8 +26,8 @@ Adds 7 CSS utility classes for custom scrollbar theming using `::-webkit-scrollb
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------- |
 | `demo.html` | 6 scrollable boxes showing thin, primary+rounded, dark, hidden, none, and custom-red variants |
-| `style.css` | 7 utility classes + 5 CSS variables + demo styles |
-| `README.md` | This documentation |
+| `style.css` | 7 utility classes + 5 CSS variables + demo styles                                             |
+| `README.md` | This documentation                                                                            |

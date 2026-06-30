@@ -12,6 +12,5 @@ A spring-style entrance animation that makes an element materialize from nothing
 ## Usage
 
 ```html
-<div class="ease-appear">
-    Content
-</div>
+<div class="ease-appear">Content</div>
+```

@@ -13,18 +13,22 @@ A utility class that makes an element rotate continuously counter-clockwise whil
 ```
 
 ```css
-@keyframes ease-kf-rotate-ccw{
-  from{ transform:rotate(0deg); }
-  to{ transform:rotate(-360deg); }
+@keyframes ease-kf-rotate-ccw {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
-.ease-hover-rotate-ccw{
-  display:inline-flex;
-  transition:transform .4s cubic-bezier(.4,0,.2,1);
+.ease-hover-rotate-ccw {
+  display: inline-flex;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ease-hover-rotate-ccw:hover{
-  animation:ease-kf-rotate-ccw 1.2s linear infinite;
+.ease-hover-rotate-ccw:hover {
+  animation: ease-kf-rotate-ccw 1.2s linear infinite;
 }
 ```
 

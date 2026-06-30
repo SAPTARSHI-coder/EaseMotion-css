@@ -17,12 +17,7 @@ if (window.scrollY > 300) {
 ## How is it used?
 
 ```html
-<button
-  id="backToTop"
-  class="back-to-top"
-  aria-label="Back to top">
-  ↑
-</button>
+<button id="backToTop" class="back-to-top" aria-label="Back to top">↑</button>
 ```
 
 The button becomes visible by toggling the `.ease-visible` class.

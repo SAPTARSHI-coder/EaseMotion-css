@@ -25,9 +25,7 @@ A premium pricing card featuring glassmorphism styling, floating animations, gra
 ## Usage
 
 ```html
-<div class="pricing-card">
-  Pricing Content
-</div>
+<div class="pricing-card">Pricing Content</div>
 ```
 
 ## Main Classes

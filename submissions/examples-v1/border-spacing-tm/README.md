@@ -18,9 +18,7 @@ This submission demonstrates the `border-spacing` CSS property with multiple var
 Apply the `border-spacing` class to any element:
 
 ```html
-<div class="border-spacing">
-  Your content here
-</div>
+<div class="border-spacing">Your content here</div>
 ```
 
 ## Tokens Used

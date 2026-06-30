@@ -13,3 +13,4 @@ A celebration-themed floating animation for balloon elements.
 
 ```html
 <div class="balloon ease-balloon-float"></div>
+```

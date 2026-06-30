@@ -15,9 +15,7 @@ A hover effect where an element subtly shifts toward the cursor position using C
 ## Usage
 
 ```html
-<div class="follow-card">
-  Hover Me
-</div>
+<div class="follow-card">Hover Me</div>
 ```
 
 ## HTML Structure

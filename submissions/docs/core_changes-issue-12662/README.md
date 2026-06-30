@@ -1,4 +1,4 @@
-# ease-backdrop-*
+# ease-backdrop-\*
 
 ## What does this do?
 
@@ -25,41 +25,37 @@ Provides backdrop filter utility classes (`.ease-backdrop-blur-*`, `.ease-backdr
 **Backdrop brightness:**
 
 ```html
-<div class="ease-backdrop-brightness-75">
-  Dimmed background
-</div>
+<div class="ease-backdrop-brightness-75">Dimmed background</div>
 ```
 
 **Remove backdrop filter:**
 
 ```html
-<div class="ease-backdrop-none">
-  No filter applied
-</div>
+<div class="ease-backdrop-none">No filter applied</div>
 ```
 
 ### Available Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-backdrop-blur-sm` | 4px blur |
-| `.ease-backdrop-blur-md` | 8px blur |
-| `.ease-backdrop-blur-lg` | 16px blur |
-| `.ease-backdrop-blur-xl` | 24px blur |
-| `.ease-backdrop-blur-2xl` | 40px blur |
-| `.ease-backdrop-brightness-50` | 50% brightness |
-| `.ease-backdrop-brightness-75` | 75% brightness |
+| Class                           | Effect                    |
+| ------------------------------- | ------------------------- |
+| `.ease-backdrop-blur-sm`        | 4px blur                  |
+| `.ease-backdrop-blur-md`        | 8px blur                  |
+| `.ease-backdrop-blur-lg`        | 16px blur                 |
+| `.ease-backdrop-blur-xl`        | 24px blur                 |
+| `.ease-backdrop-blur-2xl`       | 40px blur                 |
+| `.ease-backdrop-brightness-50`  | 50% brightness            |
+| `.ease-backdrop-brightness-75`  | 75% brightness            |
 | `.ease-backdrop-brightness-100` | 100% brightness (default) |
-| `.ease-backdrop-saturate-50` | 50% saturation |
-| `.ease-backdrop-saturate-150` | 150% saturation |
-| `.ease-backdrop-none` | Remove backdrop filter |
+| `.ease-backdrop-saturate-50`    | 50% saturation            |
+| `.ease-backdrop-saturate-150`   | 150% saturation           |
+| `.ease-backdrop-none`           | Remove backdrop filter    |
 
 ### Convenience Glass Classes
 
-| Class | Blur | Background |
-|---|---|---|
-| `.ease-glass-sm` | 4px | `rgba(255,255,255,0.25)` / dark mode fallback |
-| `.ease-glass-md` | 8px | `rgba(255,255,255,0.2)` / dark mode fallback |
+| Class            | Blur | Background                                    |
+| ---------------- | ---- | --------------------------------------------- |
+| `.ease-glass-sm` | 4px  | `rgba(255,255,255,0.25)` / dark mode fallback |
+| `.ease-glass-md` | 8px  | `rgba(255,255,255,0.2)` / dark mode fallback  |
 | `.ease-glass-lg` | 16px | `rgba(255,255,255,0.15)` / dark mode fallback |
 
 ### Fallback

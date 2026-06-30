@@ -5,16 +5,16 @@
 2. **How is it used?** Set `dir="rtl"` on the `<html>` element — all components using logical CSS properties automatically flip. For cases where logical properties alone aren't sufficient, `[dir="rtl"]` override selectors handle animation direction, arrow icon swapping, and sidebar slide position.
 
 ```html
-<html dir="rtl">
+<html dir="rtl"></html>
 ```
 
 ```css
 /* Use logical properties instead of physical ones */
 .component {
-  margin-inline-start: 1rem;  /* instead of margin-left */
-  inset-inline-end: 1rem;     /* instead of right */
+  margin-inline-start: 1rem; /* instead of margin-left */
+  inset-inline-end: 1rem; /* instead of right */
   border-inline-start: 3px solid #7c3aed; /* instead of border-left */
-  text-align: start;          /* instead of text-align: left */
+  text-align: start; /* instead of text-align: left */
 }
 
 /* RTL overrides for animations and icons */
@@ -32,14 +32,14 @@
 
 ### Logical CSS Properties Reference
 
-| Physical | Logical | Purpose |
-|---|---|---|
-| `margin-left` / `margin-right` | `margin-inline-start` / `margin-inline-end` | Inline margin |
+| Physical                         | Logical                                       | Purpose        |
+| -------------------------------- | --------------------------------------------- | -------------- |
+| `margin-left` / `margin-right`   | `margin-inline-start` / `margin-inline-end`   | Inline margin  |
 | `padding-left` / `padding-right` | `padding-inline-start` / `padding-inline-end` | Inline padding |
-| `margin-top` / `margin-bottom` | `margin-block-start` / `margin-block-end` | Block margin |
-| `padding-top` / `padding-bottom` | `padding-block-start` / `padding-block-end` | Block padding |
-| `left` / `right` | `inset-inline-start` / `inset-inline-end` | Positioning |
-| `border-left` / `border-right` | `border-inline-start` / `border-inline-end` | Borders |
-| `text-align: left/right` | `text-align: start/end` | Text alignment |
+| `margin-top` / `margin-bottom`   | `margin-block-start` / `margin-block-end`     | Block margin   |
+| `padding-top` / `padding-bottom` | `padding-block-start` / `padding-block-end`   | Block padding  |
+| `left` / `right`                 | `inset-inline-start` / `inset-inline-end`     | Positioning    |
+| `border-left` / `border-right`   | `border-inline-start` / `border-inline-end`   | Borders        |
+| `text-align: left/right`         | `text-align: start/end`                       | Text alignment |
 
 Fixes #16388

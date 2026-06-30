@@ -9,8 +9,10 @@ An advanced ambient layout micro-interaction asset designed to apply a very slow
 - **GPU Thread Optimization:** Leverages isolated `transform` loops backed by explicit `will-change` allocation properties to protect the main main-thread from paint flags.
 
 ## Workspace Tree Map
+
 - `demo.html`: Sandbox sandbox playground holding the live ambient element layout.
 - `style.css`: Core modular tracking rules sheets.
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

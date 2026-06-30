@@ -5,6 +5,7 @@
 Adds aspect ratio utility classes using the native CSS `aspect-ratio` property. Supports common ratios (square, video, 4:3, 3:2, 21:9, 9:16, 2:3, 3:4, 2:1, 4:1), semantic aliases (golden, portrait, landscape, cinema, instagram, iphone, a4), legacy padding-box fallback (`.ease-aspect-box`), and responsive breakpoint variants.
 
 **Classes:**
+
 - `.ease-aspect-auto` — Default browser behavior
 - `.ease-aspect-square` — 1:1
 - `.ease-aspect-video` — 16:9

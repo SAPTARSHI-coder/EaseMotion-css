@@ -32,12 +32,12 @@ Provides a reusable testimonial / quote card component with multiple stylistic v
 
 **Variants:**
 
-| Class | Description |
-|---|---|
-| `.ease-testimonial-card` | Standard card with border, shadow, and subtle hover lift |
-| `.ease-testimonial-card--quote` | Large decorative accent quote mark |
-| `.ease-testimonial-card--minimal` | No border, transparent background, clean typography |
-| `.ease-testimonial-card--accent` | Colored left border accent |
+| Class                             | Description                                              |
+| --------------------------------- | -------------------------------------------------------- |
+| `.ease-testimonial-card`          | Standard card with border, shadow, and subtle hover lift |
+| `.ease-testimonial-card--quote`   | Large decorative accent quote mark                       |
+| `.ease-testimonial-card--minimal` | No border, transparent background, clean typography      |
+| `.ease-testimonial-card--accent`  | Colored left border accent                               |
 
 **Grid:**
 
@@ -53,12 +53,12 @@ Testimonials are a staple of marketing pages, landing sites, and product showcas
 
 ## Variants Preview
 
-| Variant | Visual Cue |
-|---|---|
-| Standard | Light border, subtle shadow, hover lift |
-| Quote | Large accent-colored quote mark behind text |
-| Minimal | Borderless, transparent, for clean layouts |
-| Accent | Colored left border for visual hierarchy |
+| Variant  | Visual Cue                                  |
+| -------- | ------------------------------------------- |
+| Standard | Light border, subtle shadow, hover lift     |
+| Quote    | Large accent-colored quote mark behind text |
+| Minimal  | Borderless, transparent, for clean layouts  |
+| Accent   | Colored left border for visual hierarchy    |
 
 ## Features
 

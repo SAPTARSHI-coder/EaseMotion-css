@@ -6,12 +6,12 @@ A pure-CSS animated breadcrumb trail for showing page hierarchy. Crumbs fade-sli
 
 ## Preview
 
-| State | Behaviour |
-|-------|-----------|
-| Mount | Crumbs fade + slide in left-to-right with staggered delay |
-| Hover | Underline slides in from left via `scaleX(0 → 1)` |
-| Active | Purple pill with soft repeating `box-shadow` pulse |
-| Separator | Fades in with its crumb item |
+| State     | Behaviour                                                 |
+| --------- | --------------------------------------------------------- |
+| Mount     | Crumbs fade + slide in left-to-right with staggered delay |
+| Hover     | Underline slides in from left via `scaleX(0 → 1)`         |
+| Active    | Purple pill with soft repeating `box-shadow` pulse        |
+| Separator | Fades in with its crumb item                              |
 
 ---
 
@@ -28,31 +28,31 @@ submissions/examples/breadcrumb-trail/
 
 ## Variants
 
-| Variant | Description |
-|---------|-------------|
-| Basic slash | Default `/` separator |
-| Chevron SVG | Inline SVG arrow separator |
-| Icon + text | Emoji/icon before each crumb label |
-| Truncated | Middle crumbs collapsed to `···` ellipsis |
-| Flat | No card chrome — transparent background |
-| Small | `.ease-breadcrumb-sm` size modifier |
+| Variant     | Description                               |
+| ----------- | ----------------------------------------- |
+| Basic slash | Default `/` separator                     |
+| Chevron SVG | Inline SVG arrow separator                |
+| Icon + text | Emoji/icon before each crumb label        |
+| Truncated   | Middle crumbs collapsed to `···` ellipsis |
+| Flat        | No card chrome — transparent background   |
+| Small       | `.ease-breadcrumb-sm` size modifier       |
 
 ---
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
-| `ease-breadcrumb` | `<ol>` container; card chrome (bg, border, shadow) |
-| `ease-breadcrumb-flat` | Remove card chrome — transparent variant |
-| `ease-breadcrumb-sm` | Small text size (0.75rem) |
-| `ease-breadcrumb-lg` | Large text size (0.9375rem) |
-| `ease-bread-item` | `<li>` crumb item; staggered fade-slide entrance |
-| `ease-bread-link` | `<a>` crumb link; hover underline slide + colour |
-| `ease-bread-icon` | Icon inside a link; colour transitions on hover |
-| `ease-bread-separator` | Separator between crumbs (text or SVG) |
-| `ease-bread-active` | Current page crumb; purple pill + pulse animation |
-| `ease-bread-ellipsis` | Collapsed middle crumbs `···` placeholder |
+| Class                  | Description                                        |
+| ---------------------- | -------------------------------------------------- |
+| `ease-breadcrumb`      | `<ol>` container; card chrome (bg, border, shadow) |
+| `ease-breadcrumb-flat` | Remove card chrome — transparent variant           |
+| `ease-breadcrumb-sm`   | Small text size (0.75rem)                          |
+| `ease-breadcrumb-lg`   | Large text size (0.9375rem)                        |
+| `ease-bread-item`      | `<li>` crumb item; staggered fade-slide entrance   |
+| `ease-bread-link`      | `<a>` crumb link; hover underline slide + colour   |
+| `ease-bread-icon`      | Icon inside a link; colour transitions on hover    |
+| `ease-bread-separator` | Separator between crumbs (text or SVG)             |
+| `ease-bread-active`    | Current page crumb; purple pill + pulse animation  |
+| `ease-bread-ellipsis`  | Collapsed middle crumbs `···` placeholder          |
 
 ---
 
@@ -63,7 +63,6 @@ submissions/examples/breadcrumb-trail/
 ```html
 <nav aria-label="Breadcrumb">
   <ol class="ease-breadcrumb">
-
     <li class="ease-bread-item">
       <a class="ease-bread-link" href="/">Home</a>
       <span class="ease-bread-separator" aria-hidden="true">/</span>
@@ -77,7 +76,6 @@ submissions/examples/breadcrumb-trail/
     <li class="ease-bread-item" aria-current="page">
       <span class="ease-bread-active">Breadcrumb</span>
     </li>
-
   </ol>
 </nav>
 ```
@@ -98,9 +96,15 @@ submissions/examples/breadcrumb-trail/
 
 ```html
 <span class="ease-bread-separator" aria-hidden="true">
-  <svg viewBox="0 0 12 12" fill="none" stroke="currentColor"
-       stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="4 2 8 6 4 10"/>
+  <svg
+    viewBox="0 0 12 12"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <polyline points="4 2 8 6 4 10" />
   </svg>
 </span>
 ```
@@ -109,7 +113,9 @@ submissions/examples/breadcrumb-trail/
 
 ```html
 <li class="ease-bread-item" aria-label="Hidden path segments">
-  <span class="ease-bread-ellipsis" title="Category > Sub-category > Section">···</span>
+  <span class="ease-bread-ellipsis" title="Category > Sub-category > Section"
+    >···</span
+  >
   <span class="ease-bread-separator" aria-hidden="true">›</span>
 </li>
 ```
@@ -119,15 +125,23 @@ submissions/examples/breadcrumb-trail/
 ## Animation Details
 
 ### Crumb entrance — `ease-bread-appear`
+
 ```css
 @keyframes ease-bread-appear {
-  from { opacity: 0; transform: translateX(-4px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 /* Each nth-child gets +60ms delay for the stagger */
 ```
 
 ### Hover underline — left-to-right slide
+
 ```css
 .ease-bread-link::after {
   transform: scaleX(0);
@@ -140,10 +154,16 @@ submissions/examples/breadcrumb-trail/
 ```
 
 ### Active crumb pulse
+
 ```css
 @keyframes ease-bread-pulse {
-  0%, 100% { box-shadow: 0 0 0 0   var(--ease-bread-active-border); }
-  50%       { box-shadow: 0 0 0 3px transparent; }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--ease-bread-active-border);
+  }
+  50% {
+    box-shadow: 0 0 0 3px transparent;
+  }
 }
 ```
 
@@ -155,11 +175,11 @@ All colours are CSS custom properties on `:root`:
 
 ```css
 :root {
-  --ease-bread-text-hover:    #6366f1;
-  --ease-bread-underline:     #6366f1;
-  --ease-bread-active-bg:     #ede9fe;
+  --ease-bread-text-hover: #6366f1;
+  --ease-bread-underline: #6366f1;
+  --ease-bread-active-bg: #ede9fe;
   --ease-bread-active-border: #a78bfa;
-  --ease-bread-active-text:   #5b21b6;
+  --ease-bread-active-text: #5b21b6;
 }
 ```
 

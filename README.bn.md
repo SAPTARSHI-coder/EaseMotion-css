@@ -601,16 +601,16 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 
 <div align="center">
 
-| প্ল্যাটফর্ম             | লিঙ্ক                                                                                                                 |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 🐛 **বাগ রিপোর্ট**      | [একটি ইস্যু খোলো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)                |
-| 💡 **ফিচার রিকোয়েস্ট** | [একটি ফিচার রিকোয়েস্ট করো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
-| 🔀 **পুল রিকোয়েস্ট**   | [একটি অবদান জমা দাও](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                                         |
-| 📖 **ডকুমেন্টেশন**      | [সম্পূর্ণ ডকস সাইট](https://saptarshi-coder.github.io/EaseMotion-css/)                                                |
-| 📦 **npm প্যাকেজ**      | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css)                                                  |
-| 🌐 **CDN**              | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css)                                                       |
-| 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                           |
-| 💬 **ডিসকর্ড সার্ভার (ঐচ্ছিক)**  | [ডিসকর্ড-এ জয়েন করো (ঐচ্ছিক)](https://discord.gg/hWSdGrccBU)                                                                   |
+| প্ল্যাটফর্ম                     | লিঙ্ক                                                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| 🐛 **বাগ রিপোর্ট**              | [একটি ইস্যু খোলো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)                |
+| 💡 **ফিচার রিকোয়েস্ট**         | [একটি ফিচার রিকোয়েস্ট করো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
+| 🔀 **পুল রিকোয়েস্ট**           | [একটি অবদান জমা দাও](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                                         |
+| 📖 **ডকুমেন্টেশন**              | [সম্পূর্ণ ডকস সাইট](https://saptarshi-coder.github.io/EaseMotion-css/)                                                |
+| 📦 **npm প্যাকেজ**              | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css)                                                  |
+| 🌐 **CDN**                      | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css)                                                       |
+| 🏆 **GSSoC 2026**               | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                           |
+| 💬 **ডিসকর্ড সার্ভার (ঐচ্ছিক)** | [ডিসকর্ড-এ জয়েন করো (ঐচ্ছিক)](https://discord.gg/hWSdGrccBU)                                                          |
 
 </div>
 

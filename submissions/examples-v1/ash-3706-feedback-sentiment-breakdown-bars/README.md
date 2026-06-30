@@ -22,17 +22,13 @@ A responsive sentiment analysis component displaying customer feedback distribut
 
 ```html
 <div class="sentiment">
+  <div class="label">
+    <span>😊 Positive</span>
+  </div>
 
-    <div class="label">
-        <span>😊 Positive</span>
-    </div>
-
-    <div class="bar">
-
-        <div class="fill positive"></div>
-
-    </div>
-
+  <div class="bar">
+    <div class="fill positive"></div>
+  </div>
 </div>
 ```
 

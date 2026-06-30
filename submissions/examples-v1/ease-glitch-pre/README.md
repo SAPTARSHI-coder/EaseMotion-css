@@ -6,6 +6,7 @@ animation on text or elements, using keyframes with clip-path
 and transform — no JavaScript, no dependencies.
 
 **How is it used?**
+
 <!-- Basic glitch on a heading -->
 <h1 class="glitch" data-text="Hello World">Hello World</h1>
 

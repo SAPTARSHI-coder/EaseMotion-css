@@ -15,7 +15,11 @@ Provides a fixed sidebar navigation that stays visible while the user scrolls th
     <nav>
       <ul class="toc-sidebar__list">
         <li class="toc-sidebar__item">
-          <a href="#section-1" class="toc-sidebar__link toc-sidebar__link--active">Section 1</a>
+          <a
+            href="#section-1"
+            class="toc-sidebar__link toc-sidebar__link--active"
+            >Section 1</a
+          >
         </li>
         <li class="toc-sidebar__item">
           <a href="#section-2" class="toc-sidebar__link">Section 2</a>
@@ -43,7 +47,9 @@ Add `toc-sidebar__link--active` to the currently active link. Update this class 
 ### Nested items
 
 ```html
-<a href="#sub-section" class="toc-sidebar__link toc-sidebar__link--nested">Sub Section</a>
+<a href="#sub-section" class="toc-sidebar__link toc-sidebar__link--nested"
+  >Sub Section</a
+>
 ```
 
 ## Why is it useful?

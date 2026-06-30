@@ -1,14 +1,8 @@
 \# ease-font-weight utilities
 
-
-
 Font weight classes from Thin (100) to Black (900).
 
-
-
 \## Available Classes
-
-
 
 | Class | Value |
 
@@ -32,17 +26,12 @@ Font weight classes from Thin (100) to Black (900).
 
 | `ease-font-black` | 900 |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <p class="ease-font-thin">Thin text (100)</p>
 
 <p class="ease-font-bold">Bold text (700)</p>
 
 <p class="ease-font-black">Black text (900)</p>
-
+```

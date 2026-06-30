@@ -18,8 +18,8 @@ Useful for card captions, descriptions, button subtitles, and other UI elements 
 
 ## Tech Stack
 
-* HTML
-* CSS
+- HTML
+- CSS
 
 ## Preview
 

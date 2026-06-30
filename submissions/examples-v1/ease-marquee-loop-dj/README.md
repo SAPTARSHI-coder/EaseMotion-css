@@ -3,6 +3,7 @@
 A CSS-only utility class that continuously scrolls content horizontally in an infinite loop, perfect for news tickers, announcements, logo carousels, and alerts.
 
 ## Features
+
 - **Pure CSS**: Zero JavaScript required for the infinite loop.
 - **Interactive**: Automatically pauses the animation when the user hovers over the content.
 - **Accessible**: Fully respects `prefers-reduced-motion` (stops animation and allows standard horizontal scrolling).
@@ -19,6 +20,7 @@ Include `style.css` in your project. Add the `.ease-marquee-loop-dj` class to a 
 ```
 
 ### Customizing Speed
+
 The default animation duration is `20s`. You can easily speed it up or slow it down by overriding the `animation-duration` on the child element:
 
 ```css

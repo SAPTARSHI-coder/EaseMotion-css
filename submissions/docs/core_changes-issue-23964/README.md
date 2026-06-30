@@ -4,10 +4,10 @@
 
 Utility classes for the CSS `overflow-anchor` property, which controls **scroll anchoring** — the browser's behavior of adjusting scroll position to prevent visual jumps when content above the viewport changes.
 
-| Class | Effect |
-|---|---|
+| Class                        | Effect                                                               |
+| ---------------------------- | -------------------------------------------------------------------- |
 | `.ease-overflow-anchor-auto` | `overflow-anchor: auto` — enables scroll anchoring (browser default) |
-| `.ease-overflow-anchor-none` | `overflow-anchor: none` — disables scroll anchoring |
+| `.ease-overflow-anchor-none` | `overflow-anchor: none` — disables scroll anchoring                  |
 
 ## How
 

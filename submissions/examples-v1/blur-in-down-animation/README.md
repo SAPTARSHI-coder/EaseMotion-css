@@ -13,9 +13,7 @@ A lightweight blur-in descending animation utility built using pure CSS.
 ## Usage
 
 ```html
-<div class="blur-box">
-  BLUR IN
-</div>
+<div class="blur-box">BLUR IN</div>
 ```
 
 ## Why It Fits EaseMotion CSS

@@ -13,10 +13,7 @@ Open `demo.html` directly in a browser.
 Example animation card:
 
 ```html
-<button
-  type="button"
-  class="animation-card"
-  data-animation="Bounce">
+<button type="button" class="animation-card" data-animation="Bounce">
   Bounce
 </button>
 ```
@@ -36,14 +33,14 @@ Example grid layout:
 
 This submission demonstrates modern accessibility and UX best practices that align with EaseMotion CSS goals:
 
-* Keyboard-accessible interactions
-* Proper semantic HTML
-* Responsive mobile layouts
-* Searchable animation catalog
-* Live preview experience
-* Copy-to-clipboard feedback
-* Theme toggle support
-* Improved readability and usability
+- Keyboard-accessible interactions
+- Proper semantic HTML
+- Responsive mobile layouts
+- Searchable animation catalog
+- Live preview experience
+- Copy-to-clipboard feedback
+- Theme toggle support
+- Improved readability and usability
 
 ## Features
 

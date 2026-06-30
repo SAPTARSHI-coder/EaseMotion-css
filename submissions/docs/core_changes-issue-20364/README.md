@@ -19,6 +19,7 @@ This checks for the exact mixed-case string `SAPTARSHI-coder/EaseMotion-css`.
 ```
 
 GitHub repository paths are case-insensitive, so both forms point to the same repo. However, `String.prototype.includes()` performs a case-sensitive comparison, so the validation fails with:
+
 ```
 package.json validation failed: repository.url must point to SAPTARSHI-coder/EaseMotion-css
 ```
@@ -28,6 +29,7 @@ package.json validation failed: repository.url must point to SAPTARSHI-coder/Eas
 Normalize both sides to lowercase before comparing on line 41 of `scripts/validate-package.mjs`.
 
 **Change from:**
+
 ```javascript
 if (!manifest.repository?.url?.includes("SAPTARSHI-coder/EaseMotion-css")) {
   fail("repository.url must point to SAPTARSHI-coder/EaseMotion-css");
@@ -35,6 +37,7 @@ if (!manifest.repository?.url?.includes("SAPTARSHI-coder/EaseMotion-css")) {
 ```
 
 **Change to:**
+
 ```javascript
 const repoUrl = (manifest.repository?.url ?? "").toLowerCase();
 const requiredRepo = "saptarshi-coder/easemotion-css";

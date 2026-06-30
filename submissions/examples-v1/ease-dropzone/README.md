@@ -30,17 +30,18 @@ A drag-and-drop file upload zone component for EaseMotion CSS.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-dropzone` | Base idle state with dashed border |
-| `ease-dropzone-active` | Dragover highlighted state |
-| `ease-dropzone-accepted` | File accepted success state |
-| `ease-dropzone-rejected` | File rejected error state |
-| `ease-dropzone-icon` | Icon area |
-| `ease-dropzone-text` | Main label text |
-| `ease-dropzone-hint` | Secondary hint text |
+| Class                    | Description                        |
+| ------------------------ | ---------------------------------- |
+| `ease-dropzone`          | Base idle state with dashed border |
+| `ease-dropzone-active`   | Dragover highlighted state         |
+| `ease-dropzone-accepted` | File accepted success state        |
+| `ease-dropzone-rejected` | File rejected error state          |
+| `ease-dropzone-icon`     | Icon area                          |
+| `ease-dropzone-text`     | Main label text                    |
+| `ease-dropzone-hint`     | Secondary hint text                |
 
 ## Features
+
 - 4 visual states: idle, active, accepted, rejected
 - Smooth transitions between states
 - Respects prefers-reduced-motion

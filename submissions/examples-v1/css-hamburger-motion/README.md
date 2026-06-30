@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated hamburger menu icons for modern res
 ## 🚀 Features
 
 ### Hamburger Styles (10 types)
+
 1. **Classic X** - Traditional X transformation
 2. **Arrow** - Transforms into left arrow
 3. **Squeeze** - Middle bar squeezes out
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated hamburger menu icons for modern res
 10. **Neon** - Cyberpunk neon glow
 
 ### Animation Features
+
 - Smooth bar transformations
 - Rotation and scaling
 - Elastic easing effects
@@ -26,6 +28,7 @@ A collection of beautiful, pure CSS animated hamburger menu icons for modern res
 - Hover state effects
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All hamburger animations
 - `readme.md` - Documentation
@@ -33,10 +36,12 @@ A collection of beautiful, pure CSS animated hamburger menu icons for modern res
 ## 🛠️ How to Use
 
 ### Basic Hamburger
+
 ```html
-<input type="checkbox" id="ham1" class="ham-toggle">
+<input type="checkbox" id="ham1" class="ham-toggle" />
 <label for="ham1" class="hamburger classic">
-    <span></span>
-    <span></span>
-    <span></span>
+  <span></span>
+  <span></span>
+  <span></span>
 </label>
+```

@@ -23,11 +23,7 @@ A search empty-state component that provides alternative search suggestions when
 
 ```html
 <div class="suggestions">
-
-  <button class="tag">
-    Wireless Keyboard
-  </button>
-
+  <button class="tag">Wireless Keyboard</button>
 </div>
 ```
 

@@ -9,9 +9,15 @@ An isolated navigation component submission introducing the sliding underline in
 - **Keyboard Navigation Compliant:** Works naturally with standard keyboard controls. Users can cycle through navigation groups seamlessly using arrow keys while focus outlines maintain visibility bounds (`:focus-visible`).
 
 ## Usage Layout Structure
-```html
 
-<input type="radio" id="tab-1" name="tab-group" class="ease-tab-input" checked />
+```html
+<input
+  type="radio"
+  id="tab-1"
+  name="tab-group"
+  class="ease-tab-input"
+  checked
+/>
 <input type="radio" id="tab-2" name="tab-group" class="ease-tab-input" />
 
 <div class="ease-tabs-container">

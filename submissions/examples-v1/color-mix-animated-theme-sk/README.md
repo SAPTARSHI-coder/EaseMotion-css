@@ -4,12 +4,12 @@ Animates an entire page palette simultaneously using a single `@property --mix-p
 
 ## Classes
 
-| Class | Theme |
-|---|---|
-| `ease-theme-sunset` | Orange → Pink (oklch 50deg → 340deg) |
-| `ease-theme-ocean` | Teal → Blue (oklch 200deg → 260deg) |
+| Class               | Theme                                 |
+| ------------------- | ------------------------------------- |
+| `ease-theme-sunset` | Orange → Pink (oklch 50deg → 340deg)  |
+| `ease-theme-ocean`  | Teal → Blue (oklch 200deg → 260deg)   |
 | `ease-theme-forest` | Green → Brown (oklch 145deg → 100deg) |
-| `ease-theme-active` | Triggers the blend-in animation |
+| `ease-theme-active` | Triggers the blend-in animation       |
 
 ## Usage
 

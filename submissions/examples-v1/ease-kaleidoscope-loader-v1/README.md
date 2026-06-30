@@ -30,9 +30,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="loader">
-...
-</div>
+<div class="loader">...</div>
 ```
 
 ---

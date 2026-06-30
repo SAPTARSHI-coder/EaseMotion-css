@@ -46,7 +46,7 @@ cricket.classList.add("chirping");
 ### Wing Motion
 
 ```css
-@keyframes wingMove
+@keyframes wingMove;
 ```
 
 Simulates rapid chirping wing movement.
@@ -54,7 +54,7 @@ Simulates rapid chirping wing movement.
 ### Sound Waves
 
 ```css
-@keyframes chirpWave
+@keyframes chirpWave;
 ```
 
 Creates expanding circular waves representing sound.
@@ -64,7 +64,7 @@ Creates expanding circular waves representing sound.
 ### Wave Color
 
 ```css
-border:3px solid #38bdf8;
+border: 3px solid #38bdf8;
 ```
 
 ### Wave Size
@@ -78,7 +78,7 @@ Increase for larger chirp radius.
 ### Chirp Speed
 
 ```css
-animation:.15s linear 6;
+animation: 0.15s linear 6;
 ```
 
 Adjust for faster or slower chirping.

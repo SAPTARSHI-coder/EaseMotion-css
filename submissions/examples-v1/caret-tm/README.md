@@ -18,9 +18,7 @@ This submission demonstrates the `caret-shape` CSS property with multiple varian
 Apply the `caret-shape` class to any element:
 
 ```html
-<div class="caret-shape">
-  Your content here
-</div>
+<div class="caret-shape">Your content here</div>
 ```
 
 ## Tokens Used

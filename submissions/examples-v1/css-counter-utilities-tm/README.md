@@ -22,7 +22,13 @@ Demonstrates CSS `counter-reset`, `counter-increment`, and `counter()` for autom
 ## Usage
 
 ```css
-.list { counter-reset: my-counter; }
-.item { counter-increment: my-counter; }
-.item::before { content: counter(my-counter); }
+.list {
+  counter-reset: my-counter;
+}
+.item {
+  counter-increment: my-counter;
+}
+.item::before {
+  content: counter(my-counter);
+}
 ```

@@ -8,7 +8,7 @@ Provides a centralized interface for managing data domains, data products, owner
 
 ```html
 <div class="domain-card healthy">
-    <h3>Customer Domain</h3>
+  <h3>Customer Domain</h3>
 </div>
 ```
 

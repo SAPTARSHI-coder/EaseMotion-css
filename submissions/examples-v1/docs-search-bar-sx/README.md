@@ -32,7 +32,9 @@ Drop the markup anywhere on a documentation page. The search bar is composed of 
       <li class="docs-result-item">
         <div class="docs-result-main">
           <span class="docs-result-title">Fade In</span>
-          <span class="docs-result-desc">Smoothly fade an element from transparent to visible.</span>
+          <span class="docs-result-desc"
+            >Smoothly fade an element from transparent to visible.</span
+          >
         </div>
         <span class="docs-result-cat cat-animation">Animation</span>
       </li>
@@ -55,22 +57,22 @@ Drop the markup anywhere on a documentation page. The search bar is composed of 
 
 ### Available classes
 
-| Class | Purpose |
-|-------|---------|
-| `.docs-search` | Root container (positioning context for dropdown) |
-| `.docs-search-wrap` | Pill-shaped input wrapper with focus glow |
-| `.docs-search-input` | The search input (transparent inside wrap) |
-| `.docs-search-icon` | Leading search glyph |
-| `.docs-search-kbd` | `/` keyboard shortcut hint (hides on focus) |
-| `.docs-search-clear` | Circular × clear button |
-| `.docs-search-results` | Animated dropdown panel |
-| `.docs-result-list` / `.docs-result-item` | Scrollable list of results |
-| `.docs-result-item.active` | Currently-highlighted item (keyboard nav) |
-| `.docs-result-title` / `.docs-result-desc` | Title and description |
-| `.docs-result-cat` + `.cat-animation` / `.cat-component` / `.cat-utility` / `.cat-docs` | Color-coded category badge |
-| `.docs-empty` | Empty-state panel |
-| `.docs-search-footer` | Keyboard hint footer inside the dropdown |
-| `<mark>` | Match-highlight styling inside titles/descriptions |
+| Class                                                                                   | Purpose                                            |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `.docs-search`                                                                          | Root container (positioning context for dropdown)  |
+| `.docs-search-wrap`                                                                     | Pill-shaped input wrapper with focus glow          |
+| `.docs-search-input`                                                                    | The search input (transparent inside wrap)         |
+| `.docs-search-icon`                                                                     | Leading search glyph                               |
+| `.docs-search-kbd`                                                                      | `/` keyboard shortcut hint (hides on focus)        |
+| `.docs-search-clear`                                                                    | Circular × clear button                            |
+| `.docs-search-results`                                                                  | Animated dropdown panel                            |
+| `.docs-result-list` / `.docs-result-item`                                               | Scrollable list of results                         |
+| `.docs-result-item.active`                                                              | Currently-highlighted item (keyboard nav)          |
+| `.docs-result-title` / `.docs-result-desc`                                              | Title and description                              |
+| `.docs-result-cat` + `.cat-animation` / `.cat-component` / `.cat-utility` / `.cat-docs` | Color-coded category badge                         |
+| `.docs-empty`                                                                           | Empty-state panel                                  |
+| `.docs-search-footer`                                                                   | Keyboard hint footer inside the dropdown           |
+| `<mark>`                                                                                | Match-highlight styling inside titles/descriptions |
 
 ### Interaction features
 

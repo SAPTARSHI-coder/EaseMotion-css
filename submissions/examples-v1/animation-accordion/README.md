@@ -4,13 +4,13 @@ A CSS-powered accordion component featuring smooth fold/unfold transitions and a
 
 ## Features
 
-* Smooth accordion expansion
-* Chevron icon rotation
-* Pure CSS implementation
-* Uses semantic HTML `<details>` and `<summary>`
-* Responsive design
-* Accessible by default
-* Reduced-motion support
+- Smooth accordion expansion
+- Chevron icon rotation
+- Pure CSS implementation
+- Uses semantic HTML `<details>` and `<summary>`
+- Responsive design
+- Accessible by default
+- Reduced-motion support
 
 ## Usage
 
@@ -38,14 +38,14 @@ This example demonstrates how EaseMotion CSS can provide elegant interaction pat
 Supports:
 
 ```css
-@media (prefers-reduced-motion: reduce)
+@media (prefers-reduced-motion: reduce);
 ```
 
 When enabled:
 
-* Accordion transitions are disabled
-* Chevron animations are disabled
-* Content remains fully accessible
+- Accordion transitions are disabled
+- Chevron animations are disabled
+- Content remains fully accessible
 
 ## Demo
 

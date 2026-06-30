@@ -1,9 +1,11 @@
 # Glossary Component
 
 ### What does this do?
+
 Adds `ease-glossary-az` — a styled definition list component using semantic `<dl>` markup. Ideal for product specs, API documentation, metadata displays, and key-value pair listings.
 
 ### How is it used?
+
 The maintainer should copy `style.css` into `components/glossary.css` and import it.
 
 ```html
@@ -22,6 +24,7 @@ The maintainer should copy `style.css` into `components/glossary.css` and import
 Variants: `.inline` (horizontal term/desc), `.striped` (alternating rows), `.card` (bordered items), `.sm`.
 
 ### Why is it useful?
+
 1. **Semantic HTML** — uses `<dl>`, `<dt>`, `<dd>` for accessibility and SEO
 2. **Four variants** — default vertical, `.inline` horizontal, `.striped` alternating, `.card` bordered items
 3. **Responsive** — inline mode collapses to vertical on mobile

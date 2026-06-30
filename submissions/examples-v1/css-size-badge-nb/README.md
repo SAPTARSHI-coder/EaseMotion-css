@@ -33,7 +33,7 @@ When developers evaluate a CSS library, bundle size is a critical factor. By pla
 - Performance-conscious adopters can make informed decisions
 - Maintainers are encouraged to keep the bundle lean across releases
 
-The badge makes size visible *without* requiring a download, build, or inspection.
+The badge makes size visible _without_ requiring a download, build, or inspection.
 
 ## Release Update Concept
 

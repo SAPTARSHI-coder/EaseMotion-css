@@ -24,11 +24,11 @@ Added a dark-mode override in `style.css`, per the issue's proposed fix:
 
 ## Contrast Verification
 
-| Mode | Border color | Background | Contrast ratio | WCAG AA (3:1)? |
-|---|---|---|---|---|
-| Light | `#cbd5e1` | `#ffffff` | ~1.4:1 | N/A (light bg, acceptable) |
-| Dark — before | `#cbd5e1` | `#0b1121` | ~1.4:1 | ❌ Fail |
-| Dark — after  | `#475569` | `#0b1121` | ~3.9:1 | ✅ Pass |
+| Mode          | Border color | Background | Contrast ratio | WCAG AA (3:1)?             |
+| ------------- | ------------ | ---------- | -------------- | -------------------------- |
+| Light         | `#cbd5e1`    | `#ffffff`  | ~1.4:1         | N/A (light bg, acceptable) |
+| Dark — before | `#cbd5e1`    | `#0b1121`  | ~1.4:1         | ❌ Fail                    |
+| Dark — after  | `#475569`    | `#0b1121`  | ~3.9:1         | ✅ Pass                    |
 
 ## Acceptance Criteria
 

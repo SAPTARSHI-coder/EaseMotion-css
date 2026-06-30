@@ -1,11 +1,12 @@
 # 3D Flip Animations (flip-x & flip-y)
 
 1. What does this do?
-Provides CSS classes (`flip-x` and `flip-y`) for one-shot 180° 3D flip animations around the horizontal or vertical axis, as well as a pure-CSS interactive `.flip-card` helper.
+   Provides CSS classes (`flip-x` and `flip-y`) for one-shot 180° 3D flip animations around the horizontal or vertical axis, as well as a pure-CSS interactive `.flip-card` helper.
 
 2. How is it used?
 
 **One-shot animations:**
+
 ```html
 <!-- Flips around the horizontal X-axis on load -->
 <div class="flip-x">Horizontal Flip Content</div>
@@ -15,6 +16,7 @@ Provides CSS classes (`flip-x` and `flip-y`) for one-shot 180° 3D flip animatio
 ```
 
 **Pure CSS interactive hover/focus cards:**
+
 ```html
 <!-- Y-axis flip (default) -->
 <div class="flip-card" tabindex="0">
@@ -42,4 +44,4 @@ Provides CSS classes (`flip-x` and `flip-y`) for one-shot 180° 3D flip animatio
 ```
 
 3. Why is it useful?
-3D card flipping is a popular interactive design pattern for flashcards, pricing plans, and product highlights. Providing standard, hardware-accelerated 3D transforms without JavaScript makes implementation fast and performance-friendly, aligning with EaseMotion CSS's philosophy of lightweight, pure-CSS utility design.
+   3D card flipping is a popular interactive design pattern for flashcards, pricing plans, and product highlights. Providing standard, hardware-accelerated 3D transforms without JavaScript makes implementation fast and performance-friendly, aligning with EaseMotion CSS's philosophy of lightweight, pure-CSS utility design.

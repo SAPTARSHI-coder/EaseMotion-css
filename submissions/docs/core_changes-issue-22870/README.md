@@ -9,7 +9,15 @@ Adds an animated search bar component with smooth expand-on-focus interaction. T
 ```html
 <div class="ease-search-bar">
   <span class="ease-search-icon">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
+    </svg>
   </span>
   <input class="ease-search-input" type="text" placeholder="Search..." />
   <button class="ease-search-clear">&times;</button>
@@ -17,6 +25,7 @@ Adds an animated search bar component with smooth expand-on-focus interaction. T
 ```
 
 Variants:
+
 ```html
 <div class="ease-search-bar ease-search-filled">...</div>
 <div class="ease-search-bar ease-search-outline">...</div>
@@ -25,6 +34,7 @@ Variants:
 ```
 
 Customise via CSS custom properties:
+
 ```css
 .ease-search-bar {
   --ease-search-border-focus: #10b981;

@@ -23,15 +23,9 @@ A responsive Startup Growth Platform dashboard designed for monitoring startup p
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="grid">
-        ...
-    </section>
-
+  <section class="grid">...</section>
 </div>
 ```
 

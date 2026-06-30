@@ -5,6 +5,7 @@
 Adds text truncation utility classes for controlling text overflow. Supports single-line truncation with ellipsis, multi-line line-clamp (1–6 lines), clip truncation (no ellipsis), responsive breakpoint variants, and a reset class.
 
 **Classes:**
+
 - `.ease-truncate` — Single-line `text-overflow: ellipsis; white-space: nowrap`
 - `.ease-truncate-{1-6}` — `-webkit-line-clamp` for N lines
 - `.ease-truncate-multiline` — Default 3-line clamp

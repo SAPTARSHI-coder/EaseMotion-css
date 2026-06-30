@@ -9,9 +9,7 @@ Adds fundamental layout utility classes to EaseMotion CSS for `position` (static
 **Sticky header:**
 
 ```html
-<header class="ease-sticky ease-top-0">
-  Sticky navigation
-</header>
+<header class="ease-sticky ease-top-0">Sticky navigation</header>
 ```
 
 **Modal overlay with scroll:**
@@ -26,7 +24,9 @@ Adds fundamental layout utility classes to EaseMotion CSS for `position` (static
 
 ```html
 <div class="ease-overflow-x-auto" style="max-width: 100%;">
-  <table>...</table>
+  <table>
+    ...
+  </table>
 </div>
 ```
 

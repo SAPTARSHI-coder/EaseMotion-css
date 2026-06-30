@@ -8,7 +8,7 @@ Provides a centralized portal interface for discovering services, APIs, document
 
 ```html
 <div class="service-card">
-    <h3>Authentication Service</h3>
+  <h3>Authentication Service</h3>
 </div>
 ```
 

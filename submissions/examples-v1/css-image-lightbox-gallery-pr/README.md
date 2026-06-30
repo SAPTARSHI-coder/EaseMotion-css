@@ -1,6 +1,7 @@
 # CSS-only Image Lightbox Gallery (Advanced Component)
 
 ## What does this do?
+
 A grid of thumbnail images. When a user clicks a thumbnail, the image
 smoothly expands to fill the screen in a dark, modal-like overlay with
 a glassmorphism backdrop blur, a close button, and smooth entry
@@ -26,6 +27,7 @@ HTML anchor links — no JavaScript.
 ```
 
 ## Why is it useful?
+
 Lightboxes are essential for portfolios, e-commerce sites, and blogs.
 Developers usually import large third-party JavaScript libraries (like
 Fancybox or Lightbox2) just to enlarge an image. By providing a pure CSS

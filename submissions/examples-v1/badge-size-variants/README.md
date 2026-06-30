@@ -9,15 +9,11 @@ An isolated sizing modification package expanding the core `.ease-badge` token f
 - `.ease-badge-lg`: Triggers an expanded `14px` type frame bound by deep padding boundaries. Optimized for primary title flags, page header accents, and loud status indicators.
 
 ## Usage Layout Structure
+
 ```html
+<span class="ease-badge ease-badge-sm"> Table Meta </span>
 
-<span class="ease-badge ease-badge-sm">
-  Table Meta
-</span>
-
-<span class="ease-badge ease-badge-lg">
-  Hero Flag
-</span>
+<span class="ease-badge ease-badge-lg"> Hero Flag </span>
 ```
 
 Closes #13254

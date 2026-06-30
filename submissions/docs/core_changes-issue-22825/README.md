@@ -21,6 +21,7 @@ Adds a toast notification system with slide-in animation, auto-dismiss, stack la
 ```
 
 Add `.ease-toast-auto-dismiss` for auto-removal after 4 seconds:
+
 ```html
 <div class="ease-toast ease-toast-success ease-toast-auto-dismiss">...</div>
 ```

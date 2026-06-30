@@ -16,9 +16,9 @@ Open `demo.html` in a browser. The counters animate on page load via `requestAni
 
 ## Customization
 
-| CSS Variable | Default | Description |
-|---|---|---|
-| `--ease-up-color` | `#22c55e` | Positive trend color |
+| CSS Variable        | Default   | Description          |
+| ------------------- | --------- | -------------------- |
+| `--ease-up-color`   | `#22c55e` | Positive trend color |
 | `--ease-down-color` | `#ef4444` | Negative trend color |
 
 Override in `:root` or use `data-theme="dark"` / `data-theme="light"`.

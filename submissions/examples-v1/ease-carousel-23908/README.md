@@ -10,10 +10,10 @@ A lightweight CSS carousel component using `scroll-snap-type: x mandatory` with 
 <div class="ease-carousel" id="my-carousel">
   <div class="ease-carousel-track">
     <div class="ease-carousel-slide" id="slide-1">
-      <img src="..." alt="...">
+      <img src="..." alt="..." />
     </div>
     <div class="ease-carousel-slide" id="slide-2">
-      <img src="..." alt="...">
+      <img src="..." alt="..." />
     </div>
   </div>
   <div class="ease-carousel-dots">
@@ -24,12 +24,14 @@ A lightweight CSS carousel component using `scroll-snap-type: x mandatory` with 
 ```
 
 Add prev/next buttons:
+
 ```html
 <button class="ease-carousel-btn ease-carousel-btn-prev">&#8249;</button>
 <button class="ease-carousel-btn ease-carousel-btn-next">&#8250;</button>
 ```
 
 Variants:
+
 - `.ease-carousel-multi` — show 2 slides at once
 - `.ease-carousel-3` — show 3 slides (with `.ease-carousel-multi`)
 - `.ease-carousel-elevated` — add shadow

@@ -23,19 +23,13 @@ A responsive password policy compliance component that displays password require
 
 ```html
 <div class="policy met">
+  <div class="icon">✓</div>
 
-    <div class="icon">✓</div>
+  <div class="content">
+    <h3>Minimum 12 Characters</h3>
+  </div>
 
-    <div class="content">
-
-        <h3>Minimum 12 Characters</h3>
-
-    </div>
-
-    <span class="badge success">
-        Met
-    </span>
-
+  <span class="badge success"> Met </span>
 </div>
 ```
 

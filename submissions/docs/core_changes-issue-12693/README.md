@@ -36,37 +36,39 @@ Provides a CSS-only Badge component for labels, counts, status indicators, and n
 ```html
 <div style="position: relative; display: inline-block;">
   🔔
-  <span class="ease-badge ease-badge-sm ease-badge-danger ease-badge-top-right">3</span>
+  <span class="ease-badge ease-badge-sm ease-badge-danger ease-badge-top-right"
+    >3</span
+  >
 </div>
 ```
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Neutral pill badge |
-| `.ease-badge-primary` | Indigo fill |
-| `.ease-badge-success` | Green fill |
-| `.ease-badge-warning` | Amber fill |
-| `.ease-badge-danger` | Red fill |
-| `.ease-badge-info` | Cyan fill |
-| `.ease-badge-sm` | Smaller font & padding |
-| `.ease-badge-lg` | Larger font & padding |
-| `.ease-badge-outline` | Transparent bg + border |
-| `.ease-badge-dot` | 0.5rem colored circle |
-| `.ease-badge-top-right` | Absolute top-right |
-| `.ease-badge-top-left` | Absolute top-left |
-| `.ease-badge-bottom-right` | Absolute bottom-right |
-| `.ease-badge-bottom-left` | Absolute bottom-left |
+| Modifier                   | Effect                  |
+| -------------------------- | ----------------------- |
+| (none)                     | Neutral pill badge      |
+| `.ease-badge-primary`      | Indigo fill             |
+| `.ease-badge-success`      | Green fill              |
+| `.ease-badge-warning`      | Amber fill              |
+| `.ease-badge-danger`       | Red fill                |
+| `.ease-badge-info`         | Cyan fill               |
+| `.ease-badge-sm`           | Smaller font & padding  |
+| `.ease-badge-lg`           | Larger font & padding   |
+| `.ease-badge-outline`      | Transparent bg + border |
+| `.ease-badge-dot`          | 0.5rem colored circle   |
+| `.ease-badge-top-right`    | Absolute top-right      |
+| `.ease-badge-top-left`     | Absolute top-left       |
+| `.ease-badge-bottom-right` | Absolute bottom-right   |
+| `.ease-badge-bottom-left`  | Absolute bottom-left    |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--bsize` | `0.75rem` | Font size |
-| `--bpadx` | `0.625rem` | Horizontal padding |
-| `--bpady` | `0.125rem` | Vertical padding |
-| `--bradius` | `9999px` | Border radius |
+| Property    | Default    | Description        |
+| ----------- | ---------- | ------------------ |
+| `--bsize`   | `0.75rem`  | Font size          |
+| `--bpadx`   | `0.625rem` | Horizontal padding |
+| `--bpady`   | `0.125rem` | Vertical padding   |
+| `--bradius` | `9999px`   | Border radius      |
 
 ## Why is it useful?
 

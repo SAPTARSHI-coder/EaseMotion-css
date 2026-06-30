@@ -23,9 +23,7 @@ A modern approval workflow component featuring request information, priority ind
 ## Usage
 
 ```html
-<div class="approval-bar">
-  Approval Request
-</div>
+<div class="approval-bar">Approval Request</div>
 ```
 
 ## Main Classes

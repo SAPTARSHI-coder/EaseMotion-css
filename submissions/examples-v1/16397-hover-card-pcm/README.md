@@ -10,7 +10,7 @@
 <div id="card-1" class="hover-card" role="tooltip">
   <div class="hover-card-arrow" data-placement="top"></div>
   <div class="hover-card-content">
-    <img class="hover-card-avatar" src="avatar.jpg" alt="">
+    <img class="hover-card-avatar" src="avatar.jpg" alt="" />
     <div>
       <h4 class="hover-card-title">User Name</h4>
       <p class="hover-card-desc">Bio text here</p>

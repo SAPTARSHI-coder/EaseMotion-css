@@ -28,9 +28,7 @@ Ease Morphing Blob Loader creates an organic loading animation using multiple an
 ## Usage
 
 ```html
-<div class="loader">
-...
-</div>
+<div class="loader">...</div>
 ```
 
 ---

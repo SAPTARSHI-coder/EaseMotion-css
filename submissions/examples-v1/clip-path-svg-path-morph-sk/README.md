@@ -16,11 +16,16 @@ Four demos are included:
 ```css
 /* All keyframe paths must share the same SVG command count and order */
 @keyframes ease-path-morph {
-  0%, 100% {
-    clip-path: path("M 150 0 C 220 10 290 80 285 155 C 280 230 210 295 135 290 C 60 285 0 220 0 145 C 0 65 75 -10 150 0 Z");
+  0%,
+  100% {
+    clip-path: path(
+      "M 150 0 C 220 10 290 80 285 155 C 280 230 210 295 135 290 C 60 285 0 220 0 145 C 0 65 75 -10 150 0 Z"
+    );
   }
   50% {
-    clip-path: path("M 155 10 C 230 25 275 110 265 185 C 255 255 185 300 110 285 C 40 270 -5 195 10 120 C 25 50 80 -5 155 10 Z");
+    clip-path: path(
+      "M 155 10 C 230 25 275 110 265 185 C 255 255 185 300 110 285 C 40 270 -5 195 10 120 C 25 50 80 -5 155 10 Z"
+    );
   }
 }
 

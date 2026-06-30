@@ -5,11 +5,14 @@
 
 2. **How is it used?**
    Once integrated, the fix automatically applies when the operating system or browser enters dark mode. Developers do not need to apply any new classes. Example:
+
    ```html
    <h1>This Heading becomes light-colored in dark mode</h1>
-   
+
    <div class="ease-card">
-     <h2 class="ease-card-title">This title adapts to high-contrast white in dark mode</h2>
+     <h2 class="ease-card-title">
+       This title adapts to high-contrast white in dark mode
+     </h2>
    </div>
    ```
 

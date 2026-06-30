@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring chaos engineering experiments, r
 
 ```html
 <div class="experiment-card healthy">
-    <h3>Pod Failure Test</h3>
+  <h3>Pod Failure Test</h3>
 </div>
 ```
 

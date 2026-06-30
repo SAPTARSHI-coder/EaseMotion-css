@@ -8,9 +8,9 @@ Submits layout utility architectures and style isolation boundary test grids (`.
 - **The Solution:** Total style containment. The `.ease-reset-all` utility establishes a strict baseline reset using `all: unset`. This wipes out both element default behaviors and inherited parameters instantly, yielding a blank-slate block context. Developers can then style web elements reliably without fighting cascade issues.
 
 ## Usage Layout Structure
+
 ```html
 <div class="legacy-polluted-wrapper">
-  
   <button type="button" class="ease-reset-all clean-framework-button">
     Isolated Action Element
   </button>

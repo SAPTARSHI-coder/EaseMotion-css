@@ -22,17 +22,11 @@ A responsive release risk assessment component that helps engineering teams eval
 
 ```html
 <div class="risk low">
+  <div class="header">
+    <h3>Code Quality</h3>
 
-    <div class="header">
-
-        <h3>Code Quality</h3>
-
-        <span class="badge success">
-            Low
-        </span>
-
-    </div>
-
+    <span class="badge success"> Low </span>
+  </div>
 </div>
 ```
 

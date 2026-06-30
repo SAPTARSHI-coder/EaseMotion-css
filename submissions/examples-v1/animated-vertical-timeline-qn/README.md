@@ -1,13 +1,16 @@
 # Animated Vertical Timeline
 
 ## Description
+
 A clean, modern, and fully animated vertical timeline component. It features a vertical line that draws itself from top to bottom, accompanied by dots that pop in and content cards that slide in from the left. The animations are perfectly staggered to create a smooth, cascading reveal effect as the page loads. Built entirely with pure CSS, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the semantic HTML structure for the timeline line, dots, and content cards.
 - `style.css`: Contains the layout, the line drawing animation, the dot pop keyframes, and the staggered content slide-in animations.
 
 ## How to use
+
 1. Open `demo.html` in your browser to see the smooth cascading load animation.
 2. Copy the HTML and CSS into your project.
 3. Wrap your timeline items inside a `.timeline-container-qn` div, and include the `.timeline-line-qn` div at the top.

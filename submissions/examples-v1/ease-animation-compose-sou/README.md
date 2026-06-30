@@ -62,25 +62,24 @@ The submission shows three working patterns. Pick whichever fits your framework 
 
 .ease-anim.add-fade-in.add-slide-up.add-rotate-in {
   --ease-anim-list:
-    ease-fade-in-kf 1s ease both,
-    ease-slide-up-kf 1s ease both,
+    ease-fade-in-kf 1s ease both, ease-slide-up-kf 1s ease both,
     ease-rotate-in-kf 1s ease both;
 }
 ```
 
 ### Class Reference
 
-| Class                            | Purpose                                              |
-| -------------------------------- | ---------------------------------------------------- |
-| `.ease-fade-in-bad` / etc.       | **Buggy** examples using `animation:` shorthand      |
-| `.ease-fade-in`                  | Longhand fade-in (composable)                        |
-| `.ease-slide-up`                 | Longhand slide-up (composable)                       |
-| `.ease-scale-in`                 | Longhand scale-in (composable)                       |
-| `.ease-rotate-in`                | Longhand rotate-in (composable)                      |
-| `.ease-fade-slide-up`            | Combo class — fade + slide                           |
-| `.ease-fade-scale-in`            | Combo class — fade + scale                           |
-| `.ease-fade-rotate-in`           | Combo class — fade + rotate                          |
-| `.ease-anim`                     | Base for CSS-variable composition pattern            |
+| Class                                                                 | Purpose                                            |
+| --------------------------------------------------------------------- | -------------------------------------------------- |
+| `.ease-fade-in-bad` / etc.                                            | **Buggy** examples using `animation:` shorthand    |
+| `.ease-fade-in`                                                       | Longhand fade-in (composable)                      |
+| `.ease-slide-up`                                                      | Longhand slide-up (composable)                     |
+| `.ease-scale-in`                                                      | Longhand scale-in (composable)                     |
+| `.ease-rotate-in`                                                     | Longhand rotate-in (composable)                    |
+| `.ease-fade-slide-up`                                                 | Combo class — fade + slide                         |
+| `.ease-fade-scale-in`                                                 | Combo class — fade + scale                         |
+| `.ease-fade-rotate-in`                                                | Combo class — fade + rotate                        |
+| `.ease-anim`                                                          | Base for CSS-variable composition pattern          |
 | `.add-fade-in` / `.add-slide-up` / `.add-scale-in` / `.add-rotate-in` | Modifier classes that append to `--ease-anim-list` |
 
 ## 3. Why is it useful?

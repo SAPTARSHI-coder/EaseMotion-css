@@ -23,11 +23,9 @@ A responsive incident response status board that visualizes incidents across dif
 
 ```html
 <div class="card investigating">
+  <strong>API Gateway Errors</strong>
 
-    <strong>API Gateway Errors</strong>
-
-    <p>Engineering reviewing logs</p>
-
+  <p>Engineering reviewing logs</p>
 </div>
 ```
 

@@ -5,6 +5,7 @@ Welcome to the **Browser Compatibility Matrix Guide**! This comprehensive docume
 ---
 
 ## 📋 Table of Contents
+
 1. [Compatibility Matrix Table](#1-compatibility-matrix-table)
 2. [Houdini CSS `@property` Variables](#2-houdini-css-property-variables)
 3. [CSS Scroll-Driven Animations](#3-css-scroll-driven-animations)
@@ -17,15 +18,15 @@ Welcome to the **Browser Compatibility Matrix Guide**! This comprehensive docume
 
 This table charts support status across the four major browsers (Chrome, Firefox, Safari, Edge) for various animation and transition techniques.
 
-| Animation Class Category | Chrome | Firefox | Safari | Edge | Fallback Needed? |
-| :--- | :---: | :---: | :---: | :---: | :--- |
-| **Standard Transitions** (`transform`, `opacity`) | **🟢 Full** | **🟢 Full** | **🟢 Full** | **🟢 Full** | No fallbacks required |
-| **Spring Curves** (Custom `cubic-bezier`) | **🟢 Full** | **🟢 Full** | **🟢 Full** | **🟢 Full** | No fallbacks required |
-| **Houdini Variables** (Animatable `@property`) | **🟢 Full** | **🟢 Full** | **🟢 Full** | **🟢 Full** | Yes (Houdini polyfill) |
+| Animation Class Category                           |   Chrome    |    Firefox     |     Safari     |    Edge     | Fallback Needed?               |
+| :------------------------------------------------- | :---------: | :------------: | :------------: | :---------: | :----------------------------- |
+| **Standard Transitions** (`transform`, `opacity`)  | **🟢 Full** |  **🟢 Full**   |  **🟢 Full**   | **🟢 Full** | No fallbacks required          |
+| **Spring Curves** (Custom `cubic-bezier`)          | **🟢 Full** |  **🟢 Full**   |  **🟢 Full**   | **🟢 Full** | No fallbacks required          |
+| **Houdini Variables** (Animatable `@property`)     | **🟢 Full** |  **🟢 Full**   |  **🟢 Full**   | **🟢 Full** | Yes (Houdini polyfill)         |
 | **Scroll-Driven Timelines** (`view()`, `scroll()`) | **🟢 Full** | **⚠️ Partial** | **⚠️ Partial** | **🟢 Full** | Yes (Scroll-timeline polyfill) |
 
-* **🟢 Full Support**: Works natively out-of-the-box.
-* **⚠️ Partial Support**: Requires enabling experimental flags, or has limited property bindings.
+- **🟢 Full Support**: Works natively out-of-the-box.
+- **⚠️ Partial Support**: Requires enabling experimental flags, or has limited property bindings.
 
 ---
 
@@ -49,6 +50,7 @@ Houdini `@property` solves this by registering custom types (like `<angle>` or `
 ```
 
 ### Browser Support Status
+
 Houdini `@property` variables are supported across Chrome, Edge, Firefox, and Safari. For older legacy browsers, load the CSS Houdini polyfill.
 
 ---
@@ -66,9 +68,10 @@ Scroll-Driven Animations bind animation progress directly to viewport scrolling 
 ```
 
 ### Browser Support Status
-* **Chromium (Chrome, Edge, Opera)**: Supported since Chrome 115.
-* **Firefox**: In development. Can be emulated by enabling the `layout.css.scroll-driven-animations.enabled` preference flag.
-* **Safari**: In development. Can be emulated by enabling the corresponding flag in macOS settings.
+
+- **Chromium (Chrome, Edge, Opera)**: Supported since Chrome 115.
+- **Firefox**: In development. Can be emulated by enabling the `layout.css.scroll-driven-animations.enabled` preference flag.
+- **Safari**: In development. Can be emulated by enabling the corresponding flag in macOS settings.
 
 ---
 
@@ -81,7 +84,9 @@ To ensure a functional interface in all browsers, use CSS Feature Queries (`@sup
 .scroll-card {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 .scroll-card.is-visible {
   opacity: 1;
@@ -104,10 +109,13 @@ To ensure a functional interface in all browsers, use CSS Feature Queries (`@sup
 To maintain consistency across all viewports, load these polyfill packages inside your project index templates:
 
 ### 1. Scroll-Timeline Polyfill
+
 For browsers lacking native `animation-timeline` support:
+
 ```html
 <script src="https://flackr.github.io/scroll-timeline/dist/scroll-timeline.js"></script>
 ```
 
 ### 2. Houdini properties Polyfill
+
 For older browsers lacking Houdini `@property` registration support, use the Houdini variables properties polyfill script.

@@ -29,13 +29,13 @@ A folded-corner card effect using the CSS border triangle technique on `::before
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
-| `border-width` on `::before` | Fold size at rest (default: `36px`) |
-| Hover `border-width` | Fold size on hover (default: `56px`) |
-| `border-color` outer side | Must match page/container background |
-| Card background | `background` on `.dog-ear-card` |
-| Corner position | Adjust `top/bottom/left/right` and `border-width` sides accordingly |
+| Property                     | Description                                                         |
+| ---------------------------- | ------------------------------------------------------------------- |
+| `border-width` on `::before` | Fold size at rest (default: `36px`)                                 |
+| Hover `border-width`         | Fold size on hover (default: `56px`)                                |
+| `border-color` outer side    | Must match page/container background                                |
+| Card background              | `background` on `.dog-ear-card`                                     |
+| Corner position              | Adjust `top/bottom/left/right` and `border-width` sides accordingly |
 
 ## Accessibility
 

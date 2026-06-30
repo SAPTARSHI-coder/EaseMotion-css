@@ -25,7 +25,13 @@ Add a Help (?) button to the navigation bar, linking to a help modal or the proj
 ### Option A: Simple link to FAQ/docs
 
 ```html
-<li><a href="https://github.com/SAPTARSHI-coder/EaseMotion-css#readme" title="Help">?</a></li>
+<li>
+  <a
+    href="https://github.com/SAPTARSHI-coder/EaseMotion-css#readme"
+    title="Help"
+    >?</a
+  >
+</li>
 ```
 
 ### Option B: Interactive help button with tooltip
@@ -40,7 +46,16 @@ Replace the closing `</ul>` with an additional list item styled as a help button
     title="Help &amp; Support"
     onclick="window.open('https://github.com/SAPTARSHI-coder/EaseMotion-css#readme', '_blank')"
   >
-    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      stroke="currentColor"
+      stroke-width="2"
+      fill="none"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <circle cx="12" cy="12" r="10"></circle>
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
       <line x1="12" y1="17" x2="12.01" y2="17"></line>
@@ -62,8 +77,9 @@ With the accompanying CSS added to the `docs/demo.html` `<style>` block:
   font-size: var(--ease-text-sm);
   display: flex;
   align-items: center;
-  transition: color var(--ease-speed-fast) var(--ease-ease),
-              background-color var(--ease-speed-fast) var(--ease-ease);
+  transition:
+    color var(--ease-speed-fast) var(--ease-ease),
+    background-color var(--ease-speed-fast) var(--ease-ease);
 }
 
 .demo-help-btn:hover {
@@ -80,8 +96,8 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
+| File                           | Change                                        |
+| ------------------------------ | --------------------------------------------- |
 | `docs/demo.html` (nav section) | Add Help (?) button with link to project docs |
 
 Fixes #20337

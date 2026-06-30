@@ -1,10 +1,9 @@
 ---
 name: General Question / Help
 about: Have a question or need general help? Join our Discord server.
-title: ''
-labels: ''
-assignees: ''
-
+title: ""
+labels: ""
+assignees: ""
 ---
 
 Have a question, need help, or want to chat with the community?

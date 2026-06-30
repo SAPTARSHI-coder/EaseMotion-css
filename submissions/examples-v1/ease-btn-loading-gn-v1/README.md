@@ -7,9 +7,7 @@ A pure-CSS loading spinner state for EaseMotion CSS buttons.
 Add the `.ease-btn-loading` class to any `.ease-btn` element:
 
 ```html
-<button class="ease-btn ease-btn-primary ease-btn-loading">
-  Submit
-</button>
+<button class="ease-btn ease-btn-primary ease-btn-loading">Submit</button>
 ```
 
 ## How it works
@@ -22,15 +20,15 @@ Add the `.ease-btn-loading` class to any `.ease-btn` element:
 
 ## Works with all variants
 
-| Class | Works with loading |
-|---|---|
-| `ease-btn-primary` | ✅ |
-| `ease-btn-success` | ✅ |
-| `ease-btn-danger` | ✅ |
-| `ease-btn-outline` | ✅ |
-| `ease-btn-ghost` | ✅ |
-| `ease-btn-sm / lg / xl` | ✅ |
-| `ease-btn-pill` | ✅ |
+| Class                   | Works with loading |
+| ----------------------- | ------------------ |
+| `ease-btn-primary`      | ✅                 |
+| `ease-btn-success`      | ✅                 |
+| `ease-btn-danger`       | ✅                 |
+| `ease-btn-outline`      | ✅                 |
+| `ease-btn-ghost`        | ✅                 |
+| `ease-btn-sm / lg / xl` | ✅                 |
+| `ease-btn-pill`         | ✅                 |
 
 ## Accessibility
 

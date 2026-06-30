@@ -15,17 +15,17 @@ submissions/core_changes-issue-22089/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Horizontal** | `.ease-stepper-horizontal` | Horizontal step indicator |
-| **Vertical** | `.ease-stepper-vertical` | Vertical stepper with body content |
-| **Numbered** | (default) | Step numbers in circle indicators |
-| **Dot** | `.ease-stepper-dots` | Compact dot-style indicators |
-| **Icon** | `.ease-stepper-icons` | Emoji/icon step markers |
-| **Completed** | `.ease-stepper-completed` | Filled primary color indicator |
-| **Active** | `.ease-stepper-active` | Primary border with glow |
-| **Upcoming** | `.ease-stepper-upcoming` | Muted/unfilled indicator |
-| **Error** | `.ease-stepper-error` | Red border for error state |
+| Variant        | Class                      | Description                        |
+| -------------- | -------------------------- | ---------------------------------- |
+| **Horizontal** | `.ease-stepper-horizontal` | Horizontal step indicator          |
+| **Vertical**   | `.ease-stepper-vertical`   | Vertical stepper with body content |
+| **Numbered**   | (default)                  | Step numbers in circle indicators  |
+| **Dot**        | `.ease-stepper-dots`       | Compact dot-style indicators       |
+| **Icon**       | `.ease-stepper-icons`      | Emoji/icon step markers            |
+| **Completed**  | `.ease-stepper-completed`  | Filled primary color indicator     |
+| **Active**     | `.ease-stepper-active`     | Primary border with glow           |
+| **Upcoming**   | `.ease-stepper-upcoming`   | Muted/unfilled indicator           |
+| **Error**      | `.ease-stepper-error`      | Red border for error state         |
 
 ## Usage
 

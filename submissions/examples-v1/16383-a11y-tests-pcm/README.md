@@ -30,8 +30,8 @@ This submission integrates **axe-core** — the industry-standard accessibility 
 
 ## Files
 
-| File | Purpose |
-|---|---|
-| `tests/a11y.test.js` | Component-level axe-core tests via Vitest + JSDOM |
-| `tests/docs-a11y.test.js` | Documentation site axe-core tests |
-| Updated `package.json` | Added `test:a11y` and `test:docs-a11y` scripts |
+| File                      | Purpose                                           |
+| ------------------------- | ------------------------------------------------- |
+| `tests/a11y.test.js`      | Component-level axe-core tests via Vitest + JSDOM |
+| `tests/docs-a11y.test.js` | Documentation site axe-core tests                 |
+| Updated `package.json`    | Added `test:a11y` and `test:docs-a11y` scripts    |

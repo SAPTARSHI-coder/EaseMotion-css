@@ -31,9 +31,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="notifications">
-...
-</div>
+<div class="notifications">...</div>
 ```
 
 ---

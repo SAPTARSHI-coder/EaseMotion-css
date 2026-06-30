@@ -18,9 +18,7 @@ A self-contained EaseMotion-css submission that demonstrates the `is selector` p
 ## Usage
 
 ```html
-<div class="is-selector is-selector-md is-selector-primary">
-  Hello world
-</div>
+<div class="is-selector is-selector-md is-selector-primary">Hello world</div>
 ```
 
 ## Why is it useful?
@@ -34,18 +32,18 @@ The submission also demonstrates two important EaseMotion patterns:
 
 ## Token reference
 
-| Variant | Token(s) used |
-| --- | --- |
-| Default | --ease-color-primary-alpha, --ease-color-primary-dark |
-| Primary | --ease-color-primary |
-| Secondary | --ease-color-secondary |
-| Success | --ease-color-success |
-| Danger | --ease-color-danger |
-| Warning | --ease-color-warning |
-| Info | --ease-color-info |
-| Sizes | --ease-space-*, --ease-radius-{sm,md,lg,xl} |
-| Shapes | --ease-radius-{sm,md,full} |
-| Motion | --ease-speed-fast, --ease-ease-out |
+| Variant   | Token(s) used                                         |
+| --------- | ----------------------------------------------------- |
+| Default   | --ease-color-primary-alpha, --ease-color-primary-dark |
+| Primary   | --ease-color-primary                                  |
+| Secondary | --ease-color-secondary                                |
+| Success   | --ease-color-success                                  |
+| Danger    | --ease-color-danger                                   |
+| Warning   | --ease-color-warning                                  |
+| Info      | --ease-color-info                                     |
+| Sizes     | --ease-space-\*, --ease-radius-{sm,md,lg,xl}          |
+| Shapes    | --ease-radius-{sm,md,full}                            |
+| Motion    | --ease-speed-fast, --ease-ease-out                    |
 
 ## Accessibility
 

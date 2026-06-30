@@ -69,7 +69,7 @@ Even at 101 thresholds, callbacks don't fire on every pixel of scroll. The CSS `
 
 ```css
 .morph-card {
-  border-radius: 50%;             /* Initial state */
+  border-radius: 50%; /* Initial state */
   transition: border-radius 120ms ease-out;
 }
 ```
@@ -82,26 +82,26 @@ A `prefers-reduced-motion` media query skips the transition and jumps directly t
 
 ## Sections
 
-| # | Section | Description |
-|---|---|---|
-| 1 | **Hero** | Title, description, live mini preview that tracks page scroll, scroll cue |
-| 2 | **Demo Cards** | 3 live morph demos (Profile Image, Product Card, Gallery Image) with ratio readouts |
-| 3 | **How It Works** | 3 code explanation cards with live syntax-highlighted snippets |
-| 4 | **Why It Works** | 4 UX rationale cards (attention, performance, hierarchy, accessibility) |
-| 5 | **Use Cases** | 6 use-case cards with mini hover-demo morph shapes |
-| 6 | **Footer** | EaseMotion branding, GitHub, Docs, copyright |
+| #   | Section          | Description                                                                         |
+| --- | ---------------- | ----------------------------------------------------------------------------------- |
+| 1   | **Hero**         | Title, description, live mini preview that tracks page scroll, scroll cue           |
+| 2   | **Demo Cards**   | 3 live morph demos (Profile Image, Product Card, Gallery Image) with ratio readouts |
+| 3   | **How It Works** | 3 code explanation cards with live syntax-highlighted snippets                      |
+| 4   | **Why It Works** | 4 UX rationale cards (attention, performance, hierarchy, accessibility)             |
+| 5   | **Use Cases**    | 6 use-case cards with mini hover-demo morph shapes                                  |
+| 6   | **Footer**       | EaseMotion branding, GitHub, Docs, copyright                                        |
 
 ---
 
 ## EaseMotion Classes Demonstrated
 
-| Class | Used on |
-|---|---|
-| `ease-fade-in` | Hero chip, preview, scroll cue, footer |
-| `ease-slide-up` | Hero title, description, tags |
-| `ease-bounce` | Scroll-down arrow cue |
-| `ease-hover-lift` | Explanation cards, use-case cards, why-items, product card CTA |
-| `ease-hover-underline` | Footer links |
+| Class                  | Used on                                                        |
+| ---------------------- | -------------------------------------------------------------- |
+| `ease-fade-in`         | Hero chip, preview, scroll cue, footer                         |
+| `ease-slide-up`        | Hero title, description, tags                                  |
+| `ease-bounce`          | Scroll-down arrow cue                                          |
+| `ease-hover-lift`      | Explanation cards, use-case cards, why-items, product card CTA |
+| `ease-hover-underline` | Footer links                                                   |
 
 > Note: The core morph animation is **not** an EaseMotion class — it is implemented via `IntersectionObserver` + a CSS `transition` on `border-radius`, as specified in the issue requirements.
 
@@ -109,13 +109,13 @@ A `prefers-reduced-motion` media query skips the transition and jumps directly t
 
 ## Browser Support
 
-| Browser | Support |
-|---|---|
-| Chrome / Edge 88+ | ✅ Full support |
-| Firefox 55+ | ✅ Full support |
-| Safari 12.1+ | ✅ Full support |
-| Samsung Internet 8+ | ✅ Full support |
-| IE 11 | ❌ No IntersectionObserver (polyfill required) |
+| Browser             | Support                                        |
+| ------------------- | ---------------------------------------------- |
+| Chrome / Edge 88+   | ✅ Full support                                |
+| Firefox 55+         | ✅ Full support                                |
+| Safari 12.1+        | ✅ Full support                                |
+| Samsung Internet 8+ | ✅ Full support                                |
+| IE 11               | ❌ No IntersectionObserver (polyfill required) |
 
 The page degrades gracefully in unsupported browsers — elements simply remain at their initial `border-radius: 50%` (or `0` with the reduced-motion rule).
 
@@ -152,15 +152,17 @@ Add `data-morph` to any element and include the observer script:
 // JS
 const THRESHOLDS = Array.from({ length: 101 }, (_, i) => i / 100);
 
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    const radius = 50 - entry.intersectionRatio * 50;
-    entry.target.style.borderRadius = `${radius.toFixed(1)}%`;
-  });
-}, { threshold: THRESHOLDS });
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      const radius = 50 - entry.intersectionRatio * 50;
+      entry.target.style.borderRadius = `${radius.toFixed(1)}%`;
+    });
+  },
+  { threshold: THRESHOLDS }
+);
 
-document.querySelectorAll('[data-morph]')
-  .forEach(el => observer.observe(el));
+document.querySelectorAll("[data-morph]").forEach((el) => observer.observe(el));
 ```
 
 ### Customising the Range

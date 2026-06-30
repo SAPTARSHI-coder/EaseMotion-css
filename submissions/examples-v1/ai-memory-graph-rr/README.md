@@ -7,9 +7,7 @@ Provides a graph-based visualization of AI memory structures and relationships b
 ## How is it used?
 
 ```html
-<div class="memory-node">
-    Preferences
-</div>
+<div class="memory-node">Preferences</div>
 ```
 
 Memory nodes are connected through visual relationships to represent contextual knowledge and stored information.

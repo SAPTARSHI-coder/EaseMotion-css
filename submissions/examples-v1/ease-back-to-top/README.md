@@ -4,12 +4,12 @@ A floating "Back to Top" button that appears after scrolling and smoothly scroll
 
 ## Features
 
-* Fade in/out based on scroll position
-* Smooth scroll to top on click
-* Hover lift effect
-* Minimal JavaScript
-* Responsive design
-* Fixed bottom-right placement
+- Fade in/out based on scroll position
+- Smooth scroll to top on click
+- Hover lift effect
+- Minimal JavaScript
+- Responsive design
+- Fixed bottom-right placement
 
 ## Files
 
@@ -31,16 +31,16 @@ ease-back-to-top/
 
 ## Acceptance Criteria
 
-* ✅ Fades in/out based on scroll position
-* ✅ Hover lift effect
-* ✅ Smooth scroll behavior on click
-* ✅ Uses minimal JavaScript
+- ✅ Fades in/out based on scroll position
+- ✅ Hover lift effect
+- ✅ Smooth scroll behavior on click
+- ✅ Uses minimal JavaScript
 
 ## Technologies Used
 
-* HTML
-* CSS
-* JavaScript
+- HTML
+- CSS
+- JavaScript
 
 ## Demo
 

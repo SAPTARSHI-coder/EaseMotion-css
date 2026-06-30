@@ -19,7 +19,7 @@ All interactions are lightweight and accessible, with support for reduced-motion
 
 ```html
 <div class="input-group">
-  <input type="text" required>
+  <input type="text" required />
   <label>Username</label>
 </div>
 ```
@@ -28,7 +28,7 @@ All interactions are lightweight and accessible, with support for reduced-motion
 
 ```html
 <label class="checkbox-wrapper">
-  <input type="checkbox">
+  <input type="checkbox" />
   <span class="custom-checkbox"></span>
   Remember Me
 </label>
@@ -38,7 +38,7 @@ All interactions are lightweight and accessible, with support for reduced-motion
 
 ```html
 <label class="toggle-wrapper">
-  <input type="checkbox" class="toggle-input">
+  <input type="checkbox" class="toggle-input" />
   <span class="toggle-slider"></span>
 </label>
 ```

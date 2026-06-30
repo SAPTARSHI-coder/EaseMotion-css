@@ -18,3 +18,4 @@ Append the `.ease-bounce-in-up` class to any element you wish to animate into th
   <h2>Settings</h2>
   <p>I bounced in from the bottom!</p>
 </div>
+```

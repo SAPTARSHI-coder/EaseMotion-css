@@ -17,19 +17,19 @@ Adds animated and static CSS background patterns — grids, dots, stripes, waves
 
 ### Classes
 
-| Class | Pattern |
-|---|---|
-| `.ease-pattern-dots` | Polka dots |
-| `.ease-pattern-grid` | Square grid |
-| `.ease-pattern-stripes` | Diagonal stripes |
-| `.ease-pattern-checker` | Checkerboard |
-| `.ease-pattern-waves` | Wavy lines |
-| `.ease-pattern-crosshatch` | Crosshatch |
+| Class                      | Pattern          |
+| -------------------------- | ---------------- |
+| `.ease-pattern-dots`       | Polka dots       |
+| `.ease-pattern-grid`       | Square grid      |
+| `.ease-pattern-stripes`    | Diagonal stripes |
+| `.ease-pattern-checker`    | Checkerboard     |
+| `.ease-pattern-waves`      | Wavy lines       |
+| `.ease-pattern-crosshatch` | Crosshatch       |
 
 ### Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-pattern-color` | `currentColor` | Primary pattern color |
-| `--ease-pattern-size` | `20px` | Pattern tile size |
-| `--ease-pattern-opacity` | `0.1` | Pattern layer opacity |
+| Property                 | Default        | Description           |
+| ------------------------ | -------------- | --------------------- |
+| `--ease-pattern-color`   | `currentColor` | Primary pattern color |
+| `--ease-pattern-size`    | `20px`         | Pattern tile size     |
+| `--ease-pattern-opacity` | `0.1`          | Pattern layer opacity |

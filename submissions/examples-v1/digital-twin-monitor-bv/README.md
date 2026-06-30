@@ -1,6 +1,7 @@
 # Digital Twin Monitoring Platform
 
 ## What does this do?
+
 A digital twin simulation dashboard with a sensor status registry,
 animated latency counters, an operational calibration controller, and a
 live log feed — built with premium, pure-CSS animations and transitions.
@@ -9,13 +10,18 @@ live log feed — built with premium, pure-CSS animations and transitions.
 
 ```html
 <div class="ease-twin-dashboard">
-
   <div class="ease-twin-panel">
     <h4>Sensor Registry</h4>
     <div class="ease-sensor-list">
-      <div class="ease-sensor-row"><span class="ease-sensor-dot ok"></span> Sensor A — OK</div>
-      <div class="ease-sensor-row"><span class="ease-sensor-dot lag"></span> Sensor B — Lagging</div>
-      <div class="ease-sensor-row"><span class="ease-sensor-dot down"></span> Sensor C — Offline</div>
+      <div class="ease-sensor-row">
+        <span class="ease-sensor-dot ok"></span> Sensor A — OK
+      </div>
+      <div class="ease-sensor-row">
+        <span class="ease-sensor-dot lag"></span> Sensor B — Lagging
+      </div>
+      <div class="ease-sensor-row">
+        <span class="ease-sensor-dot down"></span> Sensor C — Offline
+      </div>
     </div>
   </div>
 
@@ -36,13 +42,13 @@ live log feed — built with premium, pure-CSS animations and transitions.
   <div class="ease-twin-logfeed">
     <div class="ease-twin-log-line">&gt; log line...</div>
   </div>
-
 </div>
 ```
 
 Sensor status classes: `ok`, `lag`, `down`.
 
 ## Why is it useful?
+
 Enterprise projects need ultra-premium, interactive showcase interfaces
 to demonstrate design fidelity and user experience capabilities. This
 example demonstrates a digital twin simulation platform with pulsing

@@ -13,15 +13,23 @@
 
     var rect = btn.getBoundingClientRect();
     var size = Math.max(rect.width, rect.height);
-    var x = (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) - rect.left - size / 2;
-    var y = (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) - rect.top - size / 2;
+    var x =
+      (e.clientX || e.touches?.[0]?.clientX || rect.left + rect.width / 2) -
+      rect.left -
+      size / 2;
+    var y =
+      (e.clientY || e.touches?.[0]?.clientY || rect.top + rect.height / 2) -
+      rect.top -
+      size / 2;
 
     ripple.style.width = ripple.style.height = size + "px";
     ripple.style.left = x + "px";
     ripple.style.top = y + "px";
 
     btn.appendChild(ripple);
-    ripple.addEventListener("animationend", function () { ripple.remove(); });
+    ripple.addEventListener("animationend", function () {
+      ripple.remove();
+    });
   }
 
   function init() {

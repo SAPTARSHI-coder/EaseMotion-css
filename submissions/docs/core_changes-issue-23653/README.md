@@ -6,15 +6,15 @@ Adds per-category SCSS partial files (`_fade.scss`, `_slide.scss`, `_bounce.scss
 
 **New files in `scss/`:**
 
-| File | Mixins |
-|------|--------|
-| `_fade.scss` | `fade-in`, `fade-out`, `fade-icon-exit`, `pulse-fade`, `blur-to-focus` |
-| `_slide.scss` | `slide-up`, `slide-down`, `slide-in-from-*` (8 directional variants), `slide-image-exit` |
-| `_bounce.scss` | `bounce`, `bounce-in`, `bounce-text`, `bounce-button-exit` |
-| `_zoom.scss` | `zoom-in`, `zoom-out`, `reveal-scale`, `morph-card` |
-| `_rotate.scss` | `rotate`, `rotate-image-exit`, `flip`, `gradient-rotation` |
-| `_hover.scss` | `pulse`, `ping`, `shimmer`, `shimmer-sweep`, `shimmer-text`, `shake`, `wave`, `hover-pulse-glow`, `cursor-blink`, `typewriter-loop`, `count-up` |
-| `_index.scss` | Forwards all partials and existing `variables`/`mixins` |
+| File           | Mixins                                                                                                                                          |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_fade.scss`   | `fade-in`, `fade-out`, `fade-icon-exit`, `pulse-fade`, `blur-to-focus`                                                                          |
+| `_slide.scss`  | `slide-up`, `slide-down`, `slide-in-from-*` (8 directional variants), `slide-image-exit`                                                        |
+| `_bounce.scss` | `bounce`, `bounce-in`, `bounce-text`, `bounce-button-exit`                                                                                      |
+| `_zoom.scss`   | `zoom-in`, `zoom-out`, `reveal-scale`, `morph-card`                                                                                             |
+| `_rotate.scss` | `rotate`, `rotate-image-exit`, `flip`, `gradient-rotation`                                                                                      |
+| `_hover.scss`  | `pulse`, `ping`, `shimmer`, `shimmer-sweep`, `shimmer-text`, `shake`, `wave`, `hover-pulse-glow`, `cursor-blink`, `typewriter-loop`, `count-up` |
+| `_index.scss`  | Forwards all partials and existing `variables`/`mixins`                                                                                         |
 
 ## 2. How is it used?
 

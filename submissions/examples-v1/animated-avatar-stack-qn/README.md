@@ -1,13 +1,16 @@
 # Animated Avatar Stack
 
 ## Description
+
 A modern, interactive avatar stack component that displays overlapping circular avatars which smoothly spread out on hover. It supports both initial-based avatars with gradient backgrounds and image-based avatars. Each avatar features smooth scale and lift animations, tooltips on hover, and a "+X more" indicator for additional members. Built entirely with pure CSS using transforms and transitions, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains two examples - one with initial-based avatars and one with image-based avatars.
 - `style.css`: Contains the overlapping layout, hover spread animations, tooltip effects, and responsive design.
 
 ## How to use
+
 1. Open `demo.html` in your browser and hover over the avatar stacks to see the spread effect.
 2. Copy the HTML and CSS into your project.
 3. Wrap your avatars in a `.avatar-stack-qn` container.
@@ -25,6 +28,7 @@ A modern, interactive avatar stack component that displays overlapping circular 
    - **Animation Speed:** Modify the `0.4s` transition duration for faster or slower animations.
 
 ## Features
+
 - **Overlapping Layout:** Avatars overlap with negative margins for a compact display
 - **Hover Spread:** Avatars smoothly spread out when hovering the stack
 - **Lift & Scale:** Individual avatars lift up and scale on hover
@@ -36,8 +40,11 @@ A modern, interactive avatar stack component that displays overlapping circular 
 - **Accessibility:** Respects `prefers-reduced-motion` user preference
 
 ## Adding Tooltips
+
 To add tooltips, include the `data-name` attribute on each avatar:
+
 ```html
 <div class="avatar-qn" data-name="John Doe" style="background: ...">
-    <span class="avatar-initials-qn">JD</span>
+  <span class="avatar-initials-qn">JD</span>
 </div>
+```

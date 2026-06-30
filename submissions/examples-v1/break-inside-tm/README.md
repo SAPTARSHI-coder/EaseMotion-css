@@ -18,9 +18,7 @@ This submission demonstrates the `break-inside` CSS property with multiple varia
 Apply the `break-inside` class to any element:
 
 ```html
-<div class="break-inside">
-  Your content here
-</div>
+<div class="break-inside">Your content here</div>
 ```
 
 ## Tokens Used

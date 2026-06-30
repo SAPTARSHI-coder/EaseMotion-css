@@ -5,6 +5,7 @@ submenus, arrow indicators, and slide/fade animations. No JavaScript
 required.
 
 ## Files
+
 - `demo.html` - Working demo with a 3-item menu and a nested submenu
 - `style.css` - Component styles
 - `README.md` - This file
@@ -14,7 +15,11 @@ required.
 ```html
 <ul class="ease-dropdown">
   <li class="ease-dropdown-item">
-    <button class="ease-dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+    <button
+      class="ease-dropdown-trigger"
+      aria-haspopup="true"
+      aria-expanded="false"
+    >
       File
       <span class="ease-dropdown-arrow"></span>
     </button>
@@ -39,6 +44,7 @@ required.
 ```
 
 ## Features
+
 - Pure CSS, no JavaScript
 - Opens on `:hover` (mouse) and `:focus-within` (keyboard/Tab) for accessibility
 - Slide + fade animation on open/close

@@ -5,6 +5,7 @@
 Adds a collapsible accordion component built on native HTML `<details>` / `<summary>` elements — no JavaScript required. Supports three variants (default, small, bordered) with animated chevron indicators, hover states, and keyboard accessibility.
 
 **New CSS classes:**
+
 - `.ease-accordion` — Container for accordion items
 - `.ease-accordion-item` — Individual collapsible panel (use `<details>`)
 - `.ease-accordion-item summary` — Clickable header (use `<summary>`)

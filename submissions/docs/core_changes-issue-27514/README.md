@@ -7,7 +7,7 @@ A React component for a notification badge with a pulsing ring indicator. Suppor
 ## How is it used?
 
 ```jsx
-import BadgePulse from './BadgePulse';
+import BadgePulse from "./BadgePulse";
 
-<BadgePulse count={5} variant="danger" size="md" />
+<BadgePulse count={5} variant="danger" size="md" />;
 ```

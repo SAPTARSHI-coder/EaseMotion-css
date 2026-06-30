@@ -64,23 +64,23 @@ The minimum skeleton for one card is:
 
 ### 4. Choose a size modifier
 
-| Modifier | Grid area | Typical use |
-|---|---|---|
-| `bento-card--large`  | spans 3 columns | Hero feature |
-| `bento-card--small`  | 1 column        | Secondary highlight |
+| Modifier             | Grid area       | Typical use               |
+| -------------------- | --------------- | ------------------------- |
+| `bento-card--large`  | spans 3 columns | Hero feature              |
+| `bento-card--small`  | 1 column        | Secondary highlight       |
 | `bento-card--wide`   | spans 3 columns | Horizontal stat or banner |
-| `bento-card--medium` | 1 column each   | Three-up feature row |
+| `bento-card--medium` | 1 column each   | Three-up feature row      |
 
 ### 5. Choose an accent modifier
 
-| Modifier | Accent |
-|---|---|
-| `bento-card--accent-blue`     | Electric blue |
-| `bento-card--accent-purple`   | Soft violet |
-| `bento-card--accent-cyan`     | Bright cyan |
-| `bento-card--accent-indigo`   | Indigo |
-| `bento-card--accent-rose`     | Rose |
-| `bento-card--accent-teal`     | Teal |
+| Modifier                      | Accent                           |
+| ----------------------------- | -------------------------------- |
+| `bento-card--accent-blue`     | Electric blue                    |
+| `bento-card--accent-purple`   | Soft violet                      |
+| `bento-card--accent-cyan`     | Bright cyan                      |
+| `bento-card--accent-indigo`   | Indigo                           |
+| `bento-card--accent-rose`     | Rose                             |
+| `bento-card--accent-teal`     | Teal                             |
 | `bento-card--accent-gradient` | Blue → cyan gradient (wide card) |
 
 ### 6. Customise tokens
@@ -89,9 +89,9 @@ All colours, radii, gaps, and easing curves live in `:root` CSS custom propertie
 
 ```css
 .my-section {
-  --color-bg:      #f8f9fc;          /* switch to light theme */
-  --accent-blue:   #2563eb;
-  --radius-card:   24px;
+  --color-bg: #f8f9fc; /* switch to light theme */
+  --accent-blue: #2563eb;
+  --radius-card: 24px;
 }
 ```
 
@@ -102,12 +102,15 @@ All colours, radii, gaps, and easing curves live in `:root` CSS custom propertie
 EaseMotion CSS is built on three tenets:
 
 ### Human-readable
+
 Every class name maps to a plain-English concept. `bento-card--accent-purple` means exactly what it says. `em-fade-up` names the animation the way a motion designer would name it on a storyboard. No utility soup, no cryptic abbreviations.
 
 ### Animation-first
+
 Animations are not bolted on after the fact — they are structural. The entrance stagger is defined at the grid level. The hover lift is part of the base card definition. The glow blob is always in the DOM; the `opacity` transition on hover is all that fires it. Animations compose with the layout, not against it.
 
 ### Composable
+
 Each concern — size, accent, inner layout, decoration — is an independent modifier or element. `bento-card--large` controls grid placement. `bento-card--accent-blue` controls glow colour. `bento-card__inner--row` switches the inner flex direction. Mixing them produces no conflicts because they operate on orthogonal properties.
 
 ---
@@ -125,12 +128,12 @@ animated-bento-grid/
 
 ## Browser Support
 
-| Browser | Support |
-|---|---|
-| Chrome / Edge 88+ | ✅ Full (backdrop-filter unprefixed) |
-| Firefox 103+ | ✅ Full |
-| Safari 14+ | ✅ Full (`-webkit-backdrop-filter` included) |
-| iOS Safari 14+ | ✅ Full |
+| Browser           | Support                                      |
+| ----------------- | -------------------------------------------- |
+| Chrome / Edge 88+ | ✅ Full (backdrop-filter unprefixed)         |
+| Firefox 103+      | ✅ Full                                      |
+| Safari 14+        | ✅ Full (`-webkit-backdrop-filter` included) |
+| iOS Safari 14+    | ✅ Full                                      |
 
 ---
 

@@ -24,15 +24,9 @@ A modern disclosure component using native HTML `details` and `summary` elements
 
 ```html
 <details class="disclosure-card">
+  <summary>Section Title</summary>
 
-    <summary>
-        Section Title
-    </summary>
-
-    <div class="content">
-        Content goes here
-    </div>
-
+  <div class="content">Content goes here</div>
 </details>
 ```
 

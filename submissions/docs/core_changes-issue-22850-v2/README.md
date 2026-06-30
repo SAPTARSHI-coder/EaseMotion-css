@@ -19,11 +19,13 @@ Adds a contextual alert/banner component with 4 color variants, dismissible clos
 Color variants: `ease-alert-success`, `ease-alert-danger`, `ease-alert-warning`, `ease-alert-info`.
 
 For a filled background style:
+
 ```html
-<div class="ease-alert ease-alert-danger ease-alert-filled" role="alert">
+<div class="ease-alert ease-alert-danger ease-alert-filled" role="alert"></div>
 ```
 
 Dismissible — add a close button inside the alert:
+
 ```html
 <button class="ease-alert-close" aria-label="Close">&times;</button>
 ```

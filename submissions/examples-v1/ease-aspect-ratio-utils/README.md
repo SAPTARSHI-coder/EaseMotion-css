@@ -4,20 +4,20 @@ Composable utility classes that lock common width-to-height proportions for imag
 
 ## Class reference
 
-| Class | Aspect Ratio | Common Use Case |
-|-------|--------------|-----------------|
-| `.ease-aspect-square` | `1 / 1` | Profile avatars, album art, square thumbnails |
-| `.ease-aspect-video` | `16 / 9` | YouTube-style embeds, hero videos, widescreen media |
-| `.ease-aspect-portrait` | `3 / 4` | Mobile screenshots, portrait photography, story cards |
-| `.ease-aspect-4-3` | `4 / 3` | Classic photo frames, presentation slides, legacy displays |
+| Class                   | Aspect Ratio | Common Use Case                                            |
+| ----------------------- | ------------ | ---------------------------------------------------------- |
+| `.ease-aspect-square`   | `1 / 1`      | Profile avatars, album art, square thumbnails              |
+| `.ease-aspect-video`    | `16 / 9`     | YouTube-style embeds, hero videos, widescreen media        |
+| `.ease-aspect-portrait` | `3 / 4`      | Mobile screenshots, portrait photography, story cards      |
+| `.ease-aspect-4-3`      | `4 / 3`      | Classic photo frames, presentation slides, legacy displays |
 
 ## Usage
 
 ```html
-<img class="ease-aspect-video" src="poster.svg" alt="Video poster">
+<img class="ease-aspect-video" src="poster.svg" alt="Video poster" />
 
 <div class="ease-aspect-square">
-  <img src="avatar.svg" alt="User avatar">
+  <img src="avatar.svg" alt="User avatar" />
 </div>
 
 <div class="ease-aspect-video video-embed" aria-label="Embedded video">

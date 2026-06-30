@@ -10,8 +10,8 @@ Exit animation where the element scales down and fades out. Clean dismiss/remove
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                   | Description                          |
+| ----------------------- | ------------------------------------ |
 | `ease-contract-bg-exit` | Default contract exit (scale + fade) |
 
 ## Notes

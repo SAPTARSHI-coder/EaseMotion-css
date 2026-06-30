@@ -23,13 +23,17 @@ Replace the shorthand in `.ease-btn-hover` with individual sub-properties:
 ```css
 /* ❌ Before — shorthand overrides base, drops color */
 .ease-btn-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease,
-              background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* ✅ After — individual props extend base without overriding */
 .ease-btn-hover {
-  transition-property: transform, box-shadow, background-color, border-color, color;
+  transition-property:
+    transform, box-shadow, background-color, border-color, color;
   transition-duration: 0.3s;
   transition-timing-function: ease;
 }
@@ -42,5 +46,6 @@ Replace the shorthand in `.ease-btn-hover` with individual sub-properties:
 3. Hover the **After Fix** button slowly → all properties transition smoothly
 
 ## Files
-- `style.css` — the fix  
+
+- `style.css` — the fix
 - `demo.html` — side-by-side buggy vs fixed button comparison

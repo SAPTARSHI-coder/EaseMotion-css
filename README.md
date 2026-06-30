@@ -378,7 +378,7 @@ npm install easemotion-css
 
 ```jsx
 // main.jsx or App.jsx
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 ```
 
 #### 3. Use classes directly in JSX
@@ -388,7 +388,9 @@ export default function HeroSection() {
   return (
     <div className="ease-center ease-fade-in">
       <h1 className="ease-slide-up ease-delay-100">Build faster.</h1>
-      <p className="ease-slide-up ease-delay-200">Animation-first CSS for humans.</p>
+      <p className="ease-slide-up ease-delay-200">
+        Animation-first CSS for humans.
+      </p>
       <button className="ease-btn ease-btn-primary ease-hover-grow ease-delay-300">
         Get Started →
       </button>
@@ -403,7 +405,7 @@ We ship a React wrapper component that turns animation settings into declarative
 
 ```jsx
 // Copy Animate.jsx from examples/react-vite/src/components/Animate.jsx
-import Animate from './components/Animate';
+import Animate from "./components/Animate";
 
 export default function App() {
   return (
@@ -414,14 +416,14 @@ export default function App() {
       </Animate>
 
       {/* Staggered list items */}
-      {['A', 'B', 'C'].map((item, i) => (
+      {["A", "B", "C"].map((item, i) => (
         <Animate key={item} type="slide-up" delay={i * 100} hover="lift">
           <div className="ease-card">{item}</div>
         </Animate>
       ))}
 
       {/* Animate on mount (React remounts = re-animates) */}
-      <Animate key={isOpen ? 'open' : 'closed'} type="zoom-in" duration={300}>
+      <Animate key={isOpen ? "open" : "closed"} type="zoom-in" duration={300}>
         {isOpen && <Modal />}
       </Animate>
     </>
@@ -431,14 +433,14 @@ export default function App() {
 
 **`<Animate>` Props Reference:**
 
-| Prop | Type | Default | Description |
-| ---- | ---- | ------- | ----------- |
-| `type` | `string` | — | EaseMotion animation name (e.g. `'fade-in'`, `'slide-up'`, `'zoom-in'`) |
-| `duration` | `'fast' \| 'medium' \| 'slow' \| number` | `'medium'` | Duration keyword or milliseconds |
-| `delay` | `number` | `0` | Delay in ms before animation starts |
-| `hover` | `string` | — | Hover effect class (e.g. `'lift'`, `'glow'`, `'scale'`) |
-| `tag` | `string` | `'div'` | HTML tag to render |
-| `className` | `string` | `''` | Additional CSS classes |
+| Prop        | Type                                     | Default    | Description                                                             |
+| ----------- | ---------------------------------------- | ---------- | ----------------------------------------------------------------------- |
+| `type`      | `string`                                 | —          | EaseMotion animation name (e.g. `'fade-in'`, `'slide-up'`, `'zoom-in'`) |
+| `duration`  | `'fast' \| 'medium' \| 'slow' \| number` | `'medium'` | Duration keyword or milliseconds                                        |
+| `delay`     | `number`                                 | `0`        | Delay in ms before animation starts                                     |
+| `hover`     | `string`                                 | —          | Hover effect class (e.g. `'lift'`, `'glow'`, `'scale'`)                 |
+| `tag`       | `string`                                 | `'div'`    | HTML tag to render                                                      |
+| `className` | `string`                                 | `''`       | Additional CSS classes                                                  |
 
 #### 5. Run the showcase
 
@@ -462,7 +464,7 @@ EaseMotion CSS is fully compatible with Next.js (App Router and Pages Router) si
 
 ```jsx
 // app/layout.js — import once globally
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 
 export default function RootLayout({ children }) {
   return (
@@ -488,7 +490,7 @@ export default function Page() {
 
 ```jsx
 // pages/_app.js
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 
 export default function App({ Component, pageProps }) {
   return <Component {...pageProps} />;
@@ -511,7 +513,7 @@ npm install easemotion-css
 
 ```js
 // main.js
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 ```
 
 ```vue
@@ -527,7 +529,7 @@ import 'easemotion-css/easemotion.min.css';
 
 ```js
 // src/app.js or +layout.svelte <script>
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 ```
 
 ```svelte
@@ -540,7 +542,7 @@ import 'easemotion-css/easemotion.min.css';
 
 ```js
 // src/layouts/Layout.astro
-import 'easemotion-css/easemotion.min.css';
+import "easemotion-css/easemotion.min.css";
 ```
 
 Or via a `<link>` tag in the Astro layout:
@@ -567,14 +569,14 @@ Then import the SCSS package in your stylesheet:
 
 ```scss
 // In your SCSS entry file
-@use 'easemotion-css/scss' as ease;
+@use "easemotion-css/scss" as ease;
 ```
 
 Or import individual partials:
 
 ```scss
-@use 'easemotion-css/scss/variables' as *;
-@use 'easemotion-css/scss/mixins' as ease;
+@use "easemotion-css/scss/variables" as *;
+@use "easemotion-css/scss/mixins" as ease;
 ```
 
 ### Using the `animate()` mixin
@@ -599,7 +601,11 @@ Or import individual partials:
 
 ```scss
 .nav-item {
-  @include ease.transition(color, $duration: $speed-fast, $easing: $ease-out-cubic);
+  @include ease.transition(
+    color,
+    $duration: $speed-fast,
+    $easing: $ease-out-cubic
+  );
 
   &:hover {
     color: var(--ease-color-primary);
@@ -611,33 +617,33 @@ Or import individual partials:
 
 **Duration Tokens** (mapped to CSS custom properties):
 
-| SCSS Variable | CSS Variable | Value |
-| ------------- | ------------ | ----- |
-| `$speed-fast` | `--ease-speed-fast` | CSS var |
+| SCSS Variable   | CSS Variable          | Value   |
+| --------------- | --------------------- | ------- |
+| `$speed-fast`   | `--ease-speed-fast`   | CSS var |
 | `$speed-medium` | `--ease-speed-medium` | CSS var |
-| `$speed-slow` | `--ease-speed-slow` | CSS var |
+| `$speed-slow`   | `--ease-speed-slow`   | CSS var |
 
 **Easing Tokens**:
 
-| SCSS Variable | Value |
-| ------------- | ----- |
-| `$ease-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` |
-| `$ease-bounce` | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
-| `$ease-in-out` | `cubic-bezier(0, 0, 0.2, 1)` |
-| `$ease-elastic` | Same as `$ease-bounce` |
+| SCSS Variable   | Value                               |
+| --------------- | ----------------------------------- |
+| `$ease-ease`    | `cubic-bezier(0.4, 0, 0.2, 1)`      |
+| `$ease-bounce`  | `cubic-bezier(0.34, 1.56, 0.64, 1)` |
+| `$ease-in-out`  | `cubic-bezier(0, 0, 0.2, 1)`        |
+| `$ease-elastic` | Same as `$ease-bounce`              |
 
 ### Available SCSS Mixins
 
-| Mixin | Description |
-| ----- | ----------- |
-| `animate($name, $duration, $easing, $delay, $fill, $iteration)` | Base animation mixin |
-| `transition($property, $duration, $easing, $delay)` | CSS transition helper |
-| `fade-in(...)` | Applies `ease-kf-fade-in` animation |
-| `fade-out(...)` | Applies `ease-kf-fade-out` animation |
-| `slide-up(...)` | Applies `ease-kf-slide-up` animation |
-| `slide-down(...)` | Applies `ease-kf-slide-down` animation |
-| `zoom-in(...)` | Applies `ease-kf-zoom-in` animation |
-| `zoom-out(...)` | Applies `ease-kf-zoom-out` animation |
+| Mixin                                                           | Description                            |
+| --------------------------------------------------------------- | -------------------------------------- |
+| `animate($name, $duration, $easing, $delay, $fill, $iteration)` | Base animation mixin                   |
+| `transition($property, $duration, $easing, $delay)`             | CSS transition helper                  |
+| `fade-in(...)`                                                  | Applies `ease-kf-fade-in` animation    |
+| `fade-out(...)`                                                 | Applies `ease-kf-fade-out` animation   |
+| `slide-up(...)`                                                 | Applies `ease-kf-slide-up` animation   |
+| `slide-down(...)`                                               | Applies `ease-kf-slide-down` animation |
+| `zoom-in(...)`                                                  | Applies `ease-kf-zoom-in` animation    |
+| `zoom-out(...)`                                                 | Applies `ease-kf-zoom-out` animation   |
 
 ### Build your SCSS
 
@@ -705,14 +711,13 @@ Every class in the framework has passed through this process. The curation is wh
 ## Usage and Examples
 
 ### Development
+
 Use the non-minified version for debugging and development:
 
-```html
+````html
 <link rel="stylesheet" href="easemotion.css" />
 
-### Animations
-
-```html
+### Animations ```html
 <!-- Entrance animations (run on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
@@ -725,7 +730,7 @@ Use the non-minified version for debugging and development:
 <div class="ease-slide-up ease-delay-100">First</div>
 <div class="ease-slide-up ease-delay-200">Second</div>
 <div class="ease-slide-up ease-delay-300">Third</div>
-```
+````
 
 ### Duration Helpers
 
@@ -1091,27 +1096,27 @@ easemotion-css/
 
 > Track progress and vote on features via [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues).
 
-| Feature                                               | Status                    |
-| ----------------------------------------------------- | ------------------------- |
-| ✅ Human-readable core utilities (80+)                | **Shipped — v1.0**        |
-| ✅ Animation-first motion library (20+)               | **Shipped — v1.0**        |
-| ✅ Curated contribution pipeline                      | **Shipped — v1.0**        |
-| ✅ Component library (buttons, cards)                 | **Shipped — v1.0**        |
-| ✅ npm package + jsDelivr CDN                         | **Shipped — v1.0**        |
-| ✅ Full documentation site                            | **Shipped — v1.0**        |
-| ✅ React + Vite integration showcase                  | **Shipped — v1.1**        |
-| ✅ SCSS token layer (variables + mixins)              | **Shipped — v1.1**        |
-| 🚧 React component library (hooks + wrappers)         | **In Progress — v1.1**    |
-| 🚧 SCSS modular partials (per-animation modules)      | **In Progress — v1.1**    |
-| 🚧 Next.js App Router template                        | **In Progress — v1.1**    |
-| 🔜 Form components (inputs, checkboxes, toggles)      | **Planned — v1.2**        |
-| 🔜 Dark mode token layer                              | **Planned — v1.2**        |
-| 🔜 Modal & tooltip components                         | **Planned — v1.2**        |
-| 🔜 Scroll-triggered animations (IntersectionObserver) | **Planned — v1.2**        |
-| 🔜 Navigation components (navbar, sidebar)            | **Planned — v1.3**        |
-| 🔜 CSS-only accordion & tabs                          | **Planned — v1.3**        |
-| 🔜 Badge, tag, avatar, progress bar                   | **Planned — v1.3**        |
-| 🔜 Theming CLI (generate custom token file)           | **Exploring**             |
+| Feature                                               | Status                 |
+| ----------------------------------------------------- | ---------------------- |
+| ✅ Human-readable core utilities (80+)                | **Shipped — v1.0**     |
+| ✅ Animation-first motion library (20+)               | **Shipped — v1.0**     |
+| ✅ Curated contribution pipeline                      | **Shipped — v1.0**     |
+| ✅ Component library (buttons, cards)                 | **Shipped — v1.0**     |
+| ✅ npm package + jsDelivr CDN                         | **Shipped — v1.0**     |
+| ✅ Full documentation site                            | **Shipped — v1.0**     |
+| ✅ React + Vite integration showcase                  | **Shipped — v1.1**     |
+| ✅ SCSS token layer (variables + mixins)              | **Shipped — v1.1**     |
+| 🚧 React component library (hooks + wrappers)         | **In Progress — v1.1** |
+| 🚧 SCSS modular partials (per-animation modules)      | **In Progress — v1.1** |
+| 🚧 Next.js App Router template                        | **In Progress — v1.1** |
+| 🔜 Form components (inputs, checkboxes, toggles)      | **Planned — v1.2**     |
+| 🔜 Dark mode token layer                              | **Planned — v1.2**     |
+| 🔜 Modal & tooltip components                         | **Planned — v1.2**     |
+| 🔜 Scroll-triggered animations (IntersectionObserver) | **Planned — v1.2**     |
+| 🔜 Navigation components (navbar, sidebar)            | **Planned — v1.3**     |
+| 🔜 CSS-only accordion & tabs                          | **Planned — v1.3**     |
+| 🔜 Badge, tag, avatar, progress bar                   | **Planned — v1.3**     |
+| 🔜 Theming CLI (generate custom token file)           | **Exploring**          |
 
 ---
 
@@ -1227,16 +1232,16 @@ The project encourages creative variations and parallel implementations rather t
 
 <div align="center">
 
-| Platform                | Link                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 🐛 **Bug Reports**      | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)          |
-| 💡 **Feature Requests** | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
-| 🔀 **Pull Requests**    | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                              |
-| 📖 **Documentation**    | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/)                                           |
-| 📦 **npm Package**      | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css)                                         |
-| 🌐 **CDN**              | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css)   |
-| 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                   |
-| 💬 **Discord Server (Optional)**   | [Join Discord (Optional)](https://discord.gg/hWSdGrccBU)                                                                 |
+| Platform                         | Link                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 🐛 **Bug Reports**               | [Open an issue](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)          |
+| 💡 **Feature Requests**          | [Request a feature](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
+| 🔀 **Pull Requests**             | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                              |
+| 📖 **Documentation**             | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/)                                           |
+| 📦 **npm Package**               | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css)                                         |
+| 🌐 **CDN**                       | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css)   |
+| 🏆 **GSSoC 2026**                | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                   |
+| 💬 **Discord Server (Optional)** | [Join Discord (Optional)](https://discord.gg/hWSdGrccBU)                                                      |
 
 </div>
 
@@ -1287,7 +1292,7 @@ Everyone who has submitted a PR, opened an issue, or contributed an idea. This w
 <tr><td align="center"><a href="https://github.com/CSquareClub"><img src="https://avatars.githubusercontent.com/CSquareClub?s=64" width="52" height="52" alt="CSquareClub" style="border-radius:50%;margin:4px"/><br/><sub><b>CSquareClub</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/vibeetroot"><img src="https://avatars.githubusercontent.com/vibeetroot?s=64" width="52" height="52" alt="vibeetroot" style="border-radius:50%;margin:4px"/><br/><sub><b>vibeetroot</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/ChintaTejaswini"><img src="https://avatars.githubusercontent.com/ChintaTejaswini?s=64" width="52" height="52" alt="ChintaTejaswini" style="border-radius:50%;margin:4px"/><br/><sub><b>ChintaTejaswini</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/nishantpurohit04"><img src="https://avatars.githubusercontent.com/nishantpurohit04?s=64" width="52" height="52" alt="nishantpurohit04" style="border-radius:50%;margin:4px"/><br/><sub><b>nishantpurohit04</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/Dippp10-ally"><img src="https://avatars.githubusercontent.com/Dippp10-ally?s=64" width="52" height="52" alt="Dippp10-ally" style="border-radius:50%;margin:4px"/><br/><sub><b>Dippp10-ally</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/devansh-nitb"><img src="https://avatars.githubusercontent.com/devansh-nitb?s=64" width="52" height="52" alt="devansh-nitb" style="border-radius:50%;margin:4px"/><br/><sub><b>devansh-nitb</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/DheergaMShetty"><img src="https://avatars.githubusercontent.com/DheergaMShetty?s=64" width="52" height="52" alt="DheergaMShetty" style="border-radius:50%;margin:4px"/><br/><sub><b>DheergaMShetty</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/divyanshisrivastava395"><img src="https://avatars.githubusercontent.com/divyanshisrivastava395?s=64" width="52" height="52" alt="divyanshisrivastava395" style="border-radius:50%;margin:4px"/><br/><sub><b>divyanshisrivastava395</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/HarShada8G"><img src="https://avatars.githubusercontent.com/HarShada8G?s=64" width="52" height="52" alt="HarShada8G" style="border-radius:50%;margin:4px"/><br/><sub><b>HarShada8G</b></sub><br/><sub>1 commits</sub></a></td><td align="center"><a href="https://github.com/hematejaswi-30"><img src="https://avatars.githubusercontent.com/hematejaswi-30?s=64" width="52" height="52" alt="hematejaswi-30" style="border-radius:50%;margin:4px"/><br/><sub><b>hematejaswi-30</b></sub><br/><sub>1 commits</sub></a></td></tr>
 </table>
 
-*Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)*
+_Auto-updated daily · [View all →](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)_
 
 </div>
 <!-- CONTRIBUTOR-WALL-END -->

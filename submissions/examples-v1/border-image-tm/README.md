@@ -16,7 +16,9 @@ This submission demonstrates the CSS `border-image-tm` property with practical e
 
 ```html
 <!-- Size variant -->
-<div class="border-image-tm-card border-image-tm-md border-image-tm-primary">Content</div>
+<div class="border-image-tm-card border-image-tm-md border-image-tm-primary">
+  Content
+</div>
 
 <!-- Color variants -->
 <div class="border-image-tm-card border-image-tm-success">Success</div>

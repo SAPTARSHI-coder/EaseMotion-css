@@ -10,11 +10,11 @@ Image entrance animation starting zoomed in at scale(1.25) with opacity 0, then 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-contract-image-entrance` | Default contract entrance (zoom in → settle) |
-| `ease-contract-image-entrance-sm` | Subtle zoom (1.1x) |
-| `ease-contract-image-entrance-lg` | Strong zoom (1.5x) |
+| Class                             | Description                                  |
+| --------------------------------- | -------------------------------------------- |
+| `ease-contract-image-entrance`    | Default contract entrance (zoom in → settle) |
+| `ease-contract-image-entrance-sm` | Subtle zoom (1.1x)                           |
+| `ease-contract-image-entrance-lg` | Strong zoom (1.5x)                           |
 
 ## Notes
 

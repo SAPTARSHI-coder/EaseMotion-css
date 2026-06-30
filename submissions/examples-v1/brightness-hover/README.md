@@ -12,8 +12,13 @@ Demonstrates the CSS `brightness()` filter function — animating perceived brig
 }
 
 @keyframes bright-pulse {
-  0%, 100% { filter: brightness(1); }
-  50%      { filter: brightness(1.8); }
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.8);
+  }
 }
 
 .card:hover {

@@ -20,4 +20,5 @@ A CSS-only accordion/collapse component with smooth expand and collapse animatio
 ## Usage
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
+```

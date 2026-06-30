@@ -24,7 +24,7 @@ A futuristic cyberpunk-inspired checkbox collection featuring glowing neon borde
 
 ```html
 <label class="cyber-checkbox">
-  <input type="checkbox">
+  <input type="checkbox" />
   <span class="checkmark"></span>
   Enable Feature
 </label>

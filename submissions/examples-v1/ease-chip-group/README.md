@@ -13,31 +13,34 @@ Developers use the chip group by:
 3. Optionally applying color modifiers (`.ease-chip-group-primary`, `.ease-chip-group-success`, `.ease-chip-group-danger`) or size modifiers (`.ease-chip-group-sm`, `.ease-chip-group-lg`)
 
 **Basic Example:**
+
 ```html
 <div class="ease-chip-group">
-  <input type="checkbox" id="chip-1" class="ease-chip-input">
+  <input type="checkbox" id="chip-1" class="ease-chip-input" />
   <label for="chip-1" class="ease-chip">Option 1</label>
 
-  <input type="checkbox" id="chip-2" class="ease-chip-input">
+  <input type="checkbox" id="chip-2" class="ease-chip-input" />
   <label for="chip-2" class="ease-chip">Option 2</label>
 </div>
 ```
 
 **With Color Variant:**
+
 ```html
 <div class="ease-chip-group ease-chip-group-primary">
-  <input type="checkbox" id="skill-1" class="ease-chip-input">
+  <input type="checkbox" id="skill-1" class="ease-chip-input" />
   <label for="skill-1" class="ease-chip">React</label>
 
-  <input type="checkbox" id="skill-2" class="ease-chip-input">
+  <input type="checkbox" id="skill-2" class="ease-chip-input" />
   <label for="skill-2" class="ease-chip">Vue</label>
 </div>
 ```
 
 **With Size Variant:**
+
 ```html
 <div class="ease-chip-group ease-chip-group-lg">
-  <input type="checkbox" id="large-1" class="ease-chip-input">
+  <input type="checkbox" id="large-1" class="ease-chip-input" />
   <label for="large-1" class="ease-chip">Large Chip</label>
 </div>
 ```
@@ -52,7 +55,7 @@ Developers use the chip group by:
    - Smooth checkmark appearance with scale-in animation
    - Bounce cubic-bezier timing for playful UX
 
-3. **Accessible by Default:** 
+3. **Accessible by Default:**
    - Proper label-input associations via `for`/`id` attributes
    - Focus-visible states for keyboard navigation
    - Semantic HTML structure
@@ -64,12 +67,12 @@ Developers use the chip group by:
    - Easy to extend with additional color modifiers
    - Respects CSS variables for easy customization
 
-5. **Responsive Design:** 
+5. **Responsive Design:**
    - Chips wrap naturally on smaller screens
    - Reduced gap spacing on mobile for better fit
    - Scalable sizing with responsive font adjustments
 
-6. **Checkmark Indicator:** 
+6. **Checkmark Indicator:**
    - CSS-generated checkmark using `::before` pseudo-element
    - Animates in/out with the selection state
    - No image dependencies
@@ -98,11 +101,13 @@ Developers use the chip group by:
 ### Modifier Classes
 
 **Color Variants:**
+
 - `.ease-chip-group-primary` — Blue selected state
 - `.ease-chip-group-success` — Green selected state
 - `.ease-chip-group-danger` — Red selected state
 
 **Size Variants:**
+
 - `.ease-chip-group-sm` — Small padding and font size
 - `.ease-chip-group-lg` — Large padding and font size
 

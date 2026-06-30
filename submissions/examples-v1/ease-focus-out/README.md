@@ -22,22 +22,22 @@ element.classList.add("ease-focus-out");
 
 ## Animation Details
 
-| Property    | Start      | End                       |
-| ----------- | ---------- | ------------------------- |
-| `filter`    | `blur(0)`  | `blur(20px)`              |
-| `opacity`   | `1`        | `0`                       |
-| `timing`    | `ease-in`  | —                         |
-| `duration`  | `0.6s`     | —                         |
-| `fill-mode` | `forwards` | —                         |
+| Property    | Start      | End          |
+| ----------- | ---------- | ------------ |
+| `filter`    | `blur(0)`  | `blur(20px)` |
+| `opacity`   | `1`        | `0`          |
+| `timing`    | `ease-in`  | —            |
+| `duration`  | `0.6s`     | —            |
+| `fill-mode` | `forwards` | —            |
 
 ## Pairing
 
 This animation is the counterpart to `ease-focus-in`, which brings an element into sharp focus on entry.
 
-| Animation        | Direction | Effect                        |
-| ---------------- | --------- | ----------------------------- |
-| `ease-focus-in`  | Enter     | blur(20px) → blur(0)          |
-| `ease-focus-out` | Exit      | blur(0) → blur(20px)          |
+| Animation        | Direction | Effect               |
+| ---------------- | --------- | -------------------- |
+| `ease-focus-in`  | Enter     | blur(20px) → blur(0) |
+| `ease-focus-out` | Exit      | blur(0) → blur(20px) |
 
 ## Files
 

@@ -31,14 +31,15 @@ A floating label input component for EaseMotion CSS.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-floating-input` | Base wrapper |
-| `ease-floating-input-success` | Green success state |
-| `ease-floating-input-error` | Red error state |
-| `ease-floating-hint` | Helper/error text below input |
+| Class                         | Description                   |
+| ----------------------------- | ----------------------------- |
+| `ease-floating-input`         | Base wrapper                  |
+| `ease-floating-input-success` | Green success state           |
+| `ease-floating-input-error`   | Red error state               |
+| `ease-floating-hint`          | Helper/error text below input |
 
 ## Features
+
 - Label floats on focus or when input has value
 - Success and error validation states
 - Works with input and textarea

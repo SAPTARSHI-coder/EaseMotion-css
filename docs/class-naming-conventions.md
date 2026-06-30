@@ -7,12 +7,14 @@ This document defines the naming standards for all public framework classes in E
 All public framework classes must use the `ease-` prefix.
 
 Good:
+
 - `.ease-btn`
 - `.ease-card`
 - `.ease-text-primary`
 - `.ease-animate-fade-in`
 
 Avoid:
+
 - `.btn`
 - `.card`
 - `.fadeIn`
@@ -23,11 +25,13 @@ Avoid:
 Use lowercase, kebab-case, human-readable names.
 
 Good:
+
 - `.ease-slide-in-left`
 - `.ease-hover-lift`
 - `.ease-card-glass`
 
 Avoid:
+
 - `.easeSlideInLeft`
 - `.ease_sld_l`
 - `.ease-x1`
@@ -37,6 +41,7 @@ Avoid:
 Utility classes should describe their purpose clearly.
 
 Examples:
+
 - `.ease-padding-4`
 - `.ease-margin-8`
 - `.ease-rounded-lg`
@@ -51,6 +56,7 @@ Component classes should follow:
 `ease-{component}-{state}`
 
 Examples:
+
 - `.ease-btn`
 - `.ease-btn-primary`
 - `.ease-btn-loading`
@@ -64,6 +70,7 @@ Animation classes should follow:
 `ease-{animation-name}`
 
 Examples:
+
 - `.ease-fade-in`
 - `.ease-slide-up`
 - `.ease-slide-in-left`

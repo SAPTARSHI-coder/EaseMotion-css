@@ -25,13 +25,9 @@ A sticky vertical progress navigation component that visually tracks progress th
 
 ```html
 <div class="progress-rail">
-
   <div class="rail-line">
-
     <div class="rail-fill"></div>
-
   </div>
-
 </div>
 ```
 

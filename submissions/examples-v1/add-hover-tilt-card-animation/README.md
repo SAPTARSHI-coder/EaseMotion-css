@@ -8,11 +8,11 @@ Submits layout utility architectures and perspective depth layers for modern int
 - **The Solution:** Pure hardware-accelerated CSS 3D matrix offsets. This configuration pairs parent viewport perspectives (`perspective: 1000px`) with child transform spaces (`transform-style: preserve-3d`). This lets developers construct snappy, volumetric pop-out interactions natively on hover without dropping performance scores.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-tilt-perspective">
   <div class="ease-tilt-card">
-    <div class="ease-tilt-depth">
-      </div>
+    <div class="ease-tilt-depth"></div>
   </div>
 </div>
 ```

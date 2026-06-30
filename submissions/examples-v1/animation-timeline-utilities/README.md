@@ -7,6 +7,7 @@ Animation Timeline Utilities provide a collection of multi-stage animation seque
 ## Problem Statement
 
 Creating sophisticated animations often requires:
+
 - Multiple animation keyframes chained together
 - Careful timing coordination between stages
 - Repetitive CSS boilerplate across projects
@@ -17,6 +18,7 @@ This leads to inconsistent motion language and verbose, hard-to-maintain animati
 ## Proposed Solution
 
 Timeline utilities encode complete animation sequences as semantic CSS classes. Each timeline combines:
+
 1. **Entrance stage** — How the element appears
 2. **Emphasis stage** — Optional flourish or highlight
 3. **Settle stage** — Final resting state
@@ -26,9 +28,11 @@ A single class applies the entire choreography, making animations readable and r
 ## Available Timeline Presets
 
 ### `.timeline-reveal`
+
 **Purpose:** Gentle, approachable entrance for content.
 
 **Stages:**
+
 1. Fade In + Slide Up from 40px (0%)
 2. Overshoot slightly to -5px (50%)
 3. Settle to final position (100%)
@@ -38,18 +42,19 @@ A single class applies the entire choreography, making animations readable and r
 **Best for:** Hero sections, feature cards, page content, staggered reveals
 
 **Example:**
+
 ```html
-<div class="timeline-reveal">
-  Welcome to my site
-</div>
+<div class="timeline-reveal">Welcome to my site</div>
 ```
 
 ---
 
 ### `.timeline-attention`
+
 **Purpose:** Grab attention with scale and pulse effects.
 
 **Stages:**
+
 1. Fade In + Scale from 0.8 (0%)
 2. Scale up to 1.05 (50%)
 3. Subtle pulse effect (75-85%)
@@ -60,18 +65,19 @@ A single class applies the entire choreography, making animations readable and r
 **Best for:** Alerts, badges, important notifications, CTAs
 
 **Example:**
+
 ```html
-<div class="timeline-attention">
-  Important update!
-</div>
+<div class="timeline-attention">Important update!</div>
 ```
 
 ---
 
 ### `.timeline-success`
+
 **Purpose:** Celebratory entrance with bounce and glow.
 
 **Stages:**
+
 1. Fade In + Scale from 0.5 (0%)
 2. Bounce up to 1.1 (50%)
 3. Expanding glow pulse (75%)
@@ -82,18 +88,19 @@ A single class applies the entire choreography, making animations readable and r
 **Best for:** Success messages, confirmations, form completions
 
 **Example:**
+
 ```html
-<div class="timeline-success">
-  ✓ Your changes were saved
-</div>
+<div class="timeline-success">✓ Your changes were saved</div>
 ```
 
 ---
 
 ### `.timeline-modal`
+
 **Purpose:** Sophisticated centered entrance for overlays.
 
 **Stages:**
+
 1. Fade In + Scale from 0.85 + Translate from 30px (0%)
 2. Slight scale overshoot to 1.02 (50%)
 3. Settle at 1.0 (100%)
@@ -103,6 +110,7 @@ A single class applies the entire choreography, making animations readable and r
 **Best for:** Modals, dialogs, alerts, overlay content
 
 **Example:**
+
 ```html
 <div class="modal timeline-modal">
   <h2>Confirm Action</h2>
@@ -113,9 +121,11 @@ A single class applies the entire choreography, making animations readable and r
 ---
 
 ### `.timeline-loading`
+
 **Purpose:** Continuous subtle pulsing for indeterminate states.
 
 **Stages:**
+
 1. Fade In (0%)
 2. Opacity pulse (25% → 75%)
 3. Repeats indefinitely
@@ -125,10 +135,9 @@ A single class applies the entire choreography, making animations readable and r
 **Best for:** Loading states, skeleton screens, processing indicators, sync states
 
 **Example:**
+
 ```html
-<div class="timeline-loading">
-  Loading your data...
-</div>
+<div class="timeline-loading">Loading your data...</div>
 ```
 
 ---
@@ -147,8 +156,12 @@ A single class applies the entire choreography, making animations readable and r
 ```html
 <div class="features">
   <div class="card timeline-reveal">Feature 1</div>
-  <div class="card timeline-reveal" style="animation-delay: 100ms;">Feature 2</div>
-  <div class="card timeline-reveal" style="animation-delay: 200ms;">Feature 3</div>
+  <div class="card timeline-reveal" style="animation-delay: 100ms;">
+    Feature 2
+  </div>
+  <div class="card timeline-reveal" style="animation-delay: 200ms;">
+    Feature 3
+  </div>
 </div>
 ```
 
@@ -166,9 +179,7 @@ A single class applies the entire choreography, making animations readable and r
 ### Loading State
 
 ```html
-<div class="spinner timeline-loading">
-  ⚙️ Processing...
-</div>
+<div class="spinner timeline-loading">⚙️ Processing...</div>
 ```
 
 ### Mixed Timelines in Page
@@ -216,8 +227,10 @@ Override default timings globally:
 Use inline styles for specific elements:
 
 ```html
-<div class="timeline-reveal" 
-     style="animation-duration: 0.8s; animation-delay: 50ms;">
+<div
+  class="timeline-reveal"
+  style="animation-duration: 0.8s; animation-delay: 50ms;"
+>
   Custom timing
 </div>
 ```
@@ -227,9 +240,15 @@ Use inline styles for specific elements:
 Automatically stagger child elements:
 
 ```css
-.timeline-reveal:nth-child(1) { animation-delay: 0ms; }
-.timeline-reveal:nth-child(2) { animation-delay: 100ms; }
-.timeline-reveal:nth-child(3) { animation-delay: 200ms; }
+.timeline-reveal:nth-child(1) {
+  animation-delay: 0ms;
+}
+.timeline-reveal:nth-child(2) {
+  animation-delay: 100ms;
+}
+.timeline-reveal:nth-child(3) {
+  animation-delay: 200ms;
+}
 ```
 
 ---
@@ -237,6 +256,7 @@ Automatically stagger child elements:
 ## Accessibility
 
 All timelines respect the `prefers-reduced-motion` media query. For users who prefer reduced motion:
+
 - Animations are disabled
 - Elements appear instantly
 - Content remains fully interactive
@@ -248,6 +268,7 @@ No action required — accessibility is built-in.
 ## Browser Support
 
 Animation Timeline Utilities use standard CSS `@keyframes` and `animation` properties. Supported in all modern browsers:
+
 - Chrome/Edge 43+
 - Firefox 16+
 - Safari 9+
@@ -271,8 +292,10 @@ Animation Timeline Utilities use standard CSS `@keyframes` and `animation` prope
 ### Before (Multiple Utilities)
 
 ```html
-<div class="fade-in slide-up ease-smooth" 
-     style="animation-duration: 0.8s; animation-delay: 100ms;">
+<div
+  class="fade-in slide-up ease-smooth"
+  style="animation-duration: 0.8s; animation-delay: 100ms;"
+>
   Content
 </div>
 ```
@@ -280,9 +303,7 @@ Animation Timeline Utilities use standard CSS `@keyframes` and `animation` prope
 ### After (Timeline Utilities)
 
 ```html
-<div class="timeline-reveal" style="animation-delay: 100ms;">
-  Content
-</div>
+<div class="timeline-reveal" style="animation-delay: 100ms;">Content</div>
 ```
 
 ---
@@ -292,6 +313,7 @@ Animation Timeline Utilities use standard CSS `@keyframes` and `animation` prope
 "If you can describe the motion, you should be able to apply it with one class."
 
 Animation Timeline Utilities embody this by:
+
 1. Making complex animations accessible with simple class names.
 2. Encoding motion intent into readable, semantic classes.
 3. Reducing CSS boilerplate while improving consistency.

@@ -14,10 +14,10 @@ A modern, asymmetric grid layout inspired by Apple, Linear, and Vercel. Built en
 - 🎭 **Multiple Color Variants**: 6 gradient themes for icons
 
 ## 📂 File Structurebento-grid-layout/
+
 ├── demo.html # HTML structure with 7 bento cards
 ├── style.css # Grid layout, animations, and responsive styles
 └── README.md # Documentation
-
 
 ## 🚀 How It Works
 
@@ -34,6 +34,7 @@ The asymmetric layout is achieved using CSS Grid's `span` property:
 }
 
 .bento-card--large {
-  grid-column: span 2;  /* Takes 2 columns */
-  grid-row: span 2;     /* Takes 2 rows */
+  grid-column: span 2; /* Takes 2 columns */
+  grid-row: span 2; /* Takes 2 rows */
 }
+```

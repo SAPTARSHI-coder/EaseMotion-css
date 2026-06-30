@@ -5,6 +5,7 @@ Neumorphism (soft UI) card and button styles using dual inner/outer
 shadows to simulate raised and pressed elements on a flat background.
 
 **How is it used?**
+
 <div class="ease-neu-card">Card content</div>
 <div class="ease-neu-card pressed">Pressed card</div>
 

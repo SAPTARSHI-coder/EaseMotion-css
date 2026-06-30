@@ -14,16 +14,16 @@ Combines a subtle upward lift with a center-expanding ripple on hover. Pure CSS 
 
 ### Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-hover-lift` | Lift + ripple on hover |
+| Class                    | Effect                           |
+| ------------------------ | -------------------------------- |
+| `.ease-hover-lift`       | Lift + ripple on hover           |
 | `.ease-hover-lift-light` | Light ripple (for dark surfaces) |
-| `.ease-hover-lift-dark` | Dark ripple (for light surfaces) |
+| `.ease-hover-lift-dark`  | Dark ripple (for light surfaces) |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-lift-distance` | `-4px` | Upward lift amount |
-| `--ease-lift-ripple-color` | `rgba(255,255,255,0.3)` | Ripple color |
-| `--ease-lift-duration` | `0.3s` | Transition duration |
+| Property                   | Default                 | Description         |
+| -------------------------- | ----------------------- | ------------------- |
+| `--ease-lift-distance`     | `-4px`                  | Upward lift amount  |
+| `--ease-lift-ripple-color` | `rgba(255,255,255,0.3)` | Ripple color        |
+| `--ease-lift-duration`     | `0.3s`                  | Transition duration |

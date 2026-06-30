@@ -14,8 +14,8 @@ An isolated interaction layout utility pack that provides direct access to syste
 - `.ease-cursor-none`: Explicitly hides the system cursor visibility loop within the element path.
 
 ## Usage Layout Structure
-```html
 
+```html
 <div class="custom-card ease-cursor-pointer">
   <h3>Clickable Container Block</h3>
 </div>

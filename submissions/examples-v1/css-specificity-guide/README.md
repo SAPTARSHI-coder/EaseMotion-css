@@ -14,5 +14,6 @@ Global override:
 
 ```css
 :root {
-    --ease-duration: 2s;
+  --ease-duration: 2s;
 }
+```

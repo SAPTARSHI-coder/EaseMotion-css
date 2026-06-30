@@ -24,15 +24,11 @@ A modern release countdown banner designed to promote upcoming launches, product
 
 ```html
 <div class="countdown">
+  <div class="time-card">
+    <span class="number">12</span>
 
-    <div class="time-card">
-
-        <span class="number">12</span>
-
-        <span class="label">Days</span>
-
-    </div>
-
+    <span class="label">Days</span>
+  </div>
 </div>
 ```
 

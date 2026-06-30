@@ -1,4 +1,4 @@
- # Bounce Drop Entrance Animation
+# Bounce Drop Entrance Animation
 
 A lightweight entrance animation utility that drops elements from above with a springy bounce settle effect.
 
@@ -13,9 +13,7 @@ A lightweight entrance animation utility that drops elements from above with a s
 ## Usage
 
 ```html
-<div class="ease-bounce-drop">
-  Content
-</div>
+<div class="ease-bounce-drop">Content</div>
 ```
 
 ## Animation Behavior

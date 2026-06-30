@@ -18,9 +18,7 @@ This submission demonstrates the `background-clip` CSS property with multiple va
 Apply the `background-clip` class to any element:
 
 ```html
-<div class="background-clip">
-  Your content here
-</div>
+<div class="background-clip">Your content here</div>
 ```
 
 ## Tokens Used

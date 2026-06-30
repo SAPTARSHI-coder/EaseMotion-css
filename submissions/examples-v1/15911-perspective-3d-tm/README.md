@@ -14,14 +14,20 @@ Apply the `.ease-perspective-[val]` class to a parent element to define its 3D d
 <!-- Exaggerated 3D depth perspective container -->
 <div class="perspective-viewport ease-perspective-250 ease-preserve-3d">
   <!-- Child card that undergoes 3D transforms -->
-  <div class="card ease-3d-card" style="transform: rotateY(45deg) translateZ(50px);">
+  <div
+    class="card ease-3d-card"
+    style="transform: rotateY(45deg) translateZ(50px);"
+  >
     <h3>Exaggerated 3D Depth</h3>
   </div>
 </div>
 
 <!-- Deep, subtle 3D depth perspective container -->
 <div class="perspective-viewport ease-perspective-1500 ease-preserve-3d">
-  <div class="card ease-3d-card" style="transform: rotateY(45deg) translateZ(50px);">
+  <div
+    class="card ease-3d-card"
+    style="transform: rotateY(45deg) translateZ(50px);"
+  >
     <h3>Subtle 3D Depth</h3>
   </div>
 </div>

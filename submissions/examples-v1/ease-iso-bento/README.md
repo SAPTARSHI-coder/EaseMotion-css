@@ -9,8 +9,10 @@ A premium, luxury editorial-grade landing page bento box framework that projects
 - **Volumetric Extrusion Lift:** On hover interaction, the selected card utilizes `translate3d()` and an internal `translateZ()` shift on content vectors to dynamically pop forward toward the camera view with zero document reflow lag.
 
 ## File Manifest
+
 - `demo.html`: Independent functional visual stage sandbox workspace.
 - `style.css`: Composed high-fidelity layout grid helper rule sheets.
 
 ## By
+
 Pari Dubey

@@ -7,13 +7,9 @@ Visualizes how database changes are captured and streamed through a CDC pipeline
 ## How is it used?
 
 ```html
-<div class="node cdc">
-    CDC Engine
-</div>
+<div class="node cdc">CDC Engine</div>
 
-<div class="node broker">
-    Event Broker (Kafka)
-</div>
+<div class="node broker">Event Broker (Kafka)</div>
 ```
 
 ## Why is it useful?

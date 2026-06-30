@@ -15,15 +15,15 @@ submissions/core_changes-issue-22091/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Base** | `.ease-table` | Default table with header styling and row borders |
-| **Striped** | `.ease-table-striped` | Alternating row background colors |
-| **Bordered** | `.ease-table-bordered` | Full border on all cells |
-| **Hover** | `.ease-table-hover` | Row highlight on hover |
-| **Compact** | `.ease-table-compact` | Reduced padding for denser data |
-| **Sortable** | `.ease-table-sortable` | Sort indicator arrows on headers |
-| **Responsive** | `.ease-table-responsive` | Wrapper for horizontal scroll on mobile |
+| Variant        | Class                    | Description                                       |
+| -------------- | ------------------------ | ------------------------------------------------- |
+| **Base**       | `.ease-table`            | Default table with header styling and row borders |
+| **Striped**    | `.ease-table-striped`    | Alternating row background colors                 |
+| **Bordered**   | `.ease-table-bordered`   | Full border on all cells                          |
+| **Hover**      | `.ease-table-hover`      | Row highlight on hover                            |
+| **Compact**    | `.ease-table-compact`    | Reduced padding for denser data                   |
+| **Sortable**   | `.ease-table-sortable`   | Sort indicator arrows on headers                  |
+| **Responsive** | `.ease-table-responsive` | Wrapper for horizontal scroll on mobile           |
 
 ## Usage
 
@@ -33,10 +33,18 @@ submissions/core_changes-issue-22091/
 <div class="ease-table-responsive">
   <table class="ease-table ease-table-striped ease-table-hover">
     <thead>
-      <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Status</th>
+      </tr>
     </thead>
     <tbody>
-      <tr><td>Alice Chen</td><td>Frontend Developer</td><td><span class="ease-status ease-status-active">Active</span></td></tr>
+      <tr>
+        <td>Alice Chen</td>
+        <td>Frontend Developer</td>
+        <td><span class="ease-status ease-status-active">Active</span></td>
+      </tr>
     </tbody>
   </table>
 </div>

@@ -7,9 +7,7 @@ Provides a visual interface for monitoring database replication topology, synchr
 ## How is it used?
 
 ```html
-<div class="db-node primary">
-    Primary Database
-</div>
+<div class="db-node primary">Primary Database</div>
 ```
 
 ## Why is it useful?

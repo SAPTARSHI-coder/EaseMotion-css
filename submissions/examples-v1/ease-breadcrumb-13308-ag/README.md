@@ -27,7 +27,10 @@ This submission demonstrates the `.ease-breadcrumb` component:
     <li class="ease-breadcrumb__item">
       <a href="/docs" class="ease-breadcrumb__link">Docs</a>
     </li>
-    <li class="ease-breadcrumb__item ease-breadcrumb__item--current" aria-current="page">
+    <li
+      class="ease-breadcrumb__item ease-breadcrumb__item--current"
+      aria-current="page"
+    >
       Breadcrumb
     </li>
   </ol>
@@ -36,15 +39,15 @@ This submission demonstrates the `.ease-breadcrumb` component:
 
 ### Separator Variants
 
-| Class | Separator |
-|---|---|
+| Class                        | Separator |
+| ---------------------------- | --------- |
 | `.ease-breadcrumb` (default) | `›` arrow |
-| `.ease-breadcrumb--slash` | `/` slash |
-| `.ease-breadcrumb--dot` | `•` dot |
+| `.ease-breadcrumb--slash`    | `/` slash |
+| `.ease-breadcrumb--dot`      | `•` dot   |
 
 ### CSS Variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `--breadcrumb-duration` | `0.45s` | Per-item animation duration |
-| `--breadcrumb-stagger` | `0.08s` | Delay increment between items |
+| Variable                | Default | Description                   |
+| ----------------------- | ------- | ----------------------------- |
+| `--breadcrumb-duration` | `0.45s` | Per-item animation duration   |
+| `--breadcrumb-stagger`  | `0.08s` | Delay increment between items |

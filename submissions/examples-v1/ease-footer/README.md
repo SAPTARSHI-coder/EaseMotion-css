@@ -1,14 +1,8 @@
 \# ease-footer
 
-
-
 Responsive footer component with multi-column layout, links, and social media slots.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -32,63 +26,63 @@ Responsive footer component with multi-column layout, links, and social media sl
 
 | `ease-footer-social-link` | Individual social link |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic Footer -->
 
 <footer class="ease-footer">
+  &#x20;
+  <div class="ease-footer-container">
+    &#x20;
+    <div class="ease-footer-brand">
+      &#x20;
+      <h3>Brand</h3>
 
-&#x20;   <div class="ease-footer-container">
+      &#x20;
+    </div>
 
-&#x20;       <div class="ease-footer-brand">
+    &#x20;
+    <div class="ease-footer-copyright">
+      &#x20;
+      <p>\&copy; 2026 Company</p>
 
-&#x20;           <h3>Brand</h3>
+      &#x20;
+    </div>
 
-&#x20;       </div>
-
-&#x20;       <div class="ease-footer-copyright">
-
-&#x20;           <p>\&copy; 2026 Company</p>
-
-&#x20;       </div>
-
-&#x20;   </div>
-
+    &#x20;
+  </div>
 </footer>
-
-
 
 <!-- Multi-Column Footer -->
 
 <footer class="ease-footer ease-footer-dark">
+  &#x20;
+  <div class="ease-footer-container ease-footer-grid">
+    &#x20;
+    <div class="ease-footer-column">
+      &#x20;
+      <h4>Column Title</h4>
 
-&#x20;   <div class="ease-footer-container ease-footer-grid">
+      &#x20;
+      <ul class="ease-footer-links">
+        &#x20;
+        <li><a href="#">Link 1</a></li>
 
-&#x20;       <div class="ease-footer-column">
+        &#x20;
+      </ul>
 
-&#x20;           <h4>Column Title</h4>
+      &#x20;
+    </div>
 
-&#x20;           <ul class="ease-footer-links">
+    &#x20;
+  </div>
 
-&#x20;               <li><a href="#">Link 1</a></li>
+  &#x20;
+  <div class="ease-footer-social">
+    &#x20; <a href="#" class="ease-footer-social-link">📘</a>
 
-&#x20;           </ul>
-
-&#x20;       </div>
-
-&#x20;   </div>
-
-&#x20;   <div class="ease-footer-social">
-
-&#x20;       <a href="#" class="ease-footer-social-link">📘</a>
-
-&#x20;   </div>
-
+    &#x20;
+  </div>
 </footer>
-
+```

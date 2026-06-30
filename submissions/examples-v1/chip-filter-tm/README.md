@@ -1,6 +1,7 @@
 # Chip Filter Group
 
 ## What does this do?
+
 Adds `.ease-chip-filter` — a group of toggleable chips that act as filters.
 
 ```html

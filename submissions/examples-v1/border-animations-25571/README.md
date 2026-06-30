@@ -23,6 +23,7 @@ Apply the class directly to any element:
 ```
 
 Speed modifiers available for pulse:
+
 - `.border-pulse-slow` — 3s cycle
 - `.border-pulse-fast` — 1s cycle
 

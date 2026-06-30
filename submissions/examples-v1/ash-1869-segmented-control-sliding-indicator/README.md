@@ -24,13 +24,9 @@ A modern segmented control component with an animated sliding indicator inspired
 
 ```html
 <div class="segmented-control">
-
   <div class="slider"></div>
 
-  <button class="segment active">
-    Overview
-  </button>
-
+  <button class="segment active">Overview</button>
 </div>
 ```
 

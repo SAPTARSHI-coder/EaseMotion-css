@@ -6,16 +6,16 @@ A production-grade floating scroll-to-top button for EaseMotion CSS with an SVG 
 
 ## Features
 
-| Feature | Description |
-|---|---|
-| **SVG progress ring** | Circular ring fills as the user scrolls down the page |
-| **Spring entrance** | Button appears with a cubic-bezier overshoot + pulse ring |
-| **Smooth scroll** | Native `scrollTo({ behavior: 'smooth' })` |
+| Feature                  | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| **SVG progress ring**    | Circular ring fills as the user scrolls down the page           |
+| **Spring entrance**      | Button appears with a cubic-bezier overshoot + pulse ring       |
+| **Smooth scroll**        | Native `scrollTo({ behavior: 'smooth' })`                       |
 | **CSS variable theming** | 7 custom properties — change color, size, position from `:root` |
-| **Pulse on appear** | One-shot pulse ring animation when the button first shows |
-| **Hover lift** | Button lifts with a shadow boost on hover |
-| **Reduced-motion safe** | All animations disabled via `prefers-reduced-motion: reduce` |
-| **Accessible** | `aria-label`, keyboard-focusable, `role` on wrapper |
+| **Pulse on appear**      | One-shot pulse ring animation when the button first shows       |
+| **Hover lift**           | Button lifts with a shadow boost on hover                       |
+| **Reduced-motion safe**  | All animations disabled via `prefers-reduced-motion: reduce`    |
+| **Accessible**           | `aria-label`, keyboard-focusable, `role` on wrapper             |
 
 ---
 
@@ -34,10 +34,16 @@ submissions/examples/back-to-top-button/
 ## Usage
 
 **1. Add the markup to `<body>`:**
+
 ```html
-<div class="em-btt-wrap" id="emBttWrap" role="complementary" aria-label="Back to top">
+<div
+  class="em-btt-wrap"
+  id="emBttWrap"
+  role="complementary"
+  aria-label="Back to top"
+>
   <svg class="em-btt-svg" viewBox="0 0 52 52" aria-hidden="true">
-    <circle class="em-btt-track"    cx="26" cy="26" r="23" />
+    <circle class="em-btt-track" cx="26" cy="26" r="23" />
     <circle class="em-btt-progress" cx="26" cy="26" r="23" id="emBttProgress" />
   </svg>
   <button class="em-btt" id="emBtt" aria-label="Scroll back to top">
@@ -47,18 +53,20 @@ submissions/examples/back-to-top-button/
 ```
 
 **2. Link the stylesheet and script:**
+
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <script src="btt.js"></script>
 ```
 
 **3. (Optional) Override the theme:**
+
 ```css
 :root {
-  --em-btt-color: #0ea572;     /* main color */
-  --em-btt-size: 56px;         /* button + ring size */
-  --em-btt-bottom: 32px;       /* distance from bottom */
-  --em-btt-right: 32px;        /* distance from right */
+  --em-btt-color: #0ea572; /* main color */
+  --em-btt-size: 56px; /* button + ring size */
+  --em-btt-bottom: 32px; /* distance from bottom */
+  --em-btt-right: 32px; /* distance from right */
 }
 ```
 
@@ -66,15 +74,15 @@ submissions/examples/back-to-top-button/
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--em-btt-color` | `#6c63ff` | Main button and ring color |
-| `--em-btt-accent` | `#ff6584` | Reserved for accent states |
-| `--em-btt-size` | `52px` | Total width/height of the component |
-| `--em-btt-bottom` | `28px` | Distance from bottom of viewport |
-| `--em-btt-right` | `28px` | Distance from right of viewport |
-| `--em-btt-radius` | `50%` | Button border radius |
-| `--em-btt-ring-width` | `3px` | SVG ring stroke width |
+| Property              | Default   | Description                         |
+| --------------------- | --------- | ----------------------------------- |
+| `--em-btt-color`      | `#6c63ff` | Main button and ring color          |
+| `--em-btt-accent`     | `#ff6584` | Reserved for accent states          |
+| `--em-btt-size`       | `52px`    | Total width/height of the component |
+| `--em-btt-bottom`     | `28px`    | Distance from bottom of viewport    |
+| `--em-btt-right`      | `28px`    | Distance from right of viewport     |
+| `--em-btt-radius`     | `50%`     | Button border radius                |
+| `--em-btt-ring-width` | `3px`     | SVG ring stroke width               |
 
 ---
 
@@ -89,18 +97,19 @@ submissions/examples/back-to-top-button/
 
 ## Browser Testing
 
-| Browser | Tested | Result |
-|---|---|---|
-| Chrome 125+ | ✅ | Pass |
-| Firefox 126+ | ✅ | Pass |
-| Edge 125+ | ✅ | Pass |
-| Safari 17+ | ✅ | Pass |
+| Browser      | Tested | Result |
+| ------------ | ------ | ------ |
+| Chrome 125+  | ✅     | Pass   |
+| Firefox 126+ | ✅     | Pass   |
+| Edge 125+    | ✅     | Pass   |
+| Safari 17+   | ✅     | Pass   |
 
 ---
 
 ## Why it fits EaseMotion CSS
 
 EaseMotion CSS is animation-first. This component:
+
 - Expresses every state (hidden, visible, hover, active) via CSS transitions and `@keyframes`
 - Exposes 7 CSS custom properties for zero-config theming
 - Keeps JS as a thin scroll listener — only class toggling and one SVG attribute update

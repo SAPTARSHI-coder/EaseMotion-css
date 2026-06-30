@@ -7,6 +7,7 @@ This proposal demonstrates and implements the use of the CSS `:is()` pseudo-clas
 The `:is()` pseudo-class allows us to group multiple selectors efficiently, dramatically reducing CSS bloat for complex interaction states (like hovering, focusing, and active states).
 
 **Design Tokens Documented:**
+
 - `--surface-color` / `--bg-color`: Base layer backgrounds.
 - `--text-primary` / `--text-secondary`: Typography hierarchy.
 - `--primary-accent`: Main interactive color.
@@ -14,7 +15,7 @@ The `:is()` pseudo-class allows us to group multiple selectors efficiently, dram
 
 ## ⚙️ How to Use
 
-To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`. 
+To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`.
 
 You can apply the `:is()` grouping to components to manage multiple interaction states compactly:
 
@@ -30,7 +31,8 @@ You can apply the `:is()` grouping to components to manage multiple interaction 
 }
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-is-selector-feature/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these patterns to the core utility stylesheet.*
+_Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-is-selector-feature/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these patterns to the core utility stylesheet._
 
 ## 🔗 Related Issue
+
 Closes Issue #18633

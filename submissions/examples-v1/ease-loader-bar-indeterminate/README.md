@@ -16,3 +16,4 @@ To use this component, simply apply the class to an empty `div`. It will automat
 
 ```html
 <div class="ease-loader-bar-indeterminate"></div>
+```

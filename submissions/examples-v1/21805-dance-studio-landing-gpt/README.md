@@ -9,7 +9,10 @@ It provides a complete, browser-ready dance studio landing page for Velora Dance
 Open `demo.html` directly in a browser and use the page as a standalone EaseMotion CSS submission. The layout relies on existing EaseMotion classes for buttons, cards, forms, and motion, for example:
 
 ```html
-<a class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-btn-hover ease-hover-shimmer" href="#trial-form">
+<a
+  class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-btn-hover ease-hover-shimmer"
+  href="#trial-form"
+>
   Join a Class
 </a>
 ```

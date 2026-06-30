@@ -9,36 +9,44 @@ The keyframes use a geometric decay series based on the classic CSS jello animat
 
 ## Classes
 
-| Class | Duration | Intensity |
-|-------|----------|-----------|
-| `.ease-jello` | 0.9s | 1× |
-| `.ease-jello` + `.ease-jello-fast` | 0.5s | 1× |
-| `.ease-jello` + `.ease-jello-slow` | 1.4s | 1× |
-| `.ease-jello` + `.ease-jello-strong` | 0.9s | 1.8× |
+| Class                                | Duration | Intensity |
+| ------------------------------------ | -------- | --------- |
+| `.ease-jello`                        | 0.9s     | 1×        |
+| `.ease-jello` + `.ease-jello-fast`   | 0.5s     | 1×        |
+| `.ease-jello` + `.ease-jello-slow`   | 1.4s     | 1×        |
+| `.ease-jello` + `.ease-jello-strong` | 0.9s     | 1.8×      |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-jello-duration` | `0.9s` | Animation duration |
-| `--ease-jello-intensity` | `1` | Skew amplitude multiplier |
+| Token                    | Default | Description               |
+| ------------------------ | ------- | ------------------------- |
+| `--ease-jello-duration`  | `0.9s`  | Animation duration        |
+| `--ease-jello-intensity` | `1`     | Skew amplitude multiplier |
 
 ## Usage
 
 ```html
 <!-- Trigger on click -->
-<button id="like-btn" onclick="
+<button
+  id="like-btn"
+  onclick="
   const el = document.getElementById('like-btn');
   el.classList.remove('ease-jello');
   void el.offsetWidth;
   el.classList.add('ease-jello');
-">Like</button>
+"
+>
+  Like
+</button>
 
 <!-- Strong jello for emphasis -->
 <div class="ease-jello ease-jello-strong">🍮</div>
 
 <!-- Custom intensity -->
-<div class="ease-jello" style="--ease-jello-intensity: 2; --ease-jello-duration: 1s;">
+<div
+  class="ease-jello"
+  style="--ease-jello-intensity: 2; --ease-jello-duration: 1s;"
+>
   Extra wobbly
 </div>
 ```

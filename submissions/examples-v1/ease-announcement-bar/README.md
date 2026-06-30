@@ -3,6 +3,7 @@
 A modern, responsive, and dismissable top banner component built with **EaseMotion CSS**. Ideal for announcements, promotions, alerts, or maintenance notices.
 
 ## Key Features
+
 - **Slide-down Entrance**: Smoothly animates into view when the page loads.
 - **Color Variants**: Includes semantic variants: `.is-info` (default), `.is-success`, `.is-warning`, and `.is-danger`.
 - **Dismissable**: Supports a hidden state via the `.is-dismissed` class.
@@ -10,6 +11,7 @@ A modern, responsive, and dismissable top banner component built with **EaseMoti
 - **Accessibility**: Respects `prefers-reduced-motion` and includes semantic markup.
 
 ## How to Use
+
 1. Include `easemotion.css` in your project.
 2. Structure your HTML using the `.ease-announce-bar` class.
 3. Apply color variants as needed (e.g., `.is-success`).
@@ -25,5 +27,6 @@ A modern, responsive, and dismissable top banner component built with **EaseMoti
 ```
 
 ## Directory Structure
+
 - `demo.html`: Interactive demo showcasing all variants and the dismiss functionality.
 - `style.css`: Styles for the banner layout, variants, and animations.

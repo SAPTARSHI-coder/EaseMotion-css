@@ -17,11 +17,11 @@ Adds an interactive live-editing playground to the EaseMotion CSS documentation 
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Playground HTML page |
-| `playground.js` | All JavaScript logic (IIFE module pattern) |
-| `style.css` | Playground UI styles + EaseMotion CDN import |
+| File            | Purpose                                      |
+| --------------- | -------------------------------------------- |
+| `demo.html`     | Playground HTML page                         |
+| `playground.js` | All JavaScript logic (IIFE module pattern)   |
+| `style.css`     | Playground UI styles + EaseMotion CDN import |
 
 ## Usage
 
@@ -34,6 +34,7 @@ Adds an interactive live-editing playground to the EaseMotion CSS documentation 
 ## Integration
 
 To add to the documentation site:
+
 - Copy `demo.html`, `playground.js`, `style.css` into `docs/`
 - Add a link from `docs/index.html` to the playground page
 

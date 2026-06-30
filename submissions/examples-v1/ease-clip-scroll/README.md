@@ -31,8 +31,7 @@ clip-path: inset(0 100% 0 0);
 3. The clip-path is updated continuously:
 
 ```javascript
-element.style.clipPath =
-`inset(0 ${100 - revealPercent}% 0 0)`;
+element.style.clipPath = `inset(0 ${100 - revealPercent}% 0 0)`;
 ```
 
 4. The element gradually reveals from left to right.
@@ -69,7 +68,7 @@ clip-path: inset(0 0 100% 0);
 
 ```css
 .clip-reveal {
-    height: 500px;
+  height: 500px;
 }
 ```
 

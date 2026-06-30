@@ -25,9 +25,9 @@ Three properties added to `.ease-btn-icon`:
 /* ✅ After — WCAG 2.5.5 compliant */
 .ease-btn-icon {
   padding: var(--ease-btn-icon-padding);
-  min-width:   var(--ease-btn-icon-size);   /* 44px default */
-  min-height:  var(--ease-btn-icon-size);   /* 44px default */
-  flex-shrink: 0;                           /* never collapse in flex */
+  min-width: var(--ease-btn-icon-size); /* 44px default */
+  min-height: var(--ease-btn-icon-size); /* 44px default */
+  flex-shrink: 0; /* never collapse in flex */
   border-radius: 50%;
   line-height: 1;
 }
@@ -37,11 +37,12 @@ Three properties added to `.ease-btn-icon`:
 
 ```css
 :root {
-  --ease-btn-icon-size: 44px;   /* WCAG 2.5.5 minimum */
+  --ease-btn-icon-size: 44px; /* WCAG 2.5.5 minimum */
 }
 ```
 
 Larger variant for critical actions:
+
 ```css
 .ease-btn-icon.ease-btn-lg {
   --ease-btn-icon-size: 56px;
@@ -50,11 +51,11 @@ Larger variant for critical actions:
 
 ## WCAG Compliance
 
-| Property | Before | After |
-|---|---|---|
-| Touch target size | ~38×38px ❌ | 44×44px ✅ |
-| Flex shrink | Allowed ❌ | Prevented ✅ |
-| WCAG 2.5.5 | Fail ❌ | Pass ✅ |
+| Property          | Before      | After        |
+| ----------------- | ----------- | ------------ |
+| Touch target size | ~38×38px ❌ | 44×44px ✅   |
+| Flex shrink       | Allowed ❌  | Prevented ✅ |
+| WCAG 2.5.5        | Fail ❌     | Pass ✅      |
 
 ## How to Verify
 
@@ -64,5 +65,6 @@ Larger variant for critical actions:
 4. Flex shrink demo shows the fixed button holds size in a narrow container
 
 ## Files
+
 - `style.css` — the fix
 - `demo.html` — size readout + flex shrink comparison demo

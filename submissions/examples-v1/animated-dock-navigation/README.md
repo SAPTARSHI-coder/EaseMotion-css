@@ -33,22 +33,29 @@ Designed to look at home on a product by Apple or Linear.
 ## Features
 
 ### Floating Dock
+
 A fixed-position dock anchored to the bottom-center of the viewport. Works across all screen sizes — from widescreen desktops to narrow mobile phones — remaining perfectly centred at all times.
 
 ### Glassmorphism
+
 The dock panel uses `backdrop-filter: blur()` with a translucent background, a one-pixel frosted border, and a layered box-shadow to achieve the depth and dimensionality of frosted glass. A subtle top-edge shine strip reinforces the glass illusion.
 
 ### Hover Animation
+
 Hovering an icon triggers a spring-eased scale-up, upward lift, and slight rotation on the target icon, plus a per-icon soft glow that matches its unique gradient palette (blue, cyan, purple, pink, green). The CSS `:has()` selector magnifies immediate neighbours at 1.2× and second-degree neighbours at 1.08× — recreating the classic macOS Dock magnification wave with no JavaScript.
 
 ### Entrance Animation
+
 On page load:
+
 - The dock panel fades in, slides upward from below, and de-blurs over `0.7s` with a spring curve.
 - Each icon pops in sequentially with a staggered delay (`0.65s` → `1.15s`), creating a cascading appearance effect.
 - The hero text fades in independently with a matching ease.
 
 ### Responsive
+
 Three layout tiers via `@media` breakpoints:
+
 - **Desktop** (`> 768px`): Full 58px icons, standard spacing.
 - **Tablet** (`≤ 768px`): 50px icons, tightened gaps.
 - **Mobile** (`≤ 480px`): 44px icons, minimal padding, separator hidden.
@@ -56,6 +63,7 @@ Three layout tiers via `@media` breakpoints:
 All tiers keep the dock centred with `position: fixed; left: 50%; transform: translateX(-50%)`.
 
 ### CSS Only
+
 No JavaScript. No frameworks. No build step. Drop the two files into any project and it works.
 
 ---
@@ -73,6 +81,7 @@ dock-navigation/
 ## Usage
 
 ### 1. Standalone demo
+
 Just open `demo.html` in a browser — no server, no build, no dependencies.
 
 ### 2. Drop into an existing project
@@ -87,8 +96,12 @@ Then paste the dock markup wherever you need it:
 
 ```html
 <nav class="dock" role="navigation" aria-label="Main navigation dock">
-
-  <a href="#home" class="dock__item dock__item--active" data-label="Home" aria-label="Home">
+  <a
+    href="#home"
+    class="dock__item dock__item--active"
+    data-label="Home"
+    aria-label="Home"
+  >
     <span class="dock__icon dock__icon--home">🏠</span>
     <span class="dock__dot"></span>
   </a>
@@ -99,7 +112,6 @@ Then paste the dock markup wherever you need it:
   </a>
 
   <!-- Add more items as needed -->
-
 </nav>
 ```
 
@@ -116,7 +128,7 @@ All design decisions are exposed as CSS custom properties in `:root`. Override a
   --t-normal: 0.25s;
 
   /* Change glass tint */
-  --color-glass-bg: rgba(255, 255, 255, 0.10);
+  --color-glass-bg: rgba(255, 255, 255, 0.1);
 
   /* Replace icon gradient */
   --gradient-icon-home: linear-gradient(135deg, #f97316, #ec4899);
@@ -142,12 +154,12 @@ All design decisions are exposed as CSS custom properties in `:root`. Override a
 
 ## Browser Support
 
-| Feature              | Chrome | Firefox | Safari | Edge |
-|----------------------|--------|---------|--------|------|
-| `backdrop-filter`    | ✅ 76+ | ✅ 103+ | ✅ 9+  | ✅   |
-| CSS `:has()`         | ✅ 105+| ✅ 121+ | ✅ 15.4+| ✅  |
-| CSS Custom Properties| ✅     | ✅      | ✅     | ✅   |
-| `animation`          | ✅     | ✅      | ✅     | ✅   |
+| Feature               | Chrome  | Firefox | Safari   | Edge |
+| --------------------- | ------- | ------- | -------- | ---- |
+| `backdrop-filter`     | ✅ 76+  | ✅ 103+ | ✅ 9+    | ✅   |
+| CSS `:has()`          | ✅ 105+ | ✅ 121+ | ✅ 15.4+ | ✅   |
+| CSS Custom Properties | ✅      | ✅      | ✅       | ✅   |
+| `animation`           | ✅      | ✅      | ✅       | ✅   |
 
 In browsers without `:has()` support, the neighbour magnification degrades gracefully — the hovered icon still scales, glows, and lifts; only the wave effect is absent.
 
@@ -157,9 +169,9 @@ In browsers without `:has()` support, the neighbour magnification degrades grace
 
 EaseMotion CSS is built on three core principles. This component embodies all of them:
 
-**Animation-first.** Motion is not an afterthought layered on top of a static UI — it *is* the UI. Every interaction (hover, entrance, press) is driven by a purposeful animation that communicates state and gives the interface a physical presence. The entrance sequence, the neighbour magnification, and the per-icon glow are all load-bearing design decisions, not decoration.
+**Animation-first.** Motion is not an afterthought layered on top of a static UI — it _is_ the UI. Every interaction (hover, entrance, press) is driven by a purposeful animation that communicates state and gives the interface a physical presence. The entrance sequence, the neighbour magnification, and the per-icon glow are all load-bearing design decisions, not decoration.
 
-**Human-readable.** The CSS is written to be understood at a glance. CSS custom properties are named for what they *mean* (`--glow-home`, `--t-normal`, `--ease-spring`), not what they are (`--rgba-79-158-255`, `--duration-2`). The keyframe names (`dockEntrance`, `iconEntrance`, `orbFloat`) read like sentences. Any developer can open the file, find the animation they want to change, and change it without fear.
+**Human-readable.** The CSS is written to be understood at a glance. CSS custom properties are named for what they _mean_ (`--glow-home`, `--t-normal`, `--ease-spring`), not what they are (`--rgba-79-158-255`, `--duration-2`). The keyframe names (`dockEntrance`, `iconEntrance`, `orbFloat`) read like sentences. Any developer can open the file, find the animation they want to change, and change it without fear.
 
 **Composable.** The component is built from isolated, overridable pieces. The dock panel, the icon, the glow, the tooltip, the active dot — each is a self-contained layer that can be adopted or dropped independently. CSS variables create a clean public API. You can take just the glass panel, just the spring hover, or just the staggered entrance, and compose them into something entirely different. That is the EaseMotion CSS way.
 

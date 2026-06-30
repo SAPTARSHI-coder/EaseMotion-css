@@ -7,7 +7,9 @@ A React component for a collapsible sidebar navigation that expands on hover wit
 ## How is it used?
 
 ```jsx
-import CollapsibleSidebar from './CollapsibleSidebar';
+import CollapsibleSidebar from "./CollapsibleSidebar";
 
-function App() { return <CollapsibleSidebar />; }
+function App() {
+  return <CollapsibleSidebar />;
+}
 ```

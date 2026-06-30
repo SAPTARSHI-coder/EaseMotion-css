@@ -24,10 +24,10 @@
 
    **Custom properties:**
 
-   | Variable | Default | Description |
-   |---|---|---|
-   | `--ease-masonry-cols` | `3` | Number of columns |
-   | `--ease-masonry-gap` | `1rem` | Gap between items |
+   | Variable              | Default | Description       |
+   | --------------------- | ------- | ----------------- |
+   | `--ease-masonry-cols` | `3`     | Number of columns |
+   | `--ease-masonry-gap`  | `1rem`  | Gap between items |
 
 3. **Why is it useful?**
    Native CSS masonry (`grid-template-rows: masonry`) provides better performance and simpler code than column-based hacks. This utility future-proofs EaseMotion CSS while maintaining backward compatibility via the `@supports` fallback. Developers get a modern masonry layout that works today and gets faster tomorrow.

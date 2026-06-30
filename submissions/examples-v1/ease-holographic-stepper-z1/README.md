@@ -6,12 +6,12 @@ A futuristic multi-step progress component featuring holographic gradients, floa
 
 ## Features
 
-* Holographic step cards
-* Animated conic gradients
-* Floating hover interaction
-* Responsive Flexbox layout
-* Lightweight CSS
-* Pure HTML & CSS
+- Holographic step cards
+- Animated conic gradients
+- Floating hover interaction
+- Responsive Flexbox layout
+- Lightweight CSS
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

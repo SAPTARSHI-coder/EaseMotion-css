@@ -8,6 +8,7 @@ Introduces the pseudo-element content suppression utility token (`.ease-content-
 - **The Solution:** Granular content silencing. The `.ease-content-none` utility applies `content: none;`. It provides a clean, single-class override to strip pseudo-element injection for specific modular variations, ensuring design consistency while keeping code lean.
 
 ## Usage Layout Structure
+
 ```html
 <div class="list-item has-marker">Item 1</div>
 

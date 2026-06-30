@@ -23,13 +23,11 @@ A responsive release notes interface featuring category filter pills for organiz
 
 ```html
 <div class="filters">
+  <button class="pill active">All</button>
 
-    <button class="pill active">All</button>
+  <button class="pill feature">Features</button>
 
-    <button class="pill feature">Features</button>
-
-    <button class="pill fix">Bug Fixes</button>
-
+  <button class="pill fix">Bug Fixes</button>
 </div>
 ```
 

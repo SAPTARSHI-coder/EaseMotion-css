@@ -5,6 +5,7 @@
 A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast, and Notion. Perfect for productivity applications, IDEs, and SaaS tools that need an elegant way to expose commands and actions to users.
 
 **Key Features:**
+
 - ✨ Pure CSS animations (no JavaScript required)
 - 🔍 Search bar with keyboard shortcut hints
 - 📋 Command groups with category labels
@@ -22,6 +23,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 ## 📋 Component Structure
 
 ### Files Included
+
 - **demo.html** — Two complete examples (full palette + empty state)
 - **style.css** — All styling and animations (~500 lines)
 - **README.md** — Documentation (this file)
@@ -33,11 +35,11 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
   <!-- Search Bar -->
   <div class="cpl-search-container">
     <svg class="cpl-search-icon"><!-- search icon --></svg>
-    <input 
-      type="text" 
-      class="cpl-search-input" 
+    <input
+      type="text"
+      class="cpl-search-input"
       placeholder="Search commands..."
-    >
+    />
     <span class="cpl-search-hint">⌘K</span>
   </div>
 
@@ -45,7 +47,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
   <div class="cpl-results">
     <div class="cpl-group">
       <div class="cpl-group-label">Create</div>
-      
+
       <div class="cpl-item cpl-item-active">
         <div class="cpl-item-content">
           <div class="cpl-item-title">Create New Project</div>
@@ -73,6 +75,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 ## 🎬 Animation Features
 
 ### 1. **Smooth Panel Entrance**
+
 ```css
 @keyframes cpl-entrance {
   0% {
@@ -85,24 +88,28 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
   }
 }
 ```
+
 - 300ms entrance animation
 - Combines scale (0.95 → 1.0) and vertical translation
 - Cubic-bezier easing for natural motion
 - Applies to entire palette container
 
 ### 2. **Hover Highlight Effect**
+
 ```css
 .cpl-item:hover {
   background: rgba(96, 165, 250, 0.1);
   transform: translateX(4px);
 }
 ```
+
 - Subtle background color change on hover
 - Small rightward translation for lift
 - 200ms smooth transition
 - Indicates interactive element
 
 ### 3. **Active Row Glow Animation**
+
 ```css
 .cpl-item-active {
   background: rgba(96, 165, 250, 0.15);
@@ -114,16 +121,23 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 }
 
 @keyframes cpl-active-glow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 ```
+
 - Active row has blue background + border
 - Pseudo-element creates radial glow effect
 - 2s continuous pulse animation
 - Opacity breathing: 0.4 → 0.8 → 0.4
 
 ### 4. **Keyboard Badge Hover Effect**
+
 ```css
 .cpl-shortcut {
   transition: all 0.2s ease;
@@ -141,12 +155,14 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
   box-shadow: 0 0 8px rgba(96, 165, 250, 0.2);
 }
 ```
+
 - Scale 1.05 on item hover
 - Scale 1.08 + glow on active item hover
 - Color change to blue on hover
 - Added box-shadow for emphasis on active
 
 ### 5. **Search Bar Focus Animation**
+
 ```css
 .cpl-search-input:focus {
   color: #60a5fa;
@@ -162,6 +178,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
   color: #60a5fa;
 }
 ```
+
 - Icon and hint change to blue on focus
 - Subtle background color enhancement
 - Provides visual feedback for active search
@@ -171,33 +188,40 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 ## 🎨 Component Elements
 
 ### Search Bar (`.cpl-search-container`)
+
 - Icon (magnifying glass)
 - Input field (main search input)
 - Shortcut hint (⌘K or keyboard shortcut)
 - Sticky to top of palette
 
 ### Command Groups (`.cpl-group`)
+
 - Category label (e.g., "Create", "Navigation")
 - List of commands within category
 - Visual separation between groups
 
 ### Command Items (`.cpl-item`)
+
 **Three states:**
+
 1. **Default** — Gray text, subtle background
 2. **Hover** — Blue background, slightly elevated
 3. **Active** (`.cpl-item-active`) — Blue background + glow animation
 
 **Content structure:**
+
 - `cpl-item-title` — Bold command name (0.875rem)
 - `cpl-item-description` — Gray description text (0.75rem)
 - `cpl-shortcuts` — Keyboard badge container
   - Multiple `cpl-shortcut` badges for key combinations
 
 ### Footer (`.cpl-footer`)
+
 - Result count: Shows "X commands found"
 - Navigation hints: "↑↓ Navigate • Enter Select • Esc Close"
 
 ### Empty State (`.cpl-results.cpl-empty`)
+
 - Large emoji icon (🔍)
 - Title: "No commands found"
 - Description: Helpful suggestion
@@ -208,6 +232,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 ## 📐 Responsive Behavior
 
 ### Desktop (> 768px)
+
 - Max width fits nicely on screen
 - Full-size shortcuts (0.625rem)
 - Hover effects fully enabled
@@ -215,6 +240,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 - Smooth scrollbar visible
 
 ### Tablet (768px - 481px)
+
 - Reduced padding (0.875rem → 0.625rem)
 - Slightly smaller text sizes
 - 2px hover translation
@@ -222,6 +248,7 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 - Scrollbar still visible
 
 ### Mobile (< 480px)
+
 - Compact layout (0.5rem padding)
 - Smaller text (0.75rem → 0.6875rem for titles)
 - Stacked footer (flex-direction: column)
@@ -230,7 +257,9 @@ A modern CSS-only command palette interface inspired by VS Code, Linear, Raycast
 - Max height: 80vh for viewport space
 
 ### Scrollbar Styling
+
 Custom scrollbar for smooth appearance:
+
 ```css
 .cpl-results::-webkit-scrollbar {
   width: 6px;
@@ -251,29 +280,34 @@ Custom scrollbar for smooth appearance:
 ## ♿ Accessibility Features
 
 ### 1. **Semantic HTML**
+
 - Proper input elements for search
 - Logical heading hierarchy
 - Descriptive text for commands
 - Meaningful class names
 
 ### 2. **WCAG Color Contrast**
+
 - All text meets AA or AAA standards
 - Blue (#60a5fa) on dark background: AAA
 - Gray descriptions: AA
 - Light mode colors automatically adjusted
 
 ### 3. **Keyboard Navigation**
+
 ```css
 .cpl-item:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: -2px;
 }
 ```
+
 - Items are focusable with Tab key
 - Clear focus indicators
 - Focus outline only shows on keyboard nav
 
 ### 4. **Reduced Motion Support**
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .cpl-palette,
@@ -284,19 +318,29 @@ Custom scrollbar for smooth appearance:
   }
 }
 ```
+
 Users with motion sensitivity see no animations.
 
 ### 5. **Dark Mode Support**
+
 Automatically adapts to system preference:
+
 ```css
 @media (prefers-color-scheme: light) {
-  .cpl-palette { /* Light colors */ }
-  .cpl-item-title { color: #1e293b; }
-  .cpl-item-active { /* Light blue */ }
+  .cpl-palette {
+    /* Light colors */
+  }
+  .cpl-item-title {
+    color: #1e293b;
+  }
+  .cpl-item-active {
+    /* Light blue */
+  }
 }
 ```
 
 ### 6. **Touch-Friendly Design**
+
 - 44px+ minimum touch targets
 - Adequate spacing (0.75rem minimum)
 - No hover-only interactions
@@ -307,7 +351,9 @@ Automatically adapts to system preference:
 ## 🚀 Use Cases
 
 ### 1. **IDE/Code Editor**
+
 VS Code-style command palette for development tools
+
 ```
 Edit → Find and Replace, Format Document
 File → Create File, Open Folder
@@ -315,7 +361,9 @@ View → Toggle Sidebar, Change Theme
 ```
 
 ### 2. **Project Management Tool**
+
 Linear or Jira-style command launcher
+
 ```
 Create → New Issue, New Project
 Navigate → Go to Board, Go to Settings
@@ -323,7 +371,9 @@ Workflow → Change Status, Assign to Me
 ```
 
 ### 3. **Document Editor**
+
 Notion or Google Docs command palette
+
 ```
 Insert → Image, Table, Embed
 Format → Bold, Italic, Heading
@@ -331,7 +381,9 @@ Share → Invite User, Copy Link
 ```
 
 ### 4. **Productivity App**
+
 Task management or note-taking app
+
 ```
 Create → New Task, New Note, New List
 Navigation → Today, Upcoming, Archive
@@ -339,7 +391,9 @@ Tools → Export, Settings, Help
 ```
 
 ### 5. **Design Tool**
+
 Figma or Sketch-style command palette
+
 ```
 Create → Rectangle, Circle, Text, Component
 Edit → Rename, Duplicate, Delete
@@ -347,7 +401,9 @@ View → Zoom In, Fit All, Fullscreen
 ```
 
 ### 6. **Admin Dashboard**
+
 Backend management interface
+
 ```
 User Management → Add User, Edit Permissions
 System → Backup, Settings, Logs
@@ -355,7 +411,9 @@ Reports → Generate Report, Export Data
 ```
 
 ### 7. **Customer Support**
+
 Help desk or ticketing system
+
 ```
 Tickets → Create Ticket, Assign, Resolve
 Navigation → Open Tickets, Closed Tickets
@@ -363,7 +421,9 @@ Templates → Quick Response, Canned Reply
 ```
 
 ### 8. **Browser Extension**
+
 Quick action launcher for extensions
+
 ```
 Navigation → Options, About
 Tools → Clear Cache, Reset Settings
@@ -374,37 +434,39 @@ Help → Documentation, Report Issue
 
 ## 💻 CSS Classes Reference
 
-| Class | Purpose |
-|-------|---------|
-| `.cpl-palette` | Main container with animations |
-| `.cpl-search-container` | Search bar wrapper |
-| `.cpl-search-icon` | Magnifying glass SVG |
-| `.cpl-search-input` | Text input field |
-| `.cpl-search-hint` | Keyboard shortcut badge |
-| `.cpl-results` | Results container (scrollable) |
-| `.cpl-results.cpl-empty` | Empty state styling |
-| `.cpl-empty-icon` | Large emoji icon |
-| `.cpl-empty-title` | "No results" title |
-| `.cpl-empty-description` | Helpful description |
-| `.cpl-group` | Command group wrapper |
-| `.cpl-group-label` | "Create", "Navigation" etc |
-| `.cpl-item` | Individual command item |
-| `.cpl-item-active` | Highlighted/selected state |
-| `.cpl-item-content` | Title + description wrapper |
-| `.cpl-item-title` | Bold command name |
-| `.cpl-item-description` | Gray description text |
-| `.cpl-shortcuts` | Keyboard badges wrapper |
-| `.cpl-shortcut` | Individual key badge |
-| `.cpl-footer` | Bottom info bar |
-| `.cpl-result-count` | "X commands found" |
-| `.cpl-hint` | Navigation hints |
+| Class                    | Purpose                        |
+| ------------------------ | ------------------------------ |
+| `.cpl-palette`           | Main container with animations |
+| `.cpl-search-container`  | Search bar wrapper             |
+| `.cpl-search-icon`       | Magnifying glass SVG           |
+| `.cpl-search-input`      | Text input field               |
+| `.cpl-search-hint`       | Keyboard shortcut badge        |
+| `.cpl-results`           | Results container (scrollable) |
+| `.cpl-results.cpl-empty` | Empty state styling            |
+| `.cpl-empty-icon`        | Large emoji icon               |
+| `.cpl-empty-title`       | "No results" title             |
+| `.cpl-empty-description` | Helpful description            |
+| `.cpl-group`             | Command group wrapper          |
+| `.cpl-group-label`       | "Create", "Navigation" etc     |
+| `.cpl-item`              | Individual command item        |
+| `.cpl-item-active`       | Highlighted/selected state     |
+| `.cpl-item-content`      | Title + description wrapper    |
+| `.cpl-item-title`        | Bold command name              |
+| `.cpl-item-description`  | Gray description text          |
+| `.cpl-shortcuts`         | Keyboard badges wrapper        |
+| `.cpl-shortcut`          | Individual key badge           |
+| `.cpl-footer`            | Bottom info bar                |
+| `.cpl-result-count`      | "X commands found"             |
+| `.cpl-hint`              | Navigation hints               |
 
 ---
 
 ## 🔧 Customization Examples
 
 ### Change Accent Color
+
 Replace all `#60a5fa` with your brand color:
+
 ```css
 .cpl-item:hover {
   background: rgba(YOUR_COLOR, 0.1);
@@ -420,6 +482,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Modify Animation Speed
+
 ```css
 @keyframes cpl-entrance {
   /* Change 0.3s to desired duration */
@@ -432,6 +495,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Adjust Palette Height
+
 ```css
 .cpl-palette {
   max-height: 800px; /* Was 600px */
@@ -445,6 +509,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Disable Animations
+
 ```css
 .cpl-palette {
   animation: none;
@@ -460,6 +525,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Custom Scrollbar Width
+
 ```css
 .cpl-results::-webkit-scrollbar {
   width: 8px; /* Was 6px */
@@ -477,6 +543,7 @@ Replace all `#60a5fa` with your brand color:
 - ✅ Mobile browsers (iOS Safari 14+, Chrome Mobile)
 
 **CSS Features Used:**
+
 - Flexbox
 - CSS Animations
 - CSS Gradients
@@ -491,6 +558,7 @@ Replace all `#60a5fa` with your brand color:
 ## 📝 Example Variations
 
 ### Compact Command Palette
+
 ```html
 <div class="cpl-palette" style="max-width: 500px; max-height: 400px;">
   <!-- Smaller palette for sidebar integration -->
@@ -498,6 +566,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Dark Mode Forced
+
 ```html
 <div class="cpl-palette" style="--cpl-bg-primary: #0f172a;">
   <!-- Always dark regardless of system preference -->
@@ -505,6 +574,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Custom Group
+
 ```html
 <div class="cpl-group">
   <div class="cpl-group-label">⚡ Frequently Used</div>
@@ -515,6 +585,7 @@ Replace all `#60a5fa` with your brand color:
 ```
 
 ### Multiple Shortcuts
+
 ```html
 <div class="cpl-shortcuts">
   <span class="cpl-shortcut">Cmd</span>

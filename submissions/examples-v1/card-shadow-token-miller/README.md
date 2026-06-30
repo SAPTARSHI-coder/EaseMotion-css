@@ -8,8 +8,10 @@
 
    ```css
    :root {
-     --ease-shadow-card:  0 2px 8px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06);
-     --ease-shadow-hover: 0 20px 40px rgba(0,0,0,0.15), 0 8px 16px rgba(0,0,0,0.08);
+     --ease-shadow-card:
+       0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+     --ease-shadow-hover:
+       0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.08);
    }
 
    .ease-card:hover {
@@ -18,6 +20,7 @@
    ```
 
 3. **How developers can now theme it**
+
    ```css
    /* No component CSS needed — just override the token */
    .my-card {

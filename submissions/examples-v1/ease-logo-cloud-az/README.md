@@ -24,8 +24,8 @@ Horizontal row of client/partner/sponsor logos with grayscale-to-color hover eff
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

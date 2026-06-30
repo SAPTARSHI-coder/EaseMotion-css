@@ -6,26 +6,26 @@ A modern, responsive profile card component featuring a glassmorphism aesthetic 
 
 ## Features
 
-* Glassmorphism background using `backdrop-filter: blur(16px)`
-* Smooth hover lift with cubic-bezier easing and scale transform
-* Gradient border glow on hover via `::before` pseudo-element
-* Animated social media icons (GitHub, Twitter, LinkedIn, Dribbble, Website)
-* Platform-specific hover colors for social icons
-* Avatar placeholder with gradient initials
-* Gradient accent bar at the top of the card
-* Background orbs for visual depth
-* Responsive flexbox grid layout
-* Mobile-optimized breakpoint
-* Reduced-motion accessibility support
+- Glassmorphism background using `backdrop-filter: blur(16px)`
+- Smooth hover lift with cubic-bezier easing and scale transform
+- Gradient border glow on hover via `::before` pseudo-element
+- Animated social media icons (GitHub, Twitter, LinkedIn, Dribbble, Website)
+- Platform-specific hover colors for social icons
+- Avatar placeholder with gradient initials
+- Gradient accent bar at the top of the card
+- Background orbs for visual depth
+- Responsive flexbox grid layout
+- Mobile-optimized breakpoint
+- Reduced-motion accessibility support
 
 ## Use Cases
 
-* Portfolio websites
-* Team member directories
-* User profile sections
-* About pages
-* Landing page testimonials
-* Social media link aggregators
+- Portfolio websites
+- Team member directories
+- User profile sections
+- About pages
+- Landing page testimonials
+- Social media link aggregators
 
 ## Example Usage
 
@@ -37,7 +37,9 @@ A modern, responsive profile card component featuring a glassmorphism aesthetic 
   </div>
   <div class="card-name">Alex Rivera</div>
   <div class="card-role">UI/UX Designer</div>
-  <div class="card-bio">Crafting beautiful, accessible interfaces with a passion for motion design.</div>
+  <div class="card-bio">
+    Crafting beautiful, accessible interfaces with a passion for motion design.
+  </div>
   <div class="social-row">
     <a href="#" class="social-icon github" aria-label="GitHub">G</a>
     <a href="#" class="social-icon twitter" aria-label="Twitter">T</a>
@@ -62,18 +64,18 @@ This component respects the user's motion preferences through the `prefers-reduc
 
 Compatible with modern browsers supporting:
 
-* CSS Animations
-* CSS Transforms
-* CSS Backdrop Filter
-* CSS Keyframes
-* Media Queries
-* CSS Custom Properties
+- CSS Animations
+- CSS Transforms
+- CSS Backdrop Filter
+- CSS Keyframes
+- Media Queries
+- CSS Custom Properties
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and reusable animation.
-* Lightweight implementation.
-* Accessible design.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS principles.
+- Uses CSS keyframes.
+- Smooth and reusable animation.
+- Lightweight implementation.
+- Accessible design.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS principles.

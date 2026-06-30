@@ -19,9 +19,7 @@ Provides a fixed-position cookie consent banner with slide-up entrance animation
       <button class="ease-cookie-consent-btn--reject" data-consent="reject">
         Reject All
       </button>
-      <button class="ease-cookie-consent-btn--customize">
-        Customize
-      </button>
+      <button class="ease-cookie-consent-btn--customize">Customize</button>
     </div>
   </div>
 </div>
@@ -36,7 +34,7 @@ Provides a fixed-position cookie consent banner with slide-up entrance animation
   }
 
   // Handle consent buttons
-  document.querySelectorAll("[data-consent]").forEach(btn => {
+  document.querySelectorAll("[data-consent]").forEach((btn) => {
     btn.addEventListener("click", () => {
       localStorage.setItem(STORAGE_KEY, "dismissed");
       banner.classList.add("ease-cookie-consent--dismissed");
@@ -47,29 +45,29 @@ Provides a fixed-position cookie consent banner with slide-up entrance animation
 
 ### Available Classes
 
-| Class | Purpose |
-|---|---|
-| `.ease-cookie-consent` | Fixed-position wrapper (centers banner) |
-| `.ease-cookie-consent-content` | Inner container with bg, shadow, animation |
-| `.ease-cookie-consent-text` | Message text |
-| `.ease-cookie-consent-actions` | Button group container |
-| `.ease-cookie-consent-btn--accept` | Primary accept button |
-| `.ease-cookie-consent-btn--reject` | Secondary reject button |
-| `.ease-cookie-consent-btn--customize` | Text-style customize link |
-| `.ease-cookie-consent--dismissed` | Triggers slide-down dismissal |
+| Class                                 | Purpose                                    |
+| ------------------------------------- | ------------------------------------------ |
+| `.ease-cookie-consent`                | Fixed-position wrapper (centers banner)    |
+| `.ease-cookie-consent-content`        | Inner container with bg, shadow, animation |
+| `.ease-cookie-consent-text`           | Message text                               |
+| `.ease-cookie-consent-actions`        | Button group container                     |
+| `.ease-cookie-consent-btn--accept`    | Primary accept button                      |
+| `.ease-cookie-consent-btn--reject`    | Secondary reject button                    |
+| `.ease-cookie-consent-btn--customize` | Text-style customize link                  |
+| `.ease-cookie-consent--dismissed`     | Triggers slide-down dismissal              |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ccbg` | `#ffffff` | Banner background |
-| `--ccborder` | `#e2e8f0` | Border color |
-| `--cctext` | `#1e293b` | Text color |
-| `--ccmuted` | `#64748b` | Muted text color |
-| `--ccaccent` | `#6c63ff` | Accept button + link color |
-| `--ccshadow` | `rgba(0,0,0,0.12)` | Box shadow |
-| `--ccradius` | `0.75rem` | Border radius |
-| `--ccmaxw` | `640px` | Max width |
+| Property     | Default            | Description                |
+| ------------ | ------------------ | -------------------------- |
+| `--ccbg`     | `#ffffff`          | Banner background          |
+| `--ccborder` | `#e2e8f0`          | Border color               |
+| `--cctext`   | `#1e293b`          | Text color                 |
+| `--ccmuted`  | `#64748b`          | Muted text color           |
+| `--ccaccent` | `#6c63ff`          | Accept button + link color |
+| `--ccshadow` | `rgba(0,0,0,0.12)` | Box shadow                 |
+| `--ccradius` | `0.75rem`          | Border radius              |
+| `--ccmaxw`   | `640px`            | Max width                  |
 
 ## Why is it useful?
 

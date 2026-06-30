@@ -1,6 +1,7 @@
 # Color Picker Swatch Row
 
 ## What does this do?
+
 Adds `.ease-swatch-row` — a row of color swatches with the hex label visible on hover.
 
 ```html

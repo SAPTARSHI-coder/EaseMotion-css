@@ -5,6 +5,7 @@ Utility classes for `pointer-events`, `touch-action`, and combined interaction c
 ## What
 
 Single-purpose CSS utilities:
+
 - **pointer-events**: 14 values including SVG-specific (visible, painted, fill, stroke, boundingBox, all)
 - **touch-action**: 10 values (auto, none, manipulation, pan-x/y/directions, pinch-zoom)
 - **Combined shortcuts**: `ease-clickable` (pointer + cursor), `ease-unclickable` (none + default), `ease-no-interaction` (none + no-select)

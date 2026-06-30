@@ -21,12 +21,12 @@ Provides a dedicated **flip card component** — a card that rotates 180 degrees
 
 ### Available Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-flip-card` | Perspective container (1000px) |
-| `.ease-flip-card-inner` | Inner wrapper with `preserve-3d` and smooth transition |
-| `.ease-flip-card-front` | Front face (visible by default) |
-| `.ease-flip-card-back` | Back face (hidden, rotates 180deg into view) |
+| Class                    | Purpose                                                              |
+| ------------------------ | -------------------------------------------------------------------- |
+| `.ease-flip-card`        | Perspective container (1000px)                                       |
+| `.ease-flip-card-inner`  | Inner wrapper with `preserve-3d` and smooth transition               |
+| `.ease-flip-card-front`  | Front face (visible by default)                                      |
+| `.ease-flip-card-back`   | Back face (hidden, rotates 180deg into view)                         |
 | `.ease-flip-card-flip-x` | Modifier — flips on X-axis (vertical) instead of Y-axis (horizontal) |
 
 ### Flip Directions
@@ -42,15 +42,15 @@ Provides a dedicated **flip card component** — a card that rotates 180 degrees
 
 ### Design Tokens Used
 
-| Token | Fallback | Purpose |
-|-------|----------|---------|
-| `--ease-speed-slow` | `0.6s` | Transition duration |
-| `--ease-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` | Transition easing |
-| `--ease-radius-lg` | `1rem` | Card border radius |
-| `--ease-space-8` | `2rem` | Front/back face padding |
-| `--ease-color-surface` | `#fff` / `#141e33` | Front face background |
-| `--ease-color-text` | `#1e293b` / `#e2e8f0` | Front face text color |
-| `--ease-color-primary` | `#6c63ff` | Back face background |
+| Token                  | Fallback                       | Purpose                 |
+| ---------------------- | ------------------------------ | ----------------------- |
+| `--ease-speed-slow`    | `0.6s`                         | Transition duration     |
+| `--ease-ease`          | `cubic-bezier(0.4, 0, 0.2, 1)` | Transition easing       |
+| `--ease-radius-lg`     | `1rem`                         | Card border radius      |
+| `--ease-space-8`       | `2rem`                         | Front/back face padding |
+| `--ease-color-surface` | `#fff` / `#141e33`             | Front face background   |
+| `--ease-color-text`    | `#1e293b` / `#e2e8f0`          | Front face text color   |
+| `--ease-color-primary` | `#6c63ff`                      | Back face background    |
 
 ## Why is it useful?
 

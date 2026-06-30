@@ -17,9 +17,7 @@ A lightweight hover animation that smoothly increases text letter spacing, creat
 ## 🚀 Usage
 
 ```html
-<h1 class="ease-hover-letter-spacing-grow">
-    EaseMotion CSS
-</h1>
+<h1 class="ease-hover-letter-spacing-grow">EaseMotion CSS</h1>
 ```
 
 ---
@@ -28,7 +26,7 @@ A lightweight hover animation that smoothly increases text letter spacing, creat
 
 ```css
 :root {
-    --ease-letter-spacing-hover: 0.12em;
-    --ease-letter-spacing-duration: 0.3s;
+  --ease-letter-spacing-hover: 0.12em;
+  --ease-letter-spacing-duration: 0.3s;
 }
 ```

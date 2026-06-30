@@ -10,8 +10,8 @@ Outline button variant with a bordered background and hover fill effect. A stand
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class              | Description                    |
+| ------------------ | ------------------------------ |
 | `ease-btn-outline` | Outline button with hover fill |
 
 ## Notes

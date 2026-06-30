@@ -18,20 +18,20 @@ Apply the `blur-slide-in-right` animation to any element in your CSS:
 
 ```css
 @keyframes blur-slide-in-right {
-    0% {
-        transform: translateX(30px);
-        filter: blur(10px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateX(0);
-        filter: blur(0);
-        opacity: 1;
-    }
+  0% {
+    transform: translateX(30px);
+    filter: blur(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    filter: blur(0);
+    opacity: 1;
+  }
 }
 
 .element {
-    animation: blur-slide-in-right 0.7s ease-out forwards;
+  animation: blur-slide-in-right 0.7s ease-out forwards;
 }
 ```
 
@@ -40,9 +40,15 @@ Apply the `blur-slide-in-right` animation to any element in your CSS:
 For multiple elements appearing in sequence, add progressive `animation-delay` values:
 
 ```css
-.card:nth-child(1) { animation-delay: 0ms; }
-.card:nth-child(2) { animation-delay: 100ms; }
-.card:nth-child(3) { animation-delay: 200ms; }
+.card:nth-child(1) {
+  animation-delay: 0ms;
+}
+.card:nth-child(2) {
+  animation-delay: 100ms;
+}
+.card:nth-child(3) {
+  animation-delay: 200ms;
+}
 ```
 
 ### Replay interaction
@@ -59,12 +65,12 @@ This demo includes a pure CSS replay mechanism using the checkbox hack. Clicking
 
 ## Animation Overview
 
-| Property            | Initial Value    | Final Value    | Purpose                                |
-|---------------------|------------------|----------------|----------------------------------------|
-| `transform`         | `translateX(30px)` | `translateX(0)` | Slides element into view from the right |
-| `filter`            | `blur(10px)`     | `blur(0)`      | Transitions from soft blur to clarity   |
-| `opacity`           | `0`              | `1`            | Fades element in smoothly               |
-| `animation-timing-function` | `ease-out` | —             | Natural deceleration curve              |
+| Property                    | Initial Value      | Final Value     | Purpose                                 |
+| --------------------------- | ------------------ | --------------- | --------------------------------------- |
+| `transform`                 | `translateX(30px)` | `translateX(0)` | Slides element into view from the right |
+| `filter`                    | `blur(10px)`       | `blur(0)`       | Transitions from soft blur to clarity   |
+| `opacity`                   | `0`                | `1`             | Fades element in smoothly               |
+| `animation-timing-function` | `ease-out`         | —               | Natural deceleration curve              |
 
 ## Blur Transition Explanation
 
@@ -111,4 +117,4 @@ submissions/examples/blur-slide-in-right-nb/
 
 ---
 
-*Part of the [EaseMotion CSS](https://github.com/SAPTARSHI-coder/EaseMotion-css) collection — premium, pure CSS animations for modern web interfaces.*
+_Part of the [EaseMotion CSS](https://github.com/SAPTARSHI-coder/EaseMotion-css) collection — premium, pure CSS animations for modern web interfaces._

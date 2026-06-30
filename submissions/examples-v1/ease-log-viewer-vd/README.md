@@ -14,18 +14,18 @@ Example log entry:
 
 ```html
 <div class="log info ease-fade-in-up">
-    <span class="level">INFO</span>
-    <span>Server started successfully.</span>
+  <span class="level">INFO</span>
+  <span>Server started successfully.</span>
 </div>
 
 <div class="log warn ease-fade-in-up">
-    <span class="level">WARN</span>
-    <span>Memory usage is above 80%.</span>
+  <span class="level">WARN</span>
+  <span>Memory usage is above 80%.</span>
 </div>
 
 <div class="log error ease-fade-in-up">
-    <span class="level">ERROR</span>
-    <span>Failed to fetch API response.</span>
+  <span class="level">ERROR</span>
+  <span>Failed to fetch API response.</span>
 </div>
 ```
 

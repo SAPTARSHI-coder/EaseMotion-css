@@ -5,6 +5,7 @@ A standalone Node.js utility helper to losslessly compress showcase `.png`, `.jp
 ## Setup Instructions
 
 Navigate to the utility directory and pull down dependencies:
+
 ```bash
 cd submissions/examples/asset-optimizer
 npm install

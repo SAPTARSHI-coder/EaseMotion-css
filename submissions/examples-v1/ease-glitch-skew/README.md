@@ -4,10 +4,10 @@ A retro cyberpunk glitch animation that rapidly skews and distorts elements with
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
-| `ease-glitch-skew` | Always-on glitch skew animation |
-| `ease-glitch-skew-hover` | Glitch triggers on hover |
+| Class                    | Effect                          |
+| ------------------------ | ------------------------------- |
+| `ease-glitch-skew`       | Always-on glitch skew animation |
+| `ease-glitch-skew-hover` | Glitch triggers on hover        |
 
 ## Usage
 
@@ -34,6 +34,7 @@ A retro cyberpunk glitch animation that rapidly skews and distorts elements with
 ```
 
 ## Features
+
 - skewX/skewY rapid random offsets
 - Color split via ::before/::after pseudo-elements
 - Fast 0.3s animation cycle

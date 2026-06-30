@@ -10,11 +10,14 @@ An ultra-premium, interactive cinematic layout modifier that simulates a pristin
 - **Glacial Color Tuning:** Swaps raw flat gray boundaries for a vivid, high-contrast sub-zero palette. Leverages Glacial Light Blue borders (`rgba(186, 230, 253, 0.4)`), deep aquatic refraction gradients, and a sharp cyan text-shadow glow (`text-shadow: 0 0 20px rgba(56, 189, 248, 0.4)`) to maximize readability against cosmic dark canvasses.
 
 ## Project Workspace Manifest
+
 - `demo.html`: Independent, self-contained interactive sandbox preview.
 - `style.css`: Configured production-ready utility sheets and transition maps.
 
 ## Design Composability
+
 Fully layout-agnostic framework overlay. Chains seamlessly onto game client dashboard widgets, futuristic portfolio profiles, subscription tier columns, or primary alert panels without altering document structure workflows.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

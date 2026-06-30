@@ -18,12 +18,12 @@ A 3D extruded text effect built entirely from stacked `text-shadow` layers. Each
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
-| Base color (`color`) | The face color of the text |
-| Shadow color progression | Edit the hex stops to match any palette |
-| Shadow layer count | Add more `Npx Npx 0` stops to increase depth |
-| `transition` duration | Controls how fast the depth change animates |
+| Property                 | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| Base color (`color`)     | The face color of the text                   |
+| Shadow color progression | Edit the hex stops to match any palette      |
+| Shadow layer count       | Add more `Npx Npx 0` stops to increase depth |
+| `transition` duration    | Controls how fast the depth change animates  |
 
 ## Accessibility
 

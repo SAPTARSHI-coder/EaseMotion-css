@@ -32,27 +32,27 @@ Provides a CSS-only Pagination component for navigating multi-page content. Supp
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Default pill-style page buttons |
-| `.ease-pagination-sm` | Smaller buttons (1.75rem) |
-| `.ease-pagination-lg` | Larger buttons (2.75rem) |
-| `.ease-pagination-simple` | Minimal: Prev / counter / Next |
+| Modifier                  | Effect                          |
+| ------------------------- | ------------------------------- |
+| (none)                    | Default pill-style page buttons |
+| `.ease-pagination-sm`     | Smaller buttons (1.75rem)       |
+| `.ease-pagination-lg`     | Larger buttons (2.75rem)        |
+| `.ease-pagination-simple` | Minimal: Prev / counter / Next  |
 
 ### States
 
-| Class | Effect |
-|---|---|
-| `.is-active` | Current page — brand background, white text |
+| Class          | Effect                                               |
+| -------------- | ---------------------------------------------------- |
+| `.is-active`   | Current page — brand background, white text          |
 | `.is-disabled` | Disabled action — reduced opacity, no pointer events |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--psize` | `2.25rem` | Min-width & height |
-| `--pfont` | `0.875rem` | Font size |
-| `--pradius` | `0.5rem` | Border radius |
+| Property    | Default    | Description        |
+| ----------- | ---------- | ------------------ |
+| `--psize`   | `2.25rem`  | Min-width & height |
+| `--pfont`   | `0.875rem` | Font size          |
+| `--pradius` | `0.5rem`   | Border radius      |
 
 ## Why is it useful?
 

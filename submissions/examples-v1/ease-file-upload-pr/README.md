@@ -20,9 +20,8 @@ Drag-and-drop file upload zone with hover states and file list.
 ## Usage
 
 ```html
-&lt;div class="upload-pr"&gt;
-  &lt;svg class="upload-pr-icon"&gt;...&lt;/svg&gt;
-  &lt;div class="upload-pr-title"&gt;Drop files here&lt;/div&gt;
-  &lt;div class="upload-pr-subtitle"&gt;or click to browse&lt;/div&gt;
-  &lt;span class="upload-pr-btn"&gt;Choose Files&lt;/span&gt;
-&lt;/div&gt;
+&lt;div class="upload-pr"&gt; &lt;svg class="upload-pr-icon"&gt;...&lt;/svg&gt;
+&lt;div class="upload-pr-title"&gt;Drop files here&lt;/div&gt; &lt;div
+class="upload-pr-subtitle"&gt;or click to browse&lt;/div&gt; &lt;span
+class="upload-pr-btn"&gt;Choose Files&lt;/span&gt; &lt;/div&gt;
+```

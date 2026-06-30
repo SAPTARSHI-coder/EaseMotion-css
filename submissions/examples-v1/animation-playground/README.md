@@ -5,6 +5,7 @@ EaseMotion CSS classes in real time — select animation, duration,
 delay, timing, iteration, and direction, then copy the generated class.
 
 ## Structure
+
 animation-playground/
 
 ├── demo.html
@@ -14,7 +15,9 @@ animation-playground/
 ├── script.js
 
 └── README.md
+
 ## Features
+
 - 15 animation presets across 6 categories
 - Live preview with instant DOM updates
 - Duration, delay, timing, iteration, direction controls
@@ -25,6 +28,7 @@ animation-playground/
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Learning EaseMotion CSS animations
 - Prototyping animation combinations
 - Developer playground / documentation tool

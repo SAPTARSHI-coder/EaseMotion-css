@@ -27,17 +27,17 @@ Three animation techniques working together:
 
 <!-- 3. Drop in the tilt script (bottom of body) -->
 <script>
-  document.querySelectorAll('[data-tilt]').forEach(card => {
-    card.addEventListener('mousemove', e => {
+  document.querySelectorAll("[data-tilt]").forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
       const { left, top, width, height } = card.getBoundingClientRect();
-      const x = (e.clientX - left) / width  - 0.5;
-      const y = (e.clientY - top)  / height - 0.5;
-      card.style.setProperty('--tilt-x', `${(-y * 12).toFixed(2)}deg`);
-      card.style.setProperty('--tilt-y', `${ (x * 12).toFixed(2)}deg`);
+      const x = (e.clientX - left) / width - 0.5;
+      const y = (e.clientY - top) / height - 0.5;
+      card.style.setProperty("--tilt-x", `${(-y * 12).toFixed(2)}deg`);
+      card.style.setProperty("--tilt-y", `${(x * 12).toFixed(2)}deg`);
     });
-    card.addEventListener('mouseleave', () => {
-      card.style.setProperty('--tilt-x', '0deg');
-      card.style.setProperty('--tilt-y', '0deg');
+    card.addEventListener("mouseleave", () => {
+      card.style.setProperty("--tilt-x", "0deg");
+      card.style.setProperty("--tilt-y", "0deg");
     });
   });
 </script>
@@ -53,11 +53,11 @@ EaseMotion CSS already has neon buttons and glassmorphism panels. Animated gradi
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                      |
+| ----------- | -------------------------------------------- |
 | `demo.html` | Open directly in a browser — zero build step |
-| `style.css` | All keyframes, theme tokens, card styles |
-| `README.md` | This file |
+| `style.css` | All keyframes, theme tokens, card styles     |
+| `README.md` | This file                                    |
 
 ## Accessibility
 
@@ -65,7 +65,9 @@ All animations are wrapped in:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  .card, .card::before, .card__inner::after {
+  .card,
+  .card::before,
+  .card__inner::after {
     animation: none !important;
     transition: none !important;
   }

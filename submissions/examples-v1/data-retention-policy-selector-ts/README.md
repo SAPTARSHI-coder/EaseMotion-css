@@ -8,7 +8,7 @@ Shows retention policy options with selected, recommended, and custom states.
 
 ```html
 <label class="retention-option is-selected">
-  <input type="radio" checked>
+  <input type="radio" checked />
   <strong>90 days</strong>
 </label>
 ```

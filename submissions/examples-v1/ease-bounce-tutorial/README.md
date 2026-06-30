@@ -4,11 +4,11 @@ An interactive tutorial page for the `ease-bounce` animation utility in EaseMoti
 
 ## What's included
 
-| File | Purpose |
-|---|---|
-| `demo.html` | Full tutorial page — live demo, code snippets, playground |
+| File        | Purpose                                                      |
+| ----------- | ------------------------------------------------------------ |
+| `demo.html` | Full tutorial page — live demo, code snippets, playground    |
 | `style.css` | Page styles matching the EaseMotion CSS dark design language |
-| `README.md` | This file |
+| `README.md` | This file                                                    |
 
 ## Preview
 
@@ -33,10 +33,10 @@ The CDN link in `demo.html` points to `../../easemotion.min.css` (relative path 
 
 The tutorial introduces two override variables that the core class can expose:
 
-| Variable | Default | Description |
-|---|---|---|
-| `--bounce-dur` | `0.9s` | Full animation cycle duration |
-| `--bounce-height` | `60px` | Peak height of the bounce |
+| Variable          | Default | Description                   |
+| ----------------- | ------- | ----------------------------- |
+| `--bounce-dur`    | `0.9s`  | Full animation cycle duration |
+| `--bounce-height` | `60px`  | Peak height of the bounce     |
 
 ## Author
 

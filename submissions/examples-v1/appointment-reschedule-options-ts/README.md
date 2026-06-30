@@ -8,7 +8,8 @@ Compares appointment reschedule slots with selected, open, and limited availabil
 
 ```html
 <article class="slot selected">
-  <span>Recommended</span><h2>Tue, 9:30 AM</h2>
+  <span>Recommended</span>
+  <h2>Tue, 9:30 AM</h2>
 </article>
 ```
 

@@ -1,15 +1,19 @@
 # E-commerce — Subscription Box — Books
 
 ## What does this do?
+
 A complete, copy-paste ready full-page website for a Book subscription box styled with an elegant literary paper and deep burgundy aesthetic, featuring interactive book stack fan displays, genre themes, past box reveals, pricing options, reader testimonials, subscribe CTAs, and details-based FAQ accordions.
 
 ## How is it used?
+
 Open `demo.html` directly in any web browser to view the page. No build step is required. The page transition, reveal animations, and hover components use the project's standard CSS classes.
 
 ## Why is it useful?
+
 This showcases how EaseMotion CSS can be applied to build premium ecommerce subscription and membership flows with literary aesthetics and interactive hover-based reveals without custom scripts or complex keyframes.
 
 ## EaseMotion CSS Classes Showcased
+
 - **Entrance & Hover Animations**:
   - `.ease-slide-in-left` / `.ease-slide-in-right`: Used for the hero content entrances.
   - `.ease-hover-grow`: Applied to header logo elements and button states.

@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -37,15 +37,15 @@ jobs:
 
 ### Pipeline Steps
 
-| Step | Action | Purpose |
-|---|---|---|
-| Checkout | `actions/checkout@v4` | Clone PR branch |
-| Setup Node | `actions/setup-node@v4` | Install Node 18/20/22 with npm cache |
-| Install | `npm ci` | Clean install from lockfile |
-| Lint | `npm run lint` | CSS + JS linting |
-| Test | `npm test` | Specificity, RTL, bundle integrity tests |
-| Build | `npm run build` | Generate dist bundle |
-| Validate | `npm run validate:bundle` | Size check, duplicate selectors, layer order |
+| Step       | Action                    | Purpose                                      |
+| ---------- | ------------------------- | -------------------------------------------- |
+| Checkout   | `actions/checkout@v4`     | Clone PR branch                              |
+| Setup Node | `actions/setup-node@v4`   | Install Node 18/20/22 with npm cache         |
+| Install    | `npm ci`                  | Clean install from lockfile                  |
+| Lint       | `npm run lint`            | CSS + JS linting                             |
+| Test       | `npm test`                | Specificity, RTL, bundle integrity tests     |
+| Build      | `npm run build`           | Generate dist bundle                         |
+| Validate   | `npm run validate:bundle` | Size check, duplicate selectors, layer order |
 
 ### Features
 

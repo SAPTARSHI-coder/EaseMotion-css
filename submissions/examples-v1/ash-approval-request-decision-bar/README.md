@@ -24,9 +24,7 @@ A modern approval workflow component that displays pending requests, approval ac
 ## Usage
 
 ```html
-<div class="decision-bar">
-  Approval Request
-</div>
+<div class="decision-bar">Approval Request</div>
 ```
 
 ## Main Classes

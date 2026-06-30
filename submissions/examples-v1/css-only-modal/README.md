@@ -13,10 +13,10 @@ This modal leverages the **`:target` CSS pseudo-class** hack.
 
 ## Features
 
-*   **Zero JS Dependency**: Relies purely on URL fragments and CSS state.
-*   **Animated Entrance**: The modal scales up and fades in smoothly.
-*   **Backdrop Dismiss**: Clicking outside the modal content dismisses it, just like a JS modal.
-*   **Back Button Support**: Because it uses URL hashes, the browser's "Back" button automatically closes the modal.
+- **Zero JS Dependency**: Relies purely on URL fragments and CSS state.
+- **Animated Entrance**: The modal scales up and fades in smoothly.
+- **Backdrop Dismiss**: Clicking outside the modal content dismisses it, just like a JS modal.
+- **Back Button Support**: Because it uses URL hashes, the browser's "Back" button automatically closes the modal.
 
 ## Usage
 

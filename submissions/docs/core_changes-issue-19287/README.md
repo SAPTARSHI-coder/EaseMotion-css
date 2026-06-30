@@ -17,11 +17,11 @@ Pure CSS shape-morphing button collection. Three button variants that smoothly t
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `demo.html` | Three demo sections, each with a morphing button |
+| File        | Description                                                     |
+| ----------- | --------------------------------------------------------------- |
+| `demo.html` | Three demo sections, each with a morphing button                |
 | `style.css` | All styles, transitions, animations, responsive, reduced-motion |
-| `README.md` | This documentation |
+| `README.md` | This documentation                                              |
 
 ## Usage
 

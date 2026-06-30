@@ -18,10 +18,7 @@ A reusable e-commerce product card built with pure HTML and CSS.
 ## Usage
 
 ```html
-<article class="ease-card-product">
-    ...
-</article>
+<article class="ease-card-product">...</article>
 ```
 
 ---
-

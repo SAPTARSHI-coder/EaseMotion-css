@@ -17,8 +17,8 @@ Include `style.css` for styles and the JS snippet from `demo.html` for functiona
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Full working demo |
+| File        | Purpose            |
+| ----------- | ------------------ |
+| `demo.html` | Full working demo  |
 | `style.css` | Copy button styles |
-| `README.md` | This file |
+| `README.md` | This file          |

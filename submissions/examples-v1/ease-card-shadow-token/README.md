@@ -1,14 +1,19 @@
 # fix: ease-card hover shadow design token
 
 ## Problem
+
 `.ease-card:hover` had a hardcoded `box-shadow` value:
+
 ```css
-box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 ```
+
 This could not be customized without overriding component CSS directly.
 
 ## Fix
+
 Added two CSS custom properties:
+
 - `--ease-shadow-card` — resting shadow
 - `--ease-shadow-hover` — hover lift shadow
 
@@ -28,6 +33,7 @@ Added two CSS custom properties:
 ```
 
 ## Customization
+
 ```css
 /* Override in your project */
 :root {
@@ -36,5 +42,6 @@ Added two CSS custom properties:
 ```
 
 ## Files
+
 - `style.css` — token fix
 - `demo.html` — live demo with default and themed variants

@@ -53,8 +53,12 @@ Open `demo.html` in a browser to see four cards, each demonstrating a different 
 
    ```css
    @keyframes ease-border-rotate {
-     from { --ease-angle: 0deg; }
-     to   { --ease-angle: 360deg; }
+     from {
+       --ease-angle: 0deg;
+     }
+     to {
+       --ease-angle: 360deg;
+     }
    }
    ```
 
@@ -63,7 +67,8 @@ Open `demo.html` in a browser to see four cards, each demonstrating a different 
 
    ```css
    .card::before {
-     animation: ease-border-rotate var(--ease-border-rotate-speed) linear infinite;
+     animation: ease-border-rotate var(--ease-border-rotate-speed) linear
+       infinite;
    }
    ```
 
@@ -76,13 +81,13 @@ Open `demo.html` in a browser to see four cards, each demonstrating a different 
 
 ## 🎛️ Customizable Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| `--ease-angle` | Driven by the animation; do not set manually | `0deg` |
-| `--ease-border-rotate-speed` | Full-rotation duration | `4s` |
-| `--ease-border-width` | Thickness of the gradient border | `3px` |
-| `--ease-border-radius` | Corner radius of the card and border | `16px` |
-| `--ease-color-1` … `--ease-color-4` | Gradient stop colors | cyan / violet / pink / yellow |
+| Variable                            | Description                                  | Default                       |
+| ----------------------------------- | -------------------------------------------- | ----------------------------- |
+| `--ease-angle`                      | Driven by the animation; do not set manually | `0deg`                        |
+| `--ease-border-rotate-speed`        | Full-rotation duration                       | `4s`                          |
+| `--ease-border-width`               | Thickness of the gradient border             | `3px`                         |
+| `--ease-border-radius`              | Corner radius of the card and border         | `16px`                        |
+| `--ease-color-1` … `--ease-color-4` | Gradient stop colors                         | cyan / violet / pink / yellow |
 
 ## 📂 Files
 

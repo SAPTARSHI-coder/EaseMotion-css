@@ -32,9 +32,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="notification-panel">
-...
-</div>
+<div class="notification-panel">...</div>
 ```
 
 ---

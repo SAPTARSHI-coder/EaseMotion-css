@@ -16,12 +16,26 @@ Provides a theme toggle switch component that lets users switch between light an
 <!-- Place the toggle anywhere in your layout -->
 <button class="ease-theme-switcher" aria-label="Toggle theme">
   <span class="ease-theme-icon">
-    <svg class="ease-sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="5"/>
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    <svg
+      class="ease-sun-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="12" cy="12" r="5" />
+      <path
+        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+      />
     </svg>
-    <svg class="ease-moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    <svg
+      class="ease-moon-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   </span>
 </button>
@@ -34,6 +48,7 @@ Provides a theme toggle switch component that lets users switch between light an
 ```
 
 The script automatically:
+
 - Reads `localStorage` for a saved theme
 - Falls back to `prefers-color-scheme` if no saved preference
 - Adds `data-theme="dark"` to `<html>` when dark mode is active
@@ -42,19 +57,19 @@ The script automatically:
 
 ## Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Default toggle with sun/moon SVG icons |
-| `.ease-theme-switcher-sm` | Smaller toggle (32px) for compact layouts |
+| Modifier                  | Effect                                       |
+| ------------------------- | -------------------------------------------- |
+| (none)                    | Default toggle with sun/moon SVG icons       |
+| `.ease-theme-switcher-sm` | Smaller toggle (32px) for compact layouts    |
 | `.ease-theme-switcher-lg` | Larger toggle (48px) for prominent placement |
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-theme-switcher-size` | `40px` | Width and height of the toggle button |
-| `--ease-theme-switcher-bg` | `var(--ease-color-neutral-100)` | Background color |
-| `--ease-theme-switcher-color` | `var(--ease-color-text)` | Icon color |
+| Property                      | Default                         | Description                           |
+| ----------------------------- | ------------------------------- | ------------------------------------- |
+| `--ease-theme-switcher-size`  | `40px`                          | Width and height of the toggle button |
+| `--ease-theme-switcher-bg`    | `var(--ease-color-neutral-100)` | Background color                      |
+| `--ease-theme-switcher-color` | `var(--ease-color-text)`        | Icon color                            |
 
 ## Why is it useful?
 

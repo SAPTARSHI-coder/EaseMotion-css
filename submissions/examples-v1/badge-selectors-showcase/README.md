@@ -24,9 +24,7 @@ A collection of reusable badge patterns demonstrating status indicators, notific
 ## Usage
 
 ```html
-<span class="badge success">
-  Success
-</span>
+<span class="badge success"> Success </span>
 ```
 
 ## Main Classes

@@ -14,8 +14,10 @@ A scalable pattern for creating dynamic staggered animations and sequences using
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To create a staggered entrance list:
+
 ```html
 <!-- 1. Provide the index inline -->
 <li class="ease-sequence" style="--idx: 1;">Item 1</li>
 <li class="ease-sequence" style="--idx: 2;">Item 2</li>
 <li class="ease-sequence" style="--idx: 3;">Item 3</li>
+```

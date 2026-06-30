@@ -8,14 +8,14 @@ Visualizes the lifecycle of a blockchain transaction from wallet creation throug
 
 ```html
 <div class="stage validation">
-    <h3>Validation</h3>
+  <h3>Validation</h3>
 </div>
 
 <div class="stage block">
-    <h3>Block Creation</h3>
+  <h3>Block Creation</h3>
 </div>
 ```
 
 ## Why is it useful?
 
-Blockchain systems involve multiple verification and consensus stages that can be difficult to explain using text alone. This component provides a clear visual representation of transaction processing for educational content, documentation, technical blogs, and blockchain-related projects using pure HTML and CSS.  
+Blockchain systems involve multiple verification and consensus stages that can be difficult to explain using text alone. This component provides a clear visual representation of transaction processing for educational content, documentation, technical blogs, and blockchain-related projects using pure HTML and CSS.

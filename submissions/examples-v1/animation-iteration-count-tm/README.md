@@ -13,22 +13,30 @@ A comprehensive CSS utility class for **CSS animation-iteration-count loop contr
 </div>
 
 <!-- Variant 1: left-accent border -->
-<div class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-1">
+<div
+  class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-1"
+>
   <span>Left accent variant</span>
 </div>
 
 <!-- Variant 2: outline glow -->
-<div class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-2">
+<div
+  class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-2"
+>
   <span>Outline glow variant</span>
 </div>
 
 <!-- Variant 3: tall column -->
-<div class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-3">
+<div
+  class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-3"
+>
   <span>Tall column variant</span>
 </div>
 
 <!-- Variant 4: shadow depth -->
-<div class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-4">
+<div
+  class="tm-animation-iteration-count-tm tm-animation-iteration-count-tm-variant-4"
+>
   <span>Shadow depth variant</span>
 </div>
 ```
@@ -37,14 +45,14 @@ A comprehensive CSS utility class for **CSS animation-iteration-count loop contr
 
 This utility uses the EaseMotion CSS variable system:
 
-| Variable | Default Value |
-|----------|--------------|
-| `--ease-bg` | Background surface color |
-| `--ease-surface` | Card/surface background |
-| `--ease-primary` | Primary brand color |
-| `--ease-accent` | Accent highlight color |
-| `--ease-text` | Text color |
-| `--ease-border` | Border/divider color |
+| Variable         | Default Value            |
+| ---------------- | ------------------------ |
+| `--ease-bg`      | Background surface color |
+| `--ease-surface` | Card/surface background  |
+| `--ease-primary` | Primary brand color      |
+| `--ease-accent`  | Accent highlight color   |
+| `--ease-text`    | Text color               |
+| `--ease-border`  | Border/divider color     |
 
 ## Features
 

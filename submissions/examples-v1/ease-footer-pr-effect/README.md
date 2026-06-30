@@ -14,12 +14,10 @@ on mobile.
 
 ```html
 <footer class="footer">
-
   <!-- top purple glow divider -->
   <div class="footer-glow-bar"></div>
 
   <div class="footer-inner">
-
     <!-- Col 1: Brand -->
     <div class="footer-col footer-col--brand">
       <a href="#" class="footer-logo">
@@ -33,7 +31,9 @@ on mobile.
       </div>
       <!-- social icons row -->
       <div class="footer-social">
-        <a href="#" class="footer-social-link" aria-label="GitHub"><!-- svg --></a>
+        <a href="#" class="footer-social-link" aria-label="GitHub"
+          ><!-- svg --></a
+        >
         <a href="#" class="footer-social-link" aria-label="npm"><!-- svg --></a>
       </div>
     </div>
@@ -59,13 +59,14 @@ on mobile.
     <!-- Col 4: Newsletter -->
     <div class="footer-col footer-col--newsletter">
       <h4 class="footer-col-title">Stay Updated</h4>
-      <p class="footer-newsletter-desc">Get notified when new components ship.</p>
+      <p class="footer-newsletter-desc">
+        Get notified when new components ship.
+      </p>
       <div class="footer-newsletter-form">
         <input type="email" class="footer-input" placeholder="your@email.com" />
         <button class="footer-btn" type="button">Subscribe</button>
       </div>
     </div>
-
   </div>
 
   <!-- Copyright bar -->
@@ -79,7 +80,6 @@ on mobile.
       </div>
     </div>
   </div>
-
 </footer>
 ```
 
@@ -98,6 +98,7 @@ behavior in plain English. This footer follows the same philosophy:
 - `footer-glow-bar` — purple gradient line on the top border edge
 
 Responsive breakpoints:
+
 - Desktop: 4-column grid (`1.6fr 1fr 1fr 1.5fr`)
 - Tablet (≤900px): 2-column, brand spans full width
 - Mobile (≤560px): single column, fully stacked
@@ -109,16 +110,16 @@ Accessibility: social links have `aria-label`, form input has
 
 ## Proposed class names (maintainer decides final naming)
 
-| Raw name                 | Proposed ease-* name              |
-|--------------------------|-----------------------------------|
-| `footer`                 | `ease-footer`                     |
-| `footer-inner`           | `ease-footer-inner`               |
-| `footer-col`             | `ease-footer-col`                 |
-| `footer-col--brand`      | `ease-footer-col-brand`           |
-| `footer-col--newsletter` | `ease-footer-col-newsletter`      |
-| `footer-link`            | `ease-footer-link`                |
-| `footer-social-link`     | `ease-footer-social-link`         |
-| `footer-btn`             | `ease-footer-btn`                 |
-| `footer-input`           | `ease-footer-input`               |
-| `footer-bottom`          | `ease-footer-bottom`              |
-| `footer-glow-bar`        | `ease-footer-glow-bar`            |
+| Raw name                 | Proposed ease-\* name        |
+| ------------------------ | ---------------------------- |
+| `footer`                 | `ease-footer`                |
+| `footer-inner`           | `ease-footer-inner`          |
+| `footer-col`             | `ease-footer-col`            |
+| `footer-col--brand`      | `ease-footer-col-brand`      |
+| `footer-col--newsletter` | `ease-footer-col-newsletter` |
+| `footer-link`            | `ease-footer-link`           |
+| `footer-social-link`     | `ease-footer-social-link`    |
+| `footer-btn`             | `ease-footer-btn`            |
+| `footer-input`           | `ease-footer-input`          |
+| `footer-bottom`          | `ease-footer-bottom`         |
+| `footer-glow-bar`        | `ease-footer-glow-bar`       |

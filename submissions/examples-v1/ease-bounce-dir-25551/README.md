@@ -4,13 +4,13 @@ Five directional bounce animation utility classes for entrance effects on differ
 
 ## Classes
 
-| Class | Keyframes | Effect |
-|---|---|---|
-| `ease-bounce-up` | `ease-kf-bounce-up` | Translate up with overshoot |
-| `ease-bounce-down` | `ease-kf-bounce-down` | Translate down with overshoot |
-| `ease-bounce-left` | `ease-kf-bounce-left` | Translate left with overshoot |
-| `ease-bounce-right` | `ease-kf-bounce-right` | Translate right with overshoot |
-| `ease-bounce-out` | `ease-kf-bounce-out` | Scale bounce (grow → shrink → settle) |
+| Class               | Keyframes              | Effect                                |
+| ------------------- | ---------------------- | ------------------------------------- |
+| `ease-bounce-up`    | `ease-kf-bounce-up`    | Translate up with overshoot           |
+| `ease-bounce-down`  | `ease-kf-bounce-down`  | Translate down with overshoot         |
+| `ease-bounce-left`  | `ease-kf-bounce-left`  | Translate left with overshoot         |
+| `ease-bounce-right` | `ease-kf-bounce-right` | Translate right with overshoot        |
+| `ease-bounce-out`   | `ease-kf-bounce-out`   | Scale bounce (grow → shrink → settle) |
 
 ## Usage
 
@@ -26,10 +26,10 @@ Five directional bounce animation utility classes for entrance effects on differ
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-speed-medium` | `0.6s` | Animation duration |
-| `--ease-ease` | `ease-out` | Timing function |
+| Property              | Default    | Description        |
+| --------------------- | ---------- | ------------------ |
+| `--ease-speed-medium` | `0.6s`     | Animation duration |
+| `--ease-ease`         | `ease-out` | Timing function    |
 
 ## Accessibility
 

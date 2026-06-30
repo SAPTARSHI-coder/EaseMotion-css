@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated social media icons for modern websi
 ## 🚀 Features
 
 ### Icon Styles (8 types)
+
 1. **Classic Brand Colors** - Official brand colors with lift effect
 2. **Rounded Hover** - Circular icons with 360° rotation
 3. **Slide Up Reveal** - Icon slides up to reveal label
@@ -15,6 +16,7 @@ A collection of beautiful, pure CSS animated social media icons for modern websi
 8. **Bounce Effect** - Playful bounce animation
 
 ### Supported Platforms
+
 - Facebook
 - Twitter / X
 - Instagram
@@ -23,6 +25,7 @@ A collection of beautiful, pure CSS animated social media icons for modern websi
 - GitHub
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All icon animations
 - `readme.md` - Documentation
@@ -30,5 +33,7 @@ A collection of beautiful, pure CSS animated social media icons for modern websi
 ## 🛠️ How to Use
 
 ### Basic Icon
+
 ```html
 <a href="#" class="social-icon brand-facebook">f</a>
+```

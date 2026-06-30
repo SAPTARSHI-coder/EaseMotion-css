@@ -21,9 +21,7 @@ A premium animated glowing border effect built using pure HTML and CSS.
 ## Usage
 
 ```html
-<div class="ease-border-glow">
-    Content
-</div>
+<div class="ease-border-glow">Content</div>
 ```
 
 ## Issue

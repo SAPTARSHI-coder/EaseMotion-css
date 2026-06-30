@@ -21,4 +21,6 @@ Pure CSS shape morphing animations for EaseMotion CSS. No JavaScript, no SVG, no
 ### Organic Blob
 
 ```html
-&lt;div class="ease-morph ease-morph-blob ease-morph-primary ease-morph-md"&gt;&lt;/div&gt;
+&lt;div class="ease-morph ease-morph-blob ease-morph-primary
+ease-morph-md"&gt;&lt;/div&gt;
+```

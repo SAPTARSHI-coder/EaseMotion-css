@@ -1,4 +1,5 @@
 # Cursor Glow Trail
+
 A subtle, high-quality cursor effect for immersive UI experiences.
 
 - Uses `radial-gradient` for a soft, light-source appearance.

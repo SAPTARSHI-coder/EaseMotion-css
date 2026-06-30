@@ -19,8 +19,8 @@ Adds a **Tree View** component for displaying hierarchical data — file browser
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------- |
 | `demo.html` | 3 interactive tree views: file browser, project structure, category nav — with keyboard navigation |
-| `style.css` | Tree styles: nesting, expand/collapse animation, states, toggle rotation, indentation |
-| `README.md` | This documentation |
+| `style.css` | Tree styles: nesting, expand/collapse animation, states, toggle rotation, indentation              |
+| `README.md` | This documentation                                                                                 |

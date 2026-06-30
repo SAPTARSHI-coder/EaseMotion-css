@@ -7,18 +7,22 @@ This sandbox demonstrates style recalculation behavior when re-applying CSS anim
 ## Technical Details
 
 To optimize rendering, modern browsers batch DOM changes. Removing a class and re-adding it immediately:
+
 ```javascript
-element.classList.remove('my-animation');
-element.classList.add('my-animation');
+element.classList.remove("my-animation");
+element.classList.add("my-animation");
 ```
+
 occurs in a single style resolution pass. As a result, the browser detects no state change and fails to replay keyframes.
 
 ### The Remediation
+
 A style reflow must be forced between class modification calls. Reading a layout property (like `element.offsetWidth` or `element.clientHeight`) forces style recalculation:
+
 ```javascript
-element.classList.remove('my-animation');
+element.classList.remove("my-animation");
 void element.offsetWidth; // Force Reflow
-element.classList.add('my-animation');
+element.classList.add("my-animation");
 ```
 
 ---

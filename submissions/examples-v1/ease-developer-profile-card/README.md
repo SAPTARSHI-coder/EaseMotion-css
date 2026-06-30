@@ -6,7 +6,7 @@ A modern, highly interactive, and responsive developer profile card component bu
 
 ## Overview
 
-The **Developer Profile Card** is designed to showcase software engineers, open-source contributors, tech teams, and web designers. By combining modern CSS specifications with fluid entrance animations and interactive states, it leaves a premium, polished impression on users. 
+The **Developer Profile Card** is designed to showcase software engineers, open-source contributors, tech teams, and web designers. By combining modern CSS specifications with fluid entrance animations and interactive states, it leaves a premium, polished impression on users.
 
 This component uses **no JavaScript** for its core functions—including theme switching—making it light, SEO-friendly, and easy to drop into any website or application.
 
@@ -40,29 +40,31 @@ The component is highly customizable using CSS Custom Properties. You can adjust
 
 ### Layout Custom Properties
 
-| Custom Property | Default (Light Mode) | Default (Dark Mode) | Purpose |
-| :--- | :--- | :--- | :--- |
-| `--bg-primary` | `#f8fafc` | `#080c14` | Body/wrapper page background |
-| `--card-bg` | `rgba(255, 255, 255, 0.75)` | `rgba(15, 23, 42, 0.65)` | Glassmorphic card surface |
-| `--card-border` | `rgba(255, 255, 255, 0.6)` | `rgba(255, 255, 255, 0.06)` | Semi-transparent card borders |
-| `--text-main` | `#0f172a` | `#f8fafc` | Main header and name text color |
-| `--text-muted` | `#64748b` | `#94a3b8` | Subheadings, bio, and label color |
-| `--accent-primary` | `#6366f1` (Indigo) | `#818cf8` (Light Indigo) | Main accent highlight color |
-| `--accent-secondary`| `#a855f7` (Purple) | `#c084fc` (Light Purple) | Secondary gradient accent color |
-| `--accent-pink` | `#ec4899` (Pink) | `#f472b6` (Light Pink) | Gradient highlight color |
-| `--tag-bg` | `#f1f5f9` | `#1e293b` | Technology tag background color |
-| `--btn-cta-bg` | Linear Gradient | Linear Gradient | Accent gradient for the CTA button |
+| Custom Property      | Default (Light Mode)        | Default (Dark Mode)         | Purpose                            |
+| :------------------- | :-------------------------- | :-------------------------- | :--------------------------------- |
+| `--bg-primary`       | `#f8fafc`                   | `#080c14`                   | Body/wrapper page background       |
+| `--card-bg`          | `rgba(255, 255, 255, 0.75)` | `rgba(15, 23, 42, 0.65)`    | Glassmorphic card surface          |
+| `--card-border`      | `rgba(255, 255, 255, 0.6)`  | `rgba(255, 255, 255, 0.06)` | Semi-transparent card borders      |
+| `--text-main`        | `#0f172a`                   | `#f8fafc`                   | Main header and name text color    |
+| `--text-muted`       | `#64748b`                   | `#94a3b8`                   | Subheadings, bio, and label color  |
+| `--accent-primary`   | `#6366f1` (Indigo)          | `#818cf8` (Light Indigo)    | Main accent highlight color        |
+| `--accent-secondary` | `#a855f7` (Purple)          | `#c084fc` (Light Purple)    | Secondary gradient accent color    |
+| `--accent-pink`      | `#ec4899` (Pink)            | `#f472b6` (Light Pink)      | Gradient highlight color           |
+| `--tag-bg`           | `#f1f5f9`                   | `#1e293b`                   | Technology tag background color    |
+| `--btn-cta-bg`       | Linear Gradient             | Linear Gradient             | Accent gradient for the CTA button |
 
 ### Editing Typography
 
 The component imports and utilizes two Google Fonts:
+
 - **Outfit**: Used for bold, modern headings and statistic values.
 - **Inter**: Used for high-legibility body content like roles, bios, and tag texts.
 
 To substitute these fonts, update the font families:
+
 ```css
 :root {
-  --font-heading: 'Your-Heading-Font', sans-serif;
-  --font-body: 'Your-Body-Font', sans-serif;
+  --font-heading: "Your-Heading-Font", sans-serif;
+  --font-body: "Your-Body-Font", sans-serif;
 }
 ```

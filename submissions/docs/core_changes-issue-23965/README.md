@@ -4,12 +4,13 @@
 
 Utility classes for **CSS counters** — a CSS mechanism for auto-numbering elements without JavaScript.
 
-| Class | Effect |
-|---|---|
+| Class                | Effect                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------- |
 | `.ease-counter-list` | Resets the counter on the container (`counter-reset`) and removes default list styling |
-| `.ease-counter-item` | Increments the counter (`counter-increment`) and displays the number via `::before` |
+| `.ease-counter-item` | Increments the counter (`counter-increment`) and displays the number via `::before`    |
 
 Custom properties:
+
 - `--ease-counter-name` (default `ease-counter`) — the counter identifier
 - `--ease-counter-prefix` (default `''`) — text before the number
 - `--ease-counter-suffix` (default `'. '`) — text after the number
@@ -30,7 +31,10 @@ Wrap content in `.ease-counter-list` (use `<ol>` for semantic meaning, but any b
 Override variables for custom numbering styles:
 
 ```html
-<ol class="ease-counter-list" style="--ease-counter-prefix: 'Chapter '; --ease-counter-suffix: ': ';">
+<ol
+  class="ease-counter-list"
+  style="--ease-counter-prefix: 'Chapter '; --ease-counter-suffix: ': ';"
+>
   <li class="ease-counter-item">Introduction</li>
 </ol>
 ```

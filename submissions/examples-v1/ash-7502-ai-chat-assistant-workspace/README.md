@@ -22,15 +22,9 @@ A responsive AI chat interface for interacting with conversational assistants. I
 
 ```html
 <div class="dashboard">
+  <aside class="sidebar">...</aside>
 
-    <aside class="sidebar">
-        ...
-    </aside>
-
-    <main class="chat">
-        ...
-    </main>
-
+  <main class="chat">...</main>
 </div>
 ```
 

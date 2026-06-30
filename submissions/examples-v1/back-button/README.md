@@ -18,9 +18,5 @@ A reusable glassmorphism back button component for EaseMotion CSS.
 ## Usage
 
 ```html
-<button
-  class="back-button-do"
-  onclick="window.history.back()"
->
-  ← Back
-</button>
+<button class="back-button-do" onclick="window.history.back()">← Back</button>
+```

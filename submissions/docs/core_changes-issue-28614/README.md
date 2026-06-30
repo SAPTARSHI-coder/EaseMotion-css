@@ -20,15 +20,15 @@ Creates an interactive before/after image comparison slider using a clip-based a
 
 ### Classes
 
-| Class | Description |
-|---|---|
-| `.ease-image-compare` | Container |
-| `.ease-image-compare-before` | Before image (clipped) |
-| `.ease-image-compare-after` | After image (full) |
+| Class                        | Description              |
+| ---------------------------- | ------------------------ |
+| `.ease-image-compare`        | Container                |
+| `.ease-image-compare-before` | Before image (clipped)   |
+| `.ease-image-compare-after`  | After image (full)       |
 | `.ease-image-compare-handle` | Draggable divider handle |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-compare-pos` | `50%` | Initial split position |
+| Property             | Default | Description            |
+| -------------------- | ------- | ---------------------- |
+| `--ease-compare-pos` | `50%`   | Initial split position |

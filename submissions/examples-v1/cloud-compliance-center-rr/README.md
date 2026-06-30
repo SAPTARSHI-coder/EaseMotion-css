@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring compliance frameworks, audit rea
 
 ```html
 <div class="framework-card compliant">
-    <h3>SOC 2</h3>
+  <h3>SOC 2</h3>
 </div>
 ```
 

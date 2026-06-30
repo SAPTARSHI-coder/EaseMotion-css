@@ -23,15 +23,11 @@ A responsive data retention policy selector for choosing organizational data ret
 
 ```html
 <label class="policy">
+  <input type="radio" name="retention" />
 
-    <input type="radio" name="retention">
+  <span class="indicator"></span>
 
-    <span class="indicator"></span>
-
-    <div class="content">
-        ...
-    </div>
-
+  <div class="content">...</div>
 </label>
 ```
 

@@ -18,9 +18,7 @@ This submission demonstrates the `column-fill` CSS property with multiple varian
 Apply the `column-fill` class to any element:
 
 ```html
-<div class="column-fill">
-  Your content here
-</div>
+<div class="column-fill">Your content here</div>
 ```
 
 ## Tokens Used

@@ -1,12 +1,13 @@
 # Cyberpunk AI Command Center Bento Grid
 
 ## What does this do?
+
 A futuristic, cyberpunk-inspired Bento Grid dashboard for AI operations interfaces — featuring glassmorphism cards, animated corner glows, neon accent colors, a sliding progress bar shimmer, a spinning performance ring, and live-feeling status indicators. Pure HTML/CSS, zero dependencies.
 
 ## How to use it
+
 ```html
 <div class="cyber-bento-grid">
-
   <!-- Hero card, spans 2x2 -->
   <div class="cyber-card hero">
     <div class="cyber-card-glow"></div>
@@ -38,11 +39,11 @@ A futuristic, cyberpunk-inspired Bento Grid dashboard for AI operations interfac
       </div>
     </div>
   </div>
-
 </div>
 ```
 
 ## Components included
+
 - `.cyber-card` — glassmorphism card with hover lift + glow expansion
 - `.cyber-card-glow` (`--pink/green/amber`) — animated corner glow, color variants
 - `.cyber-metric` / `.cyber-metric-unit` — large numeric display
@@ -53,4 +54,5 @@ A futuristic, cyberpunk-inspired Bento Grid dashboard for AI operations interfac
 - `.hero` / `.wide` — grid sizing modifiers (2x2 and 2-col span)
 
 ## Why it fits EaseMotion CSS
+
 This aligns with EaseMotion CSS's animation-first philosophy by combining a modern dashboard layout with visually engaging motion — glassmorphism, neon glows, hover depth, and ambient pulsing indicators. It provides a real-world inspiration template for AI products, analytics dashboards, and developer tools, built entirely with composable HTML/CSS. `prefers-reduced-motion` disables all ambient and hover animations while preserving the visual layout and color coding.

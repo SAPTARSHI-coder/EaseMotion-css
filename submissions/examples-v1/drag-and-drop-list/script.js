@@ -8,14 +8,18 @@ list.addEventListener("dragstart", (e) => {
 
 list.addEventListener("dragend", (e) => {
   e.target.classList.remove("dragging");
-  document.querySelectorAll(".dd-item").forEach((el) => el.classList.remove("drag-over"));
+  document
+    .querySelectorAll(".dd-item")
+    .forEach((el) => el.classList.remove("drag-over"));
 });
 
 list.addEventListener("dragover", (e) => {
   e.preventDefault();
   const target = e.target.closest(".dd-item");
   if (target && target !== dragSrc) {
-    document.querySelectorAll(".dd-item").forEach((el) => el.classList.remove("drag-over"));
+    document
+      .querySelectorAll(".dd-item")
+      .forEach((el) => el.classList.remove("drag-over"));
     target.classList.add("drag-over");
   }
 });
@@ -33,5 +37,7 @@ list.addEventListener("drop", (e) => {
       target.before(dragSrc);
     }
   }
-  document.querySelectorAll(".dd-item").forEach((el) => el.classList.remove("drag-over"));
+  document
+    .querySelectorAll(".dd-item")
+    .forEach((el) => el.classList.remove("drag-over"));
 });

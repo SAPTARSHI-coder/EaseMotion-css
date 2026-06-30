@@ -31,9 +31,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="tree">
-...
-</div>
+<div class="tree">...</div>
 ```
 
 ---

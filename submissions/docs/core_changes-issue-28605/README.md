@@ -40,17 +40,17 @@ For exclusive mode (only one open at a time), use `<details name="accordion">`:
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Default accordion with `+`/`×` icon |
-| `.ease-accordion-chevron` | Chevron `▾`/`▴` icon instead of plus |
-| `.ease-accordion-bordered` | Bordered items with rounded corners |
-| `.ease-accordion-flush` | No borders, minimal style |
+| Modifier                   | Effect                               |
+| -------------------------- | ------------------------------------ |
+| (none)                     | Default accordion with `+`/`×` icon  |
+| `.ease-accordion-chevron`  | Chevron `▾`/`▴` icon instead of plus |
+| `.ease-accordion-bordered` | Bordered items with rounded corners  |
+| `.ease-accordion-flush`    | No borders, minimal style            |
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property                      | Default | Description                   |
+| ----------------------------- | ------- | ----------------------------- |
 | `--ease-accordion-transition` | `300ms` | Open/close animation duration |
 
 ## Why is it useful?

@@ -3,6 +3,7 @@
 break-after — Controls page and column breaks after elements
 
 ## Features
+
 - Uses `--ease-color-surface`
 - Uses `--ease-color-neutral-200`
 - Uses `--ease-color-primary`

@@ -23,17 +23,11 @@ A responsive dataset quality scoreboard for analytics dashboards that visualizes
 
 ```html
 <div class="scoreboard">
-
-    <div class="ring">
-
-        <div class="inner">
-
-            <strong>A</strong>
-
-        </div>
-
+  <div class="ring">
+    <div class="inner">
+      <strong>A</strong>
     </div>
-
+  </div>
 </div>
 ```
 

@@ -21,21 +21,15 @@ Animated neon button hover utility with multiple color variations.
 ## Usage
 
 ```html
-<button class="ease-neon-btn">
-Hover Me
-</button>
+<button class="ease-neon-btn">Hover Me</button>
 ```
 
 ## Variations
 
 ```html
-<button class="ease-neon-btn blue">
-Blue
-</button>
+<button class="ease-neon-btn blue">Blue</button>
 
-<button class="ease-neon-btn pink">
-Pink
-</button>
+<button class="ease-neon-btn pink">Pink</button>
 ```
 
 ## Why this feature

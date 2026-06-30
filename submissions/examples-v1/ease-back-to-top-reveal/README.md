@@ -7,7 +7,12 @@ A back-to-top button that fades in once the user has scrolled down far enough, f
 ## How is it used?
 
 ```html
-<button class="ease-back-top" id="backTopBtn" type="button" aria-label="Back to top">
+<button
+  class="ease-back-top"
+  id="backTopBtn"
+  type="button"
+  aria-label="Back to top"
+>
   <svg><!-- up arrow icon --></svg>
 </button>
 ```

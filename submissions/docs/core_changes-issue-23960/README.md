@@ -4,14 +4,15 @@
 
 Utility classes for controlling the `::selection` pseudo-element appearance and styling `<mark>` tags consistently.
 
-| Class | Effect |
-|---|---|
-| `.ease-highlight-primary` | Blue selection background with white text (`#3b82f6` / `#ffffff`) |
-| `.ease-highlight-warm` | Amber selection background with dark text (`#f59e0b` / `#0f172a`) |
-| `.ease-highlight-none` | Transparent selection (selection is invisible) |
-| `.ease-mark` | Consistent `<mark>` styling available as a class for non-`<mark>` elements |
+| Class                     | Effect                                                                     |
+| ------------------------- | -------------------------------------------------------------------------- |
+| `.ease-highlight-primary` | Blue selection background with white text (`#3b82f6` / `#ffffff`)          |
+| `.ease-highlight-warm`    | Amber selection background with dark text (`#f59e0b` / `#0f172a`)          |
+| `.ease-highlight-none`    | Transparent selection (selection is invisible)                             |
+| `.ease-mark`              | Consistent `<mark>` styling available as a class for non-`<mark>` elements |
 
 Custom properties:
+
 - `--ease-highlight-primary-bg` / `--ease-highlight-primary-color`
 - `--ease-highlight-warm-bg` / `--ease-highlight-warm-color`
 
@@ -34,7 +35,9 @@ For `<mark>` elements, styling comes out of the box. Use `.ease-mark` for other 
 Customize variables at the root or per-element:
 
 ```css
-:root { --ease-highlight-primary-bg: #a78bfa; }
+:root {
+  --ease-highlight-primary-bg: #a78bfa;
+}
 ```
 
 ## Why

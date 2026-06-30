@@ -16,11 +16,11 @@ Pure CSS animated toast notification stack with slide-in entrance, dismiss-on-cl
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `demo.html` | 4 stacked toasts with hidden checkbox controls |
+| File        | Description                                                       |
+| ----------- | ----------------------------------------------------------------- |
+| `demo.html` | 4 stacked toasts with hidden checkbox controls                    |
 | `style.css` | All styles, animations, dismiss logic, responsive, reduced-motion |
-| `README.md` | This documentation |
+| `README.md` | This documentation                                                |
 
 ## How It Works
 
@@ -29,7 +29,7 @@ Each toast has a hidden checkbox sibling. The close button is a `<label>` that t
 ## Usage
 
 ```html
-<input type="checkbox" id="dismiss-1" hidden>
+<input type="checkbox" id="dismiss-1" hidden />
 <div class="toast-stack">
   <div class="toast toast-success" data-toast="1">
     <span class="toast-icon">✓</span>
@@ -44,9 +44,9 @@ Each toast has a hidden checkbox sibling. The close button is a `<label>` that t
 
 ## Keyframes
 
-| Keyframe | Purpose |
-|----------|---------|
-| `toastIn` | Slides toast in from right with opacity fade |
+| Keyframe   | Purpose                                             |
+| ---------- | --------------------------------------------------- |
+| `toastIn`  | Slides toast in from right with opacity fade        |
 | `toastOut` | Slides toast out to right, collapses height to zero |
 
 Fixes #19286

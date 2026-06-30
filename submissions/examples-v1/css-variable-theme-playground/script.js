@@ -1,44 +1,31 @@
-const primaryColor =
-document.getElementById("primaryColor");
+const primaryColor = document.getElementById("primaryColor");
 
-const bgColor =
-document.getElementById("bgColor");
+const bgColor = document.getElementById("bgColor");
 
-const surfaceColor =
-document.getElementById("surfaceColor");
+const surfaceColor = document.getElementById("surfaceColor");
 
-const textColor =
-document.getElementById("textColor");
+const textColor = document.getElementById("textColor");
 
-const cssOutput =
-document.getElementById("cssOutput");
+const cssOutput = document.getElementById("cssOutput");
 
-const customThemePreview =
-document.getElementById("customThemePreview");
+const customThemePreview = document.getElementById("customThemePreview");
 
 function updateTheme() {
+  customThemePreview.style.setProperty(
+    "--ease-color-primary",
+    primaryColor.value
+  );
 
-    customThemePreview.style.setProperty(
-        "--ease-color-primary",
-        primaryColor.value
-    );
+  customThemePreview.style.setProperty("--ease-color-bg", bgColor.value);
 
-    customThemePreview.style.setProperty(
-        "--ease-color-bg",
-        bgColor.value
-    );
+  customThemePreview.style.setProperty(
+    "--ease-color-surface",
+    surfaceColor.value
+  );
 
-    customThemePreview.style.setProperty(
-        "--ease-color-surface",
-        surfaceColor.value
-    );
+  customThemePreview.style.setProperty("--ease-color-text", textColor.value);
 
-    customThemePreview.style.setProperty(
-        "--ease-color-text",
-        textColor.value
-    );
-
-    cssOutput.textContent = `
+  cssOutput.textContent = `
 :root {
   --ease-color-primary: ${primaryColor.value};
   --ease-color-bg: ${bgColor.value};
@@ -55,13 +42,8 @@ textColor.addEventListener("input", updateTheme);
 
 updateTheme();
 
-document
-.getElementById("copyBtn")
-.addEventListener("click", () => {
+document.getElementById("copyBtn").addEventListener("click", () => {
+  navigator.clipboard.writeText(cssOutput.textContent);
 
-    navigator.clipboard.writeText(
-        cssOutput.textContent
-    );
-
-    alert("Theme CSS copied!");
+  alert("Theme CSS copied!");
 });

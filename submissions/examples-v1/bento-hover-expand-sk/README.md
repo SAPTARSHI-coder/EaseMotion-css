@@ -1,6 +1,7 @@
 # Bento Grid Hover-Expansion with `:has()`
 
 ## What does this do?
+
 A CSS Grid bento layout where hovering any cell highlights it with a glowing border while dimming all siblings — using `:has()` to select the parent and its non-hovered children. Hovering also reveals extra content within each cell via a smooth height transition.
 
 ## How is it used?
@@ -28,4 +29,5 @@ Span helpers: `.bento__cell--col2/3/4`, `.bento__cell--row2/3`.
 Accent colors: `.bento__cell--green`, `--pink`, `--cyan`, `--amber`.
 
 ## Why is it useful?
+
 The sibling-dimming effect requires selecting a parent based on a hovered child — exactly what `:has()` enables. The grid is responsive (4 → 2 → 1 columns), extra content uses `max-height` transition, and hover border uses `box-shadow` for GPU compositing. Respects `prefers-reduced-motion`.

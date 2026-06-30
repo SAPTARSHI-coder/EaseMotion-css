@@ -24,15 +24,9 @@ A responsive security audit findings list designed for security review dashboard
 
 ```html
 <div class="finding critical">
+  <div class="severity">Critical</div>
 
-    <div class="severity">
-        Critical
-    </div>
-
-    <div class="content">
-        ...
-    </div>
-
+  <div class="content">...</div>
 </div>
 ```
 

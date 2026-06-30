@@ -4,7 +4,6 @@
 
 The Shimmer Skeleton Loader shows animated placeholders that move smoothly to give a shimmering effect.It helps users see that content is loading by showing a visual of what's coming, so they know something is happening.
 
-
 ### This demo includes multiple skeleton variants:
 
 - Avatar Skeleton
@@ -19,7 +18,6 @@ Add the appropriate skeleton classes to placeholder elements while content is lo
 Example:
 
 <div class="skeleton skeleton-line"></div>
-
 
 Once the actual content is available, replace the skeleton placeholders with the real content.
 

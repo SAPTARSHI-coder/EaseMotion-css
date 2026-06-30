@@ -5,10 +5,12 @@ bubbles, staggered entry animations, hover effects, and a typing
 indicator — pure HTML and CSS.
 
 ## Structure
+
 animated-chat-message/
 ├── demo.html
 ├── style.css
 └── README.md
+
 ## Usage
 
 ```html
@@ -43,17 +45,18 @@ animated-chat-message/
 
 ## Classes
 
-| Class | Purpose |
-|---|---|
-| `chat-row receiver` | Incoming message row |
-| `chat-row sender` | Outgoing message row |
-| `chat-bubble receiver-bubble` | Dark incoming bubble |
-| `chat-bubble sender-bubble` | Gradient outgoing bubble |
-| `typing-bubble` | Animated typing indicator |
-| `chat-avatar` | Circular avatar |
-| `chat-time` | Timestamp inside bubble |
+| Class                         | Purpose                   |
+| ----------------------------- | ------------------------- |
+| `chat-row receiver`           | Incoming message row      |
+| `chat-row sender`             | Outgoing message row      |
+| `chat-bubble receiver-bubble` | Dark incoming bubble      |
+| `chat-bubble sender-bubble`   | Gradient outgoing bubble  |
+| `typing-bubble`               | Animated typing indicator |
+| `chat-avatar`                 | Circular avatar           |
+| `chat-time`                   | Timestamp inside bubble   |
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - Slide-up + scale entry animation on each bubble
 - Staggered delays for sequential message appearance
@@ -63,6 +66,7 @@ animated-chat-message/
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Messaging app UI demos
 - Support chat interfaces
 - Collaborative platform mockups

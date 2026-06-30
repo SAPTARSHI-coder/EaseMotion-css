@@ -15,19 +15,22 @@ submissions/core_changes-issue-22078/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Default** | `.ease-accordion` | Standard bordered accordion with rounded corners |
-| **Bordered** | `.ease-accordion-bordered` | Thicker 2px border for more prominence |
-| **Minimal** | `.ease-accordion-minimal` | No borders, separated by divider lines |
-| **Compact** | `.ease-accordion-compact` | Reduced padding for space-constrained layouts |
-| **Ghost** | `.ease-accordion-ghost` | No border, subtle background only on open items |
-| **Animated** | `.ease-accordion-animate` | Smooth expand/collapse via CSS `@keyframes` |
+| Variant      | Class                      | Description                                      |
+| ------------ | -------------------------- | ------------------------------------------------ |
+| **Default**  | `.ease-accordion`          | Standard bordered accordion with rounded corners |
+| **Bordered** | `.ease-accordion-bordered` | Thicker 2px border for more prominence           |
+| **Minimal**  | `.ease-accordion-minimal`  | No borders, separated by divider lines           |
+| **Compact**  | `.ease-accordion-compact`  | Reduced padding for space-constrained layouts    |
+| **Ghost**    | `.ease-accordion-ghost`    | No border, subtle background only on open items  |
+| **Animated** | `.ease-accordion-animate`  | Smooth expand/collapse via CSS `@keyframes`      |
 
 ## Usage
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@latest/easemotion.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css@latest/easemotion.min.css"
+/>
 <link rel="stylesheet" href="path/to/style.css" />
 
 <div class="ease-accordion">
@@ -36,9 +39,7 @@ submissions/core_changes-issue-22078/
       Question
       <span class="ease-accordion-icon">▼</span>
     </summary>
-    <div class="ease-accordion-content">
-      Answer text here.
-    </div>
+    <div class="ease-accordion-content">Answer text here.</div>
   </details>
 </div>
 ```

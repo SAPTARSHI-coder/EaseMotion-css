@@ -73,13 +73,13 @@ Apply background color gradients using modifier classes:
 ```html
 <div class="ease-avatar-group">
   <div class="ease-avatar ease-avatar-overlap">
-    <img src="avatar1.jpg" alt="User 1">
+    <img src="avatar1.jpg" alt="User 1" />
   </div>
   <div class="ease-avatar ease-avatar-overlap">
-    <img src="avatar2.jpg" alt="User 2">
+    <img src="avatar2.jpg" alt="User 2" />
   </div>
   <div class="ease-avatar ease-avatar-overlap">
-    <img src="avatar3.jpg" alt="User 3">
+    <img src="avatar3.jpg" alt="User 3" />
   </div>
 </div>
 ```

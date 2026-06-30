@@ -47,11 +47,11 @@ Combine `.ease-draw-path` with `.ease-draw-fill` to completely outline an illust
 
 Chain together temporal utility classes like:
 
-* `.ease-draw-delay-100`
-* `.ease-draw-delay-200`
-* `.ease-draw-delay-300`
-* `.ease-draw-delay-400`
-* `.ease-draw-delay-500`
+- `.ease-draw-delay-100`
+- `.ease-draw-delay-200`
+- `.ease-draw-delay-300`
+- `.ease-draw-delay-400`
+- `.ease-draw-delay-500`
 
 This creates smooth left-to-right staggered entrances for icon sets, logos, or navigation panels during page load.
 
@@ -63,19 +63,19 @@ This creates smooth left-to-right staggered entrances for icon sets, logos, or n
 
 Standalone presentation sandbox featuring three interactive examples:
 
-* Logo outline drawing
-* Staggered SVG icon rows
-* Cursive handwriting signature animation
+- Logo outline drawing
+- Staggered SVG icon rows
+- Cursive handwriting signature animation
 
 ### `style.css`
 
 Pure utility stylesheet containing:
 
-* Stroke drawing utilities
-* Animation speed presets
-* Delay modifiers
-* CSS custom properties
-* Performance-optimized transition variables
+- Stroke drawing utilities
+- Animation speed presets
+- Delay modifiers
+- CSS custom properties
+- Performance-optimized transition variables
 
 ---
 

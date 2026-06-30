@@ -6,27 +6,25 @@ Creates an animated corner framing effect on hover. Instead of animating a full 
 
 ## Features
 
-* Pure CSS
-* No JavaScript
-* Lightweight
-* Responsive
-* Reusable across cards, buttons, and containers
-* Customizable corner size
+- Pure CSS
+- No JavaScript
+- Lightweight
+- Responsive
+- Reusable across cards, buttons, and containers
+- Customizable corner size
 
 ## Usage
 
 ```html
-<div class="corner-reveal">
-  Content
-</div>
+<div class="corner-reveal">Content</div>
 ```
 
 ## Included Examples
 
-* Feature Card
-* Button
-* Container
-* Large Corner Variant
+- Feature Card
+- Button
+- Container
+- Large Corner Variant
 
 ## Why is it useful?
 
@@ -34,7 +32,7 @@ This effect provides a modern alternative to traditional border hover animations
 
 ## Browser Support
 
-* Chrome ✅
-* Firefox ✅
-* Edge ✅
-* Safari ✅
+- Chrome ✅
+- Firefox ✅
+- Edge ✅
+- Safari ✅

@@ -18,18 +18,15 @@ You can apply the proposed utility classes to any card component:
 ```html
 <!-- The wrapper establishes the 3D viewport -->
 <div class="em-perspective-parent">
-  
   <!-- The card itself tilts on hover -->
-  <div class="em-hover-tilt">
-    My beautiful 3D card content!
-  </div>
-  
+  <div class="em-hover-tilt">My beautiful 3D card content!</div>
 </div>
 ```
 
-*Tip for developers: You can add `transform: translateZ(50px)` to elements inside the card to make them float above the background for a true parallax effect!*
+_Tip for developers: You can add `transform: translateZ(50px)` to elements inside the card to make them float above the background for a true parallax effect!_
 
-*Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`.*
+_Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`._
 
 ## 🔗 Related Issue
+
 Resolves Issue #16174

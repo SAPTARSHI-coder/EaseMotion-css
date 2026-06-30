@@ -10,31 +10,56 @@ Add `.autosave-status` to any inline element, then append a state modifier class
 
 ```html
 <!-- Saving -->
-<div class="autosave-status is-saving" role="status" aria-live="polite" aria-label="Saving changes">
+<div
+  class="autosave-status is-saving"
+  role="status"
+  aria-live="polite"
+  aria-label="Saving changes"
+>
   <span class="autosave-dot" aria-hidden="true"></span>
   Saving…
 </div>
 
 <!-- Saved -->
-<div class="autosave-status is-saved" role="status" aria-live="polite" aria-label="All changes saved">
+<div
+  class="autosave-status is-saved"
+  role="status"
+  aria-live="polite"
+  aria-label="All changes saved"
+>
   <span class="autosave-dot" aria-hidden="true"></span>
   Saved
 </div>
 
 <!-- Offline -->
-<div class="autosave-status is-offline" role="status" aria-live="polite" aria-label="Offline, changes queued">
+<div
+  class="autosave-status is-offline"
+  role="status"
+  aria-live="polite"
+  aria-label="Offline, changes queued"
+>
   <span class="autosave-dot" aria-hidden="true"></span>
   Offline
 </div>
 
 <!-- Retrying -->
-<div class="autosave-status is-retrying" role="status" aria-live="polite" aria-label="Retrying to save">
+<div
+  class="autosave-status is-retrying"
+  role="status"
+  aria-live="polite"
+  aria-label="Retrying to save"
+>
   <span class="autosave-dot" aria-hidden="true"></span>
   Retrying…
 </div>
 
 <!-- Error -->
-<div class="autosave-status is-error" role="status" aria-live="polite" aria-label="Failed to save">
+<div
+  class="autosave-status is-error"
+  role="status"
+  aria-live="polite"
+  aria-label="Failed to save"
+>
   <span class="autosave-dot" aria-hidden="true"></span>
   Failed to save
 </div>
@@ -42,13 +67,13 @@ Add `.autosave-status` to any inline element, then append a state modifier class
 
 State modifier classes:
 
-| Class | Colour | Motion |
-|---|---|---|
-| `is-saving` | Indigo | Spinning ring on dot |
-| `is-saved` | Green | Pop entrance on dot |
-| `is-offline` | Slate grey | Static dimmed dot |
-| `is-retrying` | Amber | Slower spinning ring |
-| `is-error` | Red | Horizontal shake on dot |
+| Class         | Colour     | Motion                  |
+| ------------- | ---------- | ----------------------- |
+| `is-saving`   | Indigo     | Spinning ring on dot    |
+| `is-saved`    | Green      | Pop entrance on dot     |
+| `is-offline`  | Slate grey | Static dimmed dot       |
+| `is-retrying` | Amber      | Slower spinning ring    |
+| `is-error`    | Red        | Horizontal shake on dot |
 
 Size variants: add `is-sm` or `is-lg` to adjust the chip size.
 
@@ -57,9 +82,11 @@ Inline/bare variant: add `is-inline` to remove the pill background and border (f
 In a real integration, swap the modifier class via JavaScript when your autosave callback fires:
 
 ```js
-var chip = document.querySelector('.autosave-status');
-['is-saving', 'is-saved', 'is-offline', 'is-retrying', 'is-error'].forEach(s => chip.classList.remove(s));
-chip.classList.add('is-saved');
+var chip = document.querySelector(".autosave-status");
+["is-saving", "is-saved", "is-offline", "is-retrying", "is-error"].forEach(
+  (s) => chip.classList.remove(s)
+);
+chip.classList.add("is-saved");
 ```
 
 ## Why is it useful?

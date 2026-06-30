@@ -23,15 +23,11 @@ A responsive environment variable management component that displays deployment 
 
 ```html
 <div class="variable">
+  <div class="info">
+    <h3>DATABASE_URL</h3>
+  </div>
 
-    <div class="info">
-        <h3>DATABASE_URL</h3>
-    </div>
-
-    <span class="badge production">
-        Production
-    </span>
-
+  <span class="badge production"> Production </span>
 </div>
 ```
 

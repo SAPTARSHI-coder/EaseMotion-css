@@ -49,14 +49,14 @@ ease-card-tilt-scroll/
 
 ## Sections
 
-| # | Section | Description |
-|---|---|---|
-| 1 | **Navigation** | Sticky frosted nav — logo, 4 links, Try Demo CTA |
-| 2 | **Hero** | Monospace title, description, tech-tag badges, bounce scroll indicator |
-| 3 | **Demo Grid** | 12 live tilt cards — each shows a real-time rotateX angle badge |
-| 4 | **How It Works** | 4 explanation cards with copy-pasteable code blocks |
-| 5 | **Use Cases** | 6 application cards for different interface types |
-| 6 | **Footer** | Brand statement, Example links, EaseMotion links, copyright |
+| #   | Section          | Description                                                            |
+| --- | ---------------- | ---------------------------------------------------------------------- |
+| 1   | **Navigation**   | Sticky frosted nav — logo, 4 links, Try Demo CTA                       |
+| 2   | **Hero**         | Monospace title, description, tech-tag badges, bounce scroll indicator |
+| 3   | **Demo Grid**    | 12 live tilt cards — each shows a real-time rotateX angle badge        |
+| 4   | **How It Works** | 4 explanation cards with copy-pasteable code blocks                    |
+| 5   | **Use Cases**    | 6 application cards for different interface types                      |
+| 6   | **Footer**       | Brand statement, Example links, EaseMotion links, copyright            |
 
 ---
 
@@ -71,7 +71,7 @@ const vh = window.innerHeight / 2;
 ### Step 2 — Measure each card's position
 
 ```js
-const rect       = card.getBoundingClientRect();
+const rect = card.getBoundingClientRect();
 const cardCenter = rect.top + rect.height / 2;
 ```
 
@@ -80,7 +80,7 @@ const cardCenter = rect.top + rect.height / 2;
 ### Step 3 — Calculate normalised distance
 
 ```js
-const distance   = cardCenter - vh;
+const distance = cardCenter - vh;
 const normalized = Math.max(-1, Math.min(1, distance / vh));
 ```
 
@@ -92,7 +92,7 @@ const normalized = Math.max(-1, Math.min(1, distance / vh));
 ### Step 4 — Map to a rotation angle
 
 ```js
-const rotation = normalized * 10;  // −10° → 0° → +10°
+const rotation = normalized * 10; // −10° → 0° → +10°
 ```
 
 Multiply by any maximum angle. `10` is tasteful; `20` is dramatic.
@@ -100,7 +100,7 @@ Multiply by any maximum angle. `10` is tasteful; `20` is dramatic.
 ### Step 5 — Set the CSS custom property per card
 
 ```js
-card.style.setProperty('--ease-card-tilt', `${rotation.toFixed(2)}deg`);
+card.style.setProperty("--ease-card-tilt", `${rotation.toFixed(2)}deg`);
 ```
 
 Setting on the element itself means each card carries its own value — they update independently.
@@ -123,12 +123,16 @@ The `transition: transform 80ms linear` adds a small lag that smooths out discre
 ```js
 let ticking = false;
 
-window.addEventListener('scroll', () => {
-  if (!ticking) {
-    requestAnimationFrame(updateTilts);
-    ticking = true;
-  }
-}, { passive: true });
+window.addEventListener(
+  "scroll",
+  () => {
+    if (!ticking) {
+      requestAnimationFrame(updateTilts);
+      ticking = true;
+    }
+  },
+  { passive: true }
+);
 ```
 
 The `ticking` flag prevents queuing more than one `requestAnimationFrame` per rendered frame. `{ passive: true }` tells the browser this listener never calls `preventDefault()`, so it can start scrolling immediately without waiting for the handler to complete.
@@ -139,37 +143,37 @@ The `ticking` flag prevents queuing more than one `requestAnimationFrame` per re
 
 ### Entrance Animations
 
-| Class | Used on |
-|---|---|
-| `ease-fade-in` | Nav logo, hero chip, hero badges, scroll cue, section chips |
+| Class           | Used on                                                                                                 |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| `ease-fade-in`  | Nav logo, hero chip, hero badges, scroll cue, section chips                                             |
 | `ease-slide-up` | Hero title, hero description, section headings, section descriptions, explanation cards, use-case cards |
 
 ### Hover Effects
 
-| Class | Used on |
-|---|---|
-| `ease-hover-lift` | All 6 use-case cards |
-| `ease-hover-glow` | Try Demo nav button |
+| Class                  | Used on                        |
+| ---------------------- | ------------------------------ |
+| `ease-hover-lift`      | All 6 use-case cards           |
+| `ease-hover-glow`      | Try Demo nav button            |
 | `ease-hover-underline` | Nav links, footer column links |
 
 ### Continuous Animations
 
-| Class | Used on |
-|---|---|
+| Class         | Used on                  |
+| ------------- | ------------------------ |
 | `ease-bounce` | Scroll cue arrow in hero |
 
 ### Glassmorphism
 
-| Class | Used on |
-|---|---|
+| Class             | Used on                                                    |
+| ----------------- | ---------------------------------------------------------- |
 | `ease-glass-card` | Explanation section cards (overridden to match dark theme) |
 
 ### Delay Staggering
 
-| Class | Used on |
-|---|---|
+| Class                               | Used on                     |
+| ----------------------------------- | --------------------------- |
 | `ease-delay-100` — `ease-delay-400` | Hero and section staggering |
-| `ease-delay-100` — `ease-delay-600` | Use-case card grid |
+| `ease-delay-100` — `ease-delay-600` | Use-case card grid          |
 
 ---
 
@@ -178,15 +182,15 @@ The `ticking` flag prevents queuing more than one `requestAnimationFrame` per re
 ### Change the tilt angle range
 
 ```js
-const rotation = normalized * 10;  // ← change 10 to any value
+const rotation = normalized * 10; // ← change 10 to any value
 ```
 
-| Value | Effect |
-|---|---|
-| `5` | Very subtle, barely perceptible |
-| `10` | Default — tasteful 3D depth |
-| `20` | Dramatic, editorial feel |
-| `30` | Theatrical, skeuomorphic |
+| Value | Effect                          |
+| ----- | ------------------------------- |
+| `5`   | Very subtle, barely perceptible |
+| `10`  | Default — tasteful 3D depth     |
+| `20`  | Dramatic, editorial feel        |
+| `30`  | Theatrical, skeuomorphic        |
 
 ### Change the transition responsiveness
 
@@ -205,17 +209,17 @@ transform: perspective(1000px) rotateX(var(--ease-card-tilt, 0deg));
 /*                     ↑ smaller = more dramatic 3D projection */
 ```
 
-| Value | Visual |
-|---|---|
-| `400px` | Extreme fisheye-style depth |
-| `800px` | Strong 3D |
-| `1000px` | Default — balanced |
-| `2000px` | Subtle, almost flat |
+| Value    | Visual                      |
+| -------- | --------------------------- |
+| `400px`  | Extreme fisheye-style depth |
+| `800px`  | Strong 3D                   |
+| `1000px` | Default — balanced          |
+| `2000px` | Subtle, almost flat         |
 
 ### Switch to Y-axis (horizontal tilt on mouse/horizontal scroll)
 
 ```js
-card.style.setProperty('--ease-card-tilt-y', `${rotation.toFixed(2)}deg`);
+card.style.setProperty("--ease-card-tilt-y", `${rotation.toFixed(2)}deg`);
 ```
 
 ```css
@@ -228,13 +232,13 @@ card.style.setProperty('--ease-card-tilt-y', `${rotation.toFixed(2)}deg`);
 
 ## Browser Support
 
-| Browser | Version | Support |
-|---|---|---|
-| Chrome / Edge | 88+ | ✅ Full |
-| Firefox | 89+ | ✅ Full |
-| Safari | 15+ | ✅ Full |
-| iOS Safari | 15+ | ✅ Full |
-| Samsung Internet | 14+ | ✅ Full |
+| Browser          | Version | Support |
+| ---------------- | ------- | ------- |
+| Chrome / Edge    | 88+     | ✅ Full |
+| Firefox          | 89+     | ✅ Full |
+| Safari           | 15+     | ✅ Full |
+| iOS Safari       | 15+     | ✅ Full |
+| Samsung Internet | 14+     | ✅ Full |
 
 **Reduced motion fallback:** `prefers-reduced-motion: reduce` disables the tilt effect and the transition entirely via a media query override, making the cards render flat.
 

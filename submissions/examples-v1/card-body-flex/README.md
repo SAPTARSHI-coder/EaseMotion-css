@@ -28,11 +28,11 @@ container so that `.ease-card-body` with `flex: 1` works as intended.
 ## Browser Support
 
 | Browser | Minimum Version |
-|---------|----------------|
-| Chrome  | 80+            |
-| Firefox | 80+            |
-| Safari  | 14+            |
-| Edge    | 80+            |
+| ------- | --------------- |
+| Chrome  | 80+             |
+| Firefox | 80+             |
+| Safari  | 14+             |
+| Edge    | 80+             |
 
 > Older browsers that do not support flexbox will fall back to standard
 > block layout — no layout breakage occurs.

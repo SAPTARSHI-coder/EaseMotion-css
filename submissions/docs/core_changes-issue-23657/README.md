@@ -10,7 +10,10 @@
    <span class="ease-count-up" style="--ease-count-target: 500;"></span>
 
    <!-- Custom duration -->
-   <span class="ease-count-up" style="--ease-count-target: 1250; --ease-count-duration: 3s;"></span>
+   <span
+     class="ease-count-up"
+     style="--ease-count-target: 1250; --ease-count-duration: 3s;"
+   ></span>
 
    <!-- With a suffix label -->
    <span class="ease-count-up" style="--ease-count-target: 99;"></span>
@@ -19,10 +22,10 @@
 
    **Custom properties:**
 
-   | Variable | Default | Description |
-   |---|---|---|
-   | `--ease-count-target` | `100` | Target number to count up to |
-   | `--ease-count-duration` | `2s` | Animation duration |
+   | Variable                | Default | Description                  |
+   | ----------------------- | ------- | ---------------------------- |
+   | `--ease-count-target`   | `100`   | Target number to count up to |
+   | `--ease-count-duration` | `2s`    | Animation duration           |
 
 3. **Why is it useful?**
    Animated number counters ("500+ Contributors", "1.2K Stars") are a staple of landing pages and dashboards. Traditionally they require JavaScript libraries like CountUp.js. This utility delivers the same effect in pure CSS using the modern `@property` rule, aligning with EaseMotion CSS's zero-dependency, CSS-first philosophy.

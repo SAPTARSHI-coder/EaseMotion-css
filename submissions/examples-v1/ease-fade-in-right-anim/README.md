@@ -4,26 +4,26 @@ Enter animation: element fades in while sliding from the left to its natural pos
 
 ## Classes
 
-| Class | Distance | Description |
-|-------|----------|-------------|
-| `.ease-fade-in-right` | 32px | Default entry from left |
-| `+ .ease-fade-in-right-sm` | 16px | Subtle entry |
-| `+ .ease-fade-in-right-lg` | 64px | Dramatic entry |
+| Class                      | Distance | Description             |
+| -------------------------- | -------- | ----------------------- |
+| `.ease-fade-in-right`      | 32px     | Default entry from left |
+| `+ .ease-fade-in-right-sm` | 16px     | Subtle entry            |
+| `+ .ease-fade-in-right-lg` | 64px     | Dramatic entry          |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-fade-in-right-distance` | `32px` | Start offset from left |
-| `--ease-fade-in-right-duration` | `--ease-speed-medium` | Duration |
-| `--ease-fade-in-right-easing` | `--ease-ease` | Timing function |
+| Token                           | Default               | Description            |
+| ------------------------------- | --------------------- | ---------------------- |
+| `--ease-fade-in-right-distance` | `32px`                | Start offset from left |
+| `--ease-fade-in-right-duration` | `--ease-speed-medium` | Duration               |
+| `--ease-fade-in-right-easing`   | `--ease-ease`         | Timing function        |
 
 ## Direction family (complete)
 
-| Direction | Enter | Exit |
-|-----------|-------|------|
-| → Right (from left) | `.ease-fade-in-right` ← this | `.ease-fade-out-left` |
-| ← Left (from right) | `.ease-fade-in-left` | `.ease-fade-out-right` |
+| Direction           | Enter                        | Exit                   |
+| ------------------- | ---------------------------- | ---------------------- |
+| → Right (from left) | `.ease-fade-in-right` ← this | `.ease-fade-out-left`  |
+| ← Left (from right) | `.ease-fade-in-left`         | `.ease-fade-out-right` |
 
 ## Usage
 

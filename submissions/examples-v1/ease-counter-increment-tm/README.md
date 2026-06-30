@@ -5,7 +5,9 @@ Counter/increment animation for EaseMotion CSS.
 ## Usage
 
 ```html
-<div class="stat-card" data-count="5000" data-suffix="+"><span class="stat-number">0</span></div>
+<div class="stat-card" data-count="5000" data-suffix="+">
+  <span class="stat-number">0</span>
+</div>
 ```
 
 ```js

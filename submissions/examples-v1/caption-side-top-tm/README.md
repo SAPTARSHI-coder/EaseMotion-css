@@ -3,6 +3,7 @@
 caption-side — Positions table captions above or below
 
 ## Features
+
 - Uses `--ease-color-surface`
 - Uses `--ease-color-neutral-200`
 - Uses `--ease-color-primary`

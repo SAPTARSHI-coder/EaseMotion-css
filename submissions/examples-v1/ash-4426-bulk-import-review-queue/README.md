@@ -23,15 +23,11 @@ A responsive bulk import review component that allows users to inspect imported 
 
 ```html
 <div class="item">
+  <div class="file">
+    <h3>customers.csv</h3>
+  </div>
 
-    <div class="file">
-        <h3>customers.csv</h3>
-    </div>
-
-    <span class="badge success">
-        Valid
-    </span>
-
+  <span class="badge success"> Valid </span>
 </div>
 ```
 

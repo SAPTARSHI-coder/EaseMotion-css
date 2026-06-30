@@ -11,20 +11,18 @@ Adds a responsive and accessible back button that allows users to navigate to th
 Include the button in your HTML and attach the back navigation function.
 
 ```html
-<button class="back-button" onclick="goBack()">
-    ← Back
-</button>
+<button class="back-button" onclick="goBack()">← Back</button>
 ```
 
 Example JavaScript:
 
 ```javascript
 function goBack() {
-    if (window.history.length > 1) {
-        window.history.back();
-    } else {
-        window.location.href = "/";
-    }
+  if (window.history.length > 1) {
+    window.history.back();
+  } else {
+    window.location.href = "/";
+  }
 }
 ```
 
@@ -61,9 +59,7 @@ demo-back-button-rj/
 ## Preview
 
 ```html
-<button class="back-button">
-    ← Back
-</button>
+<button class="back-button">← Back</button>
 ```
 
 The button appears at the top-left corner of the page and provides quick backward navigation while maintaining a clean and familiar interface.

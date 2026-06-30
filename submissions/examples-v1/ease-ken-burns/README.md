@@ -26,12 +26,12 @@ A cinematic pan-and-zoom effect inspired by the Ken Burns documentary technique.
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
-| `animation` duration | Controls total cycle speed (default: `12s`) |
-| `scale()` values | Zoom level at each keyframe stop (keep between 1.0–1.2 for subtlety) |
-| `translate()` values | Pan direction and distance at each stop |
-| Container dimensions | Set width/height on `.ken-burns-container` to any size |
+| Property             | Description                                                          |
+| -------------------- | -------------------------------------------------------------------- |
+| `animation` duration | Controls total cycle speed (default: `12s`)                          |
+| `scale()` values     | Zoom level at each keyframe stop (keep between 1.0–1.2 for subtlety) |
+| `translate()` values | Pan direction and distance at each stop                              |
+| Container dimensions | Set width/height on `.ken-burns-container` to any size               |
 
 ## Accessibility
 

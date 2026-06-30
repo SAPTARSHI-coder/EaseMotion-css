@@ -4,29 +4,29 @@ A vertical timeline with smooth entrance animations triggered on scroll. Zero de
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
-| `.ease-timeline` | Container with vertical connecting line |
-| `.ease-timeline-item` | Single milestone row (hidden until `.is-visible`) |
-| `.ease-timeline-dot` | Circular connector dot |
-| `.ease-timeline-card` | Content card with hover shadow |
-| `.ease-timeline-card-date` | Coloured date/label above title |
-| `.ease-timeline-card-title` | Milestone heading |
-| `.ease-timeline-card-body` | Description text |
-| `.ease-timeline-card-tag` | Pill tag for status/category |
-| `.ease-timeline--compact` | Tighter spacing variant |
+| Class                       | Description                                       |
+| --------------------------- | ------------------------------------------------- |
+| `.ease-timeline`            | Container with vertical connecting line           |
+| `.ease-timeline-item`       | Single milestone row (hidden until `.is-visible`) |
+| `.ease-timeline-dot`        | Circular connector dot                            |
+| `.ease-timeline-card`       | Content card with hover shadow                    |
+| `.ease-timeline-card-date`  | Coloured date/label above title                   |
+| `.ease-timeline-card-title` | Milestone heading                                 |
+| `.ease-timeline-card-body`  | Description text                                  |
+| `.ease-timeline-card-tag`   | Pill tag for status/category                      |
+| `.ease-timeline--compact`   | Tighter spacing variant                           |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-timeline-line-color` | `--ease-color-primary` | Vertical line colour |
-| `--ease-timeline-dot-size` | `1rem` | Dot diameter |
-| `--ease-timeline-dot-color` | `--ease-color-primary` | Dot fill colour |
-| `--ease-timeline-card-bg` | `--ease-color-surface` | Card background |
-| `--ease-timeline-duration` | `0.5s` | Transition duration |
-| `--ease-timeline-delay-step` | `0.1s` | Stagger delay per item |
-| `--ease-timeline-gap` | `--ease-space-8` | Gap between items |
+| Token                        | Default                | Description            |
+| ---------------------------- | ---------------------- | ---------------------- |
+| `--ease-timeline-line-color` | `--ease-color-primary` | Vertical line colour   |
+| `--ease-timeline-dot-size`   | `1rem`                 | Dot diameter           |
+| `--ease-timeline-dot-color`  | `--ease-color-primary` | Dot fill colour        |
+| `--ease-timeline-card-bg`    | `--ease-color-surface` | Card background        |
+| `--ease-timeline-duration`   | `0.5s`                 | Transition duration    |
+| `--ease-timeline-delay-step` | `0.1s`                 | Stagger delay per item |
+| `--ease-timeline-gap`        | `--ease-space-8`       | Gap between items      |
 
 ## Usage
 
@@ -45,15 +45,18 @@ A vertical timeline with smooth entrance animations triggered on scroll. Zero de
 
 <script>
   const observer = new IntersectionObserver(
-    (entries) => entries.forEach((e) => {
-      if (e.isIntersecting) {
-        e.target.classList.add('is-visible');
-        observer.unobserve(e.target);
-      }
-    }),
+    (entries) =>
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("is-visible");
+          observer.unobserve(e.target);
+        }
+      }),
     { threshold: 0.15 }
   );
-  document.querySelectorAll('.ease-timeline-item').forEach((el) => observer.observe(el));
+  document
+    .querySelectorAll(".ease-timeline-item")
+    .forEach((el) => observer.observe(el));
 </script>
 ```
 

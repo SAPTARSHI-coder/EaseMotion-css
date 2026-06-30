@@ -7,26 +7,26 @@
 ```html
 <!-- Single toast -->
 <script>
-showToast({
-  message: 'File saved',
-  type: 'success',
-  title: 'Success',
-  duration: 4000,
-  position: 'top-right'
-});
+  showToast({
+    message: "File saved",
+    type: "success",
+    title: "Success",
+    duration: 4000,
+    position: "top-right",
+  });
 </script>
 
 <!-- Stack 5 toasts across different positions -->
 <script>
-showToast({ message: 'Toast 1', type: 'info', position: 'top-right' });
-showToast({ message: 'Toast 2', type: 'error', position: 'bottom-left' });
-// ... they auto-stack in their respective containers
+  showToast({ message: "Toast 1", type: "info", position: "top-right" });
+  showToast({ message: "Toast 2", type: "error", position: "bottom-left" });
+  // ... they auto-stack in their respective containers
 </script>
 
 <!-- Manual dismiss -->
 <script>
-// The close button × is automatically added to each toast
-// Or call dismissToast(element) programmatically
+  // The close button × is automatically added to each toast
+  // Or call dismissToast(element) programmatically
 </script>
 ```
 

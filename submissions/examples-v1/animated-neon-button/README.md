@@ -20,15 +20,19 @@ A futuristic CSS-only neon button collection featuring glowing borders, pulse an
 ## Included Neon Styles
 
 ### 🔵 Blue Neon
+
 Ideal for technology websites and software products.
 
 ### 🩷 Pink Neon
+
 Great for creative portfolios and modern landing pages.
 
 ### 🟢 Green Neon
+
 Suitable for downloads, success actions, and gaming interfaces.
 
 ### 🟣 Purple Neon
+
 Perfect for futuristic and cyber-themed designs.
 
 ---

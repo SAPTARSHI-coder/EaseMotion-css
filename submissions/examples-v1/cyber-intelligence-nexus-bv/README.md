@@ -5,6 +5,7 @@ Consolidated cyber ops telemetry dashboard presenting security indices, sync sta
 ---
 
 ## Features
+
 - **Nexus Telemetry Cards:** Highlights operational metrics across sub-systems.
 - **Sync metrics telemetry:** Real-time database sync status indicators.
 - **Integrated navigation:** Side-panel layouts designed for desktop settings.

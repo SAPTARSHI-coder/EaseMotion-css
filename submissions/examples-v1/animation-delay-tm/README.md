@@ -16,7 +16,11 @@ This submission demonstrates the CSS `animation-delay-tm` property with practica
 
 ```html
 <!-- Size variant -->
-<div class="animation-delay-tm-card animation-delay-tm-md animation-delay-tm-primary">Content</div>
+<div
+  class="animation-delay-tm-card animation-delay-tm-md animation-delay-tm-primary"
+>
+  Content
+</div>
 
 <!-- Color variants -->
 <div class="animation-delay-tm-card animation-delay-tm-success">Success</div>

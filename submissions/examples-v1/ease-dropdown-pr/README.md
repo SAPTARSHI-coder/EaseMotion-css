@@ -20,18 +20,11 @@ CSS-only dropdown menu using `:hover` on parent container. No JavaScript require
 ## Usage
 
 ```html
-&lt;div class="dropdown-pr"&gt;
-  &lt;button class="dropdown-pr-trigger" type="button"&gt;
-    Options
-    &lt;svg class="dropdown-pr-arrow"&gt;...&lt;/svg&gt;
-  &lt;/button&gt;
-  &lt;ul class="dropdown-pr-menu"&gt;
-    &lt;li class="dropdown-pr-item"&gt;
-      &lt;a href="#" class="dropdown-pr-link"&gt;Item 1&lt;/a&gt;
-    &lt;/li&gt;
-    &lt;li class="dropdown-pr-divider"&gt;&lt;/li&gt;
-    &lt;li class="dropdown-pr-item"&gt;
-      &lt;a href="#" class="dropdown-pr-link"&gt;Item 2&lt;/a&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/div&gt;
+&lt;div class="dropdown-pr"&gt; &lt;button class="dropdown-pr-trigger"
+type="button"&gt; Options &lt;svg class="dropdown-pr-arrow"&gt;...&lt;/svg&gt;
+&lt;/button&gt; &lt;ul class="dropdown-pr-menu"&gt; &lt;li
+class="dropdown-pr-item"&gt; &lt;a href="#" class="dropdown-pr-link"&gt;Item
+1&lt;/a&gt; &lt;/li&gt; &lt;li class="dropdown-pr-divider"&gt;&lt;/li&gt; &lt;li
+class="dropdown-pr-item"&gt; &lt;a href="#" class="dropdown-pr-link"&gt;Item
+2&lt;/a&gt; &lt;/li&gt; &lt;/ul&gt; &lt;/div&gt;
+```

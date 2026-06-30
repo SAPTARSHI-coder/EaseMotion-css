@@ -5,6 +5,7 @@ Welcome to the **CSS Custom Property Theming Guide**! This comprehensive tutoria
 ---
 
 ## 📋 Table of Contents
+
 1. [Benefits of CSS Variables over SASS/LESS](#1-benefits-of-css-variables-over-sassless)
 2. [EaseMotion Variables Registry](#2-easemotion-variables-registry)
 3. [Global Theme Overrides](#3-global-theme-overrides)
@@ -17,6 +18,7 @@ Welcome to the **CSS Custom Property Theming Guide**! This comprehensive tutoria
 ## 1. Benefits of CSS Variables over SASS/LESS
 
 Preprocessors like SASS compile variables into static values at build time. Conversely, CSS Custom Properties:
+
 1. **Compute in the Browser**: They can change dynamically in response to user actions (e.g. settings sliders, color pickers).
 2. **Follow the Cascade**: Custom properties inherit values from parent containers, allowing you to scope changes without changing component class declarations.
 3. **Read and Write via JavaScript**: You can read or overwrite property variables directly in JS, bridging the gap between design tokens and dynamic application state.
@@ -27,17 +29,17 @@ Preprocessors like SASS compile variables into static values at build time. Conv
 
 EaseMotion components inherit values from the following design variables:
 
-| Variable Name | Default Value | Description |
-| :--- | :--- | :--- |
-| `--ease-brand` | `#8b5cf6` | Primary color accent used for buttons, links, and borders |
-| `--ease-bg-base` | `#030712` | Bottom viewport backdrop color |
-| `--ease-bg-surface` | `#0b0f19` | Content card, popup, or element backgrounds |
-| `--ease-bg-surface-hover` | `#111827` | Content card background when hovered |
-| `--ease-border` | `#1f2937` | Subtle border and divider lines |
-| `--ease-border-hover` | `#374151` | Divider line colors on element hover |
-| `--ease-border-radius` | `12px` | Corner rounding curvature metric |
-| `--ease-padding-card` | `1.5rem` | Inner element content padding spacing |
-| `--ease-anim-duration` | `0.6s` | Base duration timing for transitions and animations |
+| Variable Name             | Default Value | Description                                               |
+| :------------------------ | :------------ | :-------------------------------------------------------- |
+| `--ease-brand`            | `#8b5cf6`     | Primary color accent used for buttons, links, and borders |
+| `--ease-bg-base`          | `#030712`     | Bottom viewport backdrop color                            |
+| `--ease-bg-surface`       | `#0b0f19`     | Content card, popup, or element backgrounds               |
+| `--ease-bg-surface-hover` | `#111827`     | Content card background when hovered                      |
+| `--ease-border`           | `#1f2937`     | Subtle border and divider lines                           |
+| `--ease-border-hover`     | `#374151`     | Divider line colors on element hover                      |
+| `--ease-border-radius`    | `12px`        | Corner rounding curvature metric                          |
+| `--ease-padding-card`     | `1.5rem`      | Inner element content padding spacing                     |
+| `--ease-anim-duration`    | `0.6s`        | Base duration timing for transitions and animations       |
 
 ---
 
@@ -78,6 +80,7 @@ Because CSS Custom Properties follow the cascade, you can scope an override to a
 ```
 
 ### HTML Implementation
+
 ```html
 <!-- Card 1: Inherits the global violet (--ease-brand: #8b5cf6) -->
 <div class="theme-card">...</div>
@@ -129,15 +132,15 @@ To create highly interactive themes (such as letting users custom-select accent 
 
 ```javascript
 // Get target element container
-const container = document.querySelector('.playground-canvas');
+const container = document.querySelector(".playground-canvas");
 
 // Dynamically set CSS variables based on inputs
 function updateAccent(colorHex) {
-  container.style.setProperty('--ease-brand', colorHex);
-  container.style.setProperty('--ease-brand-glow', `${colorHex}55`); // 55 adds opacity channel
+  container.style.setProperty("--ease-brand", colorHex);
+  container.style.setProperty("--ease-brand-glow", `${colorHex}55`); // 55 adds opacity channel
 }
 
 function updateRadius(radiusValue) {
-  container.style.setProperty('--ease-border-radius', `${radiusValue}px`);
+  container.style.setProperty("--ease-border-radius", `${radiusValue}px`);
 }
 ```

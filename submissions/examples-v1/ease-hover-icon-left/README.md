@@ -1,14 +1,17 @@
 # Icon Nudge Left on Hover
 
 ## What does it do?
+
 The icon inside a button shifts left when the button is hovered — pure CSS.
 
 ## Features
+
 - Icon nudges left via `translateX(-4px)` on hover
 - Springy cubic-bezier transition
 - Button background + shadow on hover
 
 ## Usage
+
 ```css
 .btn-icon {
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -19,10 +22,13 @@ The icon inside a button shifts left when the button is hovered — pure CSS.
 ```
 
 ## Browser Support
+
 - Chrome 1+, Firefox 3.5+, Safari 3.1+
 
 ## Tech Stack
+
 - HTML + CSS only, no JavaScript
 
 ## Preview
+
 Open `demo.html` directly in browser.

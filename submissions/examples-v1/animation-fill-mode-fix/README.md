@@ -42,32 +42,33 @@ Add `both` to every entry animation shorthand:
 ```
 
 `both` = `backwards` + `forwards`:
+
 - **backwards** → holds `from` keyframe state before animation starts
-- **forwards**  → holds `to` keyframe state after animation ends
+- **forwards** → holds `to` keyframe state after animation ends
 
 ## Classes Fixed
 
-| Class | Before | After |
-|---|---|---|
-| `.ease-fade-in` | ❌ no fill-mode | ✅ `both` |
-| `.ease-fade-out` | ❌ no fill-mode | ✅ `both` |
-| `.ease-slide-up` | ❌ no fill-mode | ✅ `both` |
-| `.ease-slide-down` | ❌ no fill-mode | ✅ `both` |
-| `.ease-slide-in-left` | ❌ no fill-mode | ✅ `both` |
+| Class                  | Before          | After     |
+| ---------------------- | --------------- | --------- |
+| `.ease-fade-in`        | ❌ no fill-mode | ✅ `both` |
+| `.ease-fade-out`       | ❌ no fill-mode | ✅ `both` |
+| `.ease-slide-up`       | ❌ no fill-mode | ✅ `both` |
+| `.ease-slide-down`     | ❌ no fill-mode | ✅ `both` |
+| `.ease-slide-in-left`  | ❌ no fill-mode | ✅ `both` |
 | `.ease-slide-in-right` | ❌ no fill-mode | ✅ `both` |
-| `.ease-zoom-in` | ❌ no fill-mode | ✅ `both` |
-| `.ease-zoom-out` | ❌ no fill-mode | ✅ `both` |
-| `.ease-bounce-in` | ❌ no fill-mode | ✅ `both` |
-| `.ease-flip-in` | ❌ no fill-mode | ✅ `both` |
+| `.ease-zoom-in`        | ❌ no fill-mode | ✅ `both` |
+| `.ease-zoom-out`       | ❌ no fill-mode | ✅ `both` |
+| `.ease-bounce-in`      | ❌ no fill-mode | ✅ `both` |
+| `.ease-flip-in`        | ❌ no fill-mode | ✅ `both` |
 
 ## Why `both` and not `forwards`?
 
-| Value | Before animation | After animation |
-|---|---|---|
-| `none` (default) | Normal state | Normal state |
-| `backwards` | `from` state | Normal state |
-| `forwards` | Normal state | `to` state |
-| `both` ✅ | `from` state | `to` state |
+| Value            | Before animation | After animation |
+| ---------------- | ---------------- | --------------- |
+| `none` (default) | Normal state     | Normal state    |
+| `backwards`      | `from` state     | Normal state    |
+| `forwards`       | Normal state     | `to` state      |
+| `both` ✅        | `from` state     | `to` state      |
 
 For entry animations, `both` is always correct — it prevents the
 flash before AND ensures the element stays visible after.

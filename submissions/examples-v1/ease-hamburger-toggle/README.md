@@ -9,8 +9,10 @@ A lightweight, performance-first navigational micro-interaction utility componen
 - **Compositor Path Optimizations:** Runs operations 100% via hardware compositor channels (`transform` and `opacity`) inside a `will-change` layer boundary, rendering fluid transitions at a locked 60fps across mobile and tablet browsers.
 
 ## Workspace Inventory File Map
+
 - `demo.html`: Independent fully functional browser test arena dashboard.
 - `style.css`: Configured production utility class rule sheets.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

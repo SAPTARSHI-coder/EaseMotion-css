@@ -8,8 +8,8 @@ The label smoothly transitions from a placeholder position into a smaller floati
 
 ## Preview
 
-| Empty (idle) | Focused / Filled |
-|---|---|
+| Empty (idle)                                   | Focused / Filled                             |
+| ---------------------------------------------- | -------------------------------------------- |
 | Label sits inside the field like a placeholder | Label floats up, scales down, changes colour |
 
 ---
@@ -20,7 +20,12 @@ The label smoothly transitions from a placeholder position into a smaller floati
 
 ```html
 <div class="ease-input-group">
-  <input type="text" id="username" class="ease-input-floating" placeholder=" ">
+  <input
+    type="text"
+    id="username"
+    class="ease-input-floating"
+    placeholder=" "
+  />
   <label for="username" class="ease-label-floating">Username</label>
 </div>
 ```
@@ -30,7 +35,7 @@ The label smoothly transitions from a placeholder position into a smaller floati
 ### Include the stylesheet
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ---
@@ -38,41 +43,72 @@ The label smoothly transitions from a placeholder position into a smaller floati
 ## Variants
 
 ### Basic Text Input
+
 ```html
 <div class="ease-input-group">
-  <input type="text" id="name" class="ease-input-floating" placeholder=" ">
+  <input type="text" id="name" class="ease-input-floating" placeholder=" " />
   <label for="name" class="ease-label-floating">Full Name</label>
 </div>
 ```
 
 ### Email with Native Validation
+
 ```html
 <div class="ease-input-group">
-  <input type="email" id="email" class="ease-input-floating" placeholder=" " required>
+  <input
+    type="email"
+    id="email"
+    class="ease-input-floating"
+    placeholder=" "
+    required
+  />
   <label for="email" class="ease-label-floating">Email Address</label>
 </div>
 ```
 
 ### Password
+
 ```html
 <div class="ease-input-group">
-  <input type="password" id="password" class="ease-input-floating" placeholder=" " required minlength="8">
+  <input
+    type="password"
+    id="password"
+    class="ease-input-floating"
+    placeholder=" "
+    required
+    minlength="8"
+  />
   <label for="password" class="ease-label-floating">Password</label>
 </div>
 ```
 
 ### Pre-filled Value
+
 ```html
 <div class="ease-input-group">
-  <input type="text" id="city" class="ease-input-floating" placeholder=" " value="Vijayawada">
+  <input
+    type="text"
+    id="city"
+    class="ease-input-floating"
+    placeholder=" "
+    value="Vijayawada"
+  />
   <label for="city" class="ease-label-floating">City</label>
 </div>
 ```
 
 ### Disabled
+
 ```html
 <div class="ease-input-group">
-  <input type="text" id="plan" class="ease-input-floating" placeholder=" " value="Free Plan" disabled>
+  <input
+    type="text"
+    id="plan"
+    class="ease-input-floating"
+    placeholder=" "
+    value="Free Plan"
+    disabled
+  />
   <label for="plan" class="ease-label-floating">Current Plan</label>
 </div>
 ```
@@ -117,19 +153,19 @@ Override any of these in your `:root` to customise the component:
 
 ```css
 :root {
-  --ease-input-bg:             #ffffff;
-  --ease-input-border:         #c0c8d8;
-  --ease-input-border-focus:   #5a6aee;
-  --ease-input-border-valid:   #22c55e;
+  --ease-input-bg: #ffffff;
+  --ease-input-border: #c0c8d8;
+  --ease-input-border-focus: #5a6aee;
+  --ease-input-border-valid: #22c55e;
   --ease-input-border-invalid: #ef4444;
-  --ease-input-text:           #1e2233;
+  --ease-input-text: #1e2233;
 
-  --ease-label-idle:           #8892a4;
-  --ease-label-float:          #5a6aee;
+  --ease-label-idle: #8892a4;
+  --ease-label-float: #5a6aee;
 
-  --ease-input-radius:         10px;
-  --ease-input-height:         3.5rem;
-  --ease-transition-duration:  0.22s;
+  --ease-input-radius: 10px;
+  --ease-input-height: 3.5rem;
+  --ease-transition-duration: 0.22s;
 }
 ```
 

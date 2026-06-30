@@ -1,4 +1,5 @@
 # Copywriter Portfolio
+
 A clean, typography-focused portfolio template for copywriters and content strategists.
 
 - **Design**: Minimalist layout using serif headers to prioritize readability and the quality of the written word.

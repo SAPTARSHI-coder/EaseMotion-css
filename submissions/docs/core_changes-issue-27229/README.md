@@ -13,20 +13,20 @@ Creates an input where the placeholder/label smoothly transitions to a floating 
 </div>
 ```
 
-*Note: The `placeholder=" "` (a space) is required for the CSS `:not(:placeholder-shown)` selector to detect a filled value.*
+_Note: The `placeholder=" "` (a space) is required for the CSS `:not(:placeholder-shown)` selector to detect a filled value._
 
 ### Classes
 
-| Class | Description |
-|---|---|
-| `.ease-float-label` | Container (position: relative) |
-| `.ease-float-label-input` | The input element |
-| `.ease-float-label-text` | The floating label |
+| Class                     | Description                    |
+| ------------------------- | ------------------------------ |
+| `.ease-float-label`       | Container (position: relative) |
+| `.ease-float-label-input` | The input element              |
+| `.ease-float-label-text`  | The floating label             |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-float-label-duration` | `0.2s` | Transition duration |
-| `--ease-float-label-active-color` | `#6c63ff` | Label color when focused |
-| `--ease-float-label-scale` | `0.85` | Label scale when floating |
+| Property                          | Default   | Description               |
+| --------------------------------- | --------- | ------------------------- |
+| `--ease-float-label-duration`     | `0.2s`    | Transition duration       |
+| `--ease-float-label-active-color` | `#6c63ff` | Label color when focused  |
+| `--ease-float-label-scale`        | `0.85`    | Label scale when floating |

@@ -5,6 +5,7 @@
 A CSS-only API Endpoint Documentation Card component built for developer portals and SaaS API docs. Each card summarizes an API endpoint with an HTTP method badge, endpoint path, status code indicators, parameters table, and response preview.
 
 Key goals:
+
 - Developer-friendly layout and typography
 - Clear method badges (GET/POST/PUT/DELETE) with color semantics
 - Scannable parameter tables and response examples
@@ -54,7 +55,9 @@ A typical endpoint card:
   <section class="aedc-body">
     <div class="aedc-section">
       <h3>Parameters</h3>
-      <table class="aedc-params">...</table>
+      <table class="aedc-params">
+        ...
+      </table>
     </div>
     <div class="aedc-section">
       <h3>Response Preview</h3>

@@ -29,20 +29,20 @@
 
 ### Classes Reference
 
-| Class | CSS | Purpose |
-|---|---|---|
-| `.smooth-scroll` | `scroll-behavior: smooth` | Smooth animated scrolling |
+| Class               | CSS                                                 | Purpose                                  |
+| ------------------- | --------------------------------------------------- | ---------------------------------------- |
+| `.smooth-scroll`    | `scroll-behavior: smooth`                           | Smooth animated scrolling                |
 | `.scroll-container` | `overflow: auto; -webkit-overflow-scrolling: touch` | Scrollable container with touch momentum |
-| `.scroll-momentum` | `overscroll-behavior: contain` | Prevent scroll chaining |
-| `.scroll-x` | `overflow-x: auto; overflow-y: hidden` | Horizontal-only scroll |
-| `.scroll-y` | `overflow-y: auto; overflow-x: hidden` | Vertical-only scroll |
-| `.scroll-hide-bar` | `scrollbar-width: none` + webkit scrollbar hide | Hide scrollbar, keep scrolling |
-| `.snap-x` | `scroll-snap-type: x mandatory` | Horizontal snap container |
-| `.snap-y` | `scroll-snap-type: y mandatory` | Vertical snap container |
-| `.snap-mandatory` | `scroll-snap-stop: always` | Always stop at snap points |
-| `.snap-proximity` | `scroll-snap-stop: normal` | Snap only when near |
-| `.snap-start` | `scroll-snap-align: start` | Snap to start edge |
-| `.snap-center` | `scroll-snap-align: center` | Snap to center |
-| `.snap-end` | `scroll-snap-align: end` | Snap to end edge |
+| `.scroll-momentum`  | `overscroll-behavior: contain`                      | Prevent scroll chaining                  |
+| `.scroll-x`         | `overflow-x: auto; overflow-y: hidden`              | Horizontal-only scroll                   |
+| `.scroll-y`         | `overflow-y: auto; overflow-x: hidden`              | Vertical-only scroll                     |
+| `.scroll-hide-bar`  | `scrollbar-width: none` + webkit scrollbar hide     | Hide scrollbar, keep scrolling           |
+| `.snap-x`           | `scroll-snap-type: x mandatory`                     | Horizontal snap container                |
+| `.snap-y`           | `scroll-snap-type: y mandatory`                     | Vertical snap container                  |
+| `.snap-mandatory`   | `scroll-snap-stop: always`                          | Always stop at snap points               |
+| `.snap-proximity`   | `scroll-snap-stop: normal`                          | Snap only when near                      |
+| `.snap-start`       | `scroll-snap-align: start`                          | Snap to start edge                       |
+| `.snap-center`      | `scroll-snap-align: center`                         | Snap to center                           |
+| `.snap-end`         | `scroll-snap-align: end`                            | Snap to end edge                         |
 
 Fixes #16392

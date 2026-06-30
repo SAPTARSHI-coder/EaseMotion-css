@@ -34,6 +34,7 @@ autonomous-lunar-mining-processing-rover-command-phase-999/
 ## Animation Details (EaseMotion)
 
 This project incorporates design concepts that align with the EaseMotion CSS framework:
+
 - `.ease-fade-in`: Smooth opacity transitions for panel appearances.
 - `.ease-slide-up` / `.ease-slide-down` / `.ease-slide-right`: Directional entrance animations.
 - `.hover-lift`: Y-axis translation and shadow enhancement on hover.
@@ -42,6 +43,7 @@ This project incorporates design concepts that align with the EaseMotion CSS fra
 ## Browser Compatibility
 
 Tested and fully supported on all modern browsers:
+
 - Google Chrome (Latest)
 - Mozilla Firefox (Latest)
 - Apple Safari (Latest)

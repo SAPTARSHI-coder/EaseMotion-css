@@ -23,15 +23,9 @@ A responsive AI analytics dashboard showcasing key AI metrics, model performance
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

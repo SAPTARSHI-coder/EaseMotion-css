@@ -4,6 +4,7 @@
 Generates a hyper-realistic breathing neon glow around any element.
 
 **How is it used?**
+
 <div class="ease-neon-pulse-ai">Glow</div>
 
 **Why is it useful?**

@@ -23,19 +23,13 @@ A responsive invoice payment status component that displays invoice progress usi
 
 ```html
 <div class="invoice paid">
+  <span class="dot"></span>
 
-    <span class="dot"></span>
+  <div class="details">
+    <h3>INV-1042</h3>
+  </div>
 
-    <div class="details">
-
-        <h3>INV-1042</h3>
-
-    </div>
-
-    <span class="badge success">
-        Paid
-    </span>
-
+  <span class="badge success"> Paid </span>
 </div>
 ```
 

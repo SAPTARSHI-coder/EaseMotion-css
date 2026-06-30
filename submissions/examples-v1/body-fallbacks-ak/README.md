@@ -9,8 +9,8 @@ Demonstrates CSS fallback strategies for body-level typography and spacing prope
 How is it used?
 
 body {
-  color: var(--text-color, #1a1a1a);
-  font-family: var(--font-body, system-ui, sans-serif);
+color: var(--text-color, #1a1a1a);
+font-family: var(--font-body, system-ui, sans-serif);
 }
 
 Use CSS custom properties with fallback values for body styling.

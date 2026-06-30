@@ -23,15 +23,11 @@ A responsive product return reason selector that allows customers to choose a re
 
 ```html
 <label class="option">
+  <input type="radio" name="reason" />
 
-    <input type="radio" name="reason">
+  <span class="indicator"></span>
 
-    <span class="indicator"></span>
-
-    <div class="content">
-        ...
-    </div>
-
+  <div class="content">...</div>
 </label>
 ```
 

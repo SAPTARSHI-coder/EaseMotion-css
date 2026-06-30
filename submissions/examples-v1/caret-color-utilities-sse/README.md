@@ -16,27 +16,27 @@ Just add a `cc-*` class to any input or textarea — that's it.
 
 ```html
 <!-- Solid color carets -->
-<input type="text" class="cc-blue"    placeholder="Blue cursor" />
+<input type="text" class="cc-blue" placeholder="Blue cursor" />
 <input type="text" class="cc-emerald" placeholder="Emerald cursor" />
-<input type="text" class="cc-rose"    placeholder="Rose cursor" />
+<input type="text" class="cc-rose" placeholder="Rose cursor" />
 
 <!-- Invisible / browser default -->
 <input type="text" class="cc-transparent" />
 <input type="text" class="cc-auto" />
 
 <!-- Animated carets -->
-<input    type="text" class="cc-rainbow"    placeholder="Rainbow caret 🌈" />
-<textarea            class="cc-neon-pulse">Neon pulse ⚡</textarea>
+<input type="text" class="cc-rainbow" placeholder="Rainbow caret 🌈" />
+<textarea class="cc-neon-pulse">Neon pulse ⚡</textarea>
 ```
 
 ### Available classes
 
-| Category | Classes |
-|---------|---------|
+| Category              | Classes                                                                                                                                                                                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Solid colors (17)** | `.cc-red` `.cc-orange` `.cc-amber` `.cc-yellow` `.cc-lime` `.cc-green` `.cc-emerald` `.cc-teal` `.cc-cyan` `.cc-sky` `.cc-blue` `.cc-indigo` `.cc-violet` `.cc-purple` `.cc-fuchsia` `.cc-pink` `.cc-rose` |
-| **Neutrals (3)** | `.cc-white` `.cc-black` `.cc-gray` |
-| **Special (3)** | `.cc-transparent` (hide caret) · `.cc-auto` (browser default) · `.cc-current` (inherit from text color) |
-| **Animated (2)** | `.cc-rainbow` (cycles through 6 colors) · `.cc-neon-pulse` (pulses between cyan ↔ magenta) |
+| **Neutrals (3)**      | `.cc-white` `.cc-black` `.cc-gray`                                                                                                                                                                         |
+| **Special (3)**       | `.cc-transparent` (hide caret) · `.cc-auto` (browser default) · `.cc-current` (inherit from text color)                                                                                                    |
+| **Animated (2)**      | `.cc-rainbow` (cycles through 6 colors) · `.cc-neon-pulse` (pulses between cyan ↔ magenta)                                                                                                                 |
 
 ---
 
@@ -56,9 +56,9 @@ This fits EaseMotion CSS's philosophy of **lightweight, declarative, motion-firs
 
 ## Browser Support
 
-| Feature | Support |
-|---------|---------|
-| Static caret colors (`cc-red`, etc.) | ✅ All modern browsers (Chrome, Edge, Firefox, Safari, Opera) |
+| Feature                                         | Support                                                                   |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| Static caret colors (`cc-red`, etc.)            | ✅ All modern browsers (Chrome, Edge, Firefox, Safari, Opera)             |
 | Animated carets (`cc-rainbow`, `cc-neon-pulse`) | ✅ Chrome, Edge, Safari · ⚠️ Falls back to solid initial color in Firefox |
 
 The fallback for animated carets is graceful — Firefox users still get a beautifully colored static caret instead of breaking.

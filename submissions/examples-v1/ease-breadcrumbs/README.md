@@ -1,22 +1,23 @@
 # Breadcrumbs Component
 
 **Implements:** Issue #6584  
-**Type:** New Component  
+**Type:** New Component
 
 ## Overview
-A fully accessible, animated breadcrumb navigation component 
+
+A fully accessible, animated breadcrumb navigation component
 built with EaseMotion CSS design tokens.
 
 ## Variants
 
-| Class | Separator |
-|---|---|
-| `ease-breadcrumb` | `/` slash (default) |
-| `ease-breadcrumb--chevron` | `›` chevron |
-| `ease-breadcrumb--dot` | `•` dot |
-| `ease-breadcrumb--pill` | pill buttons |
-| `ease-breadcrumb--ghost` | minimal underline |
-| `ease-breadcrumb--animated` | slide-in entrance |
+| Class                       | Separator           |
+| --------------------------- | ------------------- |
+| `ease-breadcrumb`           | `/` slash (default) |
+| `ease-breadcrumb--chevron`  | `›` chevron         |
+| `ease-breadcrumb--dot`      | `•` dot             |
+| `ease-breadcrumb--pill`     | pill buttons        |
+| `ease-breadcrumb--ghost`    | minimal underline   |
+| `ease-breadcrumb--animated` | slide-in entrance   |
 
 ## Basic Usage
 
@@ -43,14 +44,16 @@ built with EaseMotion CSS design tokens.
 ```
 
 ## Accessibility
+
 - Uses semantic `<ol>` list
 - Includes `aria-label="Breadcrumb"` on nav
 - Active item has no link (not interactive)
 - Responsive: collapses middle items on mobile
 
 ## Files
-| File | Purpose |
-|---|---|
+
+| File        | Purpose                          |
+| ----------- | -------------------------------- |
 | `style.css` | Full breadcrumb component styles |
-| `demo.html` | All variants with live demo |
-| `README.md` | This file |
+| `demo.html` | All variants with live demo      |
+| `README.md` | This file                        |

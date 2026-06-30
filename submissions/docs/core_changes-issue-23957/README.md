@@ -6,15 +6,15 @@ Utility classes for **CSS Anchor Positioning**, a native browser API that lets y
 
 Classes provided:
 
-| Class | Effect |
-|---|---|
-| `.ease-anchor` | Gives the element an `anchor-name: --ease-anchor` so it can be referenced |
-| `.ease-anchored` | Generic class that sets `position: absolute` and `position-anchor: --ease-anchor` |
-| `.ease-anchor-top` | Positions above the anchor, centered horizontally |
-| `.ease-anchor-bottom` | Positions below the anchor, centered horizontally |
-| `.ease-anchor-left` | Positions to the left of the anchor, centered vertically |
-| `.ease-anchor-right` | Positions to the right of the anchor, centered vertically |
-| `.ease-anchor-center` | Centers the positioned element over the anchor |
+| Class                 | Effect                                                                            |
+| --------------------- | --------------------------------------------------------------------------------- |
+| `.ease-anchor`        | Gives the element an `anchor-name: --ease-anchor` so it can be referenced         |
+| `.ease-anchored`      | Generic class that sets `position: absolute` and `position-anchor: --ease-anchor` |
+| `.ease-anchor-top`    | Positions above the anchor, centered horizontally                                 |
+| `.ease-anchor-bottom` | Positions below the anchor, centered horizontally                                 |
+| `.ease-anchor-left`   | Positions to the left of the anchor, centered vertically                          |
+| `.ease-anchor-right`  | Positions to the right of the anchor, centered vertically                         |
+| `.ease-anchor-center` | Centers the positioned element over the anchor                                    |
 
 Custom property `--ease-anchor-offset` controls the gap (default `8px`).
 

@@ -5,6 +5,7 @@ A CSS-only accordion/FAQ component using native HTML details and summary
 elements with smooth open/close animations and color theme variants.
 
 **How is it used?**
+
 <div class="ease-accordion">
   <details>
     <summary>Question here?</summary>

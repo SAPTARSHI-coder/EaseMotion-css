@@ -51,9 +51,9 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
-| `components/announce-bar.css` line 9 | `ease-slide-down` → `ease-kf-slide-down` |
-| `components/announce-bar.css` (end) | Add `@media (prefers-reduced-motion: reduce)` block |
+| File                                 | Change                                              |
+| ------------------------------------ | --------------------------------------------------- |
+| `components/announce-bar.css` line 9 | `ease-slide-down` → `ease-kf-slide-down`            |
+| `components/announce-bar.css` (end)  | Add `@media (prefers-reduced-motion: reduce)` block |
 
 Fixes #20370

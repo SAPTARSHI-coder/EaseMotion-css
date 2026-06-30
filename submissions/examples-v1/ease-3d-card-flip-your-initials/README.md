@@ -25,14 +25,10 @@ Pure CSS 3D flip card component for EaseMotion CSS. No JavaScript required for t
 ### Basic Horizontal Flip
 
 ```html
-&lt;div class="ease-card-flip"&gt;
-  &lt;input type="checkbox" class="ease-card-flip-input" aria-label="Flip card to see details"&gt;
-  &lt;div class="ease-card-flip-inner"&gt;
-    &lt;div class="ease-card-flip-front"&gt;
-      &lt;!-- Front content --&gt;
-    &lt;/div&gt;
-    &lt;div class="ease-card-flip-back"&gt;
-      &lt;!-- Back content --&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="ease-card-flip"&gt; &lt;input type="checkbox"
+class="ease-card-flip-input" aria-label="Flip card to see details"&gt; &lt;div
+class="ease-card-flip-inner"&gt; &lt;div class="ease-card-flip-front"&gt;
+&lt;!-- Front content --&gt; &lt;/div&gt; &lt;div
+class="ease-card-flip-back"&gt; &lt;!-- Back content --&gt; &lt;/div&gt;
+&lt;/div&gt; &lt;/div&gt;
+```

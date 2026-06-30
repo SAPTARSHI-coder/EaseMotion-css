@@ -17,11 +17,11 @@ CSS-only shape morphing animations using `border-radius` percentage manipulation
 <div class="ease-morph-loader"></div>
 ```
 
-| Modifier | Effect |
-|----------|--------|
-| `ease-morph-blob-fast` | 1.5s duration |
-| `ease-morph-blob-slow` | 6s duration |
-| `ease-morph-loader-fast` | 1.5s loader |
+| Modifier                 | Effect        |
+| ------------------------ | ------------- |
+| `ease-morph-blob-fast`   | 1.5s duration |
+| `ease-morph-blob-slow`   | 6s duration   |
+| `ease-morph-loader-fast` | 1.5s loader   |
 
 Customize via CSS variables: `--ease-morph-duration`, `--ease-morph-color`, `--ease-morph-size`.
 

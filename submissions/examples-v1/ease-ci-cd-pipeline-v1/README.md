@@ -33,9 +33,7 @@ The demo showcases:
 ## Usage
 
 ```html
-<div class="pipeline">
-...
-</div>
+<div class="pipeline">...</div>
 ```
 
 ---

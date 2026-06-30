@@ -8,4 +8,3 @@
 
 3. **Why is it useful?**
    It fits EaseMotion CSS by turning progress tracking into a clear, human-friendly interaction pattern—where state changes (pending → active → completed) are communicated through subtle motion, not just color.
-

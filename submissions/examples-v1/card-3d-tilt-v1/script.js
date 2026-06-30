@@ -1,4 +1,6 @@
-const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const prefersReduced = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+).matches;
 
 document.querySelectorAll(".tilt-card").forEach((card) => {
   const inner = card.querySelector(".tilt-inner");

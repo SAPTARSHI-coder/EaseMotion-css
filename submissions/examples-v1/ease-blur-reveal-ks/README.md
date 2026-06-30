@@ -9,9 +9,7 @@ This adds a smooth focus-reveal effect to text components. The text starts with 
 Simply apply the `.blur-reveal-text` class to any text element:
 
 ```html
-<div class="blur-reveal-text">
-  🔍 Reveal Hidden Insight
-</div>
+<div class="blur-reveal-text">🔍 Reveal Hidden Insight</div>
 ```
 
 ## 3. Why is it useful?

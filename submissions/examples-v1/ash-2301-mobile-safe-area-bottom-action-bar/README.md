@@ -23,13 +23,8 @@ A mobile-first bottom action bar that respects device safe areas using CSS envir
 ## Usage
 
 ```css
-.bottom-action-bar{
-
-    padding-bottom:
-    calc(
-        1rem +
-        env(safe-area-inset-bottom)
-    );
+.bottom-action-bar {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
 ```
 

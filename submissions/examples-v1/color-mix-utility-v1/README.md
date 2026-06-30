@@ -17,12 +17,12 @@ A pure CSS utility demonstrating the native `color-mix()` function integrated wi
 
 ### Blend groups
 
-| Group | Colour A | Colour B | Use case |
-|---|---|---|---|
-| Primary × Secondary | `--ease-color-primary` | `--ease-color-secondary` | Intermediate brand hues |
-| Primary × Accent | `--ease-color-primary` | `--ease-color-accent` | CTA / warning blends |
-| Tints | `--ease-color-primary` | `white` | Backgrounds, badges, hover fills |
-| Shades | `--ease-color-primary` | `black` | Pressed states, borders, dark text |
+| Group               | Colour A               | Colour B                 | Use case                           |
+| ------------------- | ---------------------- | ------------------------ | ---------------------------------- |
+| Primary × Secondary | `--ease-color-primary` | `--ease-color-secondary` | Intermediate brand hues            |
+| Primary × Accent    | `--ease-color-primary` | `--ease-color-accent`    | CTA / warning blends               |
+| Tints               | `--ease-color-primary` | `white`                  | Backgrounds, badges, hover fills   |
+| Shades              | `--ease-color-primary` | `black`                  | Pressed states, borders, dark text |
 
 Each group is shown at **75% / 50% / 25%** of colour A (remainder is colour B).
 
@@ -54,7 +54,7 @@ All tokens are declared in `:root` and **automatically recompute** if a source t
 
 ```css
 /* In :root */
---ease-color-primary:   #6d28d9;
+--ease-color-primary: #6d28d9;
 --ease-color-secondary: #0ea5e9;
 
 /* Generated token */
@@ -80,7 +80,7 @@ Dark mode is implemented with **zero JavaScript** using a hidden checkbox and CS
 
 ```html
 <input type="checkbox" id="theme-toggle" />
-<div class="page"> … </div>
+<div class="page">…</div>
 ```
 
 ```css
@@ -112,12 +112,12 @@ All `color-mix()` tokens automatically recalculate when the source tokens change
 `color-mix()` with `oklch` is **Baseline 2023** — broadly supported across all modern browsers:
 
 | Browser | Minimum version |
-|---|---|
-| Chrome | 111 |
-| Firefox | 113 |
-| Safari | 16.2 |
-| Edge | 111 |
-| IE | Not supported |
+| ------- | --------------- |
+| Chrome  | 111             |
+| Firefox | 113             |
+| Safari  | 16.2            |
+| Edge    | 111             |
+| IE      | Not supported   |
 
 ---
 

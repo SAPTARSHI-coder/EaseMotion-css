@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated profile avatars for modern web appl
 ## 🚀 Features
 
 ### Avatar Styles (8 types)
+
 1. **Pulse Ring** - Expanding ring animation
 2. **Status Indicator** - Online/Offline/Busy dots
 3. **Gradient Border** - Rotating conic gradient
@@ -15,6 +16,7 @@ A collection of beautiful, pure CSS animated profile avatars for modern web appl
 8. **Flip Card** - 3D flip to show initials
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All avatar animations
 - `readme.md` - Documentation
@@ -22,7 +24,9 @@ A collection of beautiful, pure CSS animated profile avatars for modern web appl
 ## 🛠️ How to Use
 
 ### Basic Avatar
+
 ```html
 <div class="avatar pulse-ring">
-    <img src="user.jpg" alt="User">
+  <img src="user.jpg" alt="User" />
 </div>
+```

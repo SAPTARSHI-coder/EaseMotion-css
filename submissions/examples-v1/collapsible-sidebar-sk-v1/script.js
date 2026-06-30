@@ -2,7 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const layout = document.querySelector(".ease-sidebar-layout");
   const desktopToggle = document.querySelector(".ease-sidebar-toggle");
   const mobileToggle = document.querySelector(".mobile-toggle");
-  const navItems = document.querySelectorAll(".nav-item:not(.dropdown-trigger)");
+  const navItems = document.querySelectorAll(
+    ".nav-item:not(.dropdown-trigger)"
+  );
   const dropdownTriggers = document.querySelectorAll(".dropdown-trigger");
 
   // Toggle Collapse on Desktop
@@ -37,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (item.getAttribute("href") === "#") {
         e.preventDefault();
       }
-      
+
       navItems.forEach((nav) => nav.classList.remove("active"));
       item.classList.add("active");
 

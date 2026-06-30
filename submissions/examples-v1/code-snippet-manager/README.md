@@ -1,16 +1,10 @@
 \# Code Snippet Manager — EaseMotion CSS Showcase
 
-
-
 \## Overview
 
 A fully responsive, production-ready landing page for a developer productivity tool — built entirely with EaseMotion CSS utility classes.
 
-
-
 \## Folder Structure
-
-
 
 submissions/examples/code-snippet-manager/
 
@@ -19,10 +13,6 @@ submissions/examples/code-snippet-manager/
 ├── style.css
 
 └── README.md
-
-
-
-
 
 \## Requirements Met
 
@@ -38,11 +28,7 @@ submissions/examples/code-snippet-manager/
 
 \- \[x] README with EaseMotion classes used
 
-
-
 \## EaseMotion Classes Used
-
-
 
 \- \*\*Layout\*\*: ease-container, ease-grid, ease-flex, ease-flex-wrap
 
@@ -62,8 +48,6 @@ submissions/examples/code-snippet-manager/
 
 \- \*\*Utilities\*\*: ease-inline-block, ease-uppercase, ease-tracking-wider, ease-opacity-\*, ease-max-w-\*, ease-w-\*, ease-h-\*
 
-
-
 \## How to Run
 
 1\. Open demo.html in any modern browser
@@ -71,8 +55,6 @@ submissions/examples/code-snippet-manager/
 2\. No build step, no server required
 
 3\. All CSS loaded via CDN
-
-
 
 \## Features Showcased
 
@@ -90,19 +72,12 @@ submissions/examples/code-snippet-manager/
 
 \- \[x] Footer
 
-
-
 \## Links
 
 \- \[EaseMotion CSS](https://github.com/SAPTARSHI-coder/EaseMotion-css)
 
 \- \[Issue #24665](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/24665)
 
-
-
 \---
 
-
-
 Built as part of GSSoC'26 contribution
-

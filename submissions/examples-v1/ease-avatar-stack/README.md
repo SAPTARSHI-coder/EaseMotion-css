@@ -27,3 +27,4 @@ Wrap individual `.ease-avatar` elements inside an `.ease-avatar-group` container
     <span>+3</span>
   </div>
 </div>
+```

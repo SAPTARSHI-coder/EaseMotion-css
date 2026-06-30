@@ -19,18 +19,23 @@ A modern animated progress bar component with smooth loading effects, percentage
 ## Variants
 
 ### Basic
+
 Simple solid color progress indicator.
 
 ### Gradient
+
 Colorful gradient filled progress bar.
 
 ### Rounded
+
 Extra rounded progress bar style.
 
 ### Striped
+
 Animated moving stripe effect.
 
 ### Compact
+
 Minimal progress bar with smaller height.
 
 ## Usage

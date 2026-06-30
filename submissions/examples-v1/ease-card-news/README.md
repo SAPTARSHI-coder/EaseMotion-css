@@ -19,7 +19,5 @@ A modern news article card component with breaking/category badge, image hover z
 ## 🚀 Usage
 
 ```html
-<article class="ease-card-news breaking">
-    ...
-</article>
+<article class="ease-card-news breaking">...</article>
 ```

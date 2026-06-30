@@ -20,7 +20,7 @@
   </button>
   <div class="split-btn-menu">
     <button class="split-btn-item">Save as Draft</button>
-    <hr class="split-btn-divider">
+    <hr class="split-btn-divider" />
     <button class="split-btn-item danger">Discard</button>
   </div>
 </div>
@@ -28,11 +28,11 @@
 <!-- Segmented Control -->
 <div class="segmented-control" role="radiogroup">
   <label class="segment">
-    <input type="radio" name="view" value="list" checked hidden>
+    <input type="radio" name="view" value="list" checked hidden />
     <span class="segment-label">List</span>
   </label>
   <label class="segment">
-    <input type="radio" name="view" value="grid" hidden>
+    <input type="radio" name="view" value="grid" hidden />
     <span class="segment-label">Grid</span>
   </label>
 </div>
@@ -42,10 +42,10 @@
 
 ### Components
 
-| Component | Classes | Features |
-|---|---|---|
-| Button Group | `.btn-group` | Connected buttons, 0 gaps, smart border-radius |
-| Split Button | `.split-btn`, `.split-btn-toggle`, `.split-btn-menu`, `.split-btn-item` | Dropdown toggle, arrow rotation, divider, danger item, click-outside close |
-| Segmented Control | `.segmented-control`, `.segment`, `.segment-label` | Hidden radio inputs, ARIA radiogroup, checked highlight, focus-visible |
+| Component         | Classes                                                                 | Features                                                                   |
+| ----------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Button Group      | `.btn-group`                                                            | Connected buttons, 0 gaps, smart border-radius                             |
+| Split Button      | `.split-btn`, `.split-btn-toggle`, `.split-btn-menu`, `.split-btn-item` | Dropdown toggle, arrow rotation, divider, danger item, click-outside close |
+| Segmented Control | `.segmented-control`, `.segment`, `.segment-label`                      | Hidden radio inputs, ARIA radiogroup, checked highlight, focus-visible     |
 
 Fixes #16382

@@ -4,7 +4,7 @@ An intermediate bug-fix submission for `ease-card-flip`, addressing its unreliab
 
 ## The Bug
 
-`:hover`-only flip cards rely on a continuous pointer state that simply doesn't exist on touch devices. A finger tap doesn't enter and later leave an element the way a mouse cursor does — it makes contact, then lifts away entirely. Depending on the browser, this produces one of three broken outcomes: the card never flips because no real hover state registers, the card flips on first tap but has no `:hover`-out event to flip it back, or the flip fires correctly once but then needs a tap *elsewhere on the page* to reverse, which is non-obvious and frustrating. None of these is acceptable for a UI pattern that's meant to reveal content on demand.
+`:hover`-only flip cards rely on a continuous pointer state that simply doesn't exist on touch devices. A finger tap doesn't enter and later leave an element the way a mouse cursor does — it makes contact, then lifts away entirely. Depending on the browser, this produces one of three broken outcomes: the card never flips because no real hover state registers, the card flips on first tap but has no `:hover`-out event to flip it back, or the flip fires correctly once but then needs a tap _elsewhere on the page_ to reverse, which is non-obvious and frustrating. None of these is acceptable for a UI pattern that's meant to reveal content on demand.
 
 ## Verification Method
 
@@ -22,13 +22,13 @@ Tested via Chrome DevTools touch emulation (Cmd/Ctrl+Shift+M, toggling the devic
 
 ## Touch vs. Hover Behavior — Documented Differences
 
-| | `.ease-card-flip` (hover) | `.ease-card-flip-tap` (tap) |
-|---|---|---|
-| Trigger | `:hover` / `:focus-within` | JS-toggled `.is-flipped` class |
-| Touch device | Unreliable — may not flip, or flip with no reverse | Flips and reverses reliably on every tap |
-| Keyboard | Works via `:focus-within` (tab onto card) | Works via Enter/Space (explicit `keydown` handler) |
-| Reversal | Mouse leaves the element | Tap again — explicit toggle, no ambiguity |
-| Recommended for | Mouse-only desktop contexts only | Default choice for any public-facing site |
+|                 | `.ease-card-flip` (hover)                          | `.ease-card-flip-tap` (tap)                        |
+| --------------- | -------------------------------------------------- | -------------------------------------------------- |
+| Trigger         | `:hover` / `:focus-within`                         | JS-toggled `.is-flipped` class                     |
+| Touch device    | Unreliable — may not flip, or flip with no reverse | Flips and reverses reliably on every tap           |
+| Keyboard        | Works via `:focus-within` (tab onto card)          | Works via Enter/Space (explicit `keydown` handler) |
+| Reversal        | Mouse leaves the element                           | Tap again — explicit toggle, no ambiguity          |
+| Recommended for | Mouse-only desktop contexts only                   | Default choice for any public-facing site          |
 
 ## Workspace Tree Map
 
@@ -40,4 +40,5 @@ submissions/examples/ease-card-flip/
 ```
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

@@ -29,9 +29,7 @@ Ease JSON Tree Viewer is a reusable HTML & CSS component that visually represent
 ## Usage
 
 ```html
-<div class="viewer">
-...
-</div>
+<div class="viewer">...</div>
 ```
 
 ---

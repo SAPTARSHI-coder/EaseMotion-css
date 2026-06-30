@@ -12,6 +12,7 @@ transitions for switching between light and dark themes.
 Add class `dark-on` to activate dark state.
 
 **Variants included:**
+
 1. Sun & Moon Toggle
 2. Sliding Theme Switch
 3. Material-Inspired Toggle

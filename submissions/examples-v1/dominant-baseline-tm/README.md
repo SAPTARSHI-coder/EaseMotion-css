@@ -5,29 +5,29 @@ CSS `dominant-baseline` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.baseline` | `dominant-baseline: baseline;` |
-| `.middle` | `dominant-baseline: middle;` |
-| `.central` | `dominant-baseline: central;` |
-| `.text-top` | `dominant-baseline: text-top;` |
-| `.text-bottom` | `dominant-baseline: text-bottom;` |
-| `.before-edge` | `dominant-baseline: before-edge;` |
-| `.after-edge` | `dominant-baseline: after-edge;` |
+| Class               | Declaration                            |
+| ------------------- | -------------------------------------- |
+| `.baseline`         | `dominant-baseline: baseline;`         |
+| `.middle`           | `dominant-baseline: middle;`           |
+| `.central`          | `dominant-baseline: central;`          |
+| `.text-top`         | `dominant-baseline: text-top;`         |
+| `.text-bottom`      | `dominant-baseline: text-bottom;`      |
+| `.before-edge`      | `dominant-baseline: before-edge;`      |
+| `.after-edge`       | `dominant-baseline: after-edge;`       |
 | `.text-before-edge` | `dominant-baseline: text-before-edge;` |
-| `.text-after-edge` | `dominant-baseline: text-after-edge;` |
-| `.mathematical` | `dominant-baseline: mathematical;` |
-| `.ideographic` | `dominant-baseline: ideographic;` |
-| `.alphabetic` | `dominant-baseline: alphabetic;` |
-| `.hanging` | `dominant-baseline: hanging;` |
-| `.use-script` | `dominant-baseline: use-script;` |
-| `.no-change` | `dominant-baseline: no-change;` |
-| `.reset-size` | `dominant-baseline: reset-size;` |
+| `.text-after-edge`  | `dominant-baseline: text-after-edge;`  |
+| `.mathematical`     | `dominant-baseline: mathematical;`     |
+| `.ideographic`      | `dominant-baseline: ideographic;`      |
+| `.alphabetic`       | `dominant-baseline: alphabetic;`       |
+| `.hanging`          | `dominant-baseline: hanging;`          |
+| `.use-script`       | `dominant-baseline: use-script;`       |
+| `.no-change`        | `dominant-baseline: no-change;`        |
+| `.reset-size`       | `dominant-baseline: reset-size;`       |
 
 ## Responsive Variants
 
@@ -44,9 +44,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Dominant Baseline
-</div>
+<div class="util-class-dark">Dark mode Dominant Baseline</div>
 ```
 
 ## Reduced Motion
@@ -54,9 +52,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Dominant Baseline
-</div>
+<div class="util-class-nomotion">No motion Dominant Baseline</div>
 ```
 
 ## Framework Integration

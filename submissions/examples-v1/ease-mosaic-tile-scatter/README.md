@@ -22,13 +22,13 @@ A grid of tiles fly in from four different directions (top, right, bottom, left)
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
+| Property            | Description                                                       |
+| ------------------- | ----------------------------------------------------------------- |
 | Grid columns / rows | Adjust `grid-template-columns` and add/remove `.mosaic-tile` divs |
-| Tile size | Change `width` / `height` on `.mosaic-tile` |
-| Per-tile background | Set via `nth-child` rules or inline styles |
-| Delay step | Edit the `animation-delay` on each tile's rule |
-| `cubic-bezier` | Controls the spring overshoot on landing |
+| Tile size           | Change `width` / `height` on `.mosaic-tile`                       |
+| Per-tile background | Set via `nth-child` rules or inline styles                        |
+| Delay step          | Edit the `animation-delay` on each tile's rule                    |
+| `cubic-bezier`      | Controls the spring overshoot on landing                          |
 
 ## Accessibility
 

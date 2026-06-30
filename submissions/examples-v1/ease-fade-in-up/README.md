@@ -4,15 +4,15 @@ Element fades in while gently rising upward from its starting position — the m
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
+| Class              | Effect                                                                     |
+| ------------------ | -------------------------------------------------------------------------- |
 | `.ease-fade-in-up` | Fades from opacity 0 → 1 while translating from `--ease-rise-distance` → 0 |
 
 ## Custom property
 
-| Property | Default | Description |
-|----------|---------|--------------|
-| `--ease-rise-distance` | `20px` | How far the element rises during the entrance |
+| Property               | Default | Description                                   |
+| ---------------------- | ------- | --------------------------------------------- |
+| `--ease-rise-distance` | `20px`  | How far the element rises during the entrance |
 
 ## Usage
 

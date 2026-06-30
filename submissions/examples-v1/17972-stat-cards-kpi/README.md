@@ -9,6 +9,7 @@
 ## Overview
 
 Upgrades plain, full-width stat blocks into polished KPI cards with:
+
 - **CSS Grid layout** — responsive 4-col → 2-col → 1-col
 - **Icon badges** with per-card accent colors
 - **Trend indicators** (up / down / neutral) with directional arrows and percentage
@@ -20,10 +21,10 @@ Upgrades plain, full-width stat blocks into polished KPI cards with:
 
 ## Demos Included
 
-| Demo | Description |
-|------|-------------|
-| **Library Overview** | 4 EaseMotion stat cards (Utilities, Animations, Dependencies, Contributors) with sparklines |
-| **Dashboard KPI Row** | Compact 4-column row suitable for a dashboard header |
+| Demo                  | Description                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| **Library Overview**  | 4 EaseMotion stat cards (Utilities, Animations, Dependencies, Contributors) with sparklines |
+| **Dashboard KPI Row** | Compact 4-column row suitable for a dashboard header                                        |
 
 ---
 
@@ -40,16 +41,16 @@ submissions/examples/17972-stat-cards-kpi/
 
 ## CSS Techniques
 
-| Technique | Implementation |
-|-----------|----------------|
-| Responsive grid | `grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))` |
-| Per-card accent colors | CSS custom properties `--card-accent`, `--card-accent-light` |
-| Hover lift | `transform: translateY(-6px)` + `box-shadow` transition |
-| Accent border glow | `box-shadow: 0 0 0 1px var(--card-accent)` on hover |
-| Icon bounce | `transform: scale(1.1) rotate(-5deg)` on hover |
-| Accent stripe | `::before` pseudo-element, left edge, opacity 0→1 on hover |
-| Sparkline bars | Flex row of `div`s with `height: var(--h)` |
-| Number counter | `IntersectionObserver` + JS `setInterval` |
+| Technique              | Implementation                                                |
+| ---------------------- | ------------------------------------------------------------- |
+| Responsive grid        | `grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))` |
+| Per-card accent colors | CSS custom properties `--card-accent`, `--card-accent-light`  |
+| Hover lift             | `transform: translateY(-6px)` + `box-shadow` transition       |
+| Accent border glow     | `box-shadow: 0 0 0 1px var(--card-accent)` on hover           |
+| Icon bounce            | `transform: scale(1.1) rotate(-5deg)` on hover                |
+| Accent stripe          | `::before` pseudo-element, left edge, opacity 0→1 on hover    |
+| Sparkline bars         | Flex row of `div`s with `height: var(--h)`                    |
+| Number counter         | `IntersectionObserver` + JS `setInterval`                     |
 
 ---
 

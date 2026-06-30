@@ -18,9 +18,7 @@ This submission demonstrates the `clip-path` CSS property with multiple variants
 Apply the `clip-path` class to any element:
 
 ```html
-<div class="clip-path">
-  Your content here
-</div>
+<div class="clip-path">Your content here</div>
 ```
 
 ## Tokens Used

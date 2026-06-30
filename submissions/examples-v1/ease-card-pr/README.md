@@ -18,14 +18,12 @@ A profile card component with avatar placeholder, name, title, and social links.
 ## Usage
 
 ```html
-&lt;!-- After integration, it will become: --&gt;
-&lt;div class="ease-card ease-card-pr"&gt;
-  &lt;div class="ease-card-pr-avatar"&gt;JD&lt;/div&gt;
-  &lt;div class="ease-card-pr-name"&gt;John Doe&lt;/div&gt;
-  &lt;div class="ease-card-pr-title"&gt;Frontend Developer&lt;/div&gt;
-  &lt;div class="ease-card-pr-social"&gt;
-    &lt;a href="#" aria-label="Twitter"&gt;𝕏&lt;/a&gt;
-    &lt;a href="#" aria-label="GitHub"&gt;Ⓖ&lt;/a&gt;
-    &lt;a href="#" aria-label="LinkedIn"&gt;Ⓛ&lt;/a&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;!-- After integration, it will become: --&gt; &lt;div class="ease-card
+ease-card-pr"&gt; &lt;div class="ease-card-pr-avatar"&gt;JD&lt;/div&gt; &lt;div
+class="ease-card-pr-name"&gt;John Doe&lt;/div&gt; &lt;div
+class="ease-card-pr-title"&gt;Frontend Developer&lt;/div&gt; &lt;div
+class="ease-card-pr-social"&gt; &lt;a href="#"
+aria-label="Twitter"&gt;𝕏&lt;/a&gt; &lt;a href="#"
+aria-label="GitHub"&gt;Ⓖ&lt;/a&gt; &lt;a href="#"
+aria-label="LinkedIn"&gt;Ⓛ&lt;/a&gt; &lt;/div&gt; &lt;/div&gt;
+```

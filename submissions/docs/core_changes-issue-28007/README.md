@@ -14,9 +14,9 @@ Controls the browser's image scaling algorithm via `image-rendering`. Useful for
 
 ### Classes
 
-| Class | Property | Use Case |
-|---|---|---|
-| `.ease-image-auto` | `image-rendering: auto` | Default browser behavior |
-| `.ease-image-smooth` | `image-rendering: smooth` | Smooth upscaling (modern browsers) |
-| `.ease-image-pixel` | `image-rendering: pixelated` | Pixel art, crisp scaling |
-| `.ease-image-crisp` | `image-rendering: crisp-edges` | Sharp edges, no anti-aliasing |
+| Class                | Property                       | Use Case                           |
+| -------------------- | ------------------------------ | ---------------------------------- |
+| `.ease-image-auto`   | `image-rendering: auto`        | Default browser behavior           |
+| `.ease-image-smooth` | `image-rendering: smooth`      | Smooth upscaling (modern browsers) |
+| `.ease-image-pixel`  | `image-rendering: pixelated`   | Pixel art, crisp scaling           |
+| `.ease-image-crisp`  | `image-rendering: crisp-edges` | Sharp edges, no anti-aliasing      |

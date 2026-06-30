@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated alerts and notifications for modern
 ## 🚀 Features
 
 ### Alert Styles (10 types)
+
 1. **Success Alert** - Green themed with slide effect
 2. **Error Alert** - Red themed with shake animation
 3. **Warning Alert** - Orange themed with scale effect
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated alerts and notifications for modern
 10. **Outline Alert** - Clean border with shine effect
 
 ### Animation Features
+
 - Fade in on load
 - Shake effect for errors
 - Slide in from right
@@ -28,6 +30,7 @@ A collection of beautiful, pure CSS animated alerts and notifications for modern
 - Hover transformations
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All alert animations
 - `readme.md` - Documentation
@@ -35,12 +38,14 @@ A collection of beautiful, pure CSS animated alerts and notifications for modern
 ## 🛠️ How to Use
 
 ### Basic Alert
+
 ```html
 <div class="alert alert-success">
-    <span class="alert-icon">✅</span>
-    <div class="alert-content">
-        <h4>Success!</h4>
-        <p>Your message here.</p>
-    </div>
-    <button class="alert-close">×</button>
+  <span class="alert-icon">✅</span>
+  <div class="alert-content">
+    <h4>Success!</h4>
+    <p>Your message here.</p>
+  </div>
+  <button class="alert-close">×</button>
 </div>
+```

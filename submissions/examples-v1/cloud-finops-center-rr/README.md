@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring cloud spending, budget utilizati
 
 ```html
 <div class="category-card efficient">
-    <h3>Compute</h3>
+  <h3>Compute</h3>
 </div>
 ```
 

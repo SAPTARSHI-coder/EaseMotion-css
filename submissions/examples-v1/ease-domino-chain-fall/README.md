@@ -30,13 +30,13 @@ A hover-triggered domino chain-fall animation. Each piece rotates from upright t
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
-| `.domino` width / height | Domino proportions |
-| `gap` on `.domino-track` | Spacing between pieces |
-| `animation-delay` step | Time between each domino falling (default: ~0.1s) |
-| Per-child `background` | Piece colors — adjust the `nth-child` rules |
-| `animation` duration | Per-piece fall speed (default: `0.5s`) |
+| Property                 | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| `.domino` width / height | Domino proportions                                |
+| `gap` on `.domino-track` | Spacing between pieces                            |
+| `animation-delay` step   | Time between each domino falling (default: ~0.1s) |
+| Per-child `background`   | Piece colors — adjust the `nth-child` rules       |
+| `animation` duration     | Per-piece fall speed (default: `0.5s`)            |
 
 ## Accessibility
 

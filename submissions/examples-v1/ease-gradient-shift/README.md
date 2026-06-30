@@ -7,9 +7,7 @@ Adds an animated gradient background effect that smoothly shifts colors over tim
 ## How is it used?
 
 ```html
-<section class="gradient-shift">
-  Animated gradient content
-</section>
+<section class="gradient-shift">Animated gradient content</section>
 ```
 
 ## Why is it useful?

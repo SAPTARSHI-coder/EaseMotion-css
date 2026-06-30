@@ -36,7 +36,8 @@ The pulse animation itself is the standard `ease-ping` keyframe pattern:
 }
 
 .location-marker__pulse {
-  animation: ease-ping var(--ease-ping-speed) cubic-bezier(0, 0, 0.2, 1) infinite;
+  animation: ease-ping var(--ease-ping-speed) cubic-bezier(0, 0, 0.2, 1)
+    infinite;
 }
 ```
 
@@ -50,12 +51,12 @@ Holding at `opacity: 0` for the last 25% of the animation (via the `75%, 100%` k
 
 ## 🎛️ Customizable Variables
 
-| Variable | Description | Default |
-|---|---|---|
-| `--ease-ping-color` | Color of the dot and pulse ring | `#3b82f6` |
-| `--ease-ping-speed` | Duration of one pulse cycle | `2s` |
-| `--ease-ping-scale` | How large the ring grows before fading out | `2.5` |
-| `--ease-ping-dot-size` | Diameter of the static center dot | `14px` |
+| Variable               | Description                                | Default   |
+| ---------------------- | ------------------------------------------ | --------- |
+| `--ease-ping-color`    | Color of the dot and pulse ring            | `#3b82f6` |
+| `--ease-ping-speed`    | Duration of one pulse cycle                | `2s`      |
+| `--ease-ping-scale`    | How large the ring grows before fading out | `2.5`     |
+| `--ease-ping-dot-size` | Diameter of the static center dot          | `14px`    |
 
 ## 📂 Files
 

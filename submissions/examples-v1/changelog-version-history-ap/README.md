@@ -5,6 +5,7 @@ Welcome to the **Changelog & Version History Guide**! This comprehensive documen
 ---
 
 ## 📋 Table of Contents
+
 1. [Keep a Changelog Standards](#1-keep-a-changelog-standards)
 2. [Automating Updates via GitHub Actions](#2-automating-updates-via-github-actions)
 3. [Rendered Changelog Webpage](#3-rendered-changelog-webpage)
@@ -13,15 +14,16 @@ Welcome to the **Changelog & Version History Guide**! This comprehensive documen
 
 ## 1. Keep a Changelog Standards
 
-A well-maintained changelog makes it easy for developers to see what changes were made in each version. 
+A well-maintained changelog makes it easy for developers to see what changes were made in each version.
 
 ### Core Guidelines
-* **Readability**: Write changelogs for humans, not machine logs. Avoid dump commits.
-* **Grouping**: Group updates under dedicated categories:
-  * `### Added` — For new features additions.
-  * `### Changed` — For changes in existing functionality.
-  * `### Fixed` — For bug fixes and patches.
-  * `### Security` — In case of vulnerabilities fixes.
+
+- **Readability**: Write changelogs for humans, not machine logs. Avoid dump commits.
+- **Grouping**: Group updates under dedicated categories:
+  - `### Added` — For new features additions.
+  - `### Changed` — For changes in existing functionality.
+  - `### Fixed` — For bug fixes and patches.
+  - `### Security` — In case of vulnerabilities fixes.
 
 ---
 
@@ -30,6 +32,7 @@ A well-maintained changelog makes it easy for developers to see what changes wer
 To ensure the changelog remains up to date, you can use a GitHub Action that automatically compiles release notes from pull requests and commits when a new tag is pushed.
 
 ### Workflow Configuration (`.github/workflows/changelog.yml`)
+
 ```yaml
 name: Auto Changelog Generator
 
@@ -49,8 +52,8 @@ jobs:
       - name: Build and Update Changelog File
         uses: github-actions/auto-changelog-builder@v1
         with:
-          output: 'CHANGELOG.md'
-          template: 'keep-a-changelog'
+          output: "CHANGELOG.md"
+          template: "keep-a-changelog"
 
       - name: Commit and push changes
         run: |
@@ -66,5 +69,6 @@ jobs:
 ## 3. Rendered Changelog Webpage
 
 The companion page (`demo.html`) acts as a client-facing rendering node that parses and displays project updates:
-* **Category Filters**: Allows filtering updates by categories (`Added`, `Fixed`, `Changed`).
-* **Release CLI Simulator**: Demonstrates the step-by-step GitHub Action pipeline.
+
+- **Category Filters**: Allows filtering updates by categories (`Added`, `Fixed`, `Changed`).
+- **Release CLI Simulator**: Demonstrates the step-by-step GitHub Action pipeline.

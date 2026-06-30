@@ -32,9 +32,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="dropzone">
-...
-</div>
+<div class="dropzone">...</div>
 ```
 
 ---

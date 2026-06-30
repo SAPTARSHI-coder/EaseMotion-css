@@ -8,9 +8,9 @@ Introduces the native browser-level user-agent theme configuration token (`.ease
 - **The Solution:** Syncs native user-agent layout sheets. The `.ease-scheme-dark` token formally signals to the rendering engine that this section utilizes dark mode guidelines, forcing the browser to instantly drop native elements into matching built-in dark formats.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-scheme-dark">
-  </div>
+<div class="ease-scheme-dark"></div>
 ```
 
 Closes #15153

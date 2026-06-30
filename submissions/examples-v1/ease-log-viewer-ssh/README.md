@@ -17,7 +17,12 @@ The component uses hidden checkboxes to manage Auto-scroll and Clear state, with
 ```html
 <section class="log-viewer">
   <!-- Hidden state controls -->
-  <input type="checkbox" id="autoscroll-toggle" class="log-viewer__state" checked />
+  <input
+    type="checkbox"
+    id="autoscroll-toggle"
+    class="log-viewer__state"
+    checked
+  />
   <input type="checkbox" id="clear-toggle" class="log-viewer__state" />
 
   <!-- Toolbar with window dots, title, and controls -->
@@ -67,11 +72,12 @@ The component uses hidden checkboxes to manage Auto-scroll and Clear state, with
 ```
 
 ### Available log-level modifiers
-| Class                  | Color  | Use case                          |
-| ---------------------- | ------ | --------------------------------- |
-| `.log-line--info`      | Blue   | Standard informational messages   |
-| `.log-line--warn`      | Yellow | Warnings, deprecations, retries   |
-| `.log-line--error`     | Red    | Errors, exceptions, failures      |
+
+| Class              | Color  | Use case                        |
+| ------------------ | ------ | ------------------------------- |
+| `.log-line--info`  | Blue   | Standard informational messages |
+| `.log-line--warn`  | Yellow | Warnings, deprecations, retries |
+| `.log-line--error` | Red    | Errors, exceptions, failures    |
 
 Just open `demo.html` in any modern browser — no server, no build step, no dependencies.
 

@@ -4,13 +4,13 @@ Utility classes for customizing the text cursor (caret) color in form fields.
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
-| `.caret-red` | `caret-color: #ef4444;` |
-| `.caret-blue` | `caret-color: #3b82f6;` |
-| `.caret-green` | `caret-color: #22c55e;` |
+| Class           | CSS                     |
+| --------------- | ----------------------- |
+| `.caret-red`    | `caret-color: #ef4444;` |
+| `.caret-blue`   | `caret-color: #3b82f6;` |
+| `.caret-green`  | `caret-color: #22c55e;` |
 | `.caret-purple` | `caret-color: #8b5cf6;` |
-| `.caret-black` | `caret-color: #000;` |
+| `.caret-black`  | `caret-color: #000;`    |
 
 ## Usage
 

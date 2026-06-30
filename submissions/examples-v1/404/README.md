@@ -6,11 +6,11 @@ This feature adds a custom **404 Not Found** page to improve user experience whe
 
 ## Features
 
-* Custom "404 - Page Not Found" message.
-* Responsive design for desktop, tablet, and mobile devices.
-* Clear explanation that the requested page does not exist.
-* "Go Home" button to redirect users back to the homepage.
-* Consistent styling with the application's theme.
+- Custom "404 - Page Not Found" message.
+- Responsive design for desktop, tablet, and mobile devices.
+- Clear explanation that the requested page does not exist.
+- "Go Home" button to redirect users back to the homepage.
+- Consistent styling with the application's theme.
 
 ## File Structure
 
@@ -35,17 +35,17 @@ project/
 
 You can customize:
 
-* Colors and typography
-* Background gradients or images
-* Animations and illustrations
-* Button styles and navigation links
+- Colors and typography
+- Background gradients or images
+- Animations and illustrations
+- Button styles and navigation links
 
 ## Benefits
 
-* Improves user experience.
-* Provides clear navigation when errors occur.
-* Maintains a professional and consistent interface.
-* Reduces user confusion on broken or invalid links.
+- Improves user experience.
+- Provides clear navigation when errors occur.
+- Maintains a professional and consistent interface.
+- Reduces user confusion on broken or invalid links.
 
 ## Screenshot
 

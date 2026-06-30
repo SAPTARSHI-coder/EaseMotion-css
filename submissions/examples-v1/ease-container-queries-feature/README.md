@@ -4,9 +4,10 @@ This proposal demonstrates and implements the usage of CSS `@container` queries 
 
 ## 📌 Feature Overview
 
-Container queries (`@container`) represent the future of responsive design. They allow UI components (like cards, sidebars, or media objects) to adjust their layout based on the space *available* to them, not just the entire screen size.
+Container queries (`@container`) represent the future of responsive design. They allow UI components (like cards, sidebars, or media objects) to adjust their layout based on the space _available_ to them, not just the entire screen size.
 
 **Design Tokens Documented:**
+
 - `--color-base` / `--color-surface`: Background layers.
 - `--color-brand`: Main interactive accent color.
 - `--anim-speed`: Handles animation timing, respecting user accessibility preferences (`prefers-reduced-motion: reduce`).
@@ -18,6 +19,7 @@ To test this feature locally, simply open the `demo.html` file in your web brows
 **Usage:**
 
 1. Define a container class:
+
 ```css
 .container-wrap {
   container-type: inline-size;
@@ -25,6 +27,7 @@ To test this feature locally, simply open the `demo.html` file in your web brows
 ```
 
 2. Query the container size instead of the viewport:
+
 ```css
 @container (min-width: 400px) {
   .component {
@@ -33,7 +36,8 @@ To test this feature locally, simply open the `demo.html` file in your web brows
 }
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-container-queries-feature/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these patterns to the core stylesheet.*
+_Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-container-queries-feature/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these patterns to the core stylesheet._
 
 ## 🔗 Related Issue
+
 Closes Issue #18483

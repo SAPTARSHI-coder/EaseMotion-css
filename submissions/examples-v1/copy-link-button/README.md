@@ -28,3 +28,4 @@ Example:
   Design Philosophy
   <button class="copy-link-btn">🔗</button>
 </h2>
+```

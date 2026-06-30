@@ -4,6 +4,7 @@
 A semantic breadcrumb navigation trail showing the current page location within a site hierarchy, with separator styling and hover effects.
 
 **How is it used?**
+
 ```html
 <nav aria-label="Breadcrumb">
   <ol class="breadcrumb">

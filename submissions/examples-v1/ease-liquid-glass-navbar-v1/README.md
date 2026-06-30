@@ -19,7 +19,6 @@ A modern glassmorphism navigation bar featuring floating liquid background anima
 ---
 
 ## 📁 Folder Structure
-
 ```
 
 submissions/

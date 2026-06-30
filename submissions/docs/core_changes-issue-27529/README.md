@@ -7,7 +7,7 @@ A React component for a user profile card with a 3D flip animation on hover — 
 ## How is it used?
 
 ```jsx
-import ProfileFlipCard from './ProfileFlipCard';
+import ProfileFlipCard from "./ProfileFlipCard";
 
-<ProfileFlipCard name="Alex" role="Designer" bio="Creative problem solver." />
+<ProfileFlipCard name="Alex" role="Designer" bio="Creative problem solver." />;
 ```

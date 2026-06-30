@@ -42,13 +42,14 @@ A dropdown menu component for navigation submenus, user menus, and action menus 
 </div>
 
 <script>
-  document.querySelector('#dd > .ease-dropdown-trigger')
-    .addEventListener('click', (e) => {
-      e.currentTarget.closest('.ease-dropdown').classList.toggle('open');
+  document
+    .querySelector("#dd > .ease-dropdown-trigger")
+    .addEventListener("click", (e) => {
+      e.currentTarget.closest(".ease-dropdown").classList.toggle("open");
     });
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#dd')) {
-      document.querySelector('#dd').classList.remove('open');
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#dd")) {
+      document.querySelector("#dd").classList.remove("open");
     }
   });
 </script>

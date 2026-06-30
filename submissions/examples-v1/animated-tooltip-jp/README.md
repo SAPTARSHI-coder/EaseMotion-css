@@ -15,15 +15,15 @@ A lightweight CSS-only tooltip component with smooth fade and slide animations.
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
-| `.tooltip-container` | Holds multiple tooltip examples |
-| `.tooltip-btn` | Trigger button |
-| `.tooltip` | Base tooltip style |
-| `.tooltip-top` | Displays tooltip above the element |
-| `.tooltip-bottom` | Displays tooltip below the element |
-| `.tooltip-left` | Displays tooltip on the left |
-| `.tooltip-right` | Displays tooltip on the right |
+| Class                | Description                        |
+| -------------------- | ---------------------------------- |
+| `.tooltip-container` | Holds multiple tooltip examples    |
+| `.tooltip-btn`       | Trigger button                     |
+| `.tooltip`           | Base tooltip style                 |
+| `.tooltip-top`       | Displays tooltip above the element |
+| `.tooltip-bottom`    | Displays tooltip below the element |
+| `.tooltip-left`      | Displays tooltip on the left       |
+| `.tooltip-right`     | Displays tooltip on the right      |
 
 ---
 
@@ -32,7 +32,6 @@ A lightweight CSS-only tooltip component with smooth fade and slide animations.
 ```html
 <button class="tooltip-btn">
   Hover Me
-  <span class="tooltip tooltip-top">
-    Tooltip Text
-  </span>
+  <span class="tooltip tooltip-top"> Tooltip Text </span>
 </button>
+```

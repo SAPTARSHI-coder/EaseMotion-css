@@ -20,7 +20,10 @@ Layered card stack effects with depth shadows, perspective transforms, and paral
 
 ```html
 <!-- Add the CSS file to your project -->
-<link rel="stylesheet" href="submissions/examples/card-stack-effects-tm/style.css">
+<link
+  rel="stylesheet"
+  href="submissions/examples/card-stack-effects-tm/style.css"
+/>
 ```
 
 ## Design Tokens Used

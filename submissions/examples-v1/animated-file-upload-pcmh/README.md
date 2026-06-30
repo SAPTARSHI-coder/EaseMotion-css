@@ -22,7 +22,7 @@ Drag-and-drop file upload zone with visual feedback: border glow on drag, bounce
   <div class="ease-upload-icon">📁</div>
   <div class="ease-upload-text">Drag & drop files here</div>
   <div class="ease-upload-hint">or click to browse</div>
-  <input type="file" id="fileInput" multiple style="display: none">
+  <input type="file" id="fileInput" multiple style="display: none" />
 </div>
 <ul class="ease-upload-files" id="fileList"></ul>
 ```

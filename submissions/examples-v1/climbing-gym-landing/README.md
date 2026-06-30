@@ -3,6 +3,7 @@
 A responsive landing page for Altitude Climbing built with EaseMotion CSS framework. This example showcases how to build a complete, production-ready landing page using only EaseMotion utility classes and minimal custom CSS.
 
 ## Live Demo
+
 Open \demo.html\ in any modern web browser to view the landing page. No build tools or server required.
 
 ## Features
@@ -41,10 +42,11 @@ This page demonstrates the following EaseMotion CSS framework classes:
 ## Project Structure
 
 \\\`nclimbing-gym-landing/
-  ├── demo.html
-  ├── style.css
-  └── README.md
+├── demo.html
+├── style.css
+└── README.md
 \\\`n
+
 ## Customization
 
 To customize this landing page for your own brand:
@@ -65,4 +67,3 @@ To customize this landing page for your own brand:
 ## License
 
 MIT License - feel free to use this example for personal and commercial projects.
-

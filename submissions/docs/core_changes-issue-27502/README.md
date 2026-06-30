@@ -7,8 +7,8 @@ A React modal dialog component with backdrop blur, scale-up entrance animation, 
 ## How is it used?
 
 ```jsx
-import DynamicModal from './DynamicModal';
-import { useState } from 'react';
+import DynamicModal from "./DynamicModal";
+import { useState } from "react";
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -25,9 +25,9 @@ function App() {
 
 ### Props
 
-| Prop | Type | Default |
-|---|---|---|
-| open | boolean | false |
-| onClose | function | — |
-| title | string | 'Modal' |
-| children | node | — |
+| Prop     | Type     | Default |
+| -------- | -------- | ------- |
+| open     | boolean  | false   |
+| onClose  | function | —       |
+| title    | string   | 'Modal' |
+| children | node     | —       |

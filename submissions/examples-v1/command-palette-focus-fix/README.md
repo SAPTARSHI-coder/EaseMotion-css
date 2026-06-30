@@ -6,7 +6,7 @@
 
 ## 🐛 Bug Description
 
-In `components/command-palette.css`, the `.ease-command-palette-item:focus` state lacks dark mode overrides in both the `@media (prefers-color-scheme: dark)` and `[data-theme="dark"]` selector blocks. 
+In `components/command-palette.css`, the `.ease-command-palette-item:focus` state lacks dark mode overrides in both the `@media (prefers-color-scheme: dark)` and `[data-theme="dark"]` selector blocks.
 
 When a keyboard user navigates the command palette in dark mode by pressing the `Tab` key, the focused item flashes to a bright light-mode background color (`#f1f5f9`). This creates a theme leak and results in extremely low text contrast (white text on a light gray background), violating WCAG 2.1 accessibility guidelines.
 
@@ -38,8 +38,8 @@ Include the `:focus` selector in both dark mode override blocks alongside `:hove
 
 ## 📁 Submission Contents
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                      |
+| ----------- | ---------------------------------------------------------------------------- |
 | `demo.html` | Side-by-side live demonstration of the bug vs. the fix in light & dark modes |
-| `style.css` | Raw CSS showing the proposed fix and demo page layout |
-| `README.md` | This documentation file |
+| `style.css` | Raw CSS showing the proposed fix and demo page layout                        |
+| `README.md` | This documentation file                                                      |

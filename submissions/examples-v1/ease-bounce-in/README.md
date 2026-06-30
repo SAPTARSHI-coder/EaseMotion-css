@@ -1,14 +1,8 @@
 \# ease-bounce-in
 
-
-
 Playful bounce-in entrance animation with spring-like effect.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Speed | Direction |
 
@@ -34,17 +28,8 @@ Playful bounce-in entrance animation with spring-like effect.
 
 | `ease-bounce-in-delay-3` | Delay 0.6s | 0.8s | Center |
 
-
-
 \## Usage
 
-
-
 ```html
-
-<div class="ease-bounce-in">
-
-&#x20;   Content bounces in
-
-</div>
-
+<div class="ease-bounce-in">&#x20; Content bounces in</div>
+```

@@ -43,7 +43,10 @@ The effect is driven by CSS variables so timing, opacity, size, and glow can be 
 
 ```html
 <div class="ease-code-rain">
-  <span class="ease-code-column" style="--ease-rain-delay: 0.2s; --ease-rain-speed: 12s;"></span>
+  <span
+    class="ease-code-column"
+    style="--ease-rain-delay: 0.2s; --ease-rain-speed: 12s;"
+  ></span>
 </div>
 ```
 

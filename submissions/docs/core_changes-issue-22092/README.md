@@ -15,24 +15,28 @@ submissions/core_changes-issue-22092/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Vertical** | `.ease-speed-dial-vertical` | Actions expand upward/downward |
-| **Horizontal** | `.ease-speed-dial-horizontal` | Actions expand sideways |
-| **Radial** | `.ease-speed-dial-radial` | Circular fan-out expansion |
-| **Stagger** | `.ease-speed-dial-stagger` | Cascading reveal animation |
-| **Backdrop** | `.ease-speed-dial-backdrop` | Semi-transparent overlay |
-| **Bottom-Right** | `.ease-speed-dial-br` | Fixed position bottom-right |
-| **Bottom-Left** | `.ease-speed-dial-bl` | Fixed position bottom-left |
-| **Top-Right** | `.ease-speed-dial-tr` | Fixed position top-right |
-| **Top-Left** | `.ease-speed-dial-tl` | Fixed position top-left |
+| Variant          | Class                         | Description                    |
+| ---------------- | ----------------------------- | ------------------------------ |
+| **Vertical**     | `.ease-speed-dial-vertical`   | Actions expand upward/downward |
+| **Horizontal**   | `.ease-speed-dial-horizontal` | Actions expand sideways        |
+| **Radial**       | `.ease-speed-dial-radial`     | Circular fan-out expansion     |
+| **Stagger**      | `.ease-speed-dial-stagger`    | Cascading reveal animation     |
+| **Backdrop**     | `.ease-speed-dial-backdrop`   | Semi-transparent overlay       |
+| **Bottom-Right** | `.ease-speed-dial-br`         | Fixed position bottom-right    |
+| **Bottom-Left**  | `.ease-speed-dial-bl`         | Fixed position bottom-left     |
+| **Top-Right**    | `.ease-speed-dial-tr`         | Fixed position top-right       |
+| **Top-Left**     | `.ease-speed-dial-tl`         | Fixed position top-left        |
 
 ## Usage
 
 ```html
 <link rel="stylesheet" href="path/to/style.css" />
 
-<div class="ease-speed-dial ease-speed-dial-vertical ease-speed-dial-br" id="dial" onclick="this.classList.toggle('open')">
+<div
+  class="ease-speed-dial ease-speed-dial-vertical ease-speed-dial-br"
+  id="dial"
+  onclick="this.classList.toggle('open')"
+>
   <button class="ease-speed-dial-btn">+</button>
   <div class="ease-speed-dial-actions">
     <button class="ease-speed-dial-action">✏️</button>

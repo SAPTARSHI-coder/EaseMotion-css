@@ -8,6 +8,7 @@ Submits layout utility architectures and status visualization cards for hardware
 - **The Solution:** Highly visible inventory status layout cards. This component isolates hardware details into clean, grid-aligned panels paired with semantic status pills (Active, Expiring Soon, Expired). It empowers procurement specialists and IT sysadmins to quickly prioritize hardware maintenance loops inside internal dashboard consoles.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-warranty-grid">
   <div class="ease-warranty-card">
@@ -18,8 +19,7 @@ Submits layout utility architectures and status visualization cards for hardware
       </div>
       <span class="ease-warranty-badge ease-warranty-active">Active</span>
     </div>
-    <div class="ease-warranty-details">
-      </div>
+    <div class="ease-warranty-details"></div>
   </div>
 </div>
 ```

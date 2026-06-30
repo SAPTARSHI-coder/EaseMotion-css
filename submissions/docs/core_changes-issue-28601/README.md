@@ -37,24 +37,24 @@ Completes the CSS Grid utility class set in EaseMotion CSS. Adds missing grid co
 
 ### Variants
 
-| Class | Effect |
-|---|---|
-| `.ease-grid-cols-1` to `.ease-grid-cols-12` | Fixed column count (fills existing gaps) |
-| `.ease-grid-cols-none` | Reset column template |
-| `.ease-grid-cols-auto-fill` | `repeat(auto-fill, minmax(250px, 1fr))` |
-| `.ease-grid-cols-auto-fit` | `repeat(auto-fit, minmax(250px, 1fr))` |
-| `.ease-grid-rows-1` to `.ease-grid-rows-6` | Fixed row count |
-| `.ease-grid-rows-none` | Reset row template |
-| `.ease-grid-gap-sm` / `.ease-grid-gap` / `.ease-grid-gap-lg` | Shorthand `gap` using spacing tokens |
-| `.ease-col-span-1` to `.ease-col-span-4` | Column span (1-4 columns) |
-| `.ease-col-span-full` | Span all columns (`1 / -1`) |
-| `.ease-row-span-1` to `.ease-row-span-6` | Row span |
-| `.ease-row-span-full` | Span all rows (`1 / -1`) |
+| Class                                                        | Effect                                   |
+| ------------------------------------------------------------ | ---------------------------------------- |
+| `.ease-grid-cols-1` to `.ease-grid-cols-12`                  | Fixed column count (fills existing gaps) |
+| `.ease-grid-cols-none`                                       | Reset column template                    |
+| `.ease-grid-cols-auto-fill`                                  | `repeat(auto-fill, minmax(250px, 1fr))`  |
+| `.ease-grid-cols-auto-fit`                                   | `repeat(auto-fit, minmax(250px, 1fr))`   |
+| `.ease-grid-rows-1` to `.ease-grid-rows-6`                   | Fixed row count                          |
+| `.ease-grid-rows-none`                                       | Reset row template                       |
+| `.ease-grid-gap-sm` / `.ease-grid-gap` / `.ease-grid-gap-lg` | Shorthand `gap` using spacing tokens     |
+| `.ease-col-span-1` to `.ease-col-span-4`                     | Column span (1-4 columns)                |
+| `.ease-col-span-full`                                        | Span all columns (`1 / -1`)              |
+| `.ease-row-span-1` to `.ease-row-span-6`                     | Row span                                 |
+| `.ease-row-span-full`                                        | Span all rows (`1 / -1`)                 |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property          | Default | Description                                 |
+| ----------------- | ------- | ------------------------------------------- |
 | `--ease-grid-min` | `250px` | Minimum column width for auto-fill/auto-fit |
 
 ## Why is it useful?

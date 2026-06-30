@@ -17,9 +17,7 @@ Adds three text animation utilities to EaseMotion CSS — typewriter (blinking c
 **Text reveal on scroll:**
 
 ```html
-<h1 class="ease-text-reveal" data-ease-direction="chars">
-  Welcome to my site
-</h1>
+<h1 class="ease-text-reveal" data-ease-direction="chars">Welcome to my site</h1>
 ```
 
 **Text scramble on hover:**

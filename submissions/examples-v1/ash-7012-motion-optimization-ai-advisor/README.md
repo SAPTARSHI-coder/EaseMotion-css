@@ -22,15 +22,9 @@ A responsive AI-powered dashboard that evaluates animation performance, highligh
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="workspace">
-        ...
-    </section>
-
+  <section class="workspace">...</section>
 </div>
 ```
 

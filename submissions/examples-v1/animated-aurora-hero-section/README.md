@@ -53,9 +53,9 @@ All colours, radii, spacing, and timing live in `:root` CSS variables at the top
 
 ```css
 :root {
-  --aurora-a: #6e40c9;   /* blob 1 colour */
-  --aurora-b: #1a6cf6;   /* blob 2 colour */
-  --col-bg:   #04060f;   /* page background */
+  --aurora-a: #6e40c9; /* blob 1 colour */
+  --aurora-b: #1a6cf6; /* blob 2 colour */
+  --col-bg: #04060f; /* page background */
   --grad-text: linear-gradient(135deg, #a78bfa, #60a5fa, #22d3ee);
 }
 ```
@@ -78,7 +78,7 @@ EaseMotion CSS is built on three core principles. This component embodies all th
 
 ### Animation-first
 
-Every visual layer is in motion: aurora blobs use uniquely timed `translate + scale` keyframe sequences, the badge dot pulses, the heading accent glows, the card shimmer animates, and the orbs float. Motion is not decorative afterthought — it *is* the design. The component proves that expressive, multi-layered animation is achievable with pure CSS.
+Every visual layer is in motion: aurora blobs use uniquely timed `translate + scale` keyframe sequences, the badge dot pulses, the heading accent glows, the card shimmer animates, and the orbs float. Motion is not decorative afterthought — it _is_ the design. The component proves that expressive, multi-layered animation is achievable with pure CSS.
 
 ### Human-readable
 
@@ -89,48 +89,49 @@ The CSS is organised in clearly numbered sections (tokens → reset → aurora �
 Each animation piece is independent and reusable:
 
 |
- Piece 
+Piece
 |
- Reuse 
+Reuse
 |
 |
+
 ---
-|
----
+
+## |
+
 |
 |
 `.aurora-stage`
- + 
-`.aurora-blob`
-|
- Drop into any page as a full-screen background 
-|
-|
-`.animate-fade-up`
- + 
-`--delay`
-|
- Apply to any element for staggered entrance 
-|
-|
-`.btn--primary`
- / 
-`.btn--ghost`
-|
- Standalone button styles 
-|
-|
-`.hero__card`
- glassmorphism 
-|
- Any card or modal surface 
-|
-|
-`--grad-text`
- glow heading 
-|
- Any display heading 
-|
+
+- `.aurora-blob`
+  |
+  Drop into any page as a full-screen background
+  |
+  |
+  `.animate-fade-up`
+- `--delay`
+  |
+  Apply to any element for staggered entrance
+  |
+  |
+  `.btn--primary`
+  /
+  `.btn--ghost`
+  |
+  Standalone button styles
+  |
+  |
+  `.hero__card`
+  glassmorphism
+  |
+  Any card or modal surface
+  |
+  |
+  `--grad-text`
+  glow heading
+  |
+  Any display heading
+  |
 
 Compositions can be mixed: use the aurora background with a completely different card, or use the button styles in a navigation bar. Nothing is hardcoded to a single parent container.
 
@@ -150,36 +151,38 @@ animated-aurora-hero-section/
 ## Browser Support
 
 |
- Feature 
+Feature
 |
- Support 
+Support
 |
 |
+
 ---
-|
----
+
+## |
+
 |
 |
 `backdrop-filter`
 |
- Chrome 76+, Safari 9+, Firefox 103+ 
+Chrome 76+, Safari 9+, Firefox 103+
 |
 |
- CSS custom properties 
+CSS custom properties
 |
- All modern browsers 
+All modern browsers
 |
 |
 `background-clip: text`
 |
- All modern browsers (with 
+All modern browsers (with
 `-webkit-`
- prefix included) 
+prefix included)
 |
 |
 `prefers-reduced-motion`
 |
- All modern browsers 
+All modern browsers
 |
 
 For browsers without `backdrop-filter` support, the card falls back gracefully to the semi-transparent background colour without blur.

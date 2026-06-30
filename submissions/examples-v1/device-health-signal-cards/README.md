@@ -8,6 +8,7 @@ Submits layout utility architectures and responsive data visualization modules f
 - **The Solution:** Isolated telemetry status modules. This layout utility configures a scannable grid pattern that stacks device identifiers alongside visual status tags (Excellent, Elevated, Critical) and atomic hardware readouts. It helps operators triage physical infrastructure nodes instantly within monitoring systems.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-device-grid">
   <div class="ease-device-card">

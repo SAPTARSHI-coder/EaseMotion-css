@@ -18,7 +18,7 @@ Add the CSS class to your element:
 
 ```html
 <button class="focus-demo-btn">Primary Button</button>
-<input type="text" class="focus-demo-input" placeholder="Enter text...">
+<input type="text" class="focus-demo-input" placeholder="Enter text..." />
 ```
 
 ## Why is it useful?

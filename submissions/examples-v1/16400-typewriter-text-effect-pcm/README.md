@@ -13,7 +13,10 @@
 
 <!-- Multi-string rotation + loop -->
 <div class="typewriter" data-speed="90" data-loop="true">
-  <span class="typewriter-text" data-strings='["String one", "String two", "String three"]'></span>
+  <span
+    class="typewriter-text"
+    data-strings='["String one", "String two", "String three"]'
+  ></span>
   <span class="typewriter-cursor" aria-hidden="true"></span>
 </div>
 

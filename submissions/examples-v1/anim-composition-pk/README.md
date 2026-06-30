@@ -10,11 +10,11 @@ When two animations both modify `transform` (e.g., a zoom-in and a rotation), th
 
 Three utility classes:
 
-| Class | Value | Behavior |
-|-------|-------|----------|
-| `.ease-compose-replace` | `replace` | Last animation's value wins (default) |
-| `.ease-compose-add` | `add` | Transform functions are appended in order |
-| `.ease-compose-accumulate` | `accumulate` | Numeric values are summed |
+| Class                      | Value        | Behavior                                  |
+| -------------------------- | ------------ | ----------------------------------------- |
+| `.ease-compose-replace`    | `replace`    | Last animation's value wins (default)     |
+| `.ease-compose-add`        | `add`        | Transform functions are appended in order |
+| `.ease-compose-accumulate` | `accumulate` | Numeric values are summed                 |
 
 ## Demo
 
@@ -26,20 +26,22 @@ Three boxes run the same two animations (`ease-kf-zoom-in` + `ease-kf-rotate`) w
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                             |
+| ----------- | --------------------------------------------------- |
 | `demo.html` | Three-card comparison: replace vs add vs accumulate |
-| `style.css` | Demo grid, animation boxes, explanation table |
+| `style.css` | Demo grid, animation boxes, explanation table       |
 
 ## Usage
 
 ```html
-<div class="
+<div
+  class="
   ease-anim-infinite
   ease-kf-zoom-in
   ease-kf-rotate
   ease-compose-add
-">
+"
+>
   Both zoom and rotation applied
 </div>
 ```
@@ -47,13 +49,19 @@ Three boxes run the same two animations (`ease-kf-zoom-in` + `ease-kf-rotate`) w
 ## Browser Support
 
 | Chrome | Firefox | Safari |
-|--------|---------|--------|
-| 115+ | 118+ | 17.2+ |
+| ------ | ------- | ------ |
+| 115+   | 118+    | 17.2+  |
 
 ## Adding to `core/utilities.css`
 
 ```css
-.ease-compose-replace { animation-composition: replace; }
-.ease-compose-add { animation-composition: add; }
-.ease-compose-accumulate { animation-composition: accumulate; }
+.ease-compose-replace {
+  animation-composition: replace;
+}
+.ease-compose-add {
+  animation-composition: add;
+}
+.ease-compose-accumulate {
+  animation-composition: accumulate;
+}
 ```

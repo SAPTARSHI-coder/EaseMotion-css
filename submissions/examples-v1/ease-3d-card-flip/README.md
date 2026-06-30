@@ -9,8 +9,10 @@ An immersive spatial layout micro-interaction component framework that flips str
 - **Reduced Motion Safety Guards:** Implements strict accessible adaptive support grids using `@media (prefers-reduced-motion: reduce)` which switches flashing structural rotation spins for clear instant visibility changes to avoid user sensory triggers.
 
 ## Workspace Tree Map
+
 - `demo.html`: Independent functional presentation viewport sandbox.
 - `style.css`: Configured framework utility rule sets.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

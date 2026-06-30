@@ -6,15 +6,14 @@ This submission demonstrates a smooth mouse parallax background effect using HTM
 
 ## Features
 
-* Three independent parallax layers.
-* Adjustable parallax strength using a slider.
-* Reset button to restore the default position.
-* Smooth CSS transitions.
-* Responsive layout for desktop and mobile.
-* Uses CSS custom properties:
-
-  * `--ease-mouse-x`
-  * `--ease-mouse-y`
+- Three independent parallax layers.
+- Adjustable parallax strength using a slider.
+- Reset button to restore the default position.
+- Smooth CSS transitions.
+- Responsive layout for desktop and mobile.
+- Uses CSS custom properties:
+  - `--ease-mouse-x`
+  - `--ease-mouse-y`
 
 ## File Structure
 
@@ -35,20 +34,20 @@ README.md
 
 ## Browser Support
 
-* Chrome
-* Edge
-* Firefox
-* Safari (modern versions)
+- Chrome
+- Edge
+- Firefox
+- Safari (modern versions)
 
 ## Customization
 
 You can:
 
-* Change the gradient colors.
-* Add more parallax layers.
-* Modify the slider range.
-* Adjust transition timing.
-* Change the movement multipliers for stronger or subtler effects.
+- Change the gradient colors.
+- Add more parallax layers.
+- Modify the slider range.
+- Adjust transition timing.
+- Change the movement multipliers for stronger or subtler effects.
 
 ## Why it fits EaseMotion CSS
 

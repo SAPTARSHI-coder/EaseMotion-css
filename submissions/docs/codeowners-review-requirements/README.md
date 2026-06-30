@@ -20,11 +20,11 @@ A CODEOWNERS-based review process ensures that all changes to these protected di
 
 This proposal recommends the following workflow:
 
-* Protect the `core/` directory using GitHub CODEOWNERS.
-* Protect the `components/` directory using GitHub CODEOWNERS.
-* Enable branch protection rules requiring CODEOWNERS approval before merging.
-* Document the review policy in the project's contribution guidelines.
-* Validate that pull requests affecting protected directories cannot be merged without maintainer approval.
+- Protect the `core/` directory using GitHub CODEOWNERS.
+- Protect the `components/` directory using GitHub CODEOWNERS.
+- Enable branch protection rules requiring CODEOWNERS approval before merging.
+- Document the review policy in the project's contribution guidelines.
+- Validate that pull requests affecting protected directories cannot be merged without maintainer approval.
 
 ---
 
@@ -44,9 +44,9 @@ components/*   @maintainer
 1. A contributor opens a Pull Request.
 2. GitHub evaluates the files modified in the Pull Request.
 3. If the Pull Request modifies files inside `core/` or `components/`:
+   - GitHub automatically requests review from the designated CODEOWNERS.
+   - Branch protection prevents the Pull Request from being merged until approval is received.
 
-   * GitHub automatically requests review from the designated CODEOWNERS.
-   * Branch protection prevents the Pull Request from being merged until approval is received.
 4. If the Pull Request does not affect protected directories, the standard review process continues.
 
 ---
@@ -57,10 +57,10 @@ To maintain framework quality and consistency, contributors should avoid directl
 
 Once implemented, the following policy is recommended:
 
-* Changes affecting `core/` require CODEOWNERS approval.
-* Changes affecting `components/` require CODEOWNERS approval.
-* Contributors continue submitting proposals through the `submissions/` directory.
-* Maintainers remain responsible for reviewing, integrating, and merging approved framework changes.
+- Changes affecting `core/` require CODEOWNERS approval.
+- Changes affecting `components/` require CODEOWNERS approval.
+- Contributors continue submitting proposals through the `submissions/` directory.
+- Maintainers remain responsible for reviewing, integrating, and merging approved framework changes.
 
 This proposal reflects the repository's existing curated contribution model.
 
@@ -80,11 +80,11 @@ After implementation, the following validation steps are recommended:
 
 ## Benefits
 
-* Protects critical framework source files.
-* Ensures consistent code quality through mandatory maintainer review.
-* Reduces the risk of accidental or unauthorized changes.
-* Supports a scalable and maintainable contribution workflow.
-* Reinforces the repository's curated contribution model.
+- Protects critical framework source files.
+- Ensures consistent code quality through mandatory maintainer review.
+- Reduces the risk of accidental or unauthorized changes.
+- Supports a scalable and maintainable contribution workflow.
+- Reinforces the repository's curated contribution model.
 
 ---
 
@@ -107,10 +107,10 @@ This submission is a documentation and workflow proposal only.
 
 In accordance with the repository's contribution guidelines, it **does not** modify:
 
-* `.github/CODEOWNERS`
-* `CONTRIBUTING.md`
-* Branch protection settings
-* Framework source files inside `core/` or `components/`
+- `.github/CODEOWNERS`
+- `CONTRIBUTING.md`
+- Branch protection settings
+- Framework source files inside `core/` or `components/`
 
 These changes are intended to be reviewed and integrated by the project maintainers if the proposal is accepted.
 

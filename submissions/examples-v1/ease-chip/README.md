@@ -1,14 +1,8 @@
 \# ease-chip
 
-
-
 Chip/tag component for filters, categories, and labels.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -34,11 +28,7 @@ Chip/tag component for filters, categories, and labels.
 
 | `ease-chip-large` | Large size |
 
-
-
 \## Features
-
-
 
 \- 🏷️ Multiple color variants
 
@@ -50,35 +40,25 @@ Chip/tag component for filters, categories, and labels.
 
 \- 📱 Responsive design
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic chip -->
 
 <div class="ease-chip">Tag name</div>
 
-
-
 <!-- Removable chip -->
 
 <div class="ease-chip ease-chip-removable">
-
-&#x20;   Removable
-
-&#x20;   <button class="ease-chip-remove" onclick="this.parentElement.remove()">×</button>
-
+  &#x20; Removable &#x20;
+  <button class="ease-chip-remove" onclick="this.parentElement.remove()">
+    ×
+  </button>
 </div>
-
-
 
 <!-- Color variants -->
 
 <div class="ease-chip ease-chip-primary">Primary</div>
 
 <div class="ease-chip ease-chip-success">Success</div>
-
+```

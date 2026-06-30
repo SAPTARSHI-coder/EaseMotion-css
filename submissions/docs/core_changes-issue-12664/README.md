@@ -17,8 +17,12 @@ Provides a reusable pricing table / tier card component with featured "popular" 
       <span class="ease-pricing-period">/month</span>
     </div>
     <ul class="ease-pricing-features">
-      <li class="ease-pricing-feature ease-pricing-feature--included">5 Projects</li>
-      <li class="ease-pricing-feature ease-pricing-feature--excluded">API Access</li>
+      <li class="ease-pricing-feature ease-pricing-feature--included">
+        5 Projects
+      </li>
+      <li class="ease-pricing-feature ease-pricing-feature--excluded">
+        API Access
+      </li>
     </ul>
     <button class="ease-pricing-cta">Get Started</button>
   </div>
@@ -38,7 +42,10 @@ Provides a reusable pricing table / tier card component with featured "popular" 
 
 ```html
 <div class="ease-pricing-billing-toggle">
-  <label><input type="radio" name="billing" value="monthly" checked /> Monthly</label>
+  <label
+    ><input type="radio" name="billing" value="monthly" checked />
+    Monthly</label
+  >
   <label><input type="radio" name="billing" value="annual" /> Annual</label>
 </div>
 ```
@@ -47,14 +54,14 @@ Use the companion script to swap `data-monthly` / `data-annual` values on the am
 
 ### Variants
 
-| Class | Description |
-|---|---|
-| `.ease-pricing-card` | Standard card with border, shadow, hover lift |
-| `.ease-pricing-card--popular` | Highlighted card with accent border, scale-up, badge |
-| `.ease-pricing-cta--outline` | Outline variant for the CTA button |
-| `.ease-pricing-feature--included` | Green checkmark indicator |
-| `.ease-pricing-feature--excluded` | Red cross indicator |
-| `.ease-pricing-grid` | Responsive auto-fill grid container |
+| Class                             | Description                                          |
+| --------------------------------- | ---------------------------------------------------- |
+| `.ease-pricing-card`              | Standard card with border, shadow, hover lift        |
+| `.ease-pricing-card--popular`     | Highlighted card with accent border, scale-up, badge |
+| `.ease-pricing-cta--outline`      | Outline variant for the CTA button                   |
+| `.ease-pricing-feature--included` | Green checkmark indicator                            |
+| `.ease-pricing-feature--excluded` | Red cross indicator                                  |
+| `.ease-pricing-grid`              | Responsive auto-fill grid container                  |
 
 ## Why is it useful?
 
@@ -62,11 +69,11 @@ Pricing sections are a universal website pattern. This component provides a cons
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property    | Default   | Description                                     |
+| ----------- | --------- | ----------------------------------------------- |
 | `--paccent` | `#6c63ff` | Accent color for popular card, toggles, and CTA |
-| `--pradius` | `1rem` | Card border radius |
-| `--pgap` | `1.5rem` | Gap between cards in grid |
+| `--pradius` | `1rem`    | Card border radius                              |
+| `--pgap`    | `1.5rem`  | Gap between cards in grid                       |
 
 ## Features
 

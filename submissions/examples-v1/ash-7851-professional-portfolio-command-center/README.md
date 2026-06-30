@@ -23,15 +23,9 @@ A modern professional portfolio dashboard showcasing profile information, projec
 
 ```html
 <div class="dashboard">
+  <aside class="sidebar">...</aside>
 
-    <aside class="sidebar">
-        ...
-    </aside>
-
-    <main class="content">
-        ...
-    </main>
-
+  <main class="content">...</main>
 </div>
 ```
 

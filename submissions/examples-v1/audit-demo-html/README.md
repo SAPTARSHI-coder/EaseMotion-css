@@ -12,10 +12,10 @@ Run from the repository root.
 
 ## What It Checks
 
-| Check | Description |
-|-------|-------------|
-| Exists | `demo.html` file is present in the folder |
-| Non-empty | `demo.html` has content (file size > 0) |
+| Check     | Description                               |
+| --------- | ----------------------------------------- |
+| Exists    | `demo.html` file is present in the folder |
+| Non-empty | `demo.html` has content (file size > 0)   |
 
 ## Output
 

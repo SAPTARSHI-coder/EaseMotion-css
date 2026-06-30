@@ -36,7 +36,9 @@ Each snippet is wrapped in a `.code-snippet` container. A hidden checkbox contro
       <span class="ln">3</span>
     </pre>
 
-    <pre class="code-snippet__code"><code><span class="tok-comment">// Greet a user</span>
+    <pre
+      class="code-snippet__code"
+    ><code><span class="tok-comment">// Greet a user</span>
 <span class="tok-keyword">function</span> <span class="tok-fn">greet</span>(<span class="tok-param">name</span>) {
   <span class="tok-keyword">return</span> <span class="tok-string">`Hello, ${name}!`</span>;
 }</code></pre>
@@ -46,12 +48,12 @@ Each snippet is wrapped in a `.code-snippet` container. A hidden checkbox contro
 
 ### Available modifiers & tokens
 
-| Class                          | Purpose                                                |
-| ------------------------------ | ------------------------------------------------------ |
-| `.code-snippet--numbered`      | Enables the optional line-numbers column               |
-| `.code-snippet__dot--js`       | Yellow language dot (JavaScript)                       |
-| `.code-snippet__dot--css`      | Blue language dot (CSS)                                |
-| `.code-snippet__dot--html`     | Orange language dot (HTML)                             |
+| Class                      | Purpose                                  |
+| -------------------------- | ---------------------------------------- |
+| `.code-snippet--numbered`  | Enables the optional line-numbers column |
+| `.code-snippet__dot--js`   | Yellow language dot (JavaScript)         |
+| `.code-snippet__dot--css`  | Blue language dot (CSS)                  |
+| `.code-snippet__dot--html` | Orange language dot (HTML)               |
 
 **Syntax tokens** (general): `.tok-comment`, `.tok-keyword`, `.tok-string`, `.tok-fn`, `.tok-param`, `.tok-builtin`
 **CSS-specific tokens**: `.tok-selector`, `.tok-property`, `.tok-value`, `.tok-pseudo`

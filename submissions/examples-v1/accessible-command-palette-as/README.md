@@ -13,12 +13,40 @@ A `Ctrl`/`Cmd`+`K` command palette (the "spotlight" pattern from editors and mod
   Open command palette <span class="ease-cmdk__kbd">Ctrl K</span>
 </button>
 
-<div class="ease-cmdk" id="ease-cmdk" role="dialog" aria-modal="true" aria-label="Command palette" hidden>
+<div
+  class="ease-cmdk"
+  id="ease-cmdk"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Command palette"
+  hidden
+>
   <div class="ease-cmdk__panel">
-    <input id="ease-cmdk-input" class="ease-cmdk__input" type="text" role="combobox"
-           aria-expanded="true" aria-controls="ease-cmdk-list" aria-autocomplete="list" autocomplete="off" />
-    <ul id="ease-cmdk-list" class="ease-cmdk__list" role="listbox" aria-label="Commands">
-      <li id="ease-cmd-0" role="option" class="ease-cmdk__option" data-label="New file" aria-selected="false">New file</li>
+    <input
+      id="ease-cmdk-input"
+      class="ease-cmdk__input"
+      type="text"
+      role="combobox"
+      aria-expanded="true"
+      aria-controls="ease-cmdk-list"
+      aria-autocomplete="list"
+      autocomplete="off"
+    />
+    <ul
+      id="ease-cmdk-list"
+      class="ease-cmdk__list"
+      role="listbox"
+      aria-label="Commands"
+    >
+      <li
+        id="ease-cmd-0"
+        role="option"
+        class="ease-cmdk__option"
+        data-label="New file"
+        aria-selected="false"
+      >
+        New file
+      </li>
       <!-- ...more options... -->
     </ul>
     <p class="ease-cmdk__empty" hidden>No commands found</p>
@@ -30,14 +58,14 @@ The small inline script wires up the behaviour; see `demo.html`.
 
 ## Keyboard model
 
-| Key | Action |
-|---|---|
-| `Ctrl`/`Cmd` + `K` | Open / close the palette |
-| Type | Filter commands |
-| `Down` / `Up` | Move the active command (wraps) |
-| `Home` / `End` | First / last command |
-| `Enter` | Run the active command |
-| `Esc` | Close |
+| Key                   | Action                                   |
+| --------------------- | ---------------------------------------- |
+| `Ctrl`/`Cmd` + `K`    | Open / close the palette                 |
+| Type                  | Filter commands                          |
+| `Down` / `Up`         | Move the active command (wraps)          |
+| `Home` / `End`        | First / last command                     |
+| `Enter`               | Run the active command                   |
+| `Esc`                 | Close                                    |
 | `Tab` / `Shift`+`Tab` | Cycles focus within the dialog (trapped) |
 
 ## Accessibility notes

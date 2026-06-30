@@ -9,7 +9,6 @@ A pure CSS animated credit card that flips to reveal its back face on hover. The
 ```html
 <div class="card-scene">
   <div class="card-inner">
-
     <!-- Front -->
     <div class="card-front">
       <div class="chip"></div>
@@ -34,7 +33,6 @@ A pure CSS animated credit card that flips to reveal its back face on hover. The
         <div class="cvv-box">927</div>
       </div>
     </div>
-
   </div>
 </div>
 ```

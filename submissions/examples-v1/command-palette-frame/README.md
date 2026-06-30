@@ -6,11 +6,11 @@ An interactive, fluid shell interface layout inspired by Spotlight, Raycast, and
 
 ## 🛠 Features & Classes
 
-| Class Token | Target Role | Visual Behavior |
-|---|---|---|
-| `.ease-palette-overlay` | Modal Backdrop | Manages blur animations using modern variable layer filters. |
-| `.ease-palette-overlay-centered` | Alignment | Locks the component viewport directly centered inside the device screen. |
-| `.ease-palette-overlay-top` | Alignment | Dropdown offset optimized for quick-access administrative navigation headers. |
-| `.ease-palette-frame` | Main Window | Handles scale and fade transitions simultaneously. |
-| `.ease-palette-input` | Inner Core Input | Drives subtle infinite loop box-shadow pulse loops when actively targeted. |
-| `.ease-palette-item` | Single Result Row | Provides entry staggering using simple `:nth-child` inline timing intervals. |
+| Class Token                      | Target Role       | Visual Behavior                                                               |
+| -------------------------------- | ----------------- | ----------------------------------------------------------------------------- |
+| `.ease-palette-overlay`          | Modal Backdrop    | Manages blur animations using modern variable layer filters.                  |
+| `.ease-palette-overlay-centered` | Alignment         | Locks the component viewport directly centered inside the device screen.      |
+| `.ease-palette-overlay-top`      | Alignment         | Dropdown offset optimized for quick-access administrative navigation headers. |
+| `.ease-palette-frame`            | Main Window       | Handles scale and fade transitions simultaneously.                            |
+| `.ease-palette-input`            | Inner Core Input  | Drives subtle infinite loop box-shadow pulse loops when actively targeted.    |
+| `.ease-palette-item`             | Single Result Row | Provides entry staggering using simple `:nth-child` inline timing intervals.  |

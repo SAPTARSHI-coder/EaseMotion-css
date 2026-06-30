@@ -14,17 +14,17 @@ A reusable "Copy" button pattern for EaseMotion CSS documentation pages. Shows a
 
 ## Elements
 
-| Class | Description |
-|-------|-------------|
-| `.ease-copy-row` | Row containing label + button |
-| `.ease-copy-label` | Monospace class name label |
-| `.ease-copy-btn` | Copy button (default state) |
-| `.ease-copy-btn--copied` | Success state (green) |
-| `.ease-copy-group` | Category container |
-| `.ease-copy-group-title` | Category heading |
-| `.ease-copy-search` | Search input |
-| `.ease-copy-toast` | Fixed bottom toast |
-| `.ease-copy-toast--visible` | Visible toast state |
+| Class                       | Description                   |
+| --------------------------- | ----------------------------- |
+| `.ease-copy-row`            | Row containing label + button |
+| `.ease-copy-label`          | Monospace class name label    |
+| `.ease-copy-btn`            | Copy button (default state)   |
+| `.ease-copy-btn--copied`    | Success state (green)         |
+| `.ease-copy-group`          | Category container            |
+| `.ease-copy-group-title`    | Category heading              |
+| `.ease-copy-search`         | Search input                  |
+| `.ease-copy-toast`          | Fixed bottom toast            |
+| `.ease-copy-toast--visible` | Visible toast state           |
 
 ## Usage
 
@@ -37,16 +37,16 @@ A reusable "Copy" button pattern for EaseMotion CSS documentation pages. Shows a
 </div>
 
 <script>
-function copyClass(btn, cls) {
-  navigator.clipboard.writeText(cls.slice(1)).then(() => {
-    btn.textContent = '✓ Copied';
-    btn.classList.add('ease-copy-btn--copied');
-    setTimeout(() => {
-      btn.textContent = '📋 Copy';
-      btn.classList.remove('ease-copy-btn--copied');
-    }, 1500);
-  });
-}
+  function copyClass(btn, cls) {
+    navigator.clipboard.writeText(cls.slice(1)).then(() => {
+      btn.textContent = "✓ Copied";
+      btn.classList.add("ease-copy-btn--copied");
+      setTimeout(() => {
+        btn.textContent = "📋 Copy";
+        btn.classList.remove("ease-copy-btn--copied");
+      }, 1500);
+    });
+  }
 </script>
 ```
 

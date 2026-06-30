@@ -25,10 +25,10 @@ Monthly/yearly billing toggle switch with savings badge. Includes custom checkbo
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-success` | #10b981 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-success`   | #10b981   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

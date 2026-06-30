@@ -69,9 +69,7 @@ Each interaction is enhanced with motion to provide clear visual feedback during
 ### Success State
 
 ```html
-<div class="ease-otp-row is-complete">
-  ...
-</div>
+<div class="ease-otp-row is-complete">...</div>
 ```
 
 ---
@@ -79,9 +77,7 @@ Each interaction is enhanced with motion to provide clear visual feedback during
 ### Error State
 
 ```html
-<div class="ease-otp-row is-invalid">
-  ...
-</div>
+<div class="ease-otp-row is-invalid">...</div>
 ```
 
 ---
@@ -97,11 +93,7 @@ inputs.forEach((input, i) => {
   });
 
   input.addEventListener("keydown", (e) => {
-    if (
-      e.key === "Backspace" &&
-      !input.value &&
-      inputs[i - 1]
-    ) {
+    if (e.key === "Backspace" && !input.value && inputs[i - 1]) {
       inputs[i - 1].focus();
     }
   });
@@ -112,16 +104,16 @@ inputs.forEach((input, i) => {
 
 ## CSS Classes
 
-| Class | Description |
-|-------|-------------|
-| `.ease-otp-row` | OTP container |
-| `.ease-otp-box` | Single digit cell |
-| `.ease-otp-fill-pop` | Pop animation on entry |
-| `.ease-otp-caret-blink` | Blinking caret animation |
-| `.ease-otp-error-shake` | Error state animation |
-| `.ease-otp-success-glow` | Success state animation |
-| `.is-invalid` | Invalid verification state |
-| `.is-complete` | Successful verification state |
+| Class                    | Description                   |
+| ------------------------ | ----------------------------- |
+| `.ease-otp-row`          | OTP container                 |
+| `.ease-otp-box`          | Single digit cell             |
+| `.ease-otp-fill-pop`     | Pop animation on entry        |
+| `.ease-otp-caret-blink`  | Blinking caret animation      |
+| `.ease-otp-error-shake`  | Error state animation         |
+| `.ease-otp-success-glow` | Success state animation       |
+| `.is-invalid`            | Invalid verification state    |
+| `.is-complete`           | Successful verification state |
 
 ---
 

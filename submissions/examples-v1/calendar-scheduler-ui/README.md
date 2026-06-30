@@ -17,13 +17,9 @@ A modern calendar scheduler inspired by Google Calendar, Notion Calendar, Outloo
 
 ```html
 <div class="day today">
+  <span class="date">11</span>
 
-    <span class="date">11</span>
-
-    <div class="event-badge">
-        Launch Event
-    </div>
-
+  <div class="event-badge">Launch Event</div>
 </div>
 ```
 

@@ -8,7 +8,7 @@ Demonstrates the \nchor-scope\ CSS property — which scopes anchor names to a 
 
 \\\css
 .card {
-  anchor-scope: trigger;
+anchor-scope: trigger;
 }
 .trigger { anchor-name: --trigger; }
 .tooltip { position-anchor: --trigger; top: anchor(bottom); }

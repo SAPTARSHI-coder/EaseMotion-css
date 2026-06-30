@@ -12,8 +12,13 @@ Animates the CSS `drop-shadow()` filter — creating glowing orbs, color-shiftin
 }
 
 @keyframes glow-pulse {
-  0%, 100% { filter: drop-shadow(0 0 8px blue); }
-  50%      { filter: drop-shadow(0 0 30px blue); }
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px blue);
+  }
+  50% {
+    filter: drop-shadow(0 0 30px blue);
+  }
 }
 ```
 

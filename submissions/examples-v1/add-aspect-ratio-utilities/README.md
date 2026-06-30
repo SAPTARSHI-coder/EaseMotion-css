@@ -4,14 +4,14 @@ Utility classes for maintaining consistent aspect ratios using the CSS `aspect-r
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
-| `.aspect-square` | `aspect-ratio: 1 / 1` |
-| `.aspect-4-3` | `aspect-ratio: 4 / 3` |
-| `.aspect-3-2` | `aspect-ratio: 3 / 2` |
-| `.aspect-16-9` | `aspect-ratio: 16 / 9` |
-| `.aspect-video` | `aspect-ratio: 16 / 9` |
-| `.aspect-auto` | `aspect-ratio: auto` |
+| Class            | CSS                    |
+| ---------------- | ---------------------- |
+| `.aspect-square` | `aspect-ratio: 1 / 1`  |
+| `.aspect-4-3`    | `aspect-ratio: 4 / 3`  |
+| `.aspect-3-2`    | `aspect-ratio: 3 / 2`  |
+| `.aspect-16-9`   | `aspect-ratio: 16 / 9` |
+| `.aspect-video`  | `aspect-ratio: 16 / 9` |
+| `.aspect-auto`   | `aspect-ratio: auto`   |
 
 ## Usage
 

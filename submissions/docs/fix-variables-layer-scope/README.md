@@ -4,7 +4,7 @@
 
 The entire `:root` block in `core/variables.css` (line 7–148) is wrapped inside `@layer easemotion-base`. CSS custom properties defined inside a cascade layer have lower specificity priority than un-layered `:root` rules from user stylesheets. This means any consumer declaring `--ease-color-primary` outside a layer will silently override the framework default even without `!important`.
 
-Meanwhile, `easemotion.css` comments say (line 23): *"variables.css is left unlayered so custom properties are globally defined"* — the intent and implementation are contradictory.
+Meanwhile, `easemotion.css` comments say (line 23): _"variables.css is left unlayered so custom properties are globally defined"_ — the intent and implementation are contradictory.
 
 ## Root Cause
 

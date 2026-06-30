@@ -26,34 +26,34 @@ On the homepage, the button section now includes a toggle button:
   </div>
 </section>
 <script>
-  const buttons = document.querySelectorAll('#buttons .ease-btn');
-  const toggleBtn = document.getElementById('toggle-btn');
+  const buttons = document.querySelectorAll("#buttons .ease-btn");
+  const toggleBtn = document.getElementById("toggle-btn");
   let visibleCount = 4; // initially show 4 buttons
 
   // Exclude the toggle button itself
-  const demoButtons = Array.from(buttons).filter(btn => btn !== toggleBtn);
+  const demoButtons = Array.from(buttons).filter((btn) => btn !== toggleBtn);
 
   // Show first 4 buttons initially
   demoButtons.forEach((btn, index) => {
-    btn.style.display = index < visibleCount ? 'inline-block' : 'none';
+    btn.style.display = index < visibleCount ? "inline-block" : "none";
   });
 
-  toggleBtn.addEventListener('click', () => {
+  toggleBtn.addEventListener("click", () => {
     if (visibleCount < demoButtons.length) {
       visibleCount += 8; // show 8 more
       demoButtons.forEach((btn, index) => {
-        btn.style.display = index < visibleCount ? 'inline-block' : 'none';
+        btn.style.display = index < visibleCount ? "inline-block" : "none";
       });
       if (visibleCount >= demoButtons.length) {
-        toggleBtn.textContent = 'View Less';
+        toggleBtn.textContent = "View Less";
       }
     } else {
       // Collapse back to first 4
       visibleCount = 4;
       demoButtons.forEach((btn, index) => {
-        btn.style.display = index < visibleCount ? 'inline-block' : 'none';
+        btn.style.display = index < visibleCount ? "inline-block" : "none";
       });
-      toggleBtn.textContent = 'Load More';
+      toggleBtn.textContent = "Load More";
     }
   });
 </script>
@@ -66,9 +66,9 @@ When all buttons are visible, the button changes to **View Less**, allowing user
 
 ## Why is it useful?
 
-- Prevents overwhelming users with too many buttons at once.  
-- Keeps the homepage clean and focused.  
-- Improves navigation and accessibility.  
+- Prevents overwhelming users with too many buttons at once.
+- Keeps the homepage clean and focused.
+- Improves navigation and accessibility.
 - Aligns with EaseMotion CSS’s **animation-first philosophy** while maintaining usability.
 
 ---
@@ -76,6 +76,8 @@ When all buttons are visible, the button changes to **View Less**, allowing user
 ## Demo
 
 Open `Progressive-Disclosure/demo.html` to test the **Load More / View Less** feature in the homepage button section.
+
 ```
 
 ---
+```

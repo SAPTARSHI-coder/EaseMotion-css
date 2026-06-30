@@ -3,7 +3,7 @@
 ## Usage
 
 ```html
-<link rel="stylesheet" href="submissions/examples/accent-color-tm/style.css">
+<link rel="stylesheet" href="submissions/examples/accent-color-tm/style.css" />
 <div class="accent-color-tm">
   <!-- Demo content -->
 </div>

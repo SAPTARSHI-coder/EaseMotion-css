@@ -30,32 +30,32 @@ shape an editor extension consumes to offer autocomplete suggestions.
 
 ### Representative classes included (24 entries, 5 categories)
 
-| Class                  | Category   | Source               |
-| ---------------------- | ---------- | -------------------- |
-| `ease-fade-in`         | animation  | `core/animations.css`|
-| `ease-slide-up`        | animation  | `core/animations.css`|
-| `ease-zoom-in`         | animation  | `core/animations.css`|
-| `ease-flip`            | animation  | `core/animations.css`|
-| `ease-pulse`           | animation  | `core/animations.css`|
-| `ease-center`          | layout     | `core/utilities.css` |
-| `ease-flex`            | layout     | `core/utilities.css` |
-| `ease-grid`            | layout     | `core/utilities.css` |
-| `ease-grid-cols-3`     | layout     | `core/utilities.css` |
-| `ease-items-center`    | layout     | `core/utilities.css` |
-| `ease-gap-4`           | layout     | `core/utilities.css` |
-| `ease-padding-8`       | utility    | `core/utilities.css` |
-| `ease-rounded-lg`      | utility    | `core/utilities.css` |
-| `ease-shadow-lg`       | utility    | `core/utilities.css` |
-| `ease-text-center`     | utility    | `core/utilities.css` |
-| `ease-hidden`          | utility    | `core/utilities.css` |
-| `ease-btn-primary`     | component  | `components/buttons.css`|
-| `ease-card`            | component  | `components/cards.css`|
-| `ease-card-glass`      | component  | `components/cards.css`|
-| `ease-navbar-glass`    | component  | `components/navbar.css`|
-| `ease-hover-grow`      | hover      | `core/animations.css`|
-| `ease-hover-lift`      | hover      | `core/animations.css`|
-| `ease-hover-glow`      | hover      | `core/animations.css`|
-| `ease-hover-shimmer`   | hover      | `core/animations.css`|
+| Class                | Category  | Source                   |
+| -------------------- | --------- | ------------------------ |
+| `ease-fade-in`       | animation | `core/animations.css`    |
+| `ease-slide-up`      | animation | `core/animations.css`    |
+| `ease-zoom-in`       | animation | `core/animations.css`    |
+| `ease-flip`          | animation | `core/animations.css`    |
+| `ease-pulse`         | animation | `core/animations.css`    |
+| `ease-center`        | layout    | `core/utilities.css`     |
+| `ease-flex`          | layout    | `core/utilities.css`     |
+| `ease-grid`          | layout    | `core/utilities.css`     |
+| `ease-grid-cols-3`   | layout    | `core/utilities.css`     |
+| `ease-items-center`  | layout    | `core/utilities.css`     |
+| `ease-gap-4`         | layout    | `core/utilities.css`     |
+| `ease-padding-8`     | utility   | `core/utilities.css`     |
+| `ease-rounded-lg`    | utility   | `core/utilities.css`     |
+| `ease-shadow-lg`     | utility   | `core/utilities.css`     |
+| `ease-text-center`   | utility   | `core/utilities.css`     |
+| `ease-hidden`        | utility   | `core/utilities.css`     |
+| `ease-btn-primary`   | component | `components/buttons.css` |
+| `ease-card`          | component | `components/cards.css`   |
+| `ease-card-glass`    | component | `components/cards.css`   |
+| `ease-navbar-glass`  | component | `components/navbar.css`  |
+| `ease-hover-grow`    | hover     | `core/animations.css`    |
+| `ease-hover-lift`    | hover     | `core/animations.css`    |
+| `ease-hover-glow`    | hover     | `core/animations.css`    |
+| `ease-hover-shimmer` | hover     | `core/animations.css`    |
 
 The dashboard's three stats cards show the live counts: **total classes**,
 **categories**, and **example suggestions** rendered in the mock IntelliSense box.
@@ -101,8 +101,14 @@ A minimal extractor for that mapping looks like:
 
 ```js
 const CATEGORIES = [
-  { re: /ease-(fade|slide|zoom|flip|pulse|bounce|rotate|ping|wave)/, category: "animation" },
-  { re: /ease-(center|flex|grid|stack|items|justify|place|gap|cols)/, category: "layout" },
+  {
+    re: /ease-(fade|slide|zoom|flip|pulse|bounce|rotate|ping|wave)/,
+    category: "animation",
+  },
+  {
+    re: /ease-(center|flex|grid|stack|items|justify|place|gap|cols)/,
+    category: "layout",
+  },
   { re: /ease-(hover|card-lift)/, category: "hover" },
   { re: /ease-(btn|card|navbar|button)-?/, category: "component" },
 ];
@@ -128,7 +134,7 @@ keeps growing through the curated submission pipeline. Today a developer has to
 - **Discoverability** — `hover`, `layout`, and `component` classes are surfaced
   instead of being buried in source files.
 - **Self-documenting** — each suggestion carries its description inline, so the
-  class name literally *is* the documentation (the EaseMotion philosophy).
+  class name literally _is_ the documentation (the EaseMotion philosophy).
 - **Stays in sync** — because the JSON is generated from the real CSS source,
   it can never drift from what the framework actually ships.
 

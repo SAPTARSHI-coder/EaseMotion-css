@@ -32,7 +32,7 @@ Includes:
 
 ```html
 <div class="dock">
-    <div class="icon">🏠</div>
+  <div class="icon">🏠</div>
 </div>
 ```
 

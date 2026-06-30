@@ -14,19 +14,19 @@ Fast skewed slide-in entrance animation using translateX + skewX keyframes. Zero
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-light-speed` | Slide + skew in from right |
-| `ease-light-speed-left` | Slide + skew in from left |
-| `ease-light-speed-out` | Slide + skew out to right |
-| `ease-light-speed-out-left` | Slide + skew out to left |
-| `ease-light-speed-fast` | 0.25s duration |
-| `ease-light-speed-slow` | 0.9s duration |
+| Class                       | Description                |
+| --------------------------- | -------------------------- |
+| `ease-light-speed`          | Slide + skew in from right |
+| `ease-light-speed-left`     | Slide + skew in from left  |
+| `ease-light-speed-out`      | Slide + skew out to right  |
+| `ease-light-speed-out-left` | Slide + skew out to left   |
+| `ease-light-speed-fast`     | 0.25s duration             |
+| `ease-light-speed-slow`     | 0.9s duration              |
 
 ## Delay Variants (staggered groups)
 
-| Class | Delay |
-|---|---|
+| Class            | Delay |
+| ---------------- | ----- |
 | `ease-delay-100` | 100ms |
 | `ease-delay-200` | 200ms |
 | `ease-delay-300` | 300ms |

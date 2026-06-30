@@ -42,7 +42,6 @@ A fully animated, accessible **Command Palette** component for EaseMotion CSS ‚Ä
 <!-- Palette Overlay -->
 <div class="ease-cp-overlay" id="cpOverlay" role="dialog" aria-modal="true">
   <div class="ease-command-palette">
-
     <!-- Search Bar -->
     <div class="ease-cp-search">
       <!-- search icon SVG -->
@@ -54,7 +53,12 @@ A fully animated, accessible **Command Palette** component for EaseMotion CSS ‚Ä
     <div class="ease-cp-results" role="listbox">
       <div class="ease-cp-group-label">Navigation</div>
 
-      <div class="ease-cp-item" role="option" data-label="Go to Dashboard" data-tags="home main">
+      <div
+        class="ease-cp-item"
+        role="option"
+        data-label="Go to Dashboard"
+        data-tags="home main"
+      >
         <div class="ease-cp-item-icon">üè†</div>
         <div class="ease-cp-item-text">
           <div class="ease-cp-item-title">Go to Dashboard</div>
@@ -75,13 +79,13 @@ A fully animated, accessible **Command Palette** component for EaseMotion CSS ‚Ä
     <!-- Footer -->
     <div class="ease-cp-footer">
       <span class="ease-cp-footer-hint">
-        <span class="ease-cp-kbd">‚Üë</span><span class="ease-cp-kbd">‚Üì</span> Navigate
+        <span class="ease-cp-kbd">‚Üë</span
+        ><span class="ease-cp-kbd">‚Üì</span> Navigate
       </span>
       <span class="ease-cp-footer-hint">
         <span class="ease-cp-kbd">‚Üµ</span> Select
       </span>
     </div>
-
   </div>
 </div>
 ```
@@ -89,8 +93,8 @@ A fully animated, accessible **Command Palette** component for EaseMotion CSS ‚Ä
 ### 3. Open / close via JS
 
 ```js
-document.getElementById('cpTrigger').addEventListener('click', () => {
-  document.getElementById('cpOverlay').classList.add('is-open');
+document.getElementById("cpTrigger").addEventListener("click", () => {
+  document.getElementById("cpOverlay").classList.add("is-open");
 });
 ```
 
@@ -102,12 +106,12 @@ Override any variable in your own stylesheet:
 
 ```css
 :root {
-  --cp-bg:          #1a1b26;   /* overlay background */
-  --cp-surface:     #1f2335;   /* palette card */
-  --cp-accent:      #7aa2f7;   /* highlight color */
-  --cp-text-primary:#c0caf5;   /* main text */
-  --cp-radius:      14px;      /* palette corner radius */
-  --cp-item-radius: 8px;       /* command item corner radius */
+  --cp-bg: #1a1b26; /* overlay background */
+  --cp-surface: #1f2335; /* palette card */
+  --cp-accent: #7aa2f7; /* highlight color */
+  --cp-text-primary: #c0caf5; /* main text */
+  --cp-radius: 14px; /* palette corner radius */
+  --cp-item-radius: 8px; /* command item corner radius */
 }
 ```
 
@@ -128,12 +132,12 @@ submissions/examples/animated-command-palette-gn/
 
 ## ‚ôø Accessibility
 
-| Feature | Implementation |
-|---|---|
-| Dialog role | `role="dialog" aria-modal="true"` on overlay |
-| List role | `role="listbox"` on results, `role="option"` on items |
-| Live region | `aria-live="polite"` on empty state |
-| Keyboard trap | Focus stays inside palette while open |
+| Feature        | Implementation                                                 |
+| -------------- | -------------------------------------------------------------- |
+| Dialog role    | `role="dialog" aria-modal="true"` on overlay                   |
+| List role      | `role="listbox"` on results, `role="option"` on items          |
+| Live region    | `aria-live="polite"` on empty state                            |
+| Keyboard trap  | Focus stays inside palette while open                          |
 | Reduced motion | All transitions disabled via `@media (prefers-reduced-motion)` |
 
 ---

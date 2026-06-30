@@ -1,6 +1,6 @@
 # CSS-Only Glitch Image Reveal (`ease-glitch-image-reveal`)
 
-A hyper-stylized, cyberpunk glitch hover effect built entirely with CSS `clip-path` animations. 
+A hyper-stylized, cyberpunk glitch hover effect built entirely with CSS `clip-path` animations.
 
 ## 🚀 Features
 
@@ -11,13 +11,17 @@ A hyper-stylized, cyberpunk glitch hover effect built entirely with CSS `clip-pa
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 Simply apply the inline custom property `--img-url` to the container to pass the image into the layers!
 
 ```html
-<div class="ease-glitch-image-reveal" style="--img-url: url('path-to-image.jpg');">
+<div
+  class="ease-glitch-image-reveal"
+  style="--img-url: url('path-to-image.jpg');"
+>
   <div class="glitch-layer base-layer"></div>
   <div class="glitch-layer glitch-layer-1"></div>
   <div class="glitch-layer glitch-layer-2"></div>
 </div>
+```

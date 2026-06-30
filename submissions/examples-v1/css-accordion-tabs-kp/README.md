@@ -12,7 +12,13 @@ This adds a dependency-free accordion and tab component demo using semantic HTML
   <p>Accordion content</p>
 </details>
 
-<input class="tab-input" type="radio" name="featureTabs" id="tab-motion" checked>
+<input
+  class="tab-input"
+  type="radio"
+  name="featureTabs"
+  id="tab-motion"
+  checked
+/>
 <label class="tab-label" for="tab-motion">Motion</label>
 ```
 

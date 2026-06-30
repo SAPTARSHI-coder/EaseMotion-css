@@ -11,13 +11,13 @@ Alert/info card variants with tinted backgrounds for semantic messaging. Part of
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-info` | Info/primary tinted background |
-| `ease-card-success-bg` | Success green tint |
-| `ease-card-danger-bg` | Danger red tint |
-| `ease-card-info-primary` | Stronger primary tint |
-| `ease-card-info-neutral` | Neutral gray tint |
+| Class                    | Description                    |
+| ------------------------ | ------------------------------ |
+| `ease-card-info`         | Info/primary tinted background |
+| `ease-card-success-bg`   | Success green tint             |
+| `ease-card-danger-bg`    | Danger red tint                |
+| `ease-card-info-primary` | Stronger primary tint          |
+| `ease-card-info-neutral` | Neutral gray tint              |
 
 ## Notes
 

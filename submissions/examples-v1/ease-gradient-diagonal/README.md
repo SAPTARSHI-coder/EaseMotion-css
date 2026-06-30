@@ -9,8 +9,10 @@ An intermediate animation feature utility designed to shift a multi-color gradie
 - **Fluid Diagonal Translation:** Loops the tracking vector coordinates seamlessly from `0% 0%` directly through to `100% 100%` over a continuous `6s` linear loop thread.
 
 ## Workspace Tree Map
+
 - `demo.html`: Standalone playground layout holding the live component.
 - `style.css`: Clean modular layout stylesheet rules.
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

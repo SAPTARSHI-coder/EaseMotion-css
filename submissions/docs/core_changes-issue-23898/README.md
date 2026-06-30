@@ -5,6 +5,7 @@
 Adds scrollbar visibility and styling utility classes. Hide scrollbars while retaining scroll functionality, use thin variants, or fully custom-styled scrollbars.
 
 **Classes:**
+
 - `.ease-hide-scrollbar` — Hides scrollbar, keeps scrolling
 - `.ease-hide-scrollbar-x` — Hide horizontal scrollbar only
 - `.ease-hide-scrollbar-y` — Hide vertical scrollbar only
@@ -35,10 +36,11 @@ Adds scrollbar visibility and styling utility classes. Hide scrollbars while ret
 ```
 
 Custom scrollbar colors via CSS variables:
+
 ```css
---ease-scrollbar-track: #1e293b;         /* track background */
---ease-scrollbar-thumb: #475569;         /* thumb color */
---ease-scrollbar-thumb-hover: #64748b;   /* thumb hover */
+--ease-scrollbar-track: #1e293b; /* track background */
+--ease-scrollbar-thumb: #475569; /* thumb color */
+--ease-scrollbar-thumb-hover: #64748b; /* thumb hover */
 ```
 
 ## 3. Why is this useful?

@@ -3,7 +3,8 @@
 **What does this do?**  
 Slides in a background color or gradient on hover from various directions (left, right, top, bottom, diagonal, or center-out shutter) with smooth text color adaptation.
 
-**How is it used?**  
+**How is it used?**
+
 ```html
 <!-- Slide in from left -->
 <button class="slide-btn slide-left">Slide Right</button>

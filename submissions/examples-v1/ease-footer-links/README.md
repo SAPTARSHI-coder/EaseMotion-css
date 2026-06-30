@@ -27,10 +27,10 @@ You can easily adapt the footer's theme using CSS variables defined in `:root`:
 
 ```css
 :root {
-  --ease-footer-bg: #121214;               /* Background color */
-  --ease-footer-text: #a1a1aa;             /* Paragraph/Link color */
-  --ease-footer-heading: #f4f4f5;          /* Headings and Titles */
-  --ease-footer-accent: #6366f1;           /* Accent and Hover colors */
+  --ease-footer-bg: #121214; /* Background color */
+  --ease-footer-text: #a1a1aa; /* Paragraph/Link color */
+  --ease-footer-heading: #f4f4f5; /* Headings and Titles */
+  --ease-footer-accent: #6366f1; /* Accent and Hover colors */
   --ease-footer-accent-glow: rgba(99, 102, 241, 0.4); /* Glow shadow color */
 }
 ```

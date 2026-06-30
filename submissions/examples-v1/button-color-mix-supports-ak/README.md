@@ -12,17 +12,17 @@ The `color-mix()` CSS function is not supported in older browsers (e.g. Safari <
 
 ### Before vs After
 
-| Approach | Old Browser | Modern Browser |
-|----------|------------|---------------|
-| Unwrapped `color-mix()` | Broken — button color disappears | Works correctly |
+| Approach                  | Old Browser                      | Modern Browser  |
+| ------------------------- | -------------------------------- | --------------- |
+| Unwrapped `color-mix()`   | Broken — button color disappears | Works correctly |
 | With `@supports` fallback | Graceful fallback to solid color | Works correctly |
 
 ---
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                            |
+| ----------- | -------------------------------------------------- |
 | `demo.html` | Shows broken button vs fixed button with @supports |
-| `style.css` | Demo button styles with and without fallback |
-| `README.md` | This file |
+| `style.css` | Demo button styles with and without fallback       |
+| `README.md` | This file                                          |

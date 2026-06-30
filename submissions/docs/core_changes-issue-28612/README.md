@@ -20,19 +20,19 @@ Creates a macOS-style dock navigation bar with CSS flexbox. Icons scale up on ho
 
 ### Variants
 
-| Class | Description |
-|---|---|
-| `.ease-dock` | Container (centered, flex row) |
-| `.ease-dock-item` | Individual dock icon |
-| `.ease-dock-icon` | Icon wrapper |
-| `.ease-dock-label` | Label below icon |
-| `.ease-dock-magnify` | Enables hover scale-up |
-| `.ease-dock-divider` | Vertical separator |
+| Class                | Description                    |
+| -------------------- | ------------------------------ |
+| `.ease-dock`         | Container (centered, flex row) |
+| `.ease-dock-item`    | Individual dock icon           |
+| `.ease-dock-icon`    | Icon wrapper                   |
+| `.ease-dock-label`   | Label below icon               |
+| `.ease-dock-magnify` | Enables hover scale-up         |
+| `.ease-dock-divider` | Vertical separator             |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-dock-scale` | `1.5` | Hover scale factor |
-| `--ease-dock-gap` | `0.25rem` | Gap between items |
-| `--ease-dock-size` | `48px` | Icon size |
+| Property            | Default   | Description        |
+| ------------------- | --------- | ------------------ |
+| `--ease-dock-scale` | `1.5`     | Hover scale factor |
+| `--ease-dock-gap`   | `0.25rem` | Gap between items  |
+| `--ease-dock-size`  | `48px`    | Icon size          |

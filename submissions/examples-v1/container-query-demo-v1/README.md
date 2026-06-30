@@ -27,11 +27,16 @@ Each `.cq-card` establishes its own containment context via `container-type: inl
 }
 
 @container cq-card (min-width: 280px) {
-  .cq-card-inner { flex-direction: row; }
+  .cq-card-inner {
+    flex-direction: row;
+  }
 }
 
 @container cq-card (min-width: 420px) {
-  .cq-card-media { width: 110px; height: 110px; }
+  .cq-card-media {
+    width: 110px;
+    height: 110px;
+  }
 }
 ```
 

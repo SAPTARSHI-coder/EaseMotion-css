@@ -16,9 +16,9 @@ Great for attention-grabbing UI elements, notification badges, and playful inter
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-animation-iterations` | `1` | Number of iterations |
+| Property                      | Default | Description          |
+| ----------------------------- | ------- | -------------------- |
+| `--ease-animation-iterations` | `1`     | Number of iterations |
 
 ## Accessibility
 

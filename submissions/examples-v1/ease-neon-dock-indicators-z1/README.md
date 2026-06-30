@@ -6,12 +6,12 @@ A premium dock navigation featuring glowing activity indicators, glassmorphism s
 
 ## Features
 
-* Animated dock indicators
-* Glassmorphism navigation
-* Floating hover effect
-* Responsive layout
-* Lightweight CSS
-* Pure HTML & CSS
+- Animated dock indicators
+- Glassmorphism navigation
+- Floating hover effect
+- Responsive layout
+- Lightweight CSS
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

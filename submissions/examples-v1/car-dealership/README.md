@@ -7,6 +7,7 @@ This page showcases a bold, sleek dark-mode aesthetic with vibrant red highlight
 ---
 
 ## 🎨 Showcased Sections
+
 1. **Sleek Hero Section**: Bold sales typography side-by-side with a floating premium sports car specification widget.
 2. **Inventory Grid**: Vehicle cards displaying engine specs (HP, 0-60, transmission) featuring hover zoom and card-glow outlines.
 3. **Interactive Financing Section**: A finance calculator UI that automatically estimates monthly payments based on vehicle price, down payment, APR, and term inputs.
@@ -21,6 +22,7 @@ This page showcases a bold, sleek dark-mode aesthetic with vibrant red highlight
 ## 🚀 Showcased EaseMotion CSS Classes
 
 ### 1. Entrance & Interactive Hover Animations
+
 - `.ease-fade-in`: Entrance transitions on tiny badges.
 - `.ease-slide-in-left` & `.ease-slide-in-right`: Slide-in transitions for hero details and visual mockup.
 - `.ease-float`: Looping floating translation applied to the supercar showcase widget.
@@ -31,12 +33,14 @@ This page showcases a bold, sleek dark-mode aesthetic with vibrant red highlight
 - `.ease-hover-grow`: Interactive zoom effect applied to vehicle card images.
 
 ### 2. Layout & Spacings
+
 - Cascade layer safety: `@layer easemotion-base`, `easemotion-components`, `easemotion-utilities`.
 - Flex utilities: `.ease-flex`, `.ease-flex-col`, `.ease-items-center`, `.ease-justify-between`, `.ease-center`.
 - Grid layout: `.ease-grid`.
 - Custom margins/padding tokens: `var(--ease-space-1)` through `var(--ease-space-16)`.
 
 ### 3. Components
+
 - `.ease-card`: Base layout card wrap.
 - `.ease-card-hover`: Composed dynamic card hover transitions.
 - `.ease-card-glow`: Sleek red-colored outline border glows.
@@ -49,6 +53,7 @@ This page showcases a bold, sleek dark-mode aesthetic with vibrant red highlight
 ---
 
 ## 📂 File Structure
+
 ```bash
 car-dealership/
 ├── demo.html    # Core page layout, calculators & valuation scripts
@@ -57,4 +62,5 @@ car-dealership/
 ```
 
 ## 🛠️ Usage
+
 No build steps required. Simply open `demo.html` directly in any web browser to view the premium interactive animations, transitions, and full responsive design.

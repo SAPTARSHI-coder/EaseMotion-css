@@ -1,4 +1,4 @@
-# ease-line-clamp-*
+# ease-line-clamp-\*
 
 ## What does this do?
 
@@ -17,9 +17,7 @@ Provides line clamp truncation utility classes (`.ease-line-clamp-1` through `.e
 **Remove clamping:**
 
 ```html
-<p class="ease-line-clamp-none">
-  This text is always fully visible.
-</p>
+<p class="ease-line-clamp-none">This text is always fully visible.</p>
 ```
 
 **Responsive clamp (2 lines on mobile, 4 on desktop):**
@@ -32,24 +30,24 @@ Provides line clamp truncation utility classes (`.ease-line-clamp-1` through `.e
 
 ### Available Classes
 
-| Class | Lines |
-|---|---|
-| `.ease-line-clamp-1` | 1 line |
-| `.ease-line-clamp-2` | 2 lines |
-| `.ease-line-clamp-3` | 3 lines |
-| `.ease-line-clamp-4` | 4 lines |
-| `.ease-line-clamp-5` | 5 lines |
-| `.ease-line-clamp-6` | 6 lines |
+| Class                   | Lines     |
+| ----------------------- | --------- |
+| `.ease-line-clamp-1`    | 1 line    |
+| `.ease-line-clamp-2`    | 2 lines   |
+| `.ease-line-clamp-3`    | 3 lines   |
+| `.ease-line-clamp-4`    | 4 lines   |
+| `.ease-line-clamp-5`    | 5 lines   |
+| `.ease-line-clamp-6`    | 6 lines   |
 | `.ease-line-clamp-none` | Unclamped |
 
 ### Responsive Prefixes
 
-| Prefix | Min Width |
-|---|---|
-| `ease-sm-` | 640px |
-| `ease-md-` | 768px |
-| `ease-lg-` | 1024px |
-| `ease-xl-` | 1280px |
+| Prefix     | Min Width |
+| ---------- | --------- |
+| `ease-sm-` | 640px     |
+| `ease-md-` | 768px     |
+| `ease-lg-` | 1024px    |
+| `ease-xl-` | 1280px    |
 
 Example: `.ease-lg-line-clamp-2` clamps to 2 lines on viewports 1024px and wider.
 

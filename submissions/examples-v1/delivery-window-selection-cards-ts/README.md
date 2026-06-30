@@ -9,7 +9,7 @@ Shows selected, unavailable, fastest, and eco-friendly delivery window states.
 ```html
 <label class="delivery-card is-selected">
   Tomorrow 9-12
-  <input type="radio" checked>
+  <input type="radio" checked />
 </label>
 ```
 

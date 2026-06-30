@@ -24,9 +24,7 @@ A modern API monitoring dashboard that visualizes request states, response metri
 ## Usage
 
 ```html
-<div class="request-card success">
-  ...
-</div>
+<div class="request-card success">...</div>
 ```
 
 ## Main Classes

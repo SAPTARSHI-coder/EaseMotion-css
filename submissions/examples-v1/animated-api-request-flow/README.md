@@ -1,11 +1,13 @@
 # Animated API Request Flow Visualization
 
 ## What does it do?
+
 A visual component that animates how data travels between
 Client → API Server → Database → External Service using
 animated packets, pulsing nodes, and status indicators.
 
 ## How is it used?
+
 ```html
 <div class="api-flow">
   <div class="node node-client">
@@ -13,9 +15,10 @@ animated packets, pulsing nodes, and status indicators.
     Client
     <span class="node-status status-active"></span>
   </div>
-  <div class="connection active"
-       style="--packet-color: #3b82f6; --packet-speed: 1s;">
-  </div>
+  <div
+    class="connection active"
+    style="--packet-color: #3b82f6; --packet-speed: 1s;"
+  ></div>
   <div class="node node-api">
     <span class="node-icon">⚡</span>
     API Server
@@ -25,10 +28,12 @@ animated packets, pulsing nodes, and status indicators.
 ```
 
 ## CSS Variables
+
 - `--packet-color` — color of the animated data packet
 - `--packet-speed` — speed of packet animation
 
 ## Classes
+
 - `.api-flow` — wrapper
 - `.node` — base node style
 - `.node-client/api/database/external` — node variants
@@ -38,6 +43,7 @@ animated packets, pulsing nodes, and status indicators.
 - `.status-active/idle/loading` — status states
 
 ## Features
+
 - Animated data packets on connection lines
 - Pulsing nodes with glow effects
 - Status indicators (active/idle/loading)
@@ -46,4 +52,5 @@ animated packets, pulsing nodes, and status indicators.
 - Pure HTML + CSS + vanilla JS
 
 ## Preview
+
 Open `demo.html` directly in browser.

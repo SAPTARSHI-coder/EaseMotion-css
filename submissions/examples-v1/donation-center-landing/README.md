@@ -3,6 +3,7 @@
 A responsive landing page for Hope &amp; Help built with EaseMotion CSS framework. This example showcases how to build a complete, production-ready landing page using only EaseMotion utility classes and minimal custom CSS.
 
 ## Live Demo
+
 Open \demo.html\ in any modern web browser to view the landing page. No build tools or server required.
 
 ## Features
@@ -40,9 +41,9 @@ This page demonstrates the following EaseMotion CSS framework classes:
 
 submissions/examples/donation-center-landing/
 
-├── demo.html    # Landing page HTML with EaseMotion classes
-├── style.css    # Custom styles with CSS variables for theming
-└── README.md    # This file
+├── demo.html # Landing page HTML with EaseMotion classes
+├── style.css # Custom styles with CSS variables for theming
+└── README.md # This file
 
 ## Customization
 

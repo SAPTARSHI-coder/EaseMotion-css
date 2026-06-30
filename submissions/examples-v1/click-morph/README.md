@@ -4,12 +4,12 @@ CSS-only morphing button animation classes for EaseMotion-css.
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
+| Class                      | Effect                        |
+| -------------------------- | ----------------------------- |
 | `ease-click-morph-loading` | Morphs into a loading spinner |
-| `ease-click-morph-check` | Morphs into a checkmark icon |
-| `ease-click-morph-pulse` | Pulsates with color change |
-| `ease-click-morph-shrink` | Shrinks and expands on click |
+| `ease-click-morph-check`   | Morphs into a checkmark icon  |
+| `ease-click-morph-pulse`   | Pulsates with color change    |
+| `ease-click-morph-shrink`  | Shrinks and expands on click  |
 
 ## Usage
 
@@ -20,6 +20,7 @@ CSS-only morphing button animation classes for EaseMotion-css.
 ```
 
 ## Features
+
 - Pure CSS, no JavaScript
 - Uses `:active` pseudo-class
 - Spring-like cubic-bezier transitions

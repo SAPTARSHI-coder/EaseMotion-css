@@ -2,12 +2,12 @@
 
 Control whether an element can be resized by the user.
 
-| Class | CSS |
-| ------- | ------- |
-| `resize` | `resize: both;` |
-| `resize-x` | `resize: horizontal;` |
-| `resize-y` | `resize: vertical;` |
-| `resize-none` | `resize: none;` |
+| Class         | CSS                   |
+| ------------- | --------------------- |
+| `resize`      | `resize: both;`       |
+| `resize-x`    | `resize: horizontal;` |
+| `resize-y`    | `resize: vertical;`   |
+| `resize-none` | `resize: none;`       |
 
 ### Example
 
@@ -16,3 +16,4 @@ Control whether an element can be resized by the user.
 <textarea class="resize-x"></textarea>
 <textarea class="resize-y"></textarea>
 <textarea class="resize-none"></textarea>
+```

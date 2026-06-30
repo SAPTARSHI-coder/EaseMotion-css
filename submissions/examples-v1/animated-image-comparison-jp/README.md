@@ -18,14 +18,14 @@ A CSS-only image comparison slider with smooth reveal animations, sliding divide
 
 ## Classes
 
-| Class | Description |
-|--------|-------------|
-| `.comparison-container` | Main comparison wrapper |
-| `.before-image` | Original image |
-| `.after-wrapper` | Animated overlay container |
-| `.after-image` | Transformed image |
-| `.slider-line` | Vertical divider line |
-| `.slider-circle` | Drag indicator icon |
+| Class                   | Description                |
+| ----------------------- | -------------------------- |
+| `.comparison-container` | Main comparison wrapper    |
+| `.before-image`         | Original image             |
+| `.after-wrapper`        | Animated overlay container |
+| `.after-image`          | Transformed image          |
+| `.slider-line`          | Vertical divider line      |
+| `.slider-circle`        | Drag indicator icon        |
 
 ---
 

@@ -15,16 +15,15 @@ For static HTML, you can drop the CSS classes directly onto an ordered list `<ol
 ```html
 <nav aria-label="Breadcrumb" class="ease-breadcrumb-wrapper">
   <ol class="ease-breadcrumb">
-    
     <li class="ease-crumb-item">
       <a href="#" class="ease-crumb-link">Home</a>
     </li>
-    
+
     <!-- Dynamically added item with animation class -->
     <li class="ease-crumb-item ease-crumb-enter">
       <span class="ease-separator" aria-hidden="true">›</span>
       <a href="#" class="ease-crumb-link" aria-current="page">Current Page</a>
     </li>
-
   </ol>
 </nav>
+```

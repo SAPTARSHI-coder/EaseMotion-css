@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring privacy compliance, consent mana
 
 ```html
 <div class="framework-card compliant">
-    <h3>GDPR</h3>
+  <h3>GDPR</h3>
 </div>
 ```
 

@@ -6,7 +6,7 @@
 
 Animates elements into view with a satisfying bounce effect.
 Five direction variants, two speed variants, and full compatibility
-with existing ease-delay-* classes. Pure CSS, zero JavaScript.
+with existing ease-delay-\* classes. Pure CSS, zero JavaScript.
 
 ## Usage
 
@@ -18,15 +18,15 @@ with existing ease-delay-* classes. Pure CSS, zero JavaScript.
 
 ## Class Reference
 
-| Class | Description |
-|---|---|
-| ease-bounce-in | Base — bounces in from center (scale) |
-| ease-bounce-in-up | Bounces in from bottom |
-| ease-bounce-in-down | Bounces in from top |
-| ease-bounce-in-left | Bounces in from left |
-| ease-bounce-in-right | Bounces in from right |
-| ease-bounce-in-fast | Faster entrance speed |
-| ease-bounce-in-slow | Slower entrance speed |
+| Class                | Description                           |
+| -------------------- | ------------------------------------- |
+| ease-bounce-in       | Base — bounces in from center (scale) |
+| ease-bounce-in-up    | Bounces in from bottom                |
+| ease-bounce-in-down  | Bounces in from top                   |
+| ease-bounce-in-left  | Bounces in from left                  |
+| ease-bounce-in-right | Bounces in from right                 |
+| ease-bounce-in-fast  | Faster entrance speed                 |
+| ease-bounce-in-slow  | Slower entrance speed                 |
 
 ## Staggered sequence
 
@@ -37,17 +37,17 @@ with existing ease-delay-* classes. Pure CSS, zero JavaScript.
 
 ## CSS Variables used
 
-| Token | Role |
-|---|---|
-| --ease-speed-slow | Default animation duration |
-| --ease-speed-medium | Fast variant duration |
+| Token               | Role                       |
+| ------------------- | -------------------------- |
+| --ease-speed-slow   | Default animation duration |
+| --ease-speed-medium | Fast variant duration      |
 
 ## Browser support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| CSS transform | yes | yes | yes | yes |
-| CSS custom properties | yes | yes | yes | yes |
-| animation-fill-mode | yes | yes | yes | yes |
+| Feature               | Chrome | Edge | Firefox | Safari |
+| --------------------- | ------ | ---- | ------- | ------ |
+| CSS transform         | yes    | yes  | yes     | yes    |
+| CSS custom properties | yes    | yes  | yes     | yes    |
+| animation-fill-mode   | yes    | yes  | yes     | yes    |
 
 Submitted under MIT License · EaseMotion CSS · Closes #3877 · 2026

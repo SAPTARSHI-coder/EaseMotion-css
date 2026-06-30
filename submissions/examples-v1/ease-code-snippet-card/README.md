@@ -37,13 +37,13 @@ ease-code-snippet-card/
 
 ## Classes
 
-| Class | Purpose |
-|---|---|
-| `.ease-snippet-card` | Outer card container |
+| Class                  | Purpose                                      |
+| ---------------------- | -------------------------------------------- |
+| `.ease-snippet-card`   | Outer card container                         |
 | `.ease-snippet-header` | Top bar with dots, language, and copy button |
-| `.ease-snippet-dots` | Container for window control dots |
-| `.ease-snippet-dot` | Individual colored dot |
-| `.ease-snippet-lang` | Language badge text |
-| `.ease-snippet-copy` | Copy-to-clipboard button |
-| `.ease-snippet-pre` | `<pre>` wrapper for the code block |
-| `.ease-toast` | Toast notification for copy confirmation |
+| `.ease-snippet-dots`   | Container for window control dots            |
+| `.ease-snippet-dot`    | Individual colored dot                       |
+| `.ease-snippet-lang`   | Language badge text                          |
+| `.ease-snippet-copy`   | Copy-to-clipboard button                     |
+| `.ease-snippet-pre`    | `<pre>` wrapper for the code block           |
+| `.ease-toast`          | Toast notification for copy confirmation     |

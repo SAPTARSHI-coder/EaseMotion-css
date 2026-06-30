@@ -13,7 +13,9 @@ A showcase of how combining `saturate()` with `blur()` inside a CSS `backdrop-fi
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To create vibrant frosted glass:
+
 ```html
 <div class="ease-glass-vibrant">
   <h3>My Glass Card</h3>
 </div>
+```

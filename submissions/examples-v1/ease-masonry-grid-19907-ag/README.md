@@ -7,6 +7,7 @@ This submission implements the `ease-masonry-grid` component — a CSS-only maso
 ## How It Works
 
 ### Masonry Layout via CSS Columns
+
 Unlike CSS Grid (which requires explicit row definitions), `columns` allows items to naturally fill vertical space and flow across columns — creating a true masonry effect:
 
 ```css
@@ -21,16 +22,23 @@ Unlike CSS Grid (which requires explicit row definitions), `columns` allows item
 ```
 
 ### Staggered Entrance
+
 Each `.masonry-item` animates from `opacity: 0; translateY(24px)` to fully visible, with incremental `animation-delay` on each `nth-child`:
 
 ```css
-.masonry-item:nth-child(1) { animation-delay: 0.05s; }
-.masonry-item:nth-child(2) { animation-delay: 0.15s; }
+.masonry-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.masonry-item:nth-child(2) {
+  animation-delay: 0.15s;
+}
 /* ...and so on */
 ```
 
 ### Configurable Columns
+
 The column count is driven by a CSS custom property:
+
 ```css
 /* Default: 3 columns */
 .ease-masonry-grid { --ease-columns-count: 3; }

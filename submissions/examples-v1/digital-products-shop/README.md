@@ -31,6 +31,7 @@ Here are some of the key EaseMotion classes highlighted in this project:
 ## 🌐 Browser Compatibility
 
 Tested and fully functional on modern browsers:
+
 - Google Chrome
 - Mozilla Firefox
 - Safari
@@ -38,4 +39,4 @@ Tested and fully functional on modern browsers:
 
 ## 🖼 Screenshots
 
-*(Add screenshots of the desktop and mobile views here)*
+_(Add screenshots of the desktop and mobile views here)_

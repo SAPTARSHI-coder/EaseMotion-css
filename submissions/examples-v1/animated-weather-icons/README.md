@@ -12,6 +12,7 @@ A set of pure CSS weather icons featuring the Sun, a Cloud, and Rain.
 ## Classes Introduced
 
 This component uses standard HTML/CSS. If integrated into EaseMotion CSS, these could be transformed into utility classes like:
+
 - `.ease-weather-sun`
 - `.ease-weather-cloud`
 - `.ease-weather-rain`

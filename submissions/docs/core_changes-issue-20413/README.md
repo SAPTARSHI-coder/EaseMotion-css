@@ -1,16 +1,17 @@
 # Core Changes Proposal: Issue #20413
 
 ## Feature Overview
+
 Issue #20413 requests dedicated **Skeleton Loading Utility Classes** for EaseMotion CSS.
 This submission proposes adding 5 skeleton loading utilities to `core/animations.css`:
 
-| Class | Effect |
-|-------|--------|
-| `.ease-skeleton` | Base placeholder with shimmer animation |
-| `.ease-skeleton-text` | Renders as multiple text-line blocks |
+| Class                   | Effect                                  |
+| ----------------------- | --------------------------------------- |
+| `.ease-skeleton`        | Base placeholder with shimmer animation |
+| `.ease-skeleton-text`   | Renders as multiple text-line blocks    |
 | `.ease-skeleton-avatar` | Circular placeholder for profile images |
-| `.ease-skeleton-card` | Rectangular card/image placeholder |
-| `.ease-skeleton-pulse` | Pulse-opacity variant (no shimmer) |
+| `.ease-skeleton-card`   | Rectangular card/image placeholder      |
+| `.ease-skeleton-pulse`  | Pulse-opacity variant (no shimmer)      |
 
 ## Proposed Implementation
 
@@ -19,13 +20,22 @@ This submission proposes adding 5 skeleton loading utilities to `core/animations
 ```css
 /* ── Skeleton Keyframes ── */
 @keyframes ease-skeleton-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes ease-skeleton-pulse-kf {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 /* ── Base Skeleton ── */
@@ -72,6 +82,7 @@ This submission proposes adding 5 skeleton loading utilities to `core/animations
 ```
 
 ### Usage
+
 ```html
 <div class="ease-skeleton ease-skeleton-avatar"></div>
 <div>
@@ -83,6 +94,7 @@ This submission proposes adding 5 skeleton loading utilities to `core/animations
 ```
 
 ### Accessibility
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-skeleton,
@@ -94,6 +106,7 @@ This submission proposes adding 5 skeleton loading utilities to `core/animations
 ```
 
 ## Why this is submitted here
+
 Per CONTRIBUTING.md policy and Core Framework Protection, this feature is proposed
 as a formal submission in `submissions/` rather than modifying `core/animations.css` directly.
 

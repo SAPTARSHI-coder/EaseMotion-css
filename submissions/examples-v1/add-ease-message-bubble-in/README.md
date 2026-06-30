@@ -5,7 +5,7 @@
 
 2. **How is it used?**  
    Apply the `.message-bubble-in` class to your chat bubble container, accompanied by the `.bubble-in-left` modifier for incoming messages (sprouts from the bottom-left corner) or `.bubble-in-right` for outgoing messages (sprouts from the bottom-right corner):
-   
+
    ```html
    <!-- Incoming chat bubble -->
    <div class="chat-bubble message-bubble-in bubble-in-left">
@@ -13,7 +13,10 @@
    </div>
 
    <!-- Outgoing chat bubble (staggered delay example) -->
-   <div class="chat-bubble message-bubble-in bubble-in-right" style="--bubble-in-delay: 0.3s;">
+   <div
+     class="chat-bubble message-bubble-in bubble-in-right"
+     style="--bubble-in-delay: 0.3s;"
+   >
      <p>Hi! I'm an outgoing message appearing with a slight delay.</p>
    </div>
    ```

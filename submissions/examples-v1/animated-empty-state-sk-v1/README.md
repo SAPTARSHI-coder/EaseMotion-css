@@ -41,15 +41,15 @@ A collection of animated empty state card components with four distinct variants
 
 ## Custom Properties
 
-| Variable | Default | Description |
-|---|---|---|
-| `--empty-state-bg` | `#0f172a` | Page background |
-| `--empty-state-card-bg` | `#1e293b` | Card background |
-| `--empty-state-card-border` | `#334155` | Card border color |
-| `--empty-state-text` | `#f1f5f9` | Primary text color |
-| `--empty-state-text-secondary` | `#94a3b8` | Secondary text color |
-| `--empty-state-radius` | `16px` | Card border radius |
-| `--empty-state-transition` | `0.3s ease` | Default transition |
+| Variable                       | Default     | Description          |
+| ------------------------------ | ----------- | -------------------- |
+| `--empty-state-bg`             | `#0f172a`   | Page background      |
+| `--empty-state-card-bg`        | `#1e293b`   | Card background      |
+| `--empty-state-card-border`    | `#334155`   | Card border color    |
+| `--empty-state-text`           | `#f1f5f9`   | Primary text color   |
+| `--empty-state-text-secondary` | `#94a3b8`   | Secondary text color |
+| `--empty-state-radius`         | `16px`      | Card border radius   |
+| `--empty-state-transition`     | `0.3s ease` | Default transition   |
 
 ## Browser Support
 

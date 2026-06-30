@@ -4,6 +4,7 @@
    A circular avatar component with image support, initials fallback, status dots (online/offline/busy), size variants, and group stacking with hover lift.
 
 2. **How is it used?**
+
    ```html
    <!-- Image avatar with status -->
    <div class="ease-avatar ease-avatar-online">

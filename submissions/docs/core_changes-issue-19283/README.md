@@ -16,16 +16,16 @@ Pure CSS animated pricing card component with 3 tiers, hover lift effect, monthl
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `demo.html` | 3 pricing cards with billing toggle |
+| File        | Description                                                      |
+| ----------- | ---------------------------------------------------------------- |
+| `demo.html` | 3 pricing cards with billing toggle                              |
 | `style.css` | All styles, animations, toggle logic, responsive, reduced-motion |
-| `README.md` | This documentation |
+| `README.md` | This documentation                                               |
 
 ## Usage
 
 ```html
-<input type="checkbox" id="billing-toggle">
+<input type="checkbox" id="billing-toggle" />
 <div class="pricing-grid">
   <article class="card">
     <h2>Basic</h2>
@@ -49,8 +49,8 @@ A hidden `<input type="checkbox">` controls billing period. When checked, CSS si
 
 ## Keyframes
 
-| Keyframe | Purpose |
-|----------|---------|
+| Keyframe   | Purpose                                   |
+| ---------- | ----------------------------------------- |
 | `cardRise` | Cards fade in and rise up from 30px below |
 
 Fixes #19283

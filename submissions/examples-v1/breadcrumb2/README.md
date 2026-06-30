@@ -23,16 +23,12 @@ Open `demo.html` in any modern browser.
 ### Basic Breadcrumb
 
 ```html
-&lt;nav class="breadcrumb" aria-label="Breadcrumb"&gt;
-  &lt;ol class="breadcrumb__list"&gt;
-    &lt;li class="breadcrumb__item"&gt;&lt;a href="#"&gt;Home&lt;/a&gt;&lt;/li&gt;
-    &lt;li class="breadcrumb__separator"&gt;
-      &lt;svg&gt;...&lt;/svg&gt;
-    &lt;/li&gt;
-    &lt;li class="breadcrumb__item"&gt;&lt;a href="#"&gt;Products&lt;/a&gt;&lt;/li&gt;
-    &lt;li class="breadcrumb__separator"&gt;
-      &lt;svg&gt;...&lt;/svg&gt;
-    &lt;/li&gt;
-    &lt;li class="breadcrumb__item breadcrumb__item--active" aria-current="page"&gt;Laptops&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/nav&gt;
+&lt;nav class="breadcrumb" aria-label="Breadcrumb"&gt; &lt;ol
+class="breadcrumb__list"&gt; &lt;li class="breadcrumb__item"&gt;&lt;a
+href="#"&gt;Home&lt;/a&gt;&lt;/li&gt; &lt;li class="breadcrumb__separator"&gt;
+&lt;svg&gt;...&lt;/svg&gt; &lt;/li&gt; &lt;li class="breadcrumb__item"&gt;&lt;a
+href="#"&gt;Products&lt;/a&gt;&lt;/li&gt; &lt;li
+class="breadcrumb__separator"&gt; &lt;svg&gt;...&lt;/svg&gt; &lt;/li&gt; &lt;li
+class="breadcrumb__item breadcrumb__item--active"
+aria-current="page"&gt;Laptops&lt;/li&gt; &lt;/ol&gt; &lt;/nav&gt;
+```

@@ -7,8 +7,7 @@ An interactive 3D helix of text — each letter of a word is positioned along a 
 Each letter gets its own transform combining a vertical offset, a rotation angle around the Y axis, and a fixed `translateZ` radius:
 
 ```js
-el.style.transform =
-  `translateY(${yOffset}px) rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+el.style.transform = `translateY(${yOffset}px) rotateY(${angle}deg) translateZ(${RADIUS}px)`;
 ```
 
 The parent `.spiral-ribbon` then rotates as a whole via a CSS `animation`, carrying every letter around the Y axis together:

@@ -32,21 +32,23 @@ Add the `battery` base class plus a level modifier class:
 ```
 
 ### Level modifiers
-| Class | Level | Behavior |
-|---|---|---|
-| `battery-full` | 100% | Green, static |
-| `battery-high` | 75% | Light green, static |
-| `battery-medium` | 50% | Yellow, static |
-| `battery-low` | 25% | Orange, slow pulse |
-| `battery-critical` | 10% | Red, fast pulse |
-| `battery-charging` | — | Purple sweep + ⚡ icon |
+
+| Class              | Level | Behavior               |
+| ------------------ | ----- | ---------------------- |
+| `battery-full`     | 100%  | Green, static          |
+| `battery-high`     | 75%   | Light green, static    |
+| `battery-medium`   | 50%   | Yellow, static         |
+| `battery-low`      | 25%   | Orange, slow pulse     |
+| `battery-critical` | 10%   | Red, fast pulse        |
+| `battery-charging` | —     | Purple sweep + ⚡ icon |
 
 ### Size modifiers
-| Class | Size |
-|---|---|
-| `battery-sm` | Small |
-| *(default)* | Medium |
-| `battery-lg` | Large |
+
+| Class        | Size   |
+| ------------ | ------ |
+| `battery-sm` | Small  |
+| _(default)_  | Medium |
+| `battery-lg` | Large  |
 
 ## 3. Why is it useful?
 

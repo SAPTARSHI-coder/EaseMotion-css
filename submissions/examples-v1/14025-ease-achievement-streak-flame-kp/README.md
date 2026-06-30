@@ -1,9 +1,11 @@
 # Achievement Streak Flame
 
 ## What does this do?
+
 It shows an achievement streak counter with a flame that flickers and glows to reward continued progress.
 
 ## How is it used?
+
 ```html
 <section class="streak-card">
   <div class="flame-wrap" aria-hidden="true">
@@ -16,4 +18,5 @@ It shows an achievement streak counter with a flame that flickers and glows to r
 ```
 
 ## Why is it useful?
+
 It gives dashboards, habit trackers, learning apps, and gamified interfaces a small motion cue that makes achievement streaks feel active without requiring JavaScript.

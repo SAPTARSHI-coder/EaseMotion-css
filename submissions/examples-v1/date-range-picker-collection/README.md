@@ -14,4 +14,5 @@ An interactive layout element engineered for seamless check-in configurations, t
 1. Place `style.css` in your repository structure.
 2. Link the style resource in your document setup markup:
    ```html
-   <link rel="stylesheet" href="style.css">
+   <link rel="stylesheet" href="style.css" />
+   ```

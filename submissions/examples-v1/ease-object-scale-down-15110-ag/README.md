@@ -7,6 +7,7 @@ This submission implements a media fit comparison showcase demonstrating the vis
 ## Technical Details
 
 The `object-fit` parameters determine how replaceable elements (like `<img>`, `<video>`, `<svg>`) fill their structural boxes:
+
 - **Cover**: Resizes to fill parent box, cropping as needed.
 - **Contain**: Fits entire asset inside parent box, maintaining aspect ratio.
 - **Scale-Down**: Dynamically acts as `none` (smaller natural size) or `contain` (larger natural size), preventing pixelation of small assets.

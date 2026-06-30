@@ -29,9 +29,7 @@ Includes:
 ## Usage
 
 ```html
-<svg class="infinity">
-...
-</svg>
+<svg class="infinity">...</svg>
 ```
 
 ---

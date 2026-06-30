@@ -8,57 +8,57 @@ Responsive display utility classes for EaseMotion CSS — hide, show, or change 
 
 ### Static Utilities
 
-| Class               | Effect                    |
-|---------------------|---------------------------|
-| `.ease-block`       | `display: block`          |
-| `.ease-inline`      | `display: inline`         |
-| `.ease-inline-block`| `display: inline-block`   |
-| `.ease-flex`        | `display: flex`           |
-| `.ease-inline-flex` | `display: inline-flex`    |
-| `.ease-grid`        | `display: grid`           |
-| `.ease-inline-grid` | `display: inline-grid`    |
-| `.ease-hidden`      | `display: none`           |
+| Class                | Effect                  |
+| -------------------- | ----------------------- |
+| `.ease-block`        | `display: block`        |
+| `.ease-inline`       | `display: inline`       |
+| `.ease-inline-block` | `display: inline-block` |
+| `.ease-flex`         | `display: flex`         |
+| `.ease-inline-flex`  | `display: inline-flex`  |
+| `.ease-grid`         | `display: grid`         |
+| `.ease-inline-grid`  | `display: inline-grid`  |
+| `.ease-hidden`       | `display: none`         |
 
 ### Responsive — Hide Above Breakpoint
 
 Apply `display: none` when the viewport is **at or above** the given width.
 
-| Class              | Range           |
-|--------------------|-----------------|
-| `.ease-hidden-sm`  | ≥ 640px         |
-| `.ease-hidden-md`  | ≥ 768px         |
-| `.ease-hidden-lg`  | ≥ 1024px        |
-| `.ease-hidden-xl`  | ≥ 1280px        |
+| Class             | Range    |
+| ----------------- | -------- |
+| `.ease-hidden-sm` | ≥ 640px  |
+| `.ease-hidden-md` | ≥ 768px  |
+| `.ease-hidden-lg` | ≥ 1024px |
+| `.ease-hidden-xl` | ≥ 1280px |
 
 ### Responsive — Show Above Breakpoint
 
 Apply a `display` value only at or above the given width. Use these to override a smaller default.
 
-| Class               | Display          | Range    |
-|---------------------|------------------|----------|
-| `.ease-block-sm`    | `block`          | ≥ 640px  |
-| `.ease-flex-sm`     | `flex`           | ≥ 640px  |
-| `.ease-inline-sm`   | `inline`         | ≥ 640px  |
-| `.ease-block-md`    | `block`          | ≥ 768px  |
-| `.ease-flex-md`     | `flex`           | ≥ 768px  |
-| `.ease-inline-md`   | `inline`         | ≥ 768px  |
-| `.ease-block-lg`    | `block`          | ≥ 1024px |
-| `.ease-flex-lg`     | `flex`           | ≥ 1024px |
-| `.ease-inline-lg`   | `inline`         | ≥ 1024px |
-| `.ease-block-xl`    | `block`          | ≥ 1280px |
-| `.ease-flex-xl`     | `flex`           | ≥ 1280px |
-| `.ease-inline-xl`   | `inline`         | ≥ 1280px |
+| Class             | Display  | Range    |
+| ----------------- | -------- | -------- |
+| `.ease-block-sm`  | `block`  | ≥ 640px  |
+| `.ease-flex-sm`   | `flex`   | ≥ 640px  |
+| `.ease-inline-sm` | `inline` | ≥ 640px  |
+| `.ease-block-md`  | `block`  | ≥ 768px  |
+| `.ease-flex-md`   | `flex`   | ≥ 768px  |
+| `.ease-inline-md` | `inline` | ≥ 768px  |
+| `.ease-block-lg`  | `block`  | ≥ 1024px |
+| `.ease-flex-lg`   | `flex`   | ≥ 1024px |
+| `.ease-inline-lg` | `inline` | ≥ 1024px |
+| `.ease-block-xl`  | `block`  | ≥ 1280px |
+| `.ease-flex-xl`   | `flex`   | ≥ 1280px |
+| `.ease-inline-xl` | `inline` | ≥ 1280px |
 
 ### Responsive — Hide Below Breakpoint
 
 Apply `display: none` below the given width (visible at and above it).
 
-| Class                   | Range           |
-|-------------------------|-----------------|
-| `.ease-hidden-down-sm`  | < 640px         |
-| `.ease-hidden-down-md`  | < 768px         |
-| `.ease-hidden-down-lg`  | < 1024px        |
-| `.ease-hidden-down-xl`  | < 1280px        |
+| Class                  | Range    |
+| ---------------------- | -------- |
+| `.ease-hidden-down-sm` | < 640px  |
+| `.ease-hidden-down-md` | < 768px  |
+| `.ease-hidden-down-lg` | < 1024px |
+| `.ease-hidden-down-xl` | < 1280px |
 
 ---
 

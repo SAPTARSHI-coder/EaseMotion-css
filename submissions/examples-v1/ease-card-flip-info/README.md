@@ -10,7 +10,8 @@ A hardware-accelerated 3D flipping card that reveals additional information on i
 
 ## 🛠️ Usage
 
-Your card requires a specific 4-layer nesting structure. 
+Your card requires a specific 4-layer nesting structure.
+
 1. The `.ease-card-flip` container establishes the 3D perspective.
 2. The hidden checkbox manages the click state.
 3. The `.ease-flip-inner` wrapper acts as the rotating axle.
@@ -20,10 +21,9 @@ Your card requires a specific 4-layer nesting structure.
 <div class="ease-card-flip">
   <!-- Controller -->
   <input type="checkbox" id="flip-trigger" class="ease-flip-input" />
-  
+
   <!-- Rotating Axle -->
   <label class="ease-flip-inner" for="flip-trigger">
-    
     <!-- Face 1 -->
     <div class="ease-card-front">
       <h2>Front Content</h2>
@@ -33,6 +33,6 @@ Your card requires a specific 4-layer nesting structure.
     <div class="ease-card-back">
       <h2>Back Content</h2>
     </div>
-    
   </label>
 </div>
+```

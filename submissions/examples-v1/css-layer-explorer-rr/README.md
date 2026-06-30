@@ -8,7 +8,7 @@ Provides a visual representation of CSS Cascade Layers (`@layer`) and demonstrat
 
 ```html
 <div class="layer components">
-    <h2>@layer components</h2>
+  <h2>@layer components</h2>
 </div>
 ```
 

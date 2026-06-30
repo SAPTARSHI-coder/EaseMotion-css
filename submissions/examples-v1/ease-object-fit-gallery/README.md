@@ -16,9 +16,10 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
 ```html
 <div class="gallery-item">
   <!-- Apply the object-fit class to your images -->
-  <img src="your-image.jpg" class="ease-object-fit" alt="Gallery Image">
-  
+  <img src="your-image.jpg" class="ease-object-fit" alt="Gallery Image" />
+
   <div class="gallery-overlay">
     <span>Image Title</span>
   </div>
 </div>
+```

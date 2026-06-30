@@ -8,12 +8,12 @@ Issue [#20378](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20378) r
 
 ```yaml
 paths:
-  - '**/*.css'
-  - '**/*.html'
-  - 'scripts/**'
-  - '.github/workflows/ci.yml'
-  - 'stylelint.config.json'
-  - 'htmlhint.config.json'
+  - "**/*.css"
+  - "**/*.html"
+  - "scripts/**"
+  - ".github/workflows/ci.yml"
+  - "stylelint.config.json"
+  - "htmlhint.config.json"
 ```
 
 **Missing paths that can affect runtime behavior or validation:**
@@ -33,33 +33,33 @@ Add the missing paths to both `push` and `pull_request` triggers in `.github/wor
 ```yaml
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - '**/*.css'
-      - '**/*.html'
-      - '**/*.js'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vitest.config.js'
-      - '.github/workflows/ci.yml'
-      - 'stylelint.config.json'
-      - 'htmlhint.config.json'
+      - "**/*.css"
+      - "**/*.html"
+      - "**/*.js"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vitest.config.js"
+      - ".github/workflows/ci.yml"
+      - "stylelint.config.json"
+      - "htmlhint.config.json"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - '**/*.css'
-      - '**/*.html'
-      - '**/*.js'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'vitest.config.js'
-      - '.github/workflows/ci.yml'
-      - 'stylelint.config.json'
-      - 'htmlhint.config.json'
+      - "**/*.css"
+      - "**/*.html"
+      - "**/*.js"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "vitest.config.js"
+      - ".github/workflows/ci.yml"
+      - "stylelint.config.json"
+      - "htmlhint.config.json"
 ```
 
 ## Why this is submitted here
@@ -68,8 +68,8 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
+| File                       | Change                                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
 | `.github/workflows/ci.yml` | Add `**/*.js`, `tests/**`, `package.json`, `package-lock.json`, `vitest.config.js` to path filters |
 
 Fixes #20378

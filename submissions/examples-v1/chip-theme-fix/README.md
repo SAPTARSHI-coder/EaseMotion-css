@@ -26,7 +26,10 @@ Add the `[data-theme="dark"]` attribute selector rules to match the media query 
   border-color: var(--ease-color-primary, #6366f1);
 }
 
-[data-theme="dark"] .ease-chip-group input[type="checkbox"]:checked + .ease-chip {
+[data-theme="dark"]
+  .ease-chip-group
+  input[type="checkbox"]:checked
+  + .ease-chip {
   background: var(--ease-color-primary, #6366f1);
   border-color: var(--ease-color-primary, #6366f1);
   color: #ffffff;
@@ -38,8 +41,8 @@ Add the `[data-theme="dark"]` attribute selector rules to match the media query 
 
 ## 📁 Submission Contents
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                  |
+| ----------- | -------------------------------------------------------- |
 | `demo.html` | Live demonstration of the chip group with a theme toggle |
-| `style.css` | Raw CSS showing the proposed fix and demo page layout |
-| `README.md` | This documentation file |
+| `style.css` | Raw CSS showing the proposed fix and demo page layout    |
+| `README.md` | This documentation file                                  |

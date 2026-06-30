@@ -1,6 +1,7 @@
 # Animated Dark Mode Toggle with Sun and Moon Icons
 
 ## What does this do?
+
 A dark mode toggle button where the sun and moon icons animate between
 each other — one slides up while the other slides in from below. Toggling
 sets `data-theme="dark"` on the root element.
@@ -15,15 +16,16 @@ sets `data-theme="dark"` on the root element.
 
 <script>
   const root = document.documentElement;
-  const btn = document.querySelector('.ease-theme-toggle');
+  const btn = document.querySelector(".ease-theme-toggle");
   btn.onclick = () => {
-    const isDark = root.getAttribute('data-theme') === 'dark';
-    root.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    const isDark = root.getAttribute("data-theme") === "dark";
+    root.setAttribute("data-theme", isDark ? "light" : "dark");
   };
 </script>
 ```
 
 ## Why is it useful?
+
 Dark mode toggles are a near-universal UI pattern. This component provides
 a polished, animated sun/moon transition driven by CSS transforms and
 opacity, with the actual theme state managed via the `data-theme` attribute

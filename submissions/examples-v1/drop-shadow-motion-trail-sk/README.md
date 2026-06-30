@@ -4,11 +4,11 @@ Stacks multiple `filter: drop-shadow()` layers with directional offsets that ani
 
 ## Variants
 
-| Variant | Motion | Trail technique |
-|---------|--------|-----------------|
-| Horizontal bounce | `translateX` left↔right | Shadow offsets flip direction at each end |
-| Vertical oscillation | `translateY` up↔down | Vertical offsets point opposite to travel direction |
-| Orbital trail | `offset-path: circle()` | Second `@keyframes` rotates shadow offset in sync with orbit |
+| Variant              | Motion                  | Trail technique                                              |
+| -------------------- | ----------------------- | ------------------------------------------------------------ |
+| Horizontal bounce    | `translateX` left↔right | Shadow offsets flip direction at each end                    |
+| Vertical oscillation | `translateY` up↔down    | Vertical offsets point opposite to travel direction          |
+| Orbital trail        | `offset-path: circle()` | Second `@keyframes` rotates shadow offset in sync with orbit |
 
 ## Core technique
 
@@ -18,17 +18,15 @@ Three shadow layers create depth: near (high opacity, small blur), mid, and oute
 @keyframes ease-trail-bounce {
   0% {
     transform: translateX(-120px);
-    filter:
-      drop-shadow(12px 0 6px rgba(249, 115, 22, 0.70))   /* near trail */
-      drop-shadow(22px 0 10px rgba(249, 115, 22, 0.40))  /* mid trail */
-      drop-shadow(34px 0 16px rgba(249, 115, 22, 0.20)); /* outer glow */
+    filter: drop-shadow(12px 0 6px rgba(249, 115, 22, 0.7)) /* near trail */
+      drop-shadow(22px 0 10px rgba(249, 115, 22, 0.4)) /* mid trail */
+      drop-shadow(34px 0 16px rgba(249, 115, 22, 0.2)); /* outer glow */
   }
   50% {
     transform: translateX(120px);
-    filter:
-      drop-shadow(-12px 0 6px rgba(236, 72, 153, 0.70))
-      drop-shadow(-22px 0 10px rgba(236, 72, 153, 0.40))
-      drop-shadow(-34px 0 16px rgba(236, 72, 153, 0.20));
+    filter: drop-shadow(-12px 0 6px rgba(236, 72, 153, 0.7))
+      drop-shadow(-22px 0 10px rgba(236, 72, 153, 0.4))
+      drop-shadow(-34px 0 16px rgba(236, 72, 153, 0.2));
   }
 }
 ```
@@ -46,8 +44,8 @@ The orbital variant runs two synchronized `@keyframes` on the same element:
 ```css
 .orbit-trail-dot {
   animation:
-    ease-orbit-distance 3s linear infinite,  /* moves the dot along the path */
-    ease-trail-orbit 3s linear infinite;      /* rotates the shadow offset */
+    ease-orbit-distance 3s linear infinite,
+    /* moves the dot along the path */ ease-trail-orbit 3s linear infinite; /* rotates the shadow offset */
 }
 ```
 

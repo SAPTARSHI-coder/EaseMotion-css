@@ -1,9 +1,11 @@
 # Ease Infinite Canvas
 
 ## Feature overview
+
 A lightweight scroll-reveal utility that assigns each element a deterministic entrance direction and animates it with GPU-friendly translate3d and opacity motion for a calm, infinite-canvas feel.
 
 ## Installation
+
 Copy the demo files into your project and include the stylesheet:
 
 ```html
@@ -13,6 +15,7 @@ Copy the demo files into your project and include the stylesheet:
 Wrap a collection of cards or blocks in a parent container using the `.ease-infinite-canvas` utility and place each item inside a child with `.ease-item`.
 
 ## Usage examples
+
 ```html
 <section class="ease-infinite-canvas">
   <article class="ease-item">First card</article>
@@ -22,6 +25,7 @@ Wrap a collection of cards or blocks in a parent container using the `.ease-infi
 ```
 
 ## Configuration options
+
 Customize the motion with CSS custom properties:
 
 - `--ease-canvas-distance`: how far items travel from their starting point
@@ -41,13 +45,17 @@ Available direction overrides include:
 - `.ease-direction-bottom-right`
 
 ## Browser compatibility
+
 The utility uses modern CSS transforms and can be paired with Intersection Observer for progressive enhancement in evergreen browsers.
 
 ## Accessibility considerations
+
 The feature respects the `prefers-reduced-motion` media query and disables entrance animations for users who request reduced motion.
 
 ## Performance notes
+
 The implementation is dependency-free and uses transform and opacity only, which keeps motion costs low.
 
 ## Future enhancement ideas
+
 Possible extensions include parallax depth, section-based direction themes, and richer replay controls for storytelling layouts.

@@ -6,10 +6,11 @@ using pure CSS transforms. No image files needed.
 
 **How is it used?**
 <button class="ease-hamburger" aria-label="Toggle menu">
-  <span></span><span></span><span></span>
+<span></span><span></span><span></span>
 </button>
 
 <!-- Toggle open state with JS -->
+
 button.classList.toggle('ease-hamburger-open');
 
 Variants: purple, green, dark, sm, lg

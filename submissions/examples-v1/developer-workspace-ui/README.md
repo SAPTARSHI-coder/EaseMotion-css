@@ -18,9 +18,9 @@ A complete IDE-inspired workspace combining an activity bar, file explorer, code
 
 ```html
 <div class="workspace">
-    <aside class="activity-bar"></aside>
-    <aside class="explorer"></aside>
-    <main class="editor"></main>
+  <aside class="activity-bar"></aside>
+  <aside class="explorer"></aside>
+  <main class="editor"></main>
 </div>
 ```
 

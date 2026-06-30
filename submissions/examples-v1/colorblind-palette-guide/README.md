@@ -16,10 +16,10 @@ Color alone should never communicate important information.
 
 Instead, combine colors with:
 
-* Icons
-* Labels
-* Status text
-* Patterns or borders
+- Icons
+- Labels
+- Status text
+- Patterns or borders
 
 ### Good Example
 
@@ -35,26 +35,20 @@ Using only green, yellow, or red without supporting text.
 
 ## Common Color-Blindness Types
 
-* Protanopia
-* Deuteranopia
-* Tritanopia
+- Protanopia
+- Deuteranopia
+- Tritanopia
 
 Users may not distinguish red and green effectively.
 
 ## Recommended Pattern
 
 ```html
-<div class="success">
-  ✔ Success: File uploaded
-</div>
+<div class="success">✔ Success: File uploaded</div>
 
-<div class="warning">
-  ⚠ Warning: Check your settings
-</div>
+<div class="warning">⚠ Warning: Check your settings</div>
 
-<div class="danger">
-  ✖ Error: Upload failed
-</div>
+<div class="danger">✖ Error: Upload failed</div>
 ```
 
 ## Color-Blind Simulator
@@ -67,8 +61,8 @@ to test interfaces under different color-vision conditions.
 
 ## Recommendations
 
-* Always include text labels
-* Use icons alongside color
-* Maintain sufficient contrast
-* Test with accessibility tools
-* Avoid relying solely on red vs green distinctions
+- Always include text labels
+- Use icons alongside color
+- Maintain sufficient contrast
+- Test with accessibility tools
+- Avoid relying solely on red vs green distinctions

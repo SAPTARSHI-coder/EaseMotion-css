@@ -49,7 +49,10 @@ animated-curved-timeline/
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+  rel="stylesheet"
+/>
 ```
 
 ### 4. Drop in the HTML structure
@@ -61,19 +64,23 @@ Each milestone follows this pattern:
 <svg class="svg-defs" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#6366f1" stop-opacity="0.8"/>
-      <stop offset="50%"  stop-color="#8b5cf6" stop-opacity="1"/>
-      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.8"/>
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#8b5cf6" stop-opacity="1" />
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.8" />
     </linearGradient>
   </defs>
 </svg>
 
 <!-- Left-side card (use milestone--right for the opposite side) -->
 <article class="milestone milestone--left" style="--delay: 0.1s">
-
   <!-- Connector: SVG line + animated dot -->
   <div class="milestone__connector" aria-hidden="true">
-    <svg class="connector-curve" viewBox="0 0 120 60" fill="none" preserveAspectRatio="none">
+    <svg
+      class="connector-curve"
+      viewBox="0 0 120 60"
+      fill="none"
+      preserveAspectRatio="none"
+    >
       <path class="curve-path" d="M 0 30 C 40 30, 80 30, 120 30" />
     </svg>
     <div class="milestone__dot">
@@ -88,8 +95,15 @@ Each milestone follows this pattern:
 
     <!-- Icon -->
     <div class="milestone__icon-wrap">
-      <svg class="milestone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-           stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <svg
+        class="milestone__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
         <!-- your icon path here -->
       </svg>
     </div>
@@ -99,16 +113,13 @@ Each milestone follows this pattern:
       <h2 class="milestone__title">Research</h2>
     </div>
 
-    <p class="milestone__desc">
-      Your milestone description here.
-    </p>
+    <p class="milestone__desc">Your milestone description here.</p>
 
     <div class="milestone__footer">
       <span class="milestone__tag">Tag One</span>
       <span class="milestone__tag">Tag Two</span>
     </div>
   </div>
-
 </article>
 ```
 
@@ -117,9 +128,9 @@ Each milestone follows this pattern:
 Control entrance order with the `--delay` CSS variable on each `.milestone`:
 
 ```html
-<article class="milestone milestone--left"  style="--delay: 0.1s">…</article>
+<article class="milestone milestone--left" style="--delay: 0.1s">…</article>
 <article class="milestone milestone--right" style="--delay: 0.25s">…</article>
-<article class="milestone milestone--left"  style="--delay: 0.4s">…</article>
+<article class="milestone milestone--left" style="--delay: 0.4s">…</article>
 ```
 
 ### 6. Customise the design tokens
@@ -128,11 +139,11 @@ All palette, spacing, and timing decisions live in `:root` inside `style.css`. O
 
 ```css
 :root {
-  --color-bg:       #06060d;       /* page background */
-  --dot-color:      #7c3aed;       /* dot fill */
-  --grad-primary:   linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --section-gap:    3rem;          /* vertical space between milestones */
-  --timeline-width: 1000px;        /* max-width of the timeline */
+  --color-bg: #06060d; /* page background */
+  --dot-color: #7c3aed; /* dot fill */
+  --grad-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --section-gap: 3rem; /* vertical space between milestones */
+  --timeline-width: 1000px; /* max-width of the timeline */
 }
 ```
 
@@ -144,7 +155,7 @@ EaseMotion CSS is built on three principles. The Animated Curved Timeline honour
 
 ### Animation-first
 
-Every visual element in the component serves a motion purpose. The spine grows before the cards appear — establishing spatial orientation. Cards stagger in with `em-fadeUp` so the eye is guided rather than overwhelmed. The SVG paths self-draw to reinforce the idea of progress and sequence. Animation isn't applied on top of a static design; it *is* the design.
+Every visual element in the component serves a motion purpose. The spine grows before the cards appear — establishing spatial orientation. Cards stagger in with `em-fadeUp` so the eye is guided rather than overwhelmed. The SVG paths self-draw to reinforce the idea of progress and sequence. Animation isn't applied on top of a static design; it _is_ the design.
 
 ### Human-readable
 
@@ -170,7 +181,7 @@ animated-curved-timeline/
 ## Browser Support
 
 | Feature                  | Chrome | Firefox | Safari | Edge |
-|--------------------------|--------|---------|--------|------|
+| ------------------------ | ------ | ------- | ------ | ---- |
 | `backdrop-filter`        | ✓      | ✓       | ✓      | ✓    |
 | CSS custom properties    | ✓      | ✓       | ✓      | ✓    |
 | CSS `@keyframes`         | ✓      | ✓       | ✓      | ✓    |

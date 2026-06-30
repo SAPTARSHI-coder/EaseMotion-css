@@ -28,6 +28,6 @@ Pure CSS image hover effects collection for EaseMotion CSS. 15+ gallery-ready ef
 ### Basic Zoom
 
 ```html
-&lt;div class="ease-image-hover ease-image-hover-zoom"&gt;
-  &lt;img src="photo.jpg" alt="Description"&gt;
-&lt;/div&gt;
+&lt;div class="ease-image-hover ease-image-hover-zoom"&gt; &lt;img
+src="photo.jpg" alt="Description"&gt; &lt;/div&gt;
+```

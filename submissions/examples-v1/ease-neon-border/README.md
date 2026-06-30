@@ -4,29 +4,29 @@ Animated neon border effects using `box-shadow` pulse and `conic-gradient` spin.
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
-| `.ease-neon` | Default purple neon pulse |
-| `.ease-neon-blue` | Blue neon (`#38bdf8`) |
-| `.ease-neon-green` | Green neon (`#4ade80`) |
-| `.ease-neon-pink` | Pink neon (`#f472b6`) |
-| `.ease-neon-amber` | Amber neon (`#fbbf24`) |
-| `.ease-neon-white` | White neon (`#f1f5f9`) |
-| `.ease-neon-spin` | Rotating conic-gradient border |
-| `.ease-neon-rainbow` | Full rainbow rotating border |
-| `.ease-neon-paused` | Pause animation on hover |
+| Class                | Description                    |
+| -------------------- | ------------------------------ |
+| `.ease-neon`         | Default purple neon pulse      |
+| `.ease-neon-blue`    | Blue neon (`#38bdf8`)          |
+| `.ease-neon-green`   | Green neon (`#4ade80`)         |
+| `.ease-neon-pink`    | Pink neon (`#f472b6`)          |
+| `.ease-neon-amber`   | Amber neon (`#fbbf24`)         |
+| `.ease-neon-white`   | White neon (`#f1f5f9`)         |
+| `.ease-neon-spin`    | Rotating conic-gradient border |
+| `.ease-neon-rainbow` | Full rainbow rotating border   |
+| `.ease-neon-paused`  | Pause animation on hover       |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-neon-color` | `--ease-color-primary` | Glow colour |
-| `--ease-neon-size` | `2px` | Border width |
-| `--ease-neon-blur` | `12px` | Outer glow blur radius |
-| `--ease-neon-spread` | `2px` | Outer glow spread |
-| `--ease-neon-duration` | `2s` | Pulse animation duration |
-| `--ease-neon-radius` | `--ease-radius-md` | Border radius |
-| `--ease-neon-bg` | `--ease-color-surface` | Background for spin variant |
+| Token                  | Default                | Description                 |
+| ---------------------- | ---------------------- | --------------------------- |
+| `--ease-neon-color`    | `--ease-color-primary` | Glow colour                 |
+| `--ease-neon-size`     | `2px`                  | Border width                |
+| `--ease-neon-blur`     | `12px`                 | Outer glow blur radius      |
+| `--ease-neon-spread`   | `2px`                  | Outer glow spread           |
+| `--ease-neon-duration` | `2s`                   | Pulse animation duration    |
+| `--ease-neon-radius`   | `--ease-radius-md`     | Border radius               |
+| `--ease-neon-bg`       | `--ease-color-surface` | Background for spin variant |
 
 ## Usage
 
@@ -45,7 +45,10 @@ Animated neon border effects using `box-shadow` pulse and `conic-gradient` spin.
 <input class="ease-neon ease-neon-green" />
 
 <!-- Custom colour -->
-<div class="ease-neon" style="--ease-neon-color: #00ffff; --ease-neon-blur: 24px;">
+<div
+  class="ease-neon"
+  style="--ease-neon-color: #00ffff; --ease-neon-blur: 24px;"
+>
   Cyan intense
 </div>
 ```

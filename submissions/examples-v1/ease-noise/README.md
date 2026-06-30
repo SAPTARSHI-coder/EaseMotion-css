@@ -16,35 +16,35 @@ The element must have `position: relative` (already set by the class). The grain
 
 ## Intensity Variants
 
-| Class | Opacity |
-|---|---|
-| `ease-noise-light` | 0.04 |
-| `ease-noise` (default) | 0.08 |
-| `ease-noise-heavy` | 0.18 |
+| Class                  | Opacity |
+| ---------------------- | ------- |
+| `ease-noise-light`     | 0.04    |
+| `ease-noise` (default) | 0.08    |
+| `ease-noise-heavy`     | 0.18    |
 
 ## Speed Variants
 
-| Class | Speed |
-|---|---|
-| `ease-noise-fast` | 0.08s |
-| `ease-noise` (default) | 0.2s |
-| `ease-noise-slow` | 0.5s |
-| `ease-noise-static` | No animation |
+| Class                  | Speed        |
+| ---------------------- | ------------ |
+| `ease-noise-fast`      | 0.08s        |
+| `ease-noise` (default) | 0.2s         |
+| `ease-noise-slow`      | 0.5s         |
+| `ease-noise-static`    | No animation |
 
 ## Color Tint Variants
 
-| Class | Tint |
-|---|---|
+| Class             | Tint            |
+| ----------------- | --------------- |
 | `ease-noise-warm` | Warm sepia tone |
-| `ease-noise-cool` | Cool blue tone |
+| `ease-noise-cool` | Cool blue tone  |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-noise-opacity` | `0.08` | Grain overlay opacity |
-| `--ease-noise-size` | `200px` | Grain texture tile size |
-| `--ease-noise-speed` | `0.2s` | Animation frame speed |
+| Property               | Default | Description             |
+| ---------------------- | ------- | ----------------------- |
+| `--ease-noise-opacity` | `0.08`  | Grain overlay opacity   |
+| `--ease-noise-size`    | `200px` | Grain texture tile size |
+| `--ease-noise-speed`   | `0.2s`  | Animation frame speed   |
 
 ## How It Works
 
@@ -58,11 +58,11 @@ The `::after` pseudo-element contains an inline SVG data URI with an `feTurbulen
 
 ## Browser Support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| SVG filter data URI | yes | yes | yes | yes |
-| CSS pseudo-elements | yes | yes | yes | yes |
-| prefers-reduced-motion | yes | yes | yes | yes |
+| Feature                | Chrome | Edge | Firefox | Safari |
+| ---------------------- | ------ | ---- | ------- | ------ |
+| SVG filter data URI    | yes    | yes  | yes     | yes    |
+| CSS pseudo-elements    | yes    | yes  | yes     | yes    |
+| prefers-reduced-motion | yes    | yes  | yes     | yes    |
 
 ## Submission
 

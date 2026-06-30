@@ -1,7 +1,7 @@
 # Bundle Sync Fix
 
 **Fixes:** Issue #6937  
-**Type:** Bug Fix  
+**Type:** Bug Fix
 
 ## What was broken
 
@@ -28,8 +28,9 @@ Always run `npm run build` after editing any source CSS file
 before committing. Never manually edit `easemotion.min.css`.
 
 ## Files
-| File | Purpose |
-|---|---|
-| `style.css` | Demo UI styles |
+
+| File        | Purpose                                    |
+| ----------- | ------------------------------------------ |
+| `style.css` | Demo UI styles                             |
 | `demo.html` | Visual guide showing the bug and fix steps |
-| `README.md` | This file |
+| `README.md` | This file                                  |

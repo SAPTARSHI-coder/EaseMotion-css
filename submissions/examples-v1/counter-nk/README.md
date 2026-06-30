@@ -9,6 +9,7 @@ easeOutCubic curve for natural deceleration.
 ---
 
 **How is it used?**
+
 ```html
 <!-- Basic usage -->
 <h2 class="ease-counter" data-target="1000">0</h2>
@@ -17,19 +18,26 @@ easeOutCubic curve for natural deceleration.
 <p class="ease-counter" data-target="99.9">0</p>
 
 <!-- Custom duration -->
-<span class="ease-counter" data-target="5000"
-  style="--ease-counter-duration: 3s;">0</span>
+<span
+  class="ease-counter"
+  data-target="5000"
+  style="--ease-counter-duration: 3s;"
+  >0</span
+>
 ```
 
 Then include the counter script before `</body>`:
+
 ```html
 <script src="counter.js"></script>
 ```
+
 In the framework this will follow the same pattern as `core/reveal.js`.
 
 ---
 
 **Customization**
+
 ```css
 :root {
   --ease-counter-duration: 2s; /* count-up animation duration */
@@ -66,6 +74,7 @@ single-class philosophy.
 ---
 
 **Accessibility**
+
 - Respects `prefers-reduced-motion` — number jumps directly to the
   final value with no animation, avoiding vestibular discomfort
 - Works on any inline or block text element — headings, paragraphs,

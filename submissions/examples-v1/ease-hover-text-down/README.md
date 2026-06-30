@@ -17,9 +17,7 @@ A simple hover animation where text shifts **downward by 3px**, creating a subtl
 ## 🚀 Usage
 
 ```html
-<a href="#" class="ease-hover-text-down">
-    Home
-</a>
+<a href="#" class="ease-hover-text-down"> Home </a>
 ```
 
 ---
@@ -28,7 +26,7 @@ A simple hover animation where text shifts **downward by 3px**, creating a subtl
 
 ```css
 :root {
-    --ease-hover-text-down-distance: 3px;
-    --ease-hover-text-down-duration: 0.25s;
+  --ease-hover-text-down-distance: 3px;
+  --ease-hover-text-down-duration: 0.25s;
 }
 ```

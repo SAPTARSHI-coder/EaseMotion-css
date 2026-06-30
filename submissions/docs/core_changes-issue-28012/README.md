@@ -14,11 +14,11 @@ Styles the browser scrollbar with `::-webkit-scrollbar` pseudo-elements. Support
 
 ### Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-scrollbar-thin` | Thin scrollbar (6px) |
-| `.ease-scrollbar-none` | Hide scrollbar (still scrollable) |
-| `.ease-scrollbar-thumb-primary` | Primary color thumb |
-| `.ease-scrollbar-thumb-muted` | Muted color thumb |
-| `.ease-scrollbar-track-muted` | Muted color track |
-| `.ease-scrollbar-rounded` | Rounded scrollbar thumb |
+| Class                           | Effect                            |
+| ------------------------------- | --------------------------------- |
+| `.ease-scrollbar-thin`          | Thin scrollbar (6px)              |
+| `.ease-scrollbar-none`          | Hide scrollbar (still scrollable) |
+| `.ease-scrollbar-thumb-primary` | Primary color thumb               |
+| `.ease-scrollbar-thumb-muted`   | Muted color thumb                 |
+| `.ease-scrollbar-track-muted`   | Muted color track                 |
+| `.ease-scrollbar-rounded`       | Rounded scrollbar thumb           |

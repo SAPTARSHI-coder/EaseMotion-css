@@ -6,23 +6,23 @@ A showcase of modern neon glow button animations using only HTML and CSS. Each b
 
 ## Features
 
-* Four color variants: indigo, pink, teal, amber
-* Hover-activated neon glow via box-shadow expansion
-* Breathing glow animation on select variants
-* Ghost outline variant with subtle hover tint
-* Smooth hover scale lift and active press
-* Monospace usage snippet section
-* Responsive layout
-* Reduced-motion accessibility
+- Four color variants: indigo, pink, teal, amber
+- Hover-activated neon glow via box-shadow expansion
+- Breathing glow animation on select variants
+- Ghost outline variant with subtle hover tint
+- Smooth hover scale lift and active press
+- Monospace usage snippet section
+- Responsive layout
+- Reduced-motion accessibility
 
 ## Variants
 
-| Variant | Border | Hover Glow |
-|---------|--------|------------|
-| Indigo | `rgba(99, 102, 241, 0.2)` | Violet glow ring |
-| Pink | `rgba(236, 72, 153, 0.2)` | Pink glow ring |
-| Teal | `rgba(20, 184, 166, 0.2)` | Teal glow ring |
-| Amber | `rgba(245, 158, 11, 0.2)` | Amber glow ring |
+| Variant | Border                    | Hover Glow       |
+| ------- | ------------------------- | ---------------- |
+| Indigo  | `rgba(99, 102, 241, 0.2)` | Violet glow ring |
+| Pink    | `rgba(236, 72, 153, 0.2)` | Pink glow ring   |
+| Teal    | `rgba(20, 184, 166, 0.2)` | Teal glow ring   |
+| Amber   | `rgba(245, 158, 11, 0.2)` | Amber glow ring  |
 
 ## Example Usage
 
@@ -48,11 +48,11 @@ Compatible with modern browsers supporting CSS Animations, Transforms, Box-shado
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and reusable animation.
-* Lightweight implementation.
-* Accessible design.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS principles.
+- Uses CSS keyframes.
+- Smooth and reusable animation.
+- Lightweight implementation.
+- Accessible design.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS principles.
 
 Fixes #19166

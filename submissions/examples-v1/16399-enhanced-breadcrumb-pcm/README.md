@@ -15,14 +15,18 @@
       </a>
     </li>
     <li class="breadcrumb-separator" aria-hidden="true"></li>
-    <li class="breadcrumb-item breadcrumb-current" aria-current="page">Current</li>
+    <li class="breadcrumb-item breadcrumb-current" aria-current="page">
+      Current
+    </li>
   </ol>
 </nav>
 
 <!-- Collapsed with dropdown -->
 <nav aria-label="Breadcrumb" class="breadcrumb breadcrumb-sep-arrow">
   <ol class="breadcrumb-list">
-    <li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Home</a></li>
+    <li class="breadcrumb-item">
+      <a href="#" class="breadcrumb-link">Home</a>
+    </li>
     <li class="breadcrumb-separator" aria-hidden="true"></li>
     <li class="breadcrumb-item">
       <button class="breadcrumb-collapse-trigger">...</button>

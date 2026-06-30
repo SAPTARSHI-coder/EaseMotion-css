@@ -11,31 +11,31 @@ Expands EaseMotion CSS's design token system with a comprehensive set of CSS cus
 ```css
 :root {
   /* ── Brand Colors ── */
-  --ease-color-primary:       #2563eb;
+  --ease-color-primary: #2563eb;
   --ease-color-primary-hover: #1d4ed8;
   --ease-color-primary-light: #93c5fd;
-  --ease-color-primary-dark:  #1e40af;
+  --ease-color-primary-dark: #1e40af;
 
-  --ease-color-secondary:       #7c3aed;
+  --ease-color-secondary: #7c3aed;
   --ease-color-secondary-hover: #6d28d9;
   --ease-color-secondary-light: #a78bfa;
-  --ease-color-secondary-dark:  #5b21b6;
+  --ease-color-secondary-dark: #5b21b6;
 
-  --ease-color-accent:         #f59e0b;
-  --ease-color-accent-hover:   #d97706;
+  --ease-color-accent: #f59e0b;
+  --ease-color-accent-hover: #d97706;
 
   /* ── Fonts ── */
-  --ease-font-sans:  'Inter', system-ui, sans-serif;
-  --ease-font-serif: 'Merriweather', Georgia, serif;
-  --ease-font-mono:  'JetBrains Mono', monospace;
+  --ease-font-sans: "Inter", system-ui, sans-serif;
+  --ease-font-serif: "Merriweather", Georgia, serif;
+  --ease-font-mono: "JetBrains Mono", monospace;
 
   /* ── Shadows ── */
-  --ease-shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
-  --ease-shadow-sm:  0 1px 3px rgba(0,0,0,0.08);
-  --ease-shadow-md:  0 4px 6px rgba(0,0,0,0.10);
-  --ease-shadow-lg:  0 10px 15px rgba(0,0,0,0.10);
-  --ease-shadow-xl:  0 20px 25px rgba(0,0,0,0.10);
-  --ease-shadow-2xl: 0 25px 50px rgba(0,0,0,0.25);
+  --ease-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ease-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --ease-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --ease-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --ease-shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  --ease-shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 ```
 

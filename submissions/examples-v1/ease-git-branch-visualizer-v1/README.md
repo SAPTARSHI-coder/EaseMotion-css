@@ -31,9 +31,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="graph">
-...
-</div>
+<div class="graph">...</div>
 ```
 
 ---

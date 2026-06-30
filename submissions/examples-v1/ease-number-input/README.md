@@ -1,14 +1,8 @@
 \# ease-number-input
 
-
-
 Styled number input with animated increment/decrement buttons (+/-).
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -30,11 +24,7 @@ Styled number input with animated increment/decrement buttons (+/-).
 
 | `ease-number-lg` | Large size |
 
-
-
 \## Features
-
-
 
 \- 🔢 + and − buttons with hover animation
 
@@ -48,21 +38,14 @@ Styled number input with animated increment/decrement buttons (+/-).
 
 \- 🖱️ Smooth interactions
 
-
-
 \## Usage
 
-
-
 ```html
-
 <div class="ease-number-input">
+  &#x20; <button class="ease-number-decrement">−</button>
 
-&#x20;   <button class="ease-number-decrement">−</button>
+  &#x20; <input type="number" value="0" min="0" max="100" />
 
-&#x20;   <input type="number" value="0" min="0" max="100">
-
-&#x20;   <button class="ease-number-increment">+</button>
-
+  &#x20; <button class="ease-number-increment">+</button>
 </div>
-
+```

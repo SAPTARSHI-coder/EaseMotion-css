@@ -9,13 +9,13 @@ A pure CSS accordion using the native HTML `&lt;details&gt;` / `&lt;summary&gt;`
 
 ## Variants Included
 
-| Class | Description |
-|-------|-------------|
-| `.accordion` | Base container with default light theme |
-| `.accordion-item` | Individual collapsible section (`&lt;details&gt;`) |
-| `.accordion-header` | Clickable header (`&lt;summary&gt;`) with animated chevron |
-| `.accordion-content` | Smooth reveal wrapper using grid transition |
-| `.accordion-glass` | Glassmorphism variant with backdrop blur |
+| Class                | Description                                                |
+| -------------------- | ---------------------------------------------------------- |
+| `.accordion`         | Base container with default light theme                    |
+| `.accordion-item`    | Individual collapsible section (`&lt;details&gt;`)         |
+| `.accordion-header`  | Clickable header (`&lt;summary&gt;`) with animated chevron |
+| `.accordion-content` | Smooth reveal wrapper using grid transition                |
+| `.accordion-glass`   | Glassmorphism variant with backdrop blur                   |
 
 ## How It Works
 
@@ -31,3 +31,4 @@ The smooth animation is achieved with the **CSS grid trick**:
 .accordion-item[open] &gt; .accordion-content {
   grid-template-rows: 1fr;
 }
+```

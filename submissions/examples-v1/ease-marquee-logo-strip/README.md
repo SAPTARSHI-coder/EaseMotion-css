@@ -33,16 +33,17 @@ An infinite scrolling marquee logo strip for EaseMotion CSS.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-marquee` | Outer wrapper with overflow hidden |
-| `ease-marquee-track` | Scrolling inner track |
-| `ease-marquee-item` | Individual logo/brand item |
-| `ease-marquee-reverse` | Scroll in reverse direction |
-| `ease-marquee-slow` | Slow speed (25s) |
-| `ease-marquee-fast` | Fast speed (8s) |
+| Class                  | Description                        |
+| ---------------------- | ---------------------------------- |
+| `ease-marquee`         | Outer wrapper with overflow hidden |
+| `ease-marquee-track`   | Scrolling inner track              |
+| `ease-marquee-item`    | Individual logo/brand item         |
+| `ease-marquee-reverse` | Scroll in reverse direction        |
+| `ease-marquee-slow`    | Slow speed (25s)                   |
+| `ease-marquee-fast`    | Fast speed (8s)                    |
 
 ## Features
+
 - Infinite seamless loop
 - Pauses on hover
 - Reverse direction variant

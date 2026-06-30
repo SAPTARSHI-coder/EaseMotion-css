@@ -41,14 +41,13 @@ if (entry.isIntersecting)
 The value increases smoothly using:
 
 ```javascript
-requestAnimationFrame()
+requestAnimationFrame();
 ```
 
 ### 4. Final Value Reached
 
 ```javascript
-counter.textContent =
-    target.toLocaleString();
+counter.textContent = target.toLocaleString();
 ```
 
 ## Customization
@@ -78,13 +77,13 @@ const duration = 2000;
 Examples:
 
 ```javascript
-1000
+1000;
 ```
 
 Fast
 
 ```javascript
-4000
+4000;
 ```
 
 Slow
@@ -92,7 +91,7 @@ Slow
 ### Change Trigger Point
 
 ```javascript
-threshold: 0.4
+threshold: 0.4;
 ```
 
 Lower values start earlier.

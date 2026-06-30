@@ -4,16 +4,16 @@ A lightweight, hardware-accelerated sticky navigation header featuring a premium
 
 ## 🚀 Features
 
-* **Premium Glass Surface:** Utilizes `backdrop-filter: blur(12px)` combined with semi-transparent backgrounds and borders for a modern UI aesthetic.
-* **Hardware Acceleration:** Forces GPU layer promotion using `transform: translateZ(0)` and `perspective: 1000px` to ensure silky-smooth scrolling.
-* **Stability Patches:** Incorporates `backface-visibility: hidden` and `will-change` to prevent browser paint-loop flickering and preserve filter integrity.
-* **Zero Dependencies:** Pure HTML and CSS. No JavaScript required.
-* **Custom Properties (Variables):** Built with a clean CSS variable architecture for easy theming and spacing adjustments.
+- **Premium Glass Surface:** Utilizes `backdrop-filter: blur(12px)` combined with semi-transparent backgrounds and borders for a modern UI aesthetic.
+- **Hardware Acceleration:** Forces GPU layer promotion using `transform: translateZ(0)` and `perspective: 1000px` to ensure silky-smooth scrolling.
+- **Stability Patches:** Incorporates `backface-visibility: hidden` and `will-change` to prevent browser paint-loop flickering and preserve filter integrity.
+- **Zero Dependencies:** Pure HTML and CSS. No JavaScript required.
+- **Custom Properties (Variables):** Built with a clean CSS variable architecture for easy theming and spacing adjustments.
 
 ## 📁 Project Structure
 
-* `demo.html`: The main demonstration file containing the layout and long-scroll canvas to test the sticky behavior.
-* `style.css`: The primary stylesheet containing the core component rules and hardware-acceleration patches.
+- `demo.html`: The main demonstration file containing the layout and long-scroll canvas to test the sticky behavior.
+- `style.css`: The primary stylesheet containing the core component rules and hardware-acceleration patches.
 
 ## 🛠️ Usage
 
@@ -38,3 +38,4 @@ backface-visibility: hidden;
 will-change: transform, backdrop-filter;
 transform: translateZ(0);
 perspective: 1000px;
+```

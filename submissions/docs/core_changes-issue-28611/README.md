@@ -12,15 +12,15 @@ Applies a horizontal shake animation to an element — useful for form validatio
 
 ```js
 // Trigger via JS
-el.classList.add('ease-shake');
-setTimeout(() => el.classList.remove('ease-shake'), 500);
+el.classList.add("ease-shake");
+setTimeout(() => el.classList.remove("ease-shake"), 500);
 ```
 
 ### Variants
 
-| Class | Description |
-|---|---|
-| `.ease-shake` | Horizontal shake (default) |
-| `.ease-shake-vertical` | Vertical shake |
-| `.ease-shake-subtle` | Subtle horizontal shake |
-| `.ease-shake-warn` | Shake with red tint |
+| Class                  | Description                |
+| ---------------------- | -------------------------- |
+| `.ease-shake`          | Horizontal shake (default) |
+| `.ease-shake-vertical` | Vertical shake             |
+| `.ease-shake-subtle`   | Subtle horizontal shake    |
+| `.ease-shake-warn`     | Shake with red tint        |

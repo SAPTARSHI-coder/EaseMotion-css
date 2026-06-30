@@ -23,15 +23,11 @@ A responsive delivery window selection component featuring interactive delivery 
 
 ```html
 <label class="card">
+  <input type="radio" name="delivery" />
 
-    <input type="radio" name="delivery">
+  <span class="indicator"></span>
 
-    <span class="indicator"></span>
-
-    <div class="details">
-        ...
-    </div>
-
+  <div class="details">...</div>
 </label>
 ```
 

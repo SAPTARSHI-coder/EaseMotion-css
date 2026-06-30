@@ -26,7 +26,7 @@ README.md
 Uses:
 
 ```javascript
-deviceorientation
+deviceorientation;
 ```
 
 to read:
@@ -48,7 +48,7 @@ transformations.
 Uses mouse position relative to the card:
 
 ```javascript
-mousemove
+mousemove;
 ```
 
 to simulate the same tilt effect.
@@ -60,7 +60,7 @@ On iOS Safari, gyroscope access requires user permission.
 The demo includes:
 
 ```javascript
-DeviceOrientationEvent.requestPermission()
+DeviceOrientationEvent.requestPermission();
 ```
 
 which is triggered by the button.

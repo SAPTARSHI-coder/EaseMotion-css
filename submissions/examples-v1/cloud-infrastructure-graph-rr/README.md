@@ -7,9 +7,7 @@ Provides a visual cloud architecture graph showing relationships between infrast
 ## How is it used?
 
 ```html
-<div class="node">
-    API Gateway
-</div>
+<div class="node">API Gateway</div>
 ```
 
 Infrastructure nodes are connected using visual connectors to represent service dependencies and traffic flow.

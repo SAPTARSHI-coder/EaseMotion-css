@@ -19,24 +19,27 @@ The ghost button hover state:
 ```css
 /* Current */
 .ease-btn-ghost {
-    color: var(--ease-color-neutral-700, #334155);  /* too dark on dark bg */
+  color: var(--ease-color-neutral-700, #334155); /* too dark on dark bg */
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .ease-btn-ghost:hover {
-        background-color: var(--ease-color-neutral-100, #f1f5f9); /* near-white flash */
-        color: var(--ease-color-neutral-900, #0f172a);             /* inside the flash */
-    }
+  .ease-btn-ghost:hover {
+    background-color: var(
+      --ease-color-neutral-100,
+      #f1f5f9
+    ); /* near-white flash */
+    color: var(--ease-color-neutral-900, #0f172a); /* inside the flash */
+  }
 }
 ```
 
 In dark mode:
 
-| Property | Token | Dark mode value | Contrast on #0b1121 | Result |
-|---|---|---|---|---|
-| Base text | neutral-700 | #334155 | ≈ 4.0:1 | Below WCAG AA ❌ |
-| Hover bg | neutral-100 | #f1f5f9 | ≈ 13:1 | Near-white flash ❌ |
-| Hover text | neutral-900 | #0f172a | readable inside flash | Exists inside white rect ❌ |
+| Property   | Token       | Dark mode value | Contrast on #0b1121   | Result                      |
+| ---------- | ----------- | --------------- | --------------------- | --------------------------- |
+| Base text  | neutral-700 | #334155         | ≈ 4.0:1               | Below WCAG AA ❌            |
+| Hover bg   | neutral-100 | #f1f5f9         | ≈ 13:1                | Near-white flash ❌         |
+| Hover text | neutral-900 | #0f172a         | readable inside flash | Exists inside white rect ❌ |
 
 The ghost button — designed to be the quietest interactive element — becomes the
 most visually jarring on hover. A near-white `#f1f5f9` rectangle at 13:1 contrast
@@ -46,36 +49,38 @@ flashes into existence, competing with primary buttons and card surfaces.
 
 ```css
 @media (prefers-color-scheme: dark) {
-    .ease-btn-ghost {
-        color: var(--ease-color-neutral-300, #cbd5e1);
-    }
+  .ease-btn-ghost {
+    color: var(--ease-color-neutral-300, #cbd5e1);
+  }
 
-    @media (hover: hover) and (pointer: fine) {
-        .ease-btn-ghost:hover {
-            background-color: var(--ease-color-neutral-800, #1e293b);
-            color: var(--ease-color-neutral-100, #f1f5f9);
-        }
+  @media (hover: hover) and (pointer: fine) {
+    .ease-btn-ghost:hover {
+      background-color: var(--ease-color-neutral-800, #1e293b);
+      color: var(--ease-color-neutral-100, #f1f5f9);
     }
+  }
 }
 ```
 
 ## Before vs after in dark mode
 
-| Property | Before | After |
-|---|---|---|
-| Base text | #334155 — ≈ 4.0:1 ❌ | #cbd5e1 — ≈ 5.9:1 ✅ |
-| Hover background | #f1f5f9 — ≈ 13:1 ❌ | #1e293b — ≈ 2.3:1 ✅ |
-| Hover text | #0f172a (inside white flash) | #f1f5f9 on #1e293b — readable ✅ |
+| Property         | Before                       | After                            |
+| ---------------- | ---------------------------- | -------------------------------- |
+| Base text        | #334155 — ≈ 4.0:1 ❌         | #cbd5e1 — ≈ 5.9:1 ✅             |
+| Hover background | #f1f5f9 — ≈ 13:1 ❌          | #1e293b — ≈ 2.3:1 ✅             |
+| Hover text       | #0f172a (inside white flash) | #f1f5f9 on #1e293b — readable ✅ |
 
 ## Token rationale
 
 **`--ease-color-neutral-800` (`#1e293b`) for hover background**
+
 - Slightly lighter than the dark page background (`#0b1121`)
 - Gives ~2.3:1 contrast — a gentle tint, proportionally similar to the light
   mode hover (~1.1:1). Both are intentionally low-contrast ghost hovers.
 - Mirrors the "barely visible" intent in both color schemes.
 
 **`--ease-color-neutral-300` (`#cbd5e1`) for base text**
+
 - ~5.9:1 contrast on `#0b1121` — above WCAG AA 4.5:1 for interactive text
 - Reads as muted light grey in dark mode, equivalent weight to `neutral-700`
   in light mode

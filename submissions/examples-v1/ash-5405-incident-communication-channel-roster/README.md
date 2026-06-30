@@ -23,17 +23,11 @@ A responsive incident communication roster that displays active communication ch
 
 ```html
 <div class="channel">
+  <div class="info">
+    <h3>#incident-war-room</h3>
+  </div>
 
-    <div class="info">
-
-        <h3>#incident-war-room</h3>
-
-    </div>
-
-    <span class="badge active">
-        Active
-    </span>
-
+  <span class="badge active"> Active </span>
 </div>
 ```
 

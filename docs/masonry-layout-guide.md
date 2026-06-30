@@ -25,6 +25,7 @@ The base `ease-masonry` class sets up default masonry behavior with 2 columns on
 ```
 
 ### Features
+
 - Default 2-column layout on desktop
 - 1 column on mobile (< 640px)
 - 4px gap between items (configurable)
@@ -46,10 +47,11 @@ Use `ease-masonry-2` for a dedicated 2-column grid.
 ```
 
 ### Responsive Behavior
-| Device | Columns |
-|--------|---------|
-| Mobile (< 640px) | 1 |
-| Tablet+ (≥ 640px) | 2 |
+
+| Device            | Columns |
+| ----------------- | ------- |
+| Mobile (< 640px)  | 1       |
+| Tablet+ (≥ 640px) | 2       |
 
 ---
 
@@ -71,11 +73,12 @@ Use `ease-masonry-3` for progressive 3-column layouts with intermediate tablet s
 ```
 
 ### Responsive Behavior
-| Device | Columns |
-|--------|---------|
-| Mobile (< 640px) | 1 |
-| Tablet (640–1023px) | 2 |
-| Desktop (≥ 1024px) | 3 |
+
+| Device              | Columns |
+| ------------------- | ------- |
+| Mobile (< 640px)    | 1       |
+| Tablet (640–1023px) | 2       |
+| Desktop (≥ 1024px)  | 3       |
 
 ---
 
@@ -93,12 +96,13 @@ Use `ease-masonry-4` for dense, full-featured grids with maximum responsiveness.
 ```
 
 ### Responsive Behavior
-| Device | Columns |
-|--------|---------|
-| Mobile (< 640px) | 1 |
-| Tablet (640–1023px) | 2 |
-| Small Desktop (1024–1279px) | 3 |
-| Large Desktop (≥ 1280px) | 4 |
+
+| Device                      | Columns |
+| --------------------------- | ------- |
+| Mobile (< 640px)            | 1       |
+| Tablet (640–1023px)         | 2       |
+| Small Desktop (1024–1279px) | 3       |
+| Large Desktop (≥ 1280px)    | 4       |
 
 ---
 
@@ -226,12 +230,12 @@ Always use semantic HTML within masonry items:
 The masonry utilities use CSS Columns, which is supported in all modern browsers:
 
 | Browser | Version |
-|---------|---------|
-| Chrome | 50+ |
-| Firefox | 52+ |
-| Safari | 9+ |
-| Edge | 12+ |
-| Opera | 37+ |
+| ------- | ------- |
+| Chrome  | 50+     |
+| Firefox | 52+     |
+| Safari  | 9+      |
+| Edge    | 12+     |
+| Opera   | 37+     |
 
 For older browsers, content will render as a single column (graceful degradation).
 
@@ -244,9 +248,10 @@ For older browsers, content will render as a single column (graceful degradation
    - Avoid `ease-masonry-4` on mobile or with 100+ items
 
 2. **Optimize images**: Use responsive images with `srcset` for better performance
+
    ```html
-   <img 
-     src="image-400.jpg" 
+   <img
+     src="image-400.jpg"
      srcset="image-400.jpg 400w, image-800.jpg 800w"
      alt="Description"
    />
@@ -255,7 +260,7 @@ For older browsers, content will render as a single column (graceful degradation
 3. **Batch rendering**: If adding items dynamically, batch DOM updates
    ```javascript
    const fragment = document.createDocumentFragment();
-   items.forEach(item => fragment.appendChild(item));
+   items.forEach((item) => fragment.appendChild(item));
    container.appendChild(fragment);
    ```
 
@@ -264,6 +269,7 @@ For older browsers, content will render as a single column (graceful degradation
 ## Common Use Cases
 
 ### Portfolio Grid
+
 ```html
 <section class="ease-container">
   <h2>My Work</h2>
@@ -274,6 +280,7 @@ For older browsers, content will render as a single column (graceful degradation
 ```
 
 ### Blog Feed
+
 ```html
 <section class="ease-container">
   <h2>Latest Articles</h2>
@@ -284,6 +291,7 @@ For older browsers, content will render as a single column (graceful degradation
 ```
 
 ### Image Gallery
+
 ```html
 <section class="ease-container">
   <h2>Photo Collection</h2>
@@ -294,6 +302,7 @@ For older browsers, content will render as a single column (graceful degradation
 ```
 
 ### Testimonial Wall
+
 ```html
 <section class="ease-container">
   <h2>Client Testimonials</h2>
@@ -337,9 +346,11 @@ img {
 ## Migration Guide
 
 ### From CSS Grid
+
 If migrating from `ease-grid` utilities:
 
 **Before** (Fixed columns):
+
 ```html
 <div class="ease-grid ease-grid-cols-3 ease-gap-4">
   <!-- Items must be ordered in rows -->
@@ -347,6 +358,7 @@ If migrating from `ease-grid` utilities:
 ```
 
 **After** (Masonry):
+
 ```html
 <div class="ease-masonry-3 ease-gap-4">
   <!-- Items fill columns naturally -->
@@ -354,9 +366,11 @@ If migrating from `ease-grid` utilities:
 ```
 
 ### From Flexbox
+
 If migrating from `ease-flex` utilities:
 
 **Before** (Complex wrapping):
+
 ```html
 <div class="ease-flex ease-flex-wrap ease-gap-4">
   <!-- Hard to maintain equal-height columns -->
@@ -364,6 +378,7 @@ If migrating from `ease-flex` utilities:
 ```
 
 **After** (Masonry):
+
 ```html
 <div class="ease-masonry-3 ease-gap-4">
   <!-- Automatic column balancing -->

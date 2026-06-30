@@ -4,13 +4,14 @@
 
 Utility classes for styling the `::first-letter` pseudo-element as a **drop cap** — a large decorative initial letter at the start of a paragraph.
 
-| Class | Effect |
-|---|---|
-| `.ease-drop-cap` | Standard raised drop cap (floated left, larger font) |
-| `.ease-drop-cap-circle` | Drop cap inside a circular bordered background |
+| Class                     | Effect                                                            |
+| ------------------------- | ----------------------------------------------------------------- |
+| `.ease-drop-cap`          | Standard raised drop cap (floated left, larger font)              |
+| `.ease-drop-cap-circle`   | Drop cap inside a circular bordered background                    |
 | `.ease-drop-cap-outlined` | Drop cap with only an outline (transparent fill with text stroke) |
 
 Custom properties:
+
 - `--ease-drop-cap-size` (default `3em`) — font size of the drop cap
 - `--ease-drop-cap-color` (default `#60a5fa`) — color / stroke color
 - `--ease-drop-cap-font` (default `'Georgia', serif`) — font family
@@ -29,7 +30,10 @@ Wrap a paragraph (or multiple paragraphs) in a container and apply the class:
 Override variables per instance:
 
 ```html
-<div class="ease-drop-cap-circle" style="--ease-drop-cap-color: #34d399; --ease-drop-cap-size: 4em;">
+<div
+  class="ease-drop-cap-circle"
+  style="--ease-drop-cap-color: #34d399; --ease-drop-cap-size: 4em;"
+>
   <p>Circular green drop cap...</p>
 </div>
 ```

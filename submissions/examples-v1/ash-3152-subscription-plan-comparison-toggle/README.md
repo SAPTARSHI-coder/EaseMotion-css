@@ -24,15 +24,9 @@ A responsive pricing comparison component featuring a billing toggle and subscri
 
 ```html
 <div class="billing-toggle">
+  <button class="toggle active">Monthly</button>
 
-    <button class="toggle active">
-        Monthly
-    </button>
-
-    <button class="toggle">
-        Yearly
-    </button>
-
+  <button class="toggle">Yearly</button>
 </div>
 ```
 

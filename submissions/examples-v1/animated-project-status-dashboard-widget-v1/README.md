@@ -33,7 +33,9 @@ submissions/examples/animated-project-status-dashboard-widget/
   </div>
 
   <!-- Description -->
-  <p class="project-desc">Revamp the corporate landing page with modern visual aesthetics.</p>
+  <p class="project-desc">
+    Revamp the corporate landing page with modern visual aesthetics.
+  </p>
 
   <!-- Progress Bar -->
   <div class="progress-section">
@@ -68,8 +70,16 @@ submissions/examples/animated-project-status-dashboard-widget/
     <div class="team-section">
       <span class="footer-label">Team</span>
       <div class="team-avatars">
-        <img class="avatar" alt="Sarah Chen" src="data:image/svg+xml;utf8,...">
-        <img class="avatar" alt="Alex Rivera" src="data:image/svg+xml;utf8,...">
+        <img
+          class="avatar"
+          alt="Sarah Chen"
+          src="data:image/svg+xml;utf8,..."
+        />
+        <img
+          class="avatar"
+          alt="Alex Rivera"
+          src="data:image/svg+xml;utf8,..."
+        />
       </div>
     </div>
     <div class="project-deadline">
@@ -88,13 +98,13 @@ Customize colors, borders, and animations via variables defined inside `style.cs
   /* Cards */
   --w-widget-bg: rgba(30, 41, 59, 0.4);
   --w-widget-hover-bg: rgba(30, 41, 59, 0.7);
-  
+
   /* Status Colors */
   --w-color-track: #10b981;
   --w-color-risk: #f59e0b;
   --w-color-done: #8b5cf6;
   --w-color-alert: #ef4444;
-  
+
   /* Radii */
   --w-radius: 18px;
 }
@@ -103,11 +113,13 @@ Customize colors, borders, and animations via variables defined inside `style.cs
 ### Theme & Badge States
 
 Set the correct combination of container class modifiers and badge classes:
+
 - **On Track**: Add `status-track` to the widget, and use `status-badge on-track` inside the header.
 - **At Risk**: Add `status-risk` to the widget, and use `status-badge at-risk` inside the header.
 - **Completed**: Add `status-done` to the widget, and use `status-badge completed` inside the header.
 
 Change the progress fill target dynamically by setting the style property:
+
 ```html
 <div class="progress-fill" style="--percent: 85%;"></div>
 ```

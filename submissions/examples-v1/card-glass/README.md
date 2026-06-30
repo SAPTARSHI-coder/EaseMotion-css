@@ -10,9 +10,9 @@ Glassmorphism card component with `backdrop-filter: blur(16px)`, semi-transparen
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-glass` | Default glass card with blur |
+| Class                  | Description                        |
+| ---------------------- | ---------------------------------- |
+| `ease-card-glass`      | Default glass card with blur       |
 | `ease-card-glass-dark` | Dark variant for light backgrounds |
 
 ## Notes

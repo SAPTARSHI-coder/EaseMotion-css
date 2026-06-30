@@ -11,6 +11,7 @@ Playful underwater bubble rising animation.
 Apply the `.bubble` element class (and optionally override CSS variables) and let the keyframes run automatically.
 
 Key CSS variables (optional):
+
 - `--x`: horizontal position (e.g. `18%`)
 - `--size`: bubble diameter (e.g. `18px`)
 - `--wobble`: wobble amplitude (e.g. `12px`)
@@ -29,4 +30,3 @@ Key CSS variables (optional):
   - Bubble visuals use glossy radial gradients, light border, and soft glow
 - Reduced motion override included
   - `@media (prefers-reduced-motion: reduce)` disables the animation
-

@@ -4,13 +4,13 @@ Utility classes for controlling the spacing between characters in text.
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
-| `.tracking-tight` | `letter-spacing: -0.05em;` |
-| `.tracking-normal` | `letter-spacing: 0;` |
-| `.tracking-wide` | `letter-spacing: 0.05em;` |
-| `.tracking-wider` | `letter-spacing: 0.1em;` |
-| `.tracking-widest` | `letter-spacing: 0.2em;` |
+| Class              | CSS                        |
+| ------------------ | -------------------------- |
+| `.tracking-tight`  | `letter-spacing: -0.05em;` |
+| `.tracking-normal` | `letter-spacing: 0;`       |
+| `.tracking-wide`   | `letter-spacing: 0.05em;`  |
+| `.tracking-wider`  | `letter-spacing: 0.1em;`   |
+| `.tracking-widest` | `letter-spacing: 0.2em;`   |
 
 ## Usage
 

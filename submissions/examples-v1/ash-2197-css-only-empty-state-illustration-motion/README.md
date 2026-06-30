@@ -23,9 +23,7 @@ A CSS-only animated empty state illustration featuring floating documents, folde
 ## Usage
 
 ```html
-<div class="empty-state">
-    ...
-</div>
+<div class="empty-state">...</div>
 ```
 
 ## Main Classes

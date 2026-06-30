@@ -26,6 +26,7 @@
    Dashboards constantly need to balance showing a lot of data with not overwhelming the user at a glance — a widget that stays compact until someone shows interest (hover/focus) is a clean way to surface secondary stats and quick actions without permanently consuming the layout's space, all in pure CSS.
 
 ### Notes for the maintainer
+
 - **Animated statistics**: the headline `.widgetexpand-stat` number itself reacts on hover (slight scale + color shift), not just the reveal panel — giving the main number its own small animated cue rather than only animating the newly-revealed content.
 - **`max-height` reveal budget verified, not guessed**: the reveal panel's expand uses `max-height: 0 → 160px` (since `max-height` can't transition to `auto`). The actual content height was calculated from the real CSS values shipped here (substats line-heights + margins + button height) at ~94px, giving ~66px of headroom at 160px — re-check this value if the demo content is extended.
 - **Accessibility**: cards are `tabindex="0"` and every hover state has a matching `:focus-visible` selector, so keyboard users get the identical expand behavior, not just a focus ring. `prefers-reduced-motion: reduce` removes all transitions (card lift, stat scale, panel expand) so the same content is still reachable, just without the animated transition between states.

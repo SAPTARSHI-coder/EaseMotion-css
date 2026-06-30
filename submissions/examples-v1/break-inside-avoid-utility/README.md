@@ -8,9 +8,9 @@ Introduces the layout fragmentation containment utility token (`.ease-break-insi
 - **The Solution:** Locks layout components together. The `.ease-break-inside-avoid` class forces the parsing layout shaper to keep the targeted element block fully unified, pushing the entire card onto the next column panel or print row if room runs out.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-break-inside-avoid">
-  </div>
+<div class="ease-break-inside-avoid"></div>
 ```
 
 Closes #15181

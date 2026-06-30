@@ -24,13 +24,9 @@ A modern form field component with inline help tooltips that provide contextual 
 
 ```html
 <div class="tooltip-wrapper">
+  <span class="help-icon">?</span>
 
-    <span class="help-icon">?</span>
-
-    <div class="tooltip">
-        Helpful information here.
-    </div>
-
+  <div class="tooltip">Helpful information here.</div>
 </div>
 ```
 

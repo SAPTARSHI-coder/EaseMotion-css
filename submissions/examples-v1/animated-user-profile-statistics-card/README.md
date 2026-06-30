@@ -29,12 +29,15 @@ submissions/examples/animated-user-profile-statistics-card/
   <span class="achievement-badge badge-pro">PRO</span>
 
   <!-- Profile Image -->
-  <img src="data:image/svg+xml;utf8,..." alt="Profile Avatar" class="avatar">
+  <img src="data:image/svg+xml;utf8,..." alt="Profile Avatar" class="avatar" />
 
   <!-- Info -->
   <h3>Sarah Johnson</h3>
   <p class="role">Product Designer</p>
-  <p class="bio">Lead Product Designer @CreativeLabs. Crafting minimal, motion-rich user experiences.</p>
+  <p class="bio">
+    Lead Product Designer @CreativeLabs. Crafting minimal, motion-rich user
+    experiences.
+  </p>
 
   <!-- Status -->
   <span class="status-badge">Online</span>
@@ -82,12 +85,12 @@ You can customize the card colors, transitions, and shadows via `:root` variable
   /* Cards */
   --p-card-bg: rgba(30, 41, 59, 0.4);
   --p-card-hover-bg: rgba(30, 41, 59, 0.7);
-  
+
   /* Accent Colors */
   --p-color-online: #10b981;
   --p-color-active: #3b82f6;
   --p-color-verified: #8b5cf6;
-  
+
   /* Transitions */
   --p-transition-smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -96,6 +99,7 @@ You can customize the card colors, transitions, and shadows via `:root` variable
 ### Theme Accent States
 
 To switch the styling of the card and its active buttons:
+
 - **Online**: Add `user-online` to the `.profile-card` (Green accent, PRO badge).
 - **Active**: Add `user-active` to the `.profile-card` (Blue accent, CORE badge).
 - **Verified**: Add `user-verified` to the `.profile-card` (Purple accent, ELITE badge).

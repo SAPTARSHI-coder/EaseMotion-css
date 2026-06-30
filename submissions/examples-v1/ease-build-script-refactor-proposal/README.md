@@ -13,9 +13,10 @@ An architectural proposal to replace the current Node.js CSS minifier with [Ligh
 This demo is self-contained. Open `demo.html` in your browser to view the benchmark comparison proposal. All required CSS is inside `style.css`.
 
 ### Proposed Script Change
+
 If this proposal is accepted, the maintainer would update `build-minified-css.mjs` to look something like this:
 
-```javascript
+````javascript
 import { transform } from 'lightningcss';
 import fs from 'fs';
 
@@ -66,3 +67,4 @@ const { code, map } = transform({
 
 // Write minified output
 fs.writeFileSync('dist/easemotion.min.css', code);
+````

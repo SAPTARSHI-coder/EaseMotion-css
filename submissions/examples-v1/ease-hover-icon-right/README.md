@@ -18,7 +18,7 @@ A subtle hover animation where an icon inside a link or button nudges to the rig
 
 ```html
 <a href="#" class="ease-hover-icon-right">
-    Read More <span class="icon">→</span>
+  Read More <span class="icon">→</span>
 </a>
 ```
 
@@ -28,7 +28,7 @@ A subtle hover animation where an icon inside a link or button nudges to the rig
 
 ```css
 :root {
-    --ease-hover-icon-right-distance: 4px;
-    --ease-hover-icon-right-duration: 0.25s;
+  --ease-hover-icon-right-distance: 4px;
+  --ease-hover-icon-right-duration: 0.25s;
 }
 ```

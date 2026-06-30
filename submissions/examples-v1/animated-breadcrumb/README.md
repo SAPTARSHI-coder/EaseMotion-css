@@ -26,24 +26,25 @@ An animated breadcrumb navigation component for EaseMotion CSS.
 
 ## Separator Variants
 
-| Class | Separator |
-|---|---|
-| `ease-breadcrumb-slash` | / |
-| `ease-breadcrumb-arrow` | → |
-| `ease-breadcrumb-dot` | • |
-| `ease-breadcrumb-chevron` | › |
+| Class                     | Separator |
+| ------------------------- | --------- |
+| `ease-breadcrumb-slash`   | /         |
+| `ease-breadcrumb-arrow`   | →         |
+| `ease-breadcrumb-dot`     | •         |
+| `ease-breadcrumb-chevron` | ›         |
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-breadcrumb` | Base breadcrumb list |
-| `ease-breadcrumb-item` | Individual crumb wrapper |
-| `ease-breadcrumb-link` | Clickable crumb link |
-| `ease-breadcrumb-separator` | Separator between crumbs |
-| `ease-breadcrumb-current` | Active/current page crumb |
+| Class                       | Description               |
+| --------------------------- | ------------------------- |
+| `ease-breadcrumb`           | Base breadcrumb list      |
+| `ease-breadcrumb-item`      | Individual crumb wrapper  |
+| `ease-breadcrumb-link`      | Clickable crumb link      |
+| `ease-breadcrumb-separator` | Separator between crumbs  |
+| `ease-breadcrumb-current`   | Active/current page crumb |
 
 ## Features
+
 - Staggered entrance animation per crumb
 - 4 separator variants
 - Hover effect on links

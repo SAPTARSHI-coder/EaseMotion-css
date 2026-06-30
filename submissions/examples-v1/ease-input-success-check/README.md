@@ -11,13 +11,14 @@ A satisfying form feedback component where a green checkmark bounces into view i
 
 ## 🛠️ Usage
 
-Wrap your `<input>` and the checkmark SVG inside a `.ease-input-wrapper` container. The SVG must be placed immediately *after* the input element.
+Wrap your `<input>` and the checkmark SVG inside a `.ease-input-wrapper` container. The SVG must be placed immediately _after_ the input element.
 
 ```html
 <div class="ease-input-wrapper">
   <input type="text" class="ease-input" placeholder="Enter username..." />
-  
+
   <svg class="ease-success-check" viewBox="0 0 24 24">
     <!-- SVG Path -->
   </svg>
 </div>
+```

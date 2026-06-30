@@ -16,19 +16,19 @@ const cardVariants = [
       .lift-card:hover {
         transform: translateY(-12px) scale(1.05);
       }
-    `
+    `,
   },
   {
-  id: "stats",
-  name: "Stats Card",
-  description: "Modern statistics card",
-  html: `
+    id: "stats",
+    name: "Stats Card",
+    description: "Modern statistics card",
+    html: `
     <div class="stats-card">
       <h2>12.5K</h2>
       <p>Total Users</p>
     </div>
   `,
-  css: `
+    css: `
     .stats-card{
       background:#fff;
       border-radius:16px;
@@ -43,19 +43,19 @@ const cardVariants = [
     .stats-card p{
       color:#666;
     }
-  `
-},
-{
-  id:"glass",
-  name:"Glass Card",
-  description:"Glassmorphism effect",
-  html:`
+  `,
+  },
+  {
+    id: "glass",
+    name: "Glass Card",
+    description: "Glassmorphism effect",
+    html: `
     <div class="glass-card">
       <h3>Glass Card</h3>
       <p>Beautiful frosted glass effect.</p>
     </div>
   `,
-  css:`
+    css: `
     .glass-card{
       backdrop-filter:blur(20px);
       background:rgba(255,255,255,.2);
@@ -64,20 +64,20 @@ const cardVariants = [
       padding:35px;
       color:#fff;
     }
-  `
-},
-{
-  id:"profile",
-  name:"Profile Card",
-  description:"Simple user profile",
-  html:`
+  `,
+  },
+  {
+    id: "profile",
+    name: "Profile Card",
+    description: "Simple user profile",
+    html: `
     <div class="profile-card">
       <img src="https://i.pravatar.cc/100">
       <h3>John Doe</h3>
       <p>UI Designer</p>
     </div>
   `,
-  css:`
+    css: `
     .profile-card{
       background:#fff;
       border-radius:18px;
@@ -90,19 +90,20 @@ const cardVariants = [
       height:90px;
       border-radius:50%;
     }
-  `
-},{
-  id:"product",
-  name:"Product Card",
-  description:"Modern ecommerce card",
-  html:`
+  `,
+  },
+  {
+    id: "product",
+    name: "Product Card",
+    description: "Modern ecommerce card",
+    html: `
     <div class="product-card">
       <img src="https://picsum.photos/250/180">
       <h3>Wireless Headphones</h3>
       <span>$149</span>
     </div>
   `,
-  css:`
+    css: `
     .product-card{
       background:#fff;
       border-radius:15px;
@@ -121,19 +122,20 @@ const cardVariants = [
       color:#10b981;
       font-weight:bold;
     }
-  `
-},{
-  id:"pricing",
-  name:"Pricing Card",
-  description:"Pricing plan",
-  html:`
+  `,
+  },
+  {
+    id: "pricing",
+    name: "Pricing Card",
+    description: "Pricing plan",
+    html: `
     <div class="pricing-card">
       <h2>Pro</h2>
       <h1>$19</h1>
       <button>Choose Plan</button>
     </div>
   `,
-  css:`
+    css: `
     .pricing-card{
       background:#fff;
       text-align:center;
@@ -152,12 +154,13 @@ const cardVariants = [
       background:#3b82f6;
       color:#fff;
     }
-  `
-},{
-  id:"blog",
-  name:"Blog Card",
-  description:"Blog preview",
-  html:`
+  `,
+  },
+  {
+    id: "blog",
+    name: "Blog Card",
+    description: "Blog preview",
+    html: `
     <div class="blog-card">
       <img src="https://picsum.photos/300/180">
       <div class="content">
@@ -166,7 +169,7 @@ const cardVariants = [
       </div>
     </div>
   `,
-  css:`
+    css: `
     .blog-card{
       background:#fff;
       border-radius:16px;
@@ -179,19 +182,20 @@ const cardVariants = [
     .content{
       padding:20px;
     }
-  `
-},{
-  id:"dashboard",
-  name:"Dashboard Card",
-  description:"Analytics dashboard",
-  html:`
+  `,
+  },
+  {
+    id: "dashboard",
+    name: "Dashboard Card",
+    description: "Analytics dashboard",
+    html: `
     <div class="dashboard-card">
       <h3>Revenue</h3>
       <h1>$8,250</h1>
       <small>+18% this month</small>
     </div>
   `,
-  css:`
+    css: `
     .dashboard-card{
       background:#111827;
       color:#fff;
@@ -202,19 +206,20 @@ const cardVariants = [
       color:#10b981;
       margin:15px 0;
     }
-  `
-},{
-  id:"team",
-  name:"Team Card",
-  description:"Team member",
-  html:`
+  `,
+  },
+  {
+    id: "team",
+    name: "Team Card",
+    description: "Team member",
+    html: `
     <div class="team-card">
       <img src="https://i.pravatar.cc/120">
       <h3>Emma Watson</h3>
       <span>Frontend Developer</span>
     </div>
   `,
-  css:`
+    css: `
     .team-card{
       background:#fff;
       text-align:center;
@@ -228,19 +233,20 @@ const cardVariants = [
     .team-card span{
       color:#666;
     }
-  `
-},{
-  id:"weather",
-  name:"Weather Card",
-  description:"Weather UI card",
-  html:`
+  `,
+  },
+  {
+    id: "weather",
+    name: "Weather Card",
+    description: "Weather UI card",
+    html: `
     <div class="weather-card">
       ☀️
       <h2>28°C</h2>
       <p>Sunny</p>
     </div>
   `,
-  css:`
+    css: `
     .weather-card{
       background:linear-gradient(135deg,#38bdf8,#2563eb);
       color:#fff;
@@ -249,8 +255,8 @@ const cardVariants = [
       padding:35px;
       font-size:40px;
     }
-  `
-},
+  `,
+  },
   {
     id: "glow",
     name: "Glow Card",
@@ -268,7 +274,7 @@ const cardVariants = [
       .glow-card:hover {
         box-shadow: 0 0 20px #00f, 0 0 40px #0ff;
       }
-    `
+    `,
   },
   {
     id: "flip",
@@ -312,7 +318,7 @@ const cardVariants = [
         color: #fff;
         transform: rotateY(180deg);
       }
-    `
+    `,
   },
   {
     id: "pulse",
@@ -332,7 +338,7 @@ const cardVariants = [
         text-align: center;
         animation: pulse 2s infinite;
       }
-    `
+    `,
   },
   {
     id: "bounce",
@@ -355,8 +361,8 @@ const cardVariants = [
       .bounce-card:hover {
         animation: bounce 0.6s;
       }
-    `
-  }
+    `,
+  },
 ];
 
 // Inject dynamically
@@ -364,7 +370,7 @@ const grid = document.getElementById("cardGrid");
 const styleTag = document.createElement("style");
 document.head.appendChild(styleTag);
 
-cardVariants.forEach(card => {
+cardVariants.forEach((card) => {
   styleTag.innerHTML += card.css;
   const wrapper = document.createElement("div");
   wrapper.className = "card-wrapper";

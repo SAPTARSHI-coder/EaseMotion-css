@@ -17,14 +17,14 @@ Controls browser overscroll behavior — whether scroll "bounces" or chaining oc
 
 ### Classes
 
-| Class | Property |
-|---|---|
-| `.ease-overscroll-auto` | `overscroll-behavior: auto` |
-| `.ease-overscroll-contain` | `overscroll-behavior: contain` |
-| `.ease-overscroll-none` | `overscroll-behavior: none` |
-| `.ease-overscroll-x-auto` | `overscroll-behavior-x: auto` |
+| Class                        | Property                         |
+| ---------------------------- | -------------------------------- |
+| `.ease-overscroll-auto`      | `overscroll-behavior: auto`      |
+| `.ease-overscroll-contain`   | `overscroll-behavior: contain`   |
+| `.ease-overscroll-none`      | `overscroll-behavior: none`      |
+| `.ease-overscroll-x-auto`    | `overscroll-behavior-x: auto`    |
 | `.ease-overscroll-x-contain` | `overscroll-behavior-x: contain` |
-| `.ease-overscroll-x-none` | `overscroll-behavior-x: none` |
-| `.ease-overscroll-y-auto` | `overscroll-behavior-y: auto` |
+| `.ease-overscroll-x-none`    | `overscroll-behavior-x: none`    |
+| `.ease-overscroll-y-auto`    | `overscroll-behavior-y: auto`    |
 | `.ease-overscroll-y-contain` | `overscroll-behavior-y: contain` |
-| `.ease-overscroll-y-none` | `overscroll-behavior-y: none` |
+| `.ease-overscroll-y-none`    | `overscroll-behavior-y: none`    |

@@ -22,21 +22,15 @@ A responsive notification preference settings component that organizes multiple 
 
 ```html
 <div class="item">
+  <div>
+    <h3>Email Alerts</h3>
+  </div>
 
-    <div>
+  <label class="switch">
+    <input type="checkbox" checked />
 
-        <h3>Email Alerts</h3>
-
-    </div>
-
-    <label class="switch">
-
-        <input type="checkbox" checked>
-
-        <span class="slider"></span>
-
-    </label>
-
+    <span class="slider"></span>
+  </label>
 </div>
 ```
 

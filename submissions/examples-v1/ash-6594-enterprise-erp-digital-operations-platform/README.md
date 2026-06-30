@@ -22,15 +22,9 @@ A responsive enterprise ERP dashboard that visualizes operational performance, f
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

@@ -23,12 +23,10 @@ A showcase demonstrating how interfaces can respect user accessibility settings 
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-
-    * {
-
-        animation: none;
-        transition: none;
-    }
+  * {
+    animation: none;
+    transition: none;
+  }
 }
 ```
 

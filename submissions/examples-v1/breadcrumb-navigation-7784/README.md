@@ -33,12 +33,12 @@ A breadcrumb navigation component showing page hierarchy with customizable separ
 
 ### Separator variants
 
-| Class | Separator |
-|-------|-----------|
-| `.ease-breadcrumb-separator-slash` | `/` |
-| `.ease-breadcrumb-separator-arrow` | `>` |
-| `.ease-breadcrumb-separator-chevron` | `›` |
-| `.ease-breadcrumb-separator-bullet` | `•` |
+| Class                                | Separator |
+| ------------------------------------ | --------- |
+| `.ease-breadcrumb-separator-slash`   | `/`       |
+| `.ease-breadcrumb-separator-arrow`   | `>`       |
+| `.ease-breadcrumb-separator-chevron` | `›`       |
+| `.ease-breadcrumb-separator-bullet`  | `•`       |
 
 ### Mobile truncation
 

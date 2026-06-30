@@ -5,6 +5,7 @@
 Adds auto-dismiss behavior and exit animation to the EaseMotion toast component (`components/toast.css`).
 
 **New CSS:**
+
 - `.ease-toast-dismiss` — Exit animation class using existing `ease-kf-slide-out-right` keyframe
 - `.ease-toast-progress` — Shrinking progress bar sub-element indicating time remaining
 - `--ease-toast-duration` — CSS custom property defaulting to 4s, controls both dismiss timer and progress bar speed
@@ -13,9 +14,14 @@ Adds auto-dismiss behavior and exit animation to the EaseMotion toast component 
 - `prefers-reduced-motion` gracefully hides animation
 
 **Recommended markup:**
+
 ```html
-<div class="ease-toast ease-toast-success" role="alert" aria-live="polite"
-     style="--ease-toast-duration: 5s;">
+<div
+  class="ease-toast ease-toast-success"
+  role="alert"
+  aria-live="polite"
+  style="--ease-toast-duration: 5s;"
+>
   <div class="ease-toast-body">
     <strong>Saved</strong>
     <p>Your changes have been saved.</p>
@@ -28,22 +34,31 @@ Adds auto-dismiss behavior and exit animation to the EaseMotion toast component 
 
 ```javascript
 function showToast(type, title, message, duration) {
-  var toast = document.createElement('div');
-  toast.className = 'ease-toast ease-toast-enter ease-toast-' + type;
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'polite');
-  toast.style.setProperty('--ease-toast-duration', (duration || 4) + 's');
+  var toast = document.createElement("div");
+  toast.className = "ease-toast ease-toast-enter ease-toast-" + type;
+  toast.setAttribute("role", "alert");
+  toast.setAttribute("aria-live", "polite");
+  toast.style.setProperty("--ease-toast-duration", (duration || 4) + "s");
   toast.innerHTML =
-    '<div class="ease-toast-body"><strong>' + title + '</strong><p>' + message + '</p></div>' +
+    '<div class="ease-toast-body"><strong>' +
+    title +
+    "</strong><p>" +
+    message +
+    "</p></div>" +
     '<div class="ease-toast-progress"></div>';
 
   document.body.appendChild(toast);
 
-  setTimeout(function () {
-    toast.classList.remove('ease-toast-enter');
-    toast.classList.add('ease-toast-dismiss');
-    setTimeout(function () { toast.remove(); }, 350);
-  }, (duration || 4) * 1000);
+  setTimeout(
+    function () {
+      toast.classList.remove("ease-toast-enter");
+      toast.classList.add("ease-toast-dismiss");
+      setTimeout(function () {
+        toast.remove();
+      }, 350);
+    },
+    (duration || 4) * 1000
+  );
 }
 ```
 

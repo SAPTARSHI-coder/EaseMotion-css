@@ -3,6 +3,7 @@
 clear — Stops floating elements from flowing around an element
 
 ## Features
+
 - Uses `--ease-color-surface`
 - Uses `--ease-radius-md`
 - Uses `--ease-shadow-sm`

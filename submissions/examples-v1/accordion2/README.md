@@ -23,14 +23,9 @@ Open `demo.html` in any modern browser.
 ### Basic Accordion
 
 ```html
-&lt;div class="accordion"&gt;
-  &lt;details class="accordion__item"&gt;
-    &lt;summary class="accordion__header"&gt;
-      &lt;span&gt;Question?&lt;/span&gt;
-      &lt;svg class="accordion__icon"&gt;...&lt;/svg&gt;
-    &lt;/summary&gt;
-    &lt;div class="accordion__content"&gt;
-      &lt;p&gt;Answer content goes here.&lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/details&gt;
-&lt;/div&gt;
+&lt;div class="accordion"&gt; &lt;details class="accordion__item"&gt;
+&lt;summary class="accordion__header"&gt; &lt;span&gt;Question?&lt;/span&gt;
+&lt;svg class="accordion__icon"&gt;...&lt;/svg&gt; &lt;/summary&gt; &lt;div
+class="accordion__content"&gt; &lt;p&gt;Answer content goes here.&lt;/p&gt;
+&lt;/div&gt; &lt;/details&gt; &lt;/div&gt;
+```

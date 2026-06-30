@@ -4,6 +4,7 @@ A reusable React component that creates an animated, blurry gradient
 background for hero sections. Works with any content passed as children.
 
 ## Files
+
 - `AnimatedBlurGradient.jsx` – the React component
 - `demo.html` – a pure HTML/CSS demo of the same effect
 - `style.css` – the CSS for the gradient and blur circles
@@ -19,3 +20,4 @@ background for hero sections. Works with any content passed as children.
 <AnimatedBlurGradient>
   <h1>Hello World</h1>
 </AnimatedBlurGradient>
+```

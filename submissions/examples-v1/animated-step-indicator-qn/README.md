@@ -1,13 +1,16 @@
 # Animated Step Indicator/Progress Stepper
 
 ## Description
+
 A modern, fully animated step indicator component perfect for multi-step forms, checkout processes, and onboarding flows. It features smooth animations for completed steps (with animated checkmarks), an active step with a pulsing ring effect, and connecting lines that fill progressively. The component is fully responsive and adapts from horizontal to vertical layout on mobile. Built entirely with pure CSS, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the HTML structure for a 4-step checkout process with completed, active, and upcoming states.
 - `style.css`: Contains the step styling, animations, connecting lines, checkmark effects, and responsive design.
 
 ## How to use
+
 1. Open `demo.html` in your browser to see the animated step indicator.
 2. Copy the HTML and CSS into your project.
 3. **Structure:**
@@ -22,6 +25,7 @@ A modern, fully animated step indicator component perfect for multi-step forms, 
    - **Size:** Modify the `width` and `height` in `.step-circle-qn` to make steps larger or smaller.
 
 ## Features
+
 - **Three States:** Completed (with checkmark), Active (with pulse), and Upcoming
 - **Animated Checkmarks:** SVG checkmarks draw themselves when a step is completed
 - **Progressive Line Fill:** Connecting lines animate from left to right as steps complete
@@ -31,13 +35,16 @@ A modern, fully animated step indicator component perfect for multi-step forms, 
 - **Staggered Animations:** Steps appear in sequence on page load
 
 ## State Management
+
 To change the active step, simply update the classes:
+
 - Remove `.completed-qn` and `.active-qn` from all steps
 - Add `.completed-qn` to all steps before the current one
 - Add `.active-qn` to the current step
 - Add `.completed-qn` to the connecting lines before the current step
 
 Example: Moving from step 2 to step 3:
+
 ```html
 <!-- Step 1: Completed -->
 <div class="step-qn completed-qn">...</div>
@@ -53,3 +60,4 @@ Example: Moving from step 2 to step 3:
 
 <!-- Step 4: Upcoming -->
 <div class="step-qn">...</div>
+```

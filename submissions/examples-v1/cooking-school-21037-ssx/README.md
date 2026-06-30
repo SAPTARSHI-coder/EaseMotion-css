@@ -51,17 +51,17 @@ EaseMotion CSS exists to make motion and interaction feel **effortless and consi
 
 ## Sections included
 
-| # | Section | EaseMotion classes used |
-|---|---|---|
-| 1 | Sticky navbar | `ease-nav`, `ease-nav-link`, `ease-hover-underline` |
-| 2 | Hero with food imagery | `ease-hero`, `ease-text-gradient`, `ease-pill`, `ease-reveal-up` |
-| 3 | Class types (Beginner / Advanced / Baking / International) | `ease-grid-4`, `ease-card`, `ease-hover-lift`, `ease-reveal-d1/d2/d3` |
-| 4 | Chef instructor profiles | `ease-grid-3`, `ease-chef`, `ease-hover-lift` |
-| 5 | Kitchen facility gallery | `ease-gallery`, `ease-hover-zoom` |
-| 6 | Schedule & pricing table | `ease-table`, `ease-hover-row`, `ease-link-pill` |
-| 7 | Gift cooking class CTA | `ease-cta-band`, `ease-btn-light` |
-| 8 | Enrollment form | `ease-form-grid`, `ease-form`, `ease-field`, `ease-form-success` |
-| 9 | Footer | `ease-footer`, `ease-footer-grid`, `ease-footer-link` |
+| #   | Section                                                    | EaseMotion classes used                                               |
+| --- | ---------------------------------------------------------- | --------------------------------------------------------------------- |
+| 1   | Sticky navbar                                              | `ease-nav`, `ease-nav-link`, `ease-hover-underline`                   |
+| 2   | Hero with food imagery                                     | `ease-hero`, `ease-text-gradient`, `ease-pill`, `ease-reveal-up`      |
+| 3   | Class types (Beginner / Advanced / Baking / International) | `ease-grid-4`, `ease-card`, `ease-hover-lift`, `ease-reveal-d1/d2/d3` |
+| 4   | Chef instructor profiles                                   | `ease-grid-3`, `ease-chef`, `ease-hover-lift`                         |
+| 5   | Kitchen facility gallery                                   | `ease-gallery`, `ease-hover-zoom`                                     |
+| 6   | Schedule & pricing table                                   | `ease-table`, `ease-hover-row`, `ease-link-pill`                      |
+| 7   | Gift cooking class CTA                                     | `ease-cta-band`, `ease-btn-light`                                     |
+| 8   | Enrollment form                                            | `ease-form-grid`, `ease-form`, `ease-field`, `ease-form-success`      |
+| 9   | Footer                                                     | `ease-footer`, `ease-footer-grid`, `ease-footer-link`                 |
 
 ---
 

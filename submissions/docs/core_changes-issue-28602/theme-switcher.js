@@ -25,7 +25,8 @@
   }
 
   function toggleTheme() {
-    const current = document.documentElement.getAttribute("data-theme") || "light";
+    const current =
+      document.documentElement.getAttribute("data-theme") || "light";
     applyTheme(current === "dark" ? "light" : "dark");
   }
 

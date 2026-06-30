@@ -10,9 +10,7 @@
      Centered content — max-width adapts to viewport
    </div>
 
-   <div class="ease-container-fluid">
-     Full width with consistent padding
-   </div>
+   <div class="ease-container-fluid">Full width with consistent padding</div>
 
    <div class="ease-container" style="--ease-container-padding: 2rem;">
      Custom gutter width

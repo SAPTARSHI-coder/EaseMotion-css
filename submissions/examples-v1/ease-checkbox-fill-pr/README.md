@@ -11,25 +11,25 @@ Custom checkbox background fill animation on tick using CSS transitions and :che
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| ease-checkbox | Base checkbox wrapper |
-| ease-checkbox-label | Label text next to checkbox |
-| ease-checkbox-primary | Indigo fill color |
-| ease-checkbox-success | Green fill color |
-| ease-checkbox-danger | Red fill color |
-| ease-checkbox-warning | Amber fill color |
-| ease-checkbox-pink | Pink fill color |
-| ease-checkbox-sm | Small size (15px) |
-| ease-checkbox-lg | Large size (26px) |
-| ease-checkbox-round | Circular checkbox shape |
-| ease-checkbox-bounce | Bounce animation on check |
-| ease-checkbox-strike | Strikethrough label when checked |
+| Class                 | Description                      |
+| --------------------- | -------------------------------- |
+| ease-checkbox         | Base checkbox wrapper            |
+| ease-checkbox-label   | Label text next to checkbox      |
+| ease-checkbox-primary | Indigo fill color                |
+| ease-checkbox-success | Green fill color                 |
+| ease-checkbox-danger  | Red fill color                   |
+| ease-checkbox-warning | Amber fill color                 |
+| ease-checkbox-pink    | Pink fill color                  |
+| ease-checkbox-sm      | Small size (15px)                |
+| ease-checkbox-lg      | Large size (26px)                |
+| ease-checkbox-round   | Circular checkbox shape          |
+| ease-checkbox-bounce  | Bounce animation on check        |
+| ease-checkbox-strike  | Strikethrough label when checked |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property              | Default | Description                        |
+| --------------------- | ------- | ---------------------------------- |
 | --ease-checkbox-color | #6366f1 | Fill and border color when checked |
 
 ## Notes

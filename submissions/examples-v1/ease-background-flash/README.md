@@ -9,8 +9,10 @@ A beginner-to-intermediate micro-interaction utility component engineered to bri
 - **Accessible Motion Controls:** Outfitted with robust `@media (prefers-reduced-motion: reduce)` structures that completely bypass transient visual pulses to protect sensory-sensitive users.
 
 ## Workspace Tree Map
+
 - `demo.html`: Independent playground housing live manual triggers.
 - `style.css`: Clean modular tracking stylesheet rules.
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

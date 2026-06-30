@@ -8,15 +8,15 @@ Designed for dashboards, productivity apps, scheduling interfaces, waiting state
 
 ## ✨ Features
 
-* 🎯 Pure HTML & CSS
-* ⚙️ No JavaScript or dependencies
-* 🕒 Smooth rotating hour and minute hands
-* ⏱️ Realistic ticking second hand using `steps(60)`
-* 🎨 Multiple built-in themes
-* 📏 Five responsive size variants
-* 🚀 Turbo and paused animation states
-* 🎛️ Easily customizable with CSS variables
-* 📱 Responsive and lightweight
+- 🎯 Pure HTML & CSS
+- ⚙️ No JavaScript or dependencies
+- 🕒 Smooth rotating hour and minute hands
+- ⏱️ Realistic ticking second hand using `steps(60)`
+- 🎨 Multiple built-in themes
+- 📏 Five responsive size variants
+- 🚀 Turbo and paused animation states
+- 🎛️ Easily customizable with CSS variables
+- 📱 Responsive and lightweight
 
 ---
 
@@ -35,13 +35,13 @@ ease-clock-loader/
 
 The demo showcases:
 
-* Multiple color themes
-* Responsive size variants
-* Turbo processing mode
-* Paused state
-* Real-world loading examples
-* Overlay compatibility
-* CSS customization
+- Multiple color themes
+- Responsive size variants
+- Turbo processing mode
+- Paused state
+- Real-world loading examples
+- Overlay compatibility
+- CSS customization
 
 ---
 
@@ -50,20 +50,20 @@ The demo showcases:
 Include the stylesheet:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 Add the loader markup:
 
 ```html
 <div class="ease-clock ease-clock--md ease-clock--slate">
-    <div class="ease-clock__face"></div>
+  <div class="ease-clock__face"></div>
 
-    <div class="ease-clock__hand ease-clock__hand--hour"></div>
-    <div class="ease-clock__hand ease-clock__hand--minute"></div>
-    <div class="ease-clock__hand ease-clock__hand--second"></div>
+  <div class="ease-clock__hand ease-clock__hand--hour"></div>
+  <div class="ease-clock__hand ease-clock__hand--minute"></div>
+  <div class="ease-clock__hand ease-clock__hand--second"></div>
 
-    <div class="ease-clock__center"></div>
+  <div class="ease-clock__center"></div>
 </div>
 ```
 
@@ -75,7 +75,7 @@ Choose from several predefined themes simply by adding a modifier class.
 
 | Theme    | Class                  |
 | -------- | ---------------------- |
-| Default  | *(no modifier)*        |
+| Default  | _(no modifier)_        |
 | Slate    | `ease-clock--slate`    |
 | Cream    | `ease-clock--cream`    |
 | Steel    | `ease-clock--steel`    |
@@ -84,7 +84,7 @@ Choose from several predefined themes simply by adding a modifier class.
 Example:
 
 ```html
-<div class="ease-clock ease-clock--md ease-clock--midnight">
+<div class="ease-clock ease-clock--md ease-clock--midnight"></div>
 ```
 
 ---
@@ -110,15 +110,15 @@ Scale the loader using predefined size classes.
 Accelerates the loader for active processing.
 
 ```html
-<div class="ease-clock ease-clock--turbo">
+<div class="ease-clock ease-clock--turbo"></div>
 ```
 
 Ideal for:
 
-* File processing
-* Payments
-* AI generation
-* Data analysis
+- File processing
+- Payments
+- AI generation
+- Data analysis
 
 ---
 
@@ -127,14 +127,14 @@ Ideal for:
 Freezes the clock animation.
 
 ```html
-<div class="ease-clock ease-clock--paused">
+<div class="ease-clock ease-clock--paused"></div>
 ```
 
 Useful for:
 
-* Disabled interfaces
-* Completed actions
-* Suspended processes
+- Disabled interfaces
+- Completed actions
+- Suspended processes
 
 ---
 
@@ -144,17 +144,17 @@ Override the default design using CSS custom properties.
 
 ```css
 .my-clock {
-    --clock-size: 80px;
+  --clock-size: 80px;
 
-    --clock-face: #faf6ef;
+  --clock-face: #faf6ef;
 
-    --clock-hand-hour: #1e293b;
-    --clock-hand-minute: #334155;
-    --clock-hand-second: #e74c5e;
+  --clock-hand-hour: #1e293b;
+  --clock-hand-minute: #334155;
+  --clock-hand-second: #e74c5e;
 
-    --clock-dur-hour: 60s;
-    --clock-dur-minute: 20s;
-    --clock-dur-second: 10s;
+  --clock-dur-hour: 60s;
+  --clock-dur-minute: 20s;
+  --clock-dur-second: 10s;
 }
 ```
 
@@ -164,18 +164,18 @@ Override the default design using CSS custom properties.
 
 The loader consists of:
 
-* A circular clock face
-* An hour hand
-* A minute hand
-* A ticking second hand
-* A centered pivot
+- A circular clock face
+- An hour hand
+- A minute hand
+- A ticking second hand
+- A centered pivot
 
 The animation relies entirely on CSS:
 
-* `transform: rotate()`
-* `@keyframes`
-* `steps(60)` for realistic ticking
-* CSS variables for customization
+- `transform: rotate()`
+- `@keyframes`
+- `steps(60)` for realistic ticking
+- CSS variables for customization
 
 No JavaScript is used.
 
@@ -185,14 +185,14 @@ No JavaScript is used.
 
 Ease Clock Loader works well for:
 
-* 📅 Calendar applications
-* 📊 Dashboards
-* ⏳ Waiting states
-* 💳 Payment processing
-* 📈 Report generation
-* 🤖 AI processing
-* 🗂️ Task scheduling
-* ⚙️ Background jobs
+- 📅 Calendar applications
+- 📊 Dashboards
+- ⏳ Waiting states
+- 💳 Payment processing
+- 📈 Report generation
+- 🤖 AI processing
+- 🗂️ Task scheduling
+- ⚙️ Background jobs
 
 ---
 
@@ -200,10 +200,10 @@ Ease Clock Loader works well for:
 
 Supported in all modern browsers that implement:
 
-* CSS Variables
-* CSS Animations
-* CSS Transforms
-* CSS `steps()` timing function
+- CSS Variables
+- CSS Animations
+- CSS Transforms
+- CSS `steps()` timing function
 
 ---
 
@@ -219,7 +219,9 @@ Combine modifiers for different appearances:
 <div class="ease-clock ease-clock--lg ease-clock--cream"></div>
 
 <!-- Turbo processing -->
-<div class="ease-clock ease-clock--md ease-clock--steel ease-clock--turbo"></div>
+<div
+  class="ease-clock ease-clock--md ease-clock--steel ease-clock--turbo"
+></div>
 
 <!-- Paused state -->
 <div class="ease-clock ease-clock--md ease-clock--paused"></div>

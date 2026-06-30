@@ -7,7 +7,9 @@ Demonstrates CSS `accent-color` applied to native form controls — checkboxes, 
 ## How is it used?
 
 ```css
-:root { --accent: #6c63ff; }
+:root {
+  --accent: #6c63ff;
+}
 
 input[type="checkbox"],
 input[type="radio"],

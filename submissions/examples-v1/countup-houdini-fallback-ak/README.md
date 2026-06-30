@@ -12,12 +12,14 @@ Issue [#5739](https://github.com/anomalyco/easemotion/issues/5739) tracks adding
 
 ```css
 @property --num {
-  syntax: '<integer>';
+  syntax: "<integer>";
   initial-value: 0;
   inherits: false;
 }
 
-.counter { counter-reset: num var(--num); }
+.counter {
+  counter-reset: num var(--num);
+}
 ```
 
 ### Fallback for non-supporting browsers
@@ -36,8 +38,8 @@ Issue [#5739](https://github.com/anomalyco/easemotion/issues/5739) tracks adding
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                   |
+| ----------- | --------------------------------------------------------- |
 | `demo.html` | Count-up with fallback detection and graceful degradation |
-| `style.css` | Count-up styles and cross-browser fallback logic |
-| `README.md` | This file — documentation and issue link |
+| `style.css` | Count-up styles and cross-browser fallback logic          |
+| `README.md` | This file — documentation and issue link                  |

@@ -1,6 +1,7 @@
 # Cluster Layout
 
 ## What does this do?
+
 Adds `.ease-cluster` — a wrapping flex row with gap.
 
 ```html
@@ -12,4 +13,5 @@ Adds `.ease-cluster` — a wrapping flex row with gap.
 ```
 
 ## Preview
+
 Open `demo.html` in your browser.

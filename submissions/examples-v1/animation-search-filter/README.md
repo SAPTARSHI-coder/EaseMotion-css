@@ -38,22 +38,22 @@ Open `demo.html` in browser:
 ```html
 <input type="text" id="searchInput" />
 <button onclick="filterAnimations('fade')">Fade</button>
-````
+```
 
 ---
 
 ## Benefits
 
-* Faster animation discovery
-* Better UX for developers
-* Organized animation system
-* Scales well as library grows
+- Faster animation discovery
+- Better UX for developers
+- Organized animation system
+- Scales well as library grows
 
 ---
 
 ## Future Improvements
 
-* Add tags system
-* Add animation preview playback
-* Add copy class button
-* Add dark/light mode toggle
+- Add tags system
+- Add animation preview playback
+- Add copy class button
+- Add dark/light mode toggle

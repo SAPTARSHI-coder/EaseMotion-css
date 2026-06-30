@@ -12,7 +12,9 @@ A demonstration of the `appearance: none` CSS property, an absolutely critical u
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To wipe the default styles off a form element:
+
 ```html
 <select class="ease-appearance-none custom-select">
   <option>Option</option>
 </select>
+```

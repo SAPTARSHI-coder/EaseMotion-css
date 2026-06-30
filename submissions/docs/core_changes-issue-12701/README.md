@@ -4,22 +4,22 @@ Compact pill-shaped tags for keywords, categories, filter selections, and multi-
 
 ## Classes
 
-| Class | Purpose |
-|-------|---------|
-| `ease-tag` | Base tag/chip pill |
-| `ease-tag-primary` | Primary color |
-| `ease-tag-success` | Success color |
-| `ease-tag-warning` | Warning color |
-| `ease-tag-danger` | Danger color |
-| `ease-tag-info` | Info color |
-| `ease-tag-outline` | Border-only variant (works with color classes) |
-| `ease-tag-sm` | Small size |
-| `ease-tag-lg` | Large size |
-| `ease-tag-selected` | Selected state with focus ring |
-| `ease-tag-removable` | Adds padding for close button |
-| `ease-tag-close` | Close button styling |
-| `ease-tag-group` | Flex-wrapped tag container |
-| `ease-tag-clickable` | Pointer cursor + brightness hover |
+| Class                | Purpose                                        |
+| -------------------- | ---------------------------------------------- |
+| `ease-tag`           | Base tag/chip pill                             |
+| `ease-tag-primary`   | Primary color                                  |
+| `ease-tag-success`   | Success color                                  |
+| `ease-tag-warning`   | Warning color                                  |
+| `ease-tag-danger`    | Danger color                                   |
+| `ease-tag-info`      | Info color                                     |
+| `ease-tag-outline`   | Border-only variant (works with color classes) |
+| `ease-tag-sm`        | Small size                                     |
+| `ease-tag-lg`        | Large size                                     |
+| `ease-tag-selected`  | Selected state with focus ring                 |
+| `ease-tag-removable` | Adds padding for close button                  |
+| `ease-tag-close`     | Close button styling                           |
+| `ease-tag-group`     | Flex-wrapped tag container                     |
+| `ease-tag-clickable` | Pointer cursor + brightness hover              |
 
 ## Usage
 
@@ -31,12 +31,16 @@ Compact pill-shaped tags for keywords, categories, filter selections, and multi-
 <span class="ease-tag ease-tag-outline ease-tag-success">Success</span>
 
 <!-- Selected state -->
-<span class="ease-tag ease-tag-outline ease-tag-primary ease-tag-selected">Selected</span>
+<span class="ease-tag ease-tag-outline ease-tag-primary ease-tag-selected"
+  >Selected</span
+>
 
 <!-- Removable tag -->
 <span class="ease-tag ease-tag-warning ease-tag-removable">
   Warning
-  <button class="ease-tag-close" onclick="this.parentElement.remove()">&times;</button>
+  <button class="ease-tag-close" onclick="this.parentElement.remove()">
+    &times;
+  </button>
 </span>
 
 <!-- Tag group -->
@@ -48,8 +52,8 @@ Compact pill-shaped tags for keywords, categories, filter selections, and multi-
 
 ## Affected Files
 
-| File | Change |
-|------|--------|
+| File                 | Change                   |
+| -------------------- | ------------------------ |
 | `components/tag.css` | New component stylesheet |
 
 Fixes #12701

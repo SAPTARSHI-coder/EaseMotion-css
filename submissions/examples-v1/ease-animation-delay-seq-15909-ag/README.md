@@ -6,19 +6,23 @@ This submission demonstrates four practical patterns for CSS animation stagger s
 
 ## Patterns Demonstrated
 
-| Pattern | Keyframe | Effect |
-|---------|----------|--------|
-| Card Stagger | `staggerFadeUp` | Cards fade in and rise from below |
-| List Slide-In | `staggerSlideRight` | Items slide in from the left |
-| Grid Wave | `staggerScale` | Cells pop in with elastic scale |
-| Word-by-Word | `staggerFadeUp` | Words animate in sequentially |
+| Pattern       | Keyframe            | Effect                            |
+| ------------- | ------------------- | --------------------------------- |
+| Card Stagger  | `staggerFadeUp`     | Cards fade in and rise from below |
+| List Slide-In | `staggerSlideRight` | Items slide in from the left      |
+| Grid Wave     | `staggerScale`      | Cells pop in with elastic scale   |
+| Word-by-Word  | `staggerFadeUp`     | Words animate in sequentially     |
 
 ## Core Pattern
 
 ```css
 /* Each item gets an incremental --stagger-delay */
-.item:nth-child(1) { --stagger-delay: 0s; }
-.item:nth-child(2) { --stagger-delay: 0.1s; }
+.item:nth-child(1) {
+  --stagger-delay: 0s;
+}
+.item:nth-child(2) {
+  --stagger-delay: 0.1s;
+}
 /* ... */
 
 /* Parent triggers animation via a class toggle */

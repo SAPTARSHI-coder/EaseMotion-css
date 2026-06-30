@@ -4,10 +4,10 @@ Long-page layout where each section uses `content-visibility: auto` for off-scre
 
 ## Classes
 
-| Class | Role |
-|---|---|
+| Class             | Role                                                               |
+| ----------------- | ------------------------------------------------------------------ |
 | `ease-cv-section` | Section with `content-visibility: auto` + `contain-intrinsic-size` |
-| `ease-cv-item` | Item that stagger-reveals via `view()` timeline and `--i` delay |
+| `ease-cv-item`    | Item that stagger-reveals via `view()` timeline and `--i` delay    |
 
 ## Usage
 

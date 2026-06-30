@@ -23,15 +23,9 @@ A modern checkout progress stepper that visually guides users through a multi-st
 
 ```html
 <div class="stepper">
-
-    <div class="step active">
-
-        <div class="step-circle">
-            3
-        </div>
-
-    </div>
-
+  <div class="step active">
+    <div class="step-circle">3</div>
+  </div>
 </div>
 ```
 

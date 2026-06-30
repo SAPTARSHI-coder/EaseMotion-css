@@ -41,18 +41,23 @@ Dashboard Motion Kit extends EaseMotion CSS with readable motion utilities that 
 ## Examples
 
 ### KPI cards
+
 Use `.ease-stat-counter` for revenue metrics, user counts, and performance indicators.
 
 ### Revenue dashboards
+
 Use `.ease-chart-reveal` for chart panels, analytics tiles, and report cards.
 
 ### Analytics panels
+
 Use `.ease-dashboard-entry` to animate dashboard section load states and widget groups.
 
 ### Admin interfaces
+
 Combine the utilities across widgets, tables, and overview sections for a polished admin experience.
 
 ### SaaS products
+
 Use the classes to improve first impressions in product dashboards and internal analytics pages.
 
 ## Accessibility

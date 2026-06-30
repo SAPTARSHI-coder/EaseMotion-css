@@ -12,8 +12,15 @@ A like/favourite toggle, built on a real checkbox, that plays a heart "pop" and 
 <input type="checkbox" id="ease-like-demo" class="ease-like__input" />
 <label for="ease-like-demo" class="ease-like">
   <span class="ease-like__burst" aria-hidden="true"></span>
-  <svg class="ease-like__heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M12 21s-7.4-4.6-9.4-9C1.1 8.6 2.6 5.6 5.6 5.6c1.9 0 3.2 1.1 4.4 2.6 1.2-1.5 2.5-2.6 4.4-2.6 3 0 4.5 3 3 6.4-2 4.4-9.4 9-9.4 9z" />
+  <svg
+    class="ease-like__heart"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      d="M12 21s-7.4-4.6-9.4-9C1.1 8.6 2.6 5.6 5.6 5.6c1.9 0 3.2 1.1 4.4 2.6 1.2-1.5 2.5-2.6 4.4-2.6 3 0 4.5 3 3 6.4-2 4.4-9.4 9-9.4 9z"
+    />
   </svg>
   <span class="ease-like__text ease-like__text--off">Like</span>
   <span class="ease-like__text ease-like__text--on">Liked</span>

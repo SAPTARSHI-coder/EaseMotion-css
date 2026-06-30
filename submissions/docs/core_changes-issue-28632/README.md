@@ -15,21 +15,24 @@ Adds a Material Design ripple effect to interactive elements. Uses a `<span>` el
 
 ```css
 /* Button must be position: relative; overflow: hidden; */
-button { position: relative; overflow: hidden; }
+button {
+  position: relative;
+  overflow: hidden;
+}
 ```
 
 ### Variants
 
-| Class | Description |
-|---|---|
-| `.ease-ripple` | Container for ripple effect |
-| `.ease-ripple-effect` | The ripple span element |
-| `.ease-ripple-dark` | Dark ripple (for light surfaces) |
-| `.ease-ripple-light` | Light ripple (for dark surfaces) |
+| Class                 | Description                      |
+| --------------------- | -------------------------------- |
+| `.ease-ripple`        | Container for ripple effect      |
+| `.ease-ripple-effect` | The ripple span element          |
+| `.ease-ripple-dark`   | Dark ripple (for light surfaces) |
+| `.ease-ripple-light`  | Light ripple (for dark surfaces) |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-ripple-color` | `rgba(255,255,255,0.5)` | Ripple color |
-| `--ease-ripple-duration` | `0.6s` | Animation duration |
+| Property                 | Default                 | Description        |
+| ------------------------ | ----------------------- | ------------------ |
+| `--ease-ripple-color`    | `rgba(255,255,255,0.5)` | Ripple color       |
+| `--ease-ripple-duration` | `0.6s`                  | Animation duration |

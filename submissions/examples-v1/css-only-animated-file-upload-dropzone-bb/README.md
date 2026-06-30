@@ -11,10 +11,16 @@ Provides a styled file upload dropzone with hover lift effect, animated gradient
 ```html
 <label class="dropzone">
   <input type="file" class="dropzone__input" multiple />
-  <svg class="dropzone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-    <polyline points="17 8 12 3 7 8"/>
-    <line x1="12" y1="3" x2="12" y2="15"/>
+  <svg
+    class="dropzone__icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+  >
+    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+    <polyline points="17 8 12 3 7 8" />
+    <line x1="12" y1="3" x2="12" y2="15" />
   </svg>
   <div class="dropzone__title">Drop files here or click to upload</div>
   <div class="dropzone__subtitle">Supports images and documents</div>

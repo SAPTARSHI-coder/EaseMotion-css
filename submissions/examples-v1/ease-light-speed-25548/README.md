@@ -13,10 +13,10 @@ Ideal for hero section headlines, splash elements, and dramatic reveals.
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-speed-slow` | `1s` | Light-speed-in duration |
-| `--ease-speed-medium` | `0.6s` | Light-speed-out duration |
+| Property              | Default | Description              |
+| --------------------- | ------- | ------------------------ |
+| `--ease-speed-slow`   | `1s`    | Light-speed-in duration  |
+| `--ease-speed-medium` | `0.6s`  | Light-speed-out duration |
 
 ## Accessibility
 

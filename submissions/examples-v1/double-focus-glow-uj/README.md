@@ -9,7 +9,11 @@ Creates an interactive double-focus outline ring designed to provide high visibi
 Apply the `double-focus-glow-uj` class to focusable elements like inputs, buttons, or links:
 
 ```html
-<input type="text" class="double-focus-glow-uj" placeholder="Tab to focus me...">
+<input
+  type="text"
+  class="double-focus-glow-uj"
+  placeholder="Tab to focus me..."
+/>
 ```
 
 ## Why is this useful?

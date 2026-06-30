@@ -1,6 +1,7 @@
 # Button Accessibility & Interaction Feedback Guide (#4563)
 
 > **Audit result:** `components/buttons.css` already implements most of the requested CSS-level improvements:
+>
 > - `.ease-btn:focus-visible` — visible focus ring via `--ease-btn-focus`/`--ease-color-primary` (line 41)
 > - `.ease-btn:active` — scale feedback (line 36), combined with `.ease-btn-hover:active` lift+squish (added in #3650)
 > - `.ease-btn:disabled` / `.ease-btn[disabled]` / `.ease-btn-disabled` — consistent disabled styling across all interaction states (lines 189–214)

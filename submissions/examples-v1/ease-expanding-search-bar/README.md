@@ -1,6 +1,6 @@
 # CSS-Only Expanding Search Bar (`ease-expanding-search-bar`)
 
-A sleek, minimalistic search input that seamlessly expands from a circular icon into a full text bar using strictly CSS (no JavaScript). 
+A sleek, minimalistic search input that seamlessly expands from a circular icon into a full text bar using strictly CSS (no JavaScript).
 
 ## 🚀 Features
 
@@ -12,11 +12,12 @@ A sleek, minimalistic search input that seamlessly expands from a circular icon 
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 ### How it works
 
 The core trick relies on setting a fixed closed width on the container, and hiding the input's text using `opacity: 0` and `cursor: pointer`. When the user clicks the container, the input receives focus. We detect this using `.ease-search-container:focus-within`, which triggers the container to expand its width to `280px` and reveals the input's text natively!
 
 ## 🔗 Related Issue
+
 Resolves Issue #17777

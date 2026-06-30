@@ -14,18 +14,18 @@ Adds a subtle film-grain / static noise texture overlay using a CSS-only `mask` 
 
 ### Variants
 
-| Class | Opacity | Description |
-|---|---|---|
-| `.ease-noise` | ~0.5 | Default subtle grain |
-| `.ease-noise-light` | ~0.25 | Very subtle grain |
-| `.ease-noise-heavy` | ~0.8 | Pronounced grain |
+| Class               | Opacity | Description          |
+| ------------------- | ------- | -------------------- |
+| `.ease-noise`       | ~0.5    | Default subtle grain |
+| `.ease-noise-light` | ~0.25   | Very subtle grain    |
+| `.ease-noise-heavy` | ~0.8    | Pronounced grain     |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-noise-opacity` | `0.5` | Grain overlay opacity |
-| `--ease-noise-size` | `256px` | Pattern tile size |
+| Property               | Default | Description           |
+| ---------------------- | ------- | --------------------- |
+| `--ease-noise-opacity` | `0.5`   | Grain overlay opacity |
+| `--ease-noise-size`    | `256px` | Pattern tile size     |
 
 ## Why?
 

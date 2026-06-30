@@ -5,7 +5,7 @@
 
 2. **How is it used?**  
    Apply the `.collapse-height-wrapper` class to the outer container, nest the `.collapse-height-inner` class immediately inside it to handle layout clipping, and toggle the `.is-expanded` class on the outer container to open or close the area:
-   
+
    ```html
    <!-- Collapsible container -->
    <div class="collapse-height-wrapper is-expanded">

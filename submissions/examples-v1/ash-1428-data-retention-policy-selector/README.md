@@ -25,9 +25,7 @@ A modern policy selection interface for configuring data retention periods with 
 ## Usage
 
 ```html
-<div class="policy-option active">
-  90 Days
-</div>
+<div class="policy-option active">90 Days</div>
 ```
 
 ## Main Classes

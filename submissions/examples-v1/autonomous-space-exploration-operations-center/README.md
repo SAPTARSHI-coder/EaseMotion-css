@@ -33,4 +33,3 @@ Phase 430 submission for the EaseMotion-css repository issue: an enterprise-grad
 ## Usage
 
 Open `demo.html` in any modern browser. The page is self-contained and links only to the local `style.css` file.
-

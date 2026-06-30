@@ -38,10 +38,10 @@ A chip/tag component for displaying labels, filters, skills, and categories — 
 <span class="ease-chip ease-chip-sm">Small</span>
 
 <script>
-  document.querySelectorAll('.ease-chip-close').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const chip = e.currentTarget.closest('.ease-chip');
-      chip.classList.add('removing');
+  document.querySelectorAll(".ease-chip-close").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const chip = e.currentTarget.closest(".ease-chip");
+      chip.classList.add("removing");
       setTimeout(() => chip.remove(), 300);
     });
   });

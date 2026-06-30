@@ -8,6 +8,6 @@ This modal can be used for confirmations, alerts, onboarding messages, forms, pr
 
 ## Why is this useful for EaseMotion CSS?
 
-A modal is a common UI pattern in modern interfaces and is aligned with the project roadmap. A CSS-only modal fits EaseMotion CSS because it is lightweight, animation-first, human-readable, and does not require JavaScript for state handling. 
+A modal is a common UI pattern in modern interfaces and is aligned with the project roadmap. A CSS-only modal fits EaseMotion CSS because it is lightweight, animation-first, human-readable, and does not require JavaScript for state handling.
 
 It demonstrates how to combine layout, layered UI, accessibility-minded markup, and motion in one self-contained, advanced example.

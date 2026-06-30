@@ -8,8 +8,8 @@ An interaction repair patch targeting layout paint bugs under issue #13302. This
 - **The Solution:** Modifies the baseline animation layer composition by introducing isolated 3D hardware-accelerated parameters (`backface-visibility: hidden` and `transform-style: preserve-3d`). This separates element transformation mechanics cleanly into dedicated compositor execution sequences, preventing parent element repaint calculations entirely.
 
 ## Usage Layout Structure
-```html
 
+```html
 <div class="ease-animate-zoom-in">
   <h3>Stable Modal Container</h3>
 </div>

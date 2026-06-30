@@ -10,20 +10,20 @@ Pill/capsule shaped button variant using `border-radius: 9999px`. Composable wit
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-btn-pill` | Fully rounded button (9999px radius) |
-| `ease-btn-pill-icon` | Square pill for icon-only buttons |
+| Class                 | Description                          |
+| --------------------- | ------------------------------------ |
+| `ease-btn-pill`       | Fully rounded button (9999px radius) |
+| `ease-btn-pill-icon`  | Square pill for icon-only buttons    |
 | `ease-btn-pill-group` | Grouped pill buttons joined together |
 
 ## Compatible classes
 
-| Class | Works with |
-|---|---|
-| `ease-btn-primary/success/danger/outline/ghost/link` | All variants |
-| `ease-btn-sm/lg/xl` | All sizes |
-| `ease-btn-hover` | Hover lift effect |
-| `ease-btn-block` | Full width |
+| Class                                                | Works with        |
+| ---------------------------------------------------- | ----------------- |
+| `ease-btn-primary/success/danger/outline/ghost/link` | All variants      |
+| `ease-btn-sm/lg/xl`                                  | All sizes         |
+| `ease-btn-hover`                                     | Hover lift effect |
+| `ease-btn-block`                                     | Full width        |
 
 ## Notes
 

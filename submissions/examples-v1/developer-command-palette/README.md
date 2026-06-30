@@ -27,7 +27,12 @@ A developer-focused command palette component inspired by modern tools like VS C
 ```html
 <div class="cp-wrapper">
   <div class="cp-header">
-    <input type="text" class="cp-input" placeholder="Type a command..." aria-label="Command Search">
+    <input
+      type="text"
+      class="cp-input"
+      placeholder="Type a command..."
+      aria-label="Command Search"
+    />
   </div>
   <div class="cp-list">
     <button class="cp-item active">

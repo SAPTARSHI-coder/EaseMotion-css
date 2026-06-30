@@ -8,12 +8,12 @@ A CSS-only image card effect where a caption overlay smoothly slides into view f
 
 A 2×2 responsive grid of image cards, each demonstrating a different slide direction:
 
-| Card | Direction class | Behaviour |
-|------|----------------|-----------|
-| Mountain at Golden Hour | `.dah-from-bottom` | Caption rises up from below |
-| Ocean Waves | `.dah-from-top` | Caption drops down from above |
-| Forest Light | `.dah-from-left` | Caption sweeps in from the left |
-| Starry Night | `.dah-from-right` | Caption sweeps in from the right |
+| Card                    | Direction class    | Behaviour                        |
+| ----------------------- | ------------------ | -------------------------------- |
+| Mountain at Golden Hour | `.dah-from-bottom` | Caption rises up from below      |
+| Ocean Waves             | `.dah-from-top`    | Caption drops down from above    |
+| Forest Light            | `.dah-from-left`   | Caption sweeps in from the left  |
+| Starry Night            | `.dah-from-right`  | Caption sweeps in from the right |
 
 ---
 
@@ -65,27 +65,27 @@ Every card follows this pattern — swap the direction modifier class to change 
 
 ## Direction classes
 
-| Class | Starting position | Slide direction |
-|-------|------------------|-----------------|
-| `.dah-from-bottom` | Caption starts **below** the card | Slides **up** into view |
-| `.dah-from-top` | Caption starts **above** the card | Slides **down** into view |
-| `.dah-from-left` | Caption starts **left** of the card | Slides **right** into view |
-| `.dah-from-right` | Caption starts **right** of the card | Slides **left** into view |
+| Class              | Starting position                    | Slide direction            |
+| ------------------ | ------------------------------------ | -------------------------- |
+| `.dah-from-bottom` | Caption starts **below** the card    | Slides **up** into view    |
+| `.dah-from-top`    | Caption starts **above** the card    | Slides **down** into view  |
+| `.dah-from-left`   | Caption starts **left** of the card  | Slides **right** into view |
+| `.dah-from-right`  | Caption starts **right** of the card | Slides **left** into view  |
 
 Apply exactly **one** direction class alongside `.dah-card`:
 
 ```html
 <!-- bottom (default) -->
-<div class="dah-card dah-from-bottom"> … </div>
+<div class="dah-card dah-from-bottom">…</div>
 
 <!-- top -->
-<div class="dah-card dah-from-top"> … </div>
+<div class="dah-card dah-from-top">…</div>
 
 <!-- left -->
-<div class="dah-card dah-from-left"> … </div>
+<div class="dah-card dah-from-left">…</div>
 
 <!-- right -->
-<div class="dah-card dah-from-right"> … </div>
+<div class="dah-card dah-from-right">…</div>
 ```
 
 ---
@@ -96,12 +96,12 @@ The card container uses `overflow: hidden` to clip the caption overlay. Each dir
 
 EaseMotion design tokens used:
 
-| Token | Role |
-|-------|------|
-| `--ease-speed-medium` | Transition duration (defaults to `300ms`) |
-| `--ease-ease` | Transition timing function |
-| `--ease-color-primary` | Accent bar colour on caption |
-| `--ease-glass-bg` | Glassmorphism tint in overlay gradient |
+| Token                  | Role                                      |
+| ---------------------- | ----------------------------------------- |
+| `--ease-speed-medium`  | Transition duration (defaults to `300ms`) |
+| `--ease-ease`          | Transition timing function                |
+| `--ease-color-primary` | Accent bar colour on caption              |
+| `--ease-glass-bg`      | Glassmorphism tint in overlay gradient    |
 
 All tokens have hard-coded fallback values, so the component works even without `variables.css`.
 
@@ -118,7 +118,11 @@ All tokens have hard-coded fallback values, so the component works even without 
 ## Example — full card with wrapper link
 
 ```html
-<a href="/destination" class="dah-card dah-from-bottom" aria-label="Mountain at Golden Hour">
+<a
+  href="/destination"
+  class="dah-card dah-from-bottom"
+  aria-label="Mountain at Golden Hour"
+>
   <img
     class="dah-card__image"
     src="mountain.jpg"

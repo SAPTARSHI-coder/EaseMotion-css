@@ -4,7 +4,7 @@ Animate based on **container** size, not viewport. Build truly reusable componen
 
 ## The Problem
 
-Media queries respond to the viewport, but components in a sidebar vs. a main area need different animations based on their *container* size.
+Media queries respond to the viewport, but components in a sidebar vs. a main area need different animations based on their _container_ size.
 
 ## The Solution
 
@@ -16,9 +16,9 @@ Three static cards show animations at narrow, medium, and wide container sizes. 
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Static 3-card grid + interactive drag-to-resize demo |
+| File        | Purpose                                                 |
+| ----------- | ------------------------------------------------------- |
+| `demo.html` | Static 3-card grid + interactive drag-to-resize demo    |
 | `style.css` | Container query rules, animation classes, resize handle |
 
 ## Proposed Utilities
@@ -32,15 +32,21 @@ In `core/utilities.css`:
 }
 
 @container ease (max-width: 480px) {
-  .ease-container-sm\:fade-in { animation: ease-kf-fade-in 0.4s ease both; }
+  .ease-container-sm\:fade-in {
+    animation: ease-kf-fade-in 0.4s ease both;
+  }
 }
 
 @container ease (min-width: 481px) and (max-width: 768px) {
-  .ease-container-md\:slide-up { animation: ease-kf-slide-up 0.4s ease both; }
+  .ease-container-md\:slide-up {
+    animation: ease-kf-slide-up 0.4s ease both;
+  }
 }
 
 @container ease (min-width: 769px) {
-  .ease-container-lg\:scale-in { animation: ease-kf-zoom-in 0.4s ease both; }
+  .ease-container-lg\:scale-in {
+    animation: ease-kf-zoom-in 0.4s ease both;
+  }
 }
 ```
 
@@ -48,9 +54,11 @@ In `core/utilities.css`:
 
 ```html
 <div class="ease-container">
-  <div class="ease-container-sm:fade-in
+  <div
+    class="ease-container-sm:fade-in
               ease-container-md:slide-up
-              ease-container-lg:scale-in">
+              ease-container-lg:scale-in"
+  >
     Animates based on container width
   </div>
 </div>
@@ -68,5 +76,5 @@ In `core/utilities.css`:
 ## Browser Support
 
 | Chrome | Firefox | Safari |
-|--------|---------|--------|
-| 105+ | 110+ | 16.0+ |
+| ------ | ------- | ------ |
+| 105+   | 110+    | 16.0+  |

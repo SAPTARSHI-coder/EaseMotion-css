@@ -17,9 +17,7 @@ A lightweight hover animation that reveals a colored left border by growing it f
 ## 🚀 Usage
 
 ```html
-<a href="#" class="ease-hover-grow-border-left">
-    Home
-</a>
+<a href="#" class="ease-hover-grow-border-left"> Home </a>
 ```
 
 ---
@@ -28,6 +26,6 @@ A lightweight hover animation that reveals a colored left border by growing it f
 
 ```css
 :root {
-    --ease-accent-border-color: #4f46e5;
+  --ease-accent-border-color: #4f46e5;
 }
 ```

@@ -23,15 +23,9 @@ A responsive SaaS Pricing Intelligence Platform for showcasing subscription plan
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="pricing">
-        ...
-    </section>
-
+  <section class="pricing">...</section>
 </div>
 ```
 

@@ -21,11 +21,13 @@ Adds a fully styled accordion component built on native `<details>` / `<summary>
 ```
 
 Add the `open` attribute on `<details>` to start expanded:
+
 ```html
-<details class="ease-accordion-item" open>
+<details class="ease-accordion-item" open></details>
 ```
 
 Customise colours via CSS custom properties:
+
 ```css
 .ease-accordion {
   --ease-accordion-border: #e2e8f0;

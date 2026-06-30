@@ -12,8 +12,8 @@ Ideal for dismissing modals, panels, and cards with a dramatic exit.
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
+| Property      | Default       | Description     |
+| ------------- | ------------- | --------------- |
 | `--ease-ease` | `ease-in-out` | Timing function |
 
 ## Accessibility

@@ -1,6 +1,7 @@
 # Cursor Trail Effect Collection
 
 ## What does this do?
+
 A set of five cursor-reactive hover effects — glow, spotlight, dot trail, pulsing ring, and a magnetic-feel button — built primarily with CSS, with a tiny optional JS helper only where live pointer coordinates are genuinely needed.
 
 ## How is it used?
@@ -40,15 +41,22 @@ just writes two CSS custom properties that the gradients read.
 
 ```js
 function bindPointerTracking(el) {
-  el.addEventListener('mousemove', (e) => {
+  el.addEventListener("mousemove", (e) => {
     const rect = el.getBoundingClientRect();
-    el.style.setProperty('--x', ((e.clientX - rect.left) / rect.width) * 100 + '%');
-    el.style.setProperty('--y', ((e.clientY - rect.top) / rect.height) * 100 + '%');
+    el.style.setProperty(
+      "--x",
+      ((e.clientX - rect.left) / rect.width) * 100 + "%"
+    );
+    el.style.setProperty(
+      "--y",
+      ((e.clientY - rect.top) / rect.height) * 100 + "%"
+    );
   });
 }
 ```
 
 ## Why is it useful?
+
 Cursor-reactive feedback is one of the highest-impact ways to make an
 interface feel alive without weighing it down. Three of the five effects
 (`cursor-trail`, `cursor-pulse`, `cursor-magnetic`) are entirely CSS —
@@ -66,15 +74,18 @@ rather than overclaiming a JS-free implementation that isn't possible
 for true pointer-following effects.
 
 ## Tech Stack
+
 - HTML
 - CSS (`:hover`, `::before`/`::after`, custom properties, keyframes)
 - ~10 lines of optional JS (coordinate tracking only, no rendering logic)
 
 ## Preview
+
 Open `demo.html` directly in your browser — no build step, no server,
 no external dependencies.
 
 ## Note on naming
+
 Submitted as `cursor-trail-collection-tk` (suffixed per the repo's
 naming-collision policy in `CONTRIBUTING.md`) since several related
 cursor/glow/spotlight/magnetic effects already exist as separate

@@ -23,15 +23,11 @@ A responsive maintenance notification banner featuring a countdown display for s
 
 ```html
 <div class="banner">
+  <div class="message">
+    <h2>Scheduled Maintenance</h2>
+  </div>
 
-    <div class="message">
-        <h2>Scheduled Maintenance</h2>
-    </div>
-
-    <div class="countdown">
-        ...
-    </div>
-
+  <div class="countdown">...</div>
 </div>
 ```
 

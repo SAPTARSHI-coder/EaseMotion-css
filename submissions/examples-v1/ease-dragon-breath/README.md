@@ -44,15 +44,13 @@ ease-dragon-breath/
 Include the stylesheet:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 Apply the animation class to any element:
 
 ```html
-<button class="ease-dragon-breath">
-    Launch Project
-</button>
+<button class="ease-dragon-breath">Launch Project</button>
 ```
 
 You can also use it with:
@@ -71,10 +69,10 @@ You can also use it with:
 Change the primary colors inside `:root`.
 
 ```css
-:root{
-    --orange:#ff6b00;
-    --yellow:#ffb703;
-    --red:#ff3b30;
+:root {
+  --orange: #ff6b00;
+  --yellow: #ffb703;
+  --red: #ff3b30;
 }
 ```
 

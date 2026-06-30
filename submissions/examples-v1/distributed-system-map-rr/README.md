@@ -7,13 +7,9 @@ Visualizes communication between frontend applications, gateways, services, infr
 ## How is it used?
 
 ```html
-<div class="node gateway">
-    API Gateway
-</div>
+<div class="node gateway">API Gateway</div>
 
-<div class="node service">
-    Auth Service
-</div>
+<div class="node service">Auth Service</div>
 ```
 
 ## Why is it useful?

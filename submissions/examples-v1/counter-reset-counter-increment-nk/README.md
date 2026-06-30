@@ -12,10 +12,10 @@ Example:
 
 ```html
 <ol class="steps">
-    <li>Install EaseMotion CSS</li>
-    <li>Import the stylesheet</li>
+  <li>Install EaseMotion CSS</li>
+  <li>Import the stylesheet</li>
 </ol>
 
-### Why is it useful?
-
-CSS counters help create maintainable, automatically numbered UI elements while keeping HTML clean and easy to update.
+### Why is it useful? CSS counters help create maintainable, automatically
+numbered UI elements while keeping HTML clean and easy to update.
+```

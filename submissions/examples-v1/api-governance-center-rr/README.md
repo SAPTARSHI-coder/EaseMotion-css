@@ -8,7 +8,7 @@ Provides a centralized dashboard for monitoring API compliance, ownership, lifec
 
 ```html
 <div class="api-card healthy">
-    <h3>Authentication API</h3>
+  <h3>Authentication API</h3>
 </div>
 ```
 

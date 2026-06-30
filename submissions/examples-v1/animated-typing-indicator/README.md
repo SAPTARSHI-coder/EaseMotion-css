@@ -8,7 +8,8 @@ Creates a chat-style typing indicator with animated bouncing dots.
 
 ```html
 <div class="typing-container">
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
+  <span class="dot"></span>
 </div>
+```

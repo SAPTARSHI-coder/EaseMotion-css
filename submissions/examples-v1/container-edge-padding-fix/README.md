@@ -15,8 +15,8 @@ This means content can sit flush against the viewport edge with no visible breat
 /* ❌ Buggy — padding is inside the box */
 .ease-container {
   width: 100%;
-  max-width: 1200px;       /* at 1200px viewport, fills 100% */
-  padding-left: 1.5rem;    /* only exists INSIDE the 1200px */
+  max-width: 1200px; /* at 1200px viewport, fills 100% */
+  padding-left: 1.5rem; /* only exists INSIDE the 1200px */
   padding-right: 1.5rem;
   box-sizing: border-box;
 }
@@ -30,8 +30,9 @@ Use CSS `min()` to subtract padding from the viewport width **before** applying 
 /* ✅ Fixed — padding subtracted from viewport first */
 .ease-container {
   width: min(
-    100% - (2 * var(--ease-container-padding)),  /* always leaves edge gap */
-    var(--ease-container-max)                     /* caps on large screens */
+    100% - (2 * var(--ease-container-padding)),
+    /* always leaves edge gap */ var(--ease-container-max)
+      /* caps on large screens */
   );
   margin-left: auto;
   margin-right: auto;
@@ -43,17 +44,17 @@ Use CSS `min()` to subtract padding from the viewport width **before** applying 
 
 ## Width Behaviour After Fix
 
-| Viewport | Formula | Result |
-|---|---|---|
-| 375px (mobile) | min(375 − 48, 1200) | 327px — always padded |
+| Viewport       | Formula              | Result                 |
+| -------------- | -------------------- | ---------------------- |
+| 375px (mobile) | min(375 − 48, 1200)  | 327px — always padded  |
 | 1200px (exact) | min(1200 − 48, 1200) | 1152px — 24px edge gap |
-| 1400px (wide) | min(1400 − 48, 1200) | 1200px — centred |
+| 1400px (wide)  | min(1400 − 48, 1200) | 1200px — centred       |
 
 ## Customization
 
 ```css
 .my-container {
-  --ease-container-max:     900px;
+  --ease-container-max: 900px;
   --ease-container-padding: 2rem;
 }
 ```
@@ -66,5 +67,6 @@ Use CSS `min()` to subtract padding from the viewport width **before** applying 
 4. Fixed container: always maintains visible gap from edges
 
 ## Files
+
 - `style.css` — the fix using CSS `min()`
 - `demo.html` — live viewport width display + edge indicator demo

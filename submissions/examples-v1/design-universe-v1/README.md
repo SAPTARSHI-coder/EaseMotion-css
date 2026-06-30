@@ -11,7 +11,6 @@ This is a comprehensive system. You can apply the various utility and component 
 ```html
 <!-- Container for the universe -->
 <div class="design-universe-container">
-  
   <!-- Buttons -->
   <button class="du-btn du-btn-primary">Primary Button</button>
   <button class="du-btn du-btn-outline">Outline Button</button>
@@ -27,7 +26,6 @@ This is a comprehensive system. You can apply the various utility and component 
     <label class="du-label">Username</label>
     <input type="text" class="du-input" placeholder="Enter username" />
   </div>
-
 </div>
 ```
 

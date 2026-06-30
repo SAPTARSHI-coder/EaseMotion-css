@@ -1,6 +1,7 @@
 # Analog Clock
 
 ## What does this do?
+
 A pure CSS analog clock with smoothly rotating hour, minute, and second
 hands driven by CSS transforms, a clean tick-mark face with hour numbers,
 and an optional digital readout below.

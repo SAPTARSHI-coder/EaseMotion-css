@@ -8,9 +8,13 @@ Submits layout utility architectures and multi-line typographic text wraps (`.ea
 - **The Solution:** Independent fragment replication. The `.ease-decoration-clone` utility enforces `box-decoration-break: clone`. This instructs browsers to render decoration properties—including border edges, gradients, and padding blocks—independently around every single line string wrap, ensuring neat typographic balance across fluid multi-line screens.
 
 ## Usage Layout Structure
+
 ```html
 <p style="max-width: 300px;">
-  <span class="ease-decoration-clone" style="background: indigo; padding: 4px; border-radius: 4px;">
+  <span
+    class="ease-decoration-clone"
+    style="background: indigo; padding: 4px; border-radius: 4px;"
+  >
     Multi-line copy elements reshape themselves elegantly here...
   </span>
 </p>

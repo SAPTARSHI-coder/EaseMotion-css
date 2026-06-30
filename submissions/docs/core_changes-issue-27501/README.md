@@ -7,7 +7,9 @@ A React component for a search input with autocomplete dropdown. Filters a prede
 ## How is it used?
 
 ```jsx
-import SearchAutocomplete from './SearchAutocomplete';
+import SearchAutocomplete from "./SearchAutocomplete";
 
-function App() { return <SearchAutocomplete />; }
+function App() {
+  return <SearchAutocomplete />;
+}
 ```

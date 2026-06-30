@@ -1,10 +1,10 @@
 # Color Adjust Utilities
 
-Print-color-adjust utilities ensuring elements look correct in print stylesheets. This submission demonstrates how to leverage the EaseMotion CSS design token system (--ease-* variables) for consistent styling across your project.
+Print-color-adjust utilities ensuring elements look correct in print stylesheets. This submission demonstrates how to leverage the EaseMotion CSS design token system (--ease-\* variables) for consistent styling across your project.
 
 ## Features
 
-- **Design token integration** — Uses --ease-color-*, --ease-space-*, --ease-radius-*, and --ease-shadow-* tokens from the EaseMotion CSS variables file
+- **Design token integration** — Uses --ease-color-_, --ease-space-_, --ease-radius-_, and --ease-shadow-_ tokens from the EaseMotion CSS variables file
 - **Multiple variants** — Includes primary/secondary/success/warning/danger/info color variants
 - **Dark mode support** — Respects prefers-color-scheme: dark via CSS custom properties
 - **Reduced motion support** — Respects prefers-reduced-motion: reduce for accessibility

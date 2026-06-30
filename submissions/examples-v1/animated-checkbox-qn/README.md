@@ -1,13 +1,16 @@
 # Animated Checkbox with Checkmark
 
 ## Description
+
 A modern, accessible, and highly satisfying custom checkbox component. It replaces the default browser checkbox with a beautifully styled box that smoothly transitions colors when checked. It features an SVG checkmark that elegantly "draws" itself using `stroke-dashoffset` animations, along with a subtle bouncy scale effect. It requires absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the semantic HTML structure using a hidden native checkbox, a visual wrapper, and an inline SVG.
 - `style.css`: Contains the custom styling, the bouncy pop keyframes, and the SVG stroke drawing animation.
 
 ## How to use
+
 1. Open `demo.html` in your browser and click the checkboxes to see the smooth drawing and pop effects.
 2. Copy the HTML and CSS into your project.
 3. Wrap your native `<input type="checkbox">` inside a `<label>` with the `.custom-checkbox-qn` class.

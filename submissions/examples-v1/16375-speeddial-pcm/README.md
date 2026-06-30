@@ -21,8 +21,8 @@ Adds a **Speed Dial** component — a floating action button (FAB) that expands 
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                     |
+| ----------- | --------------------------------------------------------------------------- |
 | `demo.html` | Interactive speed dial with 4 directions, hover/click modes, action logging |
-| `style.css` | Speed dial styles: trigger, actions, directions, tooltips, animations |
-| `README.md` | This documentation |
+| `style.css` | Speed dial styles: trigger, actions, directions, tooltips, animations       |
+| `README.md` | This documentation                                                          |

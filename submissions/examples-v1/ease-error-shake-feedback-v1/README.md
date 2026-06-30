@@ -1,9 +1,11 @@
 # Ease Error Shake Feedback (V1)
 
 ## Overview
+
 This feature adds an animated error feedback effect for invalid input.
 
 ## ✨ Features
+
 - Shake animation on error
 - Red glow feedback
 - Instant visual response
@@ -13,3 +15,4 @@ This feature adds an animated error feedback effect for invalid input.
 
 ```html
 <input class="error" />
+```

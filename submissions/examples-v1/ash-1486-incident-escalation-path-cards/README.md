@@ -24,9 +24,7 @@ A modern incident response workflow component that visualizes escalation paths b
 ## Usage
 
 ```html
-<div class="path-card active">
-  Engineering Team
-</div>
+<div class="path-card active">Engineering Team</div>
 ```
 
 ## Main Classes

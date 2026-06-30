@@ -25,7 +25,10 @@ Open `demo.html` in a browser. Use the controls to change animation, delay, and 
 ### Example Output
 
 ```html
-<div class="example ease-slide-up" style="animation-delay:200ms;animation-duration:600ms;">
+<div
+  class="example ease-slide-up"
+  style="animation-delay:200ms;animation-duration:600ms;"
+>
   Example Content
 </div>
 ```

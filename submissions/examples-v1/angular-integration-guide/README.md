@@ -6,3 +6,4 @@ This guide explains how to use EaseMotion CSS in Angular applications.
 
 ```bash
 npm install easemotion-css
+```

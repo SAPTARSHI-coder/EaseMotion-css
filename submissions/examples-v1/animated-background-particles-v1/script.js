@@ -64,8 +64,14 @@ function draw() {
 }
 
 window.addEventListener("resize", resize);
-canvas.addEventListener("mousemove", (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
-canvas.addEventListener("mouseleave", () => { mouse.x = null; mouse.y = null; });
+canvas.addEventListener("mousemove", (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+canvas.addEventListener("mouseleave", () => {
+  mouse.x = null;
+  mouse.y = null;
+});
 
 init();
 draw();

@@ -18,9 +18,7 @@ This submission demonstrates the `column-rule` CSS property with multiple varian
 Apply the `column-rule` class to any element:
 
 ```html
-<div class="column-rule">
-  Your content here
-</div>
+<div class="column-rule">Your content here</div>
 ```
 
 ## Tokens Used

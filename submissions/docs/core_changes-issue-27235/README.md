@@ -15,15 +15,15 @@ Creates a button that subtly follows the cursor on hover — a "magnetic" pull e
 
 ### Classes
 
-| Class | Description |
-|---|---|
-| `.ease-magnetic` | Container that tracks mouse position |
+| Class                  | Description                            |
+| ---------------------- | -------------------------------------- |
+| `.ease-magnetic`       | Container that tracks mouse position   |
 | `.ease-magnetic-inner` | Inner element that moves toward cursor |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-magnetic-strength` | `0.3` | Pull strength (0–1) |
-| `--ease-magnetic-radius` | `150px` | Activation radius |
-| `--ease-magnetic-duration` | `0.3s` | Snap-back transition |
+| Property                   | Default | Description          |
+| -------------------------- | ------- | -------------------- |
+| `--ease-magnetic-strength` | `0.3`   | Pull strength (0–1)  |
+| `--ease-magnetic-radius`   | `150px` | Activation radius    |
+| `--ease-magnetic-duration` | `0.3s`  | Snap-back transition |

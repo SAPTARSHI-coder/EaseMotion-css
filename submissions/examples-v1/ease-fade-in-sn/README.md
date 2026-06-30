@@ -4,20 +4,20 @@ Smooth fade-in animation utilities with configurable speed via CSS custom proper
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| 📄 [demo.html](./demo.html) | Interactive demo |
+| File                        | Description           |
+| --------------------------- | --------------------- |
+| 📄 [demo.html](./demo.html) | Interactive demo      |
 | 🎨 [style.css](./style.css) | Fade animation styles |
-| 📖 [README.md](./README.md) | Documentation |
+| 📖 [README.md](./README.md) | Documentation         |
 
 ## Classes
 
-| Class | Description | Default Duration |
-|-------|-------------|-----------------|
-| `.fade-in` | Standard fade-in from opacity 0 to 1 | 0.6s |
-| `.fade-in-fast` | Fast fade-in | 0.3s |
-| `.fade-in-slow` | Slow fade-in | 1.2s |
-| `.hover-fade` | Fades out on hover | 0.4s |
+| Class           | Description                          | Default Duration |
+| --------------- | ------------------------------------ | ---------------- |
+| `.fade-in`      | Standard fade-in from opacity 0 to 1 | 0.6s             |
+| `.fade-in-fast` | Fast fade-in                         | 0.3s             |
+| `.fade-in-slow` | Slow fade-in                         | 1.2s             |
+| `.hover-fade`   | Fades out on hover                   | 0.4s             |
 
 ## Usage
 

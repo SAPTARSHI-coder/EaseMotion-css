@@ -1,9 +1,11 @@
 # Animated Feature Card Stack
 
 ## Overview
+
 This feature demonstrates an animation-driven card stack with smooth entry transitions, hover effects, and layered visual depth.
 
 ## ✨ Features
+
 - Scroll-triggered slide-up animations
 - Fade-in text transitions
 - Interactive hover scaling and shadow effects
@@ -22,3 +24,4 @@ This feature demonstrates an animation-driven card stack with smooth entry trans
   <h3>Title</h3>
   <p>Content here...</p>
 </div>
+```

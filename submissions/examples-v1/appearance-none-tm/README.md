@@ -18,9 +18,7 @@ This submission demonstrates the `appearance` CSS property with multiple variant
 Apply the `appearance-none` class to any element:
 
 ```html
-<div class="appearance-none">
-  Your content here
-</div>
+<div class="appearance-none">Your content here</div>
 ```
 
 ## Tokens Used

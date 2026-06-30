@@ -22,11 +22,13 @@ Add the `magnetic-text` class and the `data-magnetic-text` attribute to any text
 <h2 class="magnetic-text magnetic-text--soft" data-magnetic-text>Hover Me</h2>
 
 <!-- Snappier, stronger pull -->
-<h3 class="magnetic-text magnetic-text--strong" data-magnetic-text>Stronger Pull</h3>
+<h3 class="magnetic-text magnetic-text--strong" data-magnetic-text>
+  Stronger Pull
+</h3>
 
 <!-- Smaller body text -->
 <p class="magnetic-text magnetic-text--small" data-magnetic-text>
-    Even paragraph text can be magnetic.
+  Even paragraph text can be magnetic.
 </p>
 ```
 

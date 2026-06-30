@@ -36,19 +36,19 @@ then layer the glass effect only when `backdrop-filter` is supported:
 
 ```css
 :root {
-  --ease-card-glass-fallback-bg:     rgba(30, 30, 60, 0.92);
+  --ease-card-glass-fallback-bg: rgba(30, 30, 60, 0.92);
   --ease-card-glass-fallback-border: rgba(255, 255, 255, 0.15);
 }
 ```
 
 ## Browser Support
 
-| Browser | Before Fix | After Fix |
-|---|---|---|
-| Chrome / Edge | ✅ Glass effect | ✅ Glass effect |
-| Firefox 103+ | ✅ Glass effect | ✅ Glass effect |
+| Browser           | Before Fix          | After Fix         |
+| ----------------- | ------------------- | ----------------- |
+| Chrome / Edge     | ✅ Glass effect     | ✅ Glass effect   |
+| Firefox 103+      | ✅ Glass effect     | ✅ Glass effect   |
 | Firefox (no flag) | ❌ Nearly invisible | ✅ Solid fallback |
-| Older Safari | ❌ Nearly invisible | ✅ Solid fallback |
+| Older Safari      | ❌ Nearly invisible | ✅ Solid fallback |
 
 ## How to Verify
 
@@ -59,5 +59,6 @@ then layer the glass effect only when `backdrop-filter` is supported:
 5. After fix: 92% opacity fallback — fully readable
 
 ## Files
+
 - `style.css` — the fix using `@supports` progressive enhancement
 - `demo.html` — live support detection + simulated unsupported browser view

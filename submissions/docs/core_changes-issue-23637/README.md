@@ -5,6 +5,7 @@
 Adds a `.ease-stagger` utility class that automatically applies incremental `animation-delay` to direct children using `nth-child` selectors. No more manually adding `style="animation-delay: 100ms"` to each list item.
 
 **Variants:**
+
 - `.ease-stagger` — Default 100ms intervals
 - `.ease-stagger-50` — 50ms intervals (faster cascade)
 - `.ease-stagger-200` — 200ms intervals (slower cascade)

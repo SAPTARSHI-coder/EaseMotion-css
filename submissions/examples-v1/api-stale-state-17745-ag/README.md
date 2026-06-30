@@ -7,6 +7,7 @@ This guide details code integrity guidelines for managing webhook race condition
 ## Technical Overview: The Stale Context Bug
 
 Webhook event triggers (like GitHub Action triggers) supply a snapshot JSON payload detailing state configurations at the moment of trigger firing:
+
 ```javascript
 // BUG: Uses payload parameters snapshot which might be stale by execution time
 const assignees = context.payload.issue.assignees;
@@ -24,7 +25,7 @@ If another workflow or admin updates assignment parameters in the seconds betwee
    const freshIssue = await octokit.rest.issues.get({
      owner: context.repo.owner,
      repo: context.repo.repo,
-     issue_number: context.issue.number
+     issue_number: context.issue.number,
    });
    const assignees = freshIssue.data.assignees;
    ```

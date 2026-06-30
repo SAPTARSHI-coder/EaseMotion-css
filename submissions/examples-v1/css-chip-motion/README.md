@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated chips and tags for modern web inter
 ## 🚀 Features
 
 ### Chip Styles (10 types)
+
 1. **Solid Chips** - Gradient background with lift effect
 2. **Outline Chips** - Border-only with fill on hover
 3. **Gradient Chips** - Gradient with shine sweep
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated chips and tags for modern web inter
 10. **Filter Chips** - Radio button-based filters
 
 ### Animation Features
+
 - Lift and scale effects
 - Shine sweep animations
 - Icon rotations
@@ -27,6 +29,7 @@ A collection of beautiful, pure CSS animated chips and tags for modern web inter
 - Selection state changes
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All chip animations
 - `readme.md` - Documentation
@@ -34,5 +37,7 @@ A collection of beautiful, pure CSS animated chips and tags for modern web inter
 ## 🛠️ How to Use
 
 ### Basic Chip
+
 ```html
 <span class="chip solid">Tag Name</span>
+```

@@ -31,8 +31,8 @@ Includes:
 
 ```html
 <label class="toggle">
-<input type="checkbox">
-<span class="slider"></span>
+  <input type="checkbox" />
+  <span class="slider"></span>
 </label>
 ```
 

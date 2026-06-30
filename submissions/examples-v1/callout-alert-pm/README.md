@@ -32,10 +32,10 @@ A contextual message component for displaying info, success, warning, and error 
 </div>
 
 <script>
-  document.querySelectorAll('.ease-callout-dismiss').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const callout = e.currentTarget.closest('.ease-callout');
-      callout.classList.add('hiding');
+  document.querySelectorAll(".ease-callout-dismiss").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const callout = e.currentTarget.closest(".ease-callout");
+      callout.classList.add("hiding");
       setTimeout(() => callout.remove(), 350);
     });
   });

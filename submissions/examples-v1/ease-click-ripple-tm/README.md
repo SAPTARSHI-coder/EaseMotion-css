@@ -9,13 +9,14 @@ Click ripple animation for EaseMotion CSS.
 ```
 
 ```js
-el.addEventListener('click', (e) => {
+el.addEventListener("click", (e) => {
   const rect = el.getBoundingClientRect();
-  el.style.setProperty('--rx', (e.clientX - rect.left) + 'px');
-  el.style.setProperty('--ry', (e.clientY - rect.top) + 'px');
-  el.classList.remove('rippling'); void el.offsetWidth;
-  el.classList.add('rippling');
-  setTimeout(() => el.classList.remove('rippling'), 700);
+  el.style.setProperty("--rx", e.clientX - rect.left + "px");
+  el.style.setProperty("--ry", e.clientY - rect.top + "px");
+  el.classList.remove("rippling");
+  void el.offsetWidth;
+  el.classList.add("rippling");
+  setTimeout(() => el.classList.remove("rippling"), 700);
 });
 ```
 

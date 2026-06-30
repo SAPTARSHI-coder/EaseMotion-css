@@ -14,11 +14,11 @@ Provides a collapsible navigation sidebar with a built-in toggle button. Users c
 
 ## Features
 
-* Collapsible sidebar navigation
-* Toggle button for easy interaction
-* Dynamic logo text switching (`EaseMotion CSS` ↔ `EM`)
-* Clean layout suitable for documentation websites
-* Smooth user experience for both large and small screens
+- Collapsible sidebar navigation
+- Toggle button for easy interaction
+- Dynamic logo text switching (`EaseMotion CSS` ↔ `EM`)
+- Clean layout suitable for documentation websites
+- Smooth user experience for both large and small screens
 
 ## Why is it useful?
 

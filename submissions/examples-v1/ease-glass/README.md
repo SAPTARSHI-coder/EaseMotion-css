@@ -10,38 +10,43 @@ and semi-transparent backgrounds. Zero JavaScript required.
 ## Classes
 
 ### Base
-| Class | Description |
-|---|---|
-| `ease-glass` | Base glassmorphism card, blur(12px) |
-| `ease-glass--dark` | Darker semi-transparent background |
-| `ease-glass--light` | Higher opacity white background |
+
+| Class               | Description                         |
+| ------------------- | ----------------------------------- |
+| `ease-glass`        | Base glassmorphism card, blur(12px) |
+| `ease-glass--dark`  | Darker semi-transparent background  |
+| `ease-glass--light` | Higher opacity white background     |
 
 ### Interaction
-| Class | Description |
-|---|---|
+
+| Class               | Description                     |
+| ------------------- | ------------------------------- |
 | `ease-glass--hover` | Lifts card on hover with shadow |
 
 ### Border
-| Class | Description |
-|---|---|
-| `ease-glass--border` | Bright inset top border highlight |
-| `ease-glass--border-glow` | Green outer glow border |
+
+| Class                     | Description                       |
+| ------------------------- | --------------------------------- |
+| `ease-glass--border`      | Bright inset top border highlight |
+| `ease-glass--border-glow` | Green outer glow border           |
 
 ### Blur Intensity
-| Class | Blur |
-|---|---|
-| `ease-glass--blur-sm` | 4px |
+
+| Class                 | Blur |
+| --------------------- | ---- |
+| `ease-glass--blur-sm` | 4px  |
 | `ease-glass--blur-md` | 12px |
 | `ease-glass--blur-lg` | 24px |
 | `ease-glass--blur-xl` | 40px |
 
 ### Color Tints
-| Class | Tint |
-|---|---|
-| `ease-glass--tint-green` | Green tint |
-| `ease-glass--tint-blue` | Blue tint |
+
+| Class                     | Tint        |
+| ------------------------- | ----------- |
+| `ease-glass--tint-green`  | Green tint  |
+| `ease-glass--tint-blue`   | Blue tint   |
 | `ease-glass--tint-purple` | Purple tint |
-| `ease-glass--tint-pink` | Pink tint |
+| `ease-glass--tint-pink`   | Pink tint   |
 
 ## Usage
 
@@ -56,7 +61,9 @@ and semi-transparent backgrounds. Zero JavaScript required.
 <div class="ease-glass ease-glass--light ease-glass--border">Light glass</div>
 
 <!-- Heavy blur with tint -->
-<div class="ease-glass ease-glass--blur-xl ease-glass--tint-purple">Purple glass</div>
+<div class="ease-glass ease-glass--blur-xl ease-glass--tint-purple">
+  Purple glass
+</div>
 ```
 
 ## Browser Support

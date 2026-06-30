@@ -1,6 +1,6 @@
 # Direction-Aware Slide Animations (`ease-diagonal-slides`)
 
-A proposal providing CSS keyframes and utility classes for diagonal (corner-originating) slide-in animations. 
+A proposal providing CSS keyframes and utility classes for diagonal (corner-originating) slide-in animations.
 
 ## 🚀 Features
 
@@ -11,7 +11,7 @@ A proposal providing CSS keyframes and utility classes for diagonal (corner-orig
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 You can apply the proposed classes to any element:
 
@@ -19,3 +19,4 @@ You can apply the proposed classes to any element:
 <div class="ease-slide-in-bottom-right">
   Content appears from the bottom right!
 </div>
+```

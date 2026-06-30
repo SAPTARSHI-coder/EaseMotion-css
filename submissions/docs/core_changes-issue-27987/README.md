@@ -19,23 +19,23 @@ Creates animated toast notifications with slide-in, auto-dismiss, and stacked po
 
 ### Classes
 
-| Class | Description |
-|---|---|
-| `.ease-toast-container` | Container for stacking toasts |
-| `.ease-toast` | Individual toast |
-| `.ease-toast-body` | Content area |
-| `.ease-toast-close` | Dismiss button |
-| `.ease-toast-top-right` | Position: top-right (default) |
-| `.ease-toast-top-left` | Position: top-left |
-| `.ease-toast-bottom-right` | Position: bottom-right |
-| `.ease-toast-bottom-left` | Position: bottom-left |
-| `.ease-toast-success` | Green accent |
-| `.ease-toast-error` | Red accent |
-| `.ease-toast-warning` | Yellow accent |
-| `.ease-toast-info` | Blue accent |
+| Class                      | Description                   |
+| -------------------------- | ----------------------------- |
+| `.ease-toast-container`    | Container for stacking toasts |
+| `.ease-toast`              | Individual toast              |
+| `.ease-toast-body`         | Content area                  |
+| `.ease-toast-close`        | Dismiss button                |
+| `.ease-toast-top-right`    | Position: top-right (default) |
+| `.ease-toast-top-left`     | Position: top-left            |
+| `.ease-toast-bottom-right` | Position: bottom-right        |
+| `.ease-toast-bottom-left`  | Position: bottom-left         |
+| `.ease-toast-success`      | Green accent                  |
+| `.ease-toast-error`        | Red accent                    |
+| `.ease-toast-warning`      | Yellow accent                 |
+| `.ease-toast-info`         | Blue accent                   |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-toast-duration` | `0.3s` | Slide-in/out duration |
+| Property                | Default | Description           |
+| ----------------------- | ------- | --------------------- |
+| `--ease-toast-duration` | `0.3s`  | Slide-in/out duration |

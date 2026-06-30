@@ -17,15 +17,18 @@ Adds lightweight parallax scrolling effects to EaseMotion CSS — elements move 
 **Foreground element moving in reverse:**
 
 ```html
-<img class="ease-parallax-reverse" data-ease-speed="1.2" src="overlay.png" alt="" />
+<img
+  class="ease-parallax-reverse"
+  data-ease-speed="1.2"
+  src="overlay.png"
+  alt=""
+/>
 ```
 
 **Slow-moving background layer:**
 
 ```html
-<div class="ease-parallax-slow">
-  Background moves at 20% of scroll speed
-</div>
+<div class="ease-parallax-slow">Background moves at 20% of scroll speed</div>
 ```
 
 ## Why is it useful?

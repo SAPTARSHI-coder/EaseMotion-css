@@ -19,16 +19,19 @@ Frosted glass, blur, and brightness effects using backdrop-filter for modern UI 
 
 ```html
 <!-- Add the CSS file to your project -->
-<link rel="stylesheet" href="submissions/examples/backdrop-filter-effects-tm/style.css">
+<link
+  rel="stylesheet"
+  href="submissions/examples/backdrop-filter-effects-tm/style.css"
+/>
 ```
 
 ### Size Variants
 
-| Class | Size | Use Case |
-|-------|------|----------|
-| `*-sm` | Small | Compact UI, badges, tags |
-| `*-md` | Medium | Body text, buttons, cards |
-| `*-lg` | Large | Headings, hero text, prominent elements |
+| Class  | Size   | Use Case                                |
+| ------ | ------ | --------------------------------------- |
+| `*-sm` | Small  | Compact UI, badges, tags                |
+| `*-md` | Medium | Body text, buttons, cards               |
+| `*-lg` | Large  | Headings, hero text, prominent elements |
 
 ## Design Tokens Used
 

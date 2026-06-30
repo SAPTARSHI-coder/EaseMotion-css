@@ -6,29 +6,29 @@ Progress bar component with determinate, indeterminate, striped, and animated va
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Determinate | `style="width: X%"` | Fixed percentage width |
-| Striped | `.ease-progress-bar-striped` | Diagonal stripe pattern overlay |
-| Animated Stripes | `.ease-progress-bar-animated-stripes` | Moving stripes animation |
-| Indeterminate | `.ease-progress-bar-indeterminate` | Sliding marquee for unknown duration |
+| Variant          | Class                                 | Description                          |
+| ---------------- | ------------------------------------- | ------------------------------------ |
+| Determinate      | `style="width: X%"`                   | Fixed percentage width               |
+| Striped          | `.ease-progress-bar-striped`          | Diagonal stripe pattern overlay      |
+| Animated Stripes | `.ease-progress-bar-animated-stripes` | Moving stripes animation             |
+| Indeterminate    | `.ease-progress-bar-indeterminate`    | Sliding marquee for unknown duration |
 
 ## Colors
 
-| Color | Class |
-|-------|-------|
+| Color   | Class                          |
+| ------- | ------------------------------ |
 | Primary | `.ease-progress-bar` (default) |
-| Success | `.ease-progress-bar-success` |
-| Warning | `.ease-progress-bar-warning` |
-| Danger | `.ease-progress-bar-danger` |
+| Success | `.ease-progress-bar-success`   |
+| Warning | `.ease-progress-bar-warning`   |
+| Danger  | `.ease-progress-bar-danger`    |
 
 ## Sizes
 
-| Size | Class | Height |
-|------|-------|--------|
-| Small | `.ease-progress-sm` | 0.375rem |
-| Default | `.ease-progress` | 0.75rem |
-| Large | `.ease-progress-lg` | 1.25rem |
+| Size    | Class               | Height   |
+| ------- | ------------------- | -------- |
+| Small   | `.ease-progress-sm` | 0.375rem |
+| Default | `.ease-progress`    | 0.75rem  |
+| Large   | `.ease-progress-lg` | 1.25rem  |
 
 ## Usage
 

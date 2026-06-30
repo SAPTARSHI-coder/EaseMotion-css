@@ -15,7 +15,8 @@ Wrap your cards in an `.ease-card-stack` container. You must assign each `.ease-
 ```html
 <div class="ease-card-stack" id="my-stack">
   <!-- Place cards in reverse order so the index 0 card renders on top -->
-  <div class="ease-card" style="--card-index: 2;"> Card 3 </div>
-  <div class="ease-card" style="--card-index: 1;"> Card 2 </div>
-  <div class="ease-card" style="--card-index: 0;"> Card 1 </div>
+  <div class="ease-card" style="--card-index: 2;">Card 3</div>
+  <div class="ease-card" style="--card-index: 1;">Card 2</div>
+  <div class="ease-card" style="--card-index: 0;">Card 1</div>
 </div>
+```

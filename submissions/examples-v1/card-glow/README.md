@@ -10,12 +10,12 @@ Glow hover effect for cards. Adds a colored box-shadow glow and border highlight
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-glow` | Default primary glow |
-| `ease-card-glow-success` | Success green glow |
-| `ease-card-glow-danger` | Danger red glow |
-| `ease-card-glow-warning` | Warning amber glow |
+| Class                    | Description          |
+| ------------------------ | -------------------- |
+| `ease-card-glow`         | Default primary glow |
+| `ease-card-glow-success` | Success green glow   |
+| `ease-card-glow-danger`  | Danger red glow      |
+| `ease-card-glow-warning` | Warning amber glow   |
 
 ## Notes
 

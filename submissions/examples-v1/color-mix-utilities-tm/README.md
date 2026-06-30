@@ -26,6 +26,10 @@ Chrome 111+, Safari 16.2+, Firefox 113+.
 ## Usage
 
 ```css
-.tint-50 { background: color-mix(in srgb, var(--ease-color-primary) 50%, white); }
-.shade-30 { background: color-mix(in srgb, var(--ease-color-primary) 70%, black); }
+.tint-50 {
+  background: color-mix(in srgb, var(--ease-color-primary) 50%, white);
+}
+.shade-30 {
+  background: color-mix(in srgb, var(--ease-color-primary) 70%, black);
+}
 ```

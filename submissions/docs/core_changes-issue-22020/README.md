@@ -11,14 +11,14 @@
 
 ## Sections
 
-| Section | Content |
-|---------|---------|
-| **Overview Cards** | Active Shipments (248), Inventory Items (48,250), Dispatches Today (186), Revenue MTD ($1.2M) |
-| **Shipment Progress** | Progress bars for 4 active orders with percentage tracking |
-| **Warehouse Capacity** | Zone-level capacity utilization (A: 85%, B: 62%, C: 78%, D: 91%) |
-| **Delivery Timeline** | 5-step timeline showing stages from pickup to delivery |
-| **Logistics Activity** | Real-time activity feed with colored status indicators |
-| **Notifications Panel** | Urgent, info, and success notification cards |
-| **Quick Actions** | Dispatch Shipment, Add Inventory, Export Report buttons |
+| Section                 | Content                                                                                       |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| **Overview Cards**      | Active Shipments (248), Inventory Items (48,250), Dispatches Today (186), Revenue MTD ($1.2M) |
+| **Shipment Progress**   | Progress bars for 4 active orders with percentage tracking                                    |
+| **Warehouse Capacity**  | Zone-level capacity utilization (A: 85%, B: 62%, C: 78%, D: 91%)                              |
+| **Delivery Timeline**   | 5-step timeline showing stages from pickup to delivery                                        |
+| **Logistics Activity**  | Real-time activity feed with colored status indicators                                        |
+| **Notifications Panel** | Urgent, info, and success notification cards                                                  |
+| **Quick Actions**       | Dispatch Shipment, Add Inventory, Export Report buttons                                       |
 
 Fixes #22020

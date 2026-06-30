@@ -23,17 +23,11 @@ A responsive campaign budget pacing dashboard that visualizes advertising spend 
 
 ```html
 <div class="meter">
-
-    <div class="ring">
-
-        <div class="inner">
-
-            <strong>68%</strong>
-
-        </div>
-
+  <div class="ring">
+    <div class="inner">
+      <strong>68%</strong>
     </div>
-
+  </div>
 </div>
 ```
 

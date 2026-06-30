@@ -24,15 +24,9 @@ A modern Dark Mode Design System showcasing reusable UI components, color palett
 
 ```html
 <div class="container">
+  <header class="hero">...</header>
 
-    <header class="hero">
-        ...
-    </header>
-
-    <section class="grid">
-        ...
-    </section>
-
+  <section class="grid">...</section>
 </div>
 ```
 

@@ -16,13 +16,11 @@ A vertical timeline component designed for displaying activity history, changelo
 
 ```html
 <div class="timeline-item">
+  <div class="timeline-dot"></div>
 
-    <div class="timeline-dot"></div>
-
-    <div class="timeline-card">
-        <h3>Milestone Title</h3>
-    </div>
-
+  <div class="timeline-card">
+    <h3>Milestone Title</h3>
+  </div>
 </div>
 ```
 

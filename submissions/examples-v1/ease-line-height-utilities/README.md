@@ -12,6 +12,8 @@ A demonstration of CSS `line-height` utilities (often called "leading" in typogr
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To apply a line height:
+
 ```html
 <h1 class="ease-leading-tight">A Massive Headline</h1>
 <p class="ease-leading-normal">A standard reading paragraph.</p>
+```

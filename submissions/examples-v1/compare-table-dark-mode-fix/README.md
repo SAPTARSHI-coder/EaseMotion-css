@@ -61,8 +61,8 @@ Replace the hardcoded hex values in `components/compare-table.css` with the appr
 
 ## 📁 Submission Contents
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                      |
+| ----------- | ---------------------------------------------------------------------------- |
 | `demo.html` | Side-by-side live demonstration of the bug vs. the fix in light & dark modes |
-| `style.css` | Raw CSS showing the proposed fix and demo page layout |
-| `README.md` | This documentation file |
+| `style.css` | Raw CSS showing the proposed fix and demo page layout                        |
+| `README.md` | This documentation file                                                      |

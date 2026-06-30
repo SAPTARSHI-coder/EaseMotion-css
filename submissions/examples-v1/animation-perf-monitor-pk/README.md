@@ -4,10 +4,10 @@ Detect jank and dropped frames in real time. An opt-in floating FPS counter that
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
 | `demo.html` | Side-by-side comparison: janky (layout-triggering) vs GPU-accelerated animation, with live FPS counter |
-| `style.css` | Demo layout, balls, guide table |
+| `style.css` | Demo layout, balls, guide table                                                                        |
 
 ## Features
 
@@ -24,7 +24,7 @@ Detect jank and dropped frames in real time. An opt-in floating FPS counter that
 Add the class to `<html>`:
 
 ```html
-<html class="ease-perf-monitor">
+<html class="ease-perf-monitor"></html>
 ```
 
 Include `core/animation-perf.js`:
@@ -41,10 +41,10 @@ Remove the class or the script. The script exits immediately if the class is abs
 
 ## Performance Tips
 
-| Avoid (triggers layout/paint) | Prefer (GPU-accelerated) |
-|-------------------------------|--------------------------|
-| `top`, `left` | `translate` |
-| `width`, `height` | `scale` |
-| `margin` | `translate` |
-| `border-width` | `box-shadow` or pseudo-element |
-| `display: none` (animating) | `visibility: hidden` + `opacity` |
+| Avoid (triggers layout/paint) | Prefer (GPU-accelerated)         |
+| ----------------------------- | -------------------------------- |
+| `top`, `left`                 | `translate`                      |
+| `width`, `height`             | `scale`                          |
+| `margin`                      | `translate`                      |
+| `border-width`                | `box-shadow` or pseudo-element   |
+| `display: none` (animating)   | `visibility: hidden` + `opacity` |

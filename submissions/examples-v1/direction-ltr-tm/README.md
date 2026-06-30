@@ -3,6 +3,7 @@
 direction — Sets text direction to left-to-right or right-to-left
 
 ## Features
+
 - Uses `--ease-color-surface`
 - Uses `--ease-color-primary`
 - Uses `--ease-radius-md`

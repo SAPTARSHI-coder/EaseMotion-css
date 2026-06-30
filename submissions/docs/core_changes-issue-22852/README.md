@@ -26,11 +26,15 @@ Adds a divider / separator component for visually separating content sections. S
 ```
 
 All variants can be combined:
+
 ```html
-<hr class="ease-divider ease-divider-vertical ease-divider-dashed ease-divider-animated" />
+<hr
+  class="ease-divider ease-divider-vertical ease-divider-dashed ease-divider-animated"
+/>
 ```
 
 Customise colours via CSS custom properties:
+
 ```css
 .ease-divider {
   --ease-divider-color: #3b82f6;

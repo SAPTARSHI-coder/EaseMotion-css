@@ -16,7 +16,7 @@ CSS color-mix() function utilities that blend EaseMotion design tokens with whit
 ## Usage
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 Apply the utility classes to your HTML elements:

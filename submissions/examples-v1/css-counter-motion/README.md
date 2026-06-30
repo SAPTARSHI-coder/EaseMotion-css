@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated counters and stats for modern websi
 ## 🚀 Features
 
 ### Counter Styles (8 types)
+
 1. **Classic Number** - Gradient text with fade-in animation
 2. **Gradient Counter** - Icons with gradient backgrounds
 3. **Circular Progress** - SVG-based circular indicators
@@ -15,6 +16,7 @@ A collection of beautiful, pure CSS animated counters and stats for modern websi
 8. **Icon Counter** - Icons with rotating animation
 
 ### Animation Features
+
 - Staggered fade-in animations
 - Shimmer effects on bars
 - Circular progress fill
@@ -24,6 +26,7 @@ A collection of beautiful, pure CSS animated counters and stats for modern websi
 - Smooth transitions
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All counter animations
 - `readme.md` - Documentation
@@ -31,8 +34,10 @@ A collection of beautiful, pure CSS animated counters and stats for modern websi
 ## 🛠️ How to Use
 
 ### Classic Counter
+
 ```html
 <div class="counter classic">
-    <div class="counter-number">1,250</div>
-    <div class="counter-label">Happy Clients</div>
+  <div class="counter-number">1,250</div>
+  <div class="counter-label">Happy Clients</div>
 </div>
+```

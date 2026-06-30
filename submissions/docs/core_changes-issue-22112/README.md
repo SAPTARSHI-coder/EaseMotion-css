@@ -9,7 +9,7 @@ Adds RTL support to EaseMotion CSS by mirroring directional animations and provi
 **Enable RTL mirroring on the whole page:**
 
 ```html
-<html dir="rtl">
+<html dir="rtl"></html>
 ```
 
 All directional animations (`ease-slide-in-left` ↔ `ease-slide-in-right`) automatically swap.
@@ -25,7 +25,9 @@ All directional animations (`ease-slide-in-left` ↔ `ease-slide-in-right`) auto
 **Logical alignment utilities:**
 
 ```html
-<div class="ease-start">Aligned to inline-start (left in LTR, right in RTL)</div>
+<div class="ease-start">
+  Aligned to inline-start (left in LTR, right in RTL)
+</div>
 <div class="ease-end">Aligned to inline-end (right in LTR, left in RTL)</div>
 ```
 

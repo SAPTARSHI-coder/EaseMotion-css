@@ -25,17 +25,10 @@ Open `index.html` in any modern browser.
 ### Basic Dropdown
 
 ```html
-&lt;nav class="navbar"&gt;
-  &lt;ul class="nav-menu"&gt;
-    &lt;li class="nav-item nav-item--dropdown"&gt;
-      &lt;a href="#" class="dropdown-trigger"&gt;
-        Menu
-        &lt;svg class="dropdown-arrow" ...&gt;...&lt;/svg&gt;
-      &lt;/a&gt;
-      &lt;ul class="dropdown dropdown--slide"&gt;
-        &lt;li&gt;&lt;a href="#"&gt;Item 1&lt;/a&gt;&lt;/li&gt;
-        &lt;li&gt;&lt;a href="#"&gt;Item 2&lt;/a&gt;&lt;/li&gt;
-      &lt;/ul&gt;
-    &lt;/li&gt;
-  &lt;/ul&gt;
-&lt;/nav&gt;
+&lt;nav class="navbar"&gt; &lt;ul class="nav-menu"&gt; &lt;li class="nav-item
+nav-item--dropdown"&gt; &lt;a href="#" class="dropdown-trigger"&gt; Menu &lt;svg
+class="dropdown-arrow" ...&gt;...&lt;/svg&gt; &lt;/a&gt; &lt;ul class="dropdown
+dropdown--slide"&gt; &lt;li&gt;&lt;a href="#"&gt;Item 1&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#"&gt;Item 2&lt;/a&gt;&lt;/li&gt; &lt;/ul&gt; &lt;/li&gt;
+&lt;/ul&gt; &lt;/nav&gt;
+```

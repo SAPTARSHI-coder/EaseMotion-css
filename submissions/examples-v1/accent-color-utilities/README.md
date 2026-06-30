@@ -8,6 +8,7 @@ Introduces a suite of native form element control tinting utility tokens under i
 - **The Solution:** Preserves semantic fidelity while applying theme values. The `.ease-accent-*` utility series relies entirely on the modern, native `accent-color` property. This lets developers re-tint internal browser interface indicators directly on native structural nodes without stripping out standard keyboard navigation loops or accessibility focus outlines.
 
 ## Usage Layout Structure
+
 ```html
 <input type="checkbox" class="ease-accent-primary" checked />
 <input type="radio" class="ease-accent-success" checked />

@@ -43,13 +43,9 @@ No installation required. Just link the stylesheet and open the HTML file.
 
 ```html
 <!-- Apply EaseMotion utility classes to any element -->
-<div class="em-float" style="--em-delay: 0.2s">
-  I float!
-</div>
+<div class="em-float" style="--em-delay: 0.2s">I float!</div>
 
-<div class="em-pulse">
-  I pulse!
-</div>
+<div class="em-pulse">I pulse!</div>
 
 <div class="em-fade-in em-slide-up" style="--em-delay: 0.4s">
   I fade in and slide up together.
@@ -58,16 +54,16 @@ No installation required. Just link the stylesheet and open the HTML file.
 
 ### EaseMotion Utility Classes
 
-| Class             | Effect                                    | CSS Variable Controls          |
-|-------------------|-------------------------------------------|-------------------------------|
-| `.em-float`       | Continuous vertical levitation            | `--em-delay`, `--em-duration-float` |
-| `.em-pulse`       | Scale + glow breath loop                  | `--em-duration-pulse`         |
-| `.em-breathe`     | Opacity breath loop                       | `--em-duration-breathe`       |
-| `.em-fade-in`     | One-shot fade in on load                  | `--em-delay`, `--em-duration-fadein` |
-| `.em-slide-up`    | One-shot slide-up entry                   | `--em-delay`, `--em-duration-slideup` |
-| `.em-rotate-cw`   | Continuous clockwise rotation             | `--em-duration-rotate`        |
-| `.em-rotate-ccw`  | Continuous counter-clockwise rotation     | `--em-duration-rotate`        |
-| `.em-glow-border` | Pulsing glowing border                    | –                             |
+| Class             | Effect                                | CSS Variable Controls                 |
+| ----------------- | ------------------------------------- | ------------------------------------- |
+| `.em-float`       | Continuous vertical levitation        | `--em-delay`, `--em-duration-float`   |
+| `.em-pulse`       | Scale + glow breath loop              | `--em-duration-pulse`                 |
+| `.em-breathe`     | Opacity breath loop                   | `--em-duration-breathe`               |
+| `.em-fade-in`     | One-shot fade in on load              | `--em-delay`, `--em-duration-fadein`  |
+| `.em-slide-up`    | One-shot slide-up entry               | `--em-delay`, `--em-duration-slideup` |
+| `.em-rotate-cw`   | Continuous clockwise rotation         | `--em-duration-rotate`                |
+| `.em-rotate-ccw`  | Continuous counter-clockwise rotation | `--em-duration-rotate`                |
+| `.em-glow-border` | Pulsing glowing border                | –                                     |
 
 ### Staggering animations with `--em-delay`
 
@@ -81,9 +77,9 @@ No installation required. Just link the stylesheet and open the HTML file.
 
 ```css
 :root {
-  --em-duration-float:   8s;   /* slower float */
-  --em-duration-pulse:   2s;   /* faster pulse */
-  --em-duration-rotate: 20s;   /* slower rings */
+  --em-duration-float: 8s; /* slower float */
+  --em-duration-pulse: 2s; /* faster pulse */
+  --em-duration-rotate: 20s; /* slower rings */
 }
 ```
 
@@ -102,7 +98,7 @@ Every visual element in the dashboard exists to carry an animation. The rotating
 Animation intent is declared at the HTML level with plain class names:
 
 ```html
-<div class="panel em-fade-in em-float" style="--em-delay: 0.3s">
+<div class="panel em-fade-in em-float" style="--em-delay: 0.3s"></div>
 ```
 
 A developer reading this immediately understands: this panel fades in, then floats. No digging into JavaScript timelines or configuration objects. The CSS variables (`--em-delay`, `--em-duration-float`) read like plain English.
@@ -138,9 +134,9 @@ All colours, durations, and spacing values are declared as CSS custom properties
 
 ```css
 :root {
-  --cyan:          #06b6d4;
-  --purple-mid:    #7c3aed;
-  --bg-card:       rgba(10, 20, 45, 0.55);
+  --cyan: #06b6d4;
+  --purple-mid: #7c3aed;
+  --bg-card: rgba(10, 20, 45, 0.55);
   --em-duration-float: 6s;
   /* … */
 }
@@ -150,12 +146,12 @@ All colours, durations, and spacing values are declared as CSS custom properties
 
 ## Browser Support
 
-| Feature              | Chrome | Firefox | Safari | Edge |
-|----------------------|--------|---------|--------|------|
-| `backdrop-filter`    | ✓      | ✓       | ✓      | ✓    |
-| CSS custom properties| ✓      | ✓       | ✓      | ✓    |
-| CSS Grid             | ✓      | ✓       | ✓      | ✓    |
-| CSS Animations       | ✓      | ✓       | ✓      | ✓    |
+| Feature               | Chrome | Firefox | Safari | Edge |
+| --------------------- | ------ | ------- | ------ | ---- |
+| `backdrop-filter`     | ✓      | ✓       | ✓      | ✓    |
+| CSS custom properties | ✓      | ✓       | ✓      | ✓    |
+| CSS Grid              | ✓      | ✓       | ✓      | ✓    |
+| CSS Animations        | ✓      | ✓       | ✓      | ✓    |
 
 Recommended: any evergreen browser from 2022 onward.
 
@@ -170,4 +166,4 @@ Recommended: any evergreen browser from 2022 onward.
 
 ---
 
-*Part of the EaseMotion CSS component library — animation-first, human-readable, composable.*
+_Part of the EaseMotion CSS component library — animation-first, human-readable, composable._

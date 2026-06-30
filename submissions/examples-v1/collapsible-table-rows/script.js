@@ -7,7 +7,10 @@ document.querySelectorAll(".ctr-parent").forEach((row) => {
     row.classList.toggle("open");
     const arrow = row.cells[0];
     if (arrow.textContent.startsWith("▶")) {
-      arrow.textContent = arrow.textContent.replace("▶", detail.classList.contains("hidden") ? "▶" : "▼");
+      arrow.textContent = arrow.textContent.replace(
+        "▶",
+        detail.classList.contains("hidden") ? "▶" : "▼"
+      );
     }
   });
 });

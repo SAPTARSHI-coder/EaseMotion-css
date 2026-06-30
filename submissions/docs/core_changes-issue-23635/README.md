@@ -5,6 +5,7 @@
 Fixes the marquee component (`components/ease-marquee.css`) to properly respect `prefers-reduced-motion: reduce`. The existing code only set `animation: none`, which stopped the scroll but left the content overflowing as inline-flex. This fix wraps the content into a static centered layout when reduced motion is active.
 
 **CSS change:**
+
 ```css
 @media (prefers-reduced-motion: reduce) {
   .ease-marquee .ease-marquee-track {

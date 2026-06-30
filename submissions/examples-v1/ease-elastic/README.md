@@ -23,13 +23,13 @@ using cubic-bezier transforms. Pure CSS, zero JavaScript.
 
 ## Class Reference
 
-| Class | Description |
-|---|---|
-| ease-elastic | Default spring overshoot on hover, snappy press on click |
-| ease-elastic-light | Subtle overshoot, gentler spring |
-| ease-elastic-heavy | Dramatic overshoot, bouncier spring |
-| ease-elastic-rotate | Spring rotation + scale on hover |
-| ease-elastic-pop | Elastic pop-in entrance animation |
+| Class               | Description                                              |
+| ------------------- | -------------------------------------------------------- |
+| ease-elastic        | Default spring overshoot on hover, snappy press on click |
+| ease-elastic-light  | Subtle overshoot, gentler spring                         |
+| ease-elastic-heavy  | Dramatic overshoot, bouncier spring                      |
+| ease-elastic-rotate | Spring rotation + scale on hover                         |
+| ease-elastic-pop    | Elastic pop-in entrance animation                        |
 
 ## Accessibility
 
@@ -43,10 +43,10 @@ compatible with the existing EaseMotion design tokens.
 
 ## Browser support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| cubic-bezier transitions | yes | yes | yes | yes |
-| CSS keyframe animations | yes | yes | yes | yes |
-| prefers-reduced-motion | yes | yes | yes | yes |
+| Feature                  | Chrome | Edge | Firefox | Safari |
+| ------------------------ | ------ | ---- | ------- | ------ |
+| cubic-bezier transitions | yes    | yes  | yes     | yes    |
+| CSS keyframe animations  | yes    | yes  | yes     | yes    |
+| prefers-reduced-motion   | yes    | yes  | yes     | yes    |
 
 Submitted under MIT License · EaseMotion CSS · 2026

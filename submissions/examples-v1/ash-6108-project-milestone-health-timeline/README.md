@@ -22,15 +22,11 @@ A responsive project milestone timeline that visualizes milestone progress and p
 
 ```html
 <div class="milestone completed">
+  <div class="dot"></div>
 
-    <div class="dot"></div>
-
-    <div class="content">
-
-        <h3>Requirements Finalized</h3>
-
-    </div>
-
+  <div class="content">
+    <h3>Requirements Finalized</h3>
+  </div>
 </div>
 ```
 

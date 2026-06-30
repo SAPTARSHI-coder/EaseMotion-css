@@ -7,6 +7,7 @@ This proposal introduces a medium backdrop-blur utility class, targeted for `cor
 Glassmorphism and frosted glass effects are a staple of modern web design. The `backdrop-filter: blur()` property achieves this effect natively. Having a predefined medium (`-md`) step in the blur scale allows developers to easily create legible overlays on complex or busy backgrounds without writing custom CSS.
 
 Included class:
+
 - `.backdrop-blur-md` (8px blur radius)
 
 ## ⚙️ How to Use
@@ -22,7 +23,8 @@ Example structure:
 </div>
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside a unique `submissions/examples/ease-backdrop-blur-md-proposal/` directory to avoid directly modifying core files and causing zero deletions.*
+_Note: As per the contributing guidelines, this proposal is implemented inside a unique `submissions/examples/ease-backdrop-blur-md-proposal/` directory to avoid directly modifying core files and causing zero deletions._
 
 ## 🔗 Related Issue
+
 Closes Issue #15077

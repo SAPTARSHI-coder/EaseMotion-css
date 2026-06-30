@@ -26,8 +26,12 @@ Applies animated gradient backgrounds to text elements, creating flowing color e
 ### Direction variants
 
 ```html
-<span class="gradient-text gradient-text--purple gradient-text--vertical">Vertical</span>
-<span class="gradient-text gradient-text--purple gradient-text--diagonal">Diagonal</span>
+<span class="gradient-text gradient-text--purple gradient-text--vertical"
+  >Vertical</span
+>
+<span class="gradient-text gradient-text--purple gradient-text--diagonal"
+  >Diagonal</span
+>
 ```
 
 ### Speed variants

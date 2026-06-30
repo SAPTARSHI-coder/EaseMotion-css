@@ -24,14 +24,12 @@ A modern notification center drawer featuring stacked toast alerts with differen
 
 ```html
 <div class="toast success">
+  <div class="icon">✓</div>
 
-    <div class="icon">✓</div>
-
-    <div>
-        <h3>Payment Successful</h3>
-        <p>Your subscription has been renewed.</p>
-    </div>
-
+  <div>
+    <h3>Payment Successful</h3>
+    <p>Your subscription has been renewed.</p>
+  </div>
 </div>
 ```
 

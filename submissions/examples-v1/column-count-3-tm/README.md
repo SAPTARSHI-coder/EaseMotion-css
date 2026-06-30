@@ -3,7 +3,10 @@
 ## Usage
 
 ```html
-<link rel="stylesheet" href="submissions/examples/column-count-3-tm/style.css">
+<link
+  rel="stylesheet"
+  href="submissions/examples/column-count-3-tm/style.css"
+/>
 <div class="column-count-3-tm">
   <!-- Demo content -->
 </div>

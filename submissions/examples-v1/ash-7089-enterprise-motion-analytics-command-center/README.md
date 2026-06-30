@@ -22,15 +22,9 @@ A responsive enterprise dashboard for monitoring motion performance, animation h
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

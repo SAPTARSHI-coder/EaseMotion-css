@@ -24,11 +24,7 @@ A status page incident banner designed to communicate active outages, degraded p
 
 ```html
 <div class="incident-banner">
-
-    <span class="severity-badge">
-        Major Incident
-    </span>
-
+  <span class="severity-badge"> Major Incident </span>
 </div>
 ```
 

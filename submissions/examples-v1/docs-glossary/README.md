@@ -19,11 +19,11 @@ Example structure:
 
 ```html
 <div class="glossary-card">
-    <h2>Easing</h2>
-    <p>
-        Easing controls the speed of an animation while it is moving,
-        making motion feel more natural and less robotic.
-    </p>
+  <h2>Easing</h2>
+  <p>
+    Easing controls the speed of an animation while it is moving, making motion
+    feel more natural and less robotic.
+  </p>
 </div>
 ```
 
@@ -37,25 +37,24 @@ Animation libraries and utility frameworks often provide powerful motion classes
 
 This glossary helps bridge that gap by:
 
-* Explaining technical terms in plain English.
-* Providing beginner-friendly descriptions instead of complex definitions.
-* Helping developers understand why animations behave the way they do.
-* Creating a quick reference guide that can be revisited during development.
-* Making motion design concepts more approachable for newcomers.
+- Explaining technical terms in plain English.
+- Providing beginner-friendly descriptions instead of complex definitions.
+- Helping developers understand why animations behave the way they do.
+- Creating a quick reference guide that can be revisited during development.
+- Making motion design concepts more approachable for newcomers.
 
 By focusing on understanding rather than implementation details, the glossary aligns with EaseMotion CSS's goal of making modern animation techniques easier to learn and use.
 
 ---
 
-
 ## Browser Compatibility
 
 This example works in all modern browsers, including:
 
-* Google Chrome
-* Microsoft Edge
-* Mozilla Firefox
-* Safari
+- Google Chrome
+- Microsoft Edge
+- Mozilla Firefox
+- Safari
 
 No additional setup is required.
 

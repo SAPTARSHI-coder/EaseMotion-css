@@ -14,19 +14,19 @@ Controls CSS properties that affect reading flow and text layout — `direction`
 
 ### Classes
 
-| Class | Property | Value |
-|---|---|---|
-| `.ease-dir-ltr` | `direction` | `ltr` |
-| `.ease-dir-rtl` | `direction` | `rtl` |
-| `.ease-unicode-normal` | `unicode-bidi` | `normal` |
-| `.ease-unicode-embed` | `unicode-bidi` | `embed` |
-| `.ease-unicode-bidi-override` | `unicode-bidi` | `bidi-override` |
-| `.ease-writing-horizontal` | `writing-mode` | `horizontal-tb` |
-| `.ease-writing-vertical` | `writing-mode` | `vertical-rl` |
-| `.ease-writing-vertical-lr` | `writing-mode` | `vertical-lr` |
-| `.ease-text-orientation-mixed` | `text-orientation` | `mixed` |
-| `.ease-text-orientation-upright` | `text-orientation` | `upright` |
-| `.ease-break-normal` | `word-break` | `normal` |
-| `.ease-break-all` | `word-break` | `break-all` |
-| `.ease-break-word` | `word-break` | `break-word` |
-| `.ease-keep-all` | `word-break` | `keep-all` |
+| Class                            | Property           | Value           |
+| -------------------------------- | ------------------ | --------------- |
+| `.ease-dir-ltr`                  | `direction`        | `ltr`           |
+| `.ease-dir-rtl`                  | `direction`        | `rtl`           |
+| `.ease-unicode-normal`           | `unicode-bidi`     | `normal`        |
+| `.ease-unicode-embed`            | `unicode-bidi`     | `embed`         |
+| `.ease-unicode-bidi-override`    | `unicode-bidi`     | `bidi-override` |
+| `.ease-writing-horizontal`       | `writing-mode`     | `horizontal-tb` |
+| `.ease-writing-vertical`         | `writing-mode`     | `vertical-rl`   |
+| `.ease-writing-vertical-lr`      | `writing-mode`     | `vertical-lr`   |
+| `.ease-text-orientation-mixed`   | `text-orientation` | `mixed`         |
+| `.ease-text-orientation-upright` | `text-orientation` | `upright`       |
+| `.ease-break-normal`             | `word-break`       | `normal`        |
+| `.ease-break-all`                | `word-break`       | `break-all`     |
+| `.ease-break-word`               | `word-break`       | `break-word`    |
+| `.ease-keep-all`                 | `word-break`       | `keep-all`      |

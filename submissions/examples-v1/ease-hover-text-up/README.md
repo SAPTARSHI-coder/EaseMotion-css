@@ -13,16 +13,14 @@ A lightweight hover animation that shifts text upward by **3px**, creating a sub
 ## Usage
 
 ```html
-<a class="ease-hover-text-up" href="#">
-    Home
-</a>
+<a class="ease-hover-text-up" href="#"> Home </a>
 ```
 
 ## CSS Variables
 
 ```css
-:root{
-    --ease-hover-text-up-distance: -3px;
-    --ease-hover-text-up-duration: 0.25s;
+:root {
+  --ease-hover-text-up-distance: -3px;
+  --ease-hover-text-up-duration: 0.25s;
 }
 ```

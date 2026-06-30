@@ -7,7 +7,9 @@ A React component for a data table with click-to-sort columns, status/priority b
 ## How is it used?
 
 ```jsx
-import DataTable from './DataTable';
+import DataTable from "./DataTable";
 
-function App() { return <DataTable />; }
+function App() {
+  return <DataTable />;
+}
 ```

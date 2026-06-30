@@ -36,7 +36,7 @@ Command palettes have become the go-to interface pattern in modern applications 
   <!-- Search Input -->
   <div class="ease-command-search" role="search">
     <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Type a command...">
+    <input type="text" placeholder="Type a command..." />
   </div>
 
   <!-- Command List -->
@@ -44,7 +44,7 @@ Command palettes have become the go-to interface pattern in modern applications 
     <!-- Command Group -->
     <div class="command-group">
       <div class="group-label">Files</div>
-      
+
       <!-- Command Item -->
       <div class="ease-command-item ease-command-active" role="option">
         <div class="command-icon">📄</div>
@@ -54,7 +54,7 @@ Command palettes have become the go-to interface pattern in modern applications 
         </div>
         <div class="ease-command-shortcut">Ctrl+N</div>
       </div>
-      
+
       <div class="ease-command-item" role="option">
         <div class="command-icon">📁</div>
         <div class="command-content">
@@ -78,38 +78,38 @@ Command palettes have become the go-to interface pattern in modern applications 
 ### Link the Stylesheet
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## 📚 CSS Classes Reference
 
 ### Main Container
 
-| Class | Purpose |
-|-------|---------|
+| Class                   | Purpose                                        |
+| ----------------------- | ---------------------------------------------- |
 | `.ease-command-palette` | Main command palette container with animations |
-| `.ease-command-search` | Search input section with icon and hint |
-| `.ease-command-list` | Scrollable container for command items |
+| `.ease-command-search`  | Search input section with icon and hint        |
+| `.ease-command-list`    | Scrollable container for command items         |
 
 ### Command Items
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-command-item` | Individual command item element |
+| Class                  | Purpose                                     |
+| ---------------------- | ------------------------------------------- |
+| `.ease-command-item`   | Individual command item element             |
 | `.ease-command-active` | Marks the currently selected/active command |
-| `.command-group` | Container for grouped commands |
-| `.group-label` | Label for command groups |
+| `.command-group`       | Container for grouped commands              |
+| `.group-label`         | Label for command groups                    |
 
 ### Sub-elements
 
-| Class | Purpose |
-|-------|---------|
-| `.command-icon` | Icon container (emoji or SVG) |
-| `.command-content` | Title and description wrapper |
-| `.command-title` | Main text of the command |
-| `.command-description` | Secondary description text |
-| `.ease-command-shortcut` | Keyboard shortcut badge |
-| `.command-footer` | Footer section with navigation hints |
+| Class                    | Purpose                              |
+| ------------------------ | ------------------------------------ |
+| `.command-icon`          | Icon container (emoji or SVG)        |
+| `.command-content`       | Title and description wrapper        |
+| `.command-title`         | Main text of the command             |
+| `.command-description`   | Secondary description text           |
+| `.ease-command-shortcut` | Keyboard shortcut badge              |
+| `.command-footer`        | Footer section with navigation hints |
 
 ## 🎨 Customization with CSS Variables
 
@@ -119,31 +119,31 @@ Customize the command palette appearance by overriding CSS variables:
 :root {
   /* Primary color for active states and icons */
   --palette-primary-color: #667eea;
-  
+
   /* Background color for the palette */
   --palette-bg-color: #ffffff;
-  
+
   /* Text color for titles and labels */
   --palette-text-color: #333333;
-  
+
   /* Secondary text color */
   --palette-secondary-text: #666666;
-  
+
   /* Border color for dividers */
   --palette-border-color: #e0e0e0;
-  
+
   /* Hover background color */
   --palette-hover-bg: #f5f7ff;
-  
+
   /* Active/selected background color */
   --palette-active-bg: #eef0ff;
-  
+
   /* Animation speed */
   --palette-animation-speed: 0.3s;
-  
+
   /* Border radius */
   --palette-border-radius: 8px;
-  
+
   /* Box shadow */
   --palette-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
@@ -163,15 +163,19 @@ Customize the command palette appearance by overriding CSS variables:
 ## 🎬 Animation Details
 
 ### Entrance Animation
+
 The palette animates in with a smooth fade and scale effect when opened.
 
 ### Item Hover Animation
+
 Command items slide in and change background color when hovered, with icons scaling up.
 
 ### Active State Animation
+
 The currently selected item has a highlighted background with an active icon state.
 
 ### Smooth Transitions
+
 All state changes include smooth transitions for a polished feel.
 
 ## 📱 Responsive Behavior
@@ -197,15 +201,19 @@ The component automatically adapts to different screen sizes:
 ```html
 <div class="ease-command-palette" role="dialog" aria-label="Command Palette">
   <div class="ease-command-search" role="search">
-    <input 
-      type="text" 
-      placeholder="Type a command..." 
+    <input
+      type="text"
+      placeholder="Type a command..."
       aria-label="Search commands"
-    >
+    />
   </div>
-  
+
   <div class="ease-command-list" role="listbox">
-    <div class="ease-command-item ease-command-active" role="option" aria-selected="true">
+    <div
+      class="ease-command-item ease-command-active"
+      role="option"
+      aria-selected="true"
+    >
       <!-- Command content -->
     </div>
     <div class="ease-command-item" role="option">
@@ -223,7 +231,7 @@ The component automatically adapts to different screen sizes:
 <div class="ease-command-palette">
   <div class="ease-command-search">
     <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Search...">
+    <input type="text" placeholder="Search..." />
     <span class="search-hint">ESC</span>
   </div>
   <div class="ease-command-list">
@@ -269,26 +277,31 @@ The component automatically adapts to different screen sizes:
 ## 📊 Use Cases
 
 ### Development Tools
+
 - IDE command palettes (VSCode, Sublime, JetBrains)
 - GitHub/GitLab command search
 - Build tool command runners
 
 ### Productivity Apps
+
 - Note-taking apps (Notion, OneNote)
 - Task managers (Linear, Jira)
 - Markdown editors
 
 ### Design Tools
+
 - Figma-style design platforms
 - UI component libraries
 - Asset management systems
 
 ### Mobile Applications
+
 - In-app search functionality
 - Quick action menus
 - Feature discovery
 
 ### Web Applications
+
 - Admin dashboards
 - CMS applications
 - SaaS platforms

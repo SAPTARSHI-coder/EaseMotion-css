@@ -21,55 +21,61 @@ Provides a lightweight, reusable, accessible pagination system that works with a
 ## Modifiers
 
 ### Sizes
-| Class | Description |
-|---|---|
-| `ease-pagination--sm` | Small (1.75rem) |
-| _(default)_ | Medium (2.25rem) |
-| `ease-pagination--lg` | Large (2.75rem) |
+
+| Class                 | Description      |
+| --------------------- | ---------------- |
+| `ease-pagination--sm` | Small (1.75rem)  |
+| _(default)_           | Medium (2.25rem) |
+| `ease-pagination--lg` | Large (2.75rem)  |
 
 ### Color Themes
-| Class | Description |
-|---|---|
-| `ease-pagination--primary` | Blue (default) |
-| `ease-pagination--secondary` | Gray |
-| `ease-pagination--success` | Green |
-| `ease-pagination--danger` | Red |
-| `ease-pagination--warning` | Amber |
-| `ease-pagination--dark` | Dark background scheme |
+
+| Class                        | Description            |
+| ---------------------------- | ---------------------- |
+| `ease-pagination--primary`   | Blue (default)         |
+| `ease-pagination--secondary` | Gray                   |
+| `ease-pagination--success`   | Green                  |
+| `ease-pagination--danger`    | Red                    |
+| `ease-pagination--warning`   | Amber                  |
+| `ease-pagination--dark`      | Dark background scheme |
 
 ### Alignment
-| Class | Description |
-|---|---|
-| _(default)_ | Flex-start |
-| `ease-pagination--centered` | Center |
-| `ease-pagination--end` | Flex-end |
-| `ease-pagination--between` | Space-between |
+
+| Class                       | Description   |
+| --------------------------- | ------------- |
+| _(default)_                 | Flex-start    |
+| `ease-pagination--centered` | Center        |
+| `ease-pagination--end`      | Flex-end      |
+| `ease-pagination--between`  | Space-between |
 
 ### Layout Variants
-| Class | Description |
-|---|---|
-| `ease-pagination--no-border` | Removes borders from all items |
-| `ease-pagination--outline` | Active item has outline style (transparent bg) |
-| `ease-pagination--compact` | Zero gap, segmented button group style |
-| `ease-pagination--stretched` | Equal-width items |
-| `ease-pagination--with-icons` | Larger font for prev/next icons |
+
+| Class                         | Description                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `ease-pagination--no-border`  | Removes borders from all items                 |
+| `ease-pagination--outline`    | Active item has outline style (transparent bg) |
+| `ease-pagination--compact`    | Zero gap, segmented button group style         |
+| `ease-pagination--stretched`  | Equal-width items                              |
+| `ease-pagination--with-icons` | Larger font for prev/next icons                |
 
 ### Rounded
-| Class | Description |
-|---|---|
-| `ease-pagination--rounded-none` | Square |
-| _(default)_ | 0.375rem |
-| `ease-pagination--rounded-sm` | 0.25rem |
-| `ease-pagination--rounded-lg` | 0.5rem |
-| `ease-pagination--rounded-xl` | 0.75rem |
-| `ease-pagination--rounded-full` | Pill shape |
+
+| Class                           | Description |
+| ------------------------------- | ----------- |
+| `ease-pagination--rounded-none` | Square      |
+| _(default)_                     | 0.375rem    |
+| `ease-pagination--rounded-sm`   | 0.25rem     |
+| `ease-pagination--rounded-lg`   | 0.5rem      |
+| `ease-pagination--rounded-xl`   | 0.75rem     |
+| `ease-pagination--rounded-full` | Pill shape  |
 
 ### Behavior
-| Class | Description |
-|---|---|
+
+| Class                         | Description                              |
+| ----------------------------- | ---------------------------------------- |
 | `ease-pagination--responsive` | Hides middle page items on small screens |
-| `ease-pagination--animated` | Adds transition and click scale effect |
-| `ease-pagination--sticky` | Sticky bottom positioning |
+| `ease-pagination--animated`   | Adds transition and click scale effect   |
+| `ease-pagination--sticky`     | Sticky bottom positioning                |
 
 ## Sub-components
 

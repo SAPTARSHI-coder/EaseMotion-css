@@ -9,8 +9,10 @@ An advanced, interactive interface component that renders a high-performance vec
 - **GPU Thread Acceleration Layer:** Runs spatial shifts and canvas decays entirely inside structural compositor targets (`transform` scale parameters and `opacity`), keeping operations running at 60fps.
 
 ## Workspace Tree Map
+
 - `demo.html`: Live interactive canvas playground workspace tracking cursor movements.
 - `style.css`: Clean modular baseline layout style configuration grids.
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

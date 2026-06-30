@@ -14,7 +14,10 @@ Set a custom property on the container element, then query it with `@container`:
 
 /* Query */
 @container card style(--card-theme: dark) {
-  .card { background: #1e293b; color: #fff; }
+  .card {
+    background: #1e293b;
+    color: #fff;
+  }
 }
 ```
 

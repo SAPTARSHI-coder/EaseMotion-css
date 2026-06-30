@@ -3,11 +3,13 @@
 Beautiful animated mesh gradient backgrounds for EaseMotion CSS.
 
 ## ✨ What it does
-Creates a living, breathing background with multiple gradient 
-orbs that float and blend together using smooth CSS animations. 
+
+Creates a living, breathing background with multiple gradient
+orbs that float and blend together using smooth CSS animations.
 Perfect for hero sections, login pages, and landing pages.
 
 ## 🚀 How to Use
+
 ```html
 <section class="ease-mesh-bg ease-mesh-bg--indigo">
   <div class="ease-mesh-bg__orb ease-mesh-bg__orb--1"></div>
@@ -20,24 +22,27 @@ Perfect for hero sections, login pages, and landing pages.
 ```
 
 ## 🎨 Color Variants
-| Class | Colors |
-|-------|--------|
-| `ease-mesh-bg--indigo` | Indigo, Blue, Purple |
-| `ease-mesh-bg--rose` | Rose, Red, Pink |
+
+| Class                   | Colors               |
+| ----------------------- | -------------------- |
+| `ease-mesh-bg--indigo`  | Indigo, Blue, Purple |
+| `ease-mesh-bg--rose`    | Rose, Red, Pink      |
 | `ease-mesh-bg--emerald` | Emerald, Cyan, Green |
-| `ease-mesh-bg--sunset` | Amber, Red, Orange |
+| `ease-mesh-bg--sunset`  | Amber, Red, Orange   |
 
 ## 📁 Files
-| File | Description |
-|------|-------------|
+
+| File        | Description                           |
+| ----------- | ------------------------------------- |
 | `demo.html` | Full interactive demo with 4 variants |
-| `style.css` | Mesh background animation styles |
-| `README.md` | Documentation |
+| `style.css` | Mesh background animation styles      |
+| `README.md` | Documentation                         |
 
 ## 🌍 Browser Support
+
 | Browser | Support |
-|---------|---------|
-| Chrome | ✅ |
-| Firefox | ✅ |
-| Safari | ✅ |
-| Edge | ✅ |
+| ------- | ------- |
+| Chrome  | ✅      |
+| Firefox | ✅      |
+| Safari  | ✅      |
+| Edge    | ✅      |

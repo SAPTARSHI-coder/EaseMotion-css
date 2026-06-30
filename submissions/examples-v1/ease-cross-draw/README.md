@@ -28,7 +28,7 @@ The X is built from **two separate `<path>` strokes**, each animated independent
 Customize via CSS variables:
 
 ```css
-:root{
+:root {
   --ease-cross-color: #ef4444;
   --ease-cross-speed-circle: 0.6s;
   --ease-cross-speed-line: 0.25s;

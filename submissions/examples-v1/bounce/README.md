@@ -10,8 +10,8 @@ Infinite vertical bounce animation loop. A classic attention-grabbing effect for
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class         | Description                              |
+| ------------- | ---------------------------------------- |
 | `ease-bounce` | Default bounce animation (infinite loop) |
 
 ## Notes

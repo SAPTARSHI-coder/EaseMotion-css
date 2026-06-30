@@ -23,13 +23,11 @@ A responsive API permission component that displays token scopes using colorful 
 
 ```html
 <div class="chip-group">
+  <span class="chip read">Read</span>
 
-    <span class="chip read">Read</span>
+  <span class="chip write">Write</span>
 
-    <span class="chip write">Write</span>
-
-    <span class="chip admin">Admin</span>
-
+  <span class="chip admin">Admin</span>
 </div>
 ```
 

@@ -27,13 +27,9 @@ Inspired by digital catalogs, portfolios, interactive brochures, and product sho
 ```html
 <div class="flipbook">
   <div class="page">
-    <div class="page-front">
-      Front
-    </div>
+    <div class="page-front">Front</div>
 
-    <div class="page-back">
-      Back
-    </div>
+    <div class="page-back">Back</div>
   </div>
 </div>
 ```

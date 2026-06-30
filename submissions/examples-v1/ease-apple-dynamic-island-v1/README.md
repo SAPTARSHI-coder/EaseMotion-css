@@ -31,9 +31,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="island">
-...
-</div>
+<div class="island">...</div>
 ```
 
 ---

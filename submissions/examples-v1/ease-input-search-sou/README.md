@@ -10,16 +10,30 @@ Apply `.ease-input-search` alongside the base `.ease-input` class. Combine with 
 
 ```html
 <!-- Basic search input -->
-<input type="search" class="ease-input ease-input-search" placeholder="Search…" />
+<input
+  type="search"
+  class="ease-input ease-input-search"
+  placeholder="Search…"
+/>
 
 <!-- Sizes -->
-<input type="search" class="ease-input ease-input-search ease-input-search-sm" placeholder="Small" />
-<input type="search" class="ease-input ease-input-search ease-input-search-lg" placeholder="Large" />
+<input
+  type="search"
+  class="ease-input ease-input-search ease-input-search-sm"
+  placeholder="Small"
+/>
+<input
+  type="search"
+  class="ease-input ease-input-search ease-input-search-lg"
+  placeholder="Large"
+/>
 
 <!-- Icon on the right (RTL or alt layouts) -->
-<input type="search"
-       class="ease-input ease-input-search ease-input-search-right"
-       placeholder="Search…" />
+<input
+  type="search"
+  class="ease-input ease-input-search ease-input-search-right"
+  placeholder="Search…"
+/>
 
 <!-- State variants -->
 <input type="search" class="ease-input ease-input-search is-error" />
@@ -28,24 +42,28 @@ Apply `.ease-input-search` alongside the base `.ease-input` class. Combine with 
 
 <!-- Loading state (with CSS-only spinner) -->
 <div class="ease-input-wrap">
-  <input type="search" class="ease-input ease-input-search is-loading" placeholder="Searching…" />
+  <input
+    type="search"
+    class="ease-input ease-input-search is-loading"
+    placeholder="Searching…"
+  />
   <span class="ease-input-spinner" aria-hidden="true"></span>
 </div>
 ```
 
 ### Class Reference
 
-| Class                          | Purpose                                                  |
-| ------------------------------ | -------------------------------------------------------- |
-| `.ease-input-search`           | Adds left-aligned inline SVG search icon + left padding  |
-| `.ease-input-search-sm`        | Smaller padding, font, and icon size                     |
-| `.ease-input-search-lg`        | Larger padding, font, and icon size                      |
-| `.ease-input-search-right`     | Moves the icon to the right side                         |
-| `.is-error`                    | Red border + glow for invalid queries                    |
-| `.is-success`                  | Green border + glow for successful searches              |
-| `.is-loading`                  | Hides the icon; pair with `.ease-input-spinner` element  |
-| `.ease-input-wrap`             | Relative wrapper for the spinner                         |
-| `.ease-input-spinner`          | CSS-only animated loading spinner                        |
+| Class                      | Purpose                                                 |
+| -------------------------- | ------------------------------------------------------- |
+| `.ease-input-search`       | Adds left-aligned inline SVG search icon + left padding |
+| `.ease-input-search-sm`    | Smaller padding, font, and icon size                    |
+| `.ease-input-search-lg`    | Larger padding, font, and icon size                     |
+| `.ease-input-search-right` | Moves the icon to the right side                        |
+| `.is-error`                | Red border + glow for invalid queries                   |
+| `.is-success`              | Green border + glow for successful searches             |
+| `.is-loading`              | Hides the icon; pair with `.ease-input-spinner` element |
+| `.ease-input-wrap`         | Relative wrapper for the spinner                        |
+| `.ease-input-spinner`      | CSS-only animated loading spinner                       |
 
 ## 3. Why is it useful?
 

@@ -9,11 +9,7 @@ Displays a number that animates from 0 to a specified target value. Uses the CSS
 ## How is it used?
 
 ```html
-<div
-  class="css-counter css-counter--stat"
-  style="--target: 2847"
->
-</div>
+<div class="css-counter css-counter--stat" style="--target: 2847"></div>
 ```
 
 ### With prefix/suffix
@@ -24,8 +20,7 @@ Displays a number that animates from 0 to a specified target value. Uses the CSS
   style="--target: 99"
   data-prefix="$"
   data-suffix="%"
->
-</div>
+></div>
 ```
 
 ### Variants

@@ -12,6 +12,5 @@ A simple hover effect where text becomes bold when hovered.
 ## Usage
 
 ```html
-<p class="ease-hover-font-weight-bold">
-  Hover over this text
-</p>
+<p class="ease-hover-font-weight-bold">Hover over this text</p>
+```

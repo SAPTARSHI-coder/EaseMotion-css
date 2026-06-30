@@ -21,12 +21,15 @@ A modern notification badge component featuring pulse and bounce animations, mul
 ## Variants
 
 ### Pulse Badge
+
 Draws user attention using a glowing pulse animation.
 
 ### Bounce Badge
+
 Creates an active notification effect with vertical movement.
 
 ### Color Styles
+
 - Red
 - Blue
 - Green

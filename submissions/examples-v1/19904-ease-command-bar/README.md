@@ -8,10 +8,10 @@ A lightweight, high-fidelity command palette component supporting backdrop fade-
 
 This submission showcases the implementation of a modern command/search modal palette (`ease-command-bar`) using vanilla HTML, CSS animations, and lightweight state-management JavaScript.
 
-* **Backdrop Fade:** Smooth `opacity` + `backdrop-filter` transition creating a premium frosted-glass blur over the background layout.
-* **Spring Scale-In Panel:** Centered search panel scaling from `0.93` with an elastic spring-like `cubic-bezier` curve.
-* **Staggered Results:** Results list entries stagger their entrance animations using CSS Custom Properties (`--delay`) to compute transition delays dynamically.
-* **Keyboard Navigation:** Full support for `CMD+K` / `Ctrl+K` to toggle, `Up/Down` arrow keys to highlight/navigate, `Enter` to confirm, and `ESC` to close.
+- **Backdrop Fade:** Smooth `opacity` + `backdrop-filter` transition creating a premium frosted-glass blur over the background layout.
+- **Spring Scale-In Panel:** Centered search panel scaling from `0.93` with an elastic spring-like `cubic-bezier` curve.
+- **Staggered Results:** Results list entries stagger their entrance animations using CSS Custom Properties (`--delay`) to compute transition delays dynamically.
+- **Keyboard Navigation:** Full support for `CMD+K` / `Ctrl+K` to toggle, `Up/Down` arrow keys to highlight/navigate, `Enter` to confirm, and `ESC` to close.
 
 ---
 
@@ -28,8 +28,12 @@ To integrate the command bar:
 }
 
 @keyframes backdropIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Panel: scale from center with spring */
@@ -38,8 +42,14 @@ To integrate the command bar:
 }
 
 @keyframes panelIn {
-  from { opacity: 0; transform: scale(0.93) translateY(-8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* Results: stagger in with --delay custom property */
@@ -48,8 +58,14 @@ To integrate the command bar:
 }
 
 @keyframes resultIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 ```
 

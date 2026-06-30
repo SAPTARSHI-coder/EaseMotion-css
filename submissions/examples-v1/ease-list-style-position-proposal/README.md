@@ -6,12 +6,13 @@ This proposal introduces a set of CSS utility classes to manage the `list-style-
 
 These utilities provide developers with direct control over how list markers (bullets or numbers) behave in relation to the list item's content box, particularly when text spans multiple lines.
 Included classes:
+
 - `.list-inside` (Marker is placed inside the content box, text wraps under the marker)
 - `.list-outside` (Marker is placed outside the content box, text wraps aligned with the first line)
 
 ## ⚙️ How to Use
 
-To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`. 
+To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`.
 
 You can apply the proposed utilities to any `<ul>` or `<ol>` element:
 
@@ -23,7 +24,8 @@ You can apply the proposed utilities to any `<ul>` or `<ol>` element:
 </ul>
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-list-style-position-proposal/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these classes to the core utility stylesheet.*
+_Note: As per the contributing guidelines, this proposal is implemented inside `submissions/examples/ease-list-style-position-proposal/` to avoid directly modifying core files and causing zero deletions. The maintainer can safely migrate these classes to the core utility stylesheet._
 
 ## 🔗 Related Issue
+
 Closes Issue #16441

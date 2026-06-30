@@ -15,12 +15,12 @@ Technique: two `::before` / `::after` pseudo-elements each carry 6 shadow-cloned
 
 ## Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-confetti` | Confetti burst on `:active` click / tap |
-| `.ease-confetti-auto` | Plays automatically once on page load |
-| `.ease-confetti-loop` | Repeats every 3 seconds |
-| `.ease-confetti-small` | Tiny particles (stack with the above) |
+| Class                  | Effect                                      |
+| ---------------------- | ------------------------------------------- |
+| `.ease-confetti`       | Confetti burst on `:active` click / tap     |
+| `.ease-confetti-auto`  | Plays automatically once on page load       |
+| `.ease-confetti-loop`  | Repeats every 3 seconds                     |
+| `.ease-confetti-small` | Tiny particles (stack with the above)       |
 | `.ease-confetti-large` | Big chunky particles (stack with the above) |
 
 ---
@@ -29,9 +29,7 @@ Technique: two `::before` / `::after` pseudo-elements each carry 6 shadow-cloned
 
 ```html
 <!-- Fires on click -->
-<button class="ease-btn ease-btn-primary ease-confetti">
-  🎉 Celebrate!
-</button>
+<button class="ease-btn ease-btn-primary ease-confetti">🎉 Celebrate!</button>
 
 <!-- Auto-plays on load -->
 <div class="ease-confetti-auto">
@@ -39,9 +37,7 @@ Technique: two `::before` / `::after` pseudo-elements each carry 6 shadow-cloned
 </div>
 
 <!-- Loops every 3s -->
-<div class="ease-confetti-loop">
-  🔁 Party mode
-</div>
+<div class="ease-confetti-loop">🔁 Party mode</div>
 
 <!-- Size modifiers — stack with ease-confetti for click trigger -->
 <button class="ease-confetti ease-confetti-small">Tiny particles</button>

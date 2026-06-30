@@ -16,15 +16,11 @@ A modern testimonial showcase featuring a responsive bento-style grid, profile a
 
 ```html
 <div class="testimonial-card">
+  <div class="avatar">A</div>
 
-    <div class="avatar">A</div>
+  <h3>Aryan Kumar</h3>
 
-    <h3>Aryan Kumar</h3>
-
-    <p>
-        Amazing experience using this product.
-    </p>
-
+  <p>Amazing experience using this product.</p>
 </div>
 ```
 

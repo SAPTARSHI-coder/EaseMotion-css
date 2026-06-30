@@ -14,3 +14,4 @@ Apply the `.ease-input` class to your base input element.
 
 ```html
 <input type="password" class="ease-input" placeholder="Password" />
+```

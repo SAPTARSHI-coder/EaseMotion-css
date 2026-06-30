@@ -5,21 +5,21 @@ CSS `content` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.content-none` | `content: none;` |
-| `.content-normal` | `content: normal;` |
-| `.content-open-quote` | `content: open-quote;` |
-| `.content-close-quote` | `content: close-quote;` |
-| `.content-no-open-quote` | `content: no-open-quote;` |
-| `.content-no-close-quote` | `content: no-close-quote;` |
-| `.content-chapter` | `content: 'Chapter ' counter(chapter);` |
-| `.content-attr` | `content: attr(data-label);` |
+| Class                     | Declaration                             |
+| ------------------------- | --------------------------------------- |
+| `.content-none`           | `content: none;`                        |
+| `.content-normal`         | `content: normal;`                      |
+| `.content-open-quote`     | `content: open-quote;`                  |
+| `.content-close-quote`    | `content: close-quote;`                 |
+| `.content-no-open-quote`  | `content: no-open-quote;`               |
+| `.content-no-close-quote` | `content: no-close-quote;`              |
+| `.content-chapter`        | `content: 'Chapter ' counter(chapter);` |
+| `.content-attr`           | `content: attr(data-label);`            |
 
 ## Responsive Variants
 
@@ -36,9 +36,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Content
-</div>
+<div class="util-class-dark">Dark mode Content</div>
 ```
 
 ## Reduced Motion
@@ -46,9 +44,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Content
-</div>
+<div class="util-class-nomotion">No motion Content</div>
 ```
 
 ## Framework Integration

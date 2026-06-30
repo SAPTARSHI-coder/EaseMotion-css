@@ -14,8 +14,12 @@ Demonstrates the CSS `animation-range` property — which controls the start and
 }
 
 @keyframes bar-fill {
-  from { width: 0%; }
-  to   { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 ```
 

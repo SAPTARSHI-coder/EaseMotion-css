@@ -22,15 +22,9 @@ A responsive dashboard for monitoring production animation performance, renderin
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

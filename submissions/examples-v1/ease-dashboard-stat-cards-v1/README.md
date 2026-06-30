@@ -31,9 +31,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="dashboard">
-...
-</div>
+<div class="dashboard">...</div>
 ```
 
 ---

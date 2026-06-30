@@ -8,8 +8,8 @@ Provides a cloud cost monitoring dashboard displaying provider spending, optimiz
 
 ```html
 <div class="card aws">
-    <h2>$12.4K</h2>
-    <span>AWS Spend</span>
+  <h2>$12.4K</h2>
+  <span>AWS Spend</span>
 </div>
 ```
 

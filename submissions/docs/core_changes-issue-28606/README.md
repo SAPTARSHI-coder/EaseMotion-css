@@ -25,20 +25,20 @@ Provides a lightweight carousel/slider component using CSS `scroll-snap`. No Jav
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Full-width slides with center snap |
-| `.ease-carousel-peek` | Shows partial prev/next slides |
-| `.ease-carousel-fade` | Fade transition instead of scroll |
+| Modifier              | Effect                               |
+| --------------------- | ------------------------------------ |
+| (none)                | Full-width slides with center snap   |
+| `.ease-carousel-peek` | Shows partial prev/next slides       |
+| `.ease-carousel-fade` | Fade transition instead of scroll    |
 | `.ease-carousel-auto` | Auto-play with configurable interval |
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-carousel-slide-width` | `100%` | Width of each slide |
-| `--ease-carousel-gap` | `0` | Gap between slides |
-| `--ease-carousel-auto-interval` | `4000` | Auto-play interval (ms) |
+| Property                        | Default | Description             |
+| ------------------------------- | ------- | ----------------------- |
+| `--ease-carousel-slide-width`   | `100%`  | Width of each slide     |
+| `--ease-carousel-gap`           | `0`     | Gap between slides      |
+| `--ease-carousel-auto-interval` | `4000`  | Auto-play interval (ms) |
 
 ## Why is it useful?
 

@@ -13,3 +13,4 @@ Provides styled inline code and code block components for documentation and blog
 npm install easemotion
 npm run dev
 </code></pre>
+```

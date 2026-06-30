@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated testimonial cards for modern websit
 ## 🚀 Features
 
 ### Testimonial Styles (6 types)
+
 1. **Classic Card** - Gradient background with hover lift
 2. **Glassmorphism** - Frosted glass effect with blur
 3. **Gradient Border** - Animated rotating gradient border
@@ -13,6 +14,7 @@ A collection of beautiful, pure CSS animated testimonial cards for modern websit
 6. **Carousel** - Pure CSS sliding carousel
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All testimonial animations
 - `readme.md` - Documentation
@@ -20,15 +22,17 @@ A collection of beautiful, pure CSS animated testimonial cards for modern websit
 ## 🛠️ How to Use
 
 ### Basic Testimonial
+
 ```html
 <div class="testimonial classic">
-    <div class="quote-icon">"</div>
-    <p class="quote">Your testimonial text here.</p>
-    <div class="author">
-        <img src="user.jpg" alt="Author" class="author-img">
-        <div class="author-info">
-            <h4>Name</h4>
-            <span>Title</span>
-        </div>
+  <div class="quote-icon">"</div>
+  <p class="quote">Your testimonial text here.</p>
+  <div class="author">
+    <img src="user.jpg" alt="Author" class="author-img" />
+    <div class="author-info">
+      <h4>Name</h4>
+      <span>Title</span>
     </div>
+  </div>
 </div>
+```

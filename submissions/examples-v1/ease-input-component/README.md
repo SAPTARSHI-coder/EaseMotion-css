@@ -4,14 +4,14 @@ Styled form inputs with smooth focus animations, error/success states, and icon+
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-input` | Base input style |
-| `ease-input-focus` | Smooth border + glow animation on focus |
-| `ease-input-error` | Red border + glow for invalid state |
-| `ease-input-success` | Green border + glow for valid state |
-| `ease-input-group` | Wrapper for icon + input combinations |
-| `ease-input-icon` | Icon slot inside `ease-input-group` |
+| Class                | Description                             |
+| -------------------- | --------------------------------------- |
+| `ease-input`         | Base input style                        |
+| `ease-input-focus`   | Smooth border + glow animation on focus |
+| `ease-input-error`   | Red border + glow for invalid state     |
+| `ease-input-success` | Green border + glow for valid state     |
+| `ease-input-group`   | Wrapper for icon + input combinations   |
+| `ease-input-icon`    | Icon slot inside `ease-input-group`     |
 
 ## Usage
 

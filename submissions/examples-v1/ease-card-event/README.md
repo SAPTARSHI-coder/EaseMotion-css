@@ -20,9 +20,7 @@ A reusable event listing card built with pure HTML and CSS. It features a promin
 ## 🚀 Usage
 
 ```html
-<article class="ease-card-event">
-    ...
-</article>
+<article class="ease-card-event">...</article>
 ```
 
 ---
@@ -36,4 +34,3 @@ A reusable event listing card built with pure HTML and CSS. It features a promin
 - Register button
 - Hover lift animation
 - CSS-only implementation
-

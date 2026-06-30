@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated breadcrumb navigation styles for mo
 ## 🚀 Features
 
 ### Breadcrumb Styles (8 types)
+
 1. **Classic Arrow** - Simple arrow separator with hover slide
 2. **Slash Separator** - Slash separator with background hover
 3. **Dot Separator** - Dot separator with border hover
@@ -15,6 +16,7 @@ A collection of beautiful, pure CSS animated breadcrumb navigation styles for mo
 8. **Colored Steps** - Multi-colored step indicators
 
 ### Animation Features
+
 - Smooth hover transitions
 - Scale and lift effects
 - Underline animations
@@ -23,6 +25,7 @@ A collection of beautiful, pure CSS animated breadcrumb navigation styles for mo
 - Icon animations
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All breadcrumb animations
 - `readme.md` - Documentation
@@ -30,11 +33,13 @@ A collection of beautiful, pure CSS animated breadcrumb navigation styles for mo
 ## 🛠️ How to Use
 
 ### Basic Breadcrumb
+
 ```html
 <nav class="breadcrumb classic">
-    <a href="#" class="crumb">Home</a>
-    <span class="separator">›</span>
-    <a href="#" class="crumb">Products</a>
-    <span class="separator">›</span>
-    <span class="crumb active">Current Page</span>
+  <a href="#" class="crumb">Home</a>
+  <span class="separator">›</span>
+  <a href="#" class="crumb">Products</a>
+  <span class="separator">›</span>
+  <span class="crumb active">Current Page</span>
 </nav>
+```

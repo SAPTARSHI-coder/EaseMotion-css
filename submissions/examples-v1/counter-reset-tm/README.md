@@ -18,9 +18,7 @@ This submission demonstrates the `counter-reset` CSS property with multiple vari
 Apply the `counter-reset` class to any element:
 
 ```html
-<div class="counter-reset">
-  Your content here
-</div>
+<div class="counter-reset">Your content here</div>
 ```
 
 ## Tokens Used

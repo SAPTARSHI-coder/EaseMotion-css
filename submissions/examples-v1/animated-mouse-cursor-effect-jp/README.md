@@ -1,6 +1,7 @@
 # Animated Mouse Cursor Effect
 
 ## Overview
+
 This component creates a modern custom mouse cursor with smooth movement, glowing effects, and interactive hover animations.
 
 ## Features

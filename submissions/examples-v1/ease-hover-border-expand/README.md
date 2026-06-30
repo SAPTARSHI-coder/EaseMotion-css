@@ -33,8 +33,8 @@ Change this variable to control how far the outline expands.
 Example:
 
 ```css
-:root{
-    --ease-border-expand-offset: 14px;
+:root {
+  --ease-border-expand-offset: 14px;
 }
 ```
 

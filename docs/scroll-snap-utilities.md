@@ -22,10 +22,18 @@ Use these utilities on scroll containers and snap targets together:
 ## Basic usage
 
 ```html
-<div class="ease-snap-x ease-snap-mandatory ease-overflow-x-auto ease-flex ease-gap-4">
-  <article class="ease-snap-start ease-card" style="min-width:320px;">Item 1</article>
-  <article class="ease-snap-center ease-card" style="min-width:320px;">Item 2</article>
-  <article class="ease-snap-end ease-card" style="min-width:320px;">Item 3</article>
+<div
+  class="ease-snap-x ease-snap-mandatory ease-overflow-x-auto ease-flex ease-gap-4"
+>
+  <article class="ease-snap-start ease-card" style="min-width:320px;">
+    Item 1
+  </article>
+  <article class="ease-snap-center ease-card" style="min-width:320px;">
+    Item 2
+  </article>
+  <article class="ease-snap-end ease-card" style="min-width:320px;">
+    Item 3
+  </article>
 </div>
 ```
 

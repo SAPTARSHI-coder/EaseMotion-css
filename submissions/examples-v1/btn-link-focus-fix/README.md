@@ -37,8 +37,8 @@ navigation:
 ## Browser Support
 
 | Browser | Minimum Version |
-|---------|----------------|
-| Chrome  | 86+            |
-| Firefox | 85+            |
-| Safari  | 15.4+          |
-| Edge    | 86+            |
+| ------- | --------------- |
+| Chrome  | 86+             |
+| Firefox | 85+             |
+| Safari  | 15.4+           |
+| Edge    | 86+             |

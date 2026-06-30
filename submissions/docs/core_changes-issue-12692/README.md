@@ -36,30 +36,30 @@ Provides a CSS-only progress bar component with determinate (percentage-based), 
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Default primary color, 0.75rem height |
-| `.ease-progress-sm` | 0.375rem height |
-| `.ease-progress-lg` | 1.125rem height |
-| `.ease-progress-xl` | 1.5rem height |
-| `.ease-progress-primary` | Accent fill (default) |
-| `.ease-progress-success` | Green fill |
-| `.ease-progress-danger` | Red fill |
-| `.ease-progress-warning` | Amber fill |
-| `.ease-progress-info` | Cyan fill |
-| `.ease-progress-indeterminate` | Continuous sliding animation |
-| `.ease-progress-striped` | Diagonal stripe pattern |
-| `.ease-progress-animated` | Animated stripes (use with striped) |
+| Modifier                       | Effect                                |
+| ------------------------------ | ------------------------------------- |
+| (none)                         | Default primary color, 0.75rem height |
+| `.ease-progress-sm`            | 0.375rem height                       |
+| `.ease-progress-lg`            | 1.125rem height                       |
+| `.ease-progress-xl`            | 1.5rem height                         |
+| `.ease-progress-primary`       | Accent fill (default)                 |
+| `.ease-progress-success`       | Green fill                            |
+| `.ease-progress-danger`        | Red fill                              |
+| `.ease-progress-warning`       | Amber fill                            |
+| `.ease-progress-info`          | Cyan fill                             |
+| `.ease-progress-indeterminate` | Continuous sliding animation          |
+| `.ease-progress-striped`       | Diagonal stripe pattern               |
+| `.ease-progress-animated`      | Animated stripes (use with striped)   |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--pbg` | `#f1f5f9` | Track background |
-| `--pfill` | `#6c63ff` | Fill color |
-| `--pradius` | `9999px` | Border radius |
-| `--pheight` | `0.75rem` | Bar height |
-| `--pspeed` | `0.5s` | Width transition speed |
+| Property    | Default   | Description            |
+| ----------- | --------- | ---------------------- |
+| `--pbg`     | `#f1f5f9` | Track background       |
+| `--pfill`   | `#6c63ff` | Fill color             |
+| `--pradius` | `9999px`  | Border radius          |
+| `--pheight` | `0.75rem` | Bar height             |
+| `--pspeed`  | `0.5s`    | Width transition speed |
 
 ## Why is it useful?
 

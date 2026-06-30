@@ -8,9 +8,9 @@ Provides a visual timeline of an AI agent's reasoning process, tool usage, obser
 
 ```html
 <div class="step">
-    <div class="card">
-        <span class="badge reasoning">Reasoning</span>
-    </div>
+  <div class="card">
+    <span class="badge reasoning">Reasoning</span>
+  </div>
 </div>
 ```
 

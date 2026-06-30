@@ -5,25 +5,25 @@ CSS `appearance` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.appearance-none` | `appearance: none;` |
-| `.appearance-auto` | `appearance: auto;` |
-| `.appearance-button` | `appearance: button;` |
-| `.appearance-checkbox` | `appearance: checkbox;` |
-| `.appearance-radio` | `appearance: radio;` |
-| `.appearance-textfield` | `appearance: textfield;` |
-| `.appearance-searchfield` | `appearance: searchfield;` |
-| `.appearance-textarea` | `appearance: textarea;` |
-| `.appearance-menulist` | `appearance: menulist;` |
-| `.appearance-listbox` | `appearance: listbox;` |
-| `.appearance-meter` | `appearance: meter;` |
-| `.appearance-progress` | `appearance: progress-bar;` |
+| Class                     | Declaration                 |
+| ------------------------- | --------------------------- |
+| `.appearance-none`        | `appearance: none;`         |
+| `.appearance-auto`        | `appearance: auto;`         |
+| `.appearance-button`      | `appearance: button;`       |
+| `.appearance-checkbox`    | `appearance: checkbox;`     |
+| `.appearance-radio`       | `appearance: radio;`        |
+| `.appearance-textfield`   | `appearance: textfield;`    |
+| `.appearance-searchfield` | `appearance: searchfield;`  |
+| `.appearance-textarea`    | `appearance: textarea;`     |
+| `.appearance-menulist`    | `appearance: menulist;`     |
+| `.appearance-listbox`     | `appearance: listbox;`      |
+| `.appearance-meter`       | `appearance: meter;`        |
+| `.appearance-progress`    | `appearance: progress-bar;` |
 
 ## Responsive Variants
 
@@ -40,9 +40,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Appearance
-</div>
+<div class="util-class-dark">Dark mode Appearance</div>
 ```
 
 ## Reduced Motion
@@ -50,9 +48,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Appearance
-</div>
+<div class="util-class-nomotion">No motion Appearance</div>
 ```
 
 ## Framework Integration

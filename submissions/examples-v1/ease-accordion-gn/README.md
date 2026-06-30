@@ -4,19 +4,20 @@
    A pure CSS accordion/collapse component with smooth max-height transitions and a rotating icon, built using the checkbox hack — two variants included: standard accordion and FAQ style.
 
 2. **How is it used?**
+
 ```html
-   <div class="accordion">
-     <div class="accordion-item">
-       <input type="checkbox" id="acc1" class="accordion-toggle"/>
-       <label class="accordion-header" for="acc1">
-         <span class="accordion-title">Your Question</span>
-         <span class="accordion-icon">+</span>
-       </label>
-       <div class="accordion-body">
-         <p>Your answer content here.</p>
-       </div>
-     </div>
-   </div>
+<div class="accordion">
+  <div class="accordion-item">
+    <input type="checkbox" id="acc1" class="accordion-toggle" />
+    <label class="accordion-header" for="acc1">
+      <span class="accordion-title">Your Question</span>
+      <span class="accordion-icon">+</span>
+    </label>
+    <div class="accordion-body">
+      <p>Your answer content here.</p>
+    </div>
+  </div>
+</div>
 ```
 
 3. **Why is it useful?**

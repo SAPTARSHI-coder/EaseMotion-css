@@ -9,19 +9,19 @@ divider lines using border and pseudo-elements. Zero JavaScript.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `ease-divider` | Base horizontal divider |
-| `ease-divider--gradient` | Gradient fade on both ends |
-| `ease-divider--label` | Text label divider via inner text |
-| `ease-divider--vertical` | Vertical divider |
-| `ease-divider--animate` | Animated draw-in on load |
-| `ease-divider--thin` | 1px thickness |
-| `ease-divider--medium` | 2px thickness |
-| `ease-divider--thick` | 4px thickness |
-| `ease-divider--primary` | Green accent color |
-| `ease-divider--accent` | Blue accent color |
-| `ease-divider--danger` | Red accent color |
+| Class                    | Description                       |
+| ------------------------ | --------------------------------- |
+| `ease-divider`           | Base horizontal divider           |
+| `ease-divider--gradient` | Gradient fade on both ends        |
+| `ease-divider--label`    | Text label divider via inner text |
+| `ease-divider--vertical` | Vertical divider                  |
+| `ease-divider--animate`  | Animated draw-in on load          |
+| `ease-divider--thin`     | 1px thickness                     |
+| `ease-divider--medium`   | 2px thickness                     |
+| `ease-divider--thick`    | 4px thickness                     |
+| `ease-divider--primary`  | Green accent color                |
+| `ease-divider--accent`   | Blue accent color                 |
+| `ease-divider--danger`   | Red accent color                  |
 
 ## Usage
 
@@ -42,7 +42,9 @@ divider lines using border and pseudo-elements. Zero JavaScript.
 <hr class="ease-divider ease-divider--animate" />
 
 <!-- Combined -->
-<hr class="ease-divider ease-divider--gradient ease-divider--animate ease-divider--medium" />
+<hr
+  class="ease-divider ease-divider--gradient ease-divider--animate ease-divider--medium"
+/>
 ```
 
 ## Accessibility

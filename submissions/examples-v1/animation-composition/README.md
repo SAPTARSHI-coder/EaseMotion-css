@@ -8,7 +8,9 @@ Demonstrates the CSS `animation-composition` property — which controls how mul
 
 ```css
 .element {
-  animation: scale-up 2s infinite, fade-pulse 2s infinite;
+  animation:
+    scale-up 2s infinite,
+    fade-pulse 2s infinite;
   animation-composition: add; /* or replace | accumulate */
 }
 ```

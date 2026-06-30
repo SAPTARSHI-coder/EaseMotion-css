@@ -20,8 +20,8 @@ Adds a fully-interactive **File Upload / Dropzone** component for forms, profile
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                                    |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
 | `demo.html` | Interactive dropzone with file validation, previews, progress bar, state controls, and all-states showcase |
-| `style.css` | Dropzone styles: states, preview cards, progress bar, animations |
-| `README.md` | This documentation |
+| `style.css` | Dropzone styles: states, preview cards, progress bar, animations                                           |
+| `README.md` | This documentation                                                                                         |

@@ -1,6 +1,6 @@
 # CSS-Only Animated Tooltip (`ease-animated-tooltip`)
 
-A lightweight, purely CSS-powered tooltip component featuring smooth fade and slide-in animations with a directional arrow. 
+A lightweight, purely CSS-powered tooltip component featuring smooth fade and slide-in animations with a directional arrow.
 
 ## 🚀 Features & EaseMotion Showcase
 
@@ -22,3 +22,4 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
     I am a tooltip!
   </div>
 </div>
+```

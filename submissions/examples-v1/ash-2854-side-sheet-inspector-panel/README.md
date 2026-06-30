@@ -24,11 +24,9 @@ A side-sheet inspector panel commonly used in dashboards, design tools, content 
 
 ```html
 <aside class="inspector-panel">
-
-    <div class="panel-header">
-        <h2>Inspector</h2>
-    </div>
-
+  <div class="panel-header">
+    <h2>Inspector</h2>
+  </div>
 </aside>
 ```
 

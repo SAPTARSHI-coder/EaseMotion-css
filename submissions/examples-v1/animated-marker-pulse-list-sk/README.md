@@ -24,11 +24,11 @@ animation-delay: calc(var(--i, 0) * 0.22s);
 
 ## Variants
 
-| Class | Marker type | Core technique |
-|---|---|---|
-| `dot-list` | Round dot | `box-shadow` ripple expansion |
-| `hue-list` | Colour disc | `@property --pulse-hue` angle interpolation |
-| `tick-list` | Dash tick | `scaleX` stretch with `transform-origin: left` |
+| Class       | Marker type | Core technique                                 |
+| ----------- | ----------- | ---------------------------------------------- |
+| `dot-list`  | Round dot   | `box-shadow` ripple expansion                  |
+| `hue-list`  | Colour disc | `@property --pulse-hue` angle interpolation    |
+| `tick-list` | Dash tick   | `scaleX` stretch with `transform-origin: left` |
 
 ## Why `::before` instead of `::marker`?
 

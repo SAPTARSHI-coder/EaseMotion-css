@@ -3,6 +3,7 @@
 A dramatic reveal animation where two solid covers part from the center to the sides, revealing the content underneath. This is a pure CSS implementation using pseudo-elements, making it extremely lightweight and easy to drop onto any container.
 
 ## Features
+
 - **Pure CSS**: Uses `::before` and `::after` pseudo-elements.
 - **Customizable**: Color and delay can be customized via CSS variables (`--ease-curtain-color`, `--ease-curtain-delay`).
 - **Responsive**: Adapts perfectly to the size of the container.
@@ -37,9 +38,11 @@ You can easily theme the curtain or stagger the animations by setting these CSS 
 ```
 
 ## Files Included
+
 - `style.css`: The core CSS definitions and keyframes.
 - `demo.html`: A working demo showcasing default and custom variations.
 - `README.md`: This documentation.
 
 ## Related Issue
+
 Resolves #11108

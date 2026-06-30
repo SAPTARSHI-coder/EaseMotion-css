@@ -11,15 +11,48 @@ A tabs component built to the WAI-ARIA Tabs pattern: full keyboard navigation wi
 
 <div class="ease-tabs">
   <div class="ease-tabs__list" role="tablist" aria-label="Account settings">
-    <button class="ease-tabs__tab" role="tab" id="ease-tab-profile"
-            aria-controls="ease-panel-profile" aria-selected="true" tabindex="0">Profile</button>
-    <button class="ease-tabs__tab" role="tab" id="ease-tab-billing"
-            aria-controls="ease-panel-billing" aria-selected="false" tabindex="-1">Billing</button>
+    <button
+      class="ease-tabs__tab"
+      role="tab"
+      id="ease-tab-profile"
+      aria-controls="ease-panel-profile"
+      aria-selected="true"
+      tabindex="0"
+    >
+      Profile
+    </button>
+    <button
+      class="ease-tabs__tab"
+      role="tab"
+      id="ease-tab-billing"
+      aria-controls="ease-panel-billing"
+      aria-selected="false"
+      tabindex="-1"
+    >
+      Billing
+    </button>
     <span class="ease-tabs__indicator" aria-hidden="true"></span>
   </div>
 
-  <div class="ease-tabs__panel" role="tabpanel" id="ease-panel-profile" aria-labelledby="ease-tab-profile" tabindex="0">…</div>
-  <div class="ease-tabs__panel" role="tabpanel" id="ease-panel-billing" aria-labelledby="ease-tab-billing" tabindex="0" hidden>…</div>
+  <div
+    class="ease-tabs__panel"
+    role="tabpanel"
+    id="ease-panel-profile"
+    aria-labelledby="ease-tab-profile"
+    tabindex="0"
+  >
+    …
+  </div>
+  <div
+    class="ease-tabs__panel"
+    role="tabpanel"
+    id="ease-panel-billing"
+    aria-labelledby="ease-tab-billing"
+    tabindex="0"
+    hidden
+  >
+    …
+  </div>
 </div>
 ```
 
@@ -27,11 +60,11 @@ The small inline script wires up selection, the roving tabindex, and the indicat
 
 ## Keyboard model
 
-| Key | Action |
-|---|---|
-| `Tab` | Enter the tablist (lands on the selected tab only) / move to the panel |
-| `Left` / `Right` | Previous / next tab (wraps), activates it |
-| `Home` / `End` | First / last tab |
+| Key              | Action                                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| `Tab`            | Enter the tablist (lands on the selected tab only) / move to the panel |
+| `Left` / `Right` | Previous / next tab (wraps), activates it                              |
+| `Home` / `End`   | First / last tab                                                       |
 
 ## Accessibility notes
 

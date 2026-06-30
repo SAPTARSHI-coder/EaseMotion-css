@@ -29,21 +29,13 @@ This example introduces a reusable liquid hover button animation built with pure
 ## Usage
 
 ```html
-<button class="ease-liquid-btn">
-    Default
-</button>
+<button class="ease-liquid-btn">Default</button>
 
-<button class="ease-liquid-btn blue">
-    Blue
-</button>
+<button class="ease-liquid-btn blue">Blue</button>
 
-<button class="ease-liquid-btn purple">
-    Purple
-</button>
+<button class="ease-liquid-btn purple">Purple</button>
 
-<button class="ease-liquid-btn green">
-    Green
-</button>
+<button class="ease-liquid-btn green">Green</button>
 ```
 
 ---

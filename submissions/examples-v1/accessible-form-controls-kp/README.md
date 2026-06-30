@@ -9,7 +9,7 @@ This adds a self-contained demo for accessible CSS-only inputs, selects, checkbo
 ```html
 <label class="field">
   <span>Email address</span>
-  <input type="email" placeholder="you@example.com">
+  <input type="email" placeholder="you@example.com" />
 </label>
 ```
 

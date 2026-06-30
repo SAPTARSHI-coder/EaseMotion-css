@@ -19,14 +19,18 @@ A submission demonstrating CSS `filter: saturate()` and `backdrop-filter: satura
 
 ```css
 /* Image desaturation */
-.desaturated-img { filter: saturate(0%); }
+.desaturated-img {
+  filter: saturate(0%);
+}
 
 /* Vibrant image enhancement */
-.vibrant-img { filter: saturate(200%); }
+.vibrant-img {
+  filter: saturate(200%);
+}
 
 /* Glass panel with saturation */
 .glass-panel {
-  background: rgba(255,255,255,0.15);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-radius: var(--ease-radius-lg);

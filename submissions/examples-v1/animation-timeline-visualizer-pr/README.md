@@ -1,6 +1,7 @@
 # Animation Timeline Visualizer
 
 ## What does this do?
+
 An interactive timeline visualizer that displays animation progress on a
 timeline, shows animation duration visually, allows comparing multiple
 animations side-by-side, and supports play/restart/speed controls. Each
@@ -32,6 +33,7 @@ A small JS controller (included in `demo.html`) attaches play/restart/speed
 behavior to each `.ease-timeline-card`.
 
 ## Why is it useful?
+
 Helps users understand animation timing instantly, reduces trial-and-error
 when choosing animations, and enhances learning for beginners — similar to
 timeline tools in Animate.css documentation. CSS keyframes drive the visuals;

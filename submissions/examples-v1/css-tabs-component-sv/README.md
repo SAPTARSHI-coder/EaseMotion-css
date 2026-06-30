@@ -21,9 +21,9 @@ Features include:
 ### Tab Inputs
 
 ```html
-<input type="radio" name="tabs" id="tab1" checked>
-<input type="radio" name="tabs" id="tab2">
-<input type="radio" name="tabs" id="tab3">
+<input type="radio" name="tabs" id="tab1" checked />
+<input type="radio" name="tabs" id="tab2" />
+<input type="radio" name="tabs" id="tab3" />
 ```
 
 ### Tab Labels
@@ -37,9 +37,7 @@ Features include:
 ### Content Panels
 
 ```html
-<div id="panel1" class="tab-panel">
-  Profile Content
-</div>
+<div id="panel1" class="tab-panel">Profile Content</div>
 ```
 
 ---

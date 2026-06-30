@@ -18,9 +18,7 @@ This submission demonstrates the `border-boundary` CSS property with multiple va
 Apply the `border-boundary` class to any element:
 
 ```html
-<div class="border-boundary">
-  Your content here
-</div>
+<div class="border-boundary">Your content here</div>
 ```
 
 ## Tokens Used

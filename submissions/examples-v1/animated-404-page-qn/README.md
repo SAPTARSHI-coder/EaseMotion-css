@@ -1,13 +1,16 @@
 # Animated 404 Error Page
 
 ## Description
+
 A fun, engaging, and visually appealing 404 error page that transforms a frustrating user experience into something delightful. It features floating background elements, bouncing numbers, a rotating "0" with an astronaut illustration, and a smooth call-to-action button. Built entirely with pure CSS using `@keyframes` for all animations, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the HTML structure for the floating elements, 404 illustration with astronaut, and error message with CTA button.
 - `style.css`: Contains the gradient background, floating element animations, bouncing numbers, rotating astronaut, and button hover effects.
 
 ## How to use
+
 1. Open `demo.html` in your browser to see the full animated 404 page.
 2. Copy the HTML and CSS into your project.
 3. Use this as your 404 error page template.
@@ -19,6 +22,7 @@ A fun, engaging, and visually appealing 404 error page that transforms a frustra
    - **Animation Speed:** Adjust the duration values in the `@keyframes` to make animations faster or slower.
 
 ## Features
+
 - **Floating Background Elements:** Creates a dynamic, space-like atmosphere
 - **Bouncing Numbers:** The "4"s bounce up and down with staggered timing
 - **Rotating "0":** The zero rotates continuously with an astronaut inside
@@ -27,6 +31,7 @@ A fun, engaging, and visually appealing 404 error page that transforms a frustra
 - **Fully Responsive:** Adapts beautifully to mobile screens
 
 ## Use Cases
+
 - 404 error pages for any website
 - Creative "page not found" experiences
 - Portfolio or personal website error pages

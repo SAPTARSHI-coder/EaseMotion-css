@@ -19,57 +19,63 @@ Provides a lightweight, reusable, accessible (focus-visible close button, role="
 ## Variants
 
 ### Colors
-| Class | Context |
-|---|---|
-| `ease-alert--info` | Blue info |
-| `ease-alert--success` | Green success |
-| `ease-alert--warning` | Amber warning |
-| `ease-alert--danger` | Red error/danger |
-| `ease-alert--neutral` | Gray neutral |
-| `ease-alert--accent` | Purple accent |
+
+| Class                 | Context          |
+| --------------------- | ---------------- |
+| `ease-alert--info`    | Blue info        |
+| `ease-alert--success` | Green success    |
+| `ease-alert--warning` | Amber warning    |
+| `ease-alert--danger`  | Red error/danger |
+| `ease-alert--neutral` | Gray neutral     |
+| `ease-alert--accent`  | Purple accent    |
 
 ### Styles
-| Class | Description |
-|---|---|
-| _(default)_ | Filled background + border |
-| `ease-alert--outline` | Transparent background, 2px border |
-| `ease-alert--subtle` | No border, lighter background |
-| `ease-alert--elevated` | Box shadow lift |
+
+| Class                  | Description                        |
+| ---------------------- | ---------------------------------- |
+| _(default)_            | Filled background + border         |
+| `ease-alert--outline`  | Transparent background, 2px border |
+| `ease-alert--subtle`   | No border, lighter background      |
+| `ease-alert--elevated` | Box shadow lift                    |
 
 ### Accent Borders
-| Class | Description |
-|---|---|
+
+| Class                       | Description            |
+| --------------------------- | ---------------------- |
 | `ease-alert--bordered-left` | 4px left accent border |
-| `ease-alert--bordered-top` | 4px top accent border |
+| `ease-alert--bordered-top`  | 4px top accent border  |
 
 ### Sizes
-| Class | Description |
-|---|---|
+
+| Class            | Description          |
+| ---------------- | -------------------- |
 | `ease-alert--sm` | Small padding + font |
-| _(default)_ | Medium |
+| _(default)_      | Medium               |
 | `ease-alert--lg` | Large padding + font |
 
 ### Modifiers
-| Class | Description |
-|---|---|
-| `ease-alert--dismissible` | Adds right padding for close button |
-| `ease-alert--no-icon` | Hides icon slot |
-| `ease-alert--centered` | Centers text and stacks vertically |
-| `ease-alert--animated` | Slide-in animation on mount |
-| `ease-alert--sticky` | Sticky positioning at top |
-| `ease-alert--full` | Full width (block) |
-| `ease-alert--inline` | Inline-flex display |
-| `ease-alert--with-progress` | Auto-dismiss progress bar (5s) |
+
+| Class                       | Description                         |
+| --------------------------- | ----------------------------------- |
+| `ease-alert--dismissible`   | Adds right padding for close button |
+| `ease-alert--no-icon`       | Hides icon slot                     |
+| `ease-alert--centered`      | Centers text and stacks vertically  |
+| `ease-alert--animated`      | Slide-in animation on mount         |
+| `ease-alert--sticky`        | Sticky positioning at top           |
+| `ease-alert--full`          | Full width (block)                  |
+| `ease-alert--inline`        | Inline-flex display                 |
+| `ease-alert--with-progress` | Auto-dismiss progress bar (5s)      |
 
 ### Roundedness
-| Class | Description |
-|---|---|
-| `ease-alert--rounded-none` | Square |
-| `ease-alert--rounded-sm` | 0.25rem |
-| _(default)_ | 0.5rem |
-| `ease-alert--rounded-lg` | 0.75rem |
-| `ease-alert--rounded-xl` | 1rem |
-| `ease-alert--rounded-full` | 9999px |
+
+| Class                      | Description |
+| -------------------------- | ----------- |
+| `ease-alert--rounded-none` | Square      |
+| `ease-alert--rounded-sm`   | 0.25rem     |
+| _(default)_                | 0.5rem      |
+| `ease-alert--rounded-lg`   | 0.75rem     |
+| `ease-alert--rounded-xl`   | 1rem        |
+| `ease-alert--rounded-full` | 9999px      |
 
 ## Sub-components
 

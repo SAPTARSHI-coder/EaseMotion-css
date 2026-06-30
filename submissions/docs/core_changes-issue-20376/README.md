@@ -5,6 +5,7 @@
 Issue [#20376](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20376) reports that a clean install includes high-severity `undici` vulnerabilities in the development dependency tree.
 
 **The vulnerability chain:**
+
 - `jsdom` (devDependency `^29.1.1`) depends on `undici: ^7.25.0`
 - The lock file pins `undici@7.27.0`, which falls in the affected range (`7.0.0` – `7.27.2`)
 - `npm audit` reports high-severity advisories including TLS certificate validation bypass and WebSocket denial-of-service
@@ -50,10 +51,10 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
-| `package.json` | Bump `jsdom` from `^29.1.1` to `^29.2.0` |
-| `package-lock.json` | Regenerated with patched `undici@7.28.0+` |
+| File                     | Change                                    |
+| ------------------------ | ----------------------------------------- |
+| `package.json`           | Bump `jsdom` from `^29.1.1` to `^29.2.0`  |
+| `package-lock.json`      | Regenerated with patched `undici@7.28.0+` |
 | `.github/dependabot.yml` | New file for automated dependency updates |
 
 Fixes #20376

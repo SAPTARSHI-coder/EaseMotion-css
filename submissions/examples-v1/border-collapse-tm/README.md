@@ -18,9 +18,7 @@ This submission demonstrates the `border-collapse` CSS property with multiple va
 Apply the `border-collapse` class to any element:
 
 ```html
-<div class="border-collapse">
-  Your content here
-</div>
+<div class="border-collapse">Your content here</div>
 ```
 
 ## Tokens Used

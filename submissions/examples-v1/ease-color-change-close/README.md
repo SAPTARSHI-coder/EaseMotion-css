@@ -25,22 +25,20 @@ README.md
 Each section defines a background color:
 
 ```html
-<section data-color="#4f46e5">
+<section data-color="#4f46e5"></section>
 ```
 
 When the section becomes visible:
 
 ```javascript
-document.body.style.backgroundColor =
-    section.dataset.color;
+document.body.style.backgroundColor = section.dataset.color;
 ```
 
 The CSS transition creates a smooth color change:
 
 ```css
 body {
-    transition:
-        background-color 0.8s ease;
+  transition: background-color 0.8s ease;
 }
 ```
 
@@ -75,8 +73,7 @@ Amber
 ### Animation Speed
 
 ```css
-transition:
-    background-color 0.8s ease;
+transition: background-color 0.8s ease;
 ```
 
 Examples:
@@ -96,7 +93,7 @@ Slow
 ### Trigger Point
 
 ```javascript
-threshold: 0.5
+threshold: 0.5;
 ```
 
 - `0.2` → color changes earlier

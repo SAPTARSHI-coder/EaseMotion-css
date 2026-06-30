@@ -22,15 +22,9 @@ Open `demo.html` in any modern browser and hover over the card stacks.
 ### Basic Card Stack
 
 ```html
-&lt;div class="card-stack"&gt;
-  &lt;div class="card-stack__card" style="--i: 0;"&gt;
-    &lt;div class="card-stack__content"&gt;
-      &lt;span class="card-stack__icon"&gt;🚀&lt;/span&gt;
-      &lt;h3&gt;Title&lt;/h3&gt;
-      &lt;p&gt;Description&lt;/p&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-  &lt;div class="card-stack__card" style="--i: 1;"&gt;
-    ...
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="card-stack"&gt; &lt;div class="card-stack__card" style="--i:
+0;"&gt; &lt;div class="card-stack__content"&gt; &lt;span
+class="card-stack__icon"&gt;🚀&lt;/span&gt; &lt;h3&gt;Title&lt;/h3&gt;
+&lt;p&gt;Description&lt;/p&gt; &lt;/div&gt; &lt;/div&gt; &lt;div
+class="card-stack__card" style="--i: 1;"&gt; ... &lt;/div&gt; &lt;/div&gt;
+```

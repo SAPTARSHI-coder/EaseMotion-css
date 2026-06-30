@@ -22,19 +22,19 @@ Animated modal backdrop overlay component using the CSS :target trick. Zero Java
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| ease-backdrop | Base fade-in backdrop overlay |
-| ease-backdrop-blur | Frosted glass blur backdrop |
-| ease-backdrop-dark | Dark 80% opacity backdrop |
-| ease-backdrop-fast | 120ms fade speed |
-| ease-backdrop-slow | 500ms fade speed |
-| ease-modal | Animated modal panel with scale entrance |
-| ease-modal-close | Absolute close button (top-right) |
-| ease-modal-header | Modal title section |
-| ease-modal-body | Modal content section |
-| ease-modal-footer | Modal action buttons section |
-| ease-backdrop-close | Full-area click-outside-to-close layer |
+| Class               | Description                              |
+| ------------------- | ---------------------------------------- |
+| ease-backdrop       | Base fade-in backdrop overlay            |
+| ease-backdrop-blur  | Frosted glass blur backdrop              |
+| ease-backdrop-dark  | Dark 80% opacity backdrop                |
+| ease-backdrop-fast  | 120ms fade speed                         |
+| ease-backdrop-slow  | 500ms fade speed                         |
+| ease-modal          | Animated modal panel with scale entrance |
+| ease-modal-close    | Absolute close button (top-right)        |
+| ease-modal-header   | Modal title section                      |
+| ease-modal-body     | Modal content section                    |
+| ease-modal-footer   | Modal action buttons section             |
+| ease-backdrop-close | Full-area click-outside-to-close layer   |
 
 ## Notes
 

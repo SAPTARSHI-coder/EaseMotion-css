@@ -27,17 +27,11 @@ The effect uses lightweight JavaScript for cursor tracking and CSS transitions f
 ## Usage
 
 ```html
-<button class="magnetic">
-    Hover Me
-</button>
+<button class="magnetic">Hover Me</button>
 
-<div class="magnetic">
-    Magnetic Card
-</div>
+<div class="magnetic">Magnetic Card</div>
 
-<a href="#" class="magnetic">
-    Get Started
-</a>
+<a href="#" class="magnetic"> Get Started </a>
 ```
 
 ---
@@ -46,15 +40,15 @@ The effect uses lightweight JavaScript for cursor tracking and CSS transitions f
 
 ```css
 :root {
-    --magnetic-strength: 0.35;
-    --magnetic-speed: 220ms;
+  --magnetic-strength: 0.35;
+  --magnetic-speed: 220ms;
 }
 ```
 
-| Variable | Description |
-|-----------|------------|
+| Variable              | Description                                          |
+| --------------------- | ---------------------------------------------------- |
 | `--magnetic-strength` | Controls how strongly the element follows the cursor |
-| `--magnetic-speed` | Controls transition speed |
+| `--magnetic-speed`    | Controls transition speed                            |
 
 ---
 
@@ -71,7 +65,7 @@ ease-magnetic extends the framework with cursor-aware motion, adding a new categ
 Supports reduced-motion preferences:
 
 ```css
-@media (prefers-reduced-motion: reduce)
+@media (prefers-reduced-motion: reduce);
 ```
 
 Users who prefer reduced motion will see the effect disabled automatically.

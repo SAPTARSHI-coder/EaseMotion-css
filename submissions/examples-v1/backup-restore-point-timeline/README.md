@@ -8,10 +8,10 @@ Submits layout utility architectures and component timeline configurations for h
 - **The Solution:** Chronological linear progress columns. This feature delivers atomic layout segments that position sequential event entries alongside pseudo-element tracking lines and colored context bullets (Active, Stable, Legacy). This configuration lets sysadmins track version pathways and manage rollbacks safely inside infrastructure management modules.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-timeline-container">
-  <div class="ease-timeline-node latest">
-    </div>
+  <div class="ease-timeline-node latest"></div>
 </div>
 ```
 

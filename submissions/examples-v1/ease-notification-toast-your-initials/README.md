@@ -23,13 +23,11 @@ A pure CSS toast and alert notification system for EaseMotion CSS. JavaScript is
 ### Basic Toast with Auto-Dismiss
 
 ```html
-&lt;div class="ease-toast-container ease-toast-container-top-right"&gt;
-  &lt;div class="ease-toast ease-toast-success"&gt;
-    &lt;div class="ease-toast-content"&gt;
-      &lt;div class="ease-toast-title"&gt;Success&lt;/div&gt;
-      &lt;div class="ease-toast-message"&gt;Your changes have been saved.&lt;/div&gt;
-    &lt;/div&gt;
-    &lt;button class="ease-toast-close" aria-label="Close notification"&gt;&lt;/button&gt;
-    &lt;div class="ease-toast-progress"&gt;&lt;/div&gt;
-  &lt;/div&gt;
-&lt;/div&gt;
+&lt;div class="ease-toast-container ease-toast-container-top-right"&gt; &lt;div
+class="ease-toast ease-toast-success"&gt; &lt;div class="ease-toast-content"&gt;
+&lt;div class="ease-toast-title"&gt;Success&lt;/div&gt; &lt;div
+class="ease-toast-message"&gt;Your changes have been saved.&lt;/div&gt;
+&lt;/div&gt; &lt;button class="ease-toast-close" aria-label="Close
+notification"&gt;&lt;/button&gt; &lt;div
+class="ease-toast-progress"&gt;&lt;/div&gt; &lt;/div&gt; &lt;/div&gt;
+```

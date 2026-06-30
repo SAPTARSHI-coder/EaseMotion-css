@@ -6,12 +6,12 @@ A futuristic command hub featuring glowing connection lines, interactive command
 
 ## Features
 
-* Connected command nodes
-* Animated energy beams
-* Pulsing center core
-* Glassmorphism interface
-* Responsive layout
-* Pure HTML & CSS
+- Connected command nodes
+- Animated energy beams
+- Pulsing center core
+- Glassmorphism interface
+- Responsive layout
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

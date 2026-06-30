@@ -26,11 +26,11 @@ A pure CSS animated cat built from basic shapes (divs with border-radius) that w
 
 Customize via CSS variables:
 
-| Variable | Default | Effect |
-|----------|---------|--------|
-| `--ease-cat-size` | `80px` | Overall size |
-| `--ease-cat-speed` | `1s` | Animation speed |
-| `--ease-cat-color` | `#f59e0b` | Cat body color |
+| Variable           | Default   | Effect          |
+| ------------------ | --------- | --------------- |
+| `--ease-cat-size`  | `80px`    | Overall size    |
+| `--ease-cat-speed` | `1s`      | Animation speed |
+| `--ease-cat-color` | `#f59e0b` | Cat body color  |
 
 ## Why is it useful?
 

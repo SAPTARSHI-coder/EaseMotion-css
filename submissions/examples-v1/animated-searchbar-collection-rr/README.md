@@ -8,7 +8,7 @@ Provides a collection of modern animated search bar designs showcasing different
 
 ```html
 <div class="search-box expand">
-    <input type="text" placeholder="Search...">
+  <input type="text" placeholder="Search..." />
 </div>
 ```
 

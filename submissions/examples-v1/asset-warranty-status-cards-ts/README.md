@@ -8,7 +8,8 @@ Shows active, expiring, expired, and replacement-needed warranty states for asse
 
 ```html
 <article class="asset expiring">
-  <span>Expiring</span><h2>Router R08</h2>
+  <span>Expiring</span>
+  <h2>Router R08</h2>
 </article>
 ```
 

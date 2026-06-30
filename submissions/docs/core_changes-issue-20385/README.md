@@ -6,13 +6,13 @@ Issue [#20385](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20385) r
 
 This submission proposes adding 5 text animation utilities to `core/animations.css`:
 
-| Class | Effect |
-|-------|--------|
-| `.ease-text-glow` | Pulsing `text-shadow` glow animation |
-| `.ease-text-shimmer` | Gradient sweep via `background-clip: text` |
-| `.ease-text-typewriter` | Pure CSS typewriter reveal with blinking cursor |
-| `.ease-text-glitch` | `clip-path` digital glitch with pseudo-element ghosts |
-| `.ease-text-gradient-flow` | Animated flowing multi-stop gradient text |
+| Class                      | Effect                                                |
+| -------------------------- | ----------------------------------------------------- |
+| `.ease-text-glow`          | Pulsing `text-shadow` glow animation                  |
+| `.ease-text-shimmer`       | Gradient sweep via `background-clip: text`            |
+| `.ease-text-typewriter`    | Pure CSS typewriter reveal with blinking cursor       |
+| `.ease-text-glitch`        | `clip-path` digital glitch with pseudo-element ghosts |
+| `.ease-text-gradient-flow` | Animated flowing multi-stop gradient text             |
 
 ## Proposed Implementation
 
@@ -27,13 +27,28 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
 }
 
 @keyframes ease-kf-text-glow {
-  0%, 100% { text-shadow: 0 0 8px currentColor, 0 0 16px currentColor; }
-  50%      { text-shadow: 0 0 16px currentColor, 0 0 32px currentColor, 0 0 48px currentColor; }
+  0%,
+  100% {
+    text-shadow:
+      0 0 8px currentColor,
+      0 0 16px currentColor;
+  }
+  50% {
+    text-shadow:
+      0 0 16px currentColor,
+      0 0 32px currentColor,
+      0 0 48px currentColor;
+  }
 }
 
 /* ── Text Shimmer ── */
 .ease-text-shimmer {
-  background: linear-gradient(90deg, transparent 0%, currentColor 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    currentColor 50%,
+    transparent 100%
+  );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -42,8 +57,12 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
 }
 
 @keyframes ease-kf-text-shimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 /* ── Text Typewriter ── */
@@ -52,17 +71,24 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
   white-space: nowrap;
   border-right: 2px solid currentColor;
   width: 0;
-  animation: ease-kf-text-typewriter 3s steps(30, end) forwards,
-             ease-kf-text-cursor 0.75s step-end infinite;
+  animation:
+    ease-kf-text-typewriter 3s steps(30, end) forwards,
+    ease-kf-text-cursor 0.75s step-end infinite;
 }
 
 @keyframes ease-kf-text-typewriter {
-  from { width: 0; }
-  to   { width: 100%; }
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes ease-kf-text-cursor {
-  50% { border-color: transparent; }
+  50% {
+    border-color: transparent;
+  }
 }
 
 /* ── Text Glitch ── */
@@ -74,8 +100,10 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
 .ease-text-glitch::after {
   content: attr(data-text);
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .ease-text-glitch::before {
@@ -91,26 +119,57 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
 }
 
 @keyframes ease-kf-text-glitch-top {
-  0%   { transform: translate(0); }
-  20%  { transform: translate(-2px, 2px); }
-  40%  { transform: translate(2px, -1px); }
-  60%  { transform: translate(-1px, 1px); }
-  80%  { transform: translate(1px, -2px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -1px);
+  }
+  60% {
+    transform: translate(-1px, 1px);
+  }
+  80% {
+    transform: translate(1px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 @keyframes ease-kf-text-glitch-bottom {
-  0%   { transform: translate(0); }
-  20%  { transform: translate(2px, -2px); }
-  40%  { transform: translate(-2px, 1px); }
-  60%  { transform: translate(1px, -1px); }
-  80%  { transform: translate(-1px, 2px); }
-  100% { transform: translate(0); }
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(2px, -2px);
+  }
+  40% {
+    transform: translate(-2px, 1px);
+  }
+  60% {
+    transform: translate(1px, -1px);
+  }
+  80% {
+    transform: translate(-1px, 2px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 /* ── Text Gradient Flow ── */
 .ease-text-gradient-flow {
-  background: linear-gradient(90deg, #ff006e, #fb5607, #ffbe0b, #8338ec, #3a86ff);
+  background: linear-gradient(
+    90deg,
+    #ff006e,
+    #fb5607,
+    #ffbe0b,
+    #8338ec,
+    #3a86ff
+  );
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -119,8 +178,12 @@ All classes use CSS custom properties for theming, respect `prefers-reduced-moti
 }
 
 @keyframes ease-kf-text-gradient-flow {
-  0%   { background-position: 0% 50%; }
-  100% { background-position: 300% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 300% 50%;
+  }
 }
 ```
 

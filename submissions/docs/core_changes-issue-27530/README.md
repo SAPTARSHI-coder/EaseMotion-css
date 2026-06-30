@@ -7,7 +7,7 @@ A React component for an interactive pricing tier switcher with monthly/yearly t
 ## How is it used?
 
 ```jsx
-import PricingSwitcher from './PricingSwitcher';
+import PricingSwitcher from "./PricingSwitcher";
 
 function App() {
   return <PricingSwitcher />;

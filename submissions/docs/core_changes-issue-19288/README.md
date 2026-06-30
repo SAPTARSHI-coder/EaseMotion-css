@@ -15,11 +15,11 @@ Pure CSS multi-step progress wizard with radio-button navigation, animated trans
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `demo.html` | Wizard layout with radio inputs, step labels, and content panels |
+| File        | Description                                                              |
+| ----------- | ------------------------------------------------------------------------ |
+| `demo.html` | Wizard layout with radio inputs, step labels, and content panels         |
 | `style.css` | All styles, radio-button state logic, animations, responsive breakpoints |
-| `README.md` | This documentation |
+| `README.md` | This documentation                                                       |
 
 ## How it Works
 
@@ -32,8 +32,8 @@ The wizard uses five hidden radio inputs of the same `name` attribute, ensuring 
 ## Usage
 
 ```html
-<input type="radio" name="wizard" id="step-1" checked>
-<input type="radio" name="wizard" id="step-2">
+<input type="radio" name="wizard" id="step-1" checked />
+<input type="radio" name="wizard" id="step-2" />
 <!-- ... -->
 
 <div class="wizard">
@@ -53,10 +53,10 @@ Open `demo.html` in any modern browser. No build step required.
 
 ## Keyframe Reference
 
-| Keyframe | Purpose |
-|----------|---------|
-| `stepPulse` | Glow pulse on the active step circle (indigo) |
-| `fadeSlideIn` | Content panel entrance (fade + translateY) |
-| `staggerIn` | Step indicator staggered entrance |
+| Keyframe      | Purpose                                       |
+| ------------- | --------------------------------------------- |
+| `stepPulse`   | Glow pulse on the active step circle (indigo) |
+| `fadeSlideIn` | Content panel entrance (fade + translateY)    |
+| `staggerIn`   | Step indicator staggered entrance             |
 
 Fixes #19288

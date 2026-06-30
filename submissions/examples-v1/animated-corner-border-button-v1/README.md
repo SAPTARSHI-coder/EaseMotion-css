@@ -22,9 +22,7 @@ A collection of animated corner border buttons using CSS pseudo-elements and tra
 ## Usage
 
 ```html
-<button class="corner-btn">
-  Button
-</button>
+<button class="corner-btn">Button</button>
 ```
 
 ## Main Classes

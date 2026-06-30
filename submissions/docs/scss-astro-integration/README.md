@@ -36,59 +36,58 @@ src/
 
 ├── styles/
 
-│   ├── _variables.scss
+│ ├── \_variables.scss
 
-│   ├── _mixins.scss
+│ ├── \_mixins.scss
 
-│   ├── _utilities.scss
+│ ├── \_utilities.scss
 
-│   └── global.scss
+│ └── global.scss
 
 ├── components/
 
-│   ├── HeroSection.astro
+│ ├── HeroSection.astro
 
-│   └── Card.astro
+│ └── Card.astro
 
 └── layouts/
 
-└── Layout.astro
----
+## └── Layout.astro
 
 ## 3. Global SCSS Setup
 
-### src/styles/_variables.scss
+### src/styles/\_variables.scss
 
 ```scss
-$ease-duration-fast:   150ms;
-$ease-duration-base:   300ms;
-$ease-duration-slow:   600ms;
-$ease-duration-xslow:  1000ms;
+$ease-duration-fast: 150ms;
+$ease-duration-base: 300ms;
+$ease-duration-slow: 600ms;
+$ease-duration-xslow: 1000ms;
 
-$ease-in-out-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
-$ease-spring:          cubic-bezier(0.34, 1.56, 0.64, 1);
-$ease-snap:            cubic-bezier(0.25, 0.46, 0.45, 0.94);
+$ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+$ease-snap: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-$ease-slide-distance:  24px;
-$ease-skew-angle:      3deg;
+$ease-slide-distance: 24px;
+$ease-skew-angle: 3deg;
 
-$ease-primary:         #6366f1;
-$ease-primary-dark:    #4f46e5;
-$ease-surface:         #1e293b;
-$ease-border:          rgba(255, 255, 255, 0.08);
+$ease-primary: #6366f1;
+$ease-primary-dark: #4f46e5;
+$ease-surface: #1e293b;
+$ease-border: rgba(255, 255, 255, 0.08);
 ```
 
-### src/styles/_mixins.scss
+### src/styles/\_mixins.scss
 
 ```scss
-@use 'variables' as v;
+@use "variables" as v;
 
 @mixin ease-animate(
   $name,
   $duration: v.$ease-duration-base,
-  $easing:   v.$ease-in-out-smooth,
-  $delay:    0ms,
-  $fill:     both
+  $easing: v.$ease-in-out-smooth,
+  $delay: 0ms,
+  $fill: both
 ) {
   animation: #{$name} $duration $easing $delay $fill;
 }
@@ -99,7 +98,10 @@ $ease-border:          rgba(255, 255, 255, 0.08);
   @include ease-animate(ease-fade-up-kf, $duration, v.$ease-spring, $delay);
 
   @keyframes ease-fade-up-kf {
-    to { opacity: 1; transform: translateY(0); }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
@@ -111,9 +113,13 @@ $ease-border:          rgba(255, 255, 255, 0.08);
   }
 }
 
-@mixin ease-hover-lift($distance: 6px, $shadow: 0 20px 40px rgba(0,0,0,0.3)) {
-  transition: transform v.$ease-duration-base v.$ease-snap,
-              box-shadow v.$ease-duration-base v.$ease-snap;
+@mixin ease-hover-lift(
+  $distance: 6px,
+  $shadow: 0 20px 40px rgba(0, 0, 0, 0.3)
+) {
+  transition:
+    transform v.$ease-duration-base v.$ease-snap,
+    box-shadow v.$ease-duration-base v.$ease-snap;
   &:hover {
     transform: translateY(-#{$distance});
     box-shadow: $shadow;
@@ -130,20 +136,22 @@ $ease-border:          rgba(255, 255, 255, 0.08);
 ### src/styles/global.scss
 
 ```scss
-@use 'variables' as v;
-@use 'mixins'    as m;
-@use 'easemotion-css/core' as *;
+@use "variables" as v;
+@use "mixins" as m;
+@use "easemotion-css/core" as *;
 
 :root {
-  --ease-duration-fast:  #{v.$ease-duration-fast};
-  --ease-duration-base:  #{v.$ease-duration-base};
-  --ease-duration-slow:  #{v.$ease-duration-slow};
-  --ease-primary:        #{v.$ease-primary};
-  --ease-surface:        #{v.$ease-surface};
+  --ease-duration-fast: #{v.$ease-duration-fast};
+  --ease-duration-base: #{v.$ease-duration-base};
+  --ease-duration-slow: #{v.$ease-duration-slow};
+  --ease-primary: #{v.$ease-primary};
+  --ease-surface: #{v.$ease-surface};
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
@@ -282,7 +290,7 @@ const { title, body, delay = 0 } = Astro.props;
 
 ```js
 // astro.config.mjs
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
   vite: {
@@ -320,13 +328,13 @@ removes unused CSS in production, and inlines critical styles per page.
 
 ## 8. Common Issues and Fixes
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Cannot find module sass | Sass not installed | npm install -D sass |
-| @use not resolving | Wrong relative path | Use correct ../ depth |
-| Styles leaking between components | Missing scope | Remove is:global |
-| additionalData conflicts | Double @use | Remove manual @use from components |
-| Animation not playing | prefers-reduced-motion active | Expected — accessibility respected |
+| Issue                             | Cause                         | Fix                                |
+| --------------------------------- | ----------------------------- | ---------------------------------- |
+| Cannot find module sass           | Sass not installed            | npm install -D sass                |
+| @use not resolving                | Wrong relative path           | Use correct ../ depth              |
+| Styles leaking between components | Missing scope                 | Remove is:global                   |
+| additionalData conflicts          | Double @use                   | Remove manual @use from components |
+| Animation not playing             | prefers-reduced-motion active | Expected — accessibility respected |
 
 ---
 
@@ -335,7 +343,9 @@ removes unused CSS in production, and inlines critical styles per page.
 ```scss
 @include m.ease-fade-up($duration: 500ms, $delay: 200ms);
 @include m.ease-stagger(100ms, 5);
-@include m.ease-safe-motion { animation: myAnim 0.4s ease; }
+@include m.ease-safe-motion {
+  animation: myAnim 0.4s ease;
+}
 @include m.ease-hover-lift(8px);
 ```
 
@@ -343,8 +353,8 @@ removes unused CSS in production, and inlines critical styles per page.
 
 ## Files in This Submission
 
-| File | Purpose |
-|------|---------|
-| README.md | This integration guide |
-| demo.html | Visual preview of the patterns |
+| File      | Purpose                                        |
+| --------- | ---------------------------------------------- |
+| README.md | This integration guide                         |
+| demo.html | Visual preview of the patterns                 |
 | style.css | Compiled output showing what the SCSS produces |

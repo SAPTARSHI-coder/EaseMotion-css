@@ -8,10 +8,13 @@ Submits responsive layout utility tokens and self-contained sizing canvas previe
 - **The Solution:** Native box aspect ratios. The `.ease-aspect-*` utilities employ standard W3C `aspect-ratio` parameters. By directly declaring the mathematical bounding ratio (e.g., `16 / 9`) alongside a single flexible width rule (`width: 100%`), elements automatically scale their height fluidly to fit mobile and desktop viewports with zero layout shifts.
 
 ## Usage Layout Structure
+
 ```html
 <div class="grid-card-wrapper">
-  
-  <iframe class="ease-aspect-video ease-embed-fluid" src="https://example.com/stream"></iframe>
+  <iframe
+    class="ease-aspect-video ease-embed-fluid"
+    src="https://example.com/stream"
+  ></iframe>
 </div>
 ```
 

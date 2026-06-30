@@ -23,15 +23,9 @@ A responsive Knowledge Hub dashboard for organizing documentation, tutorials, FA
 
 ```html
 <div class="dashboard">
+  <section class="categories">...</section>
 
-    <section class="categories">
-        ...
-    </section>
-
-    <section class="articles">
-        ...
-    </section>
-
+  <section class="articles">...</section>
 </div>
 ```
 

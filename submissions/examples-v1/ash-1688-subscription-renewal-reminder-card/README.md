@@ -25,9 +25,7 @@ A modern subscription management card that highlights upcoming renewals, billing
 ## Usage
 
 ```html
-<div class="renewal-card">
-  Subscription Content
-</div>
+<div class="renewal-card">Subscription Content</div>
 ```
 
 ## Main Classes

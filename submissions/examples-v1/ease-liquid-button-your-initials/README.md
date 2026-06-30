@@ -24,6 +24,6 @@ Premium pure CSS liquid fill button animations for EaseMotion CSS. Organic blob 
 ### Basic Liquid Fill (Bottom Up)
 
 ```html
-&lt;button class="ease-liquid-btn ease-liquid-btn-fill-up ease-liquid-btn-primary"&gt;
-  Hover Me
-&lt;/button&gt;
+&lt;button class="ease-liquid-btn ease-liquid-btn-fill-up
+ease-liquid-btn-primary"&gt; Hover Me &lt;/button&gt;
+```

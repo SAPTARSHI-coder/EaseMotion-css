@@ -34,13 +34,13 @@ component.
 
 ## Browser Matrix
 
-| Browser | color-mix() | Separator result |
-|---|---|---|
-| Chrome 111+ | ✅ | color-mix — context-aware |
-| Firefox 113+ | ✅ | color-mix — context-aware |
-| Safari 16.2+ | ✅ | color-mix — context-aware |
-| Safari 15 | ❌ | rgba(0,0,0,0.15) — subtle ✅ |
-| Firefox ESR < 113 | ❌ | rgba(0,0,0,0.15) — subtle ✅ |
+| Browser           | color-mix() | Separator result             |
+| ----------------- | ----------- | ---------------------------- |
+| Chrome 111+       | ✅          | color-mix — context-aware    |
+| Firefox 113+      | ✅          | color-mix — context-aware    |
+| Safari 16.2+      | ✅          | color-mix — context-aware    |
+| Safari 15         | ❌          | rgba(0,0,0,0.15) — subtle ✅ |
+| Firefox ESR < 113 | ❌          | rgba(0,0,0,0.15) — subtle ✅ |
 
 ## Acceptance Criteria
 

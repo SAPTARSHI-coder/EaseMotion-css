@@ -6,11 +6,11 @@ Modal/dialog with backdrop overlay, slide-down entrance, close button, click-out
 
 ## Sizes
 
-| Size | Class | Max Width |
-|------|-------|-----------|
-| Small | `.ease-modal-sm` | 320px |
-| Default | `.ease-modal` | 480px |
-| Large | `.ease-modal-lg` | 640px |
+| Size    | Class            | Max Width |
+| ------- | ---------------- | --------- |
+| Small   | `.ease-modal-sm` | 320px     |
+| Default | `.ease-modal`    | 480px     |
+| Large   | `.ease-modal-lg` | 640px     |
 
 ## Features
 

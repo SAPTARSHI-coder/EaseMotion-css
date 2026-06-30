@@ -7,6 +7,7 @@ Cards can be reached using the Tab key by adding `tabindex="0"`. This makes inte
 ## Problem
 
 Cards without keyboard focus support are inaccessible to:
+
 - Users who cannot use a mouse
 - Keyboard-only users
 - Screen reader users navigating via keyboard
@@ -16,7 +17,7 @@ Cards without keyboard focus support are inaccessible to:
 Add `tabindex="0"` to make cards focusable:
 
 ```html
-<article 
+<article
   class="ease-card ease-card-shadow ease-card-hover"
   tabindex="0"
   role="button"
@@ -29,17 +30,17 @@ Add `tabindex="0"` to make cards focusable:
 
 ## Key Properties
 
-| Property | Value | Purpose |
-|----------|-------|---------|
-| `tabindex="0"` | 0 | Allows keyboard focus |
-| `role="button"` | button | Announces as interactive |
-| `onkeydown` | handler | Enables Enter/Space activation |
+| Property        | Value   | Purpose                        |
+| --------------- | ------- | ------------------------------ |
+| `tabindex="0"`  | 0       | Allows keyboard focus          |
+| `role="button"` | button  | Announces as interactive       |
+| `onkeydown`     | handler | Enables Enter/Space activation |
 
 ## JavaScript Handler
 
 ```javascript
 function handleCardKeydown(event, card) {
-  if (event.key === 'Enter' || event.key === ' ') {
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     handleCardClick(card);
   }

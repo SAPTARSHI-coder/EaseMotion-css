@@ -3,6 +3,7 @@
 A CSS-only credit card form with floating labels, card preview, and input formatting.
 
 ## Features
+
 - Card preview with chip, type indicator, and dynamic details
 - Floating label inputs with smooth transitions
 - Card number, holder, expiry, and CVV fields
@@ -12,9 +13,11 @@ A CSS-only credit card form with floating labels, card preview, and input format
 - Glassmorphism card design with gradient background
 
 ## Usage
+
 Include `style.css` and use the BEM-structured HTML from `demo.html`.
 
 ## Browser Compatibility
+
 Modern browsers supporting CSS Flexbox, Transitions, and Custom Properties.
 
 Created by @saurabhhhcodes

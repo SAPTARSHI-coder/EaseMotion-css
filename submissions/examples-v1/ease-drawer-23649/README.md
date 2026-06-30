@@ -1,6 +1,7 @@
 # Off-Canvas Drawer (left & right)
 
 ## What does this do?
+
 An off-canvas sliding panel component that slides into view from either the left or right edge of the screen, combined with a blurred overlay backdrop to focus user attention on mobile menus, navigation links, filters, or shopping carts.
 
 ## How is it used?
@@ -30,13 +31,14 @@ Toggle the visibility of the drawer and overlay by adding/removing the `.ease-dr
 
 ```javascript
 // Open
-drawer.classList.add('ease-drawer-open');
-overlay.classList.add('ease-drawer-open');
+drawer.classList.add("ease-drawer-open");
+overlay.classList.add("ease-drawer-open");
 
 // Close
-drawer.classList.remove('ease-drawer-open');
-overlay.classList.remove('ease-drawer-open');
+drawer.classList.remove("ease-drawer-open");
+overlay.classList.remove("ease-drawer-open");
 ```
 
 ## Why is it useful?
+
 Drawers are crucial for responsive design on smaller viewports. While the framework provides a static sidebar, mobile navigations require animated off-canvas drawers that conserve valuable screen estate. This component integrates seamlessly with EaseMotion CSS's built-in easing functions, dark/light theme tokens, and shadow system to deliver a premium, native-feeling user experience.

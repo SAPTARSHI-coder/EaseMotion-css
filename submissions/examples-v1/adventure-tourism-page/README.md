@@ -5,8 +5,9 @@ A complete, responsive, and ready-to-use business landing page built specificall
 ## Live Showcase Elements
 
 This template includes all 7 required semantic sections necessary for an enterprise-level travel agency storefront:
+
 1. **High-Energy Hero:** Viewport-covering entry layout using bold wilderness background photography and load-state visibility effects.
-2. **Tour Packages Grid:** A completely responsive flex/grid structure presenting core excursions (*Hiking, Rafting, and Climbing*).
+2. **Tour Packages Grid:** A completely responsive flex/grid structure presenting core excursions (_Hiking, Rafting, and Climbing_).
 3. **Difficulty Indicators:** Visually independent taxonomy badges signaling path safety limits (Easy, Moderate, Advanced).
 4. **Guide Profiles:** Team roster layout detailing wilderness staff experience.
 5. **Safety/Certification Badges:** Highlights trust components and regulatory safety compliance marks.
@@ -20,14 +21,16 @@ This template includes all 7 required semantic sections necessary for an enterpr
 This project acts as an implementation example for the following classes within the framework ecosystem:
 
 ### 1. Entrance/Scroll Animations
-* `ease-fade-in`: Applied across containers to ease visibility smoothly during load states.
-* `ease-slide-up`: Applied to text blocks and sequential cards to lift elements up gracefully along the Y-axis.
-* **Stagger Patterns:** Handled using native sequential elements paired with staggered execution variables (`style="animation-delay: 0.x1s;"`).
+
+- `ease-fade-in`: Applied across containers to ease visibility smoothly during load states.
+- `ease-slide-up`: Applied to text blocks and sequential cards to lift elements up gracefully along the Y-axis.
+- **Stagger Patterns:** Handled using native sequential elements paired with staggered execution variables (`style="animation-delay: 0.x1s;"`).
 
 ### 2. Micro-Interactions & Hover States
-* `ease-hover-grow`: Applied to action items to expand element boundaries dynamically when focused.
-* `ease-hover-shake`: Added to layout profile spaces to trigger a subtle attention-grabbing tilt movement.
-* `ease-hover-pulse`: Embedded within structural booking elements to provide ongoing visual momentum for interactive buttons.
+
+- `ease-hover-grow`: Applied to action items to expand element boundaries dynamically when focused.
+- `ease-hover-shake`: Added to layout profile spaces to trigger a subtle attention-grabbing tilt movement.
+- `ease-hover-pulse`: Embedded within structural booking elements to provide ongoing visual momentum for interactive buttons.
 
 ---
 

@@ -24,9 +24,7 @@ A modern animated star rating component featuring interactive ratings, read-only
 ## Usage
 
 ```html
-<div class="star-rating">
-  ...
-</div>
+<div class="star-rating">...</div>
 ```
 
 ## Main Classes

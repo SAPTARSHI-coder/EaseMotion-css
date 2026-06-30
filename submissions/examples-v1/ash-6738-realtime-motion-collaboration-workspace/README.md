@@ -23,15 +23,9 @@ A responsive collaboration workspace for motion design teams featuring project s
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="workspace">
-        ...
-    </section>
-
+  <section class="workspace">...</section>
 </div>
 ```
 

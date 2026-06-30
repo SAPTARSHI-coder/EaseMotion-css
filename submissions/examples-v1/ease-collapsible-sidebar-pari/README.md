@@ -5,6 +5,7 @@ A collapsible navigation sidebar that smoothly expands and collapses
 using CSS width transitions, improving readability and focus.
 
 **How is it used?**
+
 <div class="layout">
   <aside class="sidebar" id="sidebar">
     <!-- nav items -->

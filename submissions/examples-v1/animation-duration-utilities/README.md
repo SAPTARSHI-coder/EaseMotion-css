@@ -4,6 +4,7 @@
 Adds small duration utility classes that let the same transition or keyframe animation run at fast, normal, or slow speeds.
 
 **How is it used?**
+
 ```html
 <button class="motion-card duration-fast">Fast</button>
 <button class="motion-card duration-normal">Normal</button>

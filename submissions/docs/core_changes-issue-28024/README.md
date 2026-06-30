@@ -14,22 +14,22 @@ Adds neon glow hover effects to buttons, cards, and interactive elements. Uses `
 
 ### Classes
 
-| Class | Glow Color |
-|---|---|
-| `.ease-neon-blue` | Cyan/blue glow (#00d4ff) |
-| `.ease-neon-pink` | Hot pink glow (#ff00ff) |
-| `.ease-neon-green` | Lime green glow (#39ff14) |
-| `.ease-neon-purple` | Purple glow (#b026ff) |
-| `.ease-neon-rainbow` | Cycling rainbow glow |
+| Class                | Glow Color                |
+| -------------------- | ------------------------- |
+| `.ease-neon-blue`    | Cyan/blue glow (#00d4ff)  |
+| `.ease-neon-pink`    | Hot pink glow (#ff00ff)   |
+| `.ease-neon-green`   | Lime green glow (#39ff14) |
+| `.ease-neon-purple`  | Purple glow (#b026ff)     |
+| `.ease-neon-rainbow` | Cycling rainbow glow      |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-neon-color` | *(per class)* | Glow color |
-| `--ease-neon-blur` | `8px` | Blur radius |
-| `--ease-neon-intensity` | `1` | Multiplier for glow spread |
-| `--ease-neon-duration` | `1.5s` | Pulse animation speed |
+| Property                | Default       | Description                |
+| ----------------------- | ------------- | -------------------------- |
+| `--ease-neon-color`     | _(per class)_ | Glow color                 |
+| `--ease-neon-blur`      | `8px`         | Blur radius                |
+| `--ease-neon-intensity` | `1`           | Multiplier for glow spread |
+| `--ease-neon-duration`  | `1.5s`        | Pulse animation speed      |
 
 ## Accessibility
 

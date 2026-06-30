@@ -24,9 +24,7 @@ A security-focused component for displaying and managing two-factor authenticati
 ## Usage
 
 ```html
-<div class="recovery-panel">
-  Recovery Codes
-</div>
+<div class="recovery-panel">Recovery Codes</div>
 ```
 
 ## Main Classes

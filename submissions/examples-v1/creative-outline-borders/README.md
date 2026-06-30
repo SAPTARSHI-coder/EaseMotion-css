@@ -17,30 +17,24 @@ A collection of eight unique and creative CSS outline border effects demonstrati
 
 ## Features
 
-* 8 completely different border styles
-* Pure CSS implementation
-* No JavaScript dependencies
-* Responsive showcase layout
-* Hover-driven animations
-* Lightweight and easy to integrate
-* Suitable for modern UI and component libraries
+- 8 completely different border styles
+- Pure CSS implementation
+- No JavaScript dependencies
+- Responsive showcase layout
+- Hover-driven animations
+- Lightweight and easy to integrate
+- Suitable for modern UI and component libraries
 
 ## Usage
 
 Include the desired class on an element:
 
 ```html
-<div class="card border-draw">
-  Border Draw
-</div>
+<div class="card border-draw">Border Draw</div>
 
-<div class="card neon-border">
-  Neon Glow
-</div>
+<div class="card neon-border">Neon Glow</div>
 
-<div class="card gradient-spin">
-  Gradient Spin
-</div>
+<div class="card gradient-spin">Gradient Spin</div>
 ```
 
 ## HTML Structure
@@ -62,28 +56,28 @@ Include the desired class on an element:
 
 ### Base Classes
 
-* `.grid` – responsive showcase container
-* `.card` – reusable card component for demos
+- `.grid` – responsive showcase container
+- `.card` – reusable card component for demos
 
 ### Border Variants
 
-* `.border-draw`
-* `.neon-border`
-* `.gradient-spin`
-* `.marching-ants`
-* `.electric-border`
-* `.corner-expand`
-* `.scanner-border`
-* `.pixel-border`
+- `.border-draw`
+- `.neon-border`
+- `.gradient-spin`
+- `.marching-ants`
+- `.electric-border`
+- `.corner-expand`
+- `.scanner-border`
+- `.pixel-border`
 
 ## Why It Fits EaseMotion CSS
 
-* Human-readable CSS
-* Animation-focused examples
-* No external dependencies
-* Demonstrates multiple CSS techniques
-* Easy to copy and integrate into projects
-* Self-contained examples suitable for learning and experimentation
+- Human-readable CSS
+- Animation-focused examples
+- No external dependencies
+- Demonstrates multiple CSS techniques
+- Easy to copy and integrate into projects
+- Self-contained examples suitable for learning and experimentation
 
 ## Demo
 
@@ -91,6 +85,6 @@ Open `demo.html` directly in your browser.
 
 ## Browser Support
 
-* Chrome ✅
-* Firefox ✅
-* Edge ✅
+- Chrome ✅
+- Firefox ✅
+- Edge ✅

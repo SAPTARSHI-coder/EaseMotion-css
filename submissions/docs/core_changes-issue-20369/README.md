@@ -7,7 +7,8 @@ Issue [#20369](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20369) r
 **The bug** is in `components/compare-table.css` on line 80:
 
 ```css
-.ease-icon-check, .ease-icon-cross {
+.ease-icon-check,
+.ease-icon-cross {
   display: inline-flex;
   align-items: center;
   justify-content: center;

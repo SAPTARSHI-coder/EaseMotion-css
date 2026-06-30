@@ -8,7 +8,7 @@ Additionally, this example directory introduces critical patches to resolve text
 
 ## 🚀 Key Features & Architectural Patches
 
-- **Defensive Text Overflow Controls:** Solves the issue of massive, unbroken character strings (such as unspaced descriptions, long code lines, or absolute URLs) shattering the geometry of responsive flex and grid cards. 
+- **Defensive Text Overflow Controls:** Solves the issue of massive, unbroken character strings (such as unspaced descriptions, long code lines, or absolute URLs) shattering the geometry of responsive flex and grid cards.
   - **Multi-Line Word Wrap:** Uses `overflow-wrap: break-word` and `word-break: break-word` on body typography to split continuous strings cleanly onto new lines.
   - **Single-Line Ellipsis Truncation:** Implements a neat single-line text constraint (`text-overflow: ellipsis`) for headers and metadata text to clip gracefully at the card boundary line.
   - **Flex Shrink Guard:** Enforces `min-width: 0` on card containers to override the implicit flex layout auto-minimums, allowing elements to contract smoothly on smaller viewports.
@@ -24,3 +24,4 @@ Additionally, this example directory introduces critical patches to resolve text
 card-overflow-fix-xyz/
 ├── demo.html    # Interactive sandbox playground testing overflows, layout shrinking, and theme variables
 └── style.css    # Clean CSS workspace containing design tokens and typographic containment fixes
+```

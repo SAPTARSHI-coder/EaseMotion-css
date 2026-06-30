@@ -8,16 +8,16 @@ A self-contained animated cloud monitoring dashboard for servers and infrastruct
 
 ## EaseMotion CSS Classes Showcased
 
-| Class | Applied To |
-|---|---|
-| `ease-fade-in-left` | Sidebar navigation |
-| `ease-fade-in-down` | Top navigation bar |
-| `ease-zoom-in` | Overview stat cards (staggered delays) |
-| `ease-fade-in-up` | Widget panels (staggered delays) |
-| `ease-fade-in-right` | System log entries (staggered delays) |
-| `ease-fade-in` | Progress fill bars |
-| `ease-pulse` | Live status dot |
-| `ease-grow-up` | Network throughput chart bars |
+| Class                | Applied To                             |
+| -------------------- | -------------------------------------- |
+| `ease-fade-in-left`  | Sidebar navigation                     |
+| `ease-fade-in-down`  | Top navigation bar                     |
+| `ease-zoom-in`       | Overview stat cards (staggered delays) |
+| `ease-fade-in-up`    | Widget panels (staggered delays)       |
+| `ease-fade-in-right` | System log entries (staggered delays)  |
+| `ease-fade-in`       | Progress fill bars                     |
+| `ease-pulse`         | Live status dot                        |
+| `ease-grow-up`       | Network throughput chart bars          |
 
 ## Sections
 

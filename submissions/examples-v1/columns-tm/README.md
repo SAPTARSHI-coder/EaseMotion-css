@@ -5,24 +5,24 @@ CSS `columns` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.columns-1` | `columns: 1;` |
-| `.columns-2` | `columns: 2;` |
-| `.columns-3` | `columns: 3;` |
-| `.columns-4` | `columns: 4;` |
-| `.columns-6` | `columns: 6;` |
-| `.columns-auto` | `columns: auto;` |
-| `.columns-xs` | `columns: 16rem;` |
-| `.columns-sm` | `columns: 18rem;` |
-| `.columns-md` | `columns: 20rem;` |
-| `.columns-lg` | `columns: 24rem;` |
-| `.columns-xl` | `columns: 28rem;` |
+| Class           | Declaration       |
+| --------------- | ----------------- |
+| `.columns-1`    | `columns: 1;`     |
+| `.columns-2`    | `columns: 2;`     |
+| `.columns-3`    | `columns: 3;`     |
+| `.columns-4`    | `columns: 4;`     |
+| `.columns-6`    | `columns: 6;`     |
+| `.columns-auto` | `columns: auto;`  |
+| `.columns-xs`   | `columns: 16rem;` |
+| `.columns-sm`   | `columns: 18rem;` |
+| `.columns-md`   | `columns: 20rem;` |
+| `.columns-lg`   | `columns: 24rem;` |
+| `.columns-xl`   | `columns: 28rem;` |
 
 ## Responsive Variants
 
@@ -39,9 +39,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Columns
-</div>
+<div class="util-class-dark">Dark mode Columns</div>
 ```
 
 ## Reduced Motion
@@ -49,9 +47,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Columns
-</div>
+<div class="util-class-nomotion">No motion Columns</div>
 ```
 
 ## Framework Integration

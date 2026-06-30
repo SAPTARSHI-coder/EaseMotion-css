@@ -11,27 +11,29 @@ Adds fluid (responsive) typography utility classes to EaseMotion CSS using the C
 <h1 class="ease-text-fluid-3xl">Responsive Heading</h1>
 
 <!-- Fluid body text -->
-<p class="ease-text-fluid-base">This text scales smoothly as the viewport changes.</p>
+<p class="ease-text-fluid-base">
+  This text scales smoothly as the viewport changes.
+</p>
 ```
 
 ### Variants
 
-| Class | `clamp()` value | Use case |
-|---|---|---|
-| `.ease-text-fluid-xs` | `clamp(0.75rem, 1vw, 0.875rem)` | Small labels |
-| `.ease-text-fluid-sm` | `clamp(0.875rem, 1.5vw, 1rem)` | Captions, meta |
-| `.ease-text-fluid-base` | `clamp(1rem, 2vw, 1.125rem)` | Body text |
-| `.ease-text-fluid-lg` | `clamp(1.125rem, 2.5vw, 1.5rem)` | Lead / subtitle |
-| `.ease-text-fluid-xl` | `clamp(1.25rem, 3vw, 2rem)` | Section heading |
-| `.ease-text-fluid-2xl` | `clamp(1.5rem, 4vw, 3rem)` | Major heading |
-| `.ease-text-fluid-3xl` | `clamp(2rem, 5vw, 4rem)` | Hero / display |
+| Class                   | `clamp()` value                  | Use case        |
+| ----------------------- | -------------------------------- | --------------- |
+| `.ease-text-fluid-xs`   | `clamp(0.75rem, 1vw, 0.875rem)`  | Small labels    |
+| `.ease-text-fluid-sm`   | `clamp(0.875rem, 1.5vw, 1rem)`   | Captions, meta  |
+| `.ease-text-fluid-base` | `clamp(1rem, 2vw, 1.125rem)`     | Body text       |
+| `.ease-text-fluid-lg`   | `clamp(1.125rem, 2.5vw, 1.5rem)` | Lead / subtitle |
+| `.ease-text-fluid-xl`   | `clamp(1.25rem, 3vw, 2rem)`      | Section heading |
+| `.ease-text-fluid-2xl`  | `clamp(1.5rem, 4vw, 3rem)`       | Major heading   |
+| `.ease-text-fluid-3xl`  | `clamp(2rem, 5vw, 4rem)`         | Hero / display  |
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-text-fluid-min` | `16` | Minimum viewport width (rem) used in clamp calculation |
-| `--ease-text-fluid-max` | `80` | Maximum viewport width (rem) used in clamp calculation |
+| Property                | Default | Description                                            |
+| ----------------------- | ------- | ------------------------------------------------------ |
+| `--ease-text-fluid-min` | `16`    | Minimum viewport width (rem) used in clamp calculation |
+| `--ease-text-fluid-max` | `80`    | Maximum viewport width (rem) used in clamp calculation |
 
 ## Why is it useful?
 

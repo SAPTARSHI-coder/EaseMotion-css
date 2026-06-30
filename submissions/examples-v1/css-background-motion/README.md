@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated backgrounds for modern web interfac
 ## 🚀 Features
 
 ### Background Styles (10 types)
+
 1. **Gradient Flow** - Smooth flowing gradient animation
 2. **Floating Particles** - Rising particle effects
 3. **Wave Animation** - Ocean wave SVG animation
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated backgrounds for modern web interfac
 10. **Pulse Rings** - Expanding ring animation
 
 ### Animation Features
+
 - Smooth gradient transitions
 - Particle floating effects
 - SVG wave animations
@@ -29,6 +31,7 @@ A collection of beautiful, pure CSS animated backgrounds for modern web interfac
 - Ring expansion
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All background animations
 - `readme.md` - Documentation
@@ -36,7 +39,9 @@ A collection of beautiful, pure CSS animated backgrounds for modern web interfac
 ## 🛠️ How to Use
 
 ### Basic Background
+
 ```html
 <div class="bg-demo gradient-flow">
-    <div class="demo-content">Your Content</div>
+  <div class="demo-content">Your Content</div>
 </div>
+```

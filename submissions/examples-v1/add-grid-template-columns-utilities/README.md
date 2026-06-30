@@ -4,8 +4,8 @@ Utility classes for defining the number of columns in a CSS Grid layout.
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
+| Class          | CSS                                                 |
+| -------------- | --------------------------------------------------- |
 | `.grid-cols-1` | `grid-template-columns: repeat(1, minmax(0, 1fr));` |
 | `.grid-cols-2` | `grid-template-columns: repeat(2, minmax(0, 1fr));` |
 | `.grid-cols-3` | `grid-template-columns: repeat(3, minmax(0, 1fr));` |

@@ -10,8 +10,8 @@ Button exit animation that squish-bounces through multiple scale values with ove
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class                     | Description                   |
+| ------------------------- | ----------------------------- |
 | `ease-bounce-button-exit` | Default bounce exit animation |
 
 ## Notes

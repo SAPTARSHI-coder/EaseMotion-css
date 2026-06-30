@@ -6,18 +6,16 @@
 2. **How is it used?**
 
    ```html
-   <button class="ease-btn ease-btn-primary ease-btn-loading">
-     Submit
-   </button>
+   <button class="ease-btn ease-btn-primary ease-btn-loading">Submit</button>
 
    <button class="ease-btn ease-btn-outline ease-btn-lg ease-btn-loading">
      Loading...
    </button>
 
    <script>
-     btn.classList.add('ease-btn-loading');
+     btn.classList.add("ease-btn-loading");
      btn.disabled = true;
-     btn.classList.remove('ease-btn-loading');
+     btn.classList.remove("ease-btn-loading");
      btn.disabled = false;
    </script>
    ```

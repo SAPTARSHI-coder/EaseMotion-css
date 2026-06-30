@@ -15,7 +15,9 @@ Contact information card with email, phone, address items (icon + label + value)
       <span class="ease-contact-item-icon-az">&#x2709;</span>
       <div class="ease-contact-item-content-az">
         <div class="ease-contact-item-label-az">Email</div>
-        <div class="ease-contact-item-value-az"><a href="mailto:hello@acme.com">hello@acme.com</a></div>
+        <div class="ease-contact-item-value-az">
+          <a href="mailto:hello@acme.com">hello@acme.com</a>
+        </div>
       </div>
     </div>
   </div>
@@ -33,11 +35,11 @@ Contact information card with email, phone, address items (icon + label + value)
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                 | Default   |
+| ------------------------ | --------- |
+| `--ease-space-*`         | spacing   |
+| `--ease-radius-lg`       | 12px      |
+| `--ease-radius-md`       | 8px       |
+| `--ease-color-primary`   | #6366f1   |
+| `--ease-color-neutral-*` | grays     |
+| `--ease-font-sans`       | system-ui |

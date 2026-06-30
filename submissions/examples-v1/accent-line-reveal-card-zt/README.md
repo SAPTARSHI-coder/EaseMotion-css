@@ -11,13 +11,15 @@ Link the stylesheet and use the `reveal-card` class with one of the accent varia
 Example usage:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <article class="reveal-card card-default">
   <div class="accent-line"></div>
   <div class="card-body">
     <span class="card-label">Default</span>
     <h2>Workspace summary</h2>
-    <p>Clean overview card with a balanced dark surface and soft accent border.</p>
+    <p>
+      Clean overview card with a balanced dark surface and soft accent border.
+    </p>
     <a class="card-cta" href="#">Review report</a>
   </div>
 </article>

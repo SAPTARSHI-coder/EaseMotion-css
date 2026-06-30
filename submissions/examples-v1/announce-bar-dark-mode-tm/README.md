@@ -8,11 +8,21 @@ The CSS pattern for announce bar dark mode (to be added to `components/announce-
 
 ```css
 /* Dark mode */
-[data-theme="dark"] .ease-announce-bar { background: #1e1b4b; }
-[data-theme="dark"] .ease-announce-bar.is-info { background: #4338ca; }
-[data-theme="dark"] .ease-announce-bar.is-success { background: #059669; }
-[data-theme="dark"] .ease-announce-bar.is-warning { background: #d97706; }
-[data-theme="dark"] .ease-announce-bar.is-danger { background: #dc2626; }
+[data-theme="dark"] .ease-announce-bar {
+  background: #1e1b4b;
+}
+[data-theme="dark"] .ease-announce-bar.is-info {
+  background: #4338ca;
+}
+[data-theme="dark"] .ease-announce-bar.is-success {
+  background: #059669;
+}
+[data-theme="dark"] .ease-announce-bar.is-warning {
+  background: #d97706;
+}
+[data-theme="dark"] .ease-announce-bar.is-danger {
+  background: #dc2626;
+}
 ```
 
 All variants keep white text which remains readable on all dark backgrounds.

@@ -14,9 +14,9 @@ Adds animated separator icons to breadcrumb navigation.
 
 ```html
 <nav class="ease-breadcrumb">
-    <a href="#">Home</a>
-    <span class="separator">›</span>
-    <a href="#">Products</a>
+  <a href="#">Home</a>
+  <span class="separator">›</span>
+  <a href="#">Products</a>
 </nav>
 ```
 

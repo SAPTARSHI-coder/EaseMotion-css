@@ -4,12 +4,13 @@
    A comprehensive set of CSS custom properties (design tokens) covering colors, typography, spacing, border radius, shadows, animation timing, and z-index — with a built-in dark theme override via `[data-theme="dark"]`.
 
 2. **How is it used?**
+
    ```html
    <!-- Light (default) -->
    <html lang="en">
-
-   <!-- Dark -->
-   <html lang="en" data-theme="dark">
+     <!-- Dark -->
+     <html lang="en" data-theme="dark"></html>
+   </html>
    ```
 
    ```css
@@ -32,9 +33,10 @@
    - Z-index: `--ease-z-base/dropdown/modal/toast`
 
 4. **Custom brand override**
+
    ```css
    :root {
-     --ease-color-primary: #0ea5e9;  /* swap to your brand color */
+     --ease-color-primary: #0ea5e9; /* swap to your brand color */
    }
    ```
 

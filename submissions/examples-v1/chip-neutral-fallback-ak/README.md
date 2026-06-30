@@ -12,18 +12,18 @@ When a chip uses `var(--ease-chip-neutral-bg, #f3f4f6)`, the fallback `#f3f4f6` 
 
 ### Comparison
 
-| Variant | Fallback Value | Expected Token | Match? |
-|---------|---------------|----------------|--------|
-| Neutral (buggy) | `#f3f4f6` / `#374151` | `--ease-color-neutral-100` | ❌ May drift |
-| Neutral (fixed) | `var(--ease-color-neutral-100)` | `--ease-color-neutral-100` | ✅ Always aligned |
-| Primary (reference) | `var(--ease-color-primary-500)` | `--ease-color-primary-500` | ✅ |
+| Variant             | Fallback Value                  | Expected Token             | Match?            |
+| ------------------- | ------------------------------- | -------------------------- | ----------------- |
+| Neutral (buggy)     | `#f3f4f6` / `#374151`           | `--ease-color-neutral-100` | ❌ May drift      |
+| Neutral (fixed)     | `var(--ease-color-neutral-100)` | `--ease-color-neutral-100` | ✅ Always aligned |
+| Primary (reference) | `var(--ease-color-primary-500)` | `--ease-color-primary-500` | ✅                |
 
 ---
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                  |
+| ----------- | -------------------------------------------------------- |
 | `demo.html` | Side-by-side comparison of incorrect vs correct fallback |
-| `style.css` | Demo-specific styles |
-| `README.md` | This file |
+| `style.css` | Demo-specific styles                                     |
+| `README.md` | This file                                                |

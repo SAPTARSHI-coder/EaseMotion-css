@@ -1,4 +1,5 @@
 # Interactive Calendar Component
+
 A CSS-grid based calendar component.
 
 - **Effect**: Uses CSS Grid to create a responsive, 7-column layout.

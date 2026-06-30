@@ -22,21 +22,15 @@ A responsive backlog aging dashboard that visualizes pending work items across a
 
 ```html
 <div class="band">
+  <div class="label">
+    <span>0–2 Days</span>
 
-    <div class="label">
+    <strong>54</strong>
+  </div>
 
-        <span>0–2 Days</span>
-
-        <strong>54</strong>
-
-    </div>
-
-    <div class="bar">
-
-        <div class="fill fresh"></div>
-
-    </div>
-
+  <div class="bar">
+    <div class="fill fresh"></div>
+  </div>
 </div>
 ```
 

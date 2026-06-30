@@ -7,7 +7,7 @@ This adds a beautifully animated, zero-JavaScript toggle switch (checkbox altern
 
 ```html
 <label class="ease-toggle">
-  <input type="checkbox" class="ease-toggle-input">
+  <input type="checkbox" class="ease-toggle-input" />
   <span class="ease-toggle-slider"></span>
   Toggle Me
 </label>

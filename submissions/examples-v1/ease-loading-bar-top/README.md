@@ -12,10 +12,10 @@ A thin progress bar pinned to the very top of the page that animates its width f
 
 ```js
 // Start loading
-loadingBar.classList.add("is-loading");   // animates width 0% → ~92%
+loadingBar.classList.add("is-loading"); // animates width 0% → ~92%
 
 // When the real request/navigation finishes
-loadingBar.classList.add("is-complete");  // snaps to 100%, then fades out
+loadingBar.classList.add("is-complete"); // snaps to 100%, then fades out
 ```
 
 The bar climbs to ~92% while `is-loading` (so it never looks "done" before it actually is), then `is-complete` snaps it to 100% and fades it out — matching how YouTube/GitHub's bars behave.
@@ -27,9 +27,14 @@ The bar climbs to ~92% while `is-loading` (so it never looks "done" before it ac
 ```
 
 ```css
-.ease-loading-bar{
-  --ease-loading-bar-color: #6c63ff;       /* solid color */
-  --ease-loading-bar-gradient: linear-gradient(90deg, #6c63ff, #ec4899, #f59e0b);
+.ease-loading-bar {
+  --ease-loading-bar-color: #6c63ff; /* solid color */
+  --ease-loading-bar-gradient: linear-gradient(
+    90deg,
+    #6c63ff,
+    #ec4899,
+    #f59e0b
+  );
   --ease-loading-bar-height: 3px;
 }
 ```

@@ -18,7 +18,7 @@ Unlike traditional hover cards that move upward, the card briefly drops downward
 Include the CSS file in your project.
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Usage

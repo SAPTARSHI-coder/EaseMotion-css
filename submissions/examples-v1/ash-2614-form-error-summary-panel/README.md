@@ -24,11 +24,9 @@ A modern form validation pattern featuring a centralized error summary panel tha
 
 ```html
 <div class="error-summary">
-
   <ul class="error-list">
     <li>Email address is required.</li>
   </ul>
-
 </div>
 ```
 

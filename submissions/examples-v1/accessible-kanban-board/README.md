@@ -7,16 +7,18 @@ A modern, responsive, and screen-reader-friendly Kanban Board layout highlightin
 ## 📷 Screenshots
 
 > [!NOTE]
-> *Screenshots Placeholder: Add previews of the Kanban Board showing column lists, card focus outlines, and the active task dragging mockup.*
+> _Screenshots Placeholder: Add previews of the Kanban Board showing column lists, card focus outlines, and the active task dragging mockup._
 
 ---
 
 ## ❓ Questions & Answers
 
 ### 1. What does this do?
+
 It provides a high-fidelity SaaS dashboard example of a Kanban Board. It splits work item cards into four distinct state columns (`To Do`, `In Progress`, `Review`, `Done`) and allows users to rearrange tasks both within columns and between columns using either a mouse or keyboard shortcuts, announcing relocations in real-time to screen readers.
 
 ### 2. How is it used?
+
 Structure column containers side-by-side using the `.kanban-board` grid class, adding task cards with priority badges and description fields inside the list wrappers:
 
 ```html
@@ -36,11 +38,13 @@ Structure column containers side-by-side using the `.kanban-board` grid class, a
 ```
 
 Keyboard support is active natively on focus. Press:
-*   <kbd>Tab</kbd> to focus a card.
-*   <kbd>↑</kbd> / <kbd>↓</kbd> to reorder the active card up and down.
-*   <kbd>←</kbd> / <kbd>→</kbd> to move the active card between columns.
+
+- <kbd>Tab</kbd> to focus a card.
+- <kbd>↑</kbd> / <kbd>↓</kbd> to reorder the active card up and down.
+- <kbd>←</kbd> / <kbd>→</kbd> to move the active card between columns.
 
 ### 3. Why is it useful?
+
 Most Kanban interfaces depend on heavy third-party drag-and-drop JavaScript packages (e.g. SortableJS) which are often difficult to style and fail to comply with keyboard accessibility standards. This showcases a lightweight, performant, and screen-reader-safe way to design Kanban boards using CSS and raw layout structures.
 
 ---

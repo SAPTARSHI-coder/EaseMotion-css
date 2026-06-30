@@ -24,15 +24,9 @@ A modern Interactive Product Showcase Hub for displaying products with responsiv
 
 ```html
 <div class="container">
+  <header class="hero">...</header>
 
-    <header class="hero">
-        ...
-    </header>
-
-    <section class="products">
-        ...
-    </section>
-
+  <section class="products">...</section>
 </div>
 ```
 

@@ -22,15 +22,9 @@ A responsive frontend performance dashboard that simulates rendering metrics, fr
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="workspace">
-        ...
-    </section>
-
+  <section class="workspace">...</section>
 </div>
 ```
 

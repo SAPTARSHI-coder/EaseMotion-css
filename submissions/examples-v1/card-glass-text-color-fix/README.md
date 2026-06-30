@@ -17,7 +17,7 @@ Replaced hardcoded color with a CSS variable and defined the missing token:
 
 ```css
 :root {
-  --ease-color-text-dark:  #1a1a2e;
+  --ease-color-text-dark: #1a1a2e;
   --ease-color-text-light: #ffffff;
   --ease-card-glass-color: var(--ease-color-text-light, #ffffff);
 }
@@ -43,8 +43,12 @@ Replaced hardcoded color with a CSS variable and defined the missing token:
 <div class="ease-card ease-card-glass ease-glass-dark-text">...</div>
 
 <!-- Custom color per card -->
-<div class="ease-card ease-card-glass"
-     style="--ease-card-glass-color: #1e293b;">...</div>
+<div
+  class="ease-card ease-card-glass"
+  style="--ease-card-glass-color: #1e293b;"
+>
+  ...
+</div>
 ```
 
 ## How to Verify
@@ -55,5 +59,6 @@ Replaced hardcoded color with a CSS variable and defined the missing token:
 4. Fixed card: dark text clearly readable
 
 ## Files
+
 - `style.css` — the fix + missing token definition
 - `demo.html` — dark and light background comparison

@@ -4,10 +4,12 @@ A responsive blockchain transaction flow diagram showing the journey
 from wallet to confirmed block — built in pure HTML and CSS.
 
 ## Structure
+
 blockchain-transaction-flow/
 ├── demo.html
 ├── style.css
 └── README.md
+
 ## Usage
 
 ```html
@@ -30,17 +32,18 @@ blockchain-transaction-flow/
 
 ## Node Types
 
-| Class | Stage |
-|---|---|
-| `flow-node wallet` | Transaction origin |
-| `flow-node broadcast` | P2P network broadcast |
-| `flow-node mempool` | Awaiting miner selection |
-| `flow-node validation` | Node verification |
-| `flow-node mining` | Proof of work/stake |
-| `flow-node block` | Block creation |
-| `flow-node chain` | Ledger finalization |
+| Class                  | Stage                    |
+| ---------------------- | ------------------------ |
+| `flow-node wallet`     | Transaction origin       |
+| `flow-node broadcast`  | P2P network broadcast    |
+| `flow-node mempool`    | Awaiting miner selection |
+| `flow-node validation` | Node verification        |
+| `flow-node mining`     | Proof of work/stake      |
+| `flow-node block`      | Block creation           |
+| `flow-node chain`      | Ledger finalization      |
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - Color-coded transaction stages
 - Pulsing mining badge animation
@@ -49,6 +52,7 @@ blockchain-transaction-flow/
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - Blockchain education & documentation
 - Crypto technical blogs
 - Engineering presentations

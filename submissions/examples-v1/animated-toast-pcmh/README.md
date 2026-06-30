@@ -23,12 +23,12 @@ Link the CSS and add the container to your HTML, then trigger toasts via JavaScr
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
-  const container = document.getElementById('toastContainer');
+  const container = document.getElementById("toastContainer");
 
   function showToast(type, title, message, duration = 4000) {
-    const toast = document.createElement('div');
-    toast.className = 'toast toast-' + type;
-    toast.setAttribute('role', 'alert');
+    const toast = document.createElement("div");
+    toast.className = "toast toast-" + type;
+    toast.setAttribute("role", "alert");
     toast.innerHTML = `
       <span class="toast-icon">${icon}</span>
       <div class="toast-content">
@@ -40,7 +40,7 @@ Link the CSS and add the container to your HTML, then trigger toasts via JavaScr
     `;
     container.appendChild(toast);
     setTimeout(() => {
-      toast.classList.add('dismissing');
+      toast.classList.add("dismissing");
       setTimeout(() => toast.remove(), 300);
     }, duration);
   }

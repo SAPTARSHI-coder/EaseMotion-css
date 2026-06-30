@@ -31,7 +31,7 @@ Includes:
 
 ```html
 <div class="rain">
-    <span>101101</span>
+  <span>101101</span>
 </div>
 ```
 

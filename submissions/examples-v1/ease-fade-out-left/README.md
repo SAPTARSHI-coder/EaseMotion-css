@@ -4,20 +4,20 @@ Exit animation that fades an element to opacity 0 while translating it left. The
 
 ## Classes
 
-| Class | Distance | Description |
-|-------|----------|-------------|
-| `.ease-fade-out-left` | 32px | Default exit animation |
-| `.ease-fade-out-left` + `.ease-fade-out-left-sm` | 16px | Subtle exit |
-| `.ease-fade-out-left` + `.ease-fade-out-left-lg` | 64px | Dramatic exit |
-| `.ease-fade-in-right` | 32px | Complementary enter animation |
+| Class                                            | Distance | Description                   |
+| ------------------------------------------------ | -------- | ----------------------------- |
+| `.ease-fade-out-left`                            | 32px     | Default exit animation        |
+| `.ease-fade-out-left` + `.ease-fade-out-left-sm` | 16px     | Subtle exit                   |
+| `.ease-fade-out-left` + `.ease-fade-out-left-lg` | 64px     | Dramatic exit                 |
+| `.ease-fade-in-right`                            | 32px     | Complementary enter animation |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-fade-out-left-distance` | `32px` | Translation distance |
-| `--ease-fade-out-left-duration` | `--ease-speed-medium` | Animation duration |
-| `--ease-fade-out-left-easing` | `--ease-ease` | Timing function |
+| Token                           | Default               | Description          |
+| ------------------------------- | --------------------- | -------------------- |
+| `--ease-fade-out-left-distance` | `32px`                | Translation distance |
+| `--ease-fade-out-left-duration` | `--ease-speed-medium` | Animation duration   |
+| `--ease-fade-out-left-easing`   | `--ease-ease`         | Timing function      |
 
 ## Usage
 
@@ -27,11 +27,15 @@ Exit animation that fades an element to opacity 0 while translating it left. The
 
 <!-- Remove item after animation -->
 <div id="item" class="list-item">
-  <button onclick="
+  <button
+    onclick="
     const el = document.getElementById('item');
     el.classList.add('ease-fade-out-left');
     el.addEventListener('animationend', () => el.remove(), { once: true });
-  ">Dismiss</button>
+  "
+  >
+    Dismiss
+  </button>
 </div>
 
 <!-- Custom distance -->
@@ -49,6 +53,7 @@ Exit animation that fades an element to opacity 0 while translating it left. The
 ## Direction family
 
 EaseMotion CSS follows a consistent naming pattern:
+
 - `ease-slide-in-left` → enter from left
 - `ease-fade-out-left` → exit to left ← this submission
 - `ease-slide-in-right` → enter from right

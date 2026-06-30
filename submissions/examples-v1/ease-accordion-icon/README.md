@@ -7,7 +7,7 @@ A fully responsive, JS-free accordion component utilizing the modern CSS Grid tr
 - **Zero JavaScript**: Powered entirely by the HTML `<input type="checkbox">` relationship combined with the CSS `:checked` pseudo-class.
 - **True `height: auto` Animation**: Historically, animating to an unknown height was impossible in CSS without fixed pixel counts or max-height hacks. This component uses a nested `display: grid` wrapper transitioning from `grid-template-rows: 0fr` to `1fr` to achieve a flawless, dynamic expansion.
 - **Rotating Indicator**: The chevron icon utilizes a `transform: rotate(-180deg)` powered by a bouncy `cubic-bezier` timing function to provide crisp feedback on open/close states.
-- **Dual Modes**: 
+- **Dual Modes**:
   - For **Multiple Open** mode, use `<input type="checkbox">`.
   - For **Single Open** mode, simply switch to `<input type="radio" name="my-accordion">`. The CSS requires absolutely zero changes.
 
@@ -22,17 +22,16 @@ Your accordion item requires a specific 3-layer nesting structure to make the gr
 
 ```html
 <div class="ease-accordion">
-  
   <div class="ease-accordion-item">
     <!-- State Controller -->
-    <input type="checkbox" id="acc-1" class="ease-accordion-input">
-    
+    <input type="checkbox" id="acc-1" class="ease-accordion-input" />
+
     <!-- Trigger -->
     <label for="acc-1" class="ease-accordion-header">
       Heading Title
       <svg class="ease-accordion-icon">...</svg>
     </label>
-    
+
     <!-- Grid Wrapper (Animates 0fr to 1fr) -->
     <div class="ease-accordion-content-wrapper">
       <!-- Overflow Mask -->
@@ -41,5 +40,5 @@ Your accordion item requires a specific 3-layer nesting structure to make the gr
       </div>
     </div>
   </div>
-
 </div>
+```

@@ -24,11 +24,7 @@ A responsive billing cycle progress component that visually displays subscriptio
 
 ```html
 <div class="progress-ring">
-
-    <div class="progress-value">
-        73%
-    </div>
-
+  <div class="progress-value">73%</div>
 </div>
 ```
 

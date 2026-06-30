@@ -21,15 +21,10 @@ Open `index.html` in any modern browser. Click any button to open the correspond
 ### Basic Structure
 
 ```html
-&lt;!-- Trigger --&gt;
-&lt;a href="#my-modal"&gt;Open Modal&lt;/a&gt;
-
-&lt;!-- Modal --&gt;
-&lt;div id="my-modal" class="modal"&gt;
-  &lt;a href="#" class="modal__overlay"&gt;&lt;/a&gt;
-  &lt;div class="modal__content"&gt;
-    &lt;a href="#" class="modal__close"&gt;&times;&lt;/a&gt;
-    &lt;h2&gt;Modal Title&lt;/h2&gt;
-    &lt;p&gt;Your content here...&lt;/p&gt;
-  &lt;/div&gt;
+&lt;!-- Trigger --&gt; &lt;a href="#my-modal"&gt;Open Modal&lt;/a&gt; &lt;!--
+Modal --&gt; &lt;div id="my-modal" class="modal"&gt; &lt;a href="#"
+class="modal__overlay"&gt;&lt;/a&gt; &lt;div class="modal__content"&gt; &lt;a
+href="#" class="modal__close"&gt;&times;&lt;/a&gt; &lt;h2&gt;Modal
+Title&lt;/h2&gt; &lt;p&gt;Your content here...&lt;/p&gt; &lt;/div&gt;
 &lt;/div&gt;
+```

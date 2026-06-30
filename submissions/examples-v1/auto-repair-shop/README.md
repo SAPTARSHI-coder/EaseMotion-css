@@ -7,6 +7,7 @@ This page features a highly structured, technical design aesthetic using Chakra 
 ---
 
 ## 🎨 Showcased Sections
+
 1. **Technical Hero Section**: Prominent service CTAs next to a floating mock OBD2 Diagnostic Check Scanner telemetry widget.
 2. **Services Grid**: Structured service cards displaying descriptions and pricing for synthetic oil changes, brake repairs, and diagnostics.
 3. **Why Choose Us Section**: Outline of customer guarantees (24/24 warranty, shuttle service) next to a mechanical certified shop card.
@@ -21,6 +22,7 @@ This page features a highly structured, technical design aesthetic using Chakra 
 ## 🚀 Showcased EaseMotion CSS Classes
 
 ### 1. Entrance & Interactive Hover Animations
+
 - `.ease-fade-in`: Entrance transitions on tiny trust badges.
 - `.ease-slide-in-left` & `.ease-slide-in-right`: Slide-in transitions for hero typography and visual mockup components.
 - `.ease-float`: Looping floating translation applied to the diagnostic scanner widget.
@@ -31,12 +33,14 @@ This page features a highly structured, technical design aesthetic using Chakra 
 - `.ease-hover-shimmer`: Dynamic overlay light swipe applied to coupon cards on hover.
 
 ### 2. Layout & Spacings
+
 - Cascade layer safety: `@layer easemotion-base`, `easemotion-components`, `easemotion-utilities`.
 - Flex utilities: `.ease-flex`, `.ease-flex-col`, `.ease-items-center`, `.ease-justify-between`, `.ease-center`.
 - Grid layout: `.ease-grid`.
 - Custom margins/padding tokens: `var(--ease-space-1)` through `var(--ease-space-16)`.
 
 ### 3. Components
+
 - `.ease-card`: Base layout card wrap.
 - `.ease-card-hover`: Composed dynamic card hover transitions.
 - `.ease-card-glow`: Custom safety-yellow border glow.
@@ -49,6 +53,7 @@ This page features a highly structured, technical design aesthetic using Chakra 
 ---
 
 ## 📂 File Structure
+
 ```bash
 auto-repair-shop/
 ├── demo.html    # Core page layout, coupon binders & appointment scripts
@@ -57,4 +62,5 @@ auto-repair-shop/
 ```
 
 ## 🛠️ Usage
+
 No build steps required. Simply open `demo.html` directly in any web browser to view the premium interactive animations, transitions, and full responsive design.

@@ -13,7 +13,7 @@ This component presents a set of animated status badges for dashboard states suc
 Example:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <span class="status-badge badge-online">Online</span>
 <span class="status-badge badge-live">Live</span>
 <span class="status-badge badge-syncing">Syncing</span>

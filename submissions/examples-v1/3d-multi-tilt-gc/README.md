@@ -3,9 +3,11 @@
 Implementation of Issue #424: **3D Multi-Directional Card Tilt** using invisible hover quadrants and 3D transforms.
 
 ### 1. What does this do?
+
 Creates a high-performance 3D tilting effect that reacts to mouse position without using JavaScript. It uses an invisible grid of hover zones to detect which part of the card is being hovered and applies corresponding 3D rotations.
 
 ### 2. How is it used?
+
 Structure your HTML with a container holding invisible triggers and the card itself:
 
 ```html
@@ -26,4 +28,5 @@ Structure your HTML with a container holding invisible triggers and the card its
 ```
 
 ### 3. Why is it useful?
+
 It provides a premium, interactive feel to UI components like product cards or features lists while maintaining zero JavaScript overhead. It leverages browser-native 3D acceleration for smooth performance and follows EaseMotion CSS's philosophy of declarative, dependency-free motion.

@@ -27,7 +27,7 @@ HTML markup**. No extra wrapper elements or separate skeleton components needed.
 
 <!-- Remove class when data loads -->
 <script>
-  card.classList.remove('ease-card-loading');
+  card.classList.remove("ease-card-loading");
 </script>
 ```
 
@@ -48,12 +48,13 @@ instead of the moving shimmer for users who prefer reduced motion.
 
 ```css
 :root {
-  --ease-skeleton-base:      #2a2a4a;   /* base skeleton color */
-  --ease-skeleton-highlight: #3a3a6a;   /* shimmer highlight   */
-  --ease-skeleton-speed:     1.8s;      /* animation duration  */
+  --ease-skeleton-base: #2a2a4a; /* base skeleton color */
+  --ease-skeleton-highlight: #3a3a6a; /* shimmer highlight   */
+  --ease-skeleton-speed: 1.8s; /* animation duration  */
 }
 ```
 
 ## Files
+
 - `style.css` — the `.ease-card-loading` implementation
 - `demo.html` — live toggle between loading and loaded states

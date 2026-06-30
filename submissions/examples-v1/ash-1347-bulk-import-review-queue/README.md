@@ -23,9 +23,7 @@ A modern bulk import review dashboard for validating imported records before app
 ## Usage
 
 ```html
-<div class="queue-table">
-  Import Queue
-</div>
+<div class="queue-table">Import Queue</div>
 ```
 
 ## Main Classes

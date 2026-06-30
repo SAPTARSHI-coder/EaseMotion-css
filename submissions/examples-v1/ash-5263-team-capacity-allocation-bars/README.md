@@ -21,21 +21,15 @@ A responsive team capacity dashboard that visualizes workload allocation using a
 
 ```html
 <div class="team">
+  <div class="header">
+    <span>Engineering</span>
 
-    <div class="header">
+    <strong>82%</strong>
+  </div>
 
-        <span>Engineering</span>
-
-        <strong>82%</strong>
-
-    </div>
-
-    <div class="bar">
-
-        <div class="fill engineering"></div>
-
-    </div>
-
+  <div class="bar">
+    <div class="fill engineering"></div>
+  </div>
 </div>
 ```
 

@@ -8,13 +8,12 @@ Submits layout utility architectures and tabular data metric grids for MLOps and
 - **The Solution:** Highly clear training data telemetry panels. This container utility designs an structured layout interface that groups macro-summary scoring cells over micro linear item tracks. This configuration ensures dataset architects have immediate structural certainty over dataset metrics inside processing dashboards.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-scoreboard-container">
-  <div class="ease-scoreboard-summary">
-    </div>
+  <div class="ease-scoreboard-summary"></div>
   <div class="ease-metric-grid">
-    <div class="ease-metric-row-card">
-      </div>
+    <div class="ease-metric-row-card"></div>
   </div>
 </div>
 ```

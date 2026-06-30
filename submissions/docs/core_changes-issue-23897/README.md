@@ -5,6 +5,7 @@
 Adds element resize utility classes. Control whether users can resize elements, and in which direction.
 
 **Classes:**
+
 - `.ease-resize` — Resize both directions (`resize: both`)
 - `.ease-resize-x` — Resize horizontally only (`resize: horizontal`)
 - `.ease-resize-y` — Resize vertically only (`resize: vertical`)

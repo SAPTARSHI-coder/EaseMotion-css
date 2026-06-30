@@ -1,6 +1,6 @@
 # Button Loading Reduced Motion Fix
 
-This submission fixes an accessibility bug where `.ease-btn-loading` would completely freeze into a static circle when `prefers-reduced-motion: reduce` was active. 
+This submission fixes an accessibility bug where `.ease-btn-loading` would completely freeze into a static circle when `prefers-reduced-motion: reduce` was active.
 
 ## What it does
 
@@ -8,11 +8,14 @@ Instead of aggressively disabling the animation (`animation: none !important;`),
 
 ## How to use it
 
-To use this fix, include the `style.css` provided in this directory *after* you include the main `easemotion.css` framework:
+To use this fix, include the `style.css` provided in this directory _after_ you include the main `easemotion.css` framework:
 
 ```html
-<link rel="stylesheet" href="path/to/easemotion.css">
-<link rel="stylesheet" href="path/to/btn-loading-reduced-motion-fix/style.css">
+<link rel="stylesheet" href="path/to/easemotion.css" />
+<link
+  rel="stylesheet"
+  href="path/to/btn-loading-reduced-motion-fix/style.css"
+/>
 ```
 
 ## Why it fits EaseMotion CSS

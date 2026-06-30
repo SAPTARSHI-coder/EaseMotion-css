@@ -25,7 +25,7 @@ A responsive data table component featuring hover interactions, keyboard focus s
 
 ```html
 <tr tabindex="0">
-    <td>User Data</td>
+  <td>User Data</td>
 </tr>
 ```
 

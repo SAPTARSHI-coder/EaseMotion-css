@@ -11,7 +11,7 @@ A purely CSS-powered expandable card component utilizing the hidden checkbox tec
 
 ## 🛠️ Usage
 
-Ensure your trigger card, your hidden checkbox, and your expanded modal are all siblings within the DOM structure. 
+Ensure your trigger card, your hidden checkbox, and your expanded modal are all siblings within the DOM structure.
 
 ```html
 <!-- 1. The Controller -->
@@ -26,10 +26,11 @@ Ensure your trigger card, your hidden checkbox, and your expanded modal are all 
 <div class="ease-card-expanded">
   <!-- Clicking this closes the card -->
   <label for="my-card-toggle" class="ease-card-backdrop"></label>
-  
+
   <div class="ease-card-content">
     <!-- Clicking this closes the card -->
     <label for="my-card-toggle" class="ease-card-close">×</label>
     <h2>Expanded Content</h2>
   </div>
 </div>
+```

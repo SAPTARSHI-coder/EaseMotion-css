@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated star ratings and review systems for
 ## 🚀 Features
 
 ### Rating Styles (10 types)
+
 1. **Classic Stars** - Traditional gold stars with scale effect
 2. **Hover Glow** - Stars with glowing text-shadow
 3. **Gradient Stars** - Gradient text with rotation
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated star ratings and review systems for
 10. **Pulse Stars** - Pink stars with continuous pulse
 
 ### Animation Features
+
 - Hover scale effects
 - Glow and shadow animations
 - Rotation and bounce
@@ -27,6 +29,7 @@ A collection of beautiful, pure CSS animated star ratings and review systems for
 - Continuous pulse effects
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All rating animations
 - `readme.md` - Documentation
@@ -34,16 +37,18 @@ A collection of beautiful, pure CSS animated star ratings and review systems for
 ## 🛠️ How to Use
 
 ### Basic Star Rating
+
 ```html
 <div class="rating classic">
-    <input type="radio" name="rating" id="star5" value="5">
-    <label for="star5" title="5 stars">★</label>
-    <input type="radio" name="rating" id="star4" value="4">
-    <label for="star4" title="4 stars">★</label>
-    <input type="radio" name="rating" id="star3" value="3" checked>
-    <label for="star3" title="3 stars">★</label>
-    <input type="radio" name="rating" id="star2" value="2">
-    <label for="star2" title="2 stars">★</label>
-    <input type="radio" name="rating" id="star1" value="1">
-    <label for="star1" title="1 star">★</label>
+  <input type="radio" name="rating" id="star5" value="5" />
+  <label for="star5" title="5 stars">★</label>
+  <input type="radio" name="rating" id="star4" value="4" />
+  <label for="star4" title="4 stars">★</label>
+  <input type="radio" name="rating" id="star3" value="3" checked />
+  <label for="star3" title="3 stars">★</label>
+  <input type="radio" name="rating" id="star2" value="2" />
+  <label for="star2" title="2 stars">★</label>
+  <input type="radio" name="rating" id="star1" value="1" />
+  <label for="star1" title="1 star">★</label>
 </div>
+```

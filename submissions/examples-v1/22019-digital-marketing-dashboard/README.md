@@ -8,15 +8,15 @@ A self-contained animated digital marketing analytics dashboard for campaign mon
 
 ## EaseMotion CSS Classes Showcased
 
-| Class | Applied To |
-|---|---|
-| `ease-fade-in-left` | Sidebar navigation, notification cards |
-| `ease-fade-in-down` | Top navigation bar |
-| `ease-zoom-in` | Stat overview cards (staggered), quick action buttons |
-| `ease-fade-in-up` | Widget panels (staggered delays) |
-| `ease-fade-in-right` | Funnel steps, marketing activity items |
-| `ease-fade-in` | Progress/campaign performance bars |
-| `ease-pulse` | Live indicator dot |
+| Class                | Applied To                                            |
+| -------------------- | ----------------------------------------------------- |
+| `ease-fade-in-left`  | Sidebar navigation, notification cards                |
+| `ease-fade-in-down`  | Top navigation bar                                    |
+| `ease-zoom-in`       | Stat overview cards (staggered), quick action buttons |
+| `ease-fade-in-up`    | Widget panels (staggered delays)                      |
+| `ease-fade-in-right` | Funnel steps, marketing activity items                |
+| `ease-fade-in`       | Progress/campaign performance bars                    |
+| `ease-pulse`         | Live indicator dot                                    |
 
 ## Sections
 

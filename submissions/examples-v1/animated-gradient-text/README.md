@@ -6,11 +6,11 @@ A CSS-only animated gradient text effect with three speed variants.
 
 ## Classes
 
-| Class | Description |
-|---|---|
-| `.text-gradient` | Default 3s animation |
-| `.text-gradient-fast` | 1.5s fast variant |
-| `.text-gradient-slow` | 6s slow variant |
+| Class                 | Description          |
+| --------------------- | -------------------- |
+| `.text-gradient`      | Default 3s animation |
+| `.text-gradient-fast` | 1.5s fast variant    |
+| `.text-gradient-slow` | 6s slow variant      |
 
 ## Usage
 

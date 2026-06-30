@@ -10,11 +10,11 @@ Performance is a fundamental aspect of EaseMotion CSS. Every contribution should
 
 A high-performance CSS library provides:
 
-* Faster page rendering.
-* Smooth and responsive animations.
-* Better user experience across devices.
-* Reduced CSS bundle size.
-* Easier long-term maintenance.
+- Faster page rendering.
+- Smooth and responsive animations.
+- Better user experience across devices.
+- Reduced CSS bundle size.
+- Easier long-term maintenance.
 
 When contributing to EaseMotion CSS, every new utility or animation should prioritize performance alongside functionality.
 
@@ -24,12 +24,12 @@ When contributing to EaseMotion CSS, every new utility or animation should prior
 
 Before adding new features, ensure that your contribution:
 
-* Uses clean, modular, and reusable CSS.
-* Avoids duplicate styles.
-* Keeps the generated stylesheet lightweight.
-* Follows the project's naming conventions.
-* Reuses existing utility classes whenever possible.
-* Avoids unnecessary dependencies.
+- Uses clean, modular, and reusable CSS.
+- Avoids duplicate styles.
+- Keeps the generated stylesheet lightweight.
+- Follows the project's naming conventions.
+- Reuses existing utility classes whenever possible.
+- Avoids unnecessary dependencies.
 
 ---
 
@@ -39,35 +39,31 @@ Efficient layouts improve rendering speed and responsiveness.
 
 ### ✅ Recommended
 
-* Use semantic HTML elements.
-* Prefer CSS Grid and Flexbox.
-* Keep layouts responsive.
-* Define image and media dimensions.
-* Minimize unnecessary wrapper elements.
+- Use semantic HTML elements.
+- Prefer CSS Grid and Flexbox.
+- Keep layouts responsive.
+- Define image and media dimensions.
+- Minimize unnecessary wrapper elements.
 
 ```html
 <!-- Good Example -->
 <main class="container">
-  <section class="card">
-    Content
-  </section>
+  <section class="card">Content</section>
 </main>
 ```
 
 ### ❌ Avoid
 
-* Deeply nested HTML structures.
-* Excessive absolute positioning.
-* Large numbers of unnecessary wrapper elements.
+- Deeply nested HTML structures.
+- Excessive absolute positioning.
+- Large numbers of unnecessary wrapper elements.
 
 ```html
 <!-- Avoid -->
 <div>
   <div>
     <div>
-      <div>
-        Content
-      </div>
+      <div>Content</div>
     </div>
   </div>
 </div>
@@ -81,11 +77,11 @@ Animations are the core feature of EaseMotion CSS. Contributors should ensure an
 
 ### ✅ Recommended
 
-* Animate using `transform`.
-* Animate using `opacity`.
-* Reuse existing animation utilities.
-* Keep animation durations reasonable.
-* Avoid unnecessary infinite animations.
+- Animate using `transform`.
+- Animate using `opacity`.
+- Reuse existing animation utilities.
+- Keep animation durations reasonable.
+- Avoid unnecessary infinite animations.
 
 ```css
 /* Recommended */
@@ -99,12 +95,12 @@ Animations are the core feature of EaseMotion CSS. Contributors should ensure an
 
 Avoid animating properties that trigger layout recalculations.
 
-* width
-* height
-* top
-* left
-* margin
-* padding
+- width
+- height
+- top
+- left
+- margin
+- padding
 
 ```css
 /* Avoid */
@@ -122,12 +118,12 @@ Using `transform` and `opacity` allows browsers to optimize rendering using the 
 
 Follow these best practices while writing CSS:
 
-* Keep selectors simple.
-* Avoid excessive selector specificity.
-* Remove unused CSS rules.
-* Organize related styles together.
-* Avoid unnecessary `!important`.
-* Prefer reusable utility classes.
+- Keep selectors simple.
+- Avoid excessive selector specificity.
+- Remove unused CSS rules.
+- Organize related styles together.
+- Avoid unnecessary `!important`.
+- Prefer reusable utility classes.
 
 ---
 
@@ -135,11 +131,11 @@ Follow these best practices while writing CSS:
 
 When adding assets:
 
-* Compress images before committing.
-* Prefer SVG icons.
-* Use WebP images whenever appropriate.
-* Remove unused assets.
-* Avoid unnecessarily large files.
+- Compress images before committing.
+- Prefer SVG icons.
+- Use WebP images whenever appropriate.
+- Remove unused assets.
+- Avoid unnecessarily large files.
 
 Keeping assets optimized improves loading speed and reduces repository size.
 
@@ -149,13 +145,13 @@ Keeping assets optimized improves loading speed and reduces repository size.
 
 Before opening a Pull Request, verify that:
 
-* [ ] No console errors are present.
-* [ ] All examples render correctly.
-* [ ] Animations remain smooth.
-* [ ] Responsive layouts work correctly.
-* [ ] No duplicate CSS has been introduced.
-* [ ] No unused assets are included.
-* [ ] Documentation is updated where necessary.
+- [ ] No console errors are present.
+- [ ] All examples render correctly.
+- [ ] Animations remain smooth.
+- [ ] Responsive layouts work correctly.
+- [ ] No duplicate CSS has been introduced.
+- [ ] No unused assets are included.
+- [ ] Documentation is updated where necessary.
 
 ---
 
@@ -165,11 +161,11 @@ Every contribution should be tested to ensure that existing functionality remain
 
 Check that:
 
-* Existing animations still work correctly.
-* Utility classes behave as expected.
-* Responsive layouts remain unchanged.
-* New styles do not introduce visual regressions.
-* Performance has not noticeably degraded.
+- Existing animations still work correctly.
+- Utility classes behave as expected.
+- Responsive layouts remain unchanged.
+- New styles do not introduce visual regressions.
+- Performance has not noticeably degraded.
 
 ---
 
@@ -177,12 +173,12 @@ Check that:
 
 Avoid the following:
 
-* Duplicating existing utility classes.
-* Writing unnecessary CSS rules.
-* Using highly specific selectors.
-* Animating layout-triggering properties.
-* Adding large, unoptimized assets.
-* Leaving unused styles in the project.
+- Duplicating existing utility classes.
+- Writing unnecessary CSS rules.
+- Using highly specific selectors.
+- Animating layout-triggering properties.
+- Adding large, unoptimized assets.
+- Leaving unused styles in the project.
 
 ---
 
@@ -190,12 +186,12 @@ Avoid the following:
 
 Before submitting your contribution:
 
-* [ ] CSS follows the existing project style.
-* [ ] Existing utilities have been reused where possible.
-* [ ] Styles remain modular and maintainable.
-* [ ] Animations use GPU-friendly properties.
-* [ ] Performance has been tested locally.
-* [ ] Documentation remains accurate.
+- [ ] CSS follows the existing project style.
+- [ ] Existing utilities have been reused where possible.
+- [ ] Styles remain modular and maintainable.
+- [ ] Animations use GPU-friendly properties.
+- [ ] Performance has been tested locally.
+- [ ] Documentation remains accurate.
 
 ---
 
@@ -215,11 +211,11 @@ Before submitting your contribution:
 
 Useful resources:
 
-* MDN Web Docs – CSS Animations
-* MDN Web Docs – CSS Transforms
-* MDN Web Docs – Flexbox
-* MDN Web Docs – CSS Grid
-* web.dev – Performance Best Practices
+- MDN Web Docs – CSS Animations
+- MDN Web Docs – CSS Transforms
+- MDN Web Docs – Flexbox
+- MDN Web Docs – CSS Grid
+- web.dev – Performance Best Practices
 
 ---
 

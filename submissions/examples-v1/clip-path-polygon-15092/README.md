@@ -1,4 +1,5 @@
 # Clip-path Polygon Utilities
+
 Adds utility classes for `clip-path: polygon()` shapes.
 
 - **Effect**: Masks elements into custom geometric shapes using coordinate points.

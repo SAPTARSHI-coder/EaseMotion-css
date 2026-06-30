@@ -1,4 +1,5 @@
 # Animated Billing Period Toggle
+
 This component provides a smooth UI for switching between billing cycles.
 
 - Uses a checkbox-hack for state management without JavaScript.

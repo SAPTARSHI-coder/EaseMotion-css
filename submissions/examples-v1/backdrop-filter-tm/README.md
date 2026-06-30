@@ -20,21 +20,21 @@ Provides CSS utility classes for backdrop-filter effects including blur, brightn
 
 ### Available Blur Classes
 
-| Class               | Effect           |
-|---------------------|------------------|
-| `.backdrop-blur-sm` | blur(4px)        |
-| `.backdrop-blur-md` | blur(8px)        |
-| `.backdrop-blur-lg` | blur(16px)       |
-| `.backdrop-blur-xl` | blur(24px)       |
+| Class               | Effect     |
+| ------------------- | ---------- |
+| `.backdrop-blur-sm` | blur(4px)  |
+| `.backdrop-blur-md` | blur(8px)  |
+| `.backdrop-blur-lg` | blur(16px) |
+| `.backdrop-blur-xl` | blur(24px) |
 
 ### Available Filter Classes
 
-| Class                  | Effect                      |
-|------------------------|-----------------------------|
-| `.backdrop-brightness` | brightness(0.6)             |
-| `.backdrop-contrast`   | contrast(1.2)              |
-| `.backdrop-saturate`   | saturate(1.8)              |
-| `.backdrop-grayscale`  | grayscale(0.6)             |
+| Class                     | Effect                                |
+| ------------------------- | ------------------------------------- |
+| `.backdrop-brightness`    | brightness(0.6)                       |
+| `.backdrop-contrast`      | contrast(1.2)                         |
+| `.backdrop-saturate`      | saturate(1.8)                         |
+| `.backdrop-grayscale`     | grayscale(0.6)                        |
 | `.backdrop-glassmorphism` | Combined blur + brightness + saturate |
 
 ## Why is it useful?

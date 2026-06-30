@@ -5,6 +5,7 @@
 Adds a vertical timeline component with markers, content cards, multiple color variants, sizes, icon markers, compact mode, alternating branch layout, animated entry (staggered fade-in), and card shadow variant.
 
 **Classes:**
+
 - `.ease-timeline` — Timeline container with vertical line
 - `.ease-timeline-item` — Each timeline entry
 - `.ease-timeline-marker` — Circular dot/icon on the line

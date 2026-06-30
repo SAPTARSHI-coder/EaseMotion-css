@@ -12,11 +12,11 @@ README.md
 
 ## Utilities Included
 
-| Class | CSS Property |
-|---------|---------|
-| `.break-inside-auto` | `break-inside: auto;` |
-| `.break-inside-avoid` | `break-inside: avoid;` |
-| `.break-inside-avoid-page` | `break-inside: avoid-page;` |
+| Class                        | CSS Property                  |
+| ---------------------------- | ----------------------------- |
+| `.break-inside-auto`         | `break-inside: auto;`         |
+| `.break-inside-avoid`        | `break-inside: avoid;`        |
+| `.break-inside-avoid-page`   | `break-inside: avoid-page;`   |
 | `.break-inside-avoid-column` | `break-inside: avoid-column;` |
 | `.break-inside-avoid-region` | `break-inside: avoid-region;` |
 
@@ -34,7 +34,7 @@ Each card uses:
 
 ```css
 .break-inside-avoid {
-    break-inside: avoid;
+  break-inside: avoid;
 }
 ```
 
@@ -45,36 +45,30 @@ which prevents cards from splitting between columns.
 ### Masonry Layouts
 
 ```html
-<div class="card break-inside-avoid">
-    Content
-</div>
+<div class="card break-inside-avoid">Content</div>
 ```
 
 ### Multi-Column Articles
 
 ```html
-<article class="break-inside-avoid-column">
-    Long content
-</article>
+<article class="break-inside-avoid-column">Long content</article>
 ```
 
 ### Print Layouts
 
 ```html
-<section class="break-inside-avoid-page">
-    Invoice Details
-</section>
+<section class="break-inside-avoid-page">Invoice Details</section>
 ```
 
 ## Browser Support
 
-| Value | Support |
-|---------|---------|
-| auto | Excellent |
-| avoid | Excellent |
-| avoid-column | Good |
-| avoid-page | Print-focused |
-| avoid-region | Limited |
+| Value        | Support       |
+| ------------ | ------------- |
+| auto         | Excellent     |
+| avoid        | Excellent     |
+| avoid-column | Good          |
+| avoid-page   | Print-focused |
+| avoid-region | Limited       |
 
 ## Run
 

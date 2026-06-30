@@ -16,11 +16,7 @@ A CSS-only profile avatar component with a rotating status ring to indicate acti
 <div class="avatar-wrapper">
   <div class="status-ring"></div>
 
-  <img
-    src="avatar.jpg"
-    alt="Profile Avatar"
-    class="avatar"
-  >
+  <img src="avatar.jpg" alt="Profile Avatar" class="avatar" />
 </div>
 ```
 

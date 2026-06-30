@@ -25,21 +25,21 @@ npx playwright test --update-snapshots
 
 ### Files
 
-| File | Purpose |
-|---|---|
-| `tests/visual/playwright.config.js` | Playwright config with desktop + mobile projects |
-| `tests/visual/components.spec.js` | 6 component tests with `toHaveScreenshot()` |
-| `.github/workflows/visual-tests.yml` | CI workflow running on PR |
+| File                                 | Purpose                                          |
+| ------------------------------------ | ------------------------------------------------ |
+| `tests/visual/playwright.config.js`  | Playwright config with desktop + mobile projects |
+| `tests/visual/components.spec.js`    | 6 component tests with `toHaveScreenshot()`      |
+| `.github/workflows/visual-tests.yml` | CI workflow running on PR                        |
 
 ### Components Tested
 
-| Component | Desktop (1280×720) | Mobile (375×667) |
-|---|---|---|
-| Buttons | ✓ | ✓ |
-| Cards | ✓ | ✓ |
-| Toast | ✓ | ✓ |
-| Modal | ✓ | ✓ |
-| Breadcrumb | ✓ | ✓ |
-| Split Button | ✓ | ✓ |
+| Component    | Desktop (1280×720) | Mobile (375×667) |
+| ------------ | ------------------ | ---------------- |
+| Buttons      | ✓                  | ✓                |
+| Cards        | ✓                  | ✓                |
+| Toast        | ✓                  | ✓                |
+| Modal        | ✓                  | ✓                |
+| Breadcrumb   | ✓                  | ✓                |
+| Split Button | ✓                  | ✓                |
 
 Fixes #16381

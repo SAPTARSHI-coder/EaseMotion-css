@@ -5,19 +5,19 @@ CSS `background-repeat` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.bg-repeat` | `background-repeat: repeat;` |
-| `.bg-no-repeat` | `background-repeat: no-repeat;` |
-| `.bg-repeat-x` | `background-repeat: repeat-x;` |
-| `.bg-repeat-y` | `background-repeat: repeat-y;` |
-| `.bg-repeat-round` | `background-repeat: round;` |
-| `.bg-repeat-space` | `background-repeat: space;` |
+| Class              | Declaration                     |
+| ------------------ | ------------------------------- |
+| `.bg-repeat`       | `background-repeat: repeat;`    |
+| `.bg-no-repeat`    | `background-repeat: no-repeat;` |
+| `.bg-repeat-x`     | `background-repeat: repeat-x;`  |
+| `.bg-repeat-y`     | `background-repeat: repeat-y;`  |
+| `.bg-repeat-round` | `background-repeat: round;`     |
+| `.bg-repeat-space` | `background-repeat: space;`     |
 
 ## Responsive Variants
 
@@ -34,9 +34,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Background Repeat
-</div>
+<div class="util-class-dark">Dark mode Background Repeat</div>
 ```
 
 ## Reduced Motion
@@ -44,9 +42,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Background Repeat
-</div>
+<div class="util-class-nomotion">No motion Background Repeat</div>
 ```
 
 ## Framework Integration

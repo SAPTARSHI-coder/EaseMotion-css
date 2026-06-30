@@ -15,20 +15,23 @@ submissions/core_changes-issue-22084/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Default** | `.ease-carousel` | Horizontal scroll-snap carousel |
-| **Vertical** | `.ease-carousel-vertical` | Vertical scrolling orientation |
-| **Fade** | `.ease-carousel-fade` | Crossfade transitions via `:target` |
-| **Autoplay** | `.ease-carousel-autoplay` | CSS animation auto-rotation, pauses on hover |
-| **Multi-slide 50%** | `.ease-carousel-slide-50` | Two slides visible at once |
-| **Multi-slide 33%** | `.ease-carousel-slide-33` | Three slides visible at once |
-| **Multi-slide 25%** | `.ease-carousel-slide-25` | Four slides visible at once |
+| Variant             | Class                     | Description                                  |
+| ------------------- | ------------------------- | -------------------------------------------- |
+| **Default**         | `.ease-carousel`          | Horizontal scroll-snap carousel              |
+| **Vertical**        | `.ease-carousel-vertical` | Vertical scrolling orientation               |
+| **Fade**            | `.ease-carousel-fade`     | Crossfade transitions via `:target`          |
+| **Autoplay**        | `.ease-carousel-autoplay` | CSS animation auto-rotation, pauses on hover |
+| **Multi-slide 50%** | `.ease-carousel-slide-50` | Two slides visible at once                   |
+| **Multi-slide 33%** | `.ease-carousel-slide-33` | Three slides visible at once                 |
+| **Multi-slide 25%** | `.ease-carousel-slide-25` | Four slides visible at once                  |
 
 ## Usage
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css@latest/easemotion.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css@latest/easemotion.min.css"
+/>
 <link rel="stylesheet" href="path/to/style.css" />
 
 <div class="ease-carousel">

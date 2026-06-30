@@ -14,20 +14,19 @@ This component requires both HTML and JavaScript to function properly. The JavaS
 
 ```html
 <div class="ease-dropdown" id="dropdown-container">
-  
   <button class="ease-dropdown-trigger" id="dropdown-btn">
     <span id="trigger-text">Select item...</span>
   </button>
-  
+
   <div class="ease-dropdown-menu">
     <div class="ease-search-wrapper">
-      <input type="text" id="dropdown-search">
+      <input type="text" id="dropdown-search" />
     </div>
-    
+
     <ul class="ease-dropdown-list">
       <li>Item 1</li>
       <li>Item 2</li>
     </ul>
   </div>
-  
 </div>
+```

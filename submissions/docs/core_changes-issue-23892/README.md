@@ -5,6 +5,7 @@
 Adds screen reader only utility classes that visually hide content while keeping it accessible to assistive technology (screen readers). Includes focusable variant for skip links, semantic aliases, and responsive breakpoint variants.
 
 **Classes:**
+
 - `.ease-sr-only` — Visually hide, keep accessible to screen readers
 - `.ease-not-sr-only` — Restore visibility (undo sr-only)
 - `.ease-sr-only-focusable` — Hidden until focused (for skip links)
@@ -24,9 +25,7 @@ Adds screen reader only utility classes that visually hide content while keeping
 </button>
 
 <!-- Skip link -->
-<a href="#main" class="ease-sr-only-focusable">
-  Skip to main content
-</a>
+<a href="#main" class="ease-sr-only-focusable"> Skip to main content </a>
 
 <!-- Responsive -->
 <span class="ease-lg:sr-only">Mobile only text</span>

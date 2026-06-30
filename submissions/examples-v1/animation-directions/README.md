@@ -6,21 +6,21 @@ A demo page showcasing eight directional CSS animations — fade (left, right, u
 
 ## Features
 
-* 4 fade-in directional animations (left, right, up, down)
-* 4 slide directional animations (left, right, up, down)
-* Individual trigger buttons to replay each animation
-* Modern cubic-bezier easing
-* Lightweight CSS-only implementation
-* Dark theme with glassmorphism cards
-* Accessibility support using `prefers-reduced-motion`
-* Responsive grid layout
+- 4 fade-in directional animations (left, right, up, down)
+- 4 slide directional animations (left, right, up, down)
+- Individual trigger buttons to replay each animation
+- Modern cubic-bezier easing
+- Lightweight CSS-only implementation
+- Dark theme with glassmorphism cards
+- Accessibility support using `prefers-reduced-motion`
+- Responsive grid layout
 
 ## Use Cases
 
-* Learning and understanding CSS animation directions
-* Reference page for choosing the right entrance animation
-* Portfolio and landing page development
-* Educational material for CSS workshops
+- Learning and understanding CSS animation directions
+- Reference page for choosing the right entrance animation
+- Portfolio and landing page development
+- Educational material for CSS workshops
 
 ## Example Usage
 
@@ -43,17 +43,17 @@ This component respects the user's motion preferences through the `prefers-reduc
 
 Compatible with modern browsers supporting:
 
-* CSS Animations
-* CSS Transforms
-* CSS Keyframes
-* Media Queries
-* CSS Backdrop Filter
+- CSS Animations
+- CSS Transforms
+- CSS Keyframes
+- Media Queries
+- CSS Backdrop Filter
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and reusable animation.
-* Lightweight implementation.
-* Accessible design.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS principles.
+- Uses CSS keyframes.
+- Smooth and reusable animation.
+- Lightweight implementation.
+- Accessible design.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS principles.

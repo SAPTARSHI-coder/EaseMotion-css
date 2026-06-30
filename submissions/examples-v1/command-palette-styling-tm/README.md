@@ -3,6 +3,7 @@
 A modern, accessible command palette component for EaseMotion-css. This component provides a sleek interface for searching commands, navigation, and quick actions within your application.
 
 ## Features
+
 - **Modern UI**: Uses project tokens for consistent spacing, colors, and shadows.
 - **Glassmorphism Support**: Includes optional glass-like backdrop and surface effects.
 - **Keyboard Friendly**: Styled `<kbd>` elements for shortcuts and clear focus states.
@@ -10,13 +11,14 @@ A modern, accessible command palette component for EaseMotion-css. This componen
 - **Micro-interactions**: Subtle hover and focus transitions.
 
 ## Usage
+
 Add the command palette markup to your HTML. You can trigger it using standard modal patterns or a custom keyboard listener.
 
 ```html
 <div class="ease-cmd-overlay">
   <div class="ease-cmd-palette">
     <div class="ease-cmd-header">
-      <input type="text" placeholder="Search commands...">
+      <input type="text" placeholder="Search commands..." />
     </div>
     <div class="ease-cmd-body">
       <div class="ease-cmd-group">
@@ -32,6 +34,7 @@ Add the command palette markup to your HTML. You can trigger it using standard m
 ```
 
 ## CSS Classes
+
 - `.ease-cmd-overlay`: Full-screen backdrop.
 - `.ease-cmd-palette`: Main container.
 - `.ease-cmd-header`: Search input area.

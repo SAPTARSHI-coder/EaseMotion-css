@@ -25,8 +25,8 @@ Two lines added to `.ease-card-footer`:
 .ease-card-footer {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;                            /* buttons wrap on narrow screens */
-  gap: var(--ease-card-footer-gap, 0.5rem);  /* consistent spacing */
+  flex-wrap: wrap; /* buttons wrap on narrow screens */
+  gap: var(--ease-card-footer-gap, 0.5rem); /* consistent spacing */
   padding: 0.75rem 1.25rem;
   border-top: 1px solid #2a2a4a;
 }
@@ -49,5 +49,6 @@ The gap between wrapped items is exposed as a CSS variable:
 3. **After Fix** card: 4 buttons wrap to two rows cleanly
 
 ## Files
+
 - `style.css` — the fix
 - `demo.html` — side-by-side buggy vs fixed cards in mobile viewport

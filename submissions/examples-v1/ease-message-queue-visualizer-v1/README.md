@@ -33,9 +33,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="flow">
-...
-</div>
+<div class="flow">...</div>
 ```
 
 ---

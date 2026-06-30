@@ -44,16 +44,16 @@ Link `style.css` into your project, then compose a card with the following HTML 
 
 ### Available modifier classes
 
-| Class | Effect |
-|---|---|
-| `card--default` | Violet accent, top-right fold |
-| `card--animated` | Cyan accent, fold springs in on load |
-| `card--success` | Emerald accent, success glow on hover |
-| `card--warning` | Amber accent, warning glow on hover |
-| `card--important` | Rose accent, pulsing ring animation |
-| `card--pinned` | Indigo accent, pinned note style |
+| Class               | Effect                                   |
+| ------------------- | ---------------------------------------- |
+| `card--default`     | Violet accent, top-right fold            |
+| `card--animated`    | Cyan accent, fold springs in on load     |
+| `card--success`     | Emerald accent, success glow on hover    |
+| `card--warning`     | Amber accent, warning glow on hover      |
+| `card--important`   | Rose accent, pulsing ring animation      |
+| `card--pinned`      | Indigo accent, pinned note style         |
 | `fold--bottom-left` | Moves the fold to the bottom-left corner |
-| `card--float` | Adds a gentle idle floating animation |
+| `card--float`       | Adds a gentle idle floating animation    |
 
 ### Badge color variants
 

@@ -3,4 +3,5 @@
 CSS utilities for `box-shadow`.
 
 ---
-*Generated*
+
+_Generated_

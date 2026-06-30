@@ -9,8 +9,8 @@ An isolated interaction submission introducing accessible structural utilities f
 - **Semantic Component Versatility:** Works out of the box when used as native anchor blocks (`<a>`) or as generic `div` elements combined with standard accessibility properties (`tabindex="0" role="button"`).
 
 ## Usage Layout Structure
-```html
 
+```html
 <a class="ease-card-clickable" href="#">
   <h4>Interactive Card Heading</h4>
   <p>Description text block.</p>

@@ -22,13 +22,9 @@ A modern interactive landing page showcasing responsive navigation, hero content
 ## Usage
 
 ```html
-<header class="hero">
-    ...
-</header>
+<header class="hero">...</header>
 
-<section class="features">
-    ...
-</section>
+<section class="features">...</section>
 ```
 
 ## Main Classes

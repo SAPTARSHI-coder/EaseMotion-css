@@ -24,9 +24,7 @@ A modern support operations component that visualizes ticket priority levels, SL
 ## Usage
 
 ```html
-<div class="priority-card critical">
-  Critical Ticket
-</div>
+<div class="priority-card critical">Critical Ticket</div>
 ```
 
 ## Main Classes

@@ -62,12 +62,12 @@ Paste the `.nn-scene` element (with all its children) into your page body. The c
 
 ```css
 :root {
-  --nn-blue:          #2563eb;   /* Primary blue  */
-  --nn-purple:        #7c3aed;   /* Primary purple */
-  --nn-cyan:          #06b6d4;   /* Primary cyan  */
-  --nn-speed-blob:    18s;       /* Blob drift speed */
-  --nn-speed-node:    3.4s;      /* Node pulse speed */
-  --nn-speed-data:    4s;        /* Data flow speed  */
+  --nn-blue: #2563eb; /* Primary blue  */
+  --nn-purple: #7c3aed; /* Primary purple */
+  --nn-cyan: #06b6d4; /* Primary cyan  */
+  --nn-speed-blob: 18s; /* Blob drift speed */
+  --nn-speed-node: 3.4s; /* Node pulse speed */
+  --nn-speed-data: 4s; /* Data flow speed  */
 }
 ```
 
@@ -77,15 +77,15 @@ All visual behaviour is controlled via CSS variables — no need to touch layout
 
 ## Animation Reference
 
-| Class / Element              | Animation             | Default Duration |
-|------------------------------|-----------------------|------------------|
-| `.nn-blob`                   | `nn-blob-drift`       | 18 – 24s         |
-| `.nn-node`                   | `nn-node-pulse`       | 3.4s             |
-| `.nn-line`                   | `nn-data-flow`        | 4 – 7.4s         |
-| `.nn-hero`                   | `nn-hero-enter`       | 0.9s             |
-| `.nn-hero__heading-accent`   | `nn-accent-shift`     | 6s               |
-| `.nn-hero__badge`            | `nn-badge-glow`       | 3s               |
-| `.nn-hero__badge-dot`        | `nn-dot-blink`        | 2.4s             |
+| Class / Element            | Animation         | Default Duration |
+| -------------------------- | ----------------- | ---------------- |
+| `.nn-blob`                 | `nn-blob-drift`   | 18 – 24s         |
+| `.nn-node`                 | `nn-node-pulse`   | 3.4s             |
+| `.nn-line`                 | `nn-data-flow`    | 4 – 7.4s         |
+| `.nn-hero`                 | `nn-hero-enter`   | 0.9s             |
+| `.nn-hero__heading-accent` | `nn-accent-shift` | 6s               |
+| `.nn-hero__badge`          | `nn-badge-glow`   | 3s               |
+| `.nn-hero__badge-dot`      | `nn-dot-blink`    | 2.4s             |
 
 ---
 
@@ -95,11 +95,11 @@ EaseMotion CSS is built around three core principles. This component was designe
 
 ### 1. Animation-First
 
-Every element in this component exists to *move*. The nodes breathe. The lines carry data. The blobs drift. The hero text enters the stage with choreography. Motion is not a layer added on top of a static design — it is the design. The `@keyframes` are the primary building blocks; the layout and colour exist to frame them.
+Every element in this component exists to _move_. The nodes breathe. The lines carry data. The blobs drift. The hero text enters the stage with choreography. Motion is not a layer added on top of a static design — it is the design. The `@keyframes` are the primary building blocks; the layout and colour exist to frame them.
 
 ### 2. Human-Readable
 
-Every CSS variable, class name, and keyframe is named to describe what it *is* and what it *does* in plain English: `nn-node-pulse`, `nn-data-flow`, `nn-hero-enter`, `nn-blob-drift`. A developer reading this file for the first time can understand the intent of any rule without a comment. Where a comment adds value beyond the name itself, it is there — but the names carry the meaning first.
+Every CSS variable, class name, and keyframe is named to describe what it _is_ and what it _does_ in plain English: `nn-node-pulse`, `nn-data-flow`, `nn-hero-enter`, `nn-blob-drift`. A developer reading this file for the first time can understand the intent of any rule without a comment. Where a comment adds value beyond the name itself, it is there — but the names carry the meaning first.
 
 ### 3. Composable
 
@@ -109,13 +109,13 @@ The component is layered into independent, self-contained zones: `.nn-blobs`, `.
 
 ## Browser Support
 
-| Browser         | Support |
-|-----------------|---------|
-| Chrome 88+      | ✅ Full  |
-| Firefox 87+     | ✅ Full  |
-| Safari 14+      | ✅ Full  |
-| Edge 88+        | ✅ Full  |
-| iOS Safari 14+  | ✅ Full  |
+| Browser        | Support |
+| -------------- | ------- |
+| Chrome 88+     | ✅ Full |
+| Firefox 87+    | ✅ Full |
+| Safari 14+     | ✅ Full |
+| Edge 88+       | ✅ Full |
+| iOS Safari 14+ | ✅ Full |
 
 > `backdrop-filter` / `-webkit-backdrop-filter` is used for glassmorphism effects and is supported in all modern browsers. Older browsers will display a solid semi-transparent fallback with no visual breakage.
 

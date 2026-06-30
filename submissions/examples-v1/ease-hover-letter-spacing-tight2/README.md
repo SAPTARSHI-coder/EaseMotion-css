@@ -18,9 +18,7 @@ A lightweight CSS hover animation that smoothly reduces letter spacing from **0.
 ## 🚀 Usage
 
 ```html
-<h1 class="ease-hover-letter-spacing-tight">
-    EASEMOTION CSS
-</h1>
+<h1 class="ease-hover-letter-spacing-tight">EASEMOTION CSS</h1>
 ```
 
 ---
@@ -29,8 +27,8 @@ A lightweight CSS hover animation that smoothly reduces letter spacing from **0.
 
 ```css
 :root {
-    --ease-letter-spacing-default: 0.08em;
-    --ease-letter-spacing-duration: 0.3s;
+  --ease-letter-spacing-default: 0.08em;
+  --ease-letter-spacing-duration: 0.3s;
 }
 ```
 

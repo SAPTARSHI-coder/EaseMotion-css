@@ -40,29 +40,31 @@ data-pipeline-landing/
 
 ## Sections
 
-| Section | Description |
-|---|---|
-| **Navigation** | Sticky nav with logo, links, and CTA buttons |
-| **Hero** | Headline, subheading, CTAs, animated pipeline diagram |
-| **Social Proof** | Customer logo bar (FinEdge, DataHive, RocketOps…) |
-| **Features** | 6-card grid (300+ Connectors, ETL/ELT, Scheduling, Monitoring, Incremental Sync, Security) |
-| **Integrations** | Source → Engine → Destination logo layout |
-| **Pricing** | Starter ($49), Growth ($199), Enterprise (Custom) |
-| **Customers** | Testimonial cards + stat bar (2B+ rows, 300+ connectors, 99.9% uptime) |
-| **Docs CTA** | Full-width developer call-to-action with code snippet |
-| **Footer** | Product · Resources · Company columns + social links |
+| Section          | Description                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------ |
+| **Navigation**   | Sticky nav with logo, links, and CTA buttons                                               |
+| **Hero**         | Headline, subheading, CTAs, animated pipeline diagram                                      |
+| **Social Proof** | Customer logo bar (FinEdge, DataHive, RocketOps…)                                          |
+| **Features**     | 6-card grid (300+ Connectors, ETL/ELT, Scheduling, Monitoring, Incremental Sync, Security) |
+| **Integrations** | Source → Engine → Destination logo layout                                                  |
+| **Pricing**      | Starter ($49), Growth ($199), Enterprise (Custom)                                          |
+| **Customers**    | Testimonial cards + stat bar (2B+ rows, 300+ connectors, 99.9% uptime)                     |
+| **Docs CTA**     | Full-width developer call-to-action with code snippet                                      |
+| **Footer**       | Product · Resources · Company columns + social links                                       |
 
 ---
 
 ## EaseMotion Classes Demonstrated
 
 ### Entrance Animations
+
 - `ease-fade-in` — nav, badge, hero trust line, proof bar
 - `ease-slide-up` — hero heading, subtitle, CTAs, feature cards, pricing cards
 - `ease-slide-in-left` — integrations source column
 - `ease-slide-in-right` — integrations destination column
 
 ### Hover Effects
+
 - `ease-hover-lift` — buttons, logo cards, feature cards, pricing cards, customer cards
 - `ease-hover-grow` — pipeline source/destination nodes, proof logos
 - `ease-hover-glow` — primary CTA button, featured pricing card
@@ -70,18 +72,22 @@ data-pipeline-landing/
 - `ease-hover-pulse-glow` — pipeline engine center node
 
 ### Looping / Continuous Animations
+
 - `ease-pulse` — badge dot, decorative orbs
 - `ease-rotate` — pipeline engine icon
 - `ease-float` — integration arrow, docs CTA icon
 - `ease-gradient-text-animated` — hero headline accent, stat numbers
 
 ### Glassmorphism
+
 - `ease-glass-card` — pipeline illustration, feature cards, logo cards, pricing cards, docs CTA
 
 ### Delay Staggering
+
 - `ease-delay-100` through `ease-delay-600` — entrance stagger on all grid items
 
 ### Layout Utilities
+
 - `ease-container` — max-width centered wrapper
 - `ease-flex`, `ease-justify-between`, `ease-justify-center`, `ease-items-center`
 - `ease-gap-4`, `ease-gap-8`, `ease-flex-wrap`
@@ -91,11 +97,11 @@ data-pipeline-landing/
 
 ## Responsive Support
 
-| Breakpoint | Behaviour |
-|---|---|
-| **Mobile** (< 640px) | Single-column layout, hidden nav links, stacked pipeline diagram |
-| **Tablet** (640–1023px) | 2-column feature grid, wrapped integration section |
-| **Desktop** (≥ 1024px) | Full 3-column layouts, side-by-side integrations, scaled pricing card |
+| Breakpoint              | Behaviour                                                             |
+| ----------------------- | --------------------------------------------------------------------- |
+| **Mobile** (< 640px)    | Single-column layout, hidden nav links, stacked pipeline diagram      |
+| **Tablet** (640–1023px) | 2-column feature grid, wrapped integration section                    |
+| **Desktop** (≥ 1024px)  | Full 3-column layouts, side-by-side integrations, scaled pricing card |
 
 ---
 
@@ -124,8 +130,8 @@ Colors and spacing are driven by CSS custom properties in `style.css`. Override 
 ```css
 :root {
   --brand-purple: #7c3aed;
-  --brand-blue:   #3b82f6;
-  --bg-base:      #080b14;
+  --brand-blue: #3b82f6;
+  --bg-base: #080b14;
   --text-primary: #f1f5f9;
 }
 ```

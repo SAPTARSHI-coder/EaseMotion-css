@@ -15,14 +15,15 @@ CSS-only 3D flip cards using `perspective`, `transform-style: preserve-3d`, and 
 </div>
 ```
 
-| Class | Effect |
-|-------|--------|
+| Class                       | Effect                 |
+| --------------------------- | ---------------------- |
 | `ease-card-flip-horizontal` | Flip on Y-axis (hover) |
-| `ease-card-flip-vertical` | Flip on X-axis (hover) |
+| `ease-card-flip-vertical`   | Flip on X-axis (hover) |
 
 For click-to-flip (checkbox hack):
+
 ```html
-<input type="checkbox" class="ease-card-flip-checkbox" id="my-flip">
+<input type="checkbox" class="ease-card-flip-checkbox" id="my-flip" />
 <label for="my-flip">...same inner structure...</label>
 ```
 

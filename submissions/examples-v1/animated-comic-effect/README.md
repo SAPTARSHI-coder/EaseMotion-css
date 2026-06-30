@@ -6,8 +6,8 @@ A comic-book-inspired text animation that combines spring-based word scaling, ra
 
 ## 📁 Sandbox Configuration Files
 
-* `demo.html` — Self-contained showcase demonstrating animated comic-style text with radial burst effects.
-* `style.css` — Scoped styling layer controlling typography, colors, ray appearance, layout, and visual presentation.
+- `demo.html` — Self-contained showcase demonstrating animated comic-style text with radial burst effects.
+- `style.css` — Scoped styling layer controlling typography, colors, ray appearance, layout, and visual presentation.
 
 ## 🚀 Key Animation Mechanics
 
@@ -27,11 +27,11 @@ The rays do not appear simultaneously. Small timing offsets create a cascading b
 
 The sequence progresses through several animation phases:
 
-* Text pop-in
-* Burst ray expansion
-* Gentle breathing motion
-* Controlled outro scaling
-* Final hold state
+- Text pop-in
+- Burst ray expansion
+- Gentle breathing motion
+- Controlled outro scaling
+- Final hold state
 
 This structure creates a complete animation cycle rather than a single isolated transition.
 
@@ -53,14 +53,14 @@ All logic, styling, and rendering remain fully contained within the sandbox dire
 
 ## 🎯 Use Cases
 
-* Hero section headlines
-* Call-to-action animations
-* Product announcements
-* Comic-style interfaces
-* Achievement notifications
-* Game UI effects
-* Interactive landing pages
-* Motion design showcases
+- Hero section headlines
+- Call-to-action animations
+- Product announcements
+- Comic-style interfaces
+- Achievement notifications
+- Game UI effects
+- Interactive landing pages
+- Motion design showcases
 
 ## ✨ Why It Fits EaseMotion CSS
 

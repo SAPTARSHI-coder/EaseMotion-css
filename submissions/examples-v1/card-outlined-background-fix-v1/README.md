@@ -23,9 +23,8 @@ Add an explicit `background-color: transparent` to `.ease-card-outlined`:
 
 /* ✅ After — transparent as intended */
 .ease-card-outlined {
-  border: var(--ease-card-outlined-border-width)
-          solid
-          var(--ease-card-outlined-border-color);
+  border: var(--ease-card-outlined-border-width) solid
+    var(--ease-card-outlined-border-color);
   background-color: transparent;
 }
 ```
@@ -34,14 +33,14 @@ Add an explicit `background-color: transparent` to `.ease-card-outlined`:
 
 ```html
 <!-- Transparent outlined card — works correctly after fix -->
-<div class="ease-card ease-card-outlined">
-  Card content
-</div>
+<div class="ease-card ease-card-outlined">Card content</div>
 
 <!-- Custom border via CSS variables -->
-<div class="ease-card ease-card-outlined"
-     style="--ease-card-outlined-border-color: #6366f1;
-            --ease-card-outlined-border-width: 3px;">
+<div
+  class="ease-card ease-card-outlined"
+  style="--ease-card-outlined-border-color: #6366f1;
+            --ease-card-outlined-border-width: 3px;"
+>
   Custom border
 </div>
 ```
@@ -54,5 +53,6 @@ Add an explicit `background-color: transparent` to `.ease-card-outlined`:
 4. **Fixed card**: gradient shows through — transparent as expected
 
 ## Files
+
 - `style.css` — the fix
 - `demo.html` — buggy vs fixed vs custom on gradient background

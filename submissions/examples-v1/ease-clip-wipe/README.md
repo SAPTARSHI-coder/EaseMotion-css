@@ -1,14 +1,8 @@
 \# ease-clip-wipe
 
-
-
 Clip-path wipe transition reveals elements from different directions.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Direction |
 
@@ -28,11 +22,7 @@ Clip-path wipe transition reveals elements from different directions.
 
 | `ease-clip-wipe-entrance-right` | Entrance from right | On page load |
 
-
-
 \## Speed Variants
-
-
 
 | Class | Speed |
 
@@ -44,11 +34,7 @@ Clip-path wipe transition reveals elements from different directions.
 
 | `ease-clip-wipe-left-slow` | 1.2s |
 
-
-
 \## Variables
-
-
 
 | Variable | Default | Description |
 
@@ -56,31 +42,20 @@ Clip-path wipe transition reveals elements from different directions.
 
 | `--ease-wipe-duration` | 0.6s | Animation duration |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Wipe on hover -->
 
 <div class="ease-clip-wipe-left">Reveals from left</div>
-
-
 
 <!-- Entrance on load -->
 
 <div class="ease-clip-wipe-entrance">Wipes in on load</div>
 
-
-
 <!-- Custom duration -->
 
 <div class="ease-clip-wipe-left" style="--ease-wipe-duration: 1s;">
-
-&#x20;   Slow wipe
-
+  &#x20; Slow wipe
 </div>
-
+```

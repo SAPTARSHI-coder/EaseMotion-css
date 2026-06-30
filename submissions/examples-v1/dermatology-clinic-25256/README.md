@@ -1,4 +1,5 @@
 # Dermatology Clinic Template
+
 A clean, sophisticated, and wellness-oriented template for dermatology clinics.
 
 - **Design**: Uses soft, "skin-tone" background palettes and minimalist typography to project a sense of cleanliness, safety, and wellness.

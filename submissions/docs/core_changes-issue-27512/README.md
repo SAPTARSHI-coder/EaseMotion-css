@@ -7,7 +7,9 @@ A React tabs component with a smooth sliding underline indicator that follows th
 ## How is it used?
 
 ```jsx
-import TabsGlider from './TabsGlider';
+import TabsGlider from "./TabsGlider";
 
-function App() { return <TabsGlider />; }
+function App() {
+  return <TabsGlider />;
+}
 ```

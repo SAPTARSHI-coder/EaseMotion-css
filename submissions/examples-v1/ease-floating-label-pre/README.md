@@ -5,6 +5,7 @@ A modern input field where the placeholder transforms into a
 floating label when the user focuses or enters text.
 
 **How is it used?**
+
 <div class="floating-input">
   <input type="text" required />
   <label>Name</label>

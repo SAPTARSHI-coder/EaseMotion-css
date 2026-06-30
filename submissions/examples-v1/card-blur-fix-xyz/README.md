@@ -22,3 +22,4 @@ Additionally, this example folder acts as a bug patch to enforce safe rasterizat
 card-blur-fix-xyz/
 ├── demo.html    # Interactive sandbox bench comparing stabilized and unoptimized scaling frames
 └── style.css    # Clean CSS workspace containing design tokens and GPU rasterization fixes
+```

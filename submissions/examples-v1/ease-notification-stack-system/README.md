@@ -1,9 +1,11 @@
 # Ease Notification Stack System
 
 ## Overview
+
 This feature introduces a stacked notification system with animated slide effects.
 
 ## ✨ Features
+
 - Stacked notifications
 - Auto dismiss
 - Slide-in and slide-out animation
@@ -13,3 +15,4 @@ This feature introduces a stacked notification system with animated slide effect
 
 ```html
 <div class="toast"></div>
+```

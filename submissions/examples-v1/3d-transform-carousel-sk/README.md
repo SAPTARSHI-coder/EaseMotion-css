@@ -5,6 +5,7 @@
 3. **Why is it useful?** It provides a high-performance, visually engaging way to display images, cards, or features. By relying on CSS for the layout and transition, it ensures smooth 60fps animations.
 
 ### Key Features
+
 - **Pure CSS 3D Layout:** Uses `perspective`, `transform-style: preserve-3d`, and `backface-visibility: hidden` for optimal rendering.
 - **Dynamic Rotation:** Minimal JavaScript simply updates a CSS variable or inline style to rotate the entire container.
 - **Accessible Fallbacks:** Includes `prefers-reduced-motion` media queries to speed up or disable the rotation transition for users sensitive to motion.

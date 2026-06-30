@@ -14,20 +14,20 @@ Adds gentle floating (bobbing) animations to elements — useful for hero sectio
 
 ### Classes
 
-| Class | Duration | Description |
-|---|---|---|
-| `.ease-float` | 3s | Gentle up/down float |
-| `.ease-float-slow` | 5s | Slow, subtle float |
-| `.ease-float-fast` | 1.5s | Quick bob |
-| `.ease-float-bounce` | 2s | Bouncier float with ease-out |
-| `.ease-float-hover` | 3s | Float only on hover/focus |
+| Class                | Duration | Description                  |
+| -------------------- | -------- | ---------------------------- |
+| `.ease-float`        | 3s       | Gentle up/down float         |
+| `.ease-float-slow`   | 5s       | Slow, subtle float           |
+| `.ease-float-fast`   | 1.5s     | Quick bob                    |
+| `.ease-float-bounce` | 2s       | Bouncier float with ease-out |
+| `.ease-float-hover`  | 3s       | Float only on hover/focus    |
 
 ## Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-float-distance` | `8px` | Float travel distance |
-| `--ease-float-duration` | *(per class)* | Animation duration |
+| Property                | Default       | Description           |
+| ----------------------- | ------------- | --------------------- |
+| `--ease-float-distance` | `8px`         | Float travel distance |
+| `--ease-float-duration` | _(per class)_ | Animation duration    |
 
 ## Accessibility
 

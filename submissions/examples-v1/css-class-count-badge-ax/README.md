@@ -3,19 +3,22 @@
 A Node.js script that parses the core EaseMotion CSS files, counts classes by category (animation, utility, component), and generates shields.io badge URLs for the README.
 
 ## Files
+
 - `count-classes.js` – the actual script
 - `demo.html` – explains how the tool works
 - `style.css` – demo page styling
 - `README.md` – this file
 
 ## Categories
-| Category   | Detection Pattern |
-|------------|-------------------|
-| Animation  | Classes like `ease-fade-in`, `ease-slide-up`, `ease-bounce` |
-| Utility    | Layout, spacing, typography helpers (`ease-container`, `ease-flex`, `ease-text-*`, `ease-p-*`) |
-| Component  | UI components (`ease-btn`, `ease-card`, `ease-input`, `ease-badge`) |
+
+| Category  | Detection Pattern                                                                              |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| Animation | Classes like `ease-fade-in`, `ease-slide-up`, `ease-bounce`                                    |
+| Utility   | Layout, spacing, typography helpers (`ease-container`, `ease-flex`, `ease-text-*`, `ease-p-*`) |
+| Component | UI components (`ease-btn`, `ease-card`, `ease-input`, `ease-badge`)                            |
 
 ## How to Run
+
 ```bash
 node count-classes.js
 The script reads the CSS files in the core/ directory and prints three shields.io badge URLs in Markdown format.
@@ -39,3 +42,4 @@ Components: ease-card
 Animation: ease-fade-in, ease-delay-200, ease-delay-500
 
 Utilities: ease-list-disc, ease-space-y-2
+```

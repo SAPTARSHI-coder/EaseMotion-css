@@ -1,6 +1,7 @@
 # Animated Countdown Timer
 
 ## What does this do?
+
 A pure CSS animated countdown timer with smooth slide-flip digit transitions,
 a blinking colon separator, and an automatic "Time's up!" message on completion.
 

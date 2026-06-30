@@ -4,12 +4,14 @@ This proposal provides a complete, copy-paste ready full-page template designed 
 
 ## 📌 Feature Overview
 
-A street food brand requires a bold, energetic, and mouth-watering aesthetic. This template achieves that with aggressive typography, vibrant colors, and heavily interactive micro-animations. 
+A street food brand requires a bold, energetic, and mouth-watering aesthetic. This template achieves that with aggressive typography, vibrant colors, and heavily interactive micro-animations.
 
 The layout includes a high-impact hero section, a clean menu grid, a schedule/location block, an "Our Story" split layout, an Instagram-style gallery grid, and a strong call-to-action for catering services.
 
 ### Showcased Classes
+
 The template leverages the following EaseMotion animation and interaction utilities:
+
 - `.ease-fade-in` / `.ease-fade-up` (For smooth text and section entrances)
 - `.ease-slide-down` / `.ease-slide-right` / `.ease-slide-left` (For the navigation bar and menu categories)
 - `.ease-zoom-in` / `.ease-bounce-in` (For high-energy hero text and CTAs)
@@ -19,11 +21,12 @@ The template leverages the following EaseMotion animation and interaction utilit
 
 ## ⚙️ How to Use
 
-To view this full-page template locally, open the `demo.html` file in your web browser. 
+To view this full-page template locally, open the `demo.html` file in your web browser.
 
 The CSS handles the base structural grid and typography, while standard `ease-*` interaction classes are attached directly to HTML elements to provide the entrance animations and hover effects without writing custom keyframes.
 
-*Note: As per the contributing guidelines, this proposal is implemented inside a unique `submissions/examples/business-landing-food-truck-21797/` directory to avoid modifying core files directly and to ensure zero deletions.*
+_Note: As per the contributing guidelines, this proposal is implemented inside a unique `submissions/examples/business-landing-food-truck-21797/` directory to avoid modifying core files directly and to ensure zero deletions._
 
 ## 🔗 Related Issue
+
 Closes Issue #21797

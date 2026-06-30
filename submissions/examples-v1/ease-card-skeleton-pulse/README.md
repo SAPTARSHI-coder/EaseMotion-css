@@ -3,6 +3,7 @@
 A card skeleton loading component that uses a breathing (opacity oscillation) effect instead of a shimmer sweep. Lightweight and simple.
 
 ## EaseMotion classes used
+
 - **Layout:** ease-container, ease-grid, ease-flex, ease-items-center, ease-justify-center, ease-min-h-screen
 - **Background:** ease-bg-gray-50
 - **Components:** ease-card
@@ -11,6 +12,7 @@ A card skeleton loading component that uses a breathing (opacity oscillation) ef
 - **Animation:** ease-fade-in, ease-delay-500
 
 ## How it works
+
 - Uses @keyframes skeleton-pulse that oscillates opacity between 1 and 0.4.
 - Custom property --ease-skeleton-pulse-speed controls speed (default 1.5s).
 - Each skeleton block (image, title, text, button) is a simple grey rectangle with border-radius.
@@ -18,6 +20,7 @@ A card skeleton loading component that uses a breathing (opacity oscillation) ef
 - Respects prefers-reduced-motion by freezing the animation.
 
 ## How to use
+
 1. Copy demo.html and style.css into your project.
 2. Ensure the path to easemotion.css is correct (usually from core/).
 3. Open demo.html in any modern browser.

@@ -1,4 +1,4 @@
-# ease-aspect-*
+# ease-aspect-\*
 
 ## What does this do?
 
@@ -25,40 +25,36 @@ Provides aspect ratio utility classes (`.ease-aspect-square`, `.ease-aspect-vide
 **Custom ratio via CSS variable:**
 
 ```html
-<div class="ease-aspect-custom" style="--ease-aspect-ratio: 2/1;">
-  ...
-</div>
+<div class="ease-aspect-custom" style="--ease-aspect-ratio: 2/1;">...</div>
 ```
 
 **Responsive (square on mobile, 16:9 on desktop):**
 
 ```html
-<div class="ease-aspect-square ease-md-aspect-video">
-  ...
-</div>
+<div class="ease-aspect-square ease-md-aspect-video">...</div>
 ```
 
 ### Available Classes
 
-| Class | Ratio | Use Case |
-|---|---|---|
-| `.ease-aspect-square` | 1:1 | Profile pics, thumbnails |
-| `.ease-aspect-video` | 16:9 | Videos, hero banners |
-| `.ease-aspect-portrait` | 3:4 | Portraits, card art |
-| `.ease-aspect-photo` | 4:3 | Classic photos, slides |
-| `.ease-aspect-wide` | 16:10 | Widescreen displays |
-| `.ease-aspect-ultrawide` | 21:9 | Cinematic / ultrawide |
-| `.ease-aspect-auto` | auto | Reset to natural ratio |
-| `.ease-aspect-custom` | `var(--ease-aspect-ratio)` | Arbitrary values |
+| Class                    | Ratio                      | Use Case                 |
+| ------------------------ | -------------------------- | ------------------------ |
+| `.ease-aspect-square`    | 1:1                        | Profile pics, thumbnails |
+| `.ease-aspect-video`     | 16:9                       | Videos, hero banners     |
+| `.ease-aspect-portrait`  | 3:4                        | Portraits, card art      |
+| `.ease-aspect-photo`     | 4:3                        | Classic photos, slides   |
+| `.ease-aspect-wide`      | 16:10                      | Widescreen displays      |
+| `.ease-aspect-ultrawide` | 21:9                       | Cinematic / ultrawide    |
+| `.ease-aspect-auto`      | auto                       | Reset to natural ratio   |
+| `.ease-aspect-custom`    | `var(--ease-aspect-ratio)` | Arbitrary values         |
 
 ### Responsive Prefixes
 
-| Prefix | Min Width |
-|---|---|
-| `ease-sm-` | 640px |
-| `ease-md-` | 768px |
-| `ease-lg-` | 1024px |
-| `ease-xl-` | 1280px |
+| Prefix     | Min Width |
+| ---------- | --------- |
+| `ease-sm-` | 640px     |
+| `ease-md-` | 768px     |
+| `ease-lg-` | 1024px    |
+| `ease-xl-` | 1280px    |
 
 ## Why is it useful?
 

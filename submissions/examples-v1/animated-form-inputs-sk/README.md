@@ -12,7 +12,7 @@ A reusable, fully CSS-driven collection of animated form input focus states feat
 
 ## Usage
 
-1. Copy the HTML structures from `demo.html`. 
+1. Copy the HTML structures from `demo.html`.
 2. **Crucial Step:** Ensure your `<input>` has `placeholder=" "` (a single space character). This is mandatory for the pure CSS floating label logic (`:placeholder-shown`) to calculate if the input is empty or if it contains typed text.
 3. Include the `style.css` which powers the layout and `:focus` state micro-interactions.
 
@@ -30,4 +30,5 @@ Easily adapt the colors to match your brand's theme or specific validation requi
 ```
 
 ## Contributed by
+
 - Man1ac-1773

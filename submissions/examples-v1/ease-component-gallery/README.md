@@ -22,14 +22,14 @@ An interactive gallery to browse, search, filter, preview, and copy EaseMotion C
 
 ## Components Covered
 
-| Category    | Count | Examples                                      |
-|-------------|-------|-----------------------------------------------|
-| Buttons     | 8     | primary, success, danger, outline, ghost, pill, sm, lg |
-| Cards       | 6     | basic, shadow, hover, glass, neumorphic, accent        |
-| Animations  | 8     | fade-in, slide-up, slide-left, zoom-in, bounce, pulse  |
-| Hover       | 5     | grow, glow, lift, shimmer, underline                   |
-| Utilities   | 5     | flex center, flex between, grid auto, gap, text center |
-| Navbar      | 3     | glass, sticky glass, blur glass                        |
+| Category   | Count | Examples                                               |
+| ---------- | ----- | ------------------------------------------------------ |
+| Buttons    | 8     | primary, success, danger, outline, ghost, pill, sm, lg |
+| Cards      | 6     | basic, shadow, hover, glass, neumorphic, accent        |
+| Animations | 8     | fade-in, slide-up, slide-left, zoom-in, bounce, pulse  |
+| Hover      | 5     | grow, glow, lift, shimmer, underline                   |
+| Utilities  | 5     | flex center, flex between, grid auto, gap, text center |
+| Navbar     | 3     | glass, sticky glass, blur glass                        |
 
 ## File Structure
 

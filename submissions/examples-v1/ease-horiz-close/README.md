@@ -28,7 +28,7 @@ The section is intentionally taller than the viewport:
 
 ```css
 .horizontal-wrapper {
-    height: 500vh;
+  height: 500vh;
 }
 ```
 
@@ -44,8 +44,7 @@ keeps the horizontal section fixed while scrolling.
 ### 3. Scroll Progress
 
 ```javascript
-progress =
-    -rect.top / totalScroll;
+progress = -rect.top / totalScroll;
 ```
 
 produces a value between:
@@ -57,9 +56,7 @@ produces a value between:
 ### 4. Horizontal Translation
 
 ```javascript
-translateX(
-    progress * maxMove
-)
+translateX(progress * maxMove);
 ```
 
 moves the track horizontally.
@@ -69,8 +66,8 @@ moves the track horizontally.
 Cards react to progress using:
 
 ```javascript
-opacity
-scale
+opacity;
+scale;
 ```
 
 creating a smooth focus effect as they pass through the viewport.
@@ -94,8 +91,8 @@ gap: 40px;
 ### Card Animation
 
 ```javascript
-card.style.opacity
-card.style.transform
+card.style.opacity;
+card.style.transform;
 ```
 
 Replace with:

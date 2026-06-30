@@ -9,18 +9,10 @@ Provides reusable circular avatar components with status indicators, size varian
 Add the desired avatar class to an image element:
 
 ```html
-<img
-  src="avatar.jpg"
-  alt="User Avatar"
-  class="ease-avatar ease-avatar-md"
-/>
+<img src="avatar.jpg" alt="User Avatar" class="ease-avatar ease-avatar-md" />
 
 <div class="ease-avatar-wrapper online">
-  <img
-    src="avatar.jpg"
-    alt="Online User"
-    class="ease-avatar ease-avatar-lg"
-  />
+  <img src="avatar.jpg" alt="Online User" class="ease-avatar ease-avatar-lg" />
 </div>
 ```
 

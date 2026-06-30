@@ -28,13 +28,13 @@ Provides a CSS-only breadcrumb navigation component for displaying site hierarch
 
 ### Variants
 
-| Modifier | Divider |
-|---|---|
-| (none) | `/` (slash) |
-| `.ease-breadcrumb-chevron` | `›` |
-| `.ease-breadcrumb-slash` | `/` |
-| `.ease-breadcrumb-dot` | `•` (middle dot) |
-| `.ease-breadcrumb-arrow` | `→` (arrow) |
+| Modifier                      | Divider                                       |
+| ----------------------------- | --------------------------------------------- |
+| (none)                        | `/` (slash)                                   |
+| `.ease-breadcrumb-chevron`    | `›`                                           |
+| `.ease-breadcrumb-slash`      | `/`                                           |
+| `.ease-breadcrumb-dot`        | `•` (middle dot)                              |
+| `.ease-breadcrumb-arrow`      | `→` (arrow)                                   |
 | `.ease-breadcrumb-responsive` | Collapses intermediate items on small screens |
 
 ### Styling

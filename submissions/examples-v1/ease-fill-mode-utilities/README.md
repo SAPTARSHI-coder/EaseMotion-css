@@ -21,7 +21,8 @@ You can apply the proposed utility classes to any animated element to modify its
 </div>
 ```
 
-*Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`.*
+_Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`._
 
 ## 🔗 Related Issue
+
 Resolves Issue #16802

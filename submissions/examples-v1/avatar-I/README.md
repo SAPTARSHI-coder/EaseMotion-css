@@ -1,4 +1,3 @@
- 
 # Avatar Component
 
 Avatar component with size variants, circle variant, and avatar group for stacked avatars.
@@ -33,6 +32,7 @@ Avatar component with size variants, circle variant, and avatar group for stacke
 
 <!-- Avatar group -->
 <div class="ease-avatar-group">
-    <div class="ease-avatar-circle">👤</div>
-    <div class="ease-avatar-circle">👤</div>
+  <div class="ease-avatar-circle">👤</div>
+  <div class="ease-avatar-circle">👤</div>
 </div>
+```

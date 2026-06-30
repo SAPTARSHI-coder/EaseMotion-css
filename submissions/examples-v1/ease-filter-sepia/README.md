@@ -12,5 +12,7 @@ A demonstration of the `.ease-filter-sepia` and `.ease-filter-sepia-0` utility c
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To apply a sepia filter:
+
 ```html
-<img src="photo.jpg" class="ease-filter-sepia">
+<img src="photo.jpg" class="ease-filter-sepia" />
+```

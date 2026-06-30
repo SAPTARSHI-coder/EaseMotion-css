@@ -4,7 +4,7 @@ const texts = [
   "Search animations...",
   "Find UI effects...",
   "Discover CSS tricks...",
-  "Explore components..."
+  "Explore components...",
 ];
 
 let textIndex = 0;
@@ -13,10 +13,7 @@ let charIndex = 0;
 function typeText() {
   const currentText = texts[textIndex];
 
-  input.setAttribute(
-    "placeholder",
-    currentText.slice(0, charIndex++)
-  );
+  input.setAttribute("placeholder", currentText.slice(0, charIndex++));
 
   if (charIndex <= currentText.length) {
     setTimeout(typeText, 100);

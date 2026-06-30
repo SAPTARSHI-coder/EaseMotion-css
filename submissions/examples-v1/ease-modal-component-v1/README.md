@@ -30,25 +30,33 @@ The component uses utility classes on the overlay container to dictate how the m
 
 ```html
 <!-- The Overlay Wrapper -->
-<div class="ease-modal-overlay ease-modal-center" id="my-modal" onclick="closeModal(event, 'my-modal')">
-  
+<div
+  class="ease-modal-overlay ease-modal-center"
+  id="my-modal"
+  onclick="closeModal(event, 'my-modal')"
+>
   <!-- The Modal Box -->
   <div class="ease-modal" role="dialog" aria-modal="true">
-    
     <div class="ease-modal-header">
       <h3 class="ease-modal-title">Modal Title</h3>
-      <button class="ease-modal-close" onclick="forceClose('my-modal')">✕</button>
+      <button class="ease-modal-close" onclick="forceClose('my-modal')">
+        ✕
+      </button>
     </div>
-    
+
     <div class="ease-modal-body">
       <p>Modal content goes here...</p>
     </div>
-    
+
     <div class="ease-modal-footer">
-      <button class="ease-btn ease-btn-secondary" onclick="forceClose('my-modal')">Cancel</button>
+      <button
+        class="ease-btn ease-btn-secondary"
+        onclick="forceClose('my-modal')"
+      >
+        Cancel
+      </button>
       <button class="ease-btn ease-btn-primary">Save</button>
     </div>
-    
   </div>
 </div>
 ```

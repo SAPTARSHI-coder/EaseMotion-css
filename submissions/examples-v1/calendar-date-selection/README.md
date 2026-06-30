@@ -12,6 +12,5 @@ A date-picker style calendar component with animated date selection.
 ## Usage
 
 ```html
-<div class="calendar-date selected">
-    15
-</div>
+<div class="calendar-date selected">15</div>
+```

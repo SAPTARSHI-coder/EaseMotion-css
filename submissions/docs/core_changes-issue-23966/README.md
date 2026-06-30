@@ -4,10 +4,10 @@
 
 Utility classes that provide **CSS-level hints** for image loading behavior using `content-visibility`. They control <em>rendering</em> of the image container, complementing the HTML `loading` attribute which controls <em>fetching</em>.
 
-| Class | Effect |
-|---|---|
-| `.ease-image-lazy` | `content-visibility: auto` with `contain-intrinsic-size: 0 var(--ease-image-lazy-size)` — the browser defers rendering until near the viewport |
-| `.ease-image-eager` | `content-visibility: visible` — the element renders immediately |
+| Class               | Effect                                                                                                                                         |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.ease-image-lazy`  | `content-visibility: auto` with `contain-intrinsic-size: 0 var(--ease-image-lazy-size)` — the browser defers rendering until near the viewport |
+| `.ease-image-eager` | `content-visibility: visible` — the element renders immediately                                                                                |
 
 Custom property: `--ease-image-lazy-size` (default `300px`) controls the intrinsic size hint for lazy containers.
 
@@ -28,6 +28,7 @@ Wrap `<img>` elements in a container and apply the class:
 ```
 
 **Recommended HTML attribute pairing:**
+
 - `loading="lazy"` — defers image fetching (native browser lazy loading)
 - `loading="eager"` — fetches image immediately (default behavior)
 - `decoding="async"` — enables off-main-thread image decoding

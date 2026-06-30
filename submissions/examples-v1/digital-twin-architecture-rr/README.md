@@ -7,13 +7,9 @@ Visualizes how physical assets continuously synchronize with a digital twin mode
 ## How is it used?
 
 ```html
-<div class="node twin">
-    Digital Twin Model
-</div>
+<div class="node twin">Digital Twin Model</div>
 
-<div class="node analytics">
-    Analytics Platform
-</div>
+<div class="node analytics">Analytics Platform</div>
 ```
 
 ## Why is it useful?

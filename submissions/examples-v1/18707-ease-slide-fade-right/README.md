@@ -8,30 +8,28 @@ The effect is designed to draw attention to content while maintaining a clean an
 
 ## Features
 
-* Smooth fade-in transition
-* Left-to-right slide motion
-* Subtle scale enhancement
-* Lightweight CSS-only implementation
-* Modern cubic-bezier easing
-* Accessibility support using `prefers-reduced-motion`
-* Reusable across different UI elements
+- Smooth fade-in transition
+- Left-to-right slide motion
+- Subtle scale enhancement
+- Lightweight CSS-only implementation
+- Modern cubic-bezier easing
+- Accessibility support using `prefers-reduced-motion`
+- Reusable across different UI elements
 
 ## Use Cases
 
-* Hero sections
-* Navigation menus
-* Feature cards
-* Buttons
-* Landing page content
-* Portfolio websites
-* Product showcases
+- Hero sections
+- Navigation menus
+- Feature cards
+- Buttons
+- Landing page content
+- Portfolio websites
+- Product showcases
 
 ## Example Usage
 
 ```html
-<div class="ease-slide-fade-right">
-  Welcome to EaseMotion CSS
-</div>
+<div class="ease-slide-fade-right">Welcome to EaseMotion CSS</div>
 ```
 
 ## Animation Behavior
@@ -50,16 +48,16 @@ This animation respects the user's motion preferences through the `prefers-reduc
 
 Compatible with modern browsers supporting:
 
-* CSS Animations
-* CSS Transforms
-* CSS Keyframes
-* Media Queries
+- CSS Animations
+- CSS Transforms
+- CSS Keyframes
+- Media Queries
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and reusable animation.
-* Lightweight implementation.
-* Accessible design.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS principles.
+- Uses CSS keyframes.
+- Smooth and reusable animation.
+- Lightweight implementation.
+- Accessible design.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS principles.

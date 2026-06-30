@@ -3,6 +3,7 @@
 content — Sets generated content in ::before and ::after pseudo-elements
 
 ## Features
+
 - Uses `--ease-color-surface`
 - Uses `--ease-color-primary`
 - Uses `--ease-color-muted`

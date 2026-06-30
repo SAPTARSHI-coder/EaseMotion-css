@@ -32,9 +32,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="viewer">
-...
-</div>
+<div class="viewer">...</div>
 ```
 
 ---

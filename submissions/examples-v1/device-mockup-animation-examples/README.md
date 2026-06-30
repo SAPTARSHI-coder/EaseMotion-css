@@ -1,6 +1,7 @@
 # Device Mockup Animation Examples
 
 ## What does this do?
+
 This submission showcases how EaseMotion CSS animation presets can be applied to realistic device mockups (Smartphones, Tablets, and Laptops) commonly used on SaaS landing pages, portfolio displays, and product marketing sections.
 
 ---
@@ -8,27 +9,32 @@ This submission showcases how EaseMotion CSS animation presets can be applied to
 ## Why It Fits EaseMotion CSS
 
 ### 1. Human-Readable Design
+
 The class names represent clear layout configurations and presets:
-*   `.ease-float-active` triggers smooth continuous translation on devices.
-*   `.ease-hover-active` triggers an elegant scale and lift animation.
-*   `.entrance-active` stages entrance animation triggers cleanly.
+
+- `.ease-float-active` triggers smooth continuous translation on devices.
+- `.ease-hover-active` triggers an elegant scale and lift animation.
+- `.entrance-active` stages entrance animation triggers cleanly.
 
 ### 2. Animation-First Philosophy
+
 Animations are optimized using GPU-friendly CSS transitions and transforms (e.g. `translate3d`), minimizing paint cycles and avoiding visual layout stutter.
 
 ### 3. Composable Patterns
+
 Rather than forcing rigid structures, animation properties are applied as independent utility presets, meaning floating, hover states, and staggered entrances can be combined dynamically on any mockup or grid element.
 
 ### 4. Real-World Practicality
+
 Developers frequently need device mockups to display product screenshots. Providing optimized CSS templates with premium interactive animations enables creators to drop in screens directly into their codebase.
 
 ---
 
 ## Included Files
 
-*   **[demo.html](demo.html)**: Self-contained hero section and interactive playground.
-*   **[style.css](style.css)**: Stylesheet outlining variables, grid alignments, mockup designs, and responsive layouts.
-*   **[README.md](README.md)**: Documentation and usage guidelines.
+- **[demo.html](demo.html)**: Self-contained hero section and interactive playground.
+- **[style.css](style.css)**: Stylesheet outlining variables, grid alignments, mockup designs, and responsive layouts.
+- **[README.md](README.md)**: Documentation and usage guidelines.
 
 ---
 
@@ -63,18 +69,21 @@ To integrate an animated laptop mockup, construct the HTML structure and assign 
 ---
 
 ## Usage Ideas
-*   **SaaS Landing Pages**: Present complex admin dashboard mockups on a laptop.
-*   **Startup Showcases**: Display dynamic dashboards overlapping with high-fidelity mobile apps.
-*   **Creative Portfolios**: Showcase design systems across laptop, phone, and tablet frames.
+
+- **SaaS Landing Pages**: Present complex admin dashboard mockups on a laptop.
+- **Startup Showcases**: Display dynamic dashboards overlapping with high-fidelity mobile apps.
+- **Creative Portfolios**: Showcase design systems across laptop, phone, and tablet frames.
 
 ---
 
 ## Accessibility & Responsive Considerations
 
 ### Accessibility Features
-*   **Reduced Motion Support**: Listens to `@media (prefers-reduced-motion: reduce)` to disable continuous loops, hover transitions, and load transformations.
-*   **Focus States**: CTA buttons and checkboxes are keyboard navigable with focus rings.
+
+- **Reduced Motion Support**: Listens to `@media (prefers-reduced-motion: reduce)` to disable continuous loops, hover transitions, and load transformations.
+- **Focus States**: CTA buttons and checkboxes are keyboard navigable with focus rings.
 
 ### Responsiveness
-*   **Desktop**: Displays the overlapping layered mockup composition.
-*   **Tablets/Small Screens**: Stacks the layout cleanly or formats mockups inside responsive grids depending on selected presets.
+
+- **Desktop**: Displays the overlapping layered mockup composition.
+- **Tablets/Small Screens**: Stacks the layout cleanly or formats mockups inside responsive grids depending on selected presets.

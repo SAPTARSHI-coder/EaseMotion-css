@@ -8,8 +8,8 @@ An interaction repair patch targeting the `.ease-card-interactive` component str
 - **The Solution:** Implements explicit native `:focus-visible` parameters configured through dual-layer layered `box-shadow` styles (`0 0 0 2px #ffffff, 0 0 0 4px #2563eb`). This isolates keyboard tracking loops without generating visual clutter for standard pointer clicks.
 
 ## Usage Layout Structure
-```html
 
+```html
 <a class="ease-card-interactive" href="#">
   <h3>Clickable Dashboard Title</h3>
   <p>Description text rows inside container.</p>

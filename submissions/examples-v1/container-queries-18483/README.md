@@ -1,4 +1,5 @@
 # Container Queries
+
 Implementation of modern container queries for component-level responsiveness.
 
 - **container-type**: Sets the containment context (e.g., `inline-size`).

@@ -22,3 +22,4 @@ submissions/examples/ease-image-reveal/
 ├── demo.html    # Semantic layout markup configuration
 ├── style.css    # Typography, positioning systems, and keyframe transitions
 └── README.md    # Documentation and usage guidance
+```

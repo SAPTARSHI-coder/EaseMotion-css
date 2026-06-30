@@ -4,12 +4,12 @@ A lightweight demonstration of the `--ease-card-radius` CSS variable. This desig
 
 ## Features
 
-* Pure CSS implementation
-* Centralized border-radius token
-* Easy theme customization
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Centralized border-radius token
+- Easy theme customization
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Usage
 
@@ -43,6 +43,7 @@ Using a centralized radius token improves maintainability and consistency across
 
 ---
 
-**Submitted by:** @Muditapandey26  
-**Date:** 2026-05-31  
+**Submitted by:** @Muditapandey26
+**Date:** 2026-05-31
 **Status:** Ready for review
+```

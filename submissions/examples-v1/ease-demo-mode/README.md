@@ -22,7 +22,10 @@ This feature automatically transitions components through default, hover, focus,
 Wrap your showcase area with the `.ease-demo` class and optionally configure states with data attributes:
 
 ```html
-<div class="ease-demo" data-ease-demo-states="default hover focus active disabled loading">
+<div
+  class="ease-demo"
+  data-ease-demo-states="default hover focus active disabled loading"
+>
   <!-- UI components go here -->
 </div>
 ```

@@ -23,9 +23,7 @@ A modern cloud infrastructure monitoring dashboard showcasing metrics, uptime st
 ## Usage
 
 ```html
-<div class="metric-card">
-  Infrastructure Metric
-</div>
+<div class="metric-card">Infrastructure Metric</div>
 ```
 
 ## Main Classes

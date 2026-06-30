@@ -22,7 +22,7 @@ Two changes:
 }
 
 .ease-card-stat {
-  padding: var(--ease-card-stat-padding);  /* ✅ customizable */
+  padding: var(--ease-card-stat-padding); /* ✅ customizable */
 }
 ```
 
@@ -49,8 +49,7 @@ Two changes:
 Override per card with no specificity fight:
 
 ```html
-<div class="ease-card ease-card-stat"
-     style="--ease-card-stat-padding: 12px;">
+<div class="ease-card ease-card-stat" style="--ease-card-stat-padding: 12px;">
   Compact stat card
 </div>
 ```
@@ -63,5 +62,6 @@ Override per card with no specificity fight:
 4. Fixed cards: 16px padding — compact and usable on mobile
 
 ## Files
+
 - `style.css` — the fix (CSS variable + responsive breakpoints)
 - `demo.html` — mobile vs desktop viewport comparison + live slider

@@ -16,8 +16,16 @@ Adds a CSS scroll-snap based card carousel component for showcasing featured con
   <button class="ease-carousel-prev" aria-label="Previous">&lsaquo;</button>
   <button class="ease-carousel-next" aria-label="Next">&rsaquo;</button>
   <div class="ease-carousel-dots">
-    <button class="ease-carousel-dot" data-slide="0" aria-label="Slide 1"></button>
-    <button class="ease-carousel-dot" data-slide="1" aria-label="Slide 2"></button>
+    <button
+      class="ease-carousel-dot"
+      data-slide="0"
+      aria-label="Slide 1"
+    ></button>
+    <button
+      class="ease-carousel-dot"
+      data-slide="1"
+      aria-label="Slide 2"
+    ></button>
   </div>
 </div>
 ```

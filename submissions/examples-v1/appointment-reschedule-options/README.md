@@ -8,10 +8,10 @@ Submits layout utility architecture and interface token sets for localized calen
 - **The Solution:** Fluid layout state isolation. This feature brings specialized `.ease-slot-pill` elements built on custom transitioning vectors. It gives users immediate visual micro-feedback when choosing alternate appointments, maintaining absolute structural integrity inside complex client-side dashboard panels.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-reschedule-container">
-  <div class="ease-slot-pill selected">
-    </div>
+  <div class="ease-slot-pill selected"></div>
 </div>
 ```
 

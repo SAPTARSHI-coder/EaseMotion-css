@@ -23,15 +23,9 @@ A responsive moderation queue component designed for reviewing reported content 
 
 ```html
 <div class="card">
+  <div class="severity high">High Risk</div>
 
-    <div class="severity high">
-        High Risk
-    </div>
-
-    <div class="content">
-        ...
-    </div>
-
+  <div class="content">...</div>
 </div>
 ```
 

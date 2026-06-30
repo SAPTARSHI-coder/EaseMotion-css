@@ -30,8 +30,8 @@ Issue [#5751](https://github.com/anomalyco/easemotion/issues/5751) identified th
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                |
+| ----------- | ------------------------------------------------------ |
 | `demo.html` | Before/after comparison of chip primary color fallback |
-| `style.css` | Chip component styles with correct color |
-| `README.md` | This file |
+| `style.css` | Chip component styles with correct color               |
+| `README.md` | This file                                              |

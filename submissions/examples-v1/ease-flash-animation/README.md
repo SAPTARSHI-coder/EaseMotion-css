@@ -4,28 +4,28 @@ A rapid opacity flicker using `step-end` timing — like a camera flash, neon si
 
 ## Difference from similar animations
 
-| | `.ease-pulse` | `.ease-ping` | `.ease-flash` |
-|--|--------------|-------------|--------------|
-| Motion | Smooth opacity breath | Scale ripple | Hard opacity cut |
-| Timing | `ease-in-out` | `ease-out` | `step-end` |
-| Use | Ambient loading | Notification dot | Urgent alert |
+|        | `.ease-pulse`         | `.ease-ping`     | `.ease-flash`    |
+| ------ | --------------------- | ---------------- | ---------------- |
+| Motion | Smooth opacity breath | Scale ripple     | Hard opacity cut |
+| Timing | `ease-in-out`         | `ease-out`       | `step-end`       |
+| Use    | Ambient loading       | Notification dot | Urgent alert     |
 
 ## Classes
 
-| Class | Description |
-|-------|-------------|
-| `.ease-flash` | 3-flash burst, then stays visible |
-| `.ease-flash-once` | Single flash then stays visible |
-| `.ease-flash-infinite` | Continuous rapid flicker |
-| `.ease-flash-slow` | Slow deliberate blink (infinite) |
-| `.ease-flash-dim` | Modifier — dims to 0.2 instead of 0 |
+| Class                  | Description                         |
+| ---------------------- | ----------------------------------- |
+| `.ease-flash`          | 3-flash burst, then stays visible   |
+| `.ease-flash-once`     | Single flash then stays visible     |
+| `.ease-flash-infinite` | Continuous rapid flicker            |
+| `.ease-flash-slow`     | Slow deliberate blink (infinite)    |
+| `.ease-flash-dim`      | Modifier — dims to 0.2 instead of 0 |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-flash-duration` | `0.6s` | Animation duration |
-| `--ease-flash-opacity` | `0` | Opacity at dim state |
+| Token                   | Default | Description          |
+| ----------------------- | ------- | -------------------- |
+| `--ease-flash-duration` | `0.6s`  | Animation duration   |
+| `--ease-flash-opacity`  | `0`     | Opacity at dim state |
 
 ## Usage
 
@@ -41,10 +41,10 @@ A rapid opacity flicker using `step-end` timing — like a camera flash, neon si
 
 <!-- Retrigger on each error -->
 <script>
-  const el = document.getElementById('alert');
-  el.classList.remove('ease-flash');
+  const el = document.getElementById("alert");
+  el.classList.remove("ease-flash");
   void el.offsetWidth; // reflow
-  el.classList.add('ease-flash');
+  el.classList.add("ease-flash");
 </script>
 
 <!-- Dimming flash instead of full hide -->

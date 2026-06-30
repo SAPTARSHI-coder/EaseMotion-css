@@ -11,8 +11,8 @@ An isolated component submission expanding notification badge tracking utilities
 - `.ease-badge-dot-danger`: Maps a high-visibility Red color backing. Calls attention to structural runtime exceptions, offline gateways, or critical error paths.
 
 ## Usage Layout Structure
-```html
 
+```html
 <div class="user-profile">
   <span class="ease-badge-dot ease-badge-dot-success"></span>
   <span>Active Administrator</span>

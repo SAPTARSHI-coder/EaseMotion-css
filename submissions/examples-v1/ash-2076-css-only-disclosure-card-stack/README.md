@@ -25,15 +25,9 @@ A CSS-only disclosure card stack built using native HTML `details` and `summary`
 
 ```html
 <details class="disclosure-card">
+  <summary>Section Title</summary>
 
-    <summary>
-        Section Title
-    </summary>
-
-    <div class="content">
-        Content goes here
-    </div>
-
+  <div class="content">Content goes here</div>
 </details>
 ```
 

@@ -3,6 +3,7 @@
 A responsive countdown timer that displays Days, Hours, Minutes, and Seconds in individual styled boxes — ideal for sales, events, and product launches.
 
 ## Files
+
 - `demo.html` - Working demo with a live countdown
 - `style.css` - Component styles
 - `README.md` - This file
@@ -33,6 +34,7 @@ A responsive countdown timer that displays Days, Hours, Minutes, and Seconds in 
 Add a small JS snippet (included in `demo.html`) to update the values every second, targeting a future date.
 
 ## Features
+
 - Box layout per unit (value + label)
 - Smooth "tick" animation on each update
 - Hover lift effect

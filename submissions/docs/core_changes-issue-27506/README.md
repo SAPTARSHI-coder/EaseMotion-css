@@ -7,7 +7,9 @@ A React component for a floating action button that expands into a speed dial me
 ## How is it used?
 
 ```jsx
-import FabSpeedDial from './FabSpeedDial';
+import FabSpeedDial from "./FabSpeedDial";
 
-function App() { return <FabSpeedDial />; }
+function App() {
+  return <FabSpeedDial />;
+}
 ```

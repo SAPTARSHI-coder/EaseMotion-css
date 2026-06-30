@@ -11,4 +11,6 @@ window.addEventListener("scroll", () => {
   btn.classList.toggle("visible", scrollTop > 200);
 });
 
-btn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+btn.addEventListener("click", () =>
+  window.scrollTo({ top: 0, behavior: "smooth" })
+);

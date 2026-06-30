@@ -4,19 +4,23 @@ Element-level CSS `filter` utilities for blur, brightness, and grayscale effects
 
 ## Class reference
 
-| Class | CSS Value | Visual Effect |
-|-------|-----------|---------------|
-| `.ease-blur-sm` | `blur(4px)` | Light soft blur |
-| `.ease-blur` | `blur(8px)` | Medium blur |
-| `.ease-blur-lg` | `blur(16px)` | Strong blur |
-| `.ease-brightness-50` | `brightness(0.5)` | Half brightness, darker image |
-| `.ease-grayscale` | `grayscale(1)` | Full grayscale (black and white) |
-| `.ease-grayscale-0` | `grayscale(0)` | Removes grayscale, restores color |
+| Class                 | CSS Value         | Visual Effect                     |
+| --------------------- | ----------------- | --------------------------------- |
+| `.ease-blur-sm`       | `blur(4px)`       | Light soft blur                   |
+| `.ease-blur`          | `blur(8px)`       | Medium blur                       |
+| `.ease-blur-lg`       | `blur(16px)`      | Strong blur                       |
+| `.ease-brightness-50` | `brightness(0.5)` | Half brightness, darker image     |
+| `.ease-grayscale`     | `grayscale(1)`    | Full grayscale (black and white)  |
+| `.ease-grayscale-0`   | `grayscale(0)`    | Removes grayscale, restores color |
 
 ## Usage
 
 ```html
-<img class="ease-grayscale grayscale-hover" src="photo.svg" alt="Hover to restore color">
+<img
+  class="ease-grayscale grayscale-hover"
+  src="photo.svg"
+  alt="Hover to restore color"
+/>
 ```
 
 ```css
@@ -33,7 +37,11 @@ Element-level CSS `filter` utilities for blur, brightness, and grayscale effects
 Multiple filters can be combined by stacking `filter` values in a custom inline style or a custom class:
 
 ```html
-<img style="filter: blur(2px) brightness(0.7) grayscale(0.5);" src="photo.svg" alt="Combined">
+<img
+  style="filter: blur(2px) brightness(0.7) grayscale(0.5);"
+  src="photo.svg"
+  alt="Combined"
+/>
 ```
 
 ## Element vs backdrop

@@ -32,6 +32,7 @@ Adds a CSS-only star rating component using a radio group with reversed flex ord
 ```
 
 Variants:
+
 ```html
 <!-- Sizes -->
 <div class="ease-rating ease-rating-sm">...</div>
@@ -45,6 +46,7 @@ Variants:
 ```
 
 Customise via CSS custom properties:
+
 ```css
 .ease-rating {
   --ease-rating-color: #f59e0b;

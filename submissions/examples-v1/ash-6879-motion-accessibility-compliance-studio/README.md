@@ -22,15 +22,9 @@ A responsive accessibility dashboard for auditing motion effects and animation c
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="workspace">
-        ...
-    </section>
-
+  <section class="workspace">...</section>
 </div>
 ```
 

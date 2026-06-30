@@ -6,15 +6,15 @@ A futuristic animated button component built with pure **HTML** and **CSS**. It 
 
 ## ✨ Features
 
-* Holographic button effect
-* RGB animated gradient
-* Scan line animation
-* Shine sweep hover effect
-* Glassmorphism cards
-* Floating background orbs
-* Responsive design
-* Pure HTML & CSS
-* No JavaScript required
+- Holographic button effect
+- RGB animated gradient
+- Scan line animation
+- Shine sweep hover effect
+- Glassmorphism cards
+- Floating background orbs
+- Responsive design
+- Pure HTML & CSS
+- No JavaScript required
 
 ---
 
@@ -41,12 +41,12 @@ Open `demo.html` in your browser with `style.css` in the same folder.
 
 You can customize:
 
-* Gradient colors
-* Glow intensity
-* Animation speed
-* Button radius
-* Typography
-* Background effects
+- Gradient colors
+- Glow intensity
+- Animation speed
+- Button radius
+- Typography
+- Background effects
 
 ---
 

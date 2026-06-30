@@ -11,15 +11,12 @@ A proposal for `core/utilities.css` providing simple, drop-in utility classes fo
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 You can apply the proposed classes to any element:
 
 ```html
-<button class="em-hover-scale">
-  Hover me!
-</button>
+<button class="em-hover-scale">Hover me!</button>
 
-<div class="em-hover-lift">
-  Card content
-</div>
+<div class="em-hover-lift">Card content</div>
+```

@@ -19,6 +19,7 @@ Pure-CSS animated tooltips built with the `ease-` naming convention. Supports **
 ## 🚀 Usage
 
 ### Basic Tooltip
+
 ```html
 <button class="ease-tooltip-wrap">
   Hover me
@@ -27,20 +28,26 @@ Pure-CSS animated tooltips built with the `ease-` naming convention. Supports **
 ```
 
 ### With Theme
+
 ```html
 <button class="ease-tooltip-wrap">
   Click me
-  <span class="ease-tooltip ease-tooltip-bottom ease-tooltip-pop ease-tooltip-primary">
+  <span
+    class="ease-tooltip ease-tooltip-bottom ease-tooltip-pop ease-tooltip-primary"
+  >
     Primary tooltip
   </span>
 </button>
 ```
 
 ### Icon Tooltip
+
 ```html
 <span class="ease-icon-btn ease-tooltip-wrap">
   ⚙️
-  <span class="ease-tooltip ease-tooltip-right ease-tooltip-slide">Settings</span>
+  <span class="ease-tooltip ease-tooltip-right ease-tooltip-slide"
+    >Settings</span
+  >
 </span>
 ```
 
@@ -49,35 +56,39 @@ Pure-CSS animated tooltips built with the `ease-` naming convention. Supports **
 ## 🎨 Available Classes
 
 ### Wrapper
-| Class | Description |
-|-------|-------------|
+
+| Class               | Description                    |
+| ------------------- | ------------------------------ |
 | `ease-tooltip-wrap` | Required on the parent element |
-| `ease-tooltip` | Base tooltip class |
+| `ease-tooltip`      | Base tooltip class             |
 
 ### Positions
-| Class | Description |
-|-------|-------------|
-| `ease-tooltip-top` | Tooltip appears above |
-| `ease-tooltip-bottom` | Tooltip appears below |
-| `ease-tooltip-left` | Tooltip appears to the left |
-| `ease-tooltip-right` | Tooltip appears to the right |
+
+| Class                 | Description                  |
+| --------------------- | ---------------------------- |
+| `ease-tooltip-top`    | Tooltip appears above        |
+| `ease-tooltip-bottom` | Tooltip appears below        |
+| `ease-tooltip-left`   | Tooltip appears to the left  |
+| `ease-tooltip-right`  | Tooltip appears to the right |
 
 ### Animations
-| Class | Effect | Duration |
-|-------|--------|----------|
-| `ease-tooltip-fade` | Smooth opacity fade | 0.25s |
-| `ease-tooltip-slide` | Slides from direction | 0.30s |
-| `ease-tooltip-pop` | Bouncy spring pop | 0.40s |
-| `ease-tooltip-scale` | Scale-up reveal | 0.25s |
+
+| Class                | Effect                | Duration |
+| -------------------- | --------------------- | -------- |
+| `ease-tooltip-fade`  | Smooth opacity fade   | 0.25s    |
+| `ease-tooltip-slide` | Slides from direction | 0.30s    |
+| `ease-tooltip-pop`   | Bouncy spring pop     | 0.40s    |
+| `ease-tooltip-scale` | Scale-up reveal       | 0.25s    |
 
 ### Themes
-| Class | Color |
-|-------|-------|
-| `ease-tooltip-dark` | Dark gray (default) |
-| `ease-tooltip-light` | Light/white |
-| `ease-tooltip-primary` | Brand purple |
-| `ease-tooltip-success` | Green |
-| `ease-tooltip-error` | Red |
+
+| Class                  | Color               |
+| ---------------------- | ------------------- |
+| `ease-tooltip-dark`    | Dark gray (default) |
+| `ease-tooltip-light`   | Light/white         |
+| `ease-tooltip-primary` | Brand purple        |
+| `ease-tooltip-success` | Green               |
+| `ease-tooltip-error`   | Red                 |
 
 ---
 

@@ -8,9 +8,9 @@ Introduces the advanced render performance painting containment token (`.ease-co
 - **The Solution:** Offloads GPU threads. The `.ease-contain-paint` class acts as an explicit visual boundary box. It clips content exactly at its margins (similar to `overflow: hidden` but with deeper engine optimizations) and entirely skips painting sub-nodes if the container itself drops out of the active window viewport.
 
 ## Usage Layout Structure
+
 ```html
-<div class="ease-contain-paint">
-  </div>
+<div class="ease-contain-paint"></div>
 ```
 
 Closes #15161

@@ -6,12 +6,12 @@ A premium dashboard component featuring futuristic data pods with animated energ
 
 ## Features
 
-* Animated energy line
-* Glassmorphism cards
-* Responsive CSS Grid
-* Hover lift interaction
-* Lightweight implementation
-* Pure HTML & CSS
+- Animated energy line
+- Glassmorphism cards
+- Responsive CSS Grid
+- Hover lift interaction
+- Lightweight implementation
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

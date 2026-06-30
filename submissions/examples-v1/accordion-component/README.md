@@ -35,16 +35,17 @@ Add the accordion component to your page:
 
 ## CSS Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--ease-speed-normal` | `200ms` | Animation duration |
-| `--ease-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` | Easing function |
-| `--ease-color-primary` | `#6c63ff` | Primary accent color |
-| `--ease-radius-md` | `8px` | Border radius |
+| Variable               | Default                        | Description          |
+| ---------------------- | ------------------------------ | -------------------- |
+| `--ease-speed-normal`  | `200ms`                        | Animation duration   |
+| `--ease-ease`          | `cubic-bezier(0.4, 0, 0.2, 1)` | Easing function      |
+| `--ease-color-primary` | `#6c63ff`                      | Primary accent color |
+| `--ease-radius-md`     | `8px`                          | Border radius        |
 
 ## Browser Support
 
 Works in all modern browsers that support:
+
 - `<details>` and `<summary>` elements
 - CSS custom properties
 - CSS transitions

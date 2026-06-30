@@ -5,6 +5,7 @@
 Adds a flexible chip/tag component with multiple color variants, sizes, styles (filled, outline, subtle), pill shape, removable chips, interactive/clickable states, disabled state, and chip groups.
 
 **Classes:**
+
 - `.ease-chip` — Base chip element
 - `.ease-chip-{primary|secondary|success|warning|danger|info}` — Color variants
 - `.ease-chip-{sm|lg}` — Size variants (default is md)
@@ -36,9 +37,7 @@ Adds a flexible chip/tag component with multiple color variants, sizes, styles (
 </span>
 
 <!-- Interactive button chip -->
-<button class="ease-chip ease-chip-danger ease-chip-interactive">
-  Delete
-</button>
+<button class="ease-chip ease-chip-danger ease-chip-interactive">Delete</button>
 
 <!-- Chip group -->
 <div class="ease-chip-group">

@@ -25,9 +25,7 @@ A modern security dashboard component for managing trusted devices, active sessi
 ## Usage
 
 ```html
-<div class="session-card current">
-  Current Device
-</div>
+<div class="session-card current">Current Device</div>
 ```
 
 ## Main Classes

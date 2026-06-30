@@ -4,11 +4,12 @@
    Animates text letter-spacing outward on hover, creating a smooth expand effect with four variants: basic expand, expand with underline, expand with vertical scale, and expand with color fade.
 
 2. **How is it used?**
+
 ```html
-   <span class="expand-text">Hover Over Me</span>
-   <span class="expand-text-underline">EaseMotion CSS</span>
-   <span class="expand-text-scale">Smooth Animations</span>
-   <span class="expand-text-color">Pure CSS Magic</span>
+<span class="expand-text">Hover Over Me</span>
+<span class="expand-text-underline">EaseMotion CSS</span>
+<span class="expand-text-scale">Smooth Animations</span>
+<span class="expand-text-color">Pure CSS Magic</span>
 ```
 
 3. **Why is it useful?**

@@ -19,13 +19,13 @@ An interactive daily calorie and macronutrient tracker with food search, meal lo
 
 All visual properties use `--ease-*` design tokens:
 
-| Token | Purpose |
-|-------|---------|
+| Token                  | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
 | `--ease-color-primary` | Goal panel gradient, protein ring, food calories |
-| `--ease-color-warning` | Carbs ring |
-| `--ease-color-danger` | Fat ring, over-limit bar |
-| `--ease-radius-lg` | Card border radius |
-| `--ease-space-*` | All spacing and gaps |
+| `--ease-color-warning` | Carbs ring                                       |
+| `--ease-color-danger`  | Fat ring, over-limit bar                         |
+| `--ease-radius-lg`     | Card border radius                               |
+| `--ease-space-*`       | All spacing and gaps                             |
 
 ## Usage
 

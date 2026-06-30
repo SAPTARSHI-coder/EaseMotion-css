@@ -7,9 +7,15 @@ Adds the missing `@media (prefers-reduced-motion: reduce)` guard for `.ease-boun
 Include the CSS, then use the existing classes as normal — the guard activates automatically when the user has `prefers-reduced-motion: reduce` enabled:
 
 ```html
-<div class="ease-bounce">I will not bounce for users who need reduced motion.</div>
-<div class="ease-bounce-in">I will fade in instantly instead of scaling in.</div>
-<button class="ease-bounce-button-exit">I will disappear without bouncing.</button>
+<div class="ease-bounce">
+  I will not bounce for users who need reduced motion.
+</div>
+<div class="ease-bounce-in">
+  I will fade in instantly instead of scaling in.
+</div>
+<button class="ease-bounce-button-exit">
+  I will disappear without bouncing.
+</button>
 ```
 
 No new classes, no JavaScript, no markup changes. The guard collapses all three animations to a 0.01ms single-iteration instant transition — identical to how every other animation group in the framework already handles it.

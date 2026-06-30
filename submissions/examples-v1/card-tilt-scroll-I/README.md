@@ -1,4 +1,3 @@
- 
 # Card Tilt on Scroll
 
 Cards tilt based on scroll position — rotateX mapped to viewport center with smooth perspective effect.
@@ -20,22 +19,23 @@ Cards tilt based on scroll position — rotateX mapped to viewport center with s
 
 ```html
 <div class="tilt-card" data-index="0">
-    <div class="card-content">
-        <h3>Card Title</h3>
-        <p>Card content</p>
-    </div>
+  <div class="card-content">
+    <h3>Card Title</h3>
+    <p>Card content</p>
+  </div>
 </div>
 
 <script>
-    function updateCardTilts() {
-        const cards = document.querySelectorAll('.tilt-card');
-        const center = window.innerHeight / 2;
-        cards.forEach(card => {
-            const rect = card.getBoundingClientRect();
-            const cardCenter = rect.top + rect.height / 2;
-            const offset = ((cardCenter - center) / center) * 15;
-            card.style.setProperty('--ease-card-tilt', `${-offset}deg`);
-        });
-    }
-    window.addEventListener('scroll', updateCardTilts);
+  function updateCardTilts() {
+    const cards = document.querySelectorAll(".tilt-card");
+    const center = window.innerHeight / 2;
+    cards.forEach((card) => {
+      const rect = card.getBoundingClientRect();
+      const cardCenter = rect.top + rect.height / 2;
+      const offset = ((cardCenter - center) / center) * 15;
+      card.style.setProperty("--ease-card-tilt", `${-offset}deg`);
+    });
+  }
+  window.addEventListener("scroll", updateCardTilts);
 </script>
+```

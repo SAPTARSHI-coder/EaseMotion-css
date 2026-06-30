@@ -31,4 +31,5 @@ To tweak the appearance to match your brand, modify the variables located at the
 ```
 
 ## Contributed by
+
 - Man1ac-1773

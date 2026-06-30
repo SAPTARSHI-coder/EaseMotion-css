@@ -7,7 +7,8 @@
   "use strict";
 
   function showToast(opts) {
-    var container = opts.container || document.querySelector(".ease-toast-container");
+    var container =
+      opts.container || document.querySelector(".ease-toast-container");
     if (!container) {
       container = document.createElement("div");
       container.className = "ease-toast-container ease-toast-top-right";
@@ -29,7 +30,9 @@
       var close = document.createElement("button");
       close.className = "ease-toast-close";
       close.innerHTML = "&times;";
-      close.addEventListener("click", function () { dismiss(toast); });
+      close.addEventListener("click", function () {
+        dismiss(toast);
+      });
       toast.appendChild(close);
     }
 
@@ -37,7 +40,9 @@
 
     var duration = opts.duration || 4000;
     if (duration > 0) {
-      setTimeout(function () { dismiss(toast); }, duration);
+      setTimeout(function () {
+        dismiss(toast);
+      }, duration);
     }
 
     return toast;
@@ -46,11 +51,13 @@
   function dismiss(toast) {
     if (toast.classList.contains("ease-toast-out")) return;
     toast.classList.add("ease-toast-out");
-    toast.addEventListener("animationend", function () { toast.remove(); });
+    toast.addEventListener("animationend", function () {
+      toast.remove();
+    });
   }
 
   window.easeToast = {
     show: showToast,
-    dismiss: dismiss
+    dismiss: dismiss,
   };
 })();

@@ -1,4 +1,3 @@
- 
 # Chip Group Multi-Select Component
 
 Multi-select chip component using CSS checkbox pattern — selected chips change color and show checkmark.
@@ -21,8 +20,9 @@ Multi-select chip component using CSS checkbox pattern — selected chips change
 
 ```html
 <div class="ease-chip-group">
-    <label class="chip">
-        <input type="checkbox" name="option" value="value">
-        <span>Label</span>
-    </label>
+  <label class="chip">
+    <input type="checkbox" name="option" value="value" />
+    <span>Label</span>
+  </label>
 </div>
+```

@@ -24,15 +24,13 @@ A responsive appointment rescheduling component featuring selectable time-slot c
 
 ```html
 <div class="option-card selected">
+  <div class="date">
+    <h2>Mon</h2>
+  </div>
 
-    <div class="date">
-        <h2>Mon</h2>
-    </div>
-
-    <div class="details">
-        <h3>09:30 AM</h3>
-    </div>
-
+  <div class="details">
+    <h3>09:30 AM</h3>
+  </div>
 </div>
 ```
 

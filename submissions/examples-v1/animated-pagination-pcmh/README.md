@@ -6,19 +6,19 @@ CSS pagination with stagger-fade-in animation, active page pulse, hover lift, di
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Default | `.ease-pagination` | Standard size (2.25rem) |
-| Small | `.ease-pagination-sm` | Compact (1.75rem) |
-| Large | `.ease-pagination-lg` | Large (2.75rem) |
+| Variant | Class                 | Description             |
+| ------- | --------------------- | ----------------------- |
+| Default | `.ease-pagination`    | Standard size (2.25rem) |
+| Small   | `.ease-pagination-sm` | Compact (1.75rem)       |
+| Large   | `.ease-pagination-lg` | Large (2.75rem)         |
 
 ## States
 
-| State | Class | Description |
-|-------|-------|-------------|
-| Active | `.active` + `.ease-page-item` | Primary fill + scale pulse animation |
-| Hover | `.ease-page-link:hover` | Background fill + slight lift |
-| Disabled | `.disabled` + `.ease-page-item` | Greyed out, no pointer events |
+| State    | Class                           | Description                          |
+| -------- | ------------------------------- | ------------------------------------ |
+| Active   | `.active` + `.ease-page-item`   | Primary fill + scale pulse animation |
+| Hover    | `.ease-page-link:hover`         | Background fill + slight lift        |
+| Disabled | `.disabled` + `.ease-page-item` | Greyed out, no pointer events        |
 
 ## Animations
 
@@ -30,8 +30,12 @@ CSS pagination with stagger-fade-in animation, active page pulse, hover lift, di
 
 ```html
 <ul class="ease-pagination">
-  <li class="ease-page-item disabled"><a class="ease-page-link" href="#">‹</a></li>
-  <li class="ease-page-item active"><a class="ease-page-link" href="#">1</a></li>
+  <li class="ease-page-item disabled">
+    <a class="ease-page-link" href="#">‹</a>
+  </li>
+  <li class="ease-page-item active">
+    <a class="ease-page-link" href="#">1</a>
+  </li>
   <li class="ease-page-item"><a class="ease-page-link" href="#">2</a></li>
   <li class="ease-page-item"><a class="ease-page-link" href="#">›</a></li>
 </ul>

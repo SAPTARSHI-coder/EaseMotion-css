@@ -20,10 +20,10 @@ A CSS-only animated notification badge component for EaseMotion CSS.
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-badge--danger` | Red badge |
-| `ease-badge--success` | Green badge |
-| `ease-badge--warning` | Yellow badge |
-| `ease-badge--info` | Blue badge |
-| `ease-badge--dot` | Pulsing dot (no text) |
+| Class                 | Description           |
+| --------------------- | --------------------- |
+| `ease-badge--danger`  | Red badge             |
+| `ease-badge--success` | Green badge           |
+| `ease-badge--warning` | Yellow badge          |
+| `ease-badge--info`    | Blue badge            |
+| `ease-badge--dot`     | Pulsing dot (no text) |

@@ -23,7 +23,7 @@ import "../styles/global.css";
 ## Option 2: Use CDN
 
 ```html
-<link rel="stylesheet" href="https://cdn.example.com/easemotion.css">
+<link rel="stylesheet" href="https://cdn.example.com/easemotion.css" />
 ```
 
 ## Global Layout Import
@@ -47,9 +47,7 @@ import "../styles/global.css";
 Static animations work automatically:
 
 ```html
-<div class="ease-fade-in">
-  Content
-</div>
+<div class="ease-fade-in">Content</div>
 ```
 
 Interactive animations require hydration:
@@ -62,7 +60,7 @@ This ensures client-side JavaScript is available for dynamic state changes.
 
 ## Benefits
 
-* Easy setup
-* Works in static and interactive pages
-* Human-readable animation classes
-* Minimal configuration
+- Easy setup
+- Works in static and interactive pages
+- Human-readable animation classes
+- Minimal configuration

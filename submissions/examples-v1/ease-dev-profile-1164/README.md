@@ -29,19 +29,19 @@ ease-dev-profile-1164/
 
 ## Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-dev-card` | Card wrapper with 3D perspective |
-| `.ease-dev-card-inner` | Card body with hover lift + tilt |
-| `.ease-dev-cover` | Gradient cover banner |
-| `.ease-dev-avatar` | Avatar wrapper with SVG + ring |
-| `.ease-dev-ring` | Spinning gradient border ring |
-| `.ease-dev-info` | Name, role, bio container |
-| `.ease-dev-status` | "Available" badge |
-| `.ease-dev-tech` | Flex container for skill tags |
-| `.ease-dev-tag` | Individual tech badge |
-| `.ease-dev-stats` | Stats row wrapper |
-| `.ease-dev-stat` | Single stat block |
-| `.ease-dev-social` | Social links row |
-| `.ease-dev-social-link` | Individual social icon button |
-| `.ease-dev-cta` | Call-to-action button |
+| Class                   | Purpose                          |
+| ----------------------- | -------------------------------- |
+| `.ease-dev-card`        | Card wrapper with 3D perspective |
+| `.ease-dev-card-inner`  | Card body with hover lift + tilt |
+| `.ease-dev-cover`       | Gradient cover banner            |
+| `.ease-dev-avatar`      | Avatar wrapper with SVG + ring   |
+| `.ease-dev-ring`        | Spinning gradient border ring    |
+| `.ease-dev-info`        | Name, role, bio container        |
+| `.ease-dev-status`      | "Available" badge                |
+| `.ease-dev-tech`        | Flex container for skill tags    |
+| `.ease-dev-tag`         | Individual tech badge            |
+| `.ease-dev-stats`       | Stats row wrapper                |
+| `.ease-dev-stat`        | Single stat block                |
+| `.ease-dev-social`      | Social links row                 |
+| `.ease-dev-social-link` | Individual social icon button    |
+| `.ease-dev-cta`         | Call-to-action button            |

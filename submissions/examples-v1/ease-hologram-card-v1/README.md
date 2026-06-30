@@ -28,9 +28,7 @@ Ease Hologram Card is a futuristic UI animation built using pure HTML and CSS. I
 ## Usage
 
 ```html
-<div class="ease-hologram-card">
-    Content
-</div>
+<div class="ease-hologram-card">Content</div>
 ```
 
 ---

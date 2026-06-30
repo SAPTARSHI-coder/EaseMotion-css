@@ -5,6 +5,7 @@ Utility classes for `user-select` and `-webkit-user-drag` properties. Controls t
 ## What
 
 Single-purpose CSS utilities:
+
 - **user-select**: none, text, all, auto, contain (with webkit prefixes)
 - **Children scoped**: `ease-select-none-children` applies to all descendants
 - **Drag**: `ease-drag-none`, `ease-drag-auto`, `ease-drag-element`

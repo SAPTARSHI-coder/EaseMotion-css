@@ -4,19 +4,19 @@ A lightweight collection of CSS utility classes for applying backdrop blur effec
 
 ## Features
 
-* Pure CSS implementation
-* Small, medium, and large blur levels
-* Ideal for glassmorphism interfaces
-* Lightweight and reusable
-* Cross-browser compatible
-* No JavaScript required
+- Pure CSS implementation
+- Small, medium, and large blur levels
+- Ideal for glassmorphism interfaces
+- Lightweight and reusable
+- Cross-browser compatible
+- No JavaScript required
 
 ## Available Classes
 
-| Class | Effect |
-| ------- | ------- |
-| `ease-backdrop-blur-sm` | Applies a 4px backdrop blur |
-| `ease-backdrop-blur` | Applies an 8px backdrop blur |
+| Class                   | Effect                       |
+| ----------------------- | ---------------------------- |
+| `ease-backdrop-blur-sm` | Applies a 4px backdrop blur  |
+| `ease-backdrop-blur`    | Applies an 8px backdrop blur |
 | `ease-backdrop-blur-lg` | Applies a 16px backdrop blur |
 
 ## Usage
@@ -33,10 +33,10 @@ A lightweight collection of CSS utility classes for applying backdrop blur effec
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome | ✅ |
-| Firefox | ✅ |
-| Safari | ✅ |
-| Edge | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why is it Useful?
 

@@ -4,14 +4,14 @@ A pure CSS dark mode toggle component with smooth theme transition and sun/moon 
 
 ## Classes & Elements
 
-| Selector | Purpose |
-|----------|---------|
-| `#ease-dark-toggle` | Hidden checkbox that controls theme state |
-| `.ease-dark-toggle-label` | Clickable label wrapping the toggle |
-| `.ease-toggle-track` | The toggle switch track |
-| `.ease-toggle-icon-wrap` | Wraps sun/moon icons |
-| `.ease-toggle-sun` | Sun icon (visible in light mode) |
-| `.ease-toggle-moon` | Moon icon (visible in dark mode) |
+| Selector                  | Purpose                                   |
+| ------------------------- | ----------------------------------------- |
+| `#ease-dark-toggle`       | Hidden checkbox that controls theme state |
+| `.ease-dark-toggle-label` | Clickable label wrapping the toggle       |
+| `.ease-toggle-track`      | The toggle switch track                   |
+| `.ease-toggle-icon-wrap`  | Wraps sun/moon icons                      |
+| `.ease-toggle-sun`        | Sun icon (visible in light mode)          |
+| `.ease-toggle-moon`       | Moon icon (visible in dark mode)          |
 
 ## Usage
 
@@ -43,6 +43,7 @@ A pure CSS dark mode toggle component with smooth theme transition and sun/moon 
 ```
 
 ## Features
+
 - Pure CSS, no JavaScript
 - Uses checkbox hack + :has() selector
 - Smooth 0.4s transition on all theme colors

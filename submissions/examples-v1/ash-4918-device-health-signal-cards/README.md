@@ -24,15 +24,11 @@ A responsive dashboard component that displays device health signals using color
 
 ```html
 <div class="card healthy">
+  <div class="top">
+    <h3>Edge Router</h3>
+  </div>
 
-    <div class="top">
-        <h3>Edge Router</h3>
-    </div>
-
-    <div class="metric">
-        99%
-    </div>
-
+  <div class="metric">99%</div>
 </div>
 ```
 

@@ -23,11 +23,7 @@ A responsive customer lifecycle interface that organizes customer journey stages
 
 ```html
 <div class="tabs">
-
-    <button class="tab active">
-        Qualified
-    </button>
-
+  <button class="tab active">Qualified</button>
 </div>
 ```
 

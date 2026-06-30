@@ -4,11 +4,11 @@ Three-column comparison of `replace`, `add`, and `accumulate` composition modes 
 
 ## Classes
 
-| Class | Composition |
-|---|---|
-| `ease-comp-replace` | Default — hover replaces float |
-| `ease-comp-add` | Hover adds to underlying base value |
-| `ease-comp-accumulate` | Hover stacks on current live value |
+| Class                  | Composition                         |
+| ---------------------- | ----------------------------------- |
+| `ease-comp-replace`    | Default — hover replaces float      |
+| `ease-comp-add`        | Hover adds to underlying base value |
+| `ease-comp-accumulate` | Hover stacks on current live value  |
 
 ## Usage
 

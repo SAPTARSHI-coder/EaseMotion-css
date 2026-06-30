@@ -21,16 +21,16 @@ Then add this JS snippet before your closing `</body>` tag:
 
 ```html
 <script>
-  const body = document.querySelector('.ease-cursor-trail');
+  const body = document.querySelector(".ease-cursor-trail");
 
-  document.addEventListener('mousemove', (e) => {
-    const particle = document.createElement('div');
-    particle.classList.add('ease-trail-particle');
-    particle.style.left = e.clientX + 'px';
-    particle.style.top = e.clientY + 'px';
+  document.addEventListener("mousemove", (e) => {
+    const particle = document.createElement("div");
+    particle.classList.add("ease-trail-particle");
+    particle.style.left = e.clientX + "px";
+    particle.style.top = e.clientY + "px";
     body.appendChild(particle);
 
-    particle.addEventListener('animationend', () => {
+    particle.addEventListener("animationend", () => {
       particle.remove();
     });
   });
@@ -43,9 +43,9 @@ Then add this JS snippet before your closing `</body>` tag:
 
 ```css
 :root {
-  --ease-trail-color: #00ffff;  /* cyan trail */
-  --ease-trail-size: 8px;       /* smaller particles */
-  --ease-trail-duration: 0.4s;  /* faster fade */
+  --ease-trail-color: #00ffff; /* cyan trail */
+  --ease-trail-size: 8px; /* smaller particles */
+  --ease-trail-duration: 0.4s; /* faster fade */
 }
 ```
 
@@ -53,11 +53,11 @@ Then add this JS snippet before your closing `</body>` tag:
 
 **CSS Variables**
 
-| Variable | Default | Description |
-|---|---|---|
-| `--ease-trail-color` | `#bf00ff` | Particle glow color |
-| `--ease-trail-size` | `10px` | Size of each particle |
-| `--ease-trail-duration` | `0.6s` | Fade out duration |
+| Variable                | Default   | Description           |
+| ----------------------- | --------- | --------------------- |
+| `--ease-trail-color`    | `#bf00ff` | Particle glow color   |
+| `--ease-trail-size`     | `10px`    | Size of each particle |
+| `--ease-trail-duration` | `0.6s`    | Fade out duration     |
 
 ---
 
@@ -72,6 +72,7 @@ trail color is fully themeable via CSS variables. Respects
 ---
 
 **Accessibility**
+
 - Respects `prefers-reduced-motion` — particles hidden entirely
   when reduced motion is enabled at OS level
 - All particle elements are `pointer-events: none` so they
@@ -87,11 +88,11 @@ IE not supported — consistent with EaseMotion CSS.
 
 **Files**
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                        |
+| ----------- | ---------------------------------------------- |
 | `demo.html` | Self-contained demo, no CDN or server required |
-| `style.css` | Particle styles, keyframe, and CSS variables |
-| `README.md` | This file |
+| `style.css` | Particle styles, keyframe, and CSS variables   |
+| `README.md` | This file                                      |
 
 ---
 

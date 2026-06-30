@@ -23,15 +23,9 @@ A responsive support ticket dashboard component that organizes tickets by priori
 
 ```html
 <div class="ticket critical">
+  <div class="priority">Critical</div>
 
-    <div class="priority">
-        Critical
-    </div>
-
-    <div class="details">
-        ...
-    </div>
-
+  <div class="details">...</div>
 </div>
 ```
 

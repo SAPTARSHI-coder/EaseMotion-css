@@ -2,7 +2,7 @@
 
 ## What does this do?
 
-Introduces a pure CSS-only dropdown and nested flyout menu component (`.ease-dropdown`) with built-in accessibility focus hooks and entry animation support. 
+Introduces a pure CSS-only dropdown and nested flyout menu component (`.ease-dropdown`) with built-in accessibility focus hooks and entry animation support.
 
 No JavaScript is required. The menus activate automatically on mouse hover or when keyboard focus enters any of the elements inside (using `:focus-within`).
 
@@ -14,9 +14,7 @@ No JavaScript is required. The menus activate automatically on mouse hover or wh
 
 ```html
 <div class="ease-dropdown" tabindex="0">
-  <button class="ease-dropdown-trigger">
-    Menu Trigger
-  </button>
+  <button class="ease-dropdown-trigger">Menu Trigger</button>
   <div class="ease-dropdown-menu">
     <a href="#action-1" class="ease-dropdown-item">Action 1</a>
     <a href="#action-2" class="ease-dropdown-item">Action 2</a>
@@ -32,18 +30,14 @@ To nest a submenu that flies out to the right (or left):
 <div class="ease-dropdown" tabindex="0">
   <button class="ease-dropdown-trigger">Main Menu</button>
   <div class="ease-dropdown-menu">
-    
     <!-- Submenu item -->
     <div class="ease-dropdown-submenu" tabindex="0">
-      <div class="ease-dropdown-item submenu-trigger">
-        Hover for Submenu
-      </div>
+      <div class="ease-dropdown-item submenu-trigger">Hover for Submenu</div>
       <div class="ease-dropdown-submenu-menu">
         <a href="#sub-1" class="ease-dropdown-item">Sub-Action 1</a>
         <a href="#sub-2" class="ease-dropdown-item">Sub-Action 2</a>
       </div>
     </div>
-
   </div>
 </div>
 ```
@@ -54,11 +48,11 @@ To nest a submenu that flies out to the right (or left):
 
 You can append class modifiers to alter the alignment relative to the trigger container:
 
-| Class | Behavior |
-|-------|----------|
-| `.ease-dropdown` | Left-aligned menu (default) |
-| `.ease-dropdown-right` | Right-aligned menu |
-| `.ease-dropdown-center` | Horizontally centered menu |
+| Class                   | Behavior                    |
+| ----------------------- | --------------------------- |
+| `.ease-dropdown`        | Left-aligned menu (default) |
+| `.ease-dropdown-right`  | Right-aligned menu          |
+| `.ease-dropdown-center` | Horizontally centered menu  |
 
 ---
 
@@ -71,4 +65,4 @@ You can append class modifiers to alter the alignment relative to the trigger co
 
 ---
 
-*Submitted by: dv*
+_Submitted by: dv_

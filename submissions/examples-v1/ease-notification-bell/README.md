@@ -28,17 +28,17 @@ ease-notification-bell/
 
 ## Classes
 
-| Class | Purpose |
-|-------|---------|
-| `.ease-notif` | Root widget container |
-| `.ease-notif-input` | Hidden checkbox for toggle state |
-| `.ease-notif-btn` | Bell button label |
-| `.ease-notif-bell` | Bell SVG icon |
-| `.ease-notif-badge` | Unread count badge |
-| `.ease-notif-panel` | Dropdown panel |
-| `.ease-notif-header` | Panel header with title + count |
-| `.ease-notif-list` | Scrollable notification list |
-| `.ease-notif-item` | Single notification row |
-| `.ease-notif-dot` | Unread indicator dot |
-| `.ease-notif-body` | Message, description, timestamp |
-| `.ease-notif-footer` | "Mark all as read" action |
+| Class                | Purpose                          |
+| -------------------- | -------------------------------- |
+| `.ease-notif`        | Root widget container            |
+| `.ease-notif-input`  | Hidden checkbox for toggle state |
+| `.ease-notif-btn`    | Bell button label                |
+| `.ease-notif-bell`   | Bell SVG icon                    |
+| `.ease-notif-badge`  | Unread count badge               |
+| `.ease-notif-panel`  | Dropdown panel                   |
+| `.ease-notif-header` | Panel header with title + count  |
+| `.ease-notif-list`   | Scrollable notification list     |
+| `.ease-notif-item`   | Single notification row          |
+| `.ease-notif-dot`    | Unread indicator dot             |
+| `.ease-notif-body`   | Message, description, timestamp  |
+| `.ease-notif-footer` | "Mark all as read" action        |

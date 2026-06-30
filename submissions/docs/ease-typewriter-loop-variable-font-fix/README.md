@@ -47,4 +47,5 @@ The CSS fallback `var(--text-width, 20ch)` is retained so the component doesn't 
 ---
 
 ## Related Issue
+
 Closes #13795

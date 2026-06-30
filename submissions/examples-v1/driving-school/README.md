@@ -7,6 +7,7 @@ This page features a friendly, encouraging, and trustworthy automotive/education
 ---
 
 ## 🎨 Showcased Sections
+
 1. **Friendly Hero Section**: Features custom badges and a floating simulated lesson telemetry widget dashboard.
 2. **Course Packages Grid**: Offers 3 clear, styled tiered cards (Starter Permit, License Booster, Master Driver) complete with active glow variants.
 3. **Instructor Profiles**: Showcases qualified certified instructors using avatar tags, pass rates, and custom details.
@@ -21,6 +22,7 @@ This page features a friendly, encouraging, and trustworthy automotive/education
 ## 🚀 Showcased EaseMotion CSS Classes
 
 ### 1. Entrance & Looping Animations
+
 - `.ease-fade-in`: Subtitle and small indicator badge transitions.
 - `.ease-slide-in-left` & `.ease-slide-in-right`: Slide-in transitions for the hero typography and mockup containers.
 - `.ease-float`: Looping floating animation applied to the mock telemetry widget.
@@ -30,12 +32,14 @@ This page features a friendly, encouraging, and trustworthy automotive/education
 - `.ease-reveal-delay-1` to `.ease-reveal-delay-4`: Staggered timing for listing sequences.
 
 ### 2. Layout & Utilities
+
 - Composed layout wrappers: `@layer easemotion-base`, `easemotion-components`, `easemotion-utilities`.
 - Flex utilities: `.ease-flex`, `.ease-flex-col`, `.ease-items-center`, `.ease-justify-between`, `.ease-center`.
 - Grid utilities: `.ease-grid`.
 - Custom margins/padding design tokens: `var(--ease-space-1)` to `var(--ease-space-16)`.
 
 ### 3. Components
+
 - `.ease-card`: Base layout card wrap.
 - `.ease-card-hover`: Composed lifting card states.
 - `.ease-card-glow`: Orange colored border-glow outline.
@@ -48,6 +52,7 @@ This page features a friendly, encouraging, and trustworthy automotive/education
 ---
 
 ## 📂 File Structure
+
 ```bash
 driving-school/
 ├── demo.html    # Core page layout, stats count-up script & interactive scheduler
@@ -56,4 +61,5 @@ driving-school/
 ```
 
 ## 🛠️ Usage
+
 No build steps required. Simply open `demo.html` directly in any web browser to view the premium interactive animations, transitions, and full responsive design.

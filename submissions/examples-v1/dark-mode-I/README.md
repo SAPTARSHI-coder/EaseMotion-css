@@ -1,4 +1,3 @@
- 
 # Dark Mode CSS Variables
 
 Automatic dark mode support using CSS custom properties and prefers-color-scheme media query.
@@ -14,16 +13,17 @@ Automatic dark mode support using CSS custom properties and prefers-color-scheme
 ```css
 /* Light mode variables (default) */
 :root {
-    --bg-primary: #ffffff;
-    --text-primary: #1e293b;
-    --primary-color: #667eea;
+  --bg-primary: #ffffff;
+  --text-primary: #1e293b;
+  --primary-color: #667eea;
 }
 
 /* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
-    :root {
-        --bg-primary: #0f172a;
-        --text-primary: #f1f5f9;
-        --primary-color: #818cf8;
-    }
+  :root {
+    --bg-primary: #0f172a;
+    --text-primary: #f1f5f9;
+    --primary-color: #818cf8;
+  }
 }
+```

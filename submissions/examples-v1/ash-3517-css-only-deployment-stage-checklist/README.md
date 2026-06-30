@@ -24,15 +24,11 @@ A responsive deployment checklist component built entirely with HTML and CSS. It
 
 ```html
 <label class="stage">
+  <input type="checkbox" />
 
-    <input type="checkbox">
+  <span class="checkmark"></span>
 
-    <span class="checkmark"></span>
-
-    <div class="details">
-        ...
-    </div>
-
+  <div class="details">...</div>
 </label>
 ```
 

@@ -4,24 +4,20 @@ Utility classes for controlling how text wraps when it reaches the edge of its c
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
-| `.wrap-normal` | `overflow-wrap: normal;` |
+| Class              | CSS                          |
+| ------------------ | ---------------------------- |
+| `.wrap-normal`     | `overflow-wrap: normal;`     |
 | `.wrap-break-word` | `overflow-wrap: break-word;` |
-| `.wrap-anywhere` | `overflow-wrap: anywhere;` |
+| `.wrap-anywhere`   | `overflow-wrap: anywhere;`   |
 
 ## Usage
 
 ```html
 <div class="wrap-normal">LongText...</div>
 
-<div class="wrap-break-word">
-  LongTextWithoutSpaces...
-</div>
+<div class="wrap-break-word">LongTextWithoutSpaces...</div>
 
-<div class="wrap-anywhere">
-  LongTextWithoutSpaces...
-</div>
+<div class="wrap-anywhere">LongTextWithoutSpaces...</div>
 ```
 
 ## What It Does

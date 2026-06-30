@@ -23,7 +23,8 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
 /* Fallback for Chrome/Firefox/Edge */
 @supports not (hanging-punctuation: first) {
   .ease-hanging-quote {
-    text-indent: -0.45em; 
+    text-indent: -0.45em;
     padding-left: 0.45em; /* Adjust based on your margin/padding needs */
   }
 }
+```

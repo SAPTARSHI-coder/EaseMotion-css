@@ -4,26 +4,26 @@ Enter animation that fades in from opacity 0 while descending from above. The en
 
 ## Classes
 
-| Class | Distance | Description |
-|-------|----------|-------------|
-| `.ease-fade-in-down` | 24px | Default entry |
-| `+ .ease-fade-in-down-sm` | 12px | Subtle entry |
-| `+ .ease-fade-in-down-lg` | 48px | Dramatic entry |
+| Class                     | Distance | Description    |
+| ------------------------- | -------- | -------------- |
+| `.ease-fade-in-down`      | 24px     | Default entry  |
+| `+ .ease-fade-in-down-sm` | 12px     | Subtle entry   |
+| `+ .ease-fade-in-down-lg` | 48px     | Dramatic entry |
 
 ## CSS Custom Properties
 
-| Token | Default | Description |
-|-------|---------|-------------|
-| `--ease-fade-in-down-distance` | `24px` | Start offset above final position |
-| `--ease-fade-in-down-duration` | `--ease-speed-medium` | Animation duration |
-| `--ease-fade-in-down-easing` | `--ease-ease` | Timing function |
+| Token                          | Default               | Description                       |
+| ------------------------------ | --------------------- | --------------------------------- |
+| `--ease-fade-in-down-distance` | `24px`                | Start offset above final position |
+| `--ease-fade-in-down-duration` | `--ease-speed-medium` | Animation duration                |
+| `--ease-fade-in-down-easing`   | `--ease-ease`         | Timing function                   |
 
 ## Direction family
 
-| Direction | Enter | Exit |
-|-----------|-------|------|
-| Up | `.ease-slide-up` | `.ease-fade-out-up` |
-| Down | `.ease-fade-in-down` ← this | `.ease-fade-out-down` |
+| Direction | Enter                       | Exit                  |
+| --------- | --------------------------- | --------------------- |
+| Up        | `.ease-slide-up`            | `.ease-fade-out-up`   |
+| Down      | `.ease-fade-in-down` ← this | `.ease-fade-out-down` |
 
 ## Usage
 

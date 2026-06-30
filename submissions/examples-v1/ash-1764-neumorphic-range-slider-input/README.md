@@ -22,10 +22,7 @@ A soft-shadow neumorphic range slider component designed for modern dashboards, 
 ## Usage
 
 ```html
-<input
-  type="range"
-  class="neumorphic-slider"
->
+<input type="range" class="neumorphic-slider" />
 ```
 
 ## Main Classes

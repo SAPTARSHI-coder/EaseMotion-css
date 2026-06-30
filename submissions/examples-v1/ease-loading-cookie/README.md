@@ -7,9 +7,17 @@ A cookie consent banner that slides up from the bottom of the page with a smooth
 ## How is it used?
 
 ```html
-<div class="ease-cookie-banner" id="cookieBanner" role="dialog" aria-live="polite" aria-label="Cookie consent">
+<div
+  class="ease-cookie-banner"
+  id="cookieBanner"
+  role="dialog"
+  aria-live="polite"
+  aria-label="Cookie consent"
+>
   <div class="ease-cookie-banner-content">
-    <p class="ease-cookie-banner-text">We use cookies to improve your experience...</p>
+    <p class="ease-cookie-banner-text">
+      We use cookies to improve your experience...
+    </p>
     <div class="ease-cookie-banner-actions">
       <button class="ease-btn ease-btn-outline ease-btn-sm">Decline</button>
       <button class="ease-btn ease-btn-primary ease-btn-sm">Accept</button>

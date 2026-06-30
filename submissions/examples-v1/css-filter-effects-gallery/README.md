@@ -8,6 +8,7 @@ Submits layout utility architectures and visual-processing sandbox panels (`.eas
 - **The Solution:** GPU-orchestrated image manipulation. The `.ease-filter-*` utility suite leverages standard browser `filter` properties. This permits developers to apply complex graphical transformations—like saturation shifts, blur radius intensity, or high-contrast adjustments—straight to live DOM images or background media assets with near-zero latency or memory overhead.
 
 ## Usage Layout Structure
+
 ```html
 <div class="header-banner">
   <img src="asset.jpg" class="ease-filter-blur" />

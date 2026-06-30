@@ -10,14 +10,14 @@ The page serves as a responsive documentation example for the EaseMotion CSS pro
 
 ## Features
 
-* Automatic CHANGELOG generation
-* Reads merged Pull Requests
-* Groups entries by labels
-* Keep a Changelog formatting
-* Release-ready documentation
-* GitHub Actions workflow example
-* Responsive documentation page
-* Pure HTML and CSS implementation
+- Automatic CHANGELOG generation
+- Reads merged Pull Requests
+- Groups entries by labels
+- Keep a Changelog formatting
+- Release-ready documentation
+- GitHub Actions workflow example
+- Responsive documentation page
+- Pure HTML and CSS implementation
 
 ---
 
@@ -50,31 +50,31 @@ No installation or build tools are required.
 
 The demonstrated workflow performs the following steps:
 
-* Collects merged Pull Requests.
-* Reads Pull Request labels.
-* Groups entries by category.
-* Formats the output using the Keep a Changelog specification.
-* Produces a release-ready `CHANGELOG.md`.
+- Collects merged Pull Requests.
+- Reads Pull Request labels.
+- Groups entries by category.
+- Formats the output using the Keep a Changelog specification.
+- Produces a release-ready `CHANGELOG.md`.
 
 ---
 
 ## Technologies Used
 
-* HTML5
-* CSS3
-* Responsive Design
-* GitHub Actions (demonstration)
-* Markdown
+- HTML5
+- CSS3
+- Responsive Design
+- GitHub Actions (demonstration)
+- Markdown
 
 ---
 
 ## Categories Demonstrated
 
-* Animation
-* Components
-* Bug Fixes
-* Documentation
-* Enhancements
+- Animation
+- Components
+- Bug Fixes
+- Documentation
+- Enhancements
 
 ---
 
@@ -86,10 +86,10 @@ This example follows the EaseMotion CSS philosophy by providing a lightweight, r
 
 ## Browser Compatibility
 
-* Google Chrome
-* Mozilla Firefox
-* Microsoft Edge
-* Safari (expected)
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
+- Safari (expected)
 
 ---
 

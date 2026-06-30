@@ -5,7 +5,9 @@ A modern, high-performance loading spinner component built using **pure HTML and
 ---
 
 ## 1. What does this do?
+
 The **Double Circle Loading Spinner** provides an elegant, smooth visual indicator that a page, block, or element is in a loading or processing state.
+
 - **Double Circle Effect**: It displays two rings: an outer ring and a smaller inner ring.
 - **Opposing Motion**: The outer ring rotates clockwise, while the inner ring rotates counter-clockwise.
 - **Hardware Accelerated**: The rotation animations run at 60fps, utilizing GPU-accelerated CSS `transform` properties for zero-jank execution.
@@ -17,20 +19,26 @@ The **Double Circle Loading Spinner** provides an elegant, smooth visual indicat
 ## 2. How is it used?
 
 ### Basic Installation
+
 Link the `style.css` stylesheet in your HTML document:
+
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ### Basic Spinner Markup
+
 You only need a single, empty HTML tag to render the spinner. The base class is `.ease-double-spinner`:
+
 ```html
 <!-- Default Spinner (Medium, Primary Color) -->
 <div class="ease-double-spinner"></div>
 ```
 
 ### Sizes
+
 Include a size modifier class (`-sm`, `-md`, `-lg`):
+
 ```html
 <!-- Small Spinner (24px) -->
 <div class="ease-double-spinner ease-double-spinner-sm"></div>
@@ -43,7 +51,9 @@ Include a size modifier class (`-sm`, `-md`, `-lg`):
 ```
 
 ### Color Themes
+
 Include a color modifier class (`-primary`, `-success`, `-danger`):
+
 ```html
 <!-- Primary Indigo -->
 <div class="ease-double-spinner ease-double-spinner-primary"></div>
@@ -56,7 +66,9 @@ Include a color modifier class (`-primary`, `-success`, `-danger`):
 ```
 
 ### CSS Variables Customization
+
 Override the styling variables dynamically for any container or specific element:
+
 ```css
 .my-custom-loader {
   --spinner-size: 64px;
@@ -72,6 +84,7 @@ Override the styling variables dynamically for any container or specific element
 ---
 
 ## 3. Why is it useful?
+
 - **Zero JavaScript Overhead**: Many spinners require heavy UI frameworks or complex script bundles to coordinate overlays. This loader is pure CSS, meaning zero page weight or initialization latency.
 - **Visual Depth**: The counter-rotating circle design is visually engaging and immediately signifies processing states, providing a better user experience than standard single-circle animations.
 - **Seamless Integrations**: Highly flexible classes allow developers to place the spinner in standard text buttons, card header controls, absolute-centered dashboard loading screens, or fullscreen transitions.

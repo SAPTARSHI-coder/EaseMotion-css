@@ -3,6 +3,7 @@
 A pure-CSS toggle switch (checkbox + label) with a sliding knob and animated track color.
 
 ## Usage
+
 See `demo.html` for three variants: default, small, large.
 
 ```html
@@ -15,6 +16,7 @@ See `demo.html` for three variants: default, small, large.
 ```
 
 ## Features
+
 - No JS required, built on a native checkbox for accessibility
 - Knob slides via `transform: translateX()`
 - Track color transitions on check/uncheck
@@ -22,4 +24,5 @@ See `demo.html` for three variants: default, small, large.
 - Respects `prefers-reduced-motion` (disables transition, snaps state instead)
 
 ## Suggested class name
+
 `ease-toggle` (per issue referenced in PR description)

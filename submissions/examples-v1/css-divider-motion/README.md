@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated dividers and separators for modern 
 ## 🚀 Features
 
 ### Divider Styles (10 types)
+
 1. **Gradient Line** - Flowing gradient animation
 2. **Dashed Animated** - Moving dashed line
 3. **Dots Pattern** - Scrolling dot pattern
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated dividers and separators for modern 
 10. **Animated Border** - Shine effect with text
 
 ### Animation Features
+
 - Gradient flow animations
 - Pattern scrolling
 - SVG wave motion
@@ -27,6 +29,7 @@ A collection of beautiful, pure CSS animated dividers and separators for modern 
 - Smooth transitions
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All divider animations
 - `readme.md` - Documentation
@@ -34,5 +37,7 @@ A collection of beautiful, pure CSS animated dividers and separators for modern 
 ## 🛠️ How to Use
 
 ### Basic Divider
+
 ```html
 <div class="divider gradient-line"></div>
+```

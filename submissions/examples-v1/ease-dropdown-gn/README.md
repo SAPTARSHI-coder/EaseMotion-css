@@ -4,6 +4,7 @@
    Adds a CSS-only dropdown menu with a smooth fade and slide-down open animation triggered on hover or keyboard focus.
 
 2. **How is it used?**
+
    ```html
    <div class="dropdown-wrapper">
      <button class="dropdown-toggle">Menu</button>

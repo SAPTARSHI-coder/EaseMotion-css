@@ -8,7 +8,7 @@ Provides a centralized interface for monitoring digital twins, connected assets,
 
 ```html
 <div class="asset-card healthy">
-    <h3>Manufacturing Line A</h3>
+  <h3>Manufacturing Line A</h3>
 </div>
 ```
 

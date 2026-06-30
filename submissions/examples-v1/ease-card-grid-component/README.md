@@ -4,7 +4,7 @@ A highly responsive, flexible, and modern Card Grid Layout System for EaseMotion
 
 ## Overview
 
-The Grid System relies heavily on CSS Grid for structured layouts (like 2/3/4 columns or auto-fitting columns) and CSS Columns for Masonry-style layouts. 
+The Grid System relies heavily on CSS Grid for structured layouts (like 2/3/4 columns or auto-fitting columns) and CSS Columns for Masonry-style layouts.
 
 The Card System uses Flexbox internally to ensure that the content is distributed evenly, with footers pushed to the bottom, ensuring equal height across all cards within a grid row.
 
@@ -32,29 +32,28 @@ The Card System uses Flexbox internally to ensure that the content is distribute
 
 ```html
 <div class="ease-grid ease-grid-3">
-  
   <div class="ease-card">
     <!-- Optional Image -->
     <img src="..." class="ease-card-image-top" />
-    
+
     <!-- Body Content -->
     <div class="ease-card-body">
       <h3 class="ease-card-title">Card Title</h3>
       <p class="ease-card-text">Main card description goes here.</p>
     </div>
-    
+
     <!-- Optional Footer -->
     <div class="ease-card-footer">
       <button class="ease-btn">Action</button>
     </div>
   </div>
-  
-  <!-- More cards... -->
 
+  <!-- More cards... -->
 </div>
 ```
 
 ### Specialized Cards
+
 - **Stats Card** (`ease-card-stat`): For displaying key metrics (e.g., "$45,231").
 - **Pricing Card** (`ease-card-pricing`): For subscription tiers. Use `.featured` to highlight a specific tier.
 - **Feature Card** (`ease-card-feature`): For highlighting product features with a leading icon.

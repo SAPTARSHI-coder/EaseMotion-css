@@ -1,4 +1,3 @@
-
 # Cards Gallery Page
 
 ## What does it do?
@@ -45,7 +44,9 @@ Benefits include:
 ## Demo
 
 Open `demo.html` directly in your browser to see the Cards Gallery Page in action.
+
 ```
 
 ---
 
+```

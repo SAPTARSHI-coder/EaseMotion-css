@@ -6,30 +6,30 @@ Avatar component with image support, initials fallback, status indicators, size 
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Small | `.ease-avatar-sm` | 32×32px |
-| Default | `.ease-avatar` | 48×48px |
-| Large | `.ease-avatar-lg` | 64×64px |
-| Extra Large | `.ease-avatar-xl` | 96×96px |
-| Rounded | `.ease-avatar-rounded` | Square with 0.5rem radius |
-| Hover | `.ease-avatar-hover` | Scale + ring on hover |
+| Variant     | Class                  | Description               |
+| ----------- | ---------------------- | ------------------------- |
+| Small       | `.ease-avatar-sm`      | 32×32px                   |
+| Default     | `.ease-avatar`         | 48×48px                   |
+| Large       | `.ease-avatar-lg`      | 64×64px                   |
+| Extra Large | `.ease-avatar-xl`      | 96×96px                   |
+| Rounded     | `.ease-avatar-rounded` | Square with 0.5rem radius |
+| Hover       | `.ease-avatar-hover`   | Scale + ring on hover     |
 
 ## Status Indicators
 
-| Status | Class | Color |
-|--------|-------|-------|
-| Online | `.online` | `#22c55e` |
+| Status  | Class      | Color     |
+| ------- | ---------- | --------- |
+| Online  | `.online`  | `#22c55e` |
 | Offline | `.offline` | `#94a3b8` |
-| Away | `.away` | `#f59e0b` |
-| Busy | `.busy` | `#ef4444` |
+| Away    | `.away`    | `#f59e0b` |
+| Busy    | `.busy`    | `#ef4444` |
 
 ## Usage
 
 ```html
 <!-- Image avatar with status -->
 <div class="ease-avatar ease-avatar-hover">
-  <img src="photo.jpg" alt="User">
+  <img src="photo.jpg" alt="User" />
   <span class="ease-avatar-status online"></span>
 </div>
 

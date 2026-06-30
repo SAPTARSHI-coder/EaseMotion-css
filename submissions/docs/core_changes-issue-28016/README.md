@@ -13,11 +13,11 @@ Hints to the browser about upcoming changes via `will-change`, enabling GPU acce
 
 ### Classes
 
-| Class | Value |
-|---|---|
-| `.ease-will-change-auto` | `will-change: auto` |
-| `.ease-will-change-transform` | `will-change: transform` |
-| `.ease-will-change-opacity` | `will-change: opacity` |
-| `.ease-will-change-scroll` | `will-change: scroll-position` |
-| `.ease-will-change-top` | `will-change: top, left` |
-| `.ease-will-change-contents` | `will-change: contents` |
+| Class                         | Value                          |
+| ----------------------------- | ------------------------------ |
+| `.ease-will-change-auto`      | `will-change: auto`            |
+| `.ease-will-change-transform` | `will-change: transform`       |
+| `.ease-will-change-opacity`   | `will-change: opacity`         |
+| `.ease-will-change-scroll`    | `will-change: scroll-position` |
+| `.ease-will-change-top`       | `will-change: top, left`       |
+| `.ease-will-change-contents`  | `will-change: contents`        |

@@ -1,4 +1,5 @@
 # Animation-Play-State Utilities
+
 This submission introduces utility classes for toggling the play state of CSS animations.
 
 - `.pause-animation`: Sets `animation-play-state` to `paused`.

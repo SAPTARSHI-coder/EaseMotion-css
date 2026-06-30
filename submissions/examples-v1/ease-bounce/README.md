@@ -34,34 +34,47 @@ looping, hover-trigger, speed, and amplitude. Zero JavaScript.
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `.ease-bounce` | One-shot bounce on load (default) |
-| `.ease-bounce-loop` | Infinite loop |
+| Class                | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `.ease-bounce`       | One-shot bounce on load (default)                  |
+| `.ease-bounce-loop`  | Infinite loop                                      |
 | `.ease-bounce-hover` | Triggers only on `:hover` (pointer guard included) |
-| `.ease-bounce-fast` | Duration `0.4s` |
-| `.ease-bounce-slow` | Duration `1.5s` |
-| `.ease-bounce-high` | Larger amplitude (`30px` instead of `15px`) |
+| `.ease-bounce-fast`  | Duration `0.4s`                                    |
+| `.ease-bounce-slow`  | Duration `1.5s`                                    |
+| `.ease-bounce-high`  | Larger amplitude (`30px` instead of `15px`)        |
 
 ## Composability
 
 All variants are freely composable — mix and match:
 
-| Combination | Behaviour |
-|---|---|
-| `.ease-bounce.ease-bounce-loop.ease-bounce-fast` | Fast infinite loop |
-| `.ease-bounce.ease-bounce-high.ease-bounce-loop` | High infinite loop |
-| `.ease-bounce.ease-bounce-hover.ease-bounce-high` | High bounce on hover |
-| `.ease-bounce.ease-bounce-loop.ease-delay-500` | 500ms delay then loops |
+| Combination                                       | Behaviour              |
+| ------------------------------------------------- | ---------------------- |
+| `.ease-bounce.ease-bounce-loop.ease-bounce-fast`  | Fast infinite loop     |
+| `.ease-bounce.ease-bounce-high.ease-bounce-loop`  | High infinite loop     |
+| `.ease-bounce.ease-bounce-hover.ease-bounce-high` | High bounce on hover   |
+| `.ease-bounce.ease-bounce-loop.ease-delay-500`    | 500ms delay then loops |
 
 ## Keyframe Design
 
 ```css
 @keyframes ease-kf-bounce {
-  0%, 100% { transform: translateY(0);     animation-timing-function: ease-in; }
-  40%       { transform: translateY(-15px); animation-timing-function: ease-out; }
-  60%       { transform: translateY(-10px); animation-timing-function: ease-in; }
-  80%       { transform: translateY(-5px);  animation-timing-function: ease-out; }
+  0%,
+  100% {
+    transform: translateY(0);
+    animation-timing-function: ease-in;
+  }
+  40% {
+    transform: translateY(-15px);
+    animation-timing-function: ease-out;
+  }
+  60% {
+    transform: translateY(-10px);
+    animation-timing-function: ease-in;
+  }
+  80% {
+    transform: translateY(-5px);
+    animation-timing-function: ease-out;
+  }
 }
 ```
 

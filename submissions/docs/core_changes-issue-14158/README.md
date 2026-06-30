@@ -7,6 +7,7 @@ Fixes inconsistent card heights when `ease-card` contains images with varying na
 ## Problem
 
 Images inside `.ease-card` had no fixed aspect ratio, causing:
+
 - Cards in the same grid to have different heights
 - Tall portrait images pushed card content down
 - The grid layout appeared broken
@@ -26,11 +27,11 @@ Add `aspect-ratio` and `object-fit` to `.ease-card-image`:
 
 ### Key Properties
 
-| Property | Value | Effect |
-|----------|-------|--------|
-| `aspect-ratio` | `16 / 9` (default) | Forces uniform height across images |
-| `object-fit: cover` | crops to fill | Prevents distortion, centers content |
-| `display: block` | removes gap | Eliminates inline whitespace below image |
+| Property            | Value              | Effect                                   |
+| ------------------- | ------------------ | ---------------------------------------- |
+| `aspect-ratio`      | `16 / 9` (default) | Forces uniform height across images      |
+| `object-fit: cover` | crops to fill      | Prevents distortion, centers content     |
+| `display: block`    | removes gap        | Eliminates inline whitespace below image |
 
 ### Custom Ratio
 
@@ -45,7 +46,7 @@ Override per grid via CSS custom property:
 Or per image via inline style:
 
 ```html
-<img class="ease-card-image" src="..." style="aspect-ratio: 1/1">
+<img class="ease-card-image" src="..." style="aspect-ratio: 1/1" />
 ```
 
 ## Files

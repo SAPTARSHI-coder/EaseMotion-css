@@ -5,6 +5,7 @@
 Fixes the modal component (`core/modal.js` + `components/modals.css`) to implement proper keyboard focus trapping and ARIA attributes for WCAG 2.4.3 compliance.
 
 **Changes in `modal.js`:**
+
 - Adds `aria-modal="true"` and `role="dialog"` to the modal element on open
 - Removes ARIA attributes when the modal closes
 - Implements robust focus trapping — Tab/Shift+Tab cycle only through focusable elements inside the overlay
@@ -14,6 +15,7 @@ Fixes the modal component (`core/modal.js` + `components/modals.css`) to impleme
 - Auto-links `aria-labelledby` to the modal header heading id
 
 **Changes in CSS:**
+
 - Added `focus-visible` ring styles for all focusable elements inside the modal
 - Added `aria-hidden="false"` state styling for the overlay
 
@@ -22,7 +24,12 @@ Fixes the modal component (`core/modal.js` + `components/modals.css`) to impleme
 ```html
 <!-- Modal overlay with ARIA state -->
 <div class="ease-modal-overlay" id="my-modal" aria-hidden="true">
-  <div class="ease-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div
+    class="ease-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-title"
+  >
     <div class="ease-modal-header">
       <h2 id="modal-title">My Modal</h2>
       <a href="#" class="ease-modal-close" aria-label="Close">&times;</a>
@@ -43,6 +50,7 @@ Fixes the modal component (`core/modal.js` + `components/modals.css`) to impleme
 ```
 
 Keyboard behavior:
+
 - **Tab**: Moves focus to the next focusable element inside the modal
 - **Shift+Tab**: Moves focus to the previous focusable element inside the modal
 - **Escape**: Closes the modal and returns focus to the trigger element

@@ -4,18 +4,29 @@
    Three distinct tab navigation styles: a pill-style tab with a smooth spring-physics sliding background, an underline tab with an animated sliding underline indicator, and an icon-only tab group — all keyboard-accessible with ARIA roles and animated panel content transitions.
 
 2. **How is it used?**
+
    ```html
    <!-- Pill tabs -->
    <div class="tabs-container tabs-pill" role="tablist">
      <div class="tab-slider" id="slider-pill"></div>
-     <button class="tab-btn active" role="tab" aria-selected="true"
-             aria-controls="panel-1">Home</button>
-     <button class="tab-btn" role="tab" aria-selected="false"
-             aria-controls="panel-2">Analytics</button>
+     <button
+       class="tab-btn active"
+       role="tab"
+       aria-selected="true"
+       aria-controls="panel-1"
+     >
+       Home
+     </button>
+     <button
+       class="tab-btn"
+       role="tab"
+       aria-selected="false"
+       aria-controls="panel-2"
+     >
+       Analytics
+     </button>
    </div>
-   <div class="tab-panel active" id="panel-1" role="tabpanel">
-     Content here
-   </div>
+   <div class="tab-panel active" id="panel-1" role="tabpanel">Content here</div>
 
    <!-- Underline tabs -->
    <div class="tabs-container tabs-underline" role="tablist">

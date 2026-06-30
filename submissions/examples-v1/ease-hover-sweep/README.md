@@ -1,6 +1,7 @@
 # Ease Hover Sweep
 
 ## What does this do?
+
 Full background color sweeps in from one side on hover.
 
 ## How is it used?
@@ -14,4 +15,5 @@ Add one of the sweep classes to any HTML element:
 ```
 
 ## Why is it useful?
+
 It provides a clean hover feedback pattern for buttons and CTA elements using only CSS, and fits EaseMotion CSS's animation-first, no-JavaScript approach.

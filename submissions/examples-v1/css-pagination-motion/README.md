@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated pagination styles for modern websit
 ## 🚀 Features
 
 ### Pagination Styles (8 types)
+
 1. **Classic Numbered** - Traditional numbered pages with border
 2. **Rounded** - Pill-shaped pages with green theme
 3. **Gradient** - Vibrant gradient backgrounds
@@ -15,6 +16,7 @@ A collection of beautiful, pure CSS animated pagination styles for modern websit
 8. **3D** - 3D depth effect with shadow
 
 ### Animation Features
+
 - Smooth hover transitions
 - Scale and lift effects
 - Underline animations
@@ -23,6 +25,7 @@ A collection of beautiful, pure CSS animated pagination styles for modern websit
 - Background fills
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All pagination animations
 - `readme.md` - Documentation
@@ -30,11 +33,13 @@ A collection of beautiful, pure CSS animated pagination styles for modern websit
 ## 🛠️ How to Use
 
 ### Basic Pagination
+
 ```html
 <nav class="pagination classic">
-    <a href="#" class="page-link">«</a>
-    <a href="#" class="page-link">1</a>
-    <a href="#" class="page-link active">2</a>
-    <a href="#" class="page-link">3</a>
-    <a href="#" class="page-link">»</a>
+  <a href="#" class="page-link">«</a>
+  <a href="#" class="page-link">1</a>
+  <a href="#" class="page-link active">2</a>
+  <a href="#" class="page-link">3</a>
+  <a href="#" class="page-link">»</a>
 </nav>
+```

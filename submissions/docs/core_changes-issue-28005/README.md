@@ -15,23 +15,23 @@ Controls alignment of grid items within their cells — `justify-self`, `align-s
 
 ### Classes
 
-| Class | Property | Value |
-|---|---|---|
-| `.ease-justify-self-start` | `justify-self` | `start` |
-| `.ease-justify-self-center` | `justify-self` | `center` |
-| `.ease-justify-self-end` | `justify-self` | `end` |
-| `.ease-justify-self-stretch` | `justify-self` | `stretch` |
-| `.ease-align-self-start` | `align-self` | `start` |
-| `.ease-align-self-center` | `align-self` | `center` |
-| `.ease-align-self-end` | `align-self` | `end` |
-| `.ease-align-self-stretch` | `align-self` | `stretch` |
-| `.ease-place-self-center` | `place-self` | `center` |
-| `.ease-justify-items-start` | `justify-items` | `start` |
-| `.ease-justify-items-center` | `justify-items` | `center` |
-| `.ease-justify-items-end` | `justify-items` | `end` |
+| Class                         | Property        | Value     |
+| ----------------------------- | --------------- | --------- |
+| `.ease-justify-self-start`    | `justify-self`  | `start`   |
+| `.ease-justify-self-center`   | `justify-self`  | `center`  |
+| `.ease-justify-self-end`      | `justify-self`  | `end`     |
+| `.ease-justify-self-stretch`  | `justify-self`  | `stretch` |
+| `.ease-align-self-start`      | `align-self`    | `start`   |
+| `.ease-align-self-center`     | `align-self`    | `center`  |
+| `.ease-align-self-end`        | `align-self`    | `end`     |
+| `.ease-align-self-stretch`    | `align-self`    | `stretch` |
+| `.ease-place-self-center`     | `place-self`    | `center`  |
+| `.ease-justify-items-start`   | `justify-items` | `start`   |
+| `.ease-justify-items-center`  | `justify-items` | `center`  |
+| `.ease-justify-items-end`     | `justify-items` | `end`     |
 | `.ease-justify-items-stretch` | `justify-items` | `stretch` |
-| `.ease-align-items-start` | `align-items` | `start` |
-| `.ease-align-items-center` | `align-items` | `center` |
-| `.ease-align-items-end` | `align-items` | `end` |
-| `.ease-align-items-stretch` | `align-items` | `stretch` |
-| `.ease-place-items-center` | `place-items` | `center` |
+| `.ease-align-items-start`     | `align-items`   | `start`   |
+| `.ease-align-items-center`    | `align-items`   | `center`  |
+| `.ease-align-items-end`       | `align-items`   | `end`     |
+| `.ease-align-items-stretch`   | `align-items`   | `stretch` |
+| `.ease-place-items-center`    | `place-items`   | `center`  |

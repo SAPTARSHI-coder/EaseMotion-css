@@ -23,15 +23,11 @@ A responsive component that displays data retention policies using visually dist
 
 ```html
 <div class="policy-card">
+  <div class="policy-info">
+    <h3>Financial Records</h3>
+  </div>
 
-    <div class="policy-info">
-        <h3>Financial Records</h3>
-    </div>
-
-    <span class="badge long">
-        7 Years
-    </span>
-
+  <span class="badge long"> 7 Years </span>
 </div>
 ```
 

@@ -22,23 +22,17 @@ A responsive subscription seat utilization dashboard that displays seat allocati
 
 ```html
 <tr>
+  <td>Engineering</td>
 
-    <td>Engineering</td>
+  <td>80</td>
 
-    <td>80</td>
+  <td>74</td>
 
-    <td>74</td>
-
-    <td>
-
-        <div class="bar">
-
-            <div class="fill engineering"></div>
-
-        </div>
-
-    </td>
-
+  <td>
+    <div class="bar">
+      <div class="fill engineering"></div>
+    </div>
+  </td>
 </tr>
 ```
 

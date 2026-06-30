@@ -17,9 +17,9 @@ Discrete properties (`display`, `visibility`, `overlay`) cannot be smoothly tran
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Side-by-side comparison: normal vs allow-discrete |
+| File        | Purpose                                                       |
+| ----------- | ------------------------------------------------------------- |
+| `demo.html` | Side-by-side comparison: normal vs allow-discrete             |
 | `style.css` | Toggle panels, `@starting-style`, `transition-behavior` rules |
 
 ## Proposed Utility
@@ -52,15 +52,15 @@ In `core/utilities.css`:
 
 ## Affected Components
 
-| Component | Discrete Property | Transition |
-|-----------|-----------------|------------|
-| `.ease-modal` | `display: none → flex` | opacity + transform + display allow-discrete |
-| `.ease-toast` | `display: none → block` | opacity + translate + display allow-discrete |
-| `.ease-tooltip` | `visibility: hidden → visible` | opacity + visibility allow-discrete |
-| `.ease-sidebar` | `display: none → block` | translate + display allow-discrete |
+| Component       | Discrete Property              | Transition                                   |
+| --------------- | ------------------------------ | -------------------------------------------- |
+| `.ease-modal`   | `display: none → flex`         | opacity + transform + display allow-discrete |
+| `.ease-toast`   | `display: none → block`        | opacity + translate + display allow-discrete |
+| `.ease-tooltip` | `visibility: hidden → visible` | opacity + visibility allow-discrete          |
+| `.ease-sidebar` | `display: none → block`        | translate + display allow-discrete           |
 
 ## Browser Support
 
 | Chrome | Firefox | Safari |
-|--------|---------|--------|
-| 117+ | 129+ | 17.2+ |
+| ------ | ------- | ------ |
+| 117+   | 129+    | 17.2+  |

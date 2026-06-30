@@ -21,22 +21,17 @@ Each notification supports hover interactions and subtle entrance animations.
 
 ```html
 <div class="notification-stack">
-
   <div class="notification success">
     <h4>Success</h4>
     <p>Operation completed successfully.</p>
   </div>
-
 </div>
 ```
 
 ### Available Variants
 
 ```html
-success
-info
-warning
-error
+success info warning error
 ```
 
 ---

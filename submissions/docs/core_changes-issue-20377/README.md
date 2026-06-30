@@ -20,31 +20,31 @@ Add `pull_request` and `push` triggers to `.github/workflows/test.yml`, scoped t
 ```yaml
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'core/**'
-      - 'components/**'
-      - 'easemotion/**'
-      - 'scss/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'stylelint.config.json'
-      - '.github/workflows/test.yml'
+      - "core/**"
+      - "components/**"
+      - "easemotion/**"
+      - "scss/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "stylelint.config.json"
+      - ".github/workflows/test.yml"
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'core/**'
-      - 'components/**'
-      - 'easemotion/**'
-      - 'scss/**'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'stylelint.config.json'
-      - '.github/workflows/test.yml'
+      - "core/**"
+      - "components/**"
+      - "easemotion/**"
+      - "scss/**"
+      - "scripts/**"
+      - "tests/**"
+      - "package.json"
+      - "package-lock.json"
+      - "stylelint.config.json"
+      - ".github/workflows/test.yml"
   workflow_dispatch:
 ```
 
@@ -56,8 +56,8 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
+| File                         | Change                                                   |
+| ---------------------------- | -------------------------------------------------------- |
 | `.github/workflows/test.yml` | Add `push` and `pull_request` triggers with path filters |
 
 Fixes #20377

@@ -1,13 +1,16 @@
 # Animated Card Tilt/3D Hover Effect
 
 ## Description
+
 A stunning, interactive card component that creates a parallax-like 3D tilt effect when hovered. The cards rotate in 3D space, revealing a dynamic shine/glare effect that sweeps across the surface. The icon lifts up with a depth effect, creating a premium, tactile feel. Built entirely with pure CSS using perspective transforms and 3D positioning, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the HTML structure for three feature cards with icons, titles, and descriptions.
 - `style.css`: Contains the 3D perspective setup, tilt transforms, shine effect, and depth animations.
 
 ## How to use
+
 1. Open `demo.html` in your browser and hover over the cards to see the 3D tilt effect.
 2. Copy the HTML and CSS into your project.
 3. Wrap your card content inside a `.tilt-card-qn` div, including the `.card-shine-qn` element for the glare effect.
@@ -19,6 +22,7 @@ A stunning, interactive card component that creates a parallax-like 3D tilt effe
    - **Animation Speed:** Adjust the `0.4s` transition duration to make the tilt faster or slower.
 
 ## Features
+
 - **3D Tilt Effect:** Cards rotate in 3D space on hover using perspective transforms
 - **Dynamic Shine:** A light glare sweeps across the card surface on hover
 - **Icon Depth:** Icons lift up with translateZ for a layered effect
@@ -28,6 +32,7 @@ A stunning, interactive card component that creates a parallax-like 3D tilt effe
 - **Accessibility:** Respects `prefers-reduced-motion` user preference
 
 ## Technical Details
+
 - Uses `perspective: 1000px` on the container for 3D depth
 - `transform-style: preserve-3d` allows children to exist in 3D space
 - `translateZ()` creates depth layers within the card
@@ -35,6 +40,7 @@ A stunning, interactive card component that creates a parallax-like 3D tilt effe
 - Hardware-accelerated transforms ensure smooth performance
 
 ## Use Cases
+
 - Portfolio project showcases
 - Product feature highlights
 - Service offerings
@@ -44,6 +50,7 @@ A stunning, interactive card component that creates a parallax-like 3D tilt effe
 - Gallery items
 
 ## Browser Support
+
 - Full support in all modern browsers (Chrome, Firefox, Safari, Edge)
 - 3D transforms are hardware-accelerated for smooth performance
 - Graceful fallback for mobile devices (simplified hover effect)

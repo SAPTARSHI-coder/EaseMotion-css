@@ -5,5 +5,7 @@ document.querySelectorAll(".alert-close").forEach((btn) => {
 });
 
 document.getElementById("resetAlerts").addEventListener("click", () => {
-  document.querySelectorAll(".alert").forEach((a) => a.classList.remove("dismissed"));
+  document
+    .querySelectorAll(".alert")
+    .forEach((a) => a.classList.remove("dismissed"));
 });

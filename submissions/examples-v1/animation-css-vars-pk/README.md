@@ -9,10 +9,10 @@ Expose all `@keyframes` animation names as `--ease-anim-*` CSS variables for typ
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
 | `demo.html` | Side-by-side comparison (string vs variable), JS playground, variable reference table, auto-generation script |
-| `style.css` | Demo layout and styles |
+| `style.css` | Demo layout and styles                                                                                        |
 
 ## Variable Convention
 
@@ -22,14 +22,14 @@ Expose all `@keyframes` animation names as `--ease-anim-*` CSS variables for typ
 
 Where `{name}` is the keyframe name after the `ease-` prefix:
 
-| Variable | Value |
-|----------|-------|
-| `--ease-anim-fade-in` | `ease-fade-in` |
-| `--ease-anim-fade-out` | `ease-fade-out` |
-| `--ease-anim-slide-up` | `ease-slide-up` |
-| `--ease-anim-bounce-in` | `ease-bounce-in` |
-| `--ease-anim-pulse` | `ease-pulse` |
-| `--ease-anim-shake` | `ease-shake` |
+| Variable                       | Value            |
+| ------------------------------ | ---------------- |
+| `--ease-anim-fade-in`          | `ease-fade-in`   |
+| `--ease-anim-fade-out`         | `ease-fade-out`  |
+| `--ease-anim-slide-up`         | `ease-slide-up`  |
+| `--ease-anim-bounce-in`        | `ease-bounce-in` |
+| `--ease-anim-pulse`            | `ease-pulse`     |
+| `--ease-anim-shake`            | `ease-shake`     |
 | ... and all other `@keyframes` |
 
 ## Auto-Generation
@@ -45,11 +45,12 @@ node scripts/generate-animation-vars.js
 ```js
 // Read the variable value
 const name = getComputedStyle(document.documentElement)
-  .getPropertyValue('--ease-anim-fade-in').trim();
+  .getPropertyValue("--ease-anim-fade-in")
+  .trim();
 element.style.animationName = name;
 
 // Or set via variable (browser resolves in style attr)
-element.style.animationName = 'var(--ease-anim-fade-in)';
+element.style.animationName = "var(--ease-anim-fade-in)";
 ```
 
 ## Adding to `core/variables.css`

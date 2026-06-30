@@ -23,18 +23,18 @@ Provides a visually consistent, animated focus indicator that appears when a use
 <button class="ease-focus-ring ease-focus-ring-thick">High Contrast</button>
 
 <!-- Works on inputs -->
-<input class="ease-focus-ring" type="text" placeholder="Focus me">
+<input class="ease-focus-ring" type="text" placeholder="Focus me" />
 ```
 
 ## Classes
 
-| Class | Role |
-|---|---|
-| `ease-focus-ring` | Smooth animated ring using the primary colour (indigo). |
-| `ease-focus-ring-success` | Green ring variant. |
-| `ease-focus-ring-danger` | Red ring variant. |
-| `ease-focus-ring-info` | Blue ring variant. |
-| `ease-focus-ring-thick` | Double-layer thick ring for higher visibility. |
+| Class                     | Role                                                    |
+| ------------------------- | ------------------------------------------------------- |
+| `ease-focus-ring`         | Smooth animated ring using the primary colour (indigo). |
+| `ease-focus-ring-success` | Green ring variant.                                     |
+| `ease-focus-ring-danger`  | Red ring variant.                                       |
+| `ease-focus-ring-info`    | Blue ring variant.                                      |
+| `ease-focus-ring-thick`   | Double-layer thick ring for higher visibility.          |
 
 ## Why it fits EaseMotion CSS
 

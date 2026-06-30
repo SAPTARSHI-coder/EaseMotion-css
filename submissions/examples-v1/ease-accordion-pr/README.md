@@ -19,16 +19,11 @@ CSS-only accordion using native `&lt;details&gt;`/`&lt;summary&gt;` elements wit
 ## Usage
 
 ```html
-&lt;div class="accordion-pr"&gt;
-  &lt;details class="accordion-pr-item"&gt;
-    &lt;summary class="accordion-pr-summary"&gt;
-      Question Text
-      &lt;svg class="accordion-pr-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"&gt;
-        &lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"&gt;&lt;/path&gt;
-      &lt;/svg&gt;
-    &lt;/summary&gt;
-    &lt;div class="accordion-pr-content"&gt;
-      Answer content goes here...
-    &lt;/div&gt;
-  &lt;/details&gt;
-&lt;/div&gt;
+&lt;div class="accordion-pr"&gt; &lt;details class="accordion-pr-item"&gt;
+&lt;summary class="accordion-pr-summary"&gt; Question Text &lt;svg
+class="accordion-pr-icon" fill="none" stroke="currentColor" viewBox="0 0 24
+24"&gt; &lt;path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+d="M19 9l-7 7-7-7"&gt;&lt;/path&gt; &lt;/svg&gt; &lt;/summary&gt; &lt;div
+class="accordion-pr-content"&gt; Answer content goes here... &lt;/div&gt;
+&lt;/details&gt; &lt;/div&gt;
+```

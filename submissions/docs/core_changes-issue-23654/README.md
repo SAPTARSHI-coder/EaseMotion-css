@@ -26,20 +26,18 @@
    </div>
 
    <!-- Hidden scrollbar -->
-   <div class="ease-scroll-snap-x ease-scroll-snap-hide-scrollbar">
-     ...
-   </div>
+   <div class="ease-scroll-snap-x ease-scroll-snap-hide-scrollbar">...</div>
    ```
 
    **Available classes:**
 
-   | Class | Purpose |
-   |---|---|
-   | `.ease-scroll-snap-x` | Horizontal snap-scrolling container |
-   | `.ease-scroll-snap-y` | Vertical snap-scrolling container |
-   | `.ease-scroll-snap-item` | Child snap target (align: start) |
-   | `.ease-snap-center` | Child snap target (align: center) |
-   | `.ease-scroll-snap-hide-scrollbar` | Visually hide the scrollbar |
+   | Class                              | Purpose                             |
+   | ---------------------------------- | ----------------------------------- |
+   | `.ease-scroll-snap-x`              | Horizontal snap-scrolling container |
+   | `.ease-scroll-snap-y`              | Vertical snap-scrolling container   |
+   | `.ease-scroll-snap-item`           | Child snap target (align: start)    |
+   | `.ease-snap-center`                | Child snap target (align: center)   |
+   | `.ease-scroll-snap-hide-scrollbar` | Visually hide the scrollbar         |
 
 3. **Why is it useful?**
    Image carousels, testimonial sliders, and card decks are ubiquitous in modern web design. Scroll-snap is a native CSS feature that delivers smooth, paginated scrolling with zero JavaScript. This utility packages the feature into reusable, discoverable classes — reducing boilerplate and improving consistency across projects.

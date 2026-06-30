@@ -4,6 +4,7 @@
 A seamless, GPU-accelerated infinite scrolling text ticker.
 
 **How is it used?**
+
 <div class="ease-marquee-wrap-ai">
   <div class="ease-marquee-track-ai">...</div>
 </div>

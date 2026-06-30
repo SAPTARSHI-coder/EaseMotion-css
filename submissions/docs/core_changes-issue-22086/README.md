@@ -15,21 +15,22 @@ submissions/core_changes-issue-22086/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Interactive** | `.ease-rating` | Clickable star rating using hidden radio inputs |
-| **Read-Only** | `.ease-rating-readonly` | Display-only mode with no interaction |
-| **Fractional** | `.ease-rating-fractional` | Partial star display using width clipping |
-| **Small** | `.ease-rating-sm` | Compact 1rem stars |
-| **Large** | `.ease-rating-lg` | Large 2rem stars |
-| **Extra Large** | `.ease-rating-xl` | Extra large 2.5rem stars |
-| **Primary** | `.ease-rating-primary` | Indigo star color |
-| **Success** | `.ease-rating-success` | Green star color |
-| **Danger** | `.ease-rating-danger` | Red star color |
+| Variant         | Class                     | Description                                     |
+| --------------- | ------------------------- | ----------------------------------------------- |
+| **Interactive** | `.ease-rating`            | Clickable star rating using hidden radio inputs |
+| **Read-Only**   | `.ease-rating-readonly`   | Display-only mode with no interaction           |
+| **Fractional**  | `.ease-rating-fractional` | Partial star display using width clipping       |
+| **Small**       | `.ease-rating-sm`         | Compact 1rem stars                              |
+| **Large**       | `.ease-rating-lg`         | Large 2rem stars                                |
+| **Extra Large** | `.ease-rating-xl`         | Extra large 2.5rem stars                        |
+| **Primary**     | `.ease-rating-primary`    | Indigo star color                               |
+| **Success**     | `.ease-rating-success`    | Green star color                                |
+| **Danger**      | `.ease-rating-danger`     | Red star color                                  |
 
 ## Usage
 
 ### Interactive
+
 ```html
 <link rel="stylesheet" href="path/to/style.css" />
 <form class="ease-rating">
@@ -47,6 +48,7 @@ submissions/core_changes-issue-22086/
 ```
 
 ### Fractional (Display)
+
 ```html
 <div class="ease-rating ease-rating-fractional">
   <div class="ease-rating-stars-bg">★★★★★</div>

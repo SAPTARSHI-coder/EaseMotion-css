@@ -9,8 +9,10 @@ An immersive premium layout card module that responds fluidly to mouse interacti
 - **Volumetric Parallax Lift:** Combines parent `perspective: 1000px` contexts with independent internal tracking blocks running `translateZ(30px)`, causing textual items to cleanly pop outward toward the screen during action sequences.
 
 ## Workspace Tree
+
 - `demo.html`: Standalone self-contained viewport sandbox structure.
 - `style.css`: High performance compositor-friendly rule override sheets.
 
 ## By
+
 [Pari Dubey](https://github.com/pari-dubey1)

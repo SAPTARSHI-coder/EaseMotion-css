@@ -20,6 +20,7 @@ Include the stylesheet in your HTML:
 ## CSS Classes Included
 
 ### Layout & Structure
+
 - `.demo-row` — Horizontal flex container
 - `.demo-col` — Vertical flex container
 - `.demo-gap` — Flex container with gap spacing
@@ -27,12 +28,14 @@ Include the stylesheet in your HTML:
 - `.demo-grid-base` — Auto-fill responsive grid
 
 ### Responsive
+
 - All demos are responsive and adapt gracefully to mobile viewports (600px breakpoint)
 - Dark mode support via `prefers-color-scheme: dark`
 
 ## Design Tokens Used
 
 This submission uses EaseMotion CSS design tokens:
+
 - `--ease-color-primary` — Primary brand color (#6c63ff)
 - `--ease-color-bg` — Background color (light/dark aware)
 - `--ease-color-surface` — Surface/card background

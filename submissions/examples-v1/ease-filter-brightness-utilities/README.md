@@ -13,8 +13,10 @@ A collection of CSS interactions leveraging `filter: brightness()` to create ele
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To create a text-reveal overlay that dims the image:
+
 ```html
 <div class="ease-brightness-overlay">
-  <img src="photo.jpg" class="card-bg">
+  <img src="photo.jpg" class="card-bg" />
   <div class="card-content">Read More</div>
 </div>
+```

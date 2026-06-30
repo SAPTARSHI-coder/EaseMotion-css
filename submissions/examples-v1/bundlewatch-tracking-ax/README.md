@@ -3,6 +3,7 @@
 A complete setup guide for tracking CSS bundle sizes on every pull request using Bundlewatch. Prevents accidental bundle bloat by failing CI if the size exceeds defined limits.
 
 ## Files
+
 - `bundlewatch.config.json` – configuration file with file paths and max sizes
 - `demo.html` – explains how the tool works
 - `style.css` – demo page styling
@@ -13,7 +14,8 @@ A complete setup guide for tracking CSS bundle sizes on every pull request using
 1. **Install Bundlewatch** as a dev dependency:
    ```bash
    npm install --save-dev bundlewatch
-Add the configuration file bundlewatch.config.json to your repository root with the contents provided.
+   Add the configuration file bundlewatch.config.json to your repository root with the contents provided.
+   ```
 
 Add a GitHub Actions workflow (example below) to run Bundlewatch on every PR:
 
@@ -21,14 +23,12 @@ yaml
 name: Bundle Size Check
 on: [pull_request]
 jobs:
-  bundlewatch:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Bundlewatch
-        run: npx bundlewatch
-        env:
-          BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
+bundlewatch:
+runs-on: ubuntu-latest
+steps: - uses: actions/checkout@v3 - name: Bundlewatch
+run: npx bundlewatch
+env:
+BUNDLEWATCH_GITHUB_TOKEN: ${{ secrets.BUNDLEWATCH_GITHUB_TOKEN }}
 Create a GitHub Personal Access Token with repo scope and add it as a secret named BUNDLEWATCH_GITHUB_TOKEN in your repository settings.
 
 How It Works

@@ -23,7 +23,7 @@ Wrap sibling elements in `.ease-gravity-group` and add `.ease-gravity` to each c
 
 ## How it works
 
-Uses `:has()` to detect which sibling is hovered. Items before it shift right, items after it shift left, both shrinking slightly (`scale(0.96)`) and fading to `opacity: 0.7` so the motion reads clearly. The hovered item itself scales up to `1.12`, gains an indigo border and glow ring, and shifts its text to a matching indigo — making it visually obvious *why* the other items are reacting.
+Uses `:has()` to detect which sibling is hovered. Items before it shift right, items after it shift left, both shrinking slightly (`scale(0.96)`) and fading to `opacity: 0.7` so the motion reads clearly. The hovered item itself scales up to `1.12`, gains an indigo border and glow ring, and shifts its text to a matching indigo — making it visually obvious _why_ the other items are reacting.
 
 ## Why it fits EaseMotion CSS
 

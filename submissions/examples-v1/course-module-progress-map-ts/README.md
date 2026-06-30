@@ -7,7 +7,9 @@ Displays completed, current, upcoming, and locked course modules in a responsive
 ## How is it used?
 
 ```html
-<li class="current"><span>2</span><strong>Transforms</strong><em>Current</em></li>
+<li class="current">
+  <span>2</span><strong>Transforms</strong><em>Current</em>
+</li>
 ```
 
 ## Why is it useful?

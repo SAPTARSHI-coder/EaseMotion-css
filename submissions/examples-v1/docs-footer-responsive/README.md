@@ -1,4 +1,3 @@
-
 # Responsive Documentation Footer
 
 ## What does this do?
@@ -12,15 +11,11 @@ Add the footer HTML at the bottom of the page and include the provided CSS file.
 Example:
 
 ```html
-<footer class="docs-footer">
-	...
-</footer>
-````
+<footer class="docs-footer">...</footer>
+```
 
 The footer automatically adjusts to different screen sizes for better responsiveness.
 
 ## Why is it useful?
 
 Documentation pages can feel incomplete when they end abruptly. This footer improves navigation, gives users quick access to important links, and provides a cleaner, more consistent user experience.
-
-

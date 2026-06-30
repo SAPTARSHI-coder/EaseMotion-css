@@ -4,6 +4,7 @@
 Creates a stunning, frosted-glass interactive card with pure CSS hover lighting effects.
 
 **How is it used?**
+
 <div class="ease-glass-card-ai">
   <h2>Glass Content</h2>
 </div>

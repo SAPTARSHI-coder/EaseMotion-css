@@ -21,15 +21,19 @@ A modern toast notification component with smooth slide-in animations, hover int
 ## Variants
 
 ### Success
+
 Displays positive feedback with green styling.
 
 ### Error
+
 Shows failures or invalid actions with red styling.
 
 ### Warning
+
 Highlights important notices with yellow styling.
 
 ### Information
+
 Provides general updates with blue styling.
 
 ---

@@ -16,8 +16,8 @@ A modern developer dashboard inspired by GitHub, Vercel, and Linear. It combines
 
 ```html
 <div class="stat-card">
-    <h3>Repositories</h3>
-    <span>42</span>
+  <h3>Repositories</h3>
+  <span>42</span>
 </div>
 ```
 

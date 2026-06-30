@@ -14,7 +14,10 @@ Adds a dark mode override for `.ease-card-flat` so it uses
 ```css
 .ease-card-flat {
   border-color: transparent;
-  background-color: var(--ease-color-neutral-100, #f1f5f9); /* no dark override */
+  background-color: var(
+    --ease-color-neutral-100,
+    #f1f5f9
+  ); /* no dark override */
 }
 ```
 
@@ -40,11 +43,11 @@ light mode over `--ease-color-bg` (`#f8fafc`).
 
 ## Before vs after in dark mode
 
-| Mode | Page bg | Flat card bg | Relationship |
-|---|---|---|---|
-| Light | `#f8fafc` | `#f1f5f9` | Subtly darker — correct ✅ |
-| Dark (broken) | `#0b1121` | `#f1f5f9` | Blazingly lighter — wrong ❌ |
-| Dark (fixed) | `#0b1121` | `#141e33` | Subtly lighter — correct ✅ |
+| Mode          | Page bg   | Flat card bg | Relationship                 |
+| ------------- | --------- | ------------ | ---------------------------- |
+| Light         | `#f8fafc` | `#f1f5f9`    | Subtly darker — correct ✅   |
+| Dark (broken) | `#0b1121` | `#f1f5f9`    | Blazingly lighter — wrong ❌ |
+| Dark (fixed)  | `#0b1121` | `#141e33`    | Subtly lighter — correct ✅  |
 
 ## Demo
 

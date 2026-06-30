@@ -23,15 +23,9 @@ A responsive Enterprise Testimonial Intelligence Platform that helps organizatio
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

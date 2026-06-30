@@ -10,12 +10,12 @@ Neumorphic (soft UI) card variant with raised/pressed shadow effects.
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-card-neumorphic` | Default neumorphic (medium shadow) |
-| `ease-card-neumorphic-sm` | Subtle shadow |
-| `ease-card-neumorphic-lg` | Heavy shadow for more depth |
-| `ease-card-neumorphic-inset` | Inset shadow for pressed look |
+| Class                        | Description                        |
+| ---------------------------- | ---------------------------------- |
+| `ease-card-neumorphic`       | Default neumorphic (medium shadow) |
+| `ease-card-neumorphic-sm`    | Subtle shadow                      |
+| `ease-card-neumorphic-lg`    | Heavy shadow for more depth        |
+| `ease-card-neumorphic-inset` | Inset shadow for pressed look      |
 
 ## Notes
 

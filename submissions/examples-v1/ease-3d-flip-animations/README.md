@@ -12,20 +12,19 @@ A proposal for `core/animations.css` adding `.em-flip-x` and `.em-flip-y` 3D ent
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 You can apply the proposed classes to your elements:
 
 ```html
 <!-- The parent container needs perspective for 3D depth -->
 <div class="em-perspective">
-  <div class="em-flip-y">
-    Flips in 3D!
-  </div>
+  <div class="em-flip-y">Flips in 3D!</div>
 </div>
 ```
 
-*Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/animations.css`.*
+_Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/animations.css`._
 
 ## 🔗 Related Issue
+
 Resolves Issue #16956

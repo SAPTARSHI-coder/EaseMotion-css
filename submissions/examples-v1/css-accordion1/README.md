@@ -5,6 +5,7 @@ elements with the CSS Grid `grid-template-rows` transition technique
 — no JavaScript, no fixed heights.
 
 ## Structure
+
 css-accordion/
 
 ├── demo.html
@@ -12,6 +13,7 @@ css-accordion/
 ├── style.css
 
 └── README.
+
 ## Usage
 
 ```html
@@ -30,8 +32,9 @@ css-accordion/
 ```
 
 Add `open` attribute to expand by default:
+
 ```html
-<details class="accordion-item" open>
+<details class="accordion-item" open></details>
 ```
 
 ## How It Works
@@ -58,6 +61,7 @@ details[open] .accordion-body {
 inner content smoothly regardless of content height.
 
 ## Features
+
 - Pure HTML & CSS — no JavaScript
 - Smooth height animation via CSS Grid trick
 - Rotating arrow indicator
@@ -67,6 +71,7 @@ inner content smoothly regardless of content height.
 - Respects `prefers-reduced-motion`
 
 ## Use Cases
+
 - FAQ sections
 - Documentation pages
 - Settings panels

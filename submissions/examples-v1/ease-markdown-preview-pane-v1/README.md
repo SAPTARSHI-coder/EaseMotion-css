@@ -30,9 +30,7 @@ Includes:
 ## Usage
 
 ```html
-<div class="editor">
-...
-</div>
+<div class="editor">...</div>
 ```
 
 ---

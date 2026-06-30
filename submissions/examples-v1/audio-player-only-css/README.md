@@ -78,18 +78,18 @@ This example demonstrates how motion and depth can be combined to create engagin
 
 ## CSS Classes
 
-| Class | Description |
-|-------|-------------|
-| `.player` | Main audio player container |
-| `.record-wrapper` | Vinyl record wrapper |
-| `.record` | Spinning vinyl record |
-| `.record-center` | Center spindle |
-| `.song-info` | Track information |
-| `.progress` | Progress bar container |
-| `.progress-fill` | Animated progress indicator |
-| `.controls` | Controls container |
-| `.control-btn` | Previous and next buttons |
-| `.play-btn` | Primary play button |
+| Class             | Description                 |
+| ----------------- | --------------------------- |
+| `.player`         | Main audio player container |
+| `.record-wrapper` | Vinyl record wrapper        |
+| `.record`         | Spinning vinyl record       |
+| `.record-center`  | Center spindle              |
+| `.song-info`      | Track information           |
+| `.progress`       | Progress bar container      |
+| `.progress-fill`  | Animated progress indicator |
+| `.controls`       | Controls container          |
+| `.control-btn`    | Previous and next buttons   |
+| `.play-btn`       | Primary play button         |
 
 ---
 
@@ -98,7 +98,7 @@ This example demonstrates how motion and depth can be combined to create engagin
 ### Vinyl Rotation
 
 ```css
-@keyframes spinRecord
+@keyframes spinRecord;
 ```
 
 Continuously rotates the record.
@@ -106,7 +106,7 @@ Continuously rotates the record.
 ### Progress Animation
 
 ```css
-@keyframes progressMove
+@keyframes progressMove;
 ```
 
 Animates the playback progress indicator.

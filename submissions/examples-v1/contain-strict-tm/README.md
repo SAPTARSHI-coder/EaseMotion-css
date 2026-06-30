@@ -3,7 +3,10 @@
 ## Usage
 
 ```html
-<link rel="stylesheet" href="submissions/examples/contain-strict-tm/style.css">
+<link
+  rel="stylesheet"
+  href="submissions/examples/contain-strict-tm/style.css"
+/>
 <div class="contain-strict-tm">
   <!-- Demo content -->
 </div>

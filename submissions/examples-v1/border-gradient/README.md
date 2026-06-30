@@ -28,27 +28,30 @@ Gradient border spins continuously around the element using a `conic-gradient` a
 </button>
 
 <!-- Input -->
-<input class="ease-border-gradient ease-border-gradient-slow" placeholder="Email address" />
+<input
+  class="ease-border-gradient ease-border-gradient-slow"
+  placeholder="Email address"
+/>
 ```
 
 ### Include the stylesheet
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ---
 
 ## Available Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-border-gradient` | Base class — rotating rainbow gradient border (required) |
-| `.ease-border-gradient-purple` | Purple → blue rotating border |
-| `.ease-border-gradient-sunset` | Orange → pink rotating border |
-| `.ease-border-gradient-slow` | 6s rotation speed |
-| `.ease-border-gradient-fast` | 1.5s rotation speed |
-| `.ease-border-gradient-hover` | Only animates on hover |
+| Class                          | Effect                                                   |
+| ------------------------------ | -------------------------------------------------------- |
+| `.ease-border-gradient`        | Base class — rotating rainbow gradient border (required) |
+| `.ease-border-gradient-purple` | Purple → blue rotating border                            |
+| `.ease-border-gradient-sunset` | Orange → pink rotating border                            |
+| `.ease-border-gradient-slow`   | 6s rotation speed                                        |
+| `.ease-border-gradient-fast`   | 1.5s rotation speed                                      |
+| `.ease-border-gradient-hover`  | Only animates on hover                                   |
 
 ---
 
@@ -57,25 +60,30 @@ Gradient border spins continuously around the element using a `conic-gradient` a
 ```css
 /* 1. Register @property so the browser can animate the angle */
 @property --ease-border-angle {
-  syntax: '<angle>';
+  syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
 
 /* 2. Spin the angle via keyframes */
 @keyframes ease-border-spin {
-  to { --ease-border-angle: 360deg; }
+  to {
+    --ease-border-angle: 360deg;
+  }
 }
 
 /* 3. Use ::before pseudo-element with conic-gradient */
 .ease-border-gradient::before {
-  content: '';
+  content: "";
   position: absolute;
-  inset: -2px;               /* border thickness */
+  inset: -2px; /* border thickness */
   border-radius: inherit;
   background: conic-gradient(
     from var(--ease-border-angle, 0deg),
-    #7c3aed, #3b82f6, #06b6d4, #7c3aed
+    #7c3aed,
+    #3b82f6,
+    #06b6d4,
+    #7c3aed
   );
   z-index: -1;
   animation: ease-border-spin 3s linear infinite;
@@ -103,11 +111,11 @@ The element's own background sits on top via `::after`, so only the border area 
 
 ```css
 :root {
-  --ease-border-width:       2px;
-  --ease-border-radius:      12px;
-  --ease-border-speed:       3s;
-  --ease-border-speed-slow:  6s;
-  --ease-border-speed-fast:  1.5s;
+  --ease-border-width: 2px;
+  --ease-border-radius: 12px;
+  --ease-border-speed: 3s;
+  --ease-border-speed-slow: 6s;
+  --ease-border-speed-fast: 1.5s;
 
   /* Rainbow colors */
   --ease-border-c1: #7c3aed;
@@ -144,4 +152,4 @@ Resolves issue [#2723](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/
 
 ## Author
 
-Contributed as part of **Girl script  Summer of Code 2026**
+Contributed as part of **Girl script Summer of Code 2026**

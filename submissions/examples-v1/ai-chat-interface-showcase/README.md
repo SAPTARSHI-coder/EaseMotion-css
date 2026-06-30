@@ -15,9 +15,7 @@ A modern AI chat interface featuring animated conversation bubbles and a typing 
 ## Usage
 
 ```html
-<div class="message ai">
-    AI response goes here.
-</div>
+<div class="message ai">AI response goes here.</div>
 ```
 
 Messages animate into view while maintaining a clean conversational layout.

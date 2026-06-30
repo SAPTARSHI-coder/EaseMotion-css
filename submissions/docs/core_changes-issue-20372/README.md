@@ -11,12 +11,14 @@ Issue [#20372](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20372) r
   z-index: 1;
   position: relative;
   transform-origin: center;
-  transition: transform var(--ease-speed-medium) var(--ease-ease-bounce),
-              filter var(--ease-speed-medium) var(--ease-ease-bounce);
+  transition:
+    transform var(--ease-speed-medium) var(--ease-ease-bounce),
+    filter var(--ease-speed-medium) var(--ease-ease-bounce);
 }
 
 .ease-hover-pulse-glow:hover {
-  animation: ease-kf-hover-pulse-glow var(--ease-speed-medium) var(--ease-ease-bounce) forwards;
+  animation: ease-kf-hover-pulse-glow var(--ease-speed-medium)
+    var(--ease-ease-bounce) forwards;
 }
 ```
 
@@ -47,6 +49,7 @@ Add the missing `@keyframes ease-kf-hover-pulse-glow` definition to `core/animat
 ```
 
 This creates a combined pulse+glow effect:
+
 - **Pulse**: scale up to 1.08 at midpoint, then settle back
 - **Glow**: `brightness(1.2)` boosts perceived glow, `box-shadow` expands outward in sync
 
@@ -58,9 +61,9 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
-| `core/animations.css` (after line 1380) | Add `@keyframes ease-kf-hover-pulse-glow` block |
-| `core/animations.css` (end of file) | Add `@media (prefers-reduced-motion: reduce)` rule |
+| File                                    | Change                                             |
+| --------------------------------------- | -------------------------------------------------- |
+| `core/animations.css` (after line 1380) | Add `@keyframes ease-kf-hover-pulse-glow` block    |
+| `core/animations.css` (end of file)     | Add `@media (prefers-reduced-motion: reduce)` rule |
 
 Fixes #20372

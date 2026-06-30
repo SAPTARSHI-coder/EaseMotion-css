@@ -3,6 +3,7 @@
 A complete, ready‑to‑copy landing page for a board games e‑commerce store. Built entirely with **EaseMotion CSS** utility classes – no custom keyframes.
 
 ## Sections
+
 - **Header** – clean navigation
 - **Hero** – game night imagery with a shop CTA
 - **Products by Player Count** – cards for 2‑player, family, and party games
@@ -13,6 +14,7 @@ A complete, ready‑to‑copy landing page for a board games e‑commerce store.
 - **Footer**
 
 ## EaseMotion Classes Showcased
+
 - **Layout:** `ease-container`, `ease-flex`, `ease-grid`, `ease-gap-*`, `ease-justify-between`, `ease-items-center`, `ease-max-w-*`, `ease-mx-auto`
 - **Typography:** `ease-text-*`, `ease-font-bold`, `ease-font-semibold`, `ease-text-gray-*`, `ease-text-yellow-*`, `ease-text-white`, `ease-italic`
 - **Spacing:** `ease-py-*`, `ease-px-*`, `ease-p-*`, `ease-mb-*`, `ease-mt-*`
@@ -22,6 +24,7 @@ A complete, ready‑to‑copy landing page for a board games e‑commerce store.
 - **Utilities:** `ease-rounded-lg`, `ease-shadow-lg`, `ease-bg-*`, `ease-w-full`, `ease-product-img`
 
 ## How to Use
+
 1. Copy `demo.html` into your project.
 2. Make sure the path to `easemotion.css` is correct.
 3. Open in any modern browser – no build step required.

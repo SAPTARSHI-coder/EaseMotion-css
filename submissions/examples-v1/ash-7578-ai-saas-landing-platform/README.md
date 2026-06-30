@@ -22,13 +22,9 @@ A modern AI SaaS landing page built with pure HTML and CSS. It includes a respon
 ## Usage
 
 ```html
-<header class="hero">
-    ...
-</header>
+<header class="hero">...</header>
 
-<section class="features">
-    ...
-</section>
+<section class="features">...</section>
 ```
 
 ## Main Classes

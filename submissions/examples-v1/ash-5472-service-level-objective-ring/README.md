@@ -23,17 +23,11 @@ A responsive Service Level Objective (SLO) visualization component that displays
 
 ```html
 <div class="ring">
-
-    <div class="circle">
-
-        <div class="inner">
-
-            <strong>99.87%</strong>
-
-        </div>
-
+  <div class="circle">
+    <div class="inner">
+      <strong>99.87%</strong>
     </div>
-
+  </div>
 </div>
 ```
 

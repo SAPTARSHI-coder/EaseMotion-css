@@ -22,4 +22,5 @@ submissions/examples/ease-backflip-in/
 ```
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

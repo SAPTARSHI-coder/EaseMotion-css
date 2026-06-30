@@ -8,8 +8,8 @@ An isolated utility submission adding system-level element interaction managemen
 - **The Solution:** Applying `.ease-scheme-dark` or `.ease-scheme-light` taps directly into the CSS engine's native layout properties. This instructs the browser to automatically skin default inner elements, dialog layers, and fields with matching fallback dark or light color sheets.
 
 ## Usage Layout Structure
-```html
 
+```html
 <div class="dark-dashboard-shell ease-scheme-dark">
   <input type="date" name="filter" />
 </div>

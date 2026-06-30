@@ -30,7 +30,7 @@ Ease Lava Lamp Background creates a smooth animated background using colorful mo
 
 ```html
 <div class="lava-bg">
-    <span class="blob"></span>
+  <span class="blob"></span>
 </div>
 ```
 

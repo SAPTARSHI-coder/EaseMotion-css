@@ -26,9 +26,7 @@ A CSS-only 3D interactive flip card showcase demonstrating perspective transform
 
 ```html
 <div class="flip-card">
-  <div class="flip-card-inner">
-    ...
-  </div>
+  <div class="flip-card-inner">...</div>
 </div>
 ```
 

@@ -1,6 +1,7 @@
 # Image Carousel with CSS Scroll-Snap
 
 ## What does this do?
+
 A horizontal image carousel built entirely with CSS `scroll-snap`. Slides
 snap into place on swipe/scroll, and navigation dots (anchor links to
 each slide's ID) let users jump directly to a slide.
@@ -28,6 +29,7 @@ each slide's ID) let users jump directly to a slide.
 ```
 
 ## Why is it useful?
+
 EaseMotion CSS had no image carousel or slider component. Carousels are
 a common UI pattern for hero banners, testimonials, and gallery sections.
 This provides a fully CSS scroll-snap solution with zero JavaScript —

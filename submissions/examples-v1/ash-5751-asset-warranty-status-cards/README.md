@@ -23,17 +23,11 @@ A responsive asset warranty dashboard that displays warranty status using modern
 
 ```html
 <div class="asset active">
+  <div class="top">
+    <h3>MacBook Pro 16"</h3>
 
-    <div class="top">
-
-        <h3>MacBook Pro 16"</h3>
-
-        <span class="badge success">
-            Active
-        </span>
-
-    </div>
-
+    <span class="badge success"> Active </span>
+  </div>
 </div>
 ```
 

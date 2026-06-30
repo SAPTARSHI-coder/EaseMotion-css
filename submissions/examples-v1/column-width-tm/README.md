@@ -18,9 +18,7 @@ This submission demonstrates the `column-width` CSS property with multiple varia
 Apply the `column-width` class to any element:
 
 ```html
-<div class="column-width">
-  Your content here
-</div>
+<div class="column-width">Your content here</div>
 ```
 
 ## Tokens Used

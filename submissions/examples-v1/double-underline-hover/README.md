@@ -18,6 +18,7 @@ A premium typography hover animation built using pure CSS.
 ## Customization
 
 Modify:
+
 - Font size
 - Underline gap
 - Animation duration

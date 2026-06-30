@@ -8,12 +8,12 @@ This submission triages and resolves the compatibility table rendering issues by
 
 Below is the verified browser support matrix for key modern CSS features utilized across the EaseMotion CSS library:
 
-| Feature | Chrome / Edge | Safari | Firefox | Fallback Behavior |
-| :--- | :--- | :--- | :--- | :--- |
-| **Grid Subgrid** | 104+ | 16+ | 71+ | Standard Grid wrap |
-| **Scroll Timelines** | 115+ | 17+ | 120+ | Standard scrolling |
-| **Backdrop Filter** | 76+ | 9+ | 70+ | solid color opacity |
-| **preserve-3d** | 36+ | 9+ | 16+ | Flat 2D transformations |
+| Feature              | Chrome / Edge | Safari | Firefox | Fallback Behavior       |
+| :------------------- | :------------ | :----- | :------ | :---------------------- |
+| **Grid Subgrid**     | 104+          | 16+    | 71+     | Standard Grid wrap      |
+| **Scroll Timelines** | 115+          | 17+    | 120+    | Standard scrolling      |
+| **Backdrop Filter**  | 76+           | 9+     | 70+     | solid color opacity     |
+| **preserve-3d**      | 36+           | 9+     | 16+     | Flat 2D transformations |
 
 ---
 

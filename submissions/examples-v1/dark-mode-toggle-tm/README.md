@@ -28,7 +28,7 @@ Switch slider:
 
 ```html
 <label class="theme-switch">
-  <input type="checkbox" class="theme-switch__input">
+  <input type="checkbox" class="theme-switch__input" />
   <span class="theme-switch__track"></span>
 </label>
 ```

@@ -9,7 +9,7 @@ const components = [
       <button class="button-preview">
         Click Me
       </button>
-    `
+    `,
   },
 
   {
@@ -27,7 +27,7 @@ const components = [
         <strong>Card Title</strong>
         <p>Card content here</p>
       </div>
-    `
+    `,
   },
 
   {
@@ -43,8 +43,8 @@ const components = [
       <div class="alert-preview">
         Warning message
       </div>
-    `
-  }
+    `,
+  },
 ];
 
 const gallery = document.getElementById("gallery");
@@ -67,7 +67,7 @@ function renderComponents(items) {
     return;
   }
 
-  items.forEach(component => {
+  items.forEach((component) => {
     const card = document.createElement("div");
 
     card.className = "component-card";
@@ -92,17 +92,13 @@ function renderComponents(items) {
       </div>
     `;
 
-    card
-      .querySelector(".copy-html")
-      .addEventListener("click", () => {
-        copyText(component.html);
-      });
+    card.querySelector(".copy-html").addEventListener("click", () => {
+      copyText(component.html);
+    });
 
-    card
-      .querySelector(".copy-css")
-      .addEventListener("click", () => {
-        copyText(component.css);
-      });
+    card.querySelector(".copy-css").addEventListener("click", () => {
+      copyText(component.css);
+    });
 
     gallery.appendChild(card);
   });
@@ -112,14 +108,13 @@ function filterComponents() {
   const searchTerm = searchInput.value.toLowerCase();
   const category = categoryFilter.value;
 
-  const filtered = components.filter(component => {
+  const filtered = components.filter((component) => {
     const matchesSearch =
       component.name.toLowerCase().includes(searchTerm) ||
       component.description.toLowerCase().includes(searchTerm);
 
     const matchesCategory =
-      category === "all" ||
-      component.category === category;
+      category === "all" || component.category === category;
 
     return matchesSearch && matchesCategory;
   });

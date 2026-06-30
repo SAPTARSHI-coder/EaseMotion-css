@@ -4,13 +4,14 @@
 
 Utility classes for `position: sticky` — a CSS positioning mode that toggles between relative and fixed positioning depending on the scroll position.
 
-| Class | Effect |
-|---|---|
-| `.ease-sticky-top` | `position: sticky; top: var(--ease-sticky-offset); z-index: var(--ease-sticky-z)` |
+| Class                 | Effect                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `.ease-sticky-top`    | `position: sticky; top: var(--ease-sticky-offset); z-index: var(--ease-sticky-z)`    |
 | `.ease-sticky-bottom` | `position: sticky; bottom: var(--ease-sticky-offset); z-index: var(--ease-sticky-z)` |
-| `.ease-sticky-offset` | Helper to override `--ease-sticky-offset` on a scoping element |
+| `.ease-sticky-offset` | Helper to override `--ease-sticky-offset` on a scoping element                       |
 
 Custom properties:
+
 - `--ease-sticky-z` (default `10`) — controls the stacking order
 - `--ease-sticky-offset` (default `0px`) — distance from the top/bottom edge at which the element becomes sticky
 

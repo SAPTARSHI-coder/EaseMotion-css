@@ -11,3 +11,4 @@ Displays color swatches along with their HEX color values.
   <div class="swatch red"></div>
   <p>#FF5733</p>
 </div>
+```

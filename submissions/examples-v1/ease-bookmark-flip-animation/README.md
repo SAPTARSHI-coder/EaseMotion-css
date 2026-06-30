@@ -11,7 +11,7 @@ A clean, satisfying micro-interaction that tilts and scales a bookmark icon to s
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 Apply the classes to your button and icon elements:
 
@@ -20,3 +20,4 @@ Apply the classes to your button and icon elements:
   <svg class="ease-bookmark-icon" xmlns="...">...</svg>
   <span>Save Article</span>
 </button>
+```

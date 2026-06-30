@@ -10,8 +10,8 @@ Ghost/transparent button variant with no background or border by default. On hov
 
 ## Variants
 
-| Class | Description |
-|---|---|
+| Class            | Description                  |
+| ---------------- | ---------------------------- |
 | `ease-btn-ghost` | Ghost button with hover fill |
 
 ## Notes

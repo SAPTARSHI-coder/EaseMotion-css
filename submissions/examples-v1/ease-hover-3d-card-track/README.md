@@ -38,12 +38,12 @@ The JavaScript is embedded in the HTML demo and can be extracted into a separate
 
 ```css
 :root {
-  --bg-color: #0e0e0e;          /* Page background */
-  --card-bg: rgba(255,255,255,.12); /* Card background */
-  --accent: #ff6b6b;           /* Text accent colour */
-  --glow: rgba(255,107,107,.3);   /* Hover glow */
-  --max-tilt: 15deg;            /* Maximum tilt angle */
-  --transition-speed: 0.4s;    /* Animation speed */
+  --bg-color: #0e0e0e; /* Page background */
+  --card-bg: rgba(255, 255, 255, 0.12); /* Card background */
+  --accent: #ff6b6b; /* Text accent colour */
+  --glow: rgba(255, 107, 107, 0.3); /* Hover glow */
+  --max-tilt: 15deg; /* Maximum tilt angle */
+  --transition-speed: 0.4s; /* Animation speed */
 }
 ```
 

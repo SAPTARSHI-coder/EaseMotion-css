@@ -11,7 +11,6 @@ Drop the markup into your page and the CSS handles everything else. Hover the sl
 ```html
 <section class="testimonial-slider">
   <div class="testimonial-track">
-
     <article class="testimonial-slide">
       <img class="testimonial-avatar" src="avatar.jpg" alt="User name" />
       <p class="testimonial-quote">Your testimonial text goes here.</p>
@@ -21,10 +20,10 @@ Drop the markup into your page and the CSS handles everything else. Hover the sl
     </article>
 
     <!-- Add more .testimonial-slide articles -->
-
   </div>
 
   <div class="testimonial-dots">
     <span></span><span></span><span></span><span></span>
   </div>
 </section>
+```

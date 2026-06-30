@@ -32,12 +32,12 @@ Wrap each book with the required face structure (cover, spine, back) inside the 
 
 Add a modifier class to `__book` to change the color theme:
 
-| Modifier class                         | Color    |
-| -------------------------------------- | -------- |
-| *(default)*                            | Red      |
-| `ease-3d-bookshelf-flip__book--blue`   | Blue     |
-| `ease-3d-bookshelf-flip__book--green`  | Green    |
-| `ease-3d-bookshelf-flip__book--gold`   | Gold     |
+| Modifier class                        | Color |
+| ------------------------------------- | ----- |
+| _(default)_                           | Red   |
+| `ease-3d-bookshelf-flip__book--blue`  | Blue  |
+| `ease-3d-bookshelf-flip__book--green` | Green |
+| `ease-3d-bookshelf-flip__book--gold`  | Gold  |
 
 ## 3. Why is it useful?
 

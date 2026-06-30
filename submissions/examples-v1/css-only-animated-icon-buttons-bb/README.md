@@ -11,8 +11,8 @@ Provides icon buttons with distinct hover animation effects. Each effect uses CS
 ```html
 <button class="icon-btn icon-btn--rotate" aria-label="Refresh">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <polyline points="23 4 23 10 17 10"/>
-    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10"/>
+    <polyline points="23 4 23 10 17 10" />
+    <path d="M3.51 9a9 9 0 0114.85-3.36L23 10" />
   </svg>
 </button>
 ```

@@ -8,7 +8,7 @@ Provides a centralized interface for measuring developer productivity, workflow 
 
 ```html
 <div class="scorecard-card healthy">
-    <h3>CI/CD Experience</h3>
+  <h3>CI/CD Experience</h3>
 </div>
 ```
 

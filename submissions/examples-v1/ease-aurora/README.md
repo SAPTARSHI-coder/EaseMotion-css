@@ -15,13 +15,13 @@ An intermediate, atmosphere-first background utility component that renders a li
 
 ## Palette Variants (Demo)
 
-| Name | Character |
-|---|---|
-| Default | Classic polar green-violet |
-| Arctic | Cool teal and ice blue |
-| Solar Flare | Warm orange, gold, magenta |
-| Rosé | Pink, raspberry, deep violet |
-| Moonlit | Soft indigo and periwinkle |
+| Name        | Character                    |
+| ----------- | ---------------------------- |
+| Default     | Classic polar green-violet   |
+| Arctic      | Cool teal and ice blue       |
+| Solar Flare | Warm orange, gold, magenta   |
+| Rosé        | Pink, raspberry, deep violet |
+| Moonlit     | Soft indigo and periwinkle   |
 
 ## Workspace Tree Map
 
@@ -33,4 +33,5 @@ submissions/examples/ease-aurora/
 ```
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

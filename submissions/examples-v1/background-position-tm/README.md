@@ -18,9 +18,7 @@ This submission demonstrates the `background-position` CSS property with multipl
 Apply the `background-position` class to any element:
 
 ```html
-<div class="background-position">
-  Your content here
-</div>
+<div class="background-position">Your content here</div>
 ```
 
 ## Tokens Used

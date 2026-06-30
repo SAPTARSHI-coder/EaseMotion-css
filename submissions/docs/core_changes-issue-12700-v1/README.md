@@ -38,27 +38,27 @@ Provides a CSS-only Toggle Switch component for boolean settings, feature flags,
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Default primary color, md size |
-| `.ease-toggle-sm` | Smaller track and knob |
-| `.ease-toggle-lg` | Larger track and knob |
-| `.ease-toggle-success` | Green active color |
-| `.ease-toggle-danger` | Red active color |
-| `input:disabled` | Reduced opacity, no interaction |
+| Modifier               | Effect                          |
+| ---------------------- | ------------------------------- |
+| (none)                 | Default primary color, md size  |
+| `.ease-toggle-sm`      | Smaller track and knob          |
+| `.ease-toggle-lg`      | Larger track and knob           |
+| `.ease-toggle-success` | Green active color              |
+| `.ease-toggle-danger`  | Red active color                |
+| `input:disabled`       | Reduced opacity, no interaction |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--tw` | `2.75rem` | Track width |
-| `--th` | `1.5rem` | Track height |
-| `--kw` | `1.125rem` | Knob width |
-| `--kh` | `1.125rem` | Knob height |
-| `--koff` | `0.1875rem` | Knob offset from top/left |
-| `--kshift` | `1.25rem` | Knob translate on checked |
-| `--ton` | `#6c63ff` | Track color when checked |
-| `--toff` | `#cbd5e1` | Track color when unchecked |
+| Property   | Default     | Description                |
+| ---------- | ----------- | -------------------------- |
+| `--tw`     | `2.75rem`   | Track width                |
+| `--th`     | `1.5rem`    | Track height               |
+| `--kw`     | `1.125rem`  | Knob width                 |
+| `--kh`     | `1.125rem`  | Knob height                |
+| `--koff`   | `0.1875rem` | Knob offset from top/left  |
+| `--kshift` | `1.25rem`   | Knob translate on checked  |
+| `--ton`    | `#6c63ff`   | Track color when checked   |
+| `--toff`   | `#cbd5e1`   | Track color when unchecked |
 
 ## Why is it useful?
 

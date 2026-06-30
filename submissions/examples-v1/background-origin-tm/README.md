@@ -18,9 +18,7 @@ This submission demonstrates the `background-origin` CSS property with multiple 
 Apply the `background-origin` class to any element:
 
 ```html
-<div class="background-origin">
-  Your content here
-</div>
+<div class="background-origin">Your content here</div>
 ```
 
 ## Tokens Used

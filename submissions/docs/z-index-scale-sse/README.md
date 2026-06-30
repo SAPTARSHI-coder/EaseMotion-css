@@ -13,7 +13,7 @@ Drop the `:root` block from `style.css` into the framework's variables file, the
 ```css
 .em-modal {
   position: fixed;
-  z-index: var(--em-z-modal);   /* 1000 */
+  z-index: var(--em-z-modal); /* 1000 */
 }
 
 .em-tooltip::after {
@@ -23,27 +23,27 @@ Drop the `:root` block from `style.css` into the framework's variables file, the
 
 .em-toast {
   position: fixed;
-  z-index: var(--em-z-toast);   /* 1100 — always on top */
+  z-index: var(--em-z-toast); /* 1100 — always on top */
 }
 ```
 
 ### The Proposed Scale
 
-| Token                | Value | Intended Use                          |
-| -------------------- | ----- | ------------------------------------- |
-| `--em-z-hide`        | -1    | Visually hidden, behind everything    |
-| `--em-z-base`        | 0     | Default flow layer                    |
-| `--em-z-raised`      | 10    | Cards, raised surfaces                |
-| `--em-z-dropdown`    | 100   | Select menus, dropdowns               |
-| `--em-z-sticky`      | 200   | Sticky headers, sticky nav            |
-| `--em-z-fixed`       | 300   | Fixed navbars, side rails             |
-| `--em-z-overlay`     | 400   | Backdrops / scrims                    |
-| `--em-z-drawer`      | 500   | Side drawers, off-canvas panels       |
-| `--em-z-modal`       | 1000  | Modal dialogs                         |
-| `--em-z-popover`     | 1025  | Popovers anchored to a trigger        |
-| `--em-z-tooltip`     | 1050  | Tooltips                              |
-| `--em-z-toast`       | 1100  | Toasts / snackbars                    |
-| `--em-z-top`         | 9999  | Absolute top — debug overlays         |
+| Token             | Value | Intended Use                       |
+| ----------------- | ----- | ---------------------------------- |
+| `--em-z-hide`     | -1    | Visually hidden, behind everything |
+| `--em-z-base`     | 0     | Default flow layer                 |
+| `--em-z-raised`   | 10    | Cards, raised surfaces             |
+| `--em-z-dropdown` | 100   | Select menus, dropdowns            |
+| `--em-z-sticky`   | 200   | Sticky headers, sticky nav         |
+| `--em-z-fixed`    | 300   | Fixed navbars, side rails          |
+| `--em-z-overlay`  | 400   | Backdrops / scrims                 |
+| `--em-z-drawer`   | 500   | Side drawers, off-canvas panels    |
+| `--em-z-modal`    | 1000  | Modal dialogs                      |
+| `--em-z-popover`  | 1025  | Popovers anchored to a trigger     |
+| `--em-z-tooltip`  | 1050  | Tooltips                           |
+| `--em-z-toast`    | 1100  | Toasts / snackbars                 |
+| `--em-z-top`      | 9999  | Absolute top — debug overlays      |
 
 > The exact values for `--em-z-modal` and `--em-z-tooltip` match the examples given in issue #16995. Layers are spaced by ~100 so future intermediate layers can be added without breaking the established order.
 

@@ -10,16 +10,9 @@ Provides a compact toolbar-style search component that combines a search field, 
 <form class="csb-tool" role="search">
   <span class="csb-tool-chip">All</span>
 
-  <input
-    type="search"
-    placeholder="Search..."
-  />
+  <input type="search" placeholder="Search..." />
 
-  <button
-    type="button"
-    class="csb-tool-action"
-    aria-label="Filters"
-  >
+  <button type="button" class="csb-tool-action" aria-label="Filters">
     ...
   </button>
 </form>

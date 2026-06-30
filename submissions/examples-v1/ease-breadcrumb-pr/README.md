@@ -20,18 +20,13 @@ Breadcrumb navigation showing current page path with clickable parent links.
 ## Usage
 
 ```html
-&lt;&lt;nav aria-label="Breadcrumb"&gt;
-  &lt;ol class="breadcrumb-pr"&gt;
-    &lt;li class="breadcrumb-pr-item"&gt;
-      &lt;a href="#" class="breadcrumb-pr-link"&gt;Home&lt;/a&gt;
-      &lt;span class="breadcrumb-pr-separator"&gt;/&lt;/span&gt;
-    &lt;/li&gt;
-    &lt;li class="breadcrumb-pr-item"&gt;
-      &lt;a href="#" class="breadcrumb-pr-link"&gt;Products&lt;/a&gt;
-      &lt;span class="breadcrumb-pr-separator"&gt;/&lt;/span&gt;
-    &lt;/li&gt;
-    &lt;li class="breadcrumb-pr-item"&gt;
-      &lt;span class="breadcrumb-pr-current" aria-current="page"&gt;Laptops&lt;/span&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/nav&gt;
+&lt;&lt;nav aria-label="Breadcrumb"&gt; &lt;ol class="breadcrumb-pr"&gt; &lt;li
+class="breadcrumb-pr-item"&gt; &lt;a href="#"
+class="breadcrumb-pr-link"&gt;Home&lt;/a&gt; &lt;span
+class="breadcrumb-pr-separator"&gt;/&lt;/span&gt; &lt;/li&gt; &lt;li
+class="breadcrumb-pr-item"&gt; &lt;a href="#"
+class="breadcrumb-pr-link"&gt;Products&lt;/a&gt; &lt;span
+class="breadcrumb-pr-separator"&gt;/&lt;/span&gt; &lt;/li&gt; &lt;li
+class="breadcrumb-pr-item"&gt; &lt;span class="breadcrumb-pr-current"
+aria-current="page"&gt;Laptops&lt;/span&gt; &lt;/li&gt; &lt;/ol&gt; &lt;/nav&gt;
+```

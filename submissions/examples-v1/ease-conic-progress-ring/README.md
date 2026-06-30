@@ -18,3 +18,4 @@ This demo is completely self-contained. Open `demo.html` in your browser.
 <div class="ease-conic-progress" style="animation: fill-75 1.5s forwards;">
   <span class="ease-conic-progress__value">75%</span>
 </div>
+```

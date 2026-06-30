@@ -8,16 +8,14 @@ Provides a modern command palette interface with grouped commands, keyboard shor
 
 ```html
 <div class="command-palette">
-
   <div class="search-box">
-    <input type="text" placeholder="Search commands...">
+    <input type="text" placeholder="Search commands..." />
   </div>
 
   <div class="command-item">
     <span>Open Settings</span>
     <kbd>⌘ S</kbd>
   </div>
-
 </div>
 ```
 

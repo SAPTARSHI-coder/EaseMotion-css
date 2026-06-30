@@ -30,7 +30,7 @@ The examples illustrate how metadata stored in HTML can be surfaced visually wit
 ```
 
 ```css
-.profile-card::after{
+.profile-card::after {
   content: attr(data-role);
 }
 ```

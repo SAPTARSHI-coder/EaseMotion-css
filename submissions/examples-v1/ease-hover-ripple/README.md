@@ -23,4 +23,5 @@ submissions/examples/ease-hover-ripple/
 ```
 
 ---
+
 Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

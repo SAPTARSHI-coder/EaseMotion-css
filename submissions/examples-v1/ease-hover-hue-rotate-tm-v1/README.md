@@ -6,8 +6,7 @@ Rotates the hue of an element's colors on hover using CSS `filter: hue-rotate()`
 **How is it used?**
 
 ```html
-<button class="hue-btn">Click Me</button>
-<span class="hue-badge">New</span>
+<button class="hue-btn">Click Me</button> <span class="hue-badge">New</span>
 ```
 
 ```css

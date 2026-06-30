@@ -16,11 +16,11 @@ Optionally add a suffix like + or % directly in HTML next to the span.
 
 ## Class Reference
 
-| Class | Description |
-|---|---|
-| ease-counter | Base class, animates to --ease-counter-to |
-| ease-counter-fast | Faster count speed |
-| ease-counter-slow | Slower count speed |
+| Class             | Description                               |
+| ----------------- | ----------------------------------------- |
+| ease-counter      | Base class, animates to --ease-counter-to |
+| ease-counter-fast | Faster count speed                        |
+| ease-counter-slow | Slower count speed                        |
 
 ## Staggered stats section
 
@@ -37,18 +37,18 @@ The result is a smooth count-up with zero JavaScript.
 
 ## CSS Variables used
 
-| Token | Role |
-|---|---|
-| --ease-counter-to | Target number to count up to |
-| --ease-speed-slow | Default animation duration |
-| --ease-speed-medium | Fast variant duration |
-| --ease-count | Internal animated property (do not set manually) |
+| Token               | Role                                             |
+| ------------------- | ------------------------------------------------ |
+| --ease-counter-to   | Target number to count up to                     |
+| --ease-speed-slow   | Default animation duration                       |
+| --ease-speed-medium | Fast variant duration                            |
+| --ease-count        | Internal animated property (do not set manually) |
 
 ## Browser support
 
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| CSS @property | yes | yes | yes (v128+) | yes (v17.2+) |
-| counter-reset | yes | yes | yes | yes |
+| Feature       | Chrome | Edge | Firefox     | Safari       |
+| ------------- | ------ | ---- | ----------- | ------------ |
+| CSS @property | yes    | yes  | yes (v128+) | yes (v17.2+) |
+| counter-reset | yes    | yes  | yes         | yes          |
 
 Submitted under MIT License · EaseMotion CSS · Closes #8537 · 2026

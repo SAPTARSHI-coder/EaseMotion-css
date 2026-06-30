@@ -5,9 +5,11 @@ A set of premium animation chaining utility classes that coordinate multiple seq
 ## Questions for Contributing Guide
 
 ### 1. What does this do?
+
 This submission implements CSS animation chaining utilities (`ease-chain-fade-bounce-pulse`, `ease-chain-slide-rotate-scale`, and `ease-chain-zoom-fade-bounce`) to execute sequence chains (Segment 1 ➔ Segment 2 ➔ Segment 3) in a specific order using native CSS properties.
 
 ### 2. How is it used?
+
 Apply the class directly to any HTML element. The component expects timing customization variables declared on the element or in your stylesheet.
 
 ```html
@@ -20,29 +22,31 @@ Apply the class directly to any HTML element. The component expects timing custo
 :root {
   /* Timing configuration */
   --ease-chain-duration: 0.8s; /* duration of each segment */
-  --ease-chain-gap: 0.2s;      /* gap delay between segments */
-  --ease-chain-repeat: 1;      /* repeat count: 1, 2, or infinite */
+  --ease-chain-gap: 0.2s; /* gap delay between segments */
+  --ease-chain-repeat: 1; /* repeat count: 1, 2, or infinite */
 }
 ```
 
 ### 3. Why is it useful?
+
 In premium web design, multi-stage entry animations are normally driven by heavy JavaScript libraries (like GSAP or Framer Motion). This utility allows developers to achieve highly orchestrated multi-step sequences using pure, hardware-accelerated CSS with full customization and accessibility control.
 
 ---
 
 ## Available Variants
 
-| Class Name | Animation Steps | Property Targets |
-|------------|-----------------|------------------|
-| `.ease-chain-fade-bounce-pulse` | Fade ➔ Bounce ➔ Pulse | `opacity`, `translate`, `scale` |
-| `.ease-chain-slide-rotate-scale` | Slide ➔ Rotate ➔ Scale | `translate`/`opacity`, `rotate`, `scale` |
-| `.ease-chain-zoom-fade-bounce` | Zoom ➔ Fade Cycle ➔ Bounce | `scale`/`opacity`, `opacity`, `translate` |
+| Class Name                       | Animation Steps            | Property Targets                          |
+| -------------------------------- | -------------------------- | ----------------------------------------- |
+| `.ease-chain-fade-bounce-pulse`  | Fade ➔ Bounce ➔ Pulse      | `opacity`, `translate`, `scale`           |
+| `.ease-chain-slide-rotate-scale` | Slide ➔ Rotate ➔ Scale     | `translate`/`opacity`, `rotate`, `scale`  |
+| `.ease-chain-zoom-fade-bounce`   | Zoom ➔ Fade Cycle ➔ Bounce | `scale`/`opacity`, `opacity`, `translate` |
 
 ---
 
 ## How Sequential Timing Works
 
 To prevent animation segments from overlapping, we calculate delays based on the index position of each step:
+
 - **Step 1 (Index 0)**: Starts immediately with `delay = 0s`.
 - **Step 2 (Index 1)**: Delays until Step 1 is finished plus the gap:
   `delay = calc(var(--ease-chain-duration) + var(--ease-chain-gap))`

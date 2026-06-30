@@ -18,9 +18,7 @@ This submission demonstrates the `box-decoration-break` CSS property with multip
 Apply the `box-decoration-break` class to any element:
 
 ```html
-<div class="box-decoration-break">
-  Your content here
-</div>
+<div class="box-decoration-break">Your content here</div>
 ```
 
 ## Tokens Used

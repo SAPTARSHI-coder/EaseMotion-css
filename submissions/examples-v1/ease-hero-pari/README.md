@@ -5,6 +5,7 @@ A full-width hero section component with centered content,
 overlay support, and built-in entrance animations.
 
 **How is it used?**
+
 <section class="ease-hero purple">
   <div class="ease-hero-content">
     <span class="hero-tag">Tag</span>

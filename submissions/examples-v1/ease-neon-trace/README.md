@@ -10,7 +10,7 @@ Add `.ease-neon-trace` to the container and include an inline SVG with class `ne
 <div class="ease-neon-trace">
   Content
   <svg class="neon-border" viewBox="0 0 100 100" preserveAspectRatio="none">
-    <rect x="1" y="1" width="98" height="98" rx="10"/>
+    <rect x="1" y="1" width="98" height="98" rx="10" />
   </svg>
 </div>
 ```

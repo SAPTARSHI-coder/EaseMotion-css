@@ -12,4 +12,5 @@ A utility that creates an elegant horizontal divider using a gradient fade effec
 ## Usage
 
 ```html
-<hr class="ease-divider-gradient">
+<hr class="ease-divider-gradient" />
+```

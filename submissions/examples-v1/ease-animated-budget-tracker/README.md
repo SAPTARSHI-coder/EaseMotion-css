@@ -15,8 +15,13 @@ A modern, fintech-inspired dashboard component built entirely with HTML and CSS.
 This demo is self-contained. Open `demo.html` in your browser. All required CSS is inside `style.css`.
 
 To animate a budget bar dynamically:
+
 ```html
 <div class="progress-bar">
   <!-- The bar will smoothly grow to 80% on load -->
-  <div class="ease-progress ease-progress--warning" style="--progress: 80%;"></div>
+  <div
+    class="ease-progress ease-progress--warning"
+    style="--progress: 80%;"
+  ></div>
 </div>
+```

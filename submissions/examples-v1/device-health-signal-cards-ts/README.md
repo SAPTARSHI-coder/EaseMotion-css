@@ -8,7 +8,9 @@ Compares online, degraded, offline, and maintenance states for monitored devices
 
 ```html
 <article class="device online">
-  <span></span><h2>Gateway A12</h2><p>Online · 98%</p>
+  <span></span>
+  <h2>Gateway A12</h2>
+  <p>Online · 98%</p>
 </article>
 ```
 

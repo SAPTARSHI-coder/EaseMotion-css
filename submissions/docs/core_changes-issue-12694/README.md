@@ -23,8 +23,11 @@ Provides a CSS-only Avatar component for user profile pictures, initials fallbac
 **With status dot:**
 
 ```html
-<span class="ease-avatar ease-avatar-initials
-  ease-avatar-status ease-avatar-status-online">JD</span>
+<span
+  class="ease-avatar ease-avatar-initials
+  ease-avatar-status ease-avatar-status-online"
+  >JD</span
+>
 ```
 
 **Avatar group:**
@@ -39,28 +42,28 @@ Provides a CSS-only Avatar component for user profile pictures, initials fallbac
 
 ### Variants
 
-| Modifier | Effect |
-|---|---|
-| (none) | Circle, 40px, initials background |
-| `.ease-avatar-initials` | Brand background + white text |
-| `.ease-avatar-xs` | 24px |
-| `.ease-avatar-sm` | 32px |
-| `.ease-avatar-lg` | 56px |
-| `.ease-avatar-xl` | 80px |
-| `.ease-avatar-rounded` | Full circle (default) |
-| `.ease-avatar-square` | 0.5rem radius |
-| `.ease-avatar-soft` | 0.75rem radius |
-| `.ease-avatar-status` | Enables status indicator dot |
-| `.ease-avatar-status-online` | Green dot |
-| `.ease-avatar-status-away` | Yellow dot |
-| `.ease-avatar-status-busy` | Red dot |
-| `.ease-avatar-group` | Overlapping stack container |
+| Modifier                     | Effect                            |
+| ---------------------------- | --------------------------------- |
+| (none)                       | Circle, 40px, initials background |
+| `.ease-avatar-initials`      | Brand background + white text     |
+| `.ease-avatar-xs`            | 24px                              |
+| `.ease-avatar-sm`            | 32px                              |
+| `.ease-avatar-lg`            | 56px                              |
+| `.ease-avatar-xl`            | 80px                              |
+| `.ease-avatar-rounded`       | Full circle (default)             |
+| `.ease-avatar-square`        | 0.5rem radius                     |
+| `.ease-avatar-soft`          | 0.75rem radius                    |
+| `.ease-avatar-status`        | Enables status indicator dot      |
+| `.ease-avatar-status-online` | Green dot                         |
+| `.ease-avatar-status-away`   | Yellow dot                        |
+| `.ease-avatar-status-busy`   | Red dot                           |
+| `.ease-avatar-group`         | Overlapping stack container       |
 
 ### CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--asize` | `2.5rem` | Width & height |
+| Property  | Default    | Description        |
+| --------- | ---------- | ------------------ |
+| `--asize` | `2.5rem`   | Width & height     |
 | `--afont` | `0.875rem` | Initials font size |
 
 ## Why is it useful?

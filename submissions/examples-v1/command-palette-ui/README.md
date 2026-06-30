@@ -17,11 +17,9 @@ A modern command palette inspired by Raycast, VS Code, Linear, and Spotlight Sea
 
 ```html
 <div class="command-item">
+  <span>Open Settings</span>
 
-    <span>Open Settings</span>
-
-    <kbd>⌘S</kbd>
-
+  <kbd>⌘S</kbd>
 </div>
 ```
 

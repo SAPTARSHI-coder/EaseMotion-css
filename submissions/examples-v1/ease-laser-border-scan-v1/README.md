@@ -30,9 +30,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="laser-card">
-    Content
-</div>
+<div class="laser-card">Content</div>
 ```
 
 ---

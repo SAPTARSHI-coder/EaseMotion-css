@@ -15,9 +15,7 @@ Expandable/collapsible content sections with smooth height animation using `grid
       <svg class="ease-accordion-icon"><!-- chevron --></svg>
     </button>
     <div class="ease-accordion-panel">
-      <div class="ease-accordion-content">
-        Content here
-      </div>
+      <div class="ease-accordion-content">Content here</div>
     </div>
   </div>
 </div>
@@ -25,24 +23,24 @@ Expandable/collapsible content sections with smooth height animation using `grid
 
 ## Modes
 
-| Mode | Description |
-|---|---|
-| `'single'` (default) | Only one item open at a time |
-| `'multiple'` | Multiple items can be open simultaneously |
+| Mode                 | Description                               |
+| -------------------- | ----------------------------------------- |
+| `'single'` (default) | Only one item open at a time              |
+| `'multiple'`         | Multiple items can be open simultaneously |
 
 ```js
-initAccordion(rootElement, { mode: 'single' });
-initAccordion(rootElement, { mode: 'multiple' });
+initAccordion(rootElement, { mode: "single" });
+initAccordion(rootElement, { mode: "multiple" });
 ```
 
 ## CSS Custom Properties
 
-| Property | Default | Description |
-|---|---|---|
-| `--ease-color-surface` | `#fff` | Header background |
-| `--ease-color-neutral-200` | `#e2e8f0` | Border color |
-| `--ease-speed-medium` | `0.35s` | Panel animation duration |
-| `--ease-space-4` | `1rem` | Padding |
+| Property                   | Default   | Description              |
+| -------------------------- | --------- | ------------------------ |
+| `--ease-color-surface`     | `#fff`    | Header background        |
+| `--ease-color-neutral-200` | `#e2e8f0` | Border color             |
+| `--ease-speed-medium`      | `0.35s`   | Panel animation duration |
+| `--ease-space-4`           | `1rem`    | Padding                  |
 
 ## Accessibility
 

@@ -1,4 +1,5 @@
 # Animated Budget Tracker
+
 A visual progress component for budget tracking.
 
 - **Effect**: Uses CSS transitions on `width` for smooth bar growth.

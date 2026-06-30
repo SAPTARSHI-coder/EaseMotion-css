@@ -26,12 +26,12 @@ Call-to-action banner section with icon, headline, description, and action butto
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-lg` | 12px |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-primary-dark` | #4f46e5 |
-| `--ease-color-neutral-*` | grays |
-| `--ease-font-sans` | system-ui |
+| Variable                    | Default   |
+| --------------------------- | --------- |
+| `--ease-space-*`            | spacing   |
+| `--ease-radius-lg`          | 12px      |
+| `--ease-radius-md`          | 8px       |
+| `--ease-color-primary`      | #6366f1   |
+| `--ease-color-primary-dark` | #4f46e5   |
+| `--ease-color-neutral-*`    | grays     |
+| `--ease-font-sans`          | system-ui |

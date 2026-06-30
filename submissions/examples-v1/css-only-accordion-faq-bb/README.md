@@ -4,6 +4,7 @@
    A zero-JavaScript FAQ accordion built with native `<details>`/`<summary>` HTML elements, using the CSS `grid-template-rows: 0fr → 1fr` height animation technique for smooth expand/collapse, a rotating SVG chevron icon, and staggered entrance animations.
 
 2. **How is it used?**
+
    ```html
    <details class="accordion-item" name="faq-group">
      <summary class="accordion-trigger">
@@ -19,6 +20,7 @@
      </div>
    </details>
    ```
+
    The `name="faq-group"` attribute on all `<details>` elements creates an exclusive group (only one open at a time) natively in supporting browsers.
 
 3. **Why is it useful?**

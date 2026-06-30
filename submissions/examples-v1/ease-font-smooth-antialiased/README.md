@@ -12,7 +12,9 @@ A demonstration of the `-webkit-font-smoothing: antialiased` utility, considered
 This demo is self-contained. Open `demo.html` in your browser (preferably on a Mac or iOS device to see the full native effect). All required CSS is inside `style.css`.
 
 To apply premium smoothing to an element (or usually the whole `body` in a dark mode app):
+
 ```html
 <body class="ease-font-antialiased">
   <!-- Crisp text everywhere -->
 </body>
+```

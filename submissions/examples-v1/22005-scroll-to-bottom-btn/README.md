@@ -8,18 +8,18 @@ A fixed-position scroll-to-bottom button component that animates in when the use
 
 ## EaseMotion CSS Classes Showcased
 
-| Class | Description |
-|---|---|
+| Class         | Description                                               |
+| ------------- | --------------------------------------------------------- |
 | `ease-bounce` | Applied to the scroll-down hint arrow in the hero section |
 
 ## Component Classes
 
 The following classes are proposed for integration into EaseMotion CSS:
 
-| Class | Description |
-|---|---|
-| `.scroll-to-bottom-btn` | Base styles — fixed position, hidden by default (opacity: 0, transform: scale(0.9) translateY(12px)) |
-| `.scroll-to-bottom-btn--visible` | Visible state — opacity: 1, transform: none |
+| Class                            | Description                                                                                          |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `.scroll-to-bottom-btn`          | Base styles — fixed position, hidden by default (opacity: 0, transform: scale(0.9) translateY(12px)) |
+| `.scroll-to-bottom-btn--visible` | Visible state — opacity: 1, transform: none                                                          |
 
 ## Animation Properties
 

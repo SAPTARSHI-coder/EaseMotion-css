@@ -7,11 +7,13 @@ This example demonstrates:
 - text-combine-upright
 
 Features:
+
 - Vertical writing layout
 - Upright text orientation
 - Combined upright text using text-combine-upright
 
 Files included:
+
 - demo.html
 - style.css
 - README.md

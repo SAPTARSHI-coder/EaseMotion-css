@@ -13,9 +13,7 @@ A gamification-inspired animation that creates a level-up effect with a glowing 
 ## Usage
 
 ```html
-<div class="ease-level-up-glow">
-  ⭐
-</div>
+<div class="ease-level-up-glow">⭐</div>
 ```
 
 ## Fits EaseMotion CSS

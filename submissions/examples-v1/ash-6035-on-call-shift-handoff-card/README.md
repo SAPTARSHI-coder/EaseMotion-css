@@ -23,17 +23,11 @@ A responsive on-call shift handoff component that displays outgoing and incoming
 
 ```html
 <div class="handoff">
+  <div class="person outgoing">...</div>
 
-    <div class="person outgoing">
-        ...
-    </div>
+  <div class="arrow">→</div>
 
-    <div class="arrow">→</div>
-
-    <div class="person incoming">
-        ...
-    </div>
-
+  <div class="person incoming">...</div>
 </div>
 ```
 

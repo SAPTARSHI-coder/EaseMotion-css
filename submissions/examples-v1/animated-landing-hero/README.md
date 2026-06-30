@@ -24,9 +24,7 @@ A modern animated landing page hero section featuring staggered typography revea
 ## Usage
 
 ```html
-<section class="hero">
-  ...
-</section>
+<section class="hero">...</section>
 ```
 
 ## Main Classes

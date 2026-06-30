@@ -23,15 +23,9 @@ A responsive document comparison component that displays two document versions s
 
 ```html
 <div class="comparison">
+  <div class="version old">...</div>
 
-    <div class="version old">
-        ...
-    </div>
-
-    <div class="version new">
-        ...
-    </div>
-
+  <div class="version new">...</div>
 </div>
 ```
 

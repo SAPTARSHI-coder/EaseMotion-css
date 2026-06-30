@@ -31,9 +31,7 @@ The demo includes:
 ## Usage
 
 ```html
-<div class="heatmap">
-...
-</div>
+<div class="heatmap">...</div>
 ```
 
 ---

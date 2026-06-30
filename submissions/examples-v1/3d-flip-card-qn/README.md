@@ -1,13 +1,16 @@
 # 3D Flip Card
 
 ## Description
+
 A smooth, interactive 3D flip card component. When the user hovers over the card, it flips 180 degrees along the Y-axis to reveal the back face. This is achieved entirely using CSS 3D transforms (`perspective`, `transform-style: preserve-3d`, and `backface-visibility`) and requires zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the HTML structure for the scene, card, and both front/back faces.
 - `style.css`: Contains the 3D perspective setup, transform animations, and styling for both sides of the card.
 
 ## How to use
+
 1. Open `demo.html` in your browser and hover over the card to see the 3D flip effect.
 2. Copy the HTML and CSS into your project.
 3. Wrap your card content in a `.scene-qn` container, and place a `.card-qn` inside it.

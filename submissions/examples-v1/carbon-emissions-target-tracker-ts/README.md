@@ -6,22 +6,22 @@ A dashboard component for tracking carbon emissions against reduction targets. D
 
 ## Features
 
-* Summary cards for current emissions, target, and reduction achieved
-* Animated progress bars for emissions, target, and reduction metrics
-* Three target state cards with visual and text-based status indicators
-* Color-coded accents (green/yellow/red) plus icon badges for accessibility
-* Status text labels so meaning is clear without relying on color alone
-* Staggered fade-up entrance animations
-* Dark theme with glassmorphism surfaces
-* Fully responsive layout
-* Reduced-motion accessibility support
+- Summary cards for current emissions, target, and reduction achieved
+- Animated progress bars for emissions, target, and reduction metrics
+- Three target state cards with visual and text-based status indicators
+- Color-coded accents (green/yellow/red) plus icon badges for accessibility
+- Status text labels so meaning is clear without relying on color alone
+- Staggered fade-up entrance animations
+- Dark theme with glassmorphism surfaces
+- Fully responsive layout
+- Reduced-motion accessibility support
 
 ## Use Cases
 
-* Sustainability dashboards
-* ESG reporting interfaces
-* Corporate carbon footprint trackers
-* Environmental impact monitoring
+- Sustainability dashboards
+- ESG reporting interfaces
+- Corporate carbon footprint trackers
+- Environmental impact monitoring
 
 ## Example Usage
 
@@ -43,11 +43,11 @@ A dashboard component for tracking carbon emissions against reduction targets. D
 
 ## State Indicators
 
-| State | Color | Badge Text | Icon |
-|-------|-------|------------|------|
-| On Track | Green (#22c55e) | "On Track" | ✓ |
-| Attention Needed | Yellow (#eab308) | "Attention" | ! |
-| Off Track | Red (#ef4444) | "Off Track" | ✗ |
+| State            | Color            | Badge Text  | Icon |
+| ---------------- | ---------------- | ----------- | ---- |
+| On Track         | Green (#22c55e)  | "On Track"  | ✓    |
+| Attention Needed | Yellow (#eab308) | "Attention" | !    |
+| Off Track        | Red (#ef4444)    | "Off Track" | ✗    |
 
 ## Accessibility
 
@@ -57,17 +57,17 @@ Status is conveyed through both color and text labels (badge text + icon). The c
 
 Compatible with modern browsers supporting:
 
-* CSS Animations
-* CSS Transforms
-* CSS Keyframes
-* CSS Backdrop Filter
-* Media Queries
+- CSS Animations
+- CSS Transforms
+- CSS Keyframes
+- CSS Backdrop Filter
+- Media Queries
 
 ## Acceptance Criteria
 
-* Uses CSS keyframes.
-* Smooth and reusable animation.
-* Lightweight implementation.
-* Accessible design.
-* Easy integration into existing projects.
-* Consistent with EaseMotion CSS principles.
+- Uses CSS keyframes.
+- Smooth and reusable animation.
+- Lightweight implementation.
+- Accessible design.
+- Easy integration into existing projects.
+- Consistent with EaseMotion CSS principles.

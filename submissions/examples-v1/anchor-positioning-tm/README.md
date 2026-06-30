@@ -18,7 +18,9 @@ A self-contained EaseMotion-css submission that demonstrates the `anchor positio
 ## Usage
 
 ```html
-<div class="anchor-positioning anchor-positioning-md anchor-positioning-primary">
+<div
+  class="anchor-positioning anchor-positioning-md anchor-positioning-primary"
+>
   Hello world
 </div>
 ```
@@ -34,18 +36,18 @@ The submission also demonstrates two important EaseMotion patterns:
 
 ## Token reference
 
-| Variant | Token(s) used |
-| --- | --- |
-| Default | --ease-color-primary-alpha, --ease-color-primary-dark |
-| Primary | --ease-color-primary |
-| Secondary | --ease-color-secondary |
-| Success | --ease-color-success |
-| Danger | --ease-color-danger |
-| Warning | --ease-color-warning |
-| Info | --ease-color-info |
-| Sizes | --ease-space-*, --ease-radius-{sm,md,lg,xl} |
-| Shapes | --ease-radius-{sm,md,full} |
-| Motion | --ease-speed-fast, --ease-ease-out |
+| Variant   | Token(s) used                                         |
+| --------- | ----------------------------------------------------- |
+| Default   | --ease-color-primary-alpha, --ease-color-primary-dark |
+| Primary   | --ease-color-primary                                  |
+| Secondary | --ease-color-secondary                                |
+| Success   | --ease-color-success                                  |
+| Danger    | --ease-color-danger                                   |
+| Warning   | --ease-color-warning                                  |
+| Info      | --ease-color-info                                     |
+| Sizes     | --ease-space-\*, --ease-radius-{sm,md,lg,xl}          |
+| Shapes    | --ease-radius-{sm,md,full}                            |
+| Motion    | --ease-speed-fast, --ease-ease-out                    |
 
 ## Accessibility
 

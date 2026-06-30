@@ -24,15 +24,9 @@ A responsive Knowledge Base Experience Center that provides a centralized interf
 
 ```html
 <div class="dashboard">
+  <aside class="sidebar">...</aside>
 
-    <aside class="sidebar">
-        ...
-    </aside>
-
-    <main class="content">
-        ...
-    </main>
-
+  <main class="content">...</main>
 </div>
 ```
 

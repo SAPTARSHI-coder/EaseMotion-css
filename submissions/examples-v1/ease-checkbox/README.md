@@ -1,14 +1,8 @@
 \# ease-checkbox
 
-
-
 Custom-styled checkbox component with animated checkmark.
 
-
-
 \## Classes
-
-
 
 | Class | Description |
 
@@ -28,11 +22,7 @@ Custom-styled checkbox component with animated checkmark.
 
 | `ease-checkbox-large` | Large size |
 
-
-
 \## Features
-
-
 
 \- ✅ Custom styled checkbox
 
@@ -46,19 +36,12 @@ Custom-styled checkbox component with animated checkmark.
 
 \- ⌨️ Keyboard accessible
 
-
-
 \## Usage
 
-
-
 ```html
-
 <label class="ease-checkbox">
+  &#x20; <input type="checkbox" />
 
-&#x20;   <input type="checkbox">
-
-&#x20;   <span class="ease-checkbox-label">Label text</span>
-
+  &#x20; <span class="ease-checkbox-label">Label text</span>
 </label>
-
+```

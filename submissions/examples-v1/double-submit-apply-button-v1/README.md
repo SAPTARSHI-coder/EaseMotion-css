@@ -15,7 +15,12 @@ This adds an animated job application button pattern that immediately enters a d
 When the request starts, disable the button and add the loading class before awaiting the network response:
 
 ```html
-<button class="apply-lock-button is-loading" type="button" disabled aria-busy="true">
+<button
+  class="apply-lock-button is-loading"
+  type="button"
+  disabled
+  aria-busy="true"
+>
   <span class="button-label">Applying...</span>
 </button>
 ```

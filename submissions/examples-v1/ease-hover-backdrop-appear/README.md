@@ -11,9 +11,7 @@ A hover effect that applies a smooth backdrop blur when the user hovers over an 
 ## Usage
 
 ```html
-<div class="ease-hover-backdrop-appear">
-  Hover me
-</div>
+<div class="ease-hover-backdrop-appear">Hover me</div>
 ```
 
 ## CSS

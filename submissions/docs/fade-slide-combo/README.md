@@ -13,23 +13,29 @@ and a built-in stagger helper for child elements.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File                     | Purpose                                    |
+| ------------------------ | ------------------------------------------ |
 | `_fade-slide-combo.scss` | Mixin source — copy into your SCSS project |
-| `style.css` | Pre-compiled output (CDN / no-build use) |
-| `demo.html` | Live demo with replay controls |
-| `README.md` | This document |
+| `style.css`              | Pre-compiled output (CDN / no-build use)   |
+| `demo.html`              | Live demo with replay controls             |
+| `README.md`              | This document                              |
 
 ---
 
 ## Quick Start
 
 ```scss
-@use 'path/to/fade-slide-combo' as *;
+@use "path/to/fade-slide-combo" as *;
 
-.hero-title { @include fade-slide-combo(up); }
-.hero-sub   { @include fade-slide-combo(up, $delay: 150ms); }
-.sidebar    { @include fade-slide-combo(right, $distance: 40px); }
+.hero-title {
+  @include fade-slide-combo(up);
+}
+.hero-sub {
+  @include fade-slide-combo(up, $delay: 150ms);
+}
+.sidebar {
+  @include fade-slide-combo(right, $distance: 40px);
+}
 ```
 
 ---
@@ -38,29 +44,32 @@ and a built-in stagger helper for child elements.
 
 ```scss
 @mixin fade-slide-combo(
-  $direction: up,       // up | down | left | right
-  $distance:  22px,     // slide travel distance
-  $duration:  400ms,    // animation duration
-  $easing:    cubic-bezier(0.22,1,0.36,1),
-  $delay:     0ms,
-  $fill:      both,
-  $scale:     false     // scale 0.96→1 alongside slide (up/down only)
-)
+  $direction: up,
+  // up | down | left | right
+  $distance: 22px,
+  // slide travel distance
+  $duration: 400ms,
+  // animation duration
+  $easing: cubic-bezier(0.22, 1, 0.36, 1),
+  $delay: 0ms,
+  $fill: both,
+  $scale: false // scale 0.96→1 alongside slide (up/down only)
+);
 ```
 
 ---
 
 ## Available Mixins
 
-| Mixin | Description |
-|-------|-------------|
-| `fade-slide-combo($direction, …)` | Master mixin — all options |
-| `fsc-up($duration, $delay, $distance)` | Shortcut — fade up |
-| `fsc-down($duration, $delay, $distance)` | Shortcut — fade down |
-| `fsc-left($duration, $delay, $distance)` | Shortcut — fade left |
-| `fsc-right($duration, $delay, $distance)` | Shortcut — fade right |
-| `fsc-up-spring($duration, $delay)` | Spring easing + scale variant |
-| `fsc-stagger($count, $step, $base-delay)` | nth-child delay ladder |
+| Mixin                                     | Description                   |
+| ----------------------------------------- | ----------------------------- |
+| `fade-slide-combo($direction, …)`         | Master mixin — all options    |
+| `fsc-up($duration, $delay, $distance)`    | Shortcut — fade up            |
+| `fsc-down($duration, $delay, $distance)`  | Shortcut — fade down          |
+| `fsc-left($duration, $delay, $distance)`  | Shortcut — fade left          |
+| `fsc-right($duration, $delay, $distance)` | Shortcut — fade right         |
+| `fsc-up-spring($duration, $delay)`        | Spring easing + scale variant |
+| `fsc-stagger($count, $step, $base-delay)` | nth-child delay ladder        |
 
 ---
 

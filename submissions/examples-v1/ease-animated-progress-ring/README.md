@@ -12,7 +12,7 @@ A beautifully animated, circular progress tracker built entirely with CSS and SV
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 Simply apply an inline style setting the `--progress` variable to your desired percentage:
 
@@ -24,3 +24,4 @@ Simply apply an inline style setting the `--progress` variable to your desired p
   </svg>
   <div class="ease-progress-label">85%</div>
 </div>
+```

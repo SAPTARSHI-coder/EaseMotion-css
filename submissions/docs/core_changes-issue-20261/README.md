@@ -8,14 +8,14 @@ This submission provides a complete, self-contained demo under `submissions/core
 
 ## Showcase Sections
 
-| Section | Description |
-|---------|-------------|
-| Genomics Analytics | DNA sequence coverage, variant calling stats, gene expression heatmap |
-| Lab Operations | Equipment status, sample tracking, active runs |
-| Protein Analysis | Structure visualization mockup, folding metrics |
-| Research Pipeline | Staged workflow progress tracker |
-| Publication Tracking | Paper status board with review milestones |
-| Grant Management | Funding overview, budget burn-down, deadlines |
+| Section              | Description                                                           |
+| -------------------- | --------------------------------------------------------------------- |
+| Genomics Analytics   | DNA sequence coverage, variant calling stats, gene expression heatmap |
+| Lab Operations       | Equipment status, sample tracking, active runs                        |
+| Protein Analysis     | Structure visualization mockup, folding metrics                       |
+| Research Pipeline    | Staged workflow progress tracker                                      |
+| Publication Tracking | Paper status board with review milestones                             |
+| Grant Management     | Funding overview, budget burn-down, deadlines                         |
 
 ## Design Approach
 

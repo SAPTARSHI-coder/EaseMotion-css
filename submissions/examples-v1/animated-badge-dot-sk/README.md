@@ -5,6 +5,7 @@ Status badge dot indicators (online/offline/away/busy) with pulse animation. Ava
 Created by @saurabhhhcodes
 
 ## Features
+
 - Four status states with distinct colors
 - Pulse animation for live statuses
 - Three sizes: small (8px), medium (12px), large (16px)
@@ -12,6 +13,7 @@ Created by @saurabhhhcodes
 - BEM naming convention
 
 ## Status Colors
+
 - Online — Green with pulse
 - Offline — Gray, static
 - Away — Amber with pulse

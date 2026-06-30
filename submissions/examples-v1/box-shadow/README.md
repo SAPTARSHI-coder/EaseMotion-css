@@ -31,6 +31,7 @@ CSS utility classes for the `box-shadow` property.
 ## Dark Mode
 
 - `dark:` prefix for `prefers-color-scheme: dark`
+
 ## Reduced Motion
 
 - `motion-safe:` prefix for `prefers-reduced-motion: reduce`

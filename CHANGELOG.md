@@ -10,6 +10,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### 🚀 Release Highlights
 
 #### Added
+
 - `.ease-text-underline-draw` — Animated left-to-right underline drawing on hover
 - `.ease-text-strikethrough-draw` — Animated strikethrough sweep across text
 - `.ease-text-gradient-flow` — Smooth 3-color looping text gradient animation
@@ -17,6 +18,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `.ease-glass-card` — Glassmorphism card utility with backdrop blur and border styling
 
 #### Changed & Cleaned
+
 - Bumped package version to `1.1.0` and updated minified bundle builds
 - Streamlined `submissions/examples/` directory by pruning 152 redundant duplicate clone folders while maintaining clean representative submissions
 
@@ -113,4 +115,4 @@ See [VISION.md](./VISION.md) for the long-term direction.
 
 ---
 
-*Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)*
+_Maintained by [Saptarshi Sadhu](https://github.com/SAPTARSHI-coder)_

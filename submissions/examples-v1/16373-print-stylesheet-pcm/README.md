@@ -30,8 +30,8 @@ Adds a dedicated **print stylesheet module** that ensures pages using EaseMotion
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------- |
 | `demo.html` | Full page layout demonstrating print vs screen: navbar, sidebar, cards, table, print-only content, FAB, toast |
-| `style.css` | Complete @media print stylesheet + 5 utility classes + demo styles |
-| `README.md` | This documentation |
+| `style.css` | Complete @media print stylesheet + 5 utility classes + demo styles                                            |
+| `README.md` | This documentation                                                                                            |

@@ -23,15 +23,11 @@ A responsive warehouse picking route component that guides warehouse staff throu
 
 ```html
 <div class="stop active">
+  <div class="marker">2</div>
 
-    <div class="marker">2</div>
-
-    <div class="details">
-
-        <h3>Aisle C • Shelf 04</h3>
-
-    </div>
-
+  <div class="details">
+    <h3>Aisle C • Shelf 04</h3>
+  </div>
 </div>
 ```
 

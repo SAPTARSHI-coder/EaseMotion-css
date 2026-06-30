@@ -18,9 +18,7 @@ This submission demonstrates the `caret-color` CSS property with multiple varian
 Apply the `caret-color` class to any element:
 
 ```html
-<div class="caret-color">
-  Your content here
-</div>
+<div class="caret-color">Your content here</div>
 ```
 
 ## Tokens Used

@@ -27,31 +27,31 @@ Just add a shape class to any element. Optionally add `.cp-morph` to enable the 
 
 ### Available shape classes
 
-| Class | Shape |
-|------|------|
-| `.cp-triangle` | Triangle pointing up |
-| `.cp-triangle-down` | Triangle pointing down |
-| `.cp-rhombus` | Diamond / rhombus |
-| `.cp-pentagon` | 5-sided polygon |
-| `.cp-hexagon` | 6-sided polygon |
-| `.cp-octagon` | 8-sided polygon |
-| `.cp-star` | 5-point star |
-| `.cp-heart` | Heart shape |
-| `.cp-circle` | Perfect circle |
-| `.cp-ellipse` | Ellipse |
-| `.cp-arrow-right` | Right-pointing arrow |
-| `.cp-arrow-left` | Left-pointing arrow |
-| `.cp-chevron-right` | Right chevron |
-| `.cp-parallelogram` | Parallelogram |
-| `.cp-trapezoid` | Trapezoid |
-| `.cp-cross` | Plus / cross shape |
-| `.cp-message` | Speech bubble with tail |
-| `.cp-inset` | Rounded inset window |
+| Class               | Shape                   |
+| ------------------- | ----------------------- |
+| `.cp-triangle`      | Triangle pointing up    |
+| `.cp-triangle-down` | Triangle pointing down  |
+| `.cp-rhombus`       | Diamond / rhombus       |
+| `.cp-pentagon`      | 5-sided polygon         |
+| `.cp-hexagon`       | 6-sided polygon         |
+| `.cp-octagon`       | 8-sided polygon         |
+| `.cp-star`          | 5-point star            |
+| `.cp-heart`         | Heart shape             |
+| `.cp-circle`        | Perfect circle          |
+| `.cp-ellipse`       | Ellipse                 |
+| `.cp-arrow-right`   | Right-pointing arrow    |
+| `.cp-arrow-left`    | Left-pointing arrow     |
+| `.cp-chevron-right` | Right chevron           |
+| `.cp-parallelogram` | Parallelogram           |
+| `.cp-trapezoid`     | Trapezoid               |
+| `.cp-cross`         | Plus / cross shape      |
+| `.cp-message`       | Speech bubble with tail |
+| `.cp-inset`         | Rounded inset window    |
 
 ### Optional modifier
 
-| Class | Effect |
-|------|--------|
+| Class       | Effect                                             |
+| ----------- | -------------------------------------------------- |
 | `.cp-morph` | Smoothly morphs the element into a circle on hover |
 
 ---

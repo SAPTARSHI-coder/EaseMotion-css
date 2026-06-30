@@ -4,20 +4,20 @@ Utility classes for controlling how replaced elements such as images and videos 
 
 ## Available Classes
 
-| Class | CSS |
-|---------|---------|
-| `.object-cover` | `object-fit: cover;` |
-| `.object-contain` | `object-fit: contain;` |
-| `.object-fill` | `object-fit: fill;` |
-| `.object-none` | `object-fit: none;` |
+| Class                | CSS                       |
+| -------------------- | ------------------------- |
+| `.object-cover`      | `object-fit: cover;`      |
+| `.object-contain`    | `object-fit: contain;`    |
+| `.object-fill`       | `object-fit: fill;`       |
+| `.object-none`       | `object-fit: none;`       |
 | `.object-scale-down` | `object-fit: scale-down;` |
 
 ## Usage
 
 ```html
-<img class="object-cover" src="image.jpg" alt="">
-<img class="object-contain" src="image.jpg" alt="">
-<img class="object-fill" src="image.jpg" alt="">
+<img class="object-cover" src="image.jpg" alt="" />
+<img class="object-contain" src="image.jpg" alt="" />
+<img class="object-fill" src="image.jpg" alt="" />
 ```
 
 ## What It Does

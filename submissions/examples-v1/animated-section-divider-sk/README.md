@@ -33,16 +33,16 @@ Apply the divider as a child of the section using `position: absolute` so it sit
 
 ## Custom Properties
 
-| Variable | Default | Description |
-|---|---|---|
-| `--sd-section-dark` | `#0f172a` | Dark section background |
-| `--sd-section-medium` | `#1e293b` | Medium section background |
-| `--sd-section-light` | `#334155` | Light section background |
-| `--sd-gradient-start` | `#3b82f6` | Gradient line start color |
-| `--sd-gradient-mid` | `#a855f7` | Gradient line mid color |
-| `--sd-gradient-end` | `#ec4899` | Gradient line end color |
-| `--sd-dot-color` | `#475569` | Dotted pattern dot color |
-| `--sd-divider-height` | `80px` | Height of wave/angled dividers |
+| Variable              | Default   | Description                    |
+| --------------------- | --------- | ------------------------------ |
+| `--sd-section-dark`   | `#0f172a` | Dark section background        |
+| `--sd-section-medium` | `#1e293b` | Medium section background      |
+| `--sd-section-light`  | `#334155` | Light section background       |
+| `--sd-gradient-start` | `#3b82f6` | Gradient line start color      |
+| `--sd-gradient-mid`   | `#a855f7` | Gradient line mid color        |
+| `--sd-gradient-end`   | `#ec4899` | Gradient line end color        |
+| `--sd-dot-color`      | `#475569` | Dotted pattern dot color       |
+| `--sd-divider-height` | `80px`    | Height of wave/angled dividers |
 
 ## Browser Support
 

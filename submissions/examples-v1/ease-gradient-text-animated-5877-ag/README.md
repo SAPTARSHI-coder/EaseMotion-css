@@ -7,6 +7,7 @@ This submission creates the `ease-gradient-text` effect — text where the color
 ## What It Does
 
 Combines three CSS techniques:
+
 1. `background-clip: text` + `-webkit-background-clip: text` — clips the gradient to the text shape
 2. `color: transparent` / `-webkit-text-fill-color: transparent` — makes the element's own color transparent so the background shows through
 3. `@keyframes gradientShift` — animates `background-position` from `0%` to `100%` and back on a `background-size: 200% auto` gradient
@@ -18,10 +19,14 @@ Combines three CSS techniques:
 <p class="gradient-text gradient-text--ocean">Animated gradient headline</p>
 
 <!-- Large display -->
-<h1 class="gradient-text gradient-text--ember gradient-text--display">Big Impact</h1>
+<h1 class="gradient-text gradient-text--ember gradient-text--display">
+  Big Impact
+</h1>
 
 <!-- Slow drift -->
-<p class="gradient-text gradient-text--forest gradient-text--slow">Calm forest flow</p>
+<p class="gradient-text gradient-text--forest gradient-text--slow">
+  Calm forest flow
+</p>
 ```
 
 ## Why It's Useful

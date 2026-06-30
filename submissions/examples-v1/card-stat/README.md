@@ -13,17 +13,17 @@ Stat/metric card component for dashboards and analytics displays. Part of the `e
 
 ## Sub-classes
 
-| Class | Description |
-|---|---|
-| `ease-card-stat` | Card with centered text layout for stats |
-| `ease-stat-value` | Large primary-colored number/value |
-| `ease-stat-label` | Small uppercase muted label |
+| Class             | Description                              |
+| ----------------- | ---------------------------------------- |
+| `ease-card-stat`  | Card with centered text layout for stats |
+| `ease-stat-value` | Large primary-colored number/value       |
+| `ease-stat-label` | Small uppercase muted label              |
 
 ## Variants (custom)
 
-| Class | Description |
-|---|---|
-| `ease-stat-trend-up` | Adds green up arrow after value |
+| Class                  | Description                     |
+| ---------------------- | ------------------------------- |
+| `ease-stat-trend-up`   | Adds green up arrow after value |
 | `ease-stat-trend-down` | Adds red down arrow after value |
 
 ## Notes

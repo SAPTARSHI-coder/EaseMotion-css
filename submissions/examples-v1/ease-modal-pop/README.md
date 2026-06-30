@@ -30,3 +30,4 @@ A new CSS-only modal animation variant featuring an **elastic bounce pop-in effe
     </div>
   </div>
 </div>
+```

@@ -15,16 +15,16 @@ submissions/core_changes-issue-22088/
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| **Default** | `.ease-timeline` | Left-aligned vertical timeline |
-| **Right-Aligned** | `.ease-timeline-right` | Right-aligned timeline |
-| **Alternating** | `.ease-timeline-alternating` | Left-right alternating (desktop) |
-| **Completed** | `.ease-timeline-completed` | Green dot for completed items |
-| **Current** | `.ease-timeline-current` | Indigo dot with glow for current items |
-| **Upcoming** | `.ease-timeline-upcoming` | Muted dot for upcoming items |
-| **Horizontal** | `.ease-timeline-horizontal` | Horizontal scrollable timeline |
-| **Animated** | `.ease-timeline-animate` | Staggered fade-in entry animation |
+| Variant           | Class                        | Description                            |
+| ----------------- | ---------------------------- | -------------------------------------- |
+| **Default**       | `.ease-timeline`             | Left-aligned vertical timeline         |
+| **Right-Aligned** | `.ease-timeline-right`       | Right-aligned timeline                 |
+| **Alternating**   | `.ease-timeline-alternating` | Left-right alternating (desktop)       |
+| **Completed**     | `.ease-timeline-completed`   | Green dot for completed items          |
+| **Current**       | `.ease-timeline-current`     | Indigo dot with glow for current items |
+| **Upcoming**      | `.ease-timeline-upcoming`    | Muted dot for upcoming items           |
+| **Horizontal**    | `.ease-timeline-horizontal`  | Horizontal scrollable timeline         |
+| **Animated**      | `.ease-timeline-animate`     | Staggered fade-in entry animation      |
 
 ## Usage
 

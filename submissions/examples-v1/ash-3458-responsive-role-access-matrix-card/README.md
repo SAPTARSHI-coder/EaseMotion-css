@@ -23,13 +23,11 @@ A responsive role-based access matrix component for displaying permissions acros
 
 ```html
 <div class="matrix-row">
+  <span>Manage Users</span>
 
-    <span>Manage Users</span>
+  <span class="allow">✓</span>
 
-    <span class="allow">✓</span>
-
-    <span class="deny">✕</span>
-
+  <span class="deny">✕</span>
 </div>
 ```
 

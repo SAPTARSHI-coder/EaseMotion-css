@@ -18,9 +18,7 @@ This submission demonstrates the `cursor` CSS property with multiple variants an
 Apply the `cursor` class to any element:
 
 ```html
-<div class="cursor">
-  Your content here
-</div>
+<div class="cursor">Your content here</div>
 ```
 
 ## Tokens Used

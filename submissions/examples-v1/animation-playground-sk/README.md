@@ -7,7 +7,9 @@ An interactive playground that allows developers to visually configure, test, an
 Apply the generated animation and utility classes to your HTML elements:
 
 ```html
-<div class="fade duration-500 delay-200 timing-ease-in-out iteration-infinite direction-alternate"></div>
+<div
+  class="fade duration-500 delay-200 timing-ease-in-out iteration-infinite direction-alternate"
+></div>
 ```
 
 # Why is it useful?

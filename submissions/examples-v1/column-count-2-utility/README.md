@@ -8,6 +8,7 @@ Introduces the core multi-column balancing layout utility token (`.ease-cols-2`)
 - **The Solution:** Interfaces with browser-native multi-column text distribution engines. The `.ease-cols-2` token divides reading strings directly across two equal columns with built-in balancing thresholds.
 
 ## Usage Layout Structure
+
 ```html
 <div class="ease-cols-2">
   <p>Continuous dual-split paragraph string text...</p>

@@ -31,15 +31,21 @@ Provides a scrollable table container where the header row remains fixed at the 
 
 ```html
 <span class="sticky-table__priority sticky-table__priority--high">High</span>
-<span class="sticky-table__priority sticky-table__priority--medium">Medium</span>
+<span class="sticky-table__priority sticky-table__priority--medium"
+  >Medium</span
+>
 <span class="sticky-table__priority sticky-table__priority--low">Low</span>
 ```
 
 ### Variants
 
 ```html
-<table class="sticky-table sticky-table--compact">...</table>
-<table class="sticky-table sticky-table--bordered">...</table>
+<table class="sticky-table sticky-table--compact">
+  ...
+</table>
+<table class="sticky-table sticky-table--bordered">
+  ...
+</table>
 ```
 
 ## Why is it useful?

@@ -22,15 +22,9 @@ A responsive Threat Intelligence Command Platform dashboard for monitoring cyber
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="content">
-        ...
-    </section>
-
+  <section class="content">...</section>
 </div>
 ```
 

@@ -3,7 +3,9 @@
 An interactive, premium Kanban task board with glassmorphic columns, column hover offsets, card elevation jumps, pulsing priority tags, and detailed metadata displays. Inspired by productivity platforms like Trello, Jira, Linear, ClickUp, Asana, and Notion.
 
 ## What does this do?
+
 This component provides a full workflow overview board featuring:
+
 - **Column Hover Offset**: Elevates workflow columns slightly (`translateY(-2px)`) and highlights borders on hover.
 - **Card Hover Elevation**: Lifts task cards (`translateY(-6px)`) and casts an ambient priority-based shadow.
 - **Staggered Card Load-in**: Animates cards sliding up on initial page load.
@@ -13,6 +15,7 @@ This component provides a full workflow overview board featuring:
 - **Shimmer Sheen Reflection**: Sweeps a soft gloss sheet across the card face on hover.
 
 ## How is it used?
+
 Integrate the board markup inside your dashboard layout:
 
 ```html
@@ -30,21 +33,27 @@ Integrate the board markup inside your dashboard layout:
 ```
 
 ## Why is it useful?
+
 Kanban boards are central to SaaS workspace layouts. This board:
+
 1. **Creates board-level feedback**: Improves context recognition by styling active columns and cards.
 2. **Details card metadata**: Packs priorities, comments, due dates, label tags, and assignees into a neat visual footprint.
 3. **Pure CSS implementation**: Operates completely without scripts or external image dependencies.
 
 ## Tech Stack
+
 - HTML5
 - CSS3 (Vanilla Custom Properties, Grid, Flexbox, Keyframes)
 - Inline SVGs (No external image network requests required)
 
 ## Preview
+
 To see the board in action:
+
 1. Open the [demo.html](file:///c:/Users/LENOVO/Desktop/GSSoC/Ease%20Motion/EaseMotion-css-gssoc/submissions/examples/animated-kanban-task-board/demo.html) directly in any modern web browser.
 2. Hover over columns and cards to test out translations and sparkles.
 
 ## Contribution Notes
+
 - Class names correspond to GSSoC contribution requirements.
 - The project maintainer will refactor selectors to the `ease-*` prefix during repository integration.

@@ -12,14 +12,14 @@ a lagging ring that follows mouse movement with a premium feel.
 
 ## Classes
 
-| Class | Effect |
-|-------|--------|
-| `.ease-cursor-dot` | Small 8px solid cursor dot |
-| `.ease-cursor-ring` | Larger outlined ring that lags behind |
-| `.ease-cursor-blend` | Mix-blend-mode difference effect |
-| `.ease-cursor-grow` | Ring grows over hoverable elements |
-| `.ease-cursor-primary` | Uses --ease-color-primary |
-| `.ease-cursor-hidden` | Hides default system cursor |
+| Class                  | Effect                                |
+| ---------------------- | ------------------------------------- |
+| `.ease-cursor-dot`     | Small 8px solid cursor dot            |
+| `.ease-cursor-ring`    | Larger outlined ring that lags behind |
+| `.ease-cursor-blend`   | Mix-blend-mode difference effect      |
+| `.ease-cursor-grow`    | Ring grows over hoverable elements    |
+| `.ease-cursor-primary` | Uses --ease-color-primary             |
+| `.ease-cursor-hidden`  | Hides default system cursor           |
 
 ## How to Use
 
@@ -42,8 +42,8 @@ a lagging ring that follows mouse movement with a premium feel.
 ## Browser Support
 
 | Browser | Minimum Version |
-|---------|----------------|
-| Chrome  | 80+            |
-| Firefox | 80+            |
-| Safari  | 14+            |
-| Edge    | 80+            |
+| ------- | --------------- |
+| Chrome  | 80+             |
+| Firefox | 80+             |
+| Safari  | 14+             |
+| Edge    | 80+             |

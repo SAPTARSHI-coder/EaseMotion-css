@@ -17,6 +17,7 @@ background: conic-gradient(color var(--sec), transparent var(--sec));
 A `mask: radial-gradient(...)` ring clips the gradient to an arc at the correct radius from center, making it look like a hand.
 
 Timing:
+
 - Seconds: `60s steps(60, start)` — one discrete step per second
 - Minutes: `3600s steps(60, start)` — one step per minute
 - Hours: `43200s steps(720, start)` — one step per 1/720th of 12 hours

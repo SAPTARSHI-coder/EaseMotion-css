@@ -24,15 +24,11 @@ A responsive learning progress component that visually maps course modules and t
 
 ```html
 <div class="module active">
+  <div class="indicator">2</div>
 
-    <div class="indicator">
-        2
-    </div>
-
-    <div class="details">
-        <h3>CSS Fundamentals</h3>
-    </div>
-
+  <div class="details">
+    <h3>CSS Fundamentals</h3>
+  </div>
 </div>
 ```
 

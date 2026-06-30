@@ -22,9 +22,7 @@ A responsive localization dashboard component that displays translation coverage
 
 ```html
 <div class="progress">
-
-    <div class="fill high"></div>
-
+  <div class="fill high"></div>
 </div>
 ```
 

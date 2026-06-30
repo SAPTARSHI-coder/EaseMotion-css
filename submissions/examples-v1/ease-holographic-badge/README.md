@@ -10,13 +10,14 @@ A highly premium, cyber-punk inspired ID badge featuring a pure CSS 3D tilt effe
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 ### How it works
 
-The `.hologram-overlay` sits on top of the card content with `pointer-events: none`. It has an oversized `background-size: 300% 300%` and a gradient featuring cyan, magenta, and purple. When the user hovers over the card, the overlay's opacity fades in, and a CSS `@keyframes` animation sweeps the gradient across the surface diagonally, simulating light reflecting off holographic foil. 
+The `.hologram-overlay` sits on top of the card content with `pointer-events: none`. It has an oversized `background-size: 300% 300%` and a gradient featuring cyan, magenta, and purple. When the user hovers over the card, the overlay's opacity fades in, and a CSS `@keyframes` animation sweeps the gradient across the surface diagonally, simulating light reflecting off holographic foil.
 
 The `mix-blend-mode: color-dodge` ensures the bright colors of the gradient interact with the greyscale content underneath, blowing out the whites and creating a glowing metallic aesthetic!
 
 ## 🔗 Related Issue
+
 Resolves Issue #17651

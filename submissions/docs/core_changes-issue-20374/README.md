@@ -5,6 +5,7 @@
 Issue [#20374](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/20374) reports that `scripts/validate-bundle.mjs` only validates `easemotion.min.css` but ignores `docs/easemotion.min.css`.
 
 **The bug:** `scripts/build-minified-css.mjs` writes the minified bundle to **two** locations:
+
 - `easemotion.min.css` (root)
 - `docs/easemotion.min.css` (line 163–164)
 
@@ -34,7 +35,7 @@ const bundlePaths = [
 ];
 
 const originals = await Promise.all(
-  bundlePaths.map(p => readFile(p, "utf8").catch(() => ""))
+  bundlePaths.map((p) => readFile(p, "utf8").catch(() => ""))
 );
 
 // ... run build ...
@@ -50,12 +51,12 @@ for (let i = 0; i < bundlePaths.length; i++) {
 
 if (stales.length > 0) {
   throw new Error(
-    stales.map(p => `${path.relative(rootDir, p)} is stale.`).join("\n") +
-    `\nRun \`npm run build\` and commit the regenerated bundles.`,
+    stales.map((p) => `${path.relative(rootDir, p)} is stale.`).join("\n") +
+      `\nRun \`npm run build\` and commit the regenerated bundles.`
   );
 }
 
-const names = bundlePaths.map(p => path.relative(rootDir, p)).join(", ");
+const names = bundlePaths.map((p) => path.relative(rootDir, p)).join(", ");
 console.log(`${names} are up to date.`);
 ```
 
@@ -67,8 +68,8 @@ Per the `CONTRIBUTING.md` policy and Core Framework Protection, this fix is prop
 
 ## Files changed
 
-| File | Change |
-|------|--------|
+| File                          | Change                                                           |
+| ----------------------------- | ---------------------------------------------------------------- |
 | `scripts/validate-bundle.mjs` | Validate both `easemotion.min.css` and `docs/easemotion.min.css` |
 
 Fixes #20374

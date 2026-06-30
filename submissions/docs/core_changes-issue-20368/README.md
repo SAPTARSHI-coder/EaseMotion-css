@@ -28,11 +28,13 @@ All framework keyframes follow the `ease-kf-*` naming convention (e.g., `ease-kf
 Change `ease-pulse` to `ease-kf-pulse` on line 20 of `components/connection-status.css`.
 
 **Change from:**
+
 ```css
 animation: ease-pulse 2s infinite;
 ```
 
 **Change to:**
+
 ```css
 animation: ease-kf-pulse 2s infinite;
 ```

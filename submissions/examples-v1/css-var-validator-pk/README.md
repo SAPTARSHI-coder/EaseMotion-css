@@ -9,6 +9,7 @@ Without fallbacks, a missing `var(--ease-color-primary)` silently resolves to `i
 ## The Solution
 
 A Node.js script (`scripts/validate-css-vars.js`) that:
+
 1. Scans all `.css` files for `var(--name)` usages
 2. Checks each usage has a fallback: `var(--name, FALLBACK)`
 3. Detects variables defined in `:root` but never used (orphaned)
@@ -16,10 +17,10 @@ A Node.js script (`scripts/validate-css-vars.js`) that:
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                                  |
+| ----------- | ---------------------------------------------------------------------------------------- |
 | `demo.html` | Side-by-side without/with fallback, simulate missing var, report example, validator code |
-| `style.css` | Demo layout, report table, warning/error colors |
+| `style.css` | Demo layout, report table, warning/error colors                                          |
 
 ## Validator Output Example
 
@@ -52,7 +53,10 @@ jobs:
 ## Style Guide Rule
 
 > **Every `var()` must include a fallback.**
+>
 > ```css
-> /* Good */ color: var(--ease-color-primary, #6366f1);
-> /* Bad */  color: var(--ease-color-primary);
+> /* Good */
+> color: var(--ease-color-primary, #6366f1);
+> /* Bad */
+> color: var(--ease-color-primary);
 > ```

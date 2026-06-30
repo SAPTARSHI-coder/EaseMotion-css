@@ -4,32 +4,33 @@
    Improves three UI areas: fixes navbar text contrast in light mode, adds a collapsible sidebar with smooth hover transitions, and adds lift-on-hover interactivity to purple callout/info cards.
 
 2. **How is it used?**
+
 ```html
-   <!-- Navbar -->
-   <nav class="navbar">
-     <a href="#" class="navbar-brand">EaseMotion CSS</a>
-     <ul class="navbar-links">
-       <li><a href="#" class="active">Docs</a></li>
-     </ul>
-   </nav>
+<!-- Navbar -->
+<nav class="navbar">
+  <a href="#" class="navbar-brand">EaseMotion CSS</a>
+  <ul class="navbar-links">
+    <li><a href="#" class="active">Docs</a></li>
+  </ul>
+</nav>
 
-   <!-- Collapsible sidebar (checkbox hack) -->
-   <input type="checkbox" id="sidebar-toggle"/>
-   <aside class="sidebar">
-     <label class="sidebar-toggle-btn" for="sidebar-toggle">◀</label>
-     <nav class="sidebar-nav">
-       <a href="#" class="nav-item">
-         <span class="nav-icon">🏠</span>
-         <span class="nav-label">Getting Started</span>
-       </a>
-     </nav>
-   </aside>
+<!-- Collapsible sidebar (checkbox hack) -->
+<input type="checkbox" id="sidebar-toggle" />
+<aside class="sidebar">
+  <label class="sidebar-toggle-btn" for="sidebar-toggle">◀</label>
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Getting Started</span>
+    </a>
+  </nav>
+</aside>
 
-   <!-- Callout card -->
-   <div class="callout">
-     <div class="callout-title">💡 Note</div>
-     <div class="callout-body">Your content here.</div>
-   </div>
+<!-- Callout card -->
+<div class="callout">
+  <div class="callout-title">💡 Note</div>
+  <div class="callout-body">Your content here.</div>
+</div>
 ```
 
 3. **Why is it useful?**

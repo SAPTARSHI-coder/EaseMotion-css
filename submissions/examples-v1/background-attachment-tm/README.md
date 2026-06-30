@@ -16,14 +16,24 @@ This submission demonstrates the CSS `background-attachment-tm` property with pr
 
 ```html
 <!-- Size variant -->
-<div class="background-attachment-tm-card background-attachment-tm-md background-attachment-tm-primary">Content</div>
+<div
+  class="background-attachment-tm-card background-attachment-tm-md background-attachment-tm-primary"
+>
+  Content
+</div>
 
 <!-- Color variants -->
-<div class="background-attachment-tm-card background-attachment-tm-success">Success</div>
-<div class="background-attachment-tm-card background-attachment-tm-danger">Danger</div>
+<div class="background-attachment-tm-card background-attachment-tm-success">
+  Success
+</div>
+<div class="background-attachment-tm-card background-attachment-tm-danger">
+  Danger
+</div>
 
 <!-- Interactive states -->
-<div class="background-attachment-tm-card state-hover state-focus">Hover me</div>
+<div class="background-attachment-tm-card state-hover state-focus">
+  Hover me
+</div>
 <div class="background-attachment-tm-card state-active">Click me</div>
 <div class="background-attachment-tm-card state-disabled">Disabled</div>
 ```

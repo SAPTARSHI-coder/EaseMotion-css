@@ -11,12 +11,15 @@ This submission is built with pure HTML and CSS only, and it presents a self-con
 ## Usage example
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <main class="timeline-panel">
   <header class="panel-header">
     <p class="eyebrow">Activity Timeline</p>
     <h1>Recent team activity</h1>
-    <p class="panel-copy">A vertical activity feed for deployments, comments, task progress, and payments.</p>
+    <p class="panel-copy">
+      A vertical activity feed for deployments, comments, task progress, and
+      payments.
+    </p>
   </header>
 
   <div class="timeline">
@@ -32,7 +35,9 @@ This submission is built with pure HTML and CSS only, and it presents a self-con
             <p class="item-time">Today · 09:28 AM</p>
           </div>
         </div>
-        <p class="item-copy">A new release for the dashboard service was deployed to production.</p>
+        <p class="item-copy">
+          A new release for the dashboard service was deployed to production.
+        </p>
       </div>
     </article>
   </div>

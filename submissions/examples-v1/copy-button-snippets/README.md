@@ -20,7 +20,11 @@ Add the copy button structure to any code snippet:
   <div class="snippet-content">
     <code>your-class-name</code>
   </div>
-  <button class="copy-btn" onclick="copyToClipboard(this)" aria-label="Copy to clipboard">
+  <button
+    class="copy-btn"
+    onclick="copyToClipboard(this)"
+    aria-label="Copy to clipboard"
+  >
     <!-- Copy SVG icon -->
   </button>
 </div>
@@ -30,15 +34,15 @@ Add the copy button structure to any code snippet:
 
 ```javascript
 function copyToClipboard(button) {
-  const snippet = button.parentElement.querySelector('code');
+  const snippet = button.parentElement.querySelector("code");
   const text = snippet.textContent;
-  
+
   navigator.clipboard.writeText(text).then(() => {
     // Show success state
-    button.classList.add('copied');
-    
+    button.classList.add("copied");
+
     setTimeout(() => {
-      button.classList.remove('copied');
+      button.classList.remove("copied");
     }, 2000);
   });
 }

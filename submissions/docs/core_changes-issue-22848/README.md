@@ -19,7 +19,9 @@ Adds a pricing table / plan comparison component with feature lists, checkmark i
     <ul class="ease-pricing-features">
       <li class="ease-pricing-feature">✓ 5 projects</li>
       <li class="ease-pricing-feature">✓ 10GB storage</li>
-      <li class="ease-pricing-feature ease-pricing-feature-unavailable">✗ API access</li>
+      <li class="ease-pricing-feature ease-pricing-feature-unavailable">
+        ✗ API access
+      </li>
     </ul>
     <a class="ease-pricing-cta" href="#">Get Started</a>
   </div>

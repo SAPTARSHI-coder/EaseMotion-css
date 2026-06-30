@@ -11,7 +11,7 @@ Link the stylesheet and use the `chip` base class with optional modifier classes
 Example markup:
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <label class="chip">
   <span>Design</span>
   <button class="chip-close" aria-label="Remove chip">×</button>
@@ -43,6 +43,7 @@ Neon variant:
 - The dark theme demo and polished styling fit modern admin panels and product interfaces.
 
 Variants included:
+
 - Default Chip
 - Gradient Chip
 - Neon Chip

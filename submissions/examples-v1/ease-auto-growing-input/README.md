@@ -17,4 +17,8 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
 <input type="text" class="ease-auto-grow" placeholder="Type here..." />
 
 <!-- Textarea that grows vertically -->
-<textarea class="ease-auto-grow" placeholder="Type multiple lines..."></textarea>
+<textarea
+  class="ease-auto-grow"
+  placeholder="Type multiple lines..."
+></textarea>
+```

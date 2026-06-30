@@ -13,3 +13,4 @@ A realistic heartbeat animation utility for EaseMotion CSS.
 
 ```html
 <span class="ease-heart-beat">❤️</span>
+```

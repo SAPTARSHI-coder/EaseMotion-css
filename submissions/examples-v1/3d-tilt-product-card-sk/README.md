@@ -22,4 +22,5 @@ A reusable, high-performance 3D tilt product card effect designed for premium e-
 - To adjust how far the image "floats" off the card for the parallax effect, modify the `transform: translateZ(40px);` value in `style.css`.
 
 ## Contributed by
+
 - Man1ac-1773

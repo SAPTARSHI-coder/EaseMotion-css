@@ -4,9 +4,9 @@ A simple CSS button click animation that scales the button when pressed.
 
 ## Features
 
-* Click scale effect
-* Smooth transition
-* Pure CSS
+- Click scale effect
+- Smooth transition
+- Pure CSS
 
 ## Usage
 

@@ -10,13 +10,13 @@ Pulsing shadow contract animation — scales element down while shadow shrinks, 
 
 ## Variants
 
-| Class | Description |
-|---|---|
-| `ease-contract-shadow-emphasis` | Plays once on mount |
-| `ease-contract-shadow-loop` | Infinite looping pulse |
-| `ease-contract-shadow-fast` | Faster cycle |
-| `ease-contract-shadow-slow` | Slower cycle |
-| `ease-contract-shadow-glow` | Primary glow pulse loop |
+| Class                           | Description             |
+| ------------------------------- | ----------------------- |
+| `ease-contract-shadow-emphasis` | Plays once on mount     |
+| `ease-contract-shadow-loop`     | Infinite looping pulse  |
+| `ease-contract-shadow-fast`     | Faster cycle            |
+| `ease-contract-shadow-slow`     | Slower cycle            |
+| `ease-contract-shadow-glow`     | Primary glow pulse loop |
 
 ## Notes
 

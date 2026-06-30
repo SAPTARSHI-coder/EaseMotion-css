@@ -6,6 +6,7 @@ luxury magazines with decorative quotes, verified badges,
 featured cards, and hover animations.
 
 **How is it used?**
+
 <section class="flow-editorial-testimonials">
   <div class="testimonials-grid">
     <div class="testimonial-card featured">

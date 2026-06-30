@@ -50,7 +50,7 @@ Browser Window Mockup is a Chrome-inspired browser frame component for showcasin
     <div class="ease-browser-addressbar">example.com</div>
   </div>
   <div class="ease-browser-content">
-    <img src="screenshot.jpg" alt="Website preview">
+    <img src="screenshot.jpg" alt="Website preview" />
   </div>
 </div>
 ```

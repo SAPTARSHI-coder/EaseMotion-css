@@ -1,14 +1,8 @@
 \# ease-blur-border
 
-
-
 Blur border entrance animation for cards and containers.
 
-
-
 \## Classes
-
-
 
 | Class | Speed |
 
@@ -20,17 +14,8 @@ Blur border entrance animation for cards and containers.
 
 | `ease-blur-border-slow` | Slow (1.5s) |
 
-
-
 \## Usage
 
-
-
 ```html
-
-<div class="ease-blur-border">
-
-&#x20;   Content with blur border entrance
-
-</div>
-
+<div class="ease-blur-border">&#x20; Content with blur border entrance</div>
+```

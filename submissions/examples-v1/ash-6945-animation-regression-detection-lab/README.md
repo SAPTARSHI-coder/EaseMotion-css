@@ -22,15 +22,9 @@ A responsive dashboard for visualizing animation regression testing results, per
 
 ```html
 <div class="dashboard">
+  <section class="stats">...</section>
 
-    <section class="stats">
-        ...
-    </section>
-
-    <section class="workspace">
-        ...
-    </section>
-
+  <section class="workspace">...</section>
 </div>
 ```
 

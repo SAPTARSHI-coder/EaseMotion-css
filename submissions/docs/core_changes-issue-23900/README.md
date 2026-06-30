@@ -5,6 +5,7 @@
 Adds container breakout utilities that let elements span the full viewport width while staying inside a parent container. Uses the `100vw` + negative margin technique and an alternative CSS Grid approach.
 
 **Classes:**
+
 - `.ease-breakout` — Full viewport width (both sides)
 - `.ease-breakout-left` — Break out to the left edge only
 - `.ease-breakout-right` — Break out to the right edge only

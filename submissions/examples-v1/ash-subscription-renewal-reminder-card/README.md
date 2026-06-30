@@ -26,9 +26,7 @@ A modern subscription renewal reminder card featuring countdown timers, billing 
 ## Usage
 
 ```html
-<div class="renewal-card">
-  Subscription Content
-</div>
+<div class="renewal-card">Subscription Content</div>
 ```
 
 ## Main Classes

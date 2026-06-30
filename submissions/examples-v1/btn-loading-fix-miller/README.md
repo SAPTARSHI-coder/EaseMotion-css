@@ -21,6 +21,7 @@
    ```
 
 3. **How is it used?**
+
    ```html
    <button class="ease-btn ease-btn-outline ease-btn-loading">Loading</button>
    <button class="ease-btn ease-btn-light ease-btn-loading">Loading</button>

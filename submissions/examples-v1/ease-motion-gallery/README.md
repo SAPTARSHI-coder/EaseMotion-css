@@ -5,6 +5,7 @@ A beautiful collection of CSS animations and easing effects showcasing modern mo
 ## ✨ Features
 
 ### Animation Cards
+
 - 💫 **Pulse Effect** - Smooth pulsing animation
 - 🔄 **3D Rotate** - Continuous rotation
 - ⚡ **Bounce** - Elastic bounce motion
@@ -15,12 +16,14 @@ A beautiful collection of CSS animations and easing effects showcasing modern mo
 - ✨ **Glow** - Radiant glowing effect
 
 ### Animated Buttons
+
 - Ripple Effect
 - Slide Fill
 - Glow Button
 - Bounce Click
 
 ### Easing Functions Demo
+
 - linear
 - ease
 - ease-in-out
@@ -31,4 +34,3 @@ A beautiful collection of CSS animations and easing effects showcasing modern mo
 1. Clone or download the repository
 2. Open `demo.html` in any modern browser
 3. Explore the animations and effects
-

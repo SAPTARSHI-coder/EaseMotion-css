@@ -20,52 +20,57 @@ Provides a lightweight, reusable, accessible progress indicator that integrates 
 ## Modifiers
 
 ### Sizes
-| Class | Height |
-|---|---|
-| `ease-progress--sm` | 0.375rem |
-| `ease-progress--md` | 0.625rem (default) |
-| `ease-progress--lg` | 1rem |
-| `ease-progress--xl` | 1.5rem |
-| `ease-progress--2xl` | 2rem |
+
+| Class                | Height             |
+| -------------------- | ------------------ |
+| `ease-progress--sm`  | 0.375rem           |
+| `ease-progress--md`  | 0.625rem (default) |
+| `ease-progress--lg`  | 1rem               |
+| `ease-progress--xl`  | 1.5rem             |
+| `ease-progress--2xl` | 2rem               |
 
 ### Colors
-| Class | Description |
-|---|---|
-| `ease-progress--primary` | Blue (default) |
-| `ease-progress--secondary` | Gray |
-| `ease-progress--success` | Green |
-| `ease-progress--danger` | Red |
-| `ease-progress--warning` | Amber |
-| `ease-progress--info` | Cyan |
-| `ease-progress--accent` | Purple |
-| `ease-progress--pink` | Pink |
-| `ease-progress--orange` | Orange |
+
+| Class                      | Description    |
+| -------------------------- | -------------- |
+| `ease-progress--primary`   | Blue (default) |
+| `ease-progress--secondary` | Gray           |
+| `ease-progress--success`   | Green          |
+| `ease-progress--danger`    | Red            |
+| `ease-progress--warning`   | Amber          |
+| `ease-progress--info`      | Cyan           |
+| `ease-progress--accent`    | Purple         |
+| `ease-progress--pink`      | Pink           |
+| `ease-progress--orange`    | Orange         |
 
 ### Styles
-| Class | Description |
-|---|---|
-| _(default)_ | Solid fill |
-| `ease-progress--striped` | Diagonal stripe pattern |
-| `ease-progress--animated` | Animated moving stripes |
-| `ease-progress--gradient` | Gradient fill |
+
+| Class                          | Description                   |
+| ------------------------------ | ----------------------------- |
+| _(default)_                    | Solid fill                    |
+| `ease-progress--striped`       | Diagonal stripe pattern       |
+| `ease-progress--animated`      | Animated moving stripes       |
+| `ease-progress--gradient`      | Gradient fill                 |
 | `ease-progress--indeterminate` | Looping bar (no value needed) |
 
 ### Orientation & Layout
-| Class | Description |
-|---|---|
-| _(default)_ | Horizontal |
+
+| Class                     | Description                                   |
+| ------------------------- | --------------------------------------------- |
+| _(default)_               | Horizontal                                    |
 | `ease-progress--vertical` | Vertical (set height, value controls height%) |
-| `ease-progress--stacked` | Multiple segments in one bar |
-| `.ease-progress__wrapper` | Flex container with label |
+| `ease-progress--stacked`  | Multiple segments in one bar                  |
+| `.ease-progress__wrapper` | Flex container with label                     |
 
 ### Rounded
-| Class | Description |
-|---|---|
-| `ease-progress--rounded-none` | Square |
-| _(default)_ | 9999px (pill) |
-| `ease-progress--rounded-sm` | 0.25rem |
-| `ease-progress--rounded-lg` | 0.5rem |
-| `ease-progress--rounded-xl` | 0.75rem |
+
+| Class                         | Description   |
+| ----------------------------- | ------------- |
+| `ease-progress--rounded-none` | Square        |
+| _(default)_                   | 9999px (pill) |
+| `ease-progress--rounded-sm`   | 0.25rem       |
+| `ease-progress--rounded-lg`   | 0.5rem        |
+| `ease-progress--rounded-xl`   | 0.75rem       |
 
 ## Sub-components
 

@@ -1,6 +1,7 @@
 # Confetti Rain
 
 ## What does this do?
+
 A full-page confetti burst that rains down colourful shapes — squares,
 rectangles, circles, and ribbons — each falling with a randomised
 position, speed, drift, spin, size, and colour, driven entirely by
@@ -30,10 +31,11 @@ animation reads them directly:
     </div>
 
 Available shape classes:
-- `.confetti-square`    — equal-sided square
+
+- `.confetti-square` — equal-sided square
 - `.confetti-rectangle` — wide flat rectangle
-- `.confetti-circle`    — round dot
-- `.confetti-ribbon`    — long thin streamer
+- `.confetti-circle` — round dot
+- `.confetti-ribbon` — long thin streamer
 
 A small JS helper (included in `demo.html`) generates 120 pieces on
 load and again on button click, then removes each piece from the DOM

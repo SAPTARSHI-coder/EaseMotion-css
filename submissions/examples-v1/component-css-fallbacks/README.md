@@ -14,11 +14,12 @@ In modular framework design, components are often imported, copy-pasted, or isol
 
 - **Prevents Broken UIs**: Standard variables fall back to browser defaults (often transparent, black, or white text) which destroys readability.
 - **Isolates Dependencies**: Components contain their own visual backups and function independently.
-- **Improves Developer Experience**: Developers can drop components into projects and customize them *optionally*, without visual degradation on day one.
+- **Improves Developer Experience**: Developers can drop components into projects and customize them _optionally_, without visual degradation on day one.
 
 ## ⚙️ Best Practice CSS Syntax
 
 ### Fragile Implementation (Bad ❌)
+
 If `--palette-bg-color` is not defined on `:root`, this element inherits no color (becoming transparent):
 
 ```css
@@ -29,6 +30,7 @@ If `--palette-bg-color` is not defined on `:root`, this element inherits no colo
 ```
 
 ### Resilient Implementation (Good ✅)
+
 If variables are undefined, the elements fallback gracefully to default values (`#1f2937` and `#f9fafb`):
 
 ```css

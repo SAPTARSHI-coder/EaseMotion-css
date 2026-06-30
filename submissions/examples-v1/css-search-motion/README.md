@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated search bars for modern web interfac
 ## 🚀 Features
 
 ### Search Bar Styles (10 types)
+
 1. **Expand on Focus** - Collapses to icon, expands on focus
 2. **Slide from Icon** - Bottom underline slides in
 3. **Neon Glow** - Cyberpunk neon pulsing glow
@@ -17,6 +18,7 @@ A collection of beautiful, pure CSS animated search bars for modern web interfac
 10. **Rotating Border** - Conic gradient rotating border
 
 ### Animation Features
+
 - Smooth focus transitions
 - Icon transformations
 - Glow and pulse effects
@@ -25,6 +27,7 @@ A collection of beautiful, pure CSS animated search bars for modern web interfac
 - Bounce animations
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All search bar animations
 - `readme.md` - Documentation
@@ -32,8 +35,10 @@ A collection of beautiful, pure CSS animated search bars for modern web interfac
 ## 🛠️ How to Use
 
 ### Basic Search Bar
+
 ```html
 <div class="search-bar expand">
-    <span class="search-icon">🔍</span>
-    <input type="text" placeholder="Search...">
+  <span class="search-icon">🔍</span>
+  <input type="text" placeholder="Search..." />
 </div>
+```

@@ -12,19 +12,19 @@ README.md
 
 ## Available Utilities
 
-| Class | CSS |
-|---------|---------|
-| `.aspect-ratio-auto` | `aspect-ratio: auto;` |
-| `.aspect-ratio-square` | `aspect-ratio: 1 / 1;` |
-| `.aspect-ratio-1-1` | `aspect-ratio: 1 / 1;` |
-| `.aspect-ratio-video` | `aspect-ratio: 16 / 9;` |
-| `.aspect-ratio-16-9` | `aspect-ratio: 16 / 9;` |
-| `.aspect-ratio-4-3` | `aspect-ratio: 4 / 3;` |
-| `.aspect-ratio-3-4` | `aspect-ratio: 3 / 4;` |
-| `.aspect-ratio-21-9` | `aspect-ratio: 21 / 9;` |
-| `.aspect-ratio-9-16` | `aspect-ratio: 9 / 16;` |
-| `.aspect-ratio-2-1` | `aspect-ratio: 2 / 1;` |
-| `.aspect-ratio-1-2` | `aspect-ratio: 1 / 2;` |
+| Class                  | CSS                     |
+| ---------------------- | ----------------------- |
+| `.aspect-ratio-auto`   | `aspect-ratio: auto;`   |
+| `.aspect-ratio-square` | `aspect-ratio: 1 / 1;`  |
+| `.aspect-ratio-1-1`    | `aspect-ratio: 1 / 1;`  |
+| `.aspect-ratio-video`  | `aspect-ratio: 16 / 9;` |
+| `.aspect-ratio-16-9`   | `aspect-ratio: 16 / 9;` |
+| `.aspect-ratio-4-3`    | `aspect-ratio: 4 / 3;`  |
+| `.aspect-ratio-3-4`    | `aspect-ratio: 3 / 4;`  |
+| `.aspect-ratio-21-9`   | `aspect-ratio: 21 / 9;` |
+| `.aspect-ratio-9-16`   | `aspect-ratio: 9 / 16;` |
+| `.aspect-ratio-2-1`    | `aspect-ratio: 2 / 1;`  |
+| `.aspect-ratio-1-2`    | `aspect-ratio: 1 / 2;`  |
 
 ## Usage
 
@@ -32,24 +32,20 @@ README.md
 
 ```html
 <div class="aspect-ratio-16-9">
-    <iframe></iframe>
+  <iframe></iframe>
 </div>
 ```
 
 ### Square Card
 
 ```html
-<div class="aspect-ratio-1-1">
-    Content
-</div>
+<div class="aspect-ratio-1-1">Content</div>
 ```
 
 ### Mobile Mockup
 
 ```html
-<div class="aspect-ratio-9-16">
-    Mobile Preview
-</div>
+<div class="aspect-ratio-9-16">Mobile Preview</div>
 ```
 
 ## Use Cases

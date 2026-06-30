@@ -11,7 +11,11 @@ Email signup form with input, button, feedback states, and multiple layout varia
     <p class="ease-newsletter-desc-az">Get the latest updates.</p>
   </div>
   <div class="ease-newsletter-form-az">
-    <input class="ease-newsletter-input-az" type="email" placeholder="Enter your email" />
+    <input
+      class="ease-newsletter-input-az"
+      type="email"
+      placeholder="Enter your email"
+    />
     <button class="ease-newsletter-btn-az">Subscribe</button>
   </div>
   <p class="ease-newsletter-incentive-az">No spam. Unsubscribe anytime.</p>
@@ -29,11 +33,11 @@ Email signup form with input, button, feedback states, and multiple layout varia
 
 ## CSS Variables
 
-| Variable | Default |
-|----------|---------|
-| `--ease-space-*` | spacing |
-| `--ease-radius-md` | 8px |
-| `--ease-color-primary` | #6366f1 |
-| `--ease-color-success` | #10b981 |
-| `--ease-color-danger` | #ef4444 |
-| `--ease-font-sans` | system-ui |
+| Variable               | Default   |
+| ---------------------- | --------- |
+| `--ease-space-*`       | spacing   |
+| `--ease-radius-md`     | 8px       |
+| `--ease-color-primary` | #6366f1   |
+| `--ease-color-success` | #10b981   |
+| `--ease-color-danger`  | #ef4444   |
+| `--ease-font-sans`     | system-ui |

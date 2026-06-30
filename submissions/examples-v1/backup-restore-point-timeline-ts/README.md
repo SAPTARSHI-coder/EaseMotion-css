@@ -8,7 +8,8 @@ Shows automatic, manual, failed, and verified backup restore points in a timelin
 
 ```html
 <article class="point verified">
-  <span>09:00</span><h2>Verified backup</h2>
+  <span>09:00</span>
+  <h2>Verified backup</h2>
 </article>
 ```
 

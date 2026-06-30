@@ -18,11 +18,11 @@ Added `@media (prefers-color-scheme: dark)` overrides with softer, lighter tinte
 variants of each accent color so the cards look polished in both light and dark mode.
 
 | Variant | Light Mode | Dark Mode |
-|---------|-----------|-----------|
-| Primary | `#6c63ff` | `#a5b4fc` |
-| Success | `#22c55e` | `#86efac` |
-| Danger  | `#ef4444` | `#fca5a5` |
-| Warning | `#f59e0b` | `#fcd34d` |
+| ------- | ---------- | --------- |
+| Primary | `#6c63ff`  | `#a5b4fc` |
+| Success | `#22c55e`  | `#86efac` |
+| Danger  | `#ef4444`  | `#fca5a5` |
+| Warning | `#f59e0b`  | `#fcd34d` |
 
 ## How to Test
 
@@ -34,11 +34,11 @@ variants of each accent color so the cards look polished in both light and dark 
 ## Browser Support
 
 | Browser | Minimum Version |
-|---------|----------------|
-| Chrome  | 76+            |
-| Firefox | 67+            |
-| Safari  | 12.1+          |
-| Edge    | 79+            |
+| ------- | --------------- |
+| Chrome  | 76+             |
+| Firefox | 67+             |
+| Safari  | 12.1+           |
+| Edge    | 79+             |
 
 > Browsers that do not support prefers-color-scheme will use light mode
 > colors by default — no regression occurs.

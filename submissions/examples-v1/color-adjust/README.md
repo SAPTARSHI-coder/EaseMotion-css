@@ -27,8 +27,7 @@ README.md
 The horizontal track moves according to scroll progress:
 
 ```javascript
-track.style.transform =
-    `translateX(-${progress * moveDistance}px)`;
+track.style.transform = `translateX(-${progress * moveDistance}px)`;
 ```
 
 ### Card Animation
@@ -36,9 +35,9 @@ track.style.transform =
 Cards animate continuously while scrolling:
 
 ```javascript
-opacity
-scale
-translateY
+opacity;
+scale;
+translateY;
 ```
 
 The card closest to the viewport center receives:
@@ -52,8 +51,8 @@ The card closest to the viewport center receives:
 ### Scroll Length
 
 ```css
-.scroll-section{
-    height:500vh;
+.scroll-section {
+  height: 500vh;
 }
 ```
 
@@ -62,25 +61,25 @@ Increase for slower horizontal movement.
 ### Card Gap
 
 ```css
-gap:40px;
+gap: 40px;
 ```
 
 ### Scale Range
 
 ```javascript
-scale(0.85 + intensity * 0.15)
+scale(0.85 + intensity * 0.15);
 ```
 
 ### Vertical Motion
 
 ```javascript
-translateY(20 - intensity * 20)
+translateY(20 - intensity * 20);
 ```
 
 ### Opacity Range
 
 ```javascript
-0.4 + intensity * 0.6
+0.4 + intensity * 0.6;
 ```
 
 ## Use Cases

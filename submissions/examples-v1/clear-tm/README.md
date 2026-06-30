@@ -5,17 +5,17 @@ CSS `clear` utility classes for the EaseMotion CSS framework.
 ## Quick Start
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ## Utility Classes
 
-| Class | Declaration |
-|-------|-------------|
-| `.clear-none` | `clear: none;` |
-| `.clear-left` | `clear: left;` |
-| `.clear-right` | `clear: right;` |
-| `.clear-both` | `clear: both;` |
+| Class            | Declaration       |
+| ---------------- | ----------------- |
+| `.clear-none`    | `clear: none;`    |
+| `.clear-left`    | `clear: left;`    |
+| `.clear-right`   | `clear: right;`   |
+| `.clear-both`    | `clear: both;`    |
 | `.clear-inherit` | `clear: inherit;` |
 
 ## Responsive Variants
@@ -33,9 +33,7 @@ Prefix with `sm-`, `md-`, `lg-` for responsive behavior:
 Use the `-dark` variant:
 
 ```html
-<div class="util-class-dark">
-  Dark mode Clear
-</div>
+<div class="util-class-dark">Dark mode Clear</div>
 ```
 
 ## Reduced Motion
@@ -43,9 +41,7 @@ Use the `-dark` variant:
 Use the `-nomotion` variant:
 
 ```html
-<div class="util-class-nomotion">
-  No motion Clear
-</div>
+<div class="util-class-nomotion">No motion Clear</div>
 ```
 
 ## Framework Integration

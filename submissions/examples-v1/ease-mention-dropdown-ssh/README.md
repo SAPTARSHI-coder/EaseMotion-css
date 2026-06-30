@@ -18,8 +18,11 @@ The component combines an editable input area, an `@` trigger button (a `<label>
 <div class="mention-input">
   <input type="checkbox" id="mention-trigger" class="mention-input__state" />
 
-  <div class="mention-input__field" contenteditable="true"
-       data-placeholder="Type your comment... use @ to mention someone">
+  <div
+    class="mention-input__field"
+    contenteditable="true"
+    data-placeholder="Type your comment... use @ to mention someone"
+  >
     Great work on the new release! Thanks
   </div>
 
@@ -51,8 +54,7 @@ The component combines an editable input area, an `@` trigger button (a `<label>
 
     <div class="mention-dropdown__footer">
       <span class="kbd">↑</span><span class="kbd">↓</span> navigate ·
-      <span class="kbd">Tab</span> select ·
-      <span class="kbd">Esc</span> close
+      <span class="kbd">Tab</span> select · <span class="kbd">Esc</span> close
     </div>
   </div>
 </div>
@@ -60,13 +62,13 @@ The component combines an editable input area, an `@` trigger button (a `<label>
 
 ### Available avatar color variants
 
-| Class                              | Gradient                |
-| ---------------------------------- | ----------------------- |
-| `.mention-item__avatar--purple`    | Purple → indigo          |
-| `.mention-item__avatar--blue`      | Cyan → blue              |
-| `.mention-item__avatar--pink`      | Pink → magenta           |
-| `.mention-item__avatar--green`     | Green → teal             |
-| `.mention-item__avatar--orange`    | Yellow → orange          |
+| Class                           | Gradient        |
+| ------------------------------- | --------------- |
+| `.mention-item__avatar--purple` | Purple → indigo |
+| `.mention-item__avatar--blue`   | Cyan → blue     |
+| `.mention-item__avatar--pink`   | Pink → magenta  |
+| `.mention-item__avatar--green`  | Green → teal    |
+| `.mention-item__avatar--orange` | Yellow → orange |
 
 Just open `demo.html` in any modern browser — no server, no build step, no dependencies. Click the **@** button to open the dropdown, then Tab through the suggestions.
 

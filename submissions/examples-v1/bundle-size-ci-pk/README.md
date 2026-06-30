@@ -1,14 +1,14 @@
 # EaseMotion — CSS Bundle Size CI
 
-Automated CSS bundle size tracking using [`size-limit`](https://github.com/ai/size-limit). 
+Automated CSS bundle size tracking using [`size-limit`](https://github.com/ai/size-limit).
 Every pull request gets an automated comment showing the size impact of the changes.
 
 ## Files
 
-| File | Purpose |
-|------|---------|
+| File        | Purpose                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------- |
 | `demo.html` | Visual dashboard showing current size, limit, headroom, breakdown, config, and PR comment example |
-| `style.css` | Dashboard and layout styles |
+| `style.css` | Dashboard and layout styles                                                                       |
 
 ## How `size-limit` Works
 
@@ -82,8 +82,8 @@ If a PR exceeds the limit, the workflow fails and blocks merging.
 
 ## Threshold
 
-| File | Limit | Current | Headroom |
-|------|-------|---------|----------|
-| `easemotion.min.css` | 80 KB | ~74.2 KB | ~5.8 KB |
+| File                 | Limit | Current  | Headroom |
+| -------------------- | ----- | -------- | -------- |
+| `easemotion.min.css` | 80 KB | ~74.2 KB | ~5.8 KB  |
 
 Adjust the `80 KB` value in `package.json` as the framework grows.

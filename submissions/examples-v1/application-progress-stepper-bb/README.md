@@ -28,9 +28,11 @@ submissions/examples/application-progress-stepper/
 
 ```html
 <nav class="em-stepper" aria-label="Application progress">
-
   <!-- Completed step -->
-  <div class="em-stepper__step em-stepper__step--done" aria-label="Applied — completed">
+  <div
+    class="em-stepper__step em-stepper__step--done"
+    aria-label="Applied — completed"
+  >
     <div class="em-stepper__bullet"></div>
     <div class="em-stepper__label">
       <span class="em-stepper__name">Applied</span>
@@ -39,7 +41,11 @@ submissions/examples/application-progress-stepper/
   </div>
 
   <!-- Active / current step -->
-  <div class="em-stepper__step em-stepper__step--active" aria-current="step" aria-label="Interview — in progress">
+  <div
+    class="em-stepper__step em-stepper__step--active"
+    aria-current="step"
+    aria-label="Interview — in progress"
+  >
     <div class="em-stepper__bullet">3</div>
     <div class="em-stepper__label">
       <span class="em-stepper__name">Interview</span>
@@ -48,14 +54,16 @@ submissions/examples/application-progress-stepper/
   </div>
 
   <!-- Pending step -->
-  <div class="em-stepper__step em-stepper__step--pending" aria-label="Result — pending">
+  <div
+    class="em-stepper__step em-stepper__step--pending"
+    aria-label="Result — pending"
+  >
     <div class="em-stepper__bullet">4</div>
     <div class="em-stepper__label">
       <span class="em-stepper__name">Result</span>
       <span class="em-stepper__date">—</span>
     </div>
   </div>
-
 </nav>
 ```
 
@@ -63,11 +71,11 @@ submissions/examples/application-progress-stepper/
 
 ### 2. Step State Modifiers
 
-| Modifier class | Meaning | Bullet style |
-|---|---|---|
-| `em-stepper__step--done` | Step completed | Green ✓ with glow |
-| `em-stepper__step--active` | Current step | Indigo pulsing ring + ripple |
-| `em-stepper__step--pending` | Not yet reached | Muted grey outline |
+| Modifier class               | Meaning          | Bullet style                   |
+| ---------------------------- | ---------------- | ------------------------------ |
+| `em-stepper__step--done`     | Step completed   | Green ✓ with glow              |
+| `em-stepper__step--active`   | Current step     | Indigo pulsing ring + ripple   |
+| `em-stepper__step--pending`  | Not yet reached  | Muted grey outline             |
 | `em-stepper__step--rejected` | Rejected outcome | Red ✕ with strikethrough label |
 
 ---
@@ -98,13 +106,17 @@ Add `em-stepper--vertical` to the `em-stepper` container. Add `em-stepper__body`
 
 ```html
 <!-- Active -->
-<span class="em-step-status-pill em-step-status-pill--active">Interview Stage</span>
+<span class="em-step-status-pill em-step-status-pill--active"
+  >Interview Stage</span
+>
 
 <!-- Selected -->
 <span class="em-step-status-pill em-step-status-pill--done">✓ Selected</span>
 
 <!-- Rejected -->
-<span class="em-step-status-pill em-step-status-pill--rejected">✕ Rejected</span>
+<span class="em-step-status-pill em-step-status-pill--rejected"
+  >✕ Rejected</span
+>
 ```
 
 ---
@@ -112,40 +124,73 @@ Add `em-stepper--vertical` to the `em-stepper` container. Add `em-stepper__body`
 ## How the Animations Work
 
 ### Bullet Pop-in (staggered)
+
 ```css
 @keyframes em-kf-bullet-pop {
-  from { opacity: 0; transform: scale(0.5); }
-  60%  { transform: scale(1.2);             }
-  to   { opacity: 1; transform: scale(1);   }
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 ```
+
 Each bullet delays by `0.15s` increments — creating a left-to-right cascade.
 
 ### Active Ring Pulse
+
 ```css
 @keyframes em-kf-active-ring {
-  0%, 100% { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25); }
-  50%       { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.10); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.1);
+  }
 }
 ```
+
 The active bullet softly breathes to signal "in progress."
 
 ### Ripple Effect (active only)
+
 ```css
 @keyframes em-kf-ripple {
-  0%   { transform: scale(1);   opacity: 0.6; }
-  100% { transform: scale(1.8); opacity: 0;   }
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
 }
 ```
+
 Expanding ring on the `::before` pseudo-element — no JS.
 
 ### Connector Line Fill
+
 ```css
 @keyframes em-kf-line-fill {
-  from { transform: scaleX(0); transform-origin: left; }
-  to   { transform: scaleX(1); transform-origin: left; }
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
 }
 ```
+
 Completed connectors grow from left to right, giving a "progress advancing" feel.
 
 ---
@@ -154,10 +199,10 @@ Completed connectors grow from left to right, giving a "progress advancing" feel
 
 ```css
 :root {
-  --em-step-done:    #22c55e;   /* completed colour */
-  --em-step-active:  #f59e0b;   /* amber brand colour */
-  --em-step-pending: #334155;   /* future step colour */
-  --em-step-rejected:#ef4444;   /* rejected colour */
+  --em-step-done: #22c55e; /* completed colour */
+  --em-step-active: #f59e0b; /* amber brand colour */
+  --em-step-pending: #334155; /* future step colour */
+  --em-step-rejected: #ef4444; /* rejected colour */
 }
 ```
 
@@ -176,12 +221,12 @@ Completed connectors grow from left to right, giving a "progress advancing" feel
 
 ## Browser Support
 
-| Browser | Version | Notes |
-|---|---|---|
-| Chrome / Edge | 80+ | Full support |
-| Firefox | 72+ | Full support |
-| Safari | 14+ | Full support |
-| iOS Safari | 14+ | Full support |
+| Browser       | Version | Notes        |
+| ------------- | ------- | ------------ |
+| Chrome / Edge | 80+     | Full support |
+| Firefox       | 72+     | Full support |
+| Safari        | 14+     | Full support |
+| iOS Safari    | 14+     | Full support |
 
 ---
 

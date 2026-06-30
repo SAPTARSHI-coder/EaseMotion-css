@@ -7,6 +7,7 @@ This submission implements a 3D Card Flip animation component supporting both ho
 ## Technical Overview
 
 ### 3D Perspective and preserve-3d
+
 To render transformations with realistic volumetric depth, the wrapper establishes a 3D perspective field, while the rotating container preserves the Z-index transformations of the child cards:
 
 ```css
@@ -19,6 +20,7 @@ To render transformations with realistic volumetric depth, the wrapper establish
 ```
 
 ### Backface-visibility
+
 To ensure the opposite face is hidden when the card is oriented away from the viewport, we utilize `backface-visibility: hidden`.
 
 ---

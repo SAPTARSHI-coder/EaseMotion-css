@@ -19,7 +19,7 @@ Standard CSS does not support direct transition animations on gradient colors or
 
 ```css
 @property --progress {
-  syntax: '<percentage>';
+  syntax: "<percentage>";
   inherits: false;
   initial-value: 0%;
 }

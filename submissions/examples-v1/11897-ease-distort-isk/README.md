@@ -1,9 +1,11 @@
 # ease-distort-isk
 
 ## What does this do?
+
 Applies a wave-like distortion warp effect by oscillating skewX, scaleX, and scaleY simultaneously. It supports both infinite repeating distortion and a single-trigger distortion.
 
 ## How is it used?
+
 Add the infinite distortion class for a continuous warping effect:
 
 ```html
@@ -25,8 +27,10 @@ You can customize the distortion intensity by overriding the `--ease-distort-int
 ```
 
 ## Why is it useful?
+
 Distortion and warping animations are powerful tools for glitch aesthetics, holographic interfaces, and retro monitor screen warnings. The wave-like warp adds an extreme sense of energy and disruption to any element, making it highly effective for errors, alert icons, or game UI components.
 
 ## Tech Stack
+
 - HTML
 - CSS (no frameworks, no JavaScript)

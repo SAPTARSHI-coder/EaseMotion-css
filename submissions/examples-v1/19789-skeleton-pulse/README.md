@@ -8,9 +8,9 @@ A lightweight utility class `ease-skeleton-pulse-dj` to create smooth shimmering
 
 This example demonstrates how to build structural placeholder layouts using standard CSS linear-gradients, shift transitions, and infinite keyframe scaling.
 
-* **Transitions:** Infinite linear keyframe position shift (`linear infinite`).
-* **Responsiveness:** Works natively on block nodes of any size (cards, avatar circles, paragraph lines).
-* **Dark Mode:** Seamlessly changes token colors in dark/light themes.
+- **Transitions:** Infinite linear keyframe position shift (`linear infinite`).
+- **Responsiveness:** Works natively on block nodes of any size (cards, avatar circles, paragraph lines).
+- **Dark Mode:** Seamlessly changes token colors in dark/light themes.
 
 ---
 

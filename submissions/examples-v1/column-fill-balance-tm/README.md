@@ -3,6 +3,7 @@
 column-fill: balance — Balances column heights in multi-column text
 
 ## Features
+
 - Uses `--ease-color-text`
 - Uses `--ease-text-base`
 - Uses `--ease-color-primary`

@@ -10,13 +10,22 @@ Two demos that simulate a camera depth-of-field effect using `backdrop-filter: b
 
 ## How it works
 
-`backdrop-filter` blurs what is rendered *behind* an element. The background bokeh blobs (radial-gradient) act as the scene. Each frosted plane/card sits on top and applies variable blur to everything behind it:
+`backdrop-filter` blurs what is rendered _behind_ an element. The background bokeh blobs (radial-gradient) act as the scene. Each frosted plane/card sits on top and applies variable blur to everything behind it:
 
 ```css
 @keyframes focus-near {
-  0%,  20% { backdrop-filter: blur(0px)  brightness(1.1); } /* sharp  */
-  33%, 66% { backdrop-filter: blur(8px)  brightness(0.7); } /* soft   */
-  80%, 100%{ backdrop-filter: blur(14px) brightness(0.5); } /* blurred*/
+  0%,
+  20% {
+    backdrop-filter: blur(0px) brightness(1.1);
+  } /* sharp  */
+  33%,
+  66% {
+    backdrop-filter: blur(8px) brightness(0.7);
+  } /* soft   */
+  80%,
+  100% {
+    backdrop-filter: blur(14px) brightness(0.5);
+  } /* blurred*/
 }
 ```
 

@@ -13,9 +13,9 @@ This component leverages the **"Checkbox Hack"**.
 
 ## Features
 
-*   **Zero JavaScript**: Completely relies on native HTML behavior and CSS state selectors.
-*   **Accessible**: Uses standard form inputs, making it keyboard navigable (supports `focus` state styles).
-*   **Customizable**: Easy to adapt sizes, colors, and border radii using the provided CSS variables or direct edits.
+- **Zero JavaScript**: Completely relies on native HTML behavior and CSS state selectors.
+- **Accessible**: Uses standard form inputs, making it keyboard navigable (supports `focus` state styles).
+- **Customizable**: Easy to adapt sizes, colors, and border radii using the provided CSS variables or direct edits.
 
 ## Usage
 

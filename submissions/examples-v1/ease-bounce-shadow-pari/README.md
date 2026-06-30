@@ -4,6 +4,7 @@
 Animates an element's entrance with a bouncing drop effect where the box-shadow dynamically grows and shrinks to simulate depth on landing.
 
 **How is it used?**
+
 <div class="bounce-shadow-entrance">Content</div>
 <div class="bounce-shadow-slow">Content</div>
 

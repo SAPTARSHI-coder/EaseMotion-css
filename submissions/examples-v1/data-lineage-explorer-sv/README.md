@@ -8,7 +8,6 @@ Creates a visual representation of data movement across source systems, transfor
 
 ```html
 <div class="pipeline">
-  <div class="node source">
-    CRM Database
-  </div>
+  <div class="node source">CRM Database</div>
 </div>
+```

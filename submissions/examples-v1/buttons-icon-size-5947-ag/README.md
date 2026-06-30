@@ -10,11 +10,11 @@ Icon-only buttons require consistent square dimensions (aspect-ratio 1:1) to pre
 
 The sizing parameters mapped in this demonstration are:
 
-| Class | Button Diameter | Icon (SVG) Size |
-|-------|-----------------|-----------------|
-| `.ease-btn-icon-sm` | `32px` | `14px` |
-| Default | `40px` | `18px` |
-| `.ease-btn-icon-lg` | `48px` | `22px` |
+| Class               | Button Diameter | Icon (SVG) Size |
+| ------------------- | --------------- | --------------- |
+| `.ease-btn-icon-sm` | `32px`          | `14px`          |
+| Default             | `40px`          | `18px`          |
+| `.ease-btn-icon-lg` | `48px`          | `22px`          |
 
 This ensures consistent visual balance alongside standard textual button height scales.
 

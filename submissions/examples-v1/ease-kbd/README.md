@@ -9,7 +9,10 @@ A component for showing keyboard shortcuts with styled key badges (`kbd.ease-kbd
 ```html
 <table class="ease-kbd-table">
   <thead>
-    <tr><th>Action</th><th>Shortcut</th></tr>
+    <tr>
+      <th>Action</th>
+      <th>Shortcut</th>
+    </tr>
   </thead>
   <tbody>
     <tr>

@@ -23,9 +23,7 @@ Features include:
 
 ```html
 <details class="accordion">
-  <summary class="accordion-header">
-    Accordion Title
-  </summary>
+  <summary class="accordion-header">Accordion Title</summary>
 
   <div class="accordion-content">
     <p>Accordion Content</p>

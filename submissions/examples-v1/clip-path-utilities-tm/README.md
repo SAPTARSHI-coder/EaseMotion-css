@@ -1,10 +1,10 @@
 # Clip Path Utilities
 
-Circle ellipse polygon clip-path shapes using ease-radius and ease-color tokens. This submission demonstrates how to leverage the EaseMotion CSS design token system (--ease-* variables) for consistent styling across your project.
+Circle ellipse polygon clip-path shapes using ease-radius and ease-color tokens. This submission demonstrates how to leverage the EaseMotion CSS design token system (--ease-\* variables) for consistent styling across your project.
 
 ## Features
 
-- **Design token integration** — Uses --ease-color-*, --ease-space-*, --ease-radius-*, and --ease-shadow-* tokens from the EaseMotion CSS variables file
+- **Design token integration** — Uses --ease-color-_, --ease-space-_, --ease-radius-_, and --ease-shadow-_ tokens from the EaseMotion CSS variables file
 - **Multiple variants** — Includes primary/secondary/success/warning/danger/info color variants
 - **Dark mode support** — Respects prefers-color-scheme: dark via CSS custom properties
 - **Reduced motion support** — Respects prefers-reduced-motion: reduce for accessibility

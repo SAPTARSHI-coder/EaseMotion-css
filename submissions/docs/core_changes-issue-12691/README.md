@@ -11,9 +11,9 @@ Provides a CSS-only tabs component using radio inputs (`:checked` + sibling sele
 ```html
 <div class="ease-tabs-wrapper">
   <div class="ease-tabs">
-    <input type="radio" name="tabs" id="tab-1" class="ease-tab-input" checked>
+    <input type="radio" name="tabs" id="tab-1" class="ease-tab-input" checked />
     <label for="tab-1" class="ease-tab-label">Tab 1</label>
-    <input type="radio" name="tabs" id="tab-2" class="ease-tab-input">
+    <input type="radio" name="tabs" id="tab-2" class="ease-tab-input" />
     <label for="tab-2" class="ease-tab-label">Tab 2</label>
   </div>
   <div class="ease-tab-panel">Panel 1 content...</div>
@@ -35,15 +35,15 @@ Provides a CSS-only tabs component using radio inputs (`:checked` + sibling sele
 
 ### Available Classes
 
-| Class | Purpose |
-|---|---|
-| `.ease-tabs-wrapper` | Root container |
-| `.ease-tabs` | Tab bar (flex row) |
-| `.ease-tab-input` | Hidden radio input |
-| `.ease-tab-label` | Clickable tab trigger |
-| `.ease-tab-panel` | Content panel (shown when matching input is checked) |
-| `.ease-tabs-pills` | Pill-shaped tab variant |
-| `.ease-tabs-boxed` | Boxed segmented variant |
+| Class                | Purpose                                              |
+| -------------------- | ---------------------------------------------------- |
+| `.ease-tabs-wrapper` | Root container                                       |
+| `.ease-tabs`         | Tab bar (flex row)                                   |
+| `.ease-tab-input`    | Hidden radio input                                   |
+| `.ease-tab-label`    | Clickable tab trigger                                |
+| `.ease-tab-panel`    | Content panel (shown when matching input is checked) |
+| `.ease-tabs-pills`   | Pill-shaped tab variant                              |
+| `.ease-tabs-boxed`   | Boxed segmented variant                              |
 
 ### How it works
 
@@ -57,11 +57,11 @@ Tabs are a fundamental UI pattern for organizing content into switchable panels.
 
 ## Variants
 
-| Variant | Class | Visual |
-|---|---|---|
-| Underline | (default) | Active tab has colored bottom border |
-| Pills | `.ease-tabs-pills` | Active tab is a filled pill |
-| Boxed | `.ease-tabs-boxed` | Segmented control style with raised active state |
+| Variant   | Class              | Visual                                           |
+| --------- | ------------------ | ------------------------------------------------ |
+| Underline | (default)          | Active tab has colored bottom border             |
+| Pills     | `.ease-tabs-pills` | Active tab is a filled pill                      |
+| Boxed     | `.ease-tabs-boxed` | Segmented control style with raised active state |
 
 ## Features
 

@@ -8,6 +8,7 @@ Creates a celebratory level-up style animation with an expanding glowing ring an
 
 ```html
 <button class="level-up-btn">
-    LEVEL UP!
-    <span class="glow-ring"></span>
+  LEVEL UP!
+  <span class="glow-ring"></span>
 </button>
+```

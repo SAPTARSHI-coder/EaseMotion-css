@@ -23,9 +23,7 @@ An accessibility-focused skip navigation component that remains hidden until key
 ## Usage
 
 ```html
-<a href="#main-content" class="skip-link">
-    Skip to Main Content
-</a>
+<a href="#main-content" class="skip-link"> Skip to Main Content </a>
 ```
 
 ## Main Classes

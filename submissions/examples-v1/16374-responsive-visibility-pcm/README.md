@@ -37,8 +37,8 @@ Adds responsive visibility utility classes for showing and hiding elements at sp
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                            |
+| ----------- | -------------------------------------------------------------------------------------------------- |
 | `demo.html` | Live responsive demo with viewport tracker, dashboard layout, class test grid, and reference table |
-| `style.css` | 10 utility classes across 3 media query breakpoints + demo styles |
-| `README.md` | This documentation |
+| `style.css` | 10 utility classes across 3 media query breakpoints + demo styles                                  |
+| `README.md` | This documentation                                                                                 |

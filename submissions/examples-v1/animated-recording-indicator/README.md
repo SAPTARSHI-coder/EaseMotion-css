@@ -8,8 +8,8 @@ Creates a recording status indicator with a pulsing red dot animation.
 
 ```html
 <div class="recording-indicator">
-    <span class="record-dot"></span>
-    <span class="record-text">REC</span>
+  <span class="record-dot"></span>
+  <span class="record-text">REC</span>
 </div>
 ```
 

@@ -12,11 +12,11 @@ A clean and modern hover effect where borders animate and draw around the card/b
 
 ## Features
 
-* Smooth border drawing animation
-* Pure HTML & CSS
-* Lightweight and responsive
-* Easy to customize
-* Beginner-friendly implementation
+- Smooth border drawing animation
+- Pure HTML & CSS
+- Lightweight and responsive
+- Easy to customize
+- Beginner-friendly implementation
 
 ## Preview
 
@@ -24,8 +24,8 @@ Hover over the card to see the border animate around the element.
 
 ## Technologies Used
 
-* HTML5
-* CSS3
+- HTML5
+- CSS3
 
 ## Project Structure
 
@@ -41,19 +41,19 @@ border-draw-animation/
 
 You can easily modify:
 
-* Border color
-* Animation speed
-* Card dimensions
-* Background colors
-* Border thickness
+- Border color
+- Animation speed
+- Card dimensions
+- Background colors
+- Border thickness
 
 ## Learning Concepts
 
-* CSS Pseudo Elements (`::before`, `::after`)
-* CSS Transitions
-* Positioning
-* Hover Effects
-* Transform Properties
+- CSS Pseudo Elements (`::before`, `::after`)
+- CSS Transitions
+- Positioning
+- Hover Effects
+- Transform Properties
 
 ## Screenshots
 

@@ -1,4 +1,5 @@
 # Avatar Group
+
 A compact visual stack for representing collections of users.
 
 - Uses negative margins to create the "overlapping" stack effect.

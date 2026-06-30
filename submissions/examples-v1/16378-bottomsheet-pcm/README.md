@@ -22,8 +22,8 @@ Adds a **Bottom Sheet** component — a modal panel that slides up from the bott
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                           |
+| ----------- | --------------------------------------------------------------------------------- |
 | `demo.html` | Interactive bottom sheet with 4 demos: share, filters, actions, expanded settings |
-| `style.css` | Sheet styles: backdrop, panel, handle, header, content, snap levels, animations |
-| `README.md` | This documentation |
+| `style.css` | Sheet styles: backdrop, panel, handle, header, content, snap levels, animations   |
+| `README.md` | This documentation                                                                |

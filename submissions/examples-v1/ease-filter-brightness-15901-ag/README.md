@@ -9,6 +9,7 @@ This submission implements a visual demonstration of CSS `filter: brightness()` 
 CSS brightness filters dynamically adjust element exposure values without requiring image pre-processing.
 
 The classes are configured as:
+
 - Dim State: `filter: brightness(0.55)` (increases to `1.0` on hover)
 - Baseline State: `filter: brightness(1.0)`
 - Bright State: `filter: brightness(1.45)` (decreases to `1.0` on hover)

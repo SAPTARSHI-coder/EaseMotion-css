@@ -55,15 +55,15 @@ demo-page-generator/
 
 ## Sections
 
-| # | Section | Description |
-|---|---|---|
-| 1 | **Navigation** | Sticky frosted nav — logo in monospace green, 4 links, Generate CTA |
-| 2 | **Hero** | Title, description, animated terminal mockup showing CLI output |
-| 3 | **How It Works** | 4 pipeline step cards with real code snippets |
-| 4 | **Live Generator** | Filter tabs + log strip + `▶ Generate Gallery` button → 18-card grid |
-| 5 | **Output Preview** | Syntax-highlighted mock of `demo-gallery.html` with Copy button |
-| 6 | **Benefits** | 6 developer value-prop cards |
-| 7 | **Footer** | Brand, Example links, EaseMotion links, copyright |
+| #   | Section            | Description                                                          |
+| --- | ------------------ | -------------------------------------------------------------------- |
+| 1   | **Navigation**     | Sticky frosted nav — logo in monospace green, 4 links, Generate CTA  |
+| 2   | **Hero**           | Title, description, animated terminal mockup showing CLI output      |
+| 3   | **How It Works**   | 4 pipeline step cards with real code snippets                        |
+| 4   | **Live Generator** | Filter tabs + log strip + `▶ Generate Gallery` button → 18-card grid |
+| 5   | **Output Preview** | Syntax-highlighted mock of `demo-gallery.html` with Copy button      |
+| 6   | **Benefits**       | 6 developer value-prop cards                                         |
+| 7   | **Footer**         | Brand, Example links, EaseMotion links, copyright                    |
 
 ---
 
@@ -75,10 +75,10 @@ Instead of reading the filesystem, the in-browser simulation uses a JavaScript a
 
 ```js
 const EASE_CLASSES = [
-  { name: 'ease-fade-in',        category: 'entrance',   desc: '…' },
-  { name: 'ease-slide-up',       category: 'entrance',   desc: '…' },
-  { name: 'ease-hover-grow',     category: 'hover',      desc: '…' },
-  { name: 'ease-bounce',         category: 'continuous', desc: '…' },
+  { name: "ease-fade-in", category: "entrance", desc: "…" },
+  { name: "ease-slide-up", category: "entrance", desc: "…" },
+  { name: "ease-hover-grow", category: "hover", desc: "…" },
+  { name: "ease-bounce", category: "continuous", desc: "…" },
   // … 14 more
 ];
 ```
@@ -87,13 +87,13 @@ const EASE_CLASSES = [
 
 Clicking **Generate Gallery** kicks off a 1.6-second timed simulation that mirrors what the real Node script does:
 
-| Delay | Step | Log message |
-|---|---|---|
-| 0 ms | Start | `$ node scripts/generate-demo-page.js` |
-| 300 ms | Read CSS | `✓ Reading core/animations.css…` |
-| 700 ms | Extract | `✓ Found 18 .ease-* classes` |
-| 1100 ms | Generate cards | `✓ Generating 18 preview cards…` |
-| 1600 ms | Write output | `✓ Writing demo-gallery.html…` + gallery renders |
+| Delay   | Step           | Log message                                      |
+| ------- | -------------- | ------------------------------------------------ |
+| 0 ms    | Start          | `$ node scripts/generate-demo-page.js`           |
+| 300 ms  | Read CSS       | `✓ Reading core/animations.css…`                 |
+| 700 ms  | Extract        | `✓ Found 18 .ease-* classes`                     |
+| 1100 ms | Generate cards | `✓ Generating 18 preview cards…`                 |
+| 1600 ms | Write output   | `✓ Writing demo-gallery.html…` + gallery renders |
 
 ### Card generation
 
@@ -101,9 +101,9 @@ Each class in the filtered set becomes a card via `buildCard(cls)`:
 
 ```js
 function buildCard(cls) {
-  const card = document.createElement('article');
-  const preview = document.createElement('div');
-  preview.className = `gallery-preview ${cls.name}`;  // ← class applied directly
+  const card = document.createElement("article");
+  const preview = document.createElement("div");
+  preview.className = `gallery-preview ${cls.name}`; // ← class applied directly
   // …card body with name, category badge, description, code snippet
   return card;
 }
@@ -114,9 +114,9 @@ function buildCard(cls) {
 Entrance animation cards include a `↺` replay button that re-triggers the animation by:
 
 ```js
-btn.addEventListener('click', () => {
+btn.addEventListener("click", () => {
   prev.classList.remove(cls.name);
-  void prev.offsetWidth;           // force reflow to reset the animation
+  void prev.offsetWidth; // force reflow to reset the animation
   prev.classList.add(cls.name);
 });
 ```
@@ -128,21 +128,25 @@ Three filter tabs (**All / Entrance / Hover / Continuous**) filter `EASE_CLASSES
 ### What the real Node.js script would do
 
 ```js
-const fs  = require('fs');
-const css = fs.readFileSync('core/animations.css', 'utf-8');
+const fs = require("fs");
+const css = fs.readFileSync("core/animations.css", "utf-8");
 
 // Extract unique .ease-* class names
-const RE      = /\.(ease-[\w-]+)/g;
-const classes = [...new Set([...css.matchAll(RE)].map(m => m[1]))];
+const RE = /\.(ease-[\w-]+)/g;
+const classes = [...new Set([...css.matchAll(RE)].map((m) => m[1]))];
 
 // Build cards
-const cards = classes.map(cls => `
+const cards = classes
+  .map(
+    (cls) => `
   <div class="card">
     <div class="preview ${cls}"></div>
     <code>${cls}</code>
     <p>Add <code>class="${cls}"</code> to any element.</p>
   </div>
-`).join('\n');
+`
+  )
+  .join("\n");
 
 // Wrap in full HTML document
 const html = `<!DOCTYPE html>
@@ -159,7 +163,7 @@ const html = `<!DOCTYPE html>
 </body>
 </html>`;
 
-fs.writeFileSync('demo-gallery.html', html);
+fs.writeFileSync("demo-gallery.html", html);
 console.log(`✓ Done — ${classes.length} cards written to demo-gallery.html`);
 ```
 
@@ -169,43 +173,43 @@ console.log(`✓ Done — ${classes.length} cards written to demo-gallery.html`)
 
 ### On the page itself
 
-| Class | Used on |
-|---|---|
-| `ease-fade-in` | Nav logo, hero chip, section chips, hero actions |
-| `ease-slide-up` | Hero title, hero description, section headings, how-it-works cards, benefit cards |
-| `ease-hover-lift` | Hero ghost button, benefit cards, copy button |
-| `ease-hover-glow` | Nav CTA button, Generate Gallery button |
-| `ease-hover-underline` | Nav links, footer links |
-| `ease-glass-card` | How It Works pipeline cards (overridden to dark theme) |
+| Class                  | Used on                                                                           |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `ease-fade-in`         | Nav logo, hero chip, section chips, hero actions                                  |
+| `ease-slide-up`        | Hero title, hero description, section headings, how-it-works cards, benefit cards |
+| `ease-hover-lift`      | Hero ghost button, benefit cards, copy button                                     |
+| `ease-hover-glow`      | Nav CTA button, Generate Gallery button                                           |
+| `ease-hover-underline` | Nav links, footer links                                                           |
+| `ease-glass-card`      | How It Works pipeline cards (overridden to dark theme)                            |
 
 ### Applied inside generated preview boxes
 
 Every class in the `EASE_CLASSES` array is applied directly to a preview `<div>` inside each generated card:
 
-| Category | Classes shown |
-|---|---|
-| **Entrance** | `ease-fade-in`, `ease-slide-up`, `ease-slide-in-left`, `ease-slide-in-right`, `ease-zoom-in`, `ease-slide-in-from-bottom-right`, `ease-slide-in-from-top-left`, `ease-gradient-text-animated` |
-| **Continuous** | `ease-bounce`, `ease-float`, `ease-pulse`, `ease-rotate` |
-| **Hover / Surface** | `ease-hover-grow`, `ease-hover-lift`, `ease-hover-glow`, `ease-hover-underline`, `ease-hover-pulse-glow`, `ease-glass-card` |
+| Category            | Classes shown                                                                                                                                                                                 |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Entrance**        | `ease-fade-in`, `ease-slide-up`, `ease-slide-in-left`, `ease-slide-in-right`, `ease-zoom-in`, `ease-slide-in-from-bottom-right`, `ease-slide-in-from-top-left`, `ease-gradient-text-animated` |
+| **Continuous**      | `ease-bounce`, `ease-float`, `ease-pulse`, `ease-rotate`                                                                                                                                      |
+| **Hover / Surface** | `ease-hover-grow`, `ease-hover-lift`, `ease-hover-glow`, `ease-hover-underline`, `ease-hover-pulse-glow`, `ease-glass-card`                                                                   |
 
 ### Delay staggering
 
-| Class | Used on |
-|---|---|
+| Class                               | Used on            |
+| ----------------------------------- | ------------------ |
 | `ease-delay-100` — `ease-delay-400` | How It Works cards |
-| `ease-delay-100` — `ease-delay-600` | Benefit cards |
+| `ease-delay-100` — `ease-delay-600` | Benefit cards      |
 
 ---
 
 ## Browser Support
 
-| Browser | Version | Support |
-|---|---|---|
-| Chrome / Edge | 88+ | ✅ Full |
-| Firefox | 89+ | ✅ Full |
-| Safari | 15+ | ✅ Full |
-| iOS Safari | 15+ | ✅ Full |
-| Samsung Internet | 14+ | ✅ Full |
+| Browser          | Version | Support |
+| ---------------- | ------- | ------- |
+| Chrome / Edge    | 88+     | ✅ Full |
+| Firefox          | 89+     | ✅ Full |
+| Safari           | 15+     | ✅ Full |
+| iOS Safari       | 15+     | ✅ Full |
+| Samsung Internet | 14+     | ✅ Full |
 
 The Copy button uses the `navigator.clipboard` API (Chrome 66+, Firefox 63+, Safari 13.1+). On older browsers the button is present but silent — no JS errors.
 

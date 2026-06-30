@@ -10,23 +10,22 @@ A proposal for `core/utilities.css` adding standard CSS counter utilities for au
 
 ## 🛠️ Usage
 
-Open `demo.html` in your browser. All code is contained within `style.css`. 
+Open `demo.html` in your browser. All code is contained within `style.css`.
 
 You can apply the proposed classes to automatically number a list of divs, articles, or sections:
 
 ```html
 <!-- Initialize the counter on the parent -->
 <div class="em-counter-reset">
-  
   <!-- Increment the counter on each child -->
   <div class="em-counter-increment">First Item</div>
   <div class="em-counter-increment">Second Item</div>
   <div class="em-counter-increment">Third Item</div>
-  
 </div>
 ```
 
-*Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`.*
+_Note: This is submitted via the `submissions/examples/` directory to adhere to the strict CI/CD guidelines preventing external modification of `core/` files. The maintainer can easily merge these rules into `core/utilities.css`._
 
 ## 🔗 Related Issue
+
 Resolves Issue #16836

@@ -17,19 +17,24 @@ over-limit state).
 
 ## States
 
-| State | Trigger | Visuals |
-| ----- | ------- | ------- |
-| Default  | Under ~85% of the limit | Accent-coloured fill bar |
-| Warning  | Within 15% of the limit | Amber fill + amber counter |
-| Over     | Past the limit | Red field, red bar, shake animation, negative count |
+| State   | Trigger                 | Visuals                                             |
+| ------- | ----------------------- | --------------------------------------------------- |
+| Default | Under ~85% of the limit | Accent-coloured fill bar                            |
+| Warning | Within 15% of the limit | Amber fill + amber counter                          |
+| Over    | Past the limit          | Red field, red bar, shake animation, negative count |
 
 ## Usage
 
 ```html
 <div class="field" data-charfield data-max="120">
   <label class="field__label" for="bio">Short bio</label>
-  <textarea id="bio" class="field__input" rows="4"
-            maxlength="160" aria-describedby="bio-count"></textarea>
+  <textarea
+    id="bio"
+    class="field__input"
+    rows="4"
+    maxlength="160"
+    aria-describedby="bio-count"
+  ></textarea>
 
   <div class="field__meter" aria-hidden="true">
     <span class="field__meter-fill" data-fill></span>
@@ -67,10 +72,10 @@ char-count-field/
 
 | Browser | Supported |
 | ------- | --------- |
-| Chrome  | ✅ |
-| Firefox | ✅ |
-| Safari  | ✅ |
-| Edge    | ✅ |
+| Chrome  | ✅        |
+| Firefox | ✅        |
+| Safari  | ✅        |
+| Edge    | ✅        |
 
 ## Why it's useful
 

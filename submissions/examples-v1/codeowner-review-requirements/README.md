@@ -8,13 +8,13 @@ This example explains the CODEOWNERS workflow, review process, benefits, and pro
 
 ## Features
 
-* Documentation-style landing page
-* Explanation of the CODEOWNERS feature
-* Example CODEOWNERS configuration
-* Visual workflow of the review process
-* Responsive layout
-* Clean developer-focused UI
-* Easy to customize and reuse
+- Documentation-style landing page
+- Explanation of the CODEOWNERS feature
+- Example CODEOWNERS configuration
+- Visual workflow of the review process
+- Responsive layout
+- Clean developer-focused UI
+- Easy to customize and reuse
 
 ---
 
@@ -41,11 +41,11 @@ demo.html
 
 2. Explore the documentation sections explaining:
 
-* What CODEOWNERS are
-* Protected folders
-* Pull request review workflow
-* Benefits of protected reviews
-* Example configuration
+- What CODEOWNERS are
+- Protected folders
+- Pull request review workflow
+- Benefits of protected reviews
+- Example configuration
 
 ---
 
@@ -90,11 +90,11 @@ Merge Pull Request
 
 ## Technologies Used
 
-* HTML5
-* CSS3
-* Responsive Design
-* Flexbox
-* CSS Grid
+- HTML5
+- CSS3
+- Responsive Design
+- Flexbox
+- CSS Grid
 
 ---
 
@@ -102,9 +102,9 @@ Merge Pull Request
 
 Tested on:
 
-* Google Chrome
-* Mozilla Firefox
-* Microsoft Edge
+- Google Chrome
+- Mozilla Firefox
+- Microsoft Edge
 
 Expected to work correctly on all modern browsers.
 
@@ -112,12 +112,12 @@ Expected to work correctly on all modern browsers.
 
 ## Benefits
 
-* Protects important project files
-* Prevents accidental changes
-* Improves code quality
-* Ensures maintainer oversight
-* Encourages consistent review practices
-* Supports collaborative open-source development
+- Protects important project files
+- Prevents accidental changes
+- Improves code quality
+- Ensures maintainer oversight
+- Encourages consistent review practices
+- Supports collaborative open-source development
 
 ---
 
@@ -125,13 +125,13 @@ Expected to work correctly on all modern browsers.
 
 You can easily customize:
 
-* Protected folder examples
-* Workflow diagram
-* Code snippets
-* Color theme
-* Documentation sections
-* Layout
-* Typography
+- Protected folder examples
+- Workflow diagram
+- Code snippets
+- Color theme
+- Documentation sections
+- Layout
+- Typography
 
 ---
 

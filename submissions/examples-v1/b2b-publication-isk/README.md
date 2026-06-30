@@ -1,15 +1,19 @@
 # Media — B2B Industry Publication
 
 ## What does this do?
+
 A complete, copy-paste ready full-page website for a B2B Industry Publication named `BizSphere`, featuring featured research report heroes, latest insights grids (Kubernetes scaling, LLMs in support), topic categories, expert contributor profile cards, premium email newsletter subscriptions, and footer.
 
 ## How is it used?
+
 Open `demo.html` directly in any web browser to view the page. No build step is required. The page transition, reveal animations, and hover components use the project's standard CSS classes.
 
 ## Why is it useful?
+
 This showcases how EaseMotion CSS can be applied to design premium corporate media, news, and publishing layouts with professional serif typography, clean card structures, and newsletter forms.
 
 ## EaseMotion CSS Classes Showcased
+
 - **Entrance & Hover Animations**:
   - `.ease-slide-in-left` / `.ease-slide-in-right`: Used for the hero content entrances.
   - `.ease-hover-grow`: Applied to header logo elements and button states.

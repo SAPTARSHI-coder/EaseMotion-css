@@ -38,10 +38,13 @@ submissions/examples/autonomous-robotic-surgery-guidance-station-phase-1026/
 ## Component Breakdown
 
 ### 1. Hero Section
+
 A full-viewport entry point with a live-scan grid background, animated gradient title, eyebrow indicator, and a shimmering CTA button. Three key stats (precision rate, instrument accuracy, system latency) are displayed beneath a hairline rule for immediate credibility signaling.
 
 ### 2. CSS Robotic Surgery Station
+
 The signature visual element: a fully CSS-constructed robotic station using nested `div` elements shaped with `border-radius`, `border`, and `linear-gradient`. Includes:
+
 - Two articulated arms (`arm--left`, `arm--right`) with `transform-origin` swing animation
 - Three concentric scan rings rotating at different speeds and directions
 - A central hub breathing with `hub-breathe` keyframes
@@ -50,40 +53,45 @@ The signature visual element: a fully CSS-constructed robotic station using nest
 - Three floating pulse telemetry dots
 
 ### 3. Patient Monitoring Dashboard
+
 Five glassmorphism vital cards (Heart Rate, Blood Pressure, Oxygen Saturation, Brain Activity, Body Temperature). Each card features a top accent line in the card's semantic color, a live status indicator, a monospace value with unit, and an animated progress bar with a glowing trailing dot.
 
 ### 4. AI Analytics Cards
+
 Four floating stat cards with gradient-border technique using CSS `mask` and `mask-composite` to render multi-stop gradient borders without extra DOM nodes. Each card floats at a different phase offset, creating a natural depth effect.
 
 ### 5. Surgical Workflow Timeline
+
 A horizontal timeline (vertical on mobile) representing six procedural states: done, done, done, active, pending, pending. The connector line uses `linear-gradient` to naturally transition from completed (green) to pending (faded blue). The active step glows with `glow-pulse` keyframes.
 
 ### 6. System Status Panel
+
 Six system status rows in a responsive grid. Each row shows a pulsing status dot, a component name, a technical sub-label in monospace, and a pill badge. The `status-pulse-ring` element uses `pulse-ring` keyframes for a sonar-like breathing effect.
 
 ### 7. Footer
+
 Minimal two-column footer with a branded logo mark and metadata. Adapts to single-column on mobile.
 
 ---
 
 ## Animation Breakdown
 
-| Animation | Keyframe Name | Usage | Duration |
-|---|---|---|---|
-| Arm swing | `arm-swing-left / right` | Robotic arm pivot | 4s ease-in-out infinite |
-| Hub breathe | `hub-breathe` | Central robot hub scale + glow | 3.5s ease-in-out infinite |
-| Scan ring rotate | `spin-slow / spin-reverse` | Field rings clockwise / counter | 7–14s linear infinite |
-| Target ping | `target-ping` | Targeting crosshair circles | 3s ease-in-out infinite |
-| Glow pulse | `glow-pulse` | CTA button, active timeline node | 3s ease-in-out infinite |
-| Glow pulse green | `glow-pulse-green` | Instrument tips, green elements | 2.5s ease-in-out infinite |
-| Float | `float` | Analytics stat cards | 5s ease-in-out infinite, staggered |
-| Pulse ring | `pulse-ring` | Status indicator rings | 2s ease-in-out infinite |
-| Status blink | `blink-status` | Vital status dots, eyebrow dot | 2s ease-in-out infinite |
-| Progress fill | `progress-fill` | Vital card bar fill-in | 1.4s ease-out, plays once |
-| Gradient shift | `gradient-shift` | Hero title gradient movement | 4s ease-in-out infinite |
-| Shimmer | `shimmer` | CTA button light sweep | 3.5s ease-in-out infinite |
-| Grid scan | `grid-scan` | Hero scanline sweep | 6s ease-in-out infinite |
-| Fade up | `fade-up` | Hero content entrance | 0.7s ease-out, staggered, plays once |
+| Animation        | Keyframe Name              | Usage                            | Duration                             |
+| ---------------- | -------------------------- | -------------------------------- | ------------------------------------ |
+| Arm swing        | `arm-swing-left / right`   | Robotic arm pivot                | 4s ease-in-out infinite              |
+| Hub breathe      | `hub-breathe`              | Central robot hub scale + glow   | 3.5s ease-in-out infinite            |
+| Scan ring rotate | `spin-slow / spin-reverse` | Field rings clockwise / counter  | 7–14s linear infinite                |
+| Target ping      | `target-ping`              | Targeting crosshair circles      | 3s ease-in-out infinite              |
+| Glow pulse       | `glow-pulse`               | CTA button, active timeline node | 3s ease-in-out infinite              |
+| Glow pulse green | `glow-pulse-green`         | Instrument tips, green elements  | 2.5s ease-in-out infinite            |
+| Float            | `float`                    | Analytics stat cards             | 5s ease-in-out infinite, staggered   |
+| Pulse ring       | `pulse-ring`               | Status indicator rings           | 2s ease-in-out infinite              |
+| Status blink     | `blink-status`             | Vital status dots, eyebrow dot   | 2s ease-in-out infinite              |
+| Progress fill    | `progress-fill`            | Vital card bar fill-in           | 1.4s ease-out, plays once            |
+| Gradient shift   | `gradient-shift`           | Hero title gradient movement     | 4s ease-in-out infinite              |
+| Shimmer          | `shimmer`                  | CTA button light sweep           | 3.5s ease-in-out infinite            |
+| Grid scan        | `grid-scan`                | Hero scanline sweep              | 6s ease-in-out infinite              |
+| Fade up          | `fade-up`                  | Hero content entrance            | 0.7s ease-out, staggered, plays once |
 
 All animations exclusively use `transform` and `opacity`, with the exception of `box-shadow` glow pulses which are GPU-accelerated in modern browsers.
 
@@ -96,14 +104,14 @@ All design tokens live in `:root` at the top of `style.css`. Adjust these to ret
 ```css
 :root {
   /* Change the primary accent */
-  --cyan:  #00D4FF;
+  --cyan: #00d4ff;
 
   /* Change the success/active color */
-  --green: #34D399;
+  --green: #34d399;
 
   /* Adjust background depth */
-  --bg-void:    #07111f;
-  --bg-deep:    #0d1b2a;
+  --bg-void: #07111f;
+  --bg-deep: #0d1b2a;
   --bg-surface: #132238;
 
   /* Scale spacing */
@@ -117,12 +125,12 @@ To modify animation speed, target the relevant `animation-duration` on the eleme
 
 ## Browser Support
 
-| Browser | Version | Status |
-|---|---|---|
-| Chrome | 88+ | ✓ Full support |
-| Firefox | 90+ | ✓ Full support |
-| Safari | 15.4+ | ✓ Full support (backdrop-filter supported) |
-| Edge | 88+ | ✓ Full support |
+| Browser | Version | Status                                     |
+| ------- | ------- | ------------------------------------------ |
+| Chrome  | 88+     | ✓ Full support                             |
+| Firefox | 90+     | ✓ Full support                             |
+| Safari  | 15.4+   | ✓ Full support (backdrop-filter supported) |
+| Edge    | 88+     | ✓ Full support                             |
 
 `backdrop-filter` requires vendor prefix `-webkit-backdrop-filter` for Safari, which is included. The gradient border technique uses `mask-composite: exclude` which is widely supported in modern browsers.
 
@@ -191,4 +199,4 @@ The showcase opens on a full-height hero with a live cyan grid scan line moving 
 
 ---
 
-*EaseMotion CSS · Phase #1026 · Pure CSS · No JavaScript · No External Dependencies*
+_EaseMotion CSS · Phase #1026 · Pure CSS · No JavaScript · No External Dependencies_

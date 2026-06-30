@@ -1,6 +1,7 @@
 # Interactive Animation Comparison Showcase
 
 ## What does this do?
+
 Displays several animation styles (Fade In, Slide In, Bounce, Zoom, Rotate)
 side-by-side in cards for quick visual comparison. Hovering each card
 triggers its respective animation.
@@ -22,6 +23,7 @@ triggers its respective animation.
 ```
 
 ## Why is it useful?
+
 Makes animation discovery easier, improves developer experience, and
 provides a practical, interactive demonstration of available animation
 options. Pure CSS, no JS required, with full prefers-reduced-motion support.

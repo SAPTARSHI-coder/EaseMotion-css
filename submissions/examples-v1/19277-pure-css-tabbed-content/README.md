@@ -14,11 +14,11 @@ A zero-JavaScript tabbed content component powered by hidden HTML radio inputs a
 
 ## Demos Included
 
-| Demo | Description |
-|------|-------------|
+| Demo                         | Description                                                     |
+| ---------------------------- | --------------------------------------------------------------- |
 | **Product Feature Showcase** | Horizontal pill tabs with icons, content panels with stat chips |
-| **Documentation Sections** | Pill-style variant with 4 tabs for API docs / guides |
-| **Settings Panel** | Vertical sidebar tabs with mock form fields and toggle rows |
+| **Documentation Sections**   | Pill-style variant with 4 tabs for API docs / guides            |
+| **Settings Panel**           | Vertical sidebar tabs with mock form fields and toggle rows     |
 
 ---
 

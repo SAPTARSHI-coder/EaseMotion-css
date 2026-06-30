@@ -15,7 +15,8 @@ This demo is self-contained. Open `demo.html` in your browser. All required CSS 
 ```html
 <form style="--ease-accent: #a855f7;">
   <!-- Instantly themed purple! -->
-  <input type="checkbox" class="ease-accent" checked>
-  <input type="radio" class="ease-accent" checked>
-  <input type="range" class="ease-accent">
+  <input type="checkbox" class="ease-accent" checked />
+  <input type="radio" class="ease-accent" checked />
+  <input type="range" class="ease-accent" />
 </form>
+```

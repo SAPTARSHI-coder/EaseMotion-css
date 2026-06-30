@@ -19,8 +19,8 @@ Adds a fully-featured **Step Progress** (stepper) component for multi-step forms
 
 ## Files
 
-| File | Purpose |
-|---|---|
+| File        | Purpose                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------- |
 | `demo.html` | Interactive stepper demo with horizontal/vertical layouts, nav controls, checkout example |
-| `style.css` | Stepper styles: layouts, states, connectors, animations |
-| `README.md` | This documentation |
+| `style.css` | Stepper styles: layouts, states, connectors, animations                                   |
+| `README.md` | This documentation                                                                        |

@@ -24,17 +24,11 @@ A responsive incident escalation workflow component that visualizes each escalat
 
 ```html
 <div class="step">
+  <div class="number">1</div>
 
-    <div class="number">1</div>
+  <div class="content">...</div>
 
-    <div class="content">
-        ...
-    </div>
-
-    <span class="badge">
-        15 min
-    </span>
-
+  <span class="badge"> 15 min </span>
 </div>
 ```
 

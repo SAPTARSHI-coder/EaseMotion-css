@@ -4,6 +4,7 @@
    A fully animated toast notification system with slide-in-right entrance, slide-out-right exit, auto-dismiss timer bar, 5 semantic types (success, error, warning, info, loading), stacked layout, and keyboard-accessible close buttons.
 
 2. **How is it used?**
+
    ```html
    <!-- Toast container (fixed to corner) -->
    <div class="toast-container" aria-live="polite" role="region">
@@ -19,6 +20,7 @@
      </div>
    </div>
    ```
+
    Type variants: `toast-success`, `toast-error`, `toast-warning`, `toast-info`, `toast-loading`
 
 3. **Why is it useful?**

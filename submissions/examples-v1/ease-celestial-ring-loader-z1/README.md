@@ -6,12 +6,12 @@ A futuristic loading animation featuring multiple rotating celestial rings orbit
 
 ## Features
 
-* Multi-ring orbital animation
-* Glowing center core
-* Smooth continuous rotation
-* Responsive layout
-* Lightweight CSS
-* Pure HTML & CSS
+- Multi-ring orbital animation
+- Glowing center core
+- Smooth continuous rotation
+- Responsive layout
+- Lightweight CSS
+- Pure HTML & CSS
 
 ## Folder Structure
 
@@ -28,10 +28,10 @@ Open `demo.html` in any modern browser.
 
 ## Browser Support
 
-* Chrome
-* Firefox
-* Edge
-* Safari
+- Chrome
+- Firefox
+- Edge
+- Safari
 
 ## Responsive Design
 

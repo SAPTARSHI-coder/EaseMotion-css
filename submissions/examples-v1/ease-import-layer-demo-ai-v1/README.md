@@ -4,6 +4,7 @@
 This is a minimal demonstration component designed specifically to trigger and reproduce the bundler bug reported in Issue #9622.
 
 **How is it used?**
+
 ```html
 <div class="ease-import-demo-ai">...</div>
 ```

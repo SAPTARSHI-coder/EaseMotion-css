@@ -15,7 +15,7 @@ Creates a CSS-only magnetic dock navigation bar where items attract/repel based 
 
 ### Classes
 
-| Class | Effect |
-|---|---|
-| `.ease-magnetic-dock` | Container that establishes the magnetic dock |
+| Class                 | Effect                                          |
+| --------------------- | ----------------------------------------------- |
+| `.ease-magnetic-dock` | Container that establishes the magnetic dock    |
 | `.ease-magnetic-item` | Individual dock item with magnetic hover effect |

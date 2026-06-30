@@ -1,14 +1,8 @@
 \# ease-letter-spacing-pulse
 
-
-
 Text tracking breathes in and out - letter spacing expands and contracts rhythmically.
 
-
-
 \## Classes
-
-
 
 | Class | Description | Speed |
 
@@ -22,11 +16,7 @@ Text tracking breathes in and out - letter spacing expands and contracts rhythmi
 
 | `ease-letter-spacing-pulse-hover` | One-shot on hover | 0.3s |
 
-
-
 \## Variables
-
-
 
 | Variable | Default | Description |
 
@@ -36,31 +26,20 @@ Text tracking breathes in and out - letter spacing expands and contracts rhythmi
 
 | `--ease-ls-speed` | 2s | Animation duration |
 
-
-
 \## Usage
 
-
-
 ```html
-
 <!-- Basic pulse (infinite) -->
 
 <h2 class="ease-letter-spacing-pulse">BREATHE</h2>
 
-
-
 <!-- Custom amount -->
 
 <h2 class="ease-letter-spacing-pulse" style="--ease-ls-amount: 0.4em;">
-
-&#x20;   DRAMATIC
-
+  &#x20; DRAMATIC
 </h2>
-
-
 
 <!-- One-shot on hover -->
 
 <h2 class="ease-letter-spacing-pulse-hover">HOVER ME</h2>
-
+```

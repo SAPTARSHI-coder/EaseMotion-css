@@ -5,6 +5,7 @@ A collection of beautiful, pure CSS animated badges and tags for modern web inte
 ## 🚀 Features
 
 ### Badge Styles (9 types)
+
 1. **Solid Badges** - 6 color variations with hover lift
 2. **Outline Badges** - Border-only with fill on hover
 3. **Gradient Badges** - 6 gradient variations
@@ -16,6 +17,7 @@ A collection of beautiful, pure CSS animated badges and tags for modern web inte
 9. **Icon Badges** - Badges with emoji icons
 
 ### Animation Features
+
 - Pulse effect
 - Bounce animation
 - Shake animation
@@ -26,6 +28,7 @@ A collection of beautiful, pure CSS animated badges and tags for modern web inte
 - Notification badge bounce
 
 ## 📂 Files
+
 - `demo.html` - Main HTML structure
 - `style.css` - All badge animations
 - `readme.md` - Documentation
@@ -33,5 +36,7 @@ A collection of beautiful, pure CSS animated badges and tags for modern web inte
 ## 🛠️ How to Use
 
 ### Basic Badge
+
 ```html
 <span class="badge solid-primary">Primary</span>
+```

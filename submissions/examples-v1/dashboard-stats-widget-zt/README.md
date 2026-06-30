@@ -11,7 +11,7 @@ This component is fully self-contained and built with pure HTML and CSS. It deli
 ## Usage example
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <section class="stats-grid">
   <article class="stat-card stat-revenue">
     <div class="stat-card-top">
@@ -19,7 +19,9 @@ This component is fully self-contained and built with pure HTML and CSS. It deli
       <span class="trend trend-up">+12%</span>
     </div>
     <h2>$124.8k</h2>
-    <p class="stat-copy">Monthly revenue with strong gain from paid plans and onboarding campaigns.</p>
+    <p class="stat-copy">
+      Monthly revenue with strong gain from paid plans and onboarding campaigns.
+    </p>
   </article>
 </section>
 ```

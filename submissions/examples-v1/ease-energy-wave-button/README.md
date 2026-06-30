@@ -1,9 +1,11 @@
 # Ease Energy Wave Button
 
 ## Overview
+
 This feature adds a button with an energy wave animation on click.
 
 ## ✨ Features
+
 - Expanding wave effect
 - Smooth animation
 - Click-based interaction
@@ -13,3 +15,4 @@ This feature adds a button with an energy wave animation on click.
 
 ```html
 <button class="wave-btn">Click</button>
+```

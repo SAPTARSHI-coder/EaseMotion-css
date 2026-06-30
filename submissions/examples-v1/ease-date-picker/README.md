@@ -6,13 +6,13 @@ A calendar date picker component with a styled input trigger and popover calenda
 
 ## Variants
 
-| Variant | Class | Description |
-|---------|-------|-------------|
-| Popover (default) | *(none)* | Click input to open calendar dropdown |
-| Inline | `.ease-date-picker--inline` | Calendar always visible |
-| Small | `.ease-date-picker--sm` | 28px day cells |
-| Medium (default) | *(none)* | 36px day cells |
-| Large | `.ease-date-picker--lg` | 44px day cells |
+| Variant           | Class                       | Description                           |
+| ----------------- | --------------------------- | ------------------------------------- |
+| Popover (default) | _(none)_                    | Click input to open calendar dropdown |
+| Inline            | `.ease-date-picker--inline` | Calendar always visible               |
+| Small             | `.ease-date-picker--sm`     | 28px day cells                        |
+| Medium (default)  | _(none)_                    | 36px day cells                        |
+| Large             | `.ease-date-picker--lg`     | 44px day cells                        |
 
 ## How is it used?
 
@@ -31,7 +31,8 @@ A calendar date picker component with a styled input trigger and popover calenda
       </div>
     </div>
     <div class="ease-date-picker__dow">
-      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span
+      ><span>Fr</span><span>Sa</span>
     </div>
     <div class="ease-date-picker__grid"></div>
   </div>
@@ -39,7 +40,7 @@ A calendar date picker component with a styled input trigger and popover calenda
 ```
 
 ```js
-initDatePicker(document.getElementById('my-date-picker'));
+initDatePicker(document.getElementById("my-date-picker"));
 ```
 
 ## Behaviour

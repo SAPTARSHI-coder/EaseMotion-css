@@ -39,73 +39,77 @@ custom-stationery/
 
 ## Sections
 
-| # | Section | Description |
-|---|---|---|
-| 1 | **Navigation** | Sticky frosted nav — serif logo, 5 links, Design Yours CTA |
-| 2 | **Hero** | Split layout — invitation suite mockup (card + envelope + notebook), editorial headline |
-| 3 | **Products by Occasion** | 6 product cards (Wedding, Baby, Birthday, Business, Journals, Thank You) |
-| 4 | **Personalization Options** | 6 glassmorphism cards (Monograms, Foil, Wax Seals, Handmade Paper, Liners, Typography) |
-| 5 | **Design Process Timeline** | 4-step horizontal timeline (Template → Personalise → Approve → Deliver) |
-| 6 | **Customer Reviews** | 3 testimonial cards with star ratings + aggregate score bar |
-| 7 | **Wedding Inquiry Form** | Styled form — name, email, event date, guest count, message, submit |
-| 8 | **Footer** | Shop · Wedding · Customer Care · About columns + social + legal |
+| #   | Section                     | Description                                                                             |
+| --- | --------------------------- | --------------------------------------------------------------------------------------- |
+| 1   | **Navigation**              | Sticky frosted nav — serif logo, 5 links, Design Yours CTA                              |
+| 2   | **Hero**                    | Split layout — invitation suite mockup (card + envelope + notebook), editorial headline |
+| 3   | **Products by Occasion**    | 6 product cards (Wedding, Baby, Birthday, Business, Journals, Thank You)                |
+| 4   | **Personalization Options** | 6 glassmorphism cards (Monograms, Foil, Wax Seals, Handmade Paper, Liners, Typography)  |
+| 5   | **Design Process Timeline** | 4-step horizontal timeline (Template → Personalise → Approve → Deliver)                 |
+| 6   | **Customer Reviews**        | 3 testimonial cards with star ratings + aggregate score bar                             |
+| 7   | **Wedding Inquiry Form**    | Styled form — name, email, event date, guest count, message, submit                     |
+| 8   | **Footer**                  | Shop · Wedding · Customer Care · About columns + social + legal                         |
 
 ---
 
 ## EaseMotion Classes Demonstrated
 
 ### Entrance Animations
-| Class | Used on |
-|---|---|
-| `ease-fade-in` | Nav, hero kicker, hero badges, floating tag, reviews meta, footer |
-| `ease-slide-up` | Hero headline, subtitle, CTAs, section headers, occasion cards, personalisation cards, timeline steps |
-| `ease-slide-in-left` | Wedding inquiry copy column |
-| `ease-slide-in-right` | Hero invitation suite, wedding inquiry form column |
-| `ease-slide-in-from-bottom-right` | Hero envelope accent card |
-| `ease-slide-in-from-top-left` | Hero notebook accent card |
+
+| Class                             | Used on                                                                                               |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `ease-fade-in`                    | Nav, hero kicker, hero badges, floating tag, reviews meta, footer                                     |
+| `ease-slide-up`                   | Hero headline, subtitle, CTAs, section headers, occasion cards, personalisation cards, timeline steps |
+| `ease-slide-in-left`              | Wedding inquiry copy column                                                                           |
+| `ease-slide-in-right`             | Hero invitation suite, wedding inquiry form column                                                    |
+| `ease-slide-in-from-bottom-right` | Hero envelope accent card                                                                             |
+| `ease-slide-in-from-top-left`     | Hero notebook accent card                                                                             |
 
 ### Hover Effects
-| Class | Used on |
-|---|---|
-| `ease-hover-lift` | Nav Design Yours button, hero CTAs, occasion cards, personalisation cards, review cards, inquiry perks, social links, form submit button |
-| `ease-hover-grow` | Design process step icons |
-| `ease-hover-glow` | Primary CTA buttons (hero, form submit) |
-| `ease-hover-underline` | Nav links, occasion card links, footer links |
+
+| Class                  | Used on                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `ease-hover-lift`      | Nav Design Yours button, hero CTAs, occasion cards, personalisation cards, review cards, inquiry perks, social links, form submit button |
+| `ease-hover-grow`      | Design process step icons                                                                                                                |
+| `ease-hover-glow`      | Primary CTA buttons (hero, form submit)                                                                                                  |
+| `ease-hover-underline` | Nav links, occasion card links, footer links                                                                                             |
 
 ### Glassmorphism
-| Class | Used on |
-|---|---|
+
+| Class             | Used on                                             |
+| ----------------- | --------------------------------------------------- |
 | `ease-glass-card` | Personalisation option cards, customer review cards |
 
 ### Delay Staggering
-| Class | Used on |
-|---|---|
+
+| Class                                     | Used on                                                                          |
+| ----------------------------------------- | -------------------------------------------------------------------------------- |
 | `ease-delay-100` through `ease-delay-700` | Hero elements, occasion grid, personalization grid, timeline steps, review cards |
 
 ---
 
 ## Responsive Support
 
-| Breakpoint | Behaviour |
-|---|---|
-| **Mobile** (`< 480px`) | Single column, vertical hero, stacked CTAs, hidden notebook accent, condensed footer |
-| **Tablet** (`480–860px`) | 2-column grids, mobile nav toggle, inquiry grid stacked |
-| **Desktop** (`≥ 860px`) | Full side-by-side hero, 3-column grids, 4-step horizontal timeline |
+| Breakpoint               | Behaviour                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| **Mobile** (`< 480px`)   | Single column, vertical hero, stacked CTAs, hidden notebook accent, condensed footer |
+| **Tablet** (`480–860px`) | 2-column grids, mobile nav toggle, inquiry grid stacked                              |
+| **Desktop** (`≥ 860px`)  | Full side-by-side hero, 3-column grids, 4-step horizontal timeline                   |
 
 ---
 
 ## Design Language
 
-| Token | Value | Purpose |
-|---|---|---|
-| `--ivory` | `#fdfaf6` | Base page background |
-| `--parchment` | `#f8f3eb` | Alternate section backgrounds |
-| `--gold` | `#c9a96e` | Primary accent — CTAs, ornaments, stars |
-| `--blush` | `#e8c4bc` | Wedding / baby product imagery |
-| `--sage` | `#9aab8e` | Eco / botanical imagery |
-| `--charcoal` | `#2e2b28` | Text headings, dark surfaces |
-| **Headings** | Georgia serif | Elegant editorial feel |
-| **Body** | System sans-serif | Clean, readable UI text |
+| Token         | Value             | Purpose                                 |
+| ------------- | ----------------- | --------------------------------------- |
+| `--ivory`     | `#fdfaf6`         | Base page background                    |
+| `--parchment` | `#f8f3eb`         | Alternate section backgrounds           |
+| `--gold`      | `#c9a96e`         | Primary accent — CTAs, ornaments, stars |
+| `--blush`     | `#e8c4bc`         | Wedding / baby product imagery          |
+| `--sage`      | `#9aab8e`         | Eco / botanical imagery                 |
+| `--charcoal`  | `#2e2b28`         | Text headings, dark surfaces            |
+| **Headings**  | Georgia serif     | Elegant editorial feel                  |
+| **Body**      | System sans-serif | Clean, readable UI text                 |
 
 ---
 

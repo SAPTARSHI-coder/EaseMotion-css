@@ -8,9 +8,9 @@ Submits layout utility architectures and context-aware inheritance sandboxes (`.
 - **The Solution:** Text-linked style synchronization. The `.ease-*-current` utility pipeline leverages the browser-native `currentColor` variable value. Because `currentColor` automatically points straight to the closest cascade text color definition, buttons, SVGs, and rules synchronize their tones completely without rewriting multi-class declarations.
 
 ## Usage Layout Structure
+
 ```html
 <div class="alert-banner-success" style="color: #10b981;">
-  
   <svg class="ease-fill-current" viewBox="0 0 20 20"></svg>
   <button class="ease-border-current">Dismiss</button>
 </div>

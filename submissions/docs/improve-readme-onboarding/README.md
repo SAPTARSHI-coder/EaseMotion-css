@@ -17,11 +17,9 @@ The proposal includes:
 Get started with EaseMotion CSS in just a few lines.
 
 ```html
-<link rel="stylesheet" href="easemotion.min.css">
+<link rel="stylesheet" href="easemotion.min.css" />
 
-<button class="ease-btn ease-btn-primary ease-hover-grow">
-    Get Started
-</button>
+<button class="ease-btn ease-btn-primary ease-hover-grow">Get Started</button>
 ```
 
 ---

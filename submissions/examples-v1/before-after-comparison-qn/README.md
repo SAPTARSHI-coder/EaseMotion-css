@@ -1,13 +1,16 @@
 # Animated Before/After Image Comparison
 
 ## Description
+
 A modern, interactive image comparison component that reveals the "after" image with a smooth wipe effect on hover. It features an animated slider handle that moves across the image, "Before" and "After" labels with glassmorphism styling, and a smooth `clip-path` animation. Perfect for showcasing transformations, photo edits, design changes, and product comparisons. Built entirely with pure CSS, requiring absolutely zero JavaScript.
 
 ## Files
+
 - `demo.html`: Contains the HTML structure with two stacked images, labels, and a slider handle.
 - `style.css`: Contains the clip-path animation, slider movement, and hover effects.
 
 ## How to use
+
 1. Open `demo.html` in your browser and hover over the image to see the comparison effect.
 2. Copy the HTML and CSS into your project.
 3. **Structure:**
@@ -24,6 +27,7 @@ A modern, interactive image comparison component that reveals the "after" image 
    - **Handle Size:** Modify the `width` and `height` in `.slider-handle-qn`.
 
 ## Features
+
 - **Smooth Wipe Effect:** Uses `clip-path: inset()` for a hardware-accelerated reveal animation
 - **Animated Slider Handle:** Moves across the image in sync with the reveal
 - **Glassmorphism Labels:** Semi-transparent labels with backdrop blur
@@ -32,6 +36,7 @@ A modern, interactive image comparison component that reveals the "after" image 
 - **Accessibility:** Respects `prefers-reduced-motion` user preference
 
 ## Technical Details
+
 - The "after" image uses `clip-path: inset(0 100% 0 0)` to start fully hidden
 - On hover, it transitions to `clip-path: inset(0 0 0 0)` to reveal the image
 - The slider handle uses `transform: translateX()` to move across the container
@@ -39,6 +44,7 @@ A modern, interactive image comparison component that reveals the "after" image 
 - `clip-path` is hardware-accelerated for smooth performance
 
 ## Use Cases
+
 - Photo editing before/after comparisons
 - Design mockup presentations
 - Product transformation showcases

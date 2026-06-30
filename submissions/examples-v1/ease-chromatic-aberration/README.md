@@ -24,12 +24,12 @@ Note: `.chromatic-text` requires the `data-text` attribute to mirror the text co
 
 ## Customization
 
-| Property | Description |
-|----------|-------------|
+| Property                                       | Description                          |
+| ---------------------------------------------- | ------------------------------------ |
 | `translate()` values on `::before` / `::after` | Red/blue channel separation distance |
-| `color` on pseudo-elements | RGB channel tint colors |
-| `animation` interval in keyframes | How often the auto-glitch fires |
-| `mix-blend-mode` | Try `multiply` on light backgrounds |
+| `color` on pseudo-elements                     | RGB channel tint colors              |
+| `animation` interval in keyframes              | How often the auto-glitch fires      |
+| `mix-blend-mode`                               | Try `multiply` on light backgrounds  |
 
 ## Accessibility
 

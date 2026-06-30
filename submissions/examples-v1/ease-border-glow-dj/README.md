@@ -38,13 +38,13 @@ The `::before` and `::after` pseudo-elements are sized at `inset: -50%` (making 
 .ease-border-glow-dj::before {
   content: "";
   position: absolute;
-  inset: -50%;                       /* oversized to cover rotating corners */
+  inset: -50%; /* oversized to cover rotating corners */
   background: conic-gradient(
     var(--glow-color-1),
     var(--glow-color-2),
     var(--glow-color-3),
     var(--glow-color-4),
-    var(--glow-color-1)              /* repeat first = seamless loop */
+    var(--glow-color-1) /* repeat first = seamless loop */
   );
   animation: ease-border-glow-dj-spin var(--glow-speed) linear infinite;
 }
@@ -52,7 +52,7 @@ The `::before` and `::after` pseudo-elements are sized at `inset: -50%` (making 
 .ease-border-glow-dj .glow-inner-content {
   position: relative;
   z-index: 1;
-  margin: var(--glow-border-size);   /* creates the visible border gap */
+  margin: var(--glow-border-size); /* creates the visible border gap */
   background: var(--glow-bg);
 }
 ```
@@ -62,7 +62,7 @@ The `::before` and `::after` pseudo-elements are sized at `inset: -50%` (making 
 ### Step 1 — Link the stylesheet
 
 ```html
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 ```
 
 ### Step 2 — Add the component
@@ -82,27 +82,27 @@ The `::before` and `::after` pseudo-elements are sized at `inset: -50%` (making 
 
 Override any variable on the component element:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `--glow-border-size` | `3px` | Border thickness |
-| `--glow-radius` | `16px` | Card corner radius |
-| `--glow-speed` | `6s` | Full rotation duration |
-| `--glow-color-1` | `#ff0080` | Gradient stop 1 |
-| `--glow-color-2` | `#7928ca` | Gradient stop 2 |
-| `--glow-color-3` | `#2afadf` | Gradient stop 3 |
-| `--glow-color-4` | `#00d4ff` | Gradient stop 4 |
-| `--glow-bg` | `#0f0f17` | Inner card background |
-| `--glow-blur` | `18px` | Glow blur radius |
-| `--glow-opacity` | `0.7` | Glow layer opacity |
+| Variable             | Default   | Description            |
+| -------------------- | --------- | ---------------------- |
+| `--glow-border-size` | `3px`     | Border thickness       |
+| `--glow-radius`      | `16px`    | Card corner radius     |
+| `--glow-speed`       | `6s`      | Full rotation duration |
+| `--glow-color-1`     | `#ff0080` | Gradient stop 1        |
+| `--glow-color-2`     | `#7928ca` | Gradient stop 2        |
+| `--glow-color-3`     | `#2afadf` | Gradient stop 3        |
+| `--glow-color-4`     | `#00d4ff` | Gradient stop 4        |
+| `--glow-bg`          | `#0f0f17` | Inner card background  |
+| `--glow-blur`        | `18px`    | Glow blur radius       |
+| `--glow-opacity`     | `0.7`     | Glow layer opacity     |
 
 ### Example: Custom Colors and Speed
 
 ```html
-<div class="ease-border-glow-dj"
-     style="--glow-color-1:#ff6b35; --glow-color-2:#ffd700; --glow-color-3:#ff0080; --glow-color-4:#ff6b35; --glow-speed:4s;">
-  <div class="glow-inner-content">
-    Fire theme card
-  </div>
+<div
+  class="ease-border-glow-dj"
+  style="--glow-color-1:#ff6b35; --glow-color-2:#ffd700; --glow-color-3:#ff0080; --glow-color-4:#ff6b35; --glow-speed:4s;"
+>
+  <div class="glow-inner-content">Fire theme card</div>
 </div>
 ```
 
@@ -125,12 +125,12 @@ Override any variable on the component element:
 
 Apply these alongside `.ease-border-glow-dj`:
 
-| Class | Effect |
-|-------|--------|
-| `.glow-thick` | Border size → `6px` |
-| `.glow-fast` | Speed → `2s` |
-| `.glow-slow` | Speed → `12s` |
-| `.glow-none` | Disables glow blur layer (crisp border only) |
+| Class         | Effect                                              |
+| ------------- | --------------------------------------------------- |
+| `.glow-thick` | Border size → `6px`                                 |
+| `.glow-fast`  | Speed → `2s`                                        |
+| `.glow-slow`  | Speed → `12s`                                       |
+| `.glow-none`  | Disables glow blur layer (crisp border only)        |
 | `.glow-light` | Sets inner background to `#ffffff` for light themes |
 
 ```html
@@ -188,7 +188,11 @@ Apply these alongside `.ease-border-glow-dj`:
 ```html
 <div class="ease-border-glow-dj" style="--glow-border-size:4px;">
   <div class="glow-inner-content" style="padding:0;">
-    <img src="photo.jpg" alt="Photo" style="width:100%;border-radius:inherit;display:block;">
+    <img
+      src="photo.jpg"
+      alt="Photo"
+      style="width:100%;border-radius:inherit;display:block;"
+    />
   </div>
 </div>
 ```
@@ -196,8 +200,10 @@ Apply these alongside `.ease-border-glow-dj`:
 ### CTA Banner (full width)
 
 ```html
-<div class="ease-border-glow-dj glow-slow"
-     style="--glow-radius:20px; width:min(100%,680px);">
+<div
+  class="ease-border-glow-dj glow-slow"
+  style="--glow-radius:20px; width:min(100%,680px);"
+>
   <div class="glow-inner-content" style="text-align:center;">
     <h2>Ready to Ship?</h2>
     <button>Start Free</button>
@@ -234,11 +240,11 @@ When the user has `prefers-reduced-motion: reduce` enabled:
 
 ## Browser Support
 
-| Browser | Support |
-|---------|---------|
-| Chrome 69+ | ✅ Full (`conic-gradient` since Chrome 69) |
-| Firefox 83+ | ✅ Full |
-| Edge 79+ | ✅ Full |
-| Safari 12.1+ | ✅ Full |
+| Browser      | Support                                    |
+| ------------ | ------------------------------------------ |
+| Chrome 69+   | ✅ Full (`conic-gradient` since Chrome 69) |
+| Firefox 83+  | ✅ Full                                    |
+| Edge 79+     | ✅ Full                                    |
+| Safari 12.1+ | ✅ Full                                    |
 
 > Requires `conic-gradient` support. Available in all modern browsers since 2021.

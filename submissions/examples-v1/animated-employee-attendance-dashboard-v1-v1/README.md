@@ -20,14 +20,14 @@ Open `demo.html` directly in any modern browser — no build step required.
 
 ## EaseMotion CSS classes used
 
-| Class | Purpose |
-|---|---|
-| `ease-fade-in` | Dashboard entrance |
-| `ease-slide-up` | Section entrance with delay |
-| `ease-delay-100` to `ease-delay-400` | Staggered section reveals |
-| `ease-pulse` | Live indicator badge |
-| `ease-hover-lift` | Stat and leave cards |
-| `ease-hover-grow` | Weekly day cards |
+| Class                                | Purpose                     |
+| ------------------------------------ | --------------------------- |
+| `ease-fade-in`                       | Dashboard entrance          |
+| `ease-slide-up`                      | Section entrance with delay |
+| `ease-delay-100` to `ease-delay-400` | Staggered section reveals   |
+| `ease-pulse`                         | Live indicator badge        |
+| `ease-hover-lift`                    | Stat and leave cards        |
+| `ease-hover-grow`                    | Weekly day cards            |
 
 ## File structure
 
@@ -41,7 +41,10 @@ animated-employee-attendance-dashboard/
 ## How to use
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+/>
 <link rel="stylesheet" href="style.css" />
 ```
 
@@ -53,8 +56,8 @@ All colours are CSS custom properties defined in `:root` inside `style.css`. Ove
 
 ```css
 :root {
-  --clr-primary: #f97316;   /* swap accent colour */
-  --clr-bg: #ffffff;        /* light mode background */
+  --clr-primary: #f97316; /* swap accent colour */
+  --clr-bg: #ffffff; /* light mode background */
   --clr-surface: #f1f5f9;
   --clr-text: #0f172a;
 }

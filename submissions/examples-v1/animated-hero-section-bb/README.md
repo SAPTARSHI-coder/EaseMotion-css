@@ -4,6 +4,7 @@
    A full-viewport hero section with floating radial-gradient particles, a CSS grid overlay, staggered content entrance animations (badge → headline → description → CTA), an animated gradient headline highlight, a social proof strip, and a code-window visual with staggered line-by-line reveal animation.
 
 2. **How is it used?**
+
    ```html
    <section class="hero">
      <div class="hero-particles">

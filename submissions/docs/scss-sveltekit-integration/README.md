@@ -27,76 +27,76 @@ SvelteKit uses Vite under the hood. Once `sass` is installed, any
 ---
 
 ## 2. Project Structure
+
 src/
 
 ├── lib/
 
-│   └── styles/
+│ └── styles/
 
-│       ├── _variables.scss
+│ ├── \_variables.scss
 
-│       ├── _mixins.scss
+│ ├── \_mixins.scss
 
-│       ├── _utilities.scss
+│ ├── \_utilities.scss
 
-│       └── global.scss
+│ └── global.scss
 
 ├── components/
 
-│   ├── HeroSection.svelte
+│ ├── HeroSection.svelte
 
-│   └── Card.svelte
+│ └── Card.svelte
 
 ├── routes/
 
-│   ├── +layout.svelte
+│ ├── +layout.svelte
 
-│   └── +page.svelte
+│ └── +page.svelte
 
-└── app.html
----
+## └── app.html
 
 ## 3. Global SCSS Setup
 
-### src/lib/styles/_variables.scss
+### src/lib/styles/\_variables.scss
 
 ```scss
 // Duration tokens
-$ease-duration-fast:   150ms;
-$ease-duration-base:   300ms;
-$ease-duration-slow:   600ms;
-$ease-duration-xslow:  1000ms;
+$ease-duration-fast: 150ms;
+$ease-duration-base: 300ms;
+$ease-duration-slow: 600ms;
+$ease-duration-xslow: 1000ms;
 
 // Easing tokens
-$ease-in-out-smooth:   cubic-bezier(0.4, 0, 0.2, 1);
-$ease-spring:          cubic-bezier(0.34, 1.56, 0.64, 1);
-$ease-snap:            cubic-bezier(0.25, 0.46, 0.45, 0.94);
+$ease-in-out-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+$ease-snap: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 // Motion scale
-$ease-slide-distance:  24px;
-$ease-skew-angle:      3deg;
+$ease-slide-distance: 24px;
+$ease-skew-angle: 3deg;
 
 // Colour tokens
-$ease-primary:         #6366f1;
-$ease-primary-dark:    #4f46e5;
-$ease-surface:         #1e293b;
-$ease-border:          rgba(255, 255, 255, 0.08);
-$ease-text:            #e2e8f0;
-$ease-muted:           #64748b;
+$ease-primary: #6366f1;
+$ease-primary-dark: #4f46e5;
+$ease-surface: #1e293b;
+$ease-border: rgba(255, 255, 255, 0.08);
+$ease-text: #e2e8f0;
+$ease-muted: #64748b;
 ```
 
-### src/lib/styles/_mixins.scss
+### src/lib/styles/\_mixins.scss
 
 ```scss
-@use 'variables' as v;
+@use "variables" as v;
 
 // Generic animation mixin
 @mixin ease-animate(
   $name,
   $duration: v.$ease-duration-base,
-  $easing:   v.$ease-in-out-smooth,
-  $delay:    0ms,
-  $fill:     both
+  $easing: v.$ease-in-out-smooth,
+  $delay: 0ms,
+  $fill: both
 ) {
   animation: #{$name} $duration $easing $delay $fill;
 }
@@ -108,17 +108,27 @@ $ease-muted:           #64748b;
   @include ease-animate(ease-fade-up-kf, $duration, v.$ease-spring, $delay);
 
   @keyframes ease-fade-up-kf {
-    to { opacity: 1; transform: translateY(0); }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 
 // Fade in
 @mixin ease-fade-in($duration: v.$ease-duration-base, $delay: 0ms) {
   opacity: 0;
-  @include ease-animate(ease-fade-in-kf, $duration, v.$ease-in-out-smooth, $delay);
+  @include ease-animate(
+    ease-fade-in-kf,
+    $duration,
+    v.$ease-in-out-smooth,
+    $delay
+  );
 
   @keyframes ease-fade-in-kf {
-    to { opacity: 1; }
+    to {
+      opacity: 1;
+    }
   }
 }
 
@@ -132,9 +142,13 @@ $ease-muted:           #64748b;
 }
 
 // Hover lift
-@mixin ease-hover-lift($distance: 6px, $shadow: 0 20px 40px rgba(0,0,0,0.3)) {
-  transition: transform v.$ease-duration-base v.$ease-snap,
-              box-shadow v.$ease-duration-base v.$ease-snap;
+@mixin ease-hover-lift(
+  $distance: 6px,
+  $shadow: 0 20px 40px rgba(0, 0, 0, 0.3)
+) {
+  transition:
+    transform v.$ease-duration-base v.$ease-snap,
+    box-shadow v.$ease-duration-base v.$ease-snap;
   &:hover {
     transform: translateY(-#{$distance});
     box-shadow: $shadow;
@@ -144,7 +158,9 @@ $ease-muted:           #64748b;
 // Scale on hover
 @mixin ease-hover-scale($scale: 1.04) {
   transition: transform v.$ease-duration-base v.$ease-snap;
-  &:hover { transform: scale($scale); }
+  &:hover {
+    transform: scale($scale);
+  }
 }
 
 // Wrap in prefers-reduced-motion
@@ -158,24 +174,30 @@ $ease-muted:           #64748b;
 ### src/lib/styles/global.scss
 
 ```scss
-@use 'variables' as v;
-@use 'mixins'    as m;
+@use "variables" as v;
+@use "mixins" as m;
 
 // EaseMotion CSS core
-@use 'easemotion-css/core' as *;
+@use "easemotion-css/core" as *;
 
 // Map SCSS tokens to CSS custom properties
 :root {
-  --ease-duration-fast:  #{v.$ease-duration-fast};
-  --ease-duration-base:  #{v.$ease-duration-base};
-  --ease-duration-slow:  #{v.$ease-duration-slow};
-  --ease-primary:        #{v.$ease-primary};
-  --ease-surface:        #{v.$ease-surface};
-  --ease-text:           #{v.$ease-text};
-  --ease-muted:          #{v.$ease-muted};
+  --ease-duration-fast: #{v.$ease-duration-fast};
+  --ease-duration-base: #{v.$ease-duration-base};
+  --ease-duration-slow: #{v.$ease-duration-slow};
+  --ease-primary: #{v.$ease-primary};
+  --ease-surface: #{v.$ease-surface};
+  --ease-text: #{v.$ease-text};
+  --ease-muted: #{v.$ease-muted};
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   font-family: system-ui, sans-serif;
@@ -185,9 +207,11 @@ body {
 
 // Global reduced-motion override
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration:   0.01ms !important;
-    transition-duration:  0.01ms !important;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
 }
@@ -365,8 +389,8 @@ component, configure `additionalData` in `vite.config.js`:
 
 ```js
 // vite.config.js
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [sveltekit()],
@@ -464,6 +488,7 @@ npm run preview    # Preview production build locally
 ```
 
 SvelteKit + Vite automatically:
+
 - Compiles SCSS to CSS per component
 - Scopes component styles with a unique class
 - Tree-shakes unused CSS in production
@@ -473,14 +498,14 @@ SvelteKit + Vite automatically:
 
 ## 9. Common Issues and Fixes
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Cannot find module sass | Sass not installed | npm install -D sass |
-| @use path not found | Wrong $lib alias | Use $lib/styles/filename |
-| Styles not scoped | Using :global incorrectly | Remove :global unless intentional |
-| additionalData double @use error | Manual @use still present | Remove @use from components |
-| Animation flickers on SSR | Hydration mismatch | Wrap in onMount or use svelte:head |
-| Svelte transition conflicts with SCSS animation | Both applying transforms | Use one or the other per element |
+| Issue                                           | Cause                     | Fix                                |
+| ----------------------------------------------- | ------------------------- | ---------------------------------- |
+| Cannot find module sass                         | Sass not installed        | npm install -D sass                |
+| @use path not found                             | Wrong $lib alias          | Use $lib/styles/filename           |
+| Styles not scoped                               | Using :global incorrectly | Remove :global unless intentional  |
+| additionalData double @use error                | Manual @use still present | Remove @use from components        |
+| Animation flickers on SSR                       | Hydration mismatch        | Wrap in onMount or use svelte:head |
+| Svelte transition conflicts with SCSS animation | Both applying transforms  | Use one or the other per element   |
 
 ---
 
@@ -512,8 +537,8 @@ SvelteKit + Vite automatically:
 
 ## Files in This Submission
 
-| File | Purpose |
-|------|---------|
-| README.md | This integration guide |
-| demo.html | Visual preview of the compiled patterns |
+| File      | Purpose                                            |
+| --------- | -------------------------------------------------- |
+| README.md | This integration guide                             |
+| demo.html | Visual preview of the compiled patterns            |
 | style.css | Compiled CSS output showing what the SCSS produces |

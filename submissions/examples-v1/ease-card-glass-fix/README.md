@@ -23,6 +23,7 @@ developers to override without writing custom CSS to fight specificity.
 ### 1. Replace hardcoded color with a CSS variable
 
 **Before:**
+
 ```css
 .ease-card-glass {
   color: #ffffff; /* hardcoded */
@@ -30,6 +31,7 @@ developers to override without writing custom CSS to fight specificity.
 ```
 
 **After:**
+
 ```css
 .ease-card-glass {
   color: var(--ease-card-glass-color, #ffffff); /* overridable, safe fallback */
@@ -68,7 +70,10 @@ developers to override without writing custom CSS to fight specificity.
 </div>
 
 <!-- Custom color override -->
-<div class="ease-card ease-card-glass" style="--ease-card-glass-color: #fef9ff;">
+<div
+  class="ease-card ease-card-glass"
+  style="--ease-card-glass-color: #fef9ff;"
+>
   <h3>Custom Color</h3>
   <p>Override via CSS variable.</p>
 </div>

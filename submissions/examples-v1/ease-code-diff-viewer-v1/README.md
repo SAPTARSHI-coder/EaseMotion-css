@@ -29,9 +29,7 @@ Ease Code Diff Viewer is a reusable component inspired by GitHub's code review i
 ## Usage
 
 ```html
-<div class="diff">
-...
-</div>
+<div class="diff">...</div>
 ```
 
 ---

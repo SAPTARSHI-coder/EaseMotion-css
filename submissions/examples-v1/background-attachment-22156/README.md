@@ -1,4 +1,5 @@
 # Background-Attachment Utilities
+
 This submission introduces utilities to control how a background image is fixed within its container during scrolling.
 
 - `.bg-fixed`: Image remains stationary relative to the viewport.
