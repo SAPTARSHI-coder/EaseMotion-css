@@ -1,15 +1,14 @@
 # Mobile Pull Refresh Spinner
 
-A "pull to refresh" interaction with circular spinner rotation tied to pull progress via `--pull-progress`. Past the threshold, releasing triggers a full rotation animation. Content translates down with the pull gesture.
+A "pull to refresh" interaction. The circular spinner rotates proportionally to the pull distance via `--pull-progress`. Past the threshold, releasing triggers a full rotation animation.
 
 ## Features
 
-- Circular spinner rotates proportionally to pull distance via `--pull-progress`
-- CSS handles visual rotation; JS sets progress from drag distance
-- Past threshold triggers full refresh animation
+- Circular spinner rotation tied to pull progress
+- CSS handles visual rotation via `--pull-progress`
+- JS sets progress variable from drag distance
 - Content translates down with pull gesture
-- Smooth cubic-bezier transitions
 
 ## Usage
 
-Set `--pull-progress` (0 to 1) on `.pr-spinner`. CSS uses `transform: rotate(calc(var(--pull-progress) * 360deg))` for rotation. Add `.pr-refreshing` class for the continuous spin animation.
+Set `--pull-progress` (0-1) on `.mpr-spinner`. Add `.mpr-refreshing` class for full rotation animation.
