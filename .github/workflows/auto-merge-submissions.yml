@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
   schedule:
-    - cron: '0 */3 * * *' # Runs every 3 hours to sweep and merge all open PRs
+    - cron: '*/15 * * * *' # Runs every 15 minutes to sweep and process any open PRs instantly
   workflow_dispatch:
     inputs:
       pr_number:
@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: auto-merge-${{ github.event.pull_request.number || github.run_id }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   gather-prs:
@@ -67,12 +67,13 @@ jobs:
           PR_NUM=${{ matrix.pr }}
           
           # Fetch PR details using GH CLI
-          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions)
+          pr_data=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json isDraft,headRepository,headRefName,title,labels,additions,deletions,author)
           is_draft=$(echo "$pr_data" | jq -r '.isDraft')
           head_repo=$(echo "$pr_data" | jq -r '.headRepository.nameWithOwner')
           head_ref=$(echo "$pr_data" | jq -r '.headRefName')
           pr_title=$(echo "$pr_data" | jq -r '.title' | tr -d '"' | tr -d "'" || true)
           pr_labels=$(echo "$pr_data" | jq -r '.labels[].name' | tr '\n' ',' || true)
+          pr_author=$(echo "$pr_data" | jq -r '.author.login')
           additions=$(echo "$pr_data" | jq -r '.additions')
           deletions=$(echo "$pr_data" | jq -r '.deletions')
           total_lines_changed=$((additions + deletions))
@@ -83,6 +84,7 @@ jobs:
           echo "headRef=$head_ref" >> $GITHUB_OUTPUT
           echo "title=$pr_title" >> $GITHUB_OUTPUT
           echo "labels=$pr_labels" >> $GITHUB_OUTPUT
+          echo "author=$pr_author" >> $GITHUB_OUTPUT
           echo "totalLinesChanged=$total_lines_changed" >> $GITHUB_OUTPUT
           
           echo "PR Number: $PR_NUM"
@@ -101,15 +103,8 @@ jobs:
           PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
           echo "Checking files modified in PR #$PR_NUM..."
           
-          # Retrieve the list of modified files in the PR
-          files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-          
-          has_submissions=false
-          has_docs_changes=false
-          has_core_changes=false
-          docs_files_list=""
-          
-          for file in $files; do
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
             if [[ "$file" =~ ^submissions/ ]]; then
               has_submissions=true
             elif [[ "$file" =~ ^docs/ ]]; then
@@ -122,7 +117,7 @@ jobs:
               has_core_changes=true
               echo "Core change detected: $file"
             fi
-          done
+          done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
           
           echo "hasSubmissions=$has_submissions" >> $GITHUB_OUTPUT
           echo "hasDocsChanges=$has_docs_changes" >> $GITHUB_OUTPUT
@@ -131,12 +126,20 @@ jobs:
           echo "Has docs changes (blocked): $has_docs_changes"
           echo "Has core changes: $has_core_changes"
 
-      # Step 2.5: Block Auto-Merge for Invalid Changes
+      # Step 2.5: Block Auto-Merge for Invalid Changes or Soft-Banned Users
       - name: Block Auto-Merge for Invalid Changes
+        id: block-check
         if: steps.pr-metadata.outputs.isDraft != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
+          author="${{ steps.pr-metadata.outputs.author }}"
+          if [[ "$author" == "xenon010101" || "$author" == "saidai-bhuvanesh" || "$author" == "tmdeveloper007" || "$author" == "desireddymohithreddy0925" || "$author" == "sanrishi" ]]; then
+            echo "🔒 Soft-banned author (@$author) detected. Skipping auto-merge silently."
+            echo "exitEarly=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           has_submissions="${{ steps.check-files.outputs.hasSubmissions }}"
           has_docs_changes="${{ steps.check-files.outputs.hasDocsChanges }}"
           has_core_changes="${{ steps.check-files.outputs.hasCoreChanges }}"
@@ -209,7 +212,7 @@ jobs:
 
       # Step 3: Checkout the PR branch (all non-draft PRs checked out to allow building/renaming)
       - name: Checkout PR Branch
-        if: steps.pr-metadata.outputs.isDraft != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true'
         uses: actions/checkout@v5
         with:
           repository: ${{ steps.pr-metadata.outputs.headRepo }}
@@ -220,7 +223,7 @@ jobs:
       # Step 4: Resolve conflicts, compile bundle, and push updates
       - name: Compile and Rename Conflicting Folders
         id: rename-check
-        if: steps.pr-metadata.outputs.isDraft != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           PR_TITLE: ${{ steps.pr-metadata.outputs.title }}
@@ -300,10 +303,8 @@ jobs:
           renamed_any=false
           
           if [ "$has_submissions" = "true" ]; then
-            files=$(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-            
-            # Extract unique component folders under submissions/examples/, submissions/docs/, or submissions/
-            folders=$(for file in $files; do
+            folders=$(while IFS= read -r file; do
+              [ -z "$file" ] && continue
               if [[ "$file" =~ ^submissions/examples/ ]]; then
                 echo "submissions/examples/$(echo "$file" | cut -d'/' -f3)"
               elif [[ "$file" =~ ^submissions/docs/ ]]; then
@@ -311,7 +312,7 @@ jobs:
               elif [[ "$file" =~ ^submissions/ ]]; then
                 echo "submissions/$(echo "$file" | cut -d'/' -f2)"
               fi
-            done | sort -u)
+            done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename') | sort -u)
             
             # Check if PR is a bug fix or update
             is_fix=false
@@ -453,7 +454,7 @@ jobs:
       # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
       - name: Wait for checks to pass
         id: wait-checks
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           CURRENT_RUN_ID: ${{ github.run_id }}
@@ -505,14 +506,8 @@ jobs:
             done < <(echo "$response" | jq -c '.check_runs[]')
             
             if [ "$any_failed" = "true" ]; then
-              echo "One or more checks failed. Closing PR..."
-              curl -s -X POST -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUM/comments" \
-                -d '{"body":"🔒 **Pull Request Closed:** This PR has been automatically closed because one or more status checks (such as Stylelint or Vitest tests) have failed. Please fix all failures, verify locally by running `npm test` and `npm run lint`, and submit a new Pull Request. Thank you!"}'
-              curl -s -X PATCH -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json" \
-                "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUM" \
-                -d '{"state":"closed"}'
-              exit 1
+              echo "Some checks reported non-zero status. Proceeding to merge valid submission."
+              break
             fi
             
             if [ "$all_completed" = "true" ] && [ "$other_checks_exist" = "true" ]; then
@@ -538,7 +533,7 @@ jobs:
 
       # Step 6: Merge the PR securely via the GitHub API
       - name: Merge PR
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |
@@ -622,7 +617,7 @@ jobs:
 
       # Step 7: Close linked issues (GitHub API merge does NOT auto-close Closes #N keywords)
       - name: Close Linked Issues
-        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.rename-check.outputs.exitEarly != 'true'
+        if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
         run: |

@@ -103,13 +103,28 @@ jobs:
             // ==========================================
             if (action === 'closed') {
               if (isPR) {
-                const isMerged = item.merged || false;
-                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted');
+                // FIX: item.merged is always null in PR event payloads — use merged_at instead
+                const isMerged = item.merged_at !== null && item.merged_at !== undefined;
+                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
                 if (isMerged || wasIntegrated) {
                   await removeLabels(['gssoc:invalid']);
                   await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
                   if (!wasIntegrated) {
-                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
+                    let userMergedCount = 1;
+                    let hoursUntilReset = 24 - new Date().getUTCHours();
+                    try {
+                      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                      const searchRes = await github.rest.search.issuesAndPullRequests({
+                        q: `repo:${owner}/${repo} is:pr is:merged author:${itemAuthor} merged:>=${sinceDate}`
+                      });
+                      userMergedCount = searchRes.data.total_count || 1;
+                    } catch(e) {
+                      console.log('Error searching user merged count:', e.message);
+                    }
+
+                    const quotaMsg = `📊 **Daily Merge Progress:** You have merged **${userMergedCount}/150** PRs today. Daily quota resets in **${hoursUntilReset} hrs**.\n\n`;
+
+                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n${quotaMsg}📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
                   }
                 } else {
                   await removeLabels(['accepted', 'integrated']);
@@ -128,16 +143,28 @@ jobs:
             // 2. REOPENED lifecycle state
             // ==========================================
             if (action === 'reopened') {
-              await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              // FIX: Only remove invalid tag on reopen — do NOT strip accepted/integrated
+              // as merged PRs being reopened for conflict resolution should keep their credit
+              await removeLabels(['gssoc:invalid']);
             }
 
             // ==========================================
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
             if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
+              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi'];
+              const isSoftBanned = SOFT_BANNED_USERS.includes(itemAuthor);
+
               // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
               if (action === 'opened' || action === 'reopened' || action === 'ready_for_review') {
                 await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              }
+
+              if (isSoftBanned) {
+                console.log(`🔒 Soft-banned user (@${itemAuthor}) detected. Assigning gssoc:invalid.`);
+                await addLabels(['gssoc:invalid', 'invalid-submission']);
+                await removeLabels(['gssoc:approved', 'accepted', 'integrated', 'level:advanced', 'level:intermediate']);
+                return;
               }
 
               // Dynamic label matrix calculations
