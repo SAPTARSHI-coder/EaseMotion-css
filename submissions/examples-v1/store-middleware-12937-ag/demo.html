@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State Store Middleware Console — EaseMotion CSS</title>
+  <meta name="description" content="Visual state management dashboard showcasing Redux-style middleware architecture, state logging, and local storage persistence.">
+  <link rel="stylesheet" href="../../easemotion.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="demo-badge">EaseMotion CSS — Architecture Specs</span>
+      <h1>Store Middleware Console</h1>
+      <p class="description">
+        Interactive state store utilizing Redux-style middleware pipelines. 
+        Dispatch actions below and watch the Logger Middleware output state diffs in real-time.
+      </p>
+    </header>
+
+    <main class="dashboard">
+
+      <!-- Left: Counter Controller -->
+      <section class="demo-card control-card">
+        <h2 class="section-title">Store Controller</h2>
+        
+        <div class="counter-display">
+          <span class="counter-label">Current State (Count)</span>
+          <span class="counter-val" id="count-value">0</span>
+        </div>
+
+        <div class="button-grid">
+          <button class="ease-btn action-btn" id="btn-inc" type="button">Increment</button>
+          <button class="ease-btn action-btn" id="btn-dec" type="button">Decrement</button>
+          <button class="ease-btn action-btn ease-btn-danger" id="btn-reset" type="button">Reset</button>
+        </div>
+      </section>
+
+      <!-- Right: Real-time Middleware Logs -->
+      <section class="demo-card logs-card">
+        <h2 class="section-title">Middleware Pipeline Logs</h2>
+        <div class="logs-console" id="logs-console">
+          <div class="log-line text-muted">[System] Store initialized with count: 0</div>
+        </div>
+        <button class="clear-btn" id="btn-clear" type="button">Clear Console</button>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // State Store Core
+    const createStore = (reducer, middlewares) => {
+      let state = { count: 0 };
+      const listeners = [];
+
+      const getState = () => state;
+
+      const subscribe = (listener) => {
+        listeners.push(listener);
+        return () => {
+          const index = listeners.indexOf(listener);
+          if (index !== -1) listeners.splice(index, 1);
+        };
+      };
+
+      const rawDispatch = (action) => {
+        state = reducer(state, action);
+        listeners.forEach(l => l());
+      };
+
+      // Wrap dispatch in middleware chains
+      let dispatch = rawDispatch;
+      middlewares.slice().reverse().forEach(middleware => {
+        dispatch = middleware(getState)(dispatch);
+      });
+
+      return { getState, dispatch, subscribe };
+    };
+
+    // Reducer
+    const counterReducer = (state, action) => {
+      switch (action.type) {
+        case 'INC': return { count: state.count + 1 };
+        case 'DEC': return { count: state.count - 1 };
+        case 'RESET': return { count: 0 };
+        default: return state;
+      }
+    };
+
+    // UI Console Helper
+    const logConsole = (text, type = 'normal') => {
+      const consoleEl = document.getElementById('logs-console');
+      const line = document.createElement('div');
+      line.className = `log-line ${type === 'muted' ? 'text-muted' : ''} ${type === 'success' ? 'text-success' : ''}`;
+      line.innerHTML = text;
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    };
+
+    // Middleware 1: Logger
+    const loggerMiddleware = store => next => action => {
+      const prev = store().count;
+      const result = next(action);
+      const nextVal = store().count;
+      logConsole(`➡️ Dispatch: <strong>${action.type}</strong>`);
+      logConsole(`&nbsp;&nbsp;Prev count: ${prev} | Next count: ${nextVal}`, 'muted');
+      return result;
+    };
+
+    // Middleware 2: Persistence
+    const persistMiddleware = store => next => action => {
+      const result = next(action);
+      localStorage.setItem('ease_demo_count', store().count);
+      logConsole(`💾 LocalStorage Updated`, 'success');
+      return result;
+    };
+
+    // Initial value from storage
+    const saved = localStorage.getItem('ease_demo_count');
+    const initialCount = saved ? parseInt(saved, 10) : 0;
+
+    // Create Store instance
+    const store = createStore(counterReducer, [loggerMiddleware, persistMiddleware]);
+    if (initialCount !== 0) {
+      store.dispatch({ type: 'RESET' }); // Sync state initially
+      for (let i = 0; i < initialCount; i++) store.dispatch({ type: 'INC' });
+    }
+
+    // Bind UI
+    const valueEl = document.getElementById('count-value');
+    store.subscribe(() => {
+      valueEl.textContent = store.getState().count;
+    });
+    valueEl.textContent = store.getState().count;
+
+    document.getElementById('btn-inc').addEventListener('click', () => store.dispatch({ type: 'INC' }));
+    document.getElementById('btn-dec').addEventListener('click', () => store.dispatch({ type: 'DEC' }));
+    document.getElementById('btn-reset').addEventListener('click', () => store.dispatch({ type: 'RESET' }));
+    
+    document.getElementById('btn-clear').addEventListener('click', () => {
+      document.getElementById('logs-console').innerHTML = '<div class="log-line text-muted">[System] Console cleared</div>';
+    });
+  </script>
+
+</body>
+</html>

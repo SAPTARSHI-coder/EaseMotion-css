@@ -1,0 +1,1 @@
+A pure CSS cookie consent bar that slides up from the bottom on load, featuring a cookie icon built with pseudo-elements, an explanatory message, and Accept/Decline buttons. Using :target, clicking any dismissal link hides the bar instantly. The Accept button glows on hover, and the entire bar respects reduced-motion.

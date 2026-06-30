@@ -1,0 +1,1 @@
+An animated terminal window UI component with staggered command-line output and a blinking cursor. Use it to showcase code snippets, CLI demos, or developer-focused landing pages. Adds a technical, interactive feel without any JavaScript.

@@ -1,0 +1,168 @@
+name: 🛡️ Submission Guard & Bot Detector
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Enforces repository quality standards and bot policy:
+#
+#   ✅ ALLOWED:  Only files inside submissions/ folder
+#   ❌ CLOSED:   Any file outside submissions/ (config, workflows, root, etc.)
+#   ❌ CLOSED:   Empty files (0 bytes added)
+#   🏷️ TAGGED:   Automated bot/cron/AI submissions tagged `ai-slop` + `gssoc:invalid`
+#                (They may still be merged for repo contributions, but get NO GSSoC credit)
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+jobs:
+  submission-guard:
+    name: Submission Guard & Bot Detector
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce submission policy and detect bot signatures
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            const REPO_OWNER = 'SAPTARSHI-coder'; // owner bypasses all checks
+
+            const pr          = context.payload.pull_request;
+            const prNumber    = pr.number;
+            const author      = pr.user.login;
+            const body        = (pr.body || '').toLowerCase();
+
+            // Repo owner is never restricted
+            if (author === REPO_OWNER) {
+              console.log(`✅ PR #${prNumber} by repo owner @${author} — skipping checks.`);
+              return;
+            }
+
+            const SPAMMERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa'];
+            if (SPAMMERS.includes(author)) {
+              console.log(`🔒 Spammer @${author} detected. Skipping bot-detector checks to let honeypot sandbox handle relocation.`);
+              return;
+            }
+
+            // ── Fetch PR files ────────────────────────────────────────────────
+            let files = [];
+            try {
+              const { data } = await github.rest.pulls.listFiles({
+                owner: context.repo.owner, repo: context.repo.repo,
+                pull_number: prNumber, per_page: 100,
+              });
+              files = data;
+            } catch(e) {
+              console.log('Could not fetch files:', e.message);
+              return;
+            }
+
+            // ── Ensure labels exist ───────────────────────────────────────────
+            const labelDefs = {
+              'invalid':       { color: 'E4E669', desc: 'PR does not meet submission requirements' },
+              'spam':          { color: 'EE0701', desc: 'Empty or zero-content submission' },
+              'ai-slop':       { color: 'FF0000', desc: 'AI-generated or automated bot submission' },
+              'gssoc:invalid': { color: 'B60205', desc: 'Invalid GSSoC submission — no points awarded' },
+            };
+            for (const [name, meta] of Object.entries(labelDefs)) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name });
+              } catch(e) {
+                try {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner, repo: context.repo.repo,
+                    name, color: meta.color, description: meta.desc,
+                  });
+                } catch(ee) {}
+              }
+            }
+
+            // ─────────────────────────────────────────────────────────────────
+            // RULE 1: Files outside submissions/ → close immediately
+            // ─────────────────────────────────────────────────────────────────
+            const outsideFiles = files.filter(f => !f.filename.startsWith('submissions/'));
+            if (outsideFiles.length > 0) {
+              const listed = outsideFiles.slice(0, 10).map(f => `- \`${f.filename}\``).join('\n');
+              console.log(`❌ PR #${prNumber} touches files outside submissions/ — closing.`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: prNumber, labels: ['invalid'],
+                });
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: `## ❌ PR Closed — Files Outside \`submissions/\` Folder\n\n@${author}, this PR has been automatically closed because it modifies files **outside the allowed \`submissions/\` directory**:\n\n${listed}${outsideFiles.length > 10 ? `\n- ...and ${outsideFiles.length - 10} more` : ''}\n\n### What to do\nContributions must **only** add files inside the \`submissions/\` folder. Please:\n1. Create a new branch\n2. Add only your submission files under \`submissions/examples/your-feature-name/\`\n3. Open a new PR\n\nSee the [contribution guide](../blob/main/CONTRIBUTING.md) for details.\n\n_— EaseMotion CSS Guard_`,
+                });
+                await github.rest.pulls.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  pull_number: prNumber, state: 'closed',
+                });
+              } catch(e) { console.log('Error closing PR:', e.message); }
+              return;
+            }
+
+            // ─────────────────────────────────────────────────────────────────
+            // RULE 2: Empty files (0 bytes) → close
+            // ─────────────────────────────────────────────────────────────────
+            const emptyFiles = files.filter(f => f.status === 'added' && f.additions === 0 && f.changes === 0);
+            const totalAdditions = files.reduce((sum, f) => sum + f.additions, 0);
+
+            if (emptyFiles.length > 0 || totalAdditions === 0) {
+              const listed = emptyFiles.slice(0, 5).map(f => `- \`${f.filename}\``).join('\n');
+              console.log(`❌ PR #${prNumber} contains empty files — closing.`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: prNumber, labels: ['spam', 'invalid'],
+                });
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: prNumber,
+                  body: `## ❌ PR Closed — Empty Files Submitted\n\n@${author}, this PR has been automatically closed because it contains **empty files** (0 bytes of content):\n\n${listed || '- All submitted files are empty'}\n\nPlease submit a PR with actual content in your files.\n\n_— EaseMotion CSS Guard_`,
+                });
+                await github.rest.pulls.update({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  pull_number: prNumber, state: 'closed',
+                });
+              } catch(e) { console.log('Error closing PR:', e.message); }
+              return;
+            }
+
+            // ─────────────────────────────────────────────────────────────────
+            // RULE 3: Bot/Cron/AI detection → Tag ai-slop + gssoc:invalid
+            // ─────────────────────────────────────────────────────────────────
+            const KNOWN_BOT_OPERATORS = ['tmdeveloper007', 'desireddymohithreddy0925', 'xenon010101', 'saidai-bhuvanesh', 'sanrishi', 'sonusharma6-dsa'];
+            const BOT_SIGNATURES = [
+              'auto-created by cron', 'auto generated by cron', 'generated by cron',
+              'auto-created by bot', 'auto created by script', 'generated by script',
+              'generated for easemotion-css competition',
+            ];
+
+            const isKnownBotOperator = KNOWN_BOT_OPERATORS.includes(author);
+            const hasBotSignature    = BOT_SIGNATURES.some(sig => body.includes(sig));
+
+            if (isKnownBotOperator || hasBotSignature) {
+              console.log(`🏷️ Bot/Cron pattern detected on PR #${prNumber} by @${author} — applying ai-slop + gssoc:invalid.`);
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: prNumber, labels: ['ai-slop', 'gssoc:invalid'],
+                });
+                // Strip point approval labels so bot operators earn no GSSoC credit
+                for (const l of ['gssoc:approved', 'accepted', 'integrated', 'maintainer-approved']) {
+                  try {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner, repo: context.repo.repo,
+                      issue_number: prNumber, name: l,
+                    });
+                  } catch(e) {}
+                }
+              } catch(e) { console.log('Error updating labels:', e.message); }
+            }
+
+            console.log(`✅ PR #${prNumber} by @${author} processed.`);

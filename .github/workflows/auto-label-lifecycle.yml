@@ -4,7 +4,7 @@ on:
   issues:
     types: [opened, edited, closed, reopened]
   pull_request_target:
-    types: [opened, edited, closed, reopened]
+    types: [opened, edited, closed, reopened, synchronize, ready_for_review]
 
 permissions:
   issues: write
@@ -51,6 +51,25 @@ jobs:
             const currentAssignees = item.assignees.map(a => a.login);
             const itemAuthor = item.user.login;
             const authorType = item.user.type;
+
+            const SPAMMERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa'];
+            if (SPAMMERS.includes(itemAuthor)) {
+              console.log(`🔒 Spammer @${itemAuthor} detected. Force-tagging spam labels and exiting early.`);
+              const missingSpamLabels = ['gssoc:invalid', 'gssoc:spam', 'gssoc:ai-slop', 'duplicate', 'ai-slop'].filter(l => !currentLabels.includes(l));
+              if (missingSpamLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issueNumber, labels: missingSpamLabels
+                });
+              }
+              for (const l of ['accepted', 'integrated', 'gssoc:approved', 'level:intermediate', 'level:advanced']) {
+                if (currentLabels.includes(l)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNumber, name: l });
+                  } catch(e) {}
+                }
+              }
+              return;
+            }
 
             // Helper to add labels
             const addLabels = async (labelsToAdd) => {
@@ -103,11 +122,29 @@ jobs:
             // ==========================================
             if (action === 'closed') {
               if (isPR) {
-                const isMerged = item.merged || false;
-                if (isMerged) {
+                // FIX: item.merged is always null in PR event payloads — use merged_at instead
+                const isMerged = item.merged_at !== null && item.merged_at !== undefined;
+                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
+                if (isMerged || wasIntegrated) {
                   await removeLabels(['gssoc:invalid']);
                   await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
-                  await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀`);
+                  if (!wasIntegrated) {
+                    let userMergedCount = 1;
+                    let hoursUntilReset = 24 - new Date().getUTCHours();
+                    try {
+                      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                      const searchRes = await github.rest.search.issuesAndPullRequests({
+                        q: `repo:${owner}/${repo} is:pr is:merged author:${itemAuthor} merged:>=${sinceDate}`
+                      });
+                      userMergedCount = searchRes.data.total_count || 1;
+                    } catch(e) {
+                      console.log('Error searching user merged count:', e.message);
+                    }
+
+                    const quotaMsg = `📊 **Daily Merge Progress:** You have merged **${userMergedCount}/150** PRs today. Daily quota resets in **${hoursUntilReset} hrs**.\n\n`;
+
+                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n${quotaMsg}📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
+                  }
                 } else {
                   await removeLabels(['accepted', 'integrated']);
                   await addLabels(['gssoc:invalid']);
@@ -125,16 +162,28 @@ jobs:
             // 2. REOPENED lifecycle state
             // ==========================================
             if (action === 'reopened') {
-              await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              // FIX: Only remove invalid tag on reopen — do NOT strip accepted/integrated
+              // as merged PRs being reopened for conflict resolution should keep their credit
+              await removeLabels(['gssoc:invalid']);
             }
 
             // ==========================================
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
-            if (action === 'opened' || action === 'reopened' || action === 'edited') {
-              // Only remove accepted/integrated if it is opened or reopened
-              if (action === 'opened' || action === 'reopened') {
+            if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
+              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa'];
+              const isSoftBanned = SOFT_BANNED_USERS.includes(itemAuthor);
+
+              // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
+              if (action === 'opened' || action === 'reopened' || action === 'ready_for_review') {
                 await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              }
+
+              if (isSoftBanned) {
+                console.log(`🔒 Soft-banned user (@${itemAuthor}) detected. Assigning gssoc:invalid.`);
+                await addLabels(['gssoc:invalid', 'invalid-submission']);
+                await removeLabels(['gssoc:approved', 'accepted', 'integrated', 'level:advanced', 'level:intermediate']);
+                return;
               }
 
               // Dynamic label matrix calculations
@@ -142,7 +191,18 @@ jobs:
               const body = item.body || '';
               const textContent = `${title} ${body}`.toLowerCase();
 
-              const computedLabels = ['GSSoC-26', 'gssoc:approved'];
+              const additions = isPR ? (item.additions || 0) : 0;
+              // level:advanced for PRs with >500 lines added; level:intermediate for everything else
+              const isAdvanced = isPR && (additions > 500);
+              const level = isAdvanced ? 'level:advanced' : 'level:intermediate';
+
+              const computedLabels = [
+                'GSSoC-26',
+                'gssoc:approved',
+                level,
+                'good first issue',
+                'help wanted'
+              ];
 
               if (textContent.includes('animation') || textContent.includes('animate')) {
                 computedLabels.push('animation');
@@ -150,22 +210,140 @@ jobs:
                 computedLabels.push('component');
               }
 
-              if (textContent.includes('feature') || textContent.includes('add')) {
-                computedLabels.push('type:feature');
-              } else if (textContent.includes('enhance') || textContent.includes('optimize')) {
+              if (textContent.includes('enhance') || textContent.includes('optimize')) {
                 computedLabels.push('enhancement');
               }
 
-              if (textContent.includes('good first') || textContent.includes('easy')) {
-                computedLabels.push('good first issue');
+              if (isPR) {
+                const titleLower = title.toLowerCase();
+                const bodyLower = body.toLowerCase();
+                
+                // Parse associated issues from PR body to read their labels
+                const issueLabels = [];
+                const closingPattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#([0-9]+)/gi;
+                let match;
+                while ((match = closingPattern.exec(body)) !== null) {
+                  const num = parseInt(match[1], 10);
+                  try {
+                    const { data: issue } = await github.rest.issues.get({
+                      owner, repo, issue_number: num
+                    });
+                    if (issue && issue.labels) {
+                      issueLabels.push(...issue.labels.map(l => l.name.toLowerCase()));
+                      // If the PR has > 500 additions, make sure the linked issue is also level:advanced
+                      if (additions > 500) {
+                        const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
+                        const hasAdvanced = issue.labels.some(l => l.name === 'level:advanced');
+                        if (hasIntermediate || !hasAdvanced) {
+                          await github.rest.issues.removeLabel({
+                            owner, repo, issue_number: num, name: 'level:intermediate'
+                          }).catch(() => {});
+                          await github.rest.issues.addLabels({
+                            owner, repo, issue_number: num, labels: ['level:advanced']
+                          }).catch(() => {});
+                        }
+                      }
+                    }
+                  } catch (err) {
+                    console.log(`Failed to fetch labels for issue #${num}: ${err.message}`);
+                  }
+                }
+
+                // Smart GSSoC type labeling logic
+                const isFix = titleLower.startsWith('fix:') || titleLower.startsWith('fix ') || titleLower.includes('bug') || issueLabels.includes('bug') || issueLabels.includes('type:bug') || currentLabels.includes('bug');
+                const isDocs = titleLower.startsWith('docs:') || titleLower.includes('readme') || titleLower.includes('documentation') || issueLabels.includes('documentation') || issueLabels.includes('docs') || issueLabels.includes('type:docs') || currentLabels.includes('documentation');
+                const isA11y = titleLower.includes('a11y') || titleLower.includes('accessibility') || issueLabels.includes('accessibility') || issueLabels.includes('a11y') || issueLabels.includes('type:accessibility');
+                const isTest = titleLower.startsWith('test:') || titleLower.includes('testing') || titleLower.includes('unit test') || issueLabels.includes('testing') || issueLabels.includes('test') || issueLabels.includes('type:testing');
+                const isPerf = titleLower.startsWith('perf:') || titleLower.includes('performance') || titleLower.includes('optimize') || issueLabels.includes('performance') || issueLabels.includes('perf') || issueLabels.includes('type:performance');
+                const isRefactor = titleLower.startsWith('refactor:') || titleLower.includes('refactoring') || issueLabels.includes('refactor') || issueLabels.includes('type:refactor');
+
+                let typeAdded = false;
+                if (isFix) {
+                  computedLabels.push('type:bug');
+                  typeAdded = true;
+                }
+                if (isDocs) {
+                  computedLabels.push('type:docs');
+                  typeAdded = true;
+                }
+                if (isA11y) {
+                  computedLabels.push('type:accessibility');
+                  typeAdded = true;
+                }
+                if (isTest) {
+                  computedLabels.push('type:testing');
+                  typeAdded = true;
+                }
+                if (isPerf) {
+                  computedLabels.push('type:performance');
+                  typeAdded = true;
+                }
+                if (isRefactor) {
+                  computedLabels.push('type:refactor');
+                  typeAdded = true;
+                }
+
+                if (!typeAdded) {
+                  computedLabels.push('type:feature');
+                } else {
+                  // If we added a specific type, ensure type:feature is removed if it was already on the PR
+                  await removeLabels(['type:feature']);
+                }
+
+                try {
+                  const { data: files } = await github.rest.pulls.listFiles({
+                    owner, repo, pull_number: issueNumber, per_page: 100
+                  });
+                  const filePaths = files.map(f => f.filename);
+                  console.log(`PR changed files: ${filePaths.join(', ')}`);
+
+                  const matchesPattern = (path, pattern) => {
+                    if (pattern.endsWith('/**')) {
+                      return path.startsWith(pattern.slice(0, -2));
+                    }
+                    if (pattern.endsWith('/*')) {
+                      const prefix = pattern.slice(0, -1);
+                      return path.startsWith(prefix) && !path.slice(prefix.length).includes('/');
+                    }
+                    return path === pattern;
+                  };
+
+                  const hasMatch = (patterns) => {
+                    return filePaths.some(filePath => 
+                      patterns.some(pattern => matchesPattern(filePath, pattern))
+                    );
+                  };
+
+                  if (hasMatch(['submissions/examples/**', 'submissions/docs/**'])) {
+                    computedLabels.push('contribution');
+                  }
+                  if (hasMatch(['docs/**', 'submissions/docs/**'])) {
+                    computedLabels.push('documentation');
+                    if (!computedLabels.includes('type:docs')) {
+                      computedLabels.push('type:docs');
+                      await removeLabels(['type:feature']);
+                    }
+                  }
+                  if (hasMatch(['core/**'])) {
+                    computedLabels.push('core');
+                  }
+                } catch (e) {
+                  console.log(`Warning: Failed to fetch PR files: ${e.message}`);
+                }
+              }
+
+              if (isAdvanced) {
+                // Advanced (>500 additions): remove intermediate
+                await removeLabels(['level:intermediate', 'level:beginner']);
               } else {
-                computedLabels.push('level:intermediate');
+                // Intermediate (default): remove advanced
+                await removeLabels(['level:advanced', 'level:beginner']);
               }
 
               await addLabels(computedLabels);
 
               // Assign participants
-              if (action === 'opened' || action === 'reopened') {
+              if (action === 'opened' || action === 'reopened' || action === 'ready_for_review') {
                 if (isPR) {
                   // PR: Assign author (if User) and Repo Owner (SAPTARSHI-coder)
                   const targets = [owner];

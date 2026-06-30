@@ -1,0 +1,23 @@
+# Hover Animation File Header
+
+## What does this do?
+Proposes adding a file-level documentation comment block at the top
+of `easemotion/hover.css`. Linked to issue #5572.
+
+## How is it used?
+Documentation-only change. The maintainer pastes the proposed
+header into `easemotion/hover.css`.
+
+## Why is it useful?
+`hover.css` was missing the file-level documentation banner used by
+other animation files.
+
+## Tech Stack
+- CSS (no frameworks, no JavaScript)
+- Pure documentation change
+
+## Preview
+Open `style.css` in this folder to see the proposed header.
+
+## Contribution Notes
+- Documentation only, no runtime changes

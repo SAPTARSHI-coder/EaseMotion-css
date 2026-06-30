@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix: Modal Focus Stack</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: var(--ease-font-sans);
+      background: var(--ease-color-bg);
+      color: var(--ease-color-text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+    .sub {
+      color: var(--ease-color-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      max-width: 480px;
+    }
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn {
+      padding: 0.6rem 1.25rem;
+      border: 2px solid var(--ease-color-primary);
+      background: transparent;
+      color: var(--ease-color-primary);
+      border-radius: var(--ease-radius-full);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: var(--ease-color-primary);
+      color: var(--ease-color-text-on-primary);
+    }
+    .btn.fill {
+      background: var(--ease-color-primary);
+      color: var(--ease-color-text-on-primary);
+    }
+    .btn.sm {
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+    }
+    .btn.danger {
+      border-color: var(--ease-color-danger);
+      color: var(--ease-color-danger);
+    }
+    .btn.danger:hover {
+      background: var(--ease-color-danger);
+      color: var(--ease-color-text-on-primary);
+    }
+    .mode-badge {
+      display: inline-block;
+      padding: 0.3rem 0.75rem;
+      border-radius: var(--ease-radius-full);
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .mode-badge.stack {
+      background: var(--ease-color-success-100);
+      color: var(--ease-color-success-700);
+    }
+    .mode-badge.single {
+      background: var(--ease-color-warning-100);
+      color: var(--ease-color-warning-700);
+    }
+    .trace {
+      font-size: 0.8rem;
+      color: var(--ease-color-muted);
+      background: var(--ease-color-surface);
+      padding: 0.75rem 1rem;
+      border-radius: var(--ease-radius-md);
+      border: 1px solid var(--ease-color-neutral-200);
+      min-width: 300px;
+      text-align: center;
+      margin-bottom: 1rem;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Modal focus stack</h1>
+  <p class="sub">
+    Open modal 1, then open modal 2 from inside it, then close both.
+    With a single variable, focus is lost. With a stack, it returns to the original trigger.
+  </p>
+
+  <div id="modeBadge" class="mode-badge stack">Stack (fix) — focus returns correctly</div>
+  <div class="controls">
+    <button id="trigger1" class="btn fill">Open modal 1</button>
+    <button id="trigger2" class="btn fill">Open modal 2</button>
+    <button id="toggleMode" class="btn">Switch to: Single variable (bug)</button>
+  </div>
+  <div id="trace" class="trace">Focus target stack: []</div>
+
+  <!-- Modal 1 -->
+  <div id="modal1" class="demo-modal-overlay">
+    <div class="demo-modal">
+      <h2>Modal one</h2>
+      <p>This is the first modal. Click inside to open a nested modal, then close both and see where focus lands.</p>
+      <div class="demo-modal-actions">
+        <button id="openInner" class="btn sm fill">Open modal 2 (nested)</button>
+        <button id="close1" class="btn sm danger">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2 -->
+  <div id="modal2" class="demo-modal-overlay">
+    <div class="demo-modal">
+      <h2>Modal two</h2>
+      <p>This modal was opened from inside modal 1. When closed, focus should return to modal 1's trigger button, not be lost.</p>
+      <div class="demo-modal-actions">
+        <button id="close2" class="btn sm danger">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var focusStack = [];
+      var useStack = true;
+
+      var trigger1 = document.getElementById('trigger1');
+      var trigger2 = document.getElementById('trigger2');
+      var toggleMode = document.getElementById('toggleMode');
+      var modeBadge = document.getElementById('modeBadge');
+      var trace = document.getElementById('trace');
+      var modal1 = document.getElementById('modal1');
+      var modal2 = document.getElementById('modal2');
+      var openInner = document.getElementById('openInner');
+      var close1 = document.getElementById('close1');
+      var close2 = document.getElementById('close2');
+
+      function updateTrace() {
+        var label = focusStack.map(function (el) {
+          return el.id || el.tagName + (el.textContent ? ' "' + el.textContent.trim().slice(0, 20) + '"' : '');
+        });
+        trace.textContent = 'Focus target stack: [' + label.join(', ') + ']';
+      }
+
+      function openOverlay(overlay, triggerEl) {
+        if (useStack) {
+          focusStack.push(triggerEl || document.activeElement);
+        } else {
+          focusStack = [triggerEl || document.activeElement];
+        }
+        overlay.classList.add('open');
+        var modal = overlay.querySelector('.demo-modal');
+        if (modal) {
+          modal.setAttribute('tabindex', '-1');
+          modal.focus();
+        }
+        updateTrace();
+      }
+
+      function closeOverlay(overlay) {
+        overlay.classList.remove('open');
+        if (focusStack.length > 0) {
+          var target = focusStack.pop();
+          if (target && typeof target.focus === 'function') {
+            target.focus();
+          }
+        }
+        updateTrace();
+      }
+
+      function updateMode() {
+        modeBadge.className = 'mode-badge ' + (useStack ? 'stack' : 'single');
+        modeBadge.textContent = useStack
+          ? 'Stack (fix) — focus returns correctly'
+          : 'Single variable (bug) — focus gets lost after nested close';
+        toggleMode.textContent = useStack
+          ? 'Switch to: Single variable (bug)'
+          : 'Switch to: Stack (fix)';
+        focusStack = [];
+        updateTrace();
+      }
+
+      toggleMode.addEventListener('click', function () {
+        useStack = !useStack;
+        updateMode();
+      });
+
+      trigger1.addEventListener('click', function () {
+        openOverlay(modal1, trigger1);
+      });
+
+      trigger2.addEventListener('click', function () {
+        openOverlay(modal2, trigger2);
+      });
+
+      openInner.addEventListener('click', function () {
+        openOverlay(modal2, openInner);
+      });
+
+      close1.addEventListener('click', function () {
+        closeOverlay(modal1);
+      });
+
+      close2.addEventListener('click', function () {
+        closeOverlay(modal2);
+      });
+
+      // Backdrop click
+      modal1.addEventListener('click', function (e) {
+        if (e.target === modal1) closeOverlay(modal1);
+      });
+      modal2.addEventListener('click', function (e) {
+        if (e.target === modal2) closeOverlay(modal2);
+      });
+
+      // Escape key
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+          if (modal2.classList.contains('open')) closeOverlay(modal2);
+          else if (modal1.classList.contains('open')) closeOverlay(modal1);
+        }
+      });
+
+      updateMode();
+    })();
+  </script>
+</body>
+</html>

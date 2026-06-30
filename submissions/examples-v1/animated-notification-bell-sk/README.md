@@ -1,0 +1,1 @@
+A pure CSS notification bell with a shaking ring animation, a pulsing red badge, and a :target-driven dropdown panel containing three notification items. Clicking the bell opens the dropdown and clicking the close button dismisses it. Fully self-contained with a dark theme and reduced-motion handling.

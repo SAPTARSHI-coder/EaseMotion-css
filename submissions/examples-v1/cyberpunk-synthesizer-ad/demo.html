@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyberpunk Interactive Audio Synthesizer Interface</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="synth-rack" id="synthChassis">
+    <!-- Laser Scanline -->
+    <div class="scan-line"></div>
+
+    <!-- Synth Header -->
+    <header class="synth-header">
+      <div class="synth-brand">
+        <div class="led-status active" id="powerLed"></div>
+        <h1 class="synth-title">EASE-SYNTH-ONE</h1>
+      </div>
+      <div class="switch-label">OSC_TYPE: SAW</div>
+    </header>
+
+    <!-- Controls Panel -->
+    <section class="control-grid">
+      <!-- Knob Panel -->
+      <div class="control-panel">
+        <h3 class="panel-label">Oscillators</h3>
+        <div class="knobs-container">
+          <div class="knob-wrapper">
+            <div class="synth-knob" data-value="50" id="freqKnob">
+              <div class="knob-marker"></div>
+            </div>
+            <span>FREQ: <strong id="freqVal">50%</strong></span>
+          </div>
+          
+          <div class="knob-wrapper">
+            <div class="synth-knob" data-value="20" id="detuneKnob">
+              <div class="knob-marker"></div>
+            </div>
+            <span>DETUNE: <strong id="detuneVal">20%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slider Panel -->
+      <div class="control-panel">
+        <h3 class="panel-label">Filter Envelope</h3>
+        <div class="sliders-container">
+          <div class="slider-wrapper">
+            <div class="slider-header">
+              <span>ATTACK</span>
+              <span id="attackVal">15ms</span>
+            </div>
+            <input type="range" class="synth-slider" id="attackSlider" min="0" max="100" value="15">
+          </div>
+          
+          <div class="slider-wrapper">
+            <div class="slider-header">
+              <span>RELEASE</span>
+              <span id="releaseVal">250ms</span>
+            </div>
+            <input type="range" class="synth-slider" id="releaseSlider" min="0" max="1000" value="250">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Equalizer Frequency Monitor -->
+    <section class="equalizer-panel" id="eqPanel">
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+    </section>
+
+    <!-- Footer Controls -->
+    <section class="toggles-panel">
+      <div class="glitch-switch-container">
+        <span class="switch-label">GLITCH CORE</span>
+        <label class="switch">
+          <input type="checkbox" id="glitchToggle">
+          <span class="slider-switch"></span>
+        </label>
+      </div>
+      <div class="switch-label" style="font-size: 0.65rem; color: rgba(255,255,255,0.4);">
+        SYS_STATUS: OPERATIONAL
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Sliders Synchronization
+      const attackSlider = document.getElementById('attackSlider');
+      const attackVal = document.getElementById('attackVal');
+      const releaseSlider = document.getElementById('releaseSlider');
+      const releaseVal = document.getElementById('releaseVal');
+
+      attackSlider.addEventListener('input', (e) => {
+        attackVal.textContent = `${e.target.value}ms`;
+      });
+
+      releaseSlider.addEventListener('input', (e) => {
+        releaseVal.textContent = `${e.target.value}ms`;
+      });
+
+      // 2. Knob Interaction logic
+      function setupKnob(knobId, valId, unit) {
+        const knob = document.getElementById(knobId);
+        const valText = document.getElementById(valId);
+        let startY = 0;
+        let startVal = 50;
+
+        // Initialize knob rotation based on default value
+        const initialVal = parseInt(knob.getAttribute('data-value')) || 50;
+        const initialDeg = ((initialVal / 100) * 270) - 135;
+        knob.style.transform = `rotate(${initialDeg}deg)`;
+
+        knob.addEventListener('mousedown', (e) => {
+          startY = e.clientY;
+          startVal = parseInt(knob.getAttribute('data-value')) || 50;
+          
+          document.addEventListener('mousemove', onMouseMove);
+          document.addEventListener('mouseup', onMouseUp);
+          
+          e.preventDefault(); // Prevent text selection
+        });
+
+        knob.addEventListener('touchstart', (e) => {
+          startY = e.touches[0].clientY;
+          startVal = parseInt(knob.getAttribute('data-value')) || 50;
+          
+          document.addEventListener('touchmove', onTouchMove);
+          document.addEventListener('touchend', onTouchEnd);
+          
+          e.preventDefault();
+        });
+
+        function onMouseMove(e) {
+          const deltaY = startY - e.clientY; // upward drag increases value
+          updateValue(deltaY);
+        }
+
+        function onTouchMove(e) {
+          const deltaY = startY - e.touches[0].clientY;
+          updateValue(deltaY);
+        }
+
+        function updateValue(deltaY) {
+          // Adjust sensitivity factor
+          const sensitivity = 0.8;
+          let newVal = Math.round(startVal + (deltaY * sensitivity));
+          newVal = Math.max(0, Math.min(100, newVal)); // Clamp between 0% and 100%
+
+          knob.setAttribute('data-value', newVal);
+          valText.textContent = `${newVal}${unit}`;
+
+          // Map 0-100 to rotation degrees (-135deg to +135deg)
+          const degrees = ((newVal / 100) * 270) - 135;
+          knob.style.transform = `rotate(${degrees}deg)`;
+          
+          // Affect equalizer speed based on Frequency Knob
+          if (knobId === 'freqKnob') {
+            adjustEqSpeed(newVal);
+          }
+        }
+
+        function onMouseUp() {
+          document.removeEventListener('mousemove', onMouseMove);
+          document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        function onTouchEnd() {
+          document.removeEventListener('touchmove', onTouchMove);
+          document.removeEventListener('touchend', onTouchEnd);
+        }
+      }
+
+      setupKnob('freqKnob', 'freqVal', '%');
+      setupKnob('detuneKnob', 'detuneVal', '%');
+
+      // 3. Eq animation speed control based on Frequency Knob
+      const eqBars = document.querySelectorAll('.eq-bar');
+      function adjustEqSpeed(val) {
+        // Base speeds divided by value ratio
+        const speedFactor = 1.5 - (val / 100); // Higher freq = smaller duration (faster)
+        eqBars.forEach((bar, index) => {
+          const baseSpeed = [1.2, 0.8, 1.5, 1.1, 0.9, 1.4, 0.7, 1.3, 1.0, 1.6][index % 10];
+          bar.style.animationDuration = `${Math.max(0.15, baseSpeed * speedFactor)}s`;
+        });
+      }
+
+      // 4. Glitch Toggle Mode
+      const glitchToggle = document.getElementById('glitchToggle');
+      const chassis = document.getElementById('synthChassis');
+      const powerLed = document.getElementById('powerLed');
+
+      glitchToggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          chassis.classList.add('glitch-active');
+          powerLed.style.background = '#00f0ff';
+          powerLed.style.boxShadow = '0 0 15px #00f0ff, 0 0 5px #fff';
+          
+          // Randomize EQ bar animations aggressively during glitch mode
+          glitchEqInterval = setInterval(() => {
+            eqBars.forEach(bar => {
+              const randHeight = Math.floor(Math.random() * 85) + 15;
+              bar.style.height = `${randHeight}%`;
+            });
+          }, 100);
+        } else {
+          chassis.classList.remove('glitch-active');
+          powerLed.style.background = '';
+          powerLed.style.boxShadow = '';
+          clearInterval(glitchEqInterval);
+          // reset EQ heights to rely back on CSS keyframes
+          eqBars.forEach(bar => {
+            bar.style.height = '';
+          });
+        }
+      });
+
+      let glitchEqInterval;
+    });
+  </script>
+</body>
+</html>
