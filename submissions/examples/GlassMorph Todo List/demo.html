@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlassMorph Pro - Advanced Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* INLINE UTILITIES FOR DASHBOARD EXPANSION */
+        .dashboard-layout { display: grid; grid-template-columns: 260px 1fr; height: 100vh; width: 100vw; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; }
+        
+        /* Sidebar Styling */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; padding: 20px; border-radius: var(--radius-lg); height: 100%; overflow-y: auto; }
+        .sidebar-group { margin-bottom: 20px; }
+        .sidebar-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--c-text-muted); letter-spacing: 1px; margin-bottom: 10px; padding-left: 10px; }
+        .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-radius: var(--radius-md); cursor: pointer; transition: 0.2s ease; color: var(--c-text-main); font-weight: 500; font-size: 0.95rem; }
+        .nav-item:hover, .nav-item.active { background: var(--c-glass-highlight); box-shadow: 0 2px 10px var(--c-glass-shadow); }
+        .nav-left { display: flex; align-items: center; gap: 10px; }
+        .nav-icon { width: 18px; height: 18px; color: var(--c-primary); }
+        .nav-count { font-size: 0.8rem; background: var(--c-glass-border); padding: 2px 8px; border-radius: 20px; }
+        
+        /* Main Content Expansion */
+        .main-content { display: flex; flex-direction: column; height: 100%; border-radius: var(--radius-lg); padding: 30px; position: relative; overflow-y: auto; }
+        .progress-container { width: 100%; height: 6px; background: var(--c-glass-border); border-radius: 10px; margin-top: 15px; overflow: hidden; }
+        .progress-bar { height: 100%; background: var(--c-primary); width: 0%; transition: width 0.5s ease-out; }
+        
+        /* Advanced Task Item */
+        .task-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; cursor: pointer; border-left: 4px solid transparent; }
+        .task-item:hover { border-left-color: var(--c-primary); }
+        .task-meta { display: flex; gap: 10px; margin-top: 5px; font-size: 0.8rem; color: var(--c-text-muted); }
+        .badge { padding: 2px 8px; border-radius: 12px; font-weight: 600; font-size: 0.75rem; }
+        .badge-high { background: rgba(239, 68, 68, 0.2); color: var(--c-danger); }
+        .badge-med { background: rgba(245, 158, 11, 0.2); color: #d97706; }
+        .badge-low { background: rgba(59, 130, 246, 0.2); color: var(--c-primary); }
+        
+        /* Modal Override */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.4); display: flex; justify-content: flex-end; z-index: 100; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-side { width: 400px; height: 100%; background: var(--c-glass-bg); backdrop-filter: blur(20px); border-left: 1px solid var(--c-glass-border); padding: 30px; transform: translateX(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; gap: 20px; }
+        .modal-overlay.active .modal-side { transform: translateX(0); }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--c-text-muted); }
+        .form-group input, .form-group textarea, .form-group select { padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--c-glass-border); background: var(--c-glass-highlight); color: var(--c-text-main); font-family: inherit; }
+        
+        /* Subtasks */
+        .subtask-list { display: flex; flex-direction: column; gap: 8px; }
+        .subtask-item { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        
+        @media (max-width: 900px) {
+            .dashboard-layout { grid-template-columns: 1fr; padding: 10px; }
+            .sidebar { display: none; } /* Simplified for mobile */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- EMBEDDED SVG ICON LIBRARY -->
+    <svg style="display: none;">
+        <defs>
+            <symbol id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></symbol>
+            <symbol id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></symbol>
+            <symbol id="icon-inbox" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></symbol>
+            <symbol id="icon-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></symbol>
+            <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></symbol>
+            <symbol id="icon-briefcase" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></symbol>
+            <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></symbol>
+            <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></symbol>
+            <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></symbol>
+        </defs>
+    </svg>
+
+    <div class="bg-gradient"></div>
+
+    <div class="dashboard-layout">
+        
+        <!-- SIDEBAR -->
+        <aside class="sidebar glass-panel ease-fade-up">
+            <div class="app-header" style="margin-bottom: 20px;">
+                <h2 style="font-size:1.5rem; display:flex; align-items:center; gap:10px;">
+                    <div style="background:var(--c-primary); width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white;">✓</div>
+                    GlassTask
+                </h2>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-label">Smart Filters</div>
+                <div class="nav-item active" onclick="filterByList('all', this)">
+                    <div class="nav-left"><svg class="nav-icon"><use href="#icon-inbox"></use></svg> All Tasks</div>
+                    <span class="nav-count" id="count-all">0</span>
+                </div>
+                <div class="nav-item" onclick="filterByList('today', this)">
+                    <div class="nav-left"><svg class="nav-icon"><use href="#icon-calendar"></use></svg> Today</div>
+                    <span class="nav-count" id="count-today">0</span>
+                </div>
+                <div class="nav-item" onclick="filterByList('important', this)">
+                    <div class="nav-left"><svg class="nav-icon" style="color:#f59e0b;"><use href="#icon-star"></use></svg> Important</div>
+                    <span class="nav-count" id="count-important">0</span>
+                </div>
+            </div>
+
+            <div class="sidebar-group">
+                <div class="sidebar-label">My Lists</div>
+                <div class="nav-item" onclick="filterByList('Work', this)">
+                    <div class="nav-left"><svg class="nav-icon"><use href="#icon-briefcase"></use></svg> Work</div>
+                </div>
+                <div class="nav-item" onclick="filterByList('Personal', this)">
+                    <div class="nav-left"><svg class="nav-icon"><use href="#icon-user"></use></svg> Personal</div>
+                </div>
+            </div>
+
+            <div style="margin-top: auto;">
+                <button class="nav-item" style="width: 100%; border: none; background: transparent;" onclick="toggleTheme()">
+                    <div class="nav-left">
+                        <svg class="nav-icon" id="theme-icon"><use href="#icon-moon"></use></svg> Toggle Theme
+                    </div>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content glass-panel ease-fade-up" style="animation-delay: 0.1s;">
+            <header class="app-header" style="align-items: flex-end;">
+                <div>
+                    <h1 id="view-title">All Tasks</h1>
+                    <p class="subtitle" id="date-display">Today is a great day to get things done.</p>
+                </div>
+                <div style="text-align: right;">
+                    <p class="subtitle"><span id="completed-count" style="color:var(--c-primary); font-weight:bold;">0</span> / <span id="total-count">0</span> Completed</p>
+                </div>
+            </header>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <!-- Enhanced Input Form -->
+            <form id="todo-form" class="input-group" style="margin: 20px 0;">
+                <input type="text" id="task-input" placeholder="What needs to be done? Press Enter to quick-add..." autocomplete="off">
+                <button type="submit" class="btn-add ease-scale">
+                    <svg width="20" height="20"><use href="#icon-plus"></use></svg>
+                </button>
+            </form>
+
+            <div class="filters" style="margin-bottom: 20px;">
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="active">Active</button>
+                <button class="filter-btn" data-status="completed">Completed</button>
+                <div style="flex-grow:1;"></div>
+                <button class="btn-clear ease-scale" id="clear-all">Clear Completed</button>
+            </div>
+
+            <!-- Task List -->
+            <ul id="task-list" class="task-list" style="max-height: calc(100vh - 280px);">
+                <!-- Rendered via JS -->
+            </ul>
+        </main>
+    </div>
+
+    <!-- TASK DETAIL MODAL (SLIDE-IN) -->
+    <div class="modal-overlay" id="task-modal" onclick="closeModal(event)">
+        <div class="modal-side ease-scale" onclick="event.stopPropagation()">
+            <div class="app-header">
+                <h2>Task Details</h2>
+                <button class="icon-btn" onclick="document.getElementById('task-modal').classList.remove('active')">
+                    <svg width="20" height="20"><use href="#icon-close"></use></svg>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>Task Title</label>
+                <input type="text" id="modal-title" style="font-weight:bold; font-size:1.1rem;">
+            </div>
+
+            <div class="form-group">
+                <label>List / Category</label>
+                <select id="modal-category">
+                    <option value="Inbox">Inbox</option>
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Priority Level</label>
+                <select id="modal-priority">
+                    <option value="Low">Low Priority</option>
+                    <option value="Med">Medium Priority</option>
+                    <option value="High">High Priority</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Description / Notes</label>
+                <textarea id="modal-desc" rows="4" placeholder="Add additional details here..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-top: auto;">
+                <button class="btn-add ease-scale" style="position:relative; width:100%; border-radius:8px; padding:15px; font-weight:bold;" onclick="saveModalTask()">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MASSIVE JAVASCRIPT ENGINE -->
+    <script>
+        // --- 1. MOCK DATA / STATE MANAGEMENT ---
+        // Pre-populating a large dataset to ensure the UI looks impressive immediately
+        const defaultTasks = [
+            { id: 101, title: "Finalize Q3 Marketing Report", desc: "Compile all the analytics from Google Ads and Meta.", category: "Work", priority: "High", completed: false, date: new Date().toISOString() },
+            { id: 102, title: "Buy groceries for the week", desc: "Milk, Eggs, Bread, Avocados, and Coffee beans.", category: "Personal", priority: "Med", completed: false, date: new Date().toISOString() },
+            { id: 103, title: "Schedule dentist appointment", desc: "Call Dr. Smith's office before Friday.", category: "Personal", priority: "Low", completed: true, date: new Date().toISOString() },
+            { id: 104, title: "Review Pull Request #402", desc: "Check the new authentication flow logic.", category: "Work", priority: "High", completed: false, date: new Date().toISOString() },
+            { id: 105, title: "Renew Car Insurance", desc: "Policy expires next week.", category: "Personal", priority: "High", completed: false, date: new Date().toISOString() },
+            { id: 106, title: "Plan team offsite event", desc: "Research venues in upstate New York.", category: "Work", priority: "Med", completed: true, date: new Date().toISOString() }
+        ];
+
+        let tasks = JSON.parse(localStorage.getItem('glassmorph-pro-tasks')) || defaultTasks;
+        
+        let state = {
+            currentList: 'all',
+            currentStatus: 'all', // all, active, completed
+            activeTaskId: null
+        };
+
+        // DOM Elements
+        const DOM = {
+            list: document.getElementById('task-list'),
+            form: document.getElementById('todo-form'),
+            input: document.getElementById('task-input'),
+            progressBar: document.getElementById('progress-bar'),
+            totalCount: document.getElementById('total-count'),
+            completedCount: document.getElementById('completed-count'),
+            viewTitle: document.getElementById('view-title'),
+            modal: document.getElementById('task-modal'),
+            modTitle: document.getElementById('modal-title'),
+            modCat: document.getElementById('modal-category'),
+            modPri: document.getElementById('modal-priority'),
+            modDesc: document.getElementById('modal-desc')
+        };
+
+        // --- 2. INITIALIZATION ---
+        document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+        // --- 3. RENDERING ENGINE ---
+        function saveTasks() {
+            localStorage.setItem('glassmorph-pro-tasks', JSON.stringify(tasks));
+        }
+
+        function renderTasks() {
+            DOM.list.innerHTML = '';
+            
+            // 1. Filter by List/Category
+            let filtered = tasks;
+            if (state.currentList === 'today') {
+                // Simplified today filter
+                filtered = tasks.filter(t => !t.completed); 
+            } else if (state.currentList === 'important') {
+                filtered = tasks.filter(t => t.priority === 'High');
+            } else if (state.currentList !== 'all') {
+                filtered = tasks.filter(t => t.category === state.currentList);
+            }
+
+            // 2. Filter by Status (Tabs)
+            if (state.currentStatus === 'active') filtered = filtered.filter(t => !t.completed);
+            if (state.currentStatus === 'completed') filtered = filtered.filter(t => t.completed);
+
+            // 3. Sort (Incomplete first, then High priority)
+            filtered.sort((a, b) => {
+                if (a.completed === b.completed) {
+                    const pri = { "High": 3, "Med": 2, "Low": 1 };
+                    return pri[b.priority] - pri[a.priority];
+                }
+                return a.completed ? 1 : -1;
+            });
+
+            // 4. Render to DOM
+            if (filtered.length === 0) {
+                DOM.list.innerHTML = `
+                    <div class="empty-state ease-fade-up" style="padding:40px; text-align:center;">
+                        <svg width="48" height="48" style="color:var(--c-text-muted); margin-bottom:10px;"><use href="#icon-check"></use></svg>
+                        <h3>No Tasks Found</h3>
+                        <p style="color:var(--c-text-muted); font-size:0.9rem;">You are all caught up in this view!</p>
+                    </div>`;
+            }
+
+            filtered.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item glass-panel ease-fade-up ${task.completed ? 'completed' : ''}`;
+                
+                // Priority Badge
+                let badgeClass = task.priority === 'High' ? 'badge-high' : task.priority === 'Med' ? 'badge-med' : 'badge-low';
+                
+                li.innerHTML = `
+                    <label class="custom-checkbox" onclick="event.stopPropagation()">
+                        <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id}, this)">
+                        <span class="checkmark ease-scale"></span>
+                    </label>
+                    <div class="task-text-container" onclick="openTaskModal(${task.id})">
+                        <span class="task-text">${task.title}</span>
+                        <div class="task-meta">
+                            <span class="badge ${badgeClass}">${task.priority}</span>
+                            <span>📁 ${task.category}</span>
+                            ${task.desc ? '<span>📝 Has Notes</span>' : ''}
+                        </div>
+                    </div>
+                    <button class="btn-delete" onclick="event.stopPropagation(); deleteTask(${task.id}, this)" aria-label="Delete">
+                        <svg width="18" height="18"><use href="#icon-trash"></use></svg>
+                    </button>
+                `;
+                DOM.list.appendChild(li);
+            });
+
+            updateSidebarCounts();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            
+            DOM.totalCount.innerText = total;
+            DOM.completedCount.innerText = completed;
+            
+            const pct = total === 0 ? 0 : (completed / total) * 100;
+            DOM.progressBar.style.width = `${pct}%`;
+            
+            // Pop animation if 100%
+            if (pct === 100 && total > 0) {
+                DOM.progressBar.style.backgroundColor = '#10b981'; // Green success
+                DOM.progressBar.parentElement.classList.add('ease-shake');
+                setTimeout(() => DOM.progressBar.parentElement.classList.remove('ease-shake'), 500);
+            } else {
+                DOM.progressBar.style.backgroundColor = 'var(--c-primary)';
+            }
+        }
+
+        function updateSidebarCounts() {
+            document.getElementById('count-all').innerText = tasks.length;
+            document.getElementById('count-today').innerText = tasks.filter(t => !t.completed).length;
+            document.getElementById('count-important').innerText = tasks.filter(t => t.priority === 'High' && !t.completed).length;
+        }
+
+        // --- 4. TASK ACTIONS ---
+        DOM.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = DOM.input.value.trim();
+            if (!text) return;
+
+            tasks.unshift({
+                id: Date.now(),
+                title: text,
+                desc: "",
+                category: state.currentList === 'all' || state.currentList === 'today' || state.currentList === 'important' ? 'Inbox' : state.currentList,
+                priority: "Low",
+                completed: false,
+                date: new Date().toISOString()
+            });
+            
+            DOM.input.value = '';
+            saveTasks();
+            
+            // Reset status filter to show new task
+            if (state.currentStatus === 'completed') {
+                document.querySelector('[data-status="all"]').click();
+            } else {
+                renderTasks();
+            }
+        });
+
+        window.toggleTask = function(id, checkboxEl) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                
+                const li = checkboxEl.closest('.task-item');
+                task.completed ? li.classList.add('completed') : li.classList.remove('completed');
+                
+                // If the filter hides the task, animate it out
+                if ((state.currentStatus === 'active' && task.completed) || (state.currentStatus === 'completed' && !task.completed)) {
+                    li.classList.replace('ease-fade-up', 'ease-fade-out');
+                    setTimeout(renderTasks, 300);
+                } else {
+                    updateProgress();
+                    updateSidebarCounts();
+                }
+            }
+        };
+
+        window.deleteTask = function(id, btnEl) {
+            const li = btnEl.closest('.task-item');
+            li.classList.replace('ease-fade-up', 'ease-fade-out');
+            
+            setTimeout(() => {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderTasks();
+            }, 300);
+        };
+
+        document.getElementById('clear-all').addEventListener('click', () => {
+            const completed = tasks.filter(t => t.completed);
+            if (completed.length === 0) return;
+            
+            DOM.list.classList.add('ease-shake');
+            setTimeout(() => {
+                DOM.list.classList.remove('ease-shake');
+                tasks = tasks.filter(t => !t.completed);
+                saveTasks();
+                renderTasks();
+            }, 400);
+        });
+
+        // --- 5. UI CONTROLS & MODALS ---
+        window.filterByList = function(listName, btnEl) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+            
+            state.currentList = listName;
+            
+            // Update Title
+            const titles = { 'all': 'All Tasks', 'today': 'My Day', 'important': 'Priority Tasks' };
+            DOM.viewTitle.innerText = titles[listName] || listName + ' List';
+            
+            renderTasks();
+        };
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentStatus = btn.dataset.status;
+                renderTasks();
+            });
+        });
+
+        window.openTaskModal = function(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+            
+            state.activeTaskId = id;
+            DOM.modTitle.value = task.title;
+            DOM.modCat.value = task.category;
+            DOM.modPri.value = task.priority;
+            DOM.modDesc.value = task.desc;
+            
+            DOM.modal.classList.add('active');
+        };
+
+        window.closeModal = function(e) {
+            if(e.target === DOM.modal) DOM.modal.classList.remove('active');
+        };
+
+        window.saveModalTask = function() {
+            const task = tasks.find(t => t.id === state.activeTaskId);
+            if (task) {
+                task.title = DOM.modTitle.value;
+                task.category = DOM.modCat.value;
+                task.priority = DOM.modPri.value;
+                task.desc = DOM.modDesc.value;
+                
+                saveTasks();
+                DOM.modal.classList.remove('active');
+                renderTasks();
+            }
+        };
+
+        // Theme System
+        window.toggleTheme = function() {
+            const root = document.documentElement;
+            const isDark = root.getAttribute('data-theme') === 'dark';
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            root.setAttribute('data-theme', newTheme);
+            localStorage.setItem('glassmorph-pro-theme', newTheme);
+            
+            document.getElementById('theme-icon').innerHTML = `<use href="#icon-${isDark ? 'moon' : 'sun'}"></use>`;
+        };
+
+        // Init Theme
+        if (localStorage.getItem('glassmorph-pro-theme') === 'dark') toggleTheme();
+
+        // Initial Boot
+        renderTasks();
+
+    </script>
+</body>
+</html>
