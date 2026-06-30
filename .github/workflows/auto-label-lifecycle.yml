@@ -52,6 +52,25 @@ jobs:
             const itemAuthor = item.user.login;
             const authorType = item.user.type;
 
+            const SPAMMERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
+            if (SPAMMERS.includes(itemAuthor)) {
+              console.log(`🔒 Spammer @${itemAuthor} detected. Force-tagging spam labels and exiting early.`);
+              const missingSpamLabels = ['gssoc:invalid', 'gssoc:spam', 'gssoc:ai-slop', 'duplicate', 'ai-slop'].filter(l => !currentLabels.includes(l));
+              if (missingSpamLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issueNumber, labels: missingSpamLabels
+                });
+              }
+              for (const l of ['accepted', 'integrated', 'gssoc:approved', 'level:intermediate', 'level:advanced']) {
+                if (currentLabels.includes(l)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNumber, name: l });
+                  } catch(e) {}
+                }
+              }
+              return;
+            }
+
             // Helper to add labels
             const addLabels = async (labelsToAdd) => {
               const missing = labelsToAdd.filter(l => !currentLabels.includes(l));
@@ -152,9 +171,19 @@ jobs:
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
             if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
+              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
+              const isSoftBanned = SOFT_BANNED_USERS.includes(itemAuthor);
+
               // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
               if (action === 'opened' || action === 'reopened' || action === 'ready_for_review') {
                 await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              }
+
+              if (isSoftBanned) {
+                console.log(`🔒 Soft-banned user (@${itemAuthor}) detected. Assigning gssoc:invalid.`);
+                await addLabels(['gssoc:invalid', 'invalid-submission']);
+                await removeLabels(['gssoc:approved', 'accepted', 'integrated', 'level:advanced', 'level:intermediate']);
+                return;
               }
 
               // Dynamic label matrix calculations
