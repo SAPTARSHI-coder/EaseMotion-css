@@ -26,18 +26,8 @@ function req(pathStr, method = 'GET', data = null) {
   });
 }
 
-function fetchRaw(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'Authorization': `token ${token}`, 'User-Agent': 'NodeJS' } }, res => {
-      let data = [];
-      res.on('data', chunk => data.push(chunk));
-      res.on('end', () => resolve(Buffer.concat(data)));
-    }).on('error', reject);
-  });
-}
-
 async function run() {
-  console.log(`=== RUNNING HONEYPOT SANDBOX RELOCATION FOR PR #${prNum} by @${author} ===`);
+  console.log(`=== HONEYPOT SANDBOX — PR #${prNum} by @${author} ===`);
 
   // 1. Fetch files list for the PR
   const filesRes = await req(`/repos/${repo}/pulls/${prNum}/files?per_page=100`);
@@ -47,45 +37,14 @@ async function run() {
   }
   const files = JSON.parse(filesRes.b);
 
-  const destDir = path.join('submissions', 'special-submissions', author, `PR-${prNum}`);
-  fs.mkdirSync(destDir, { recursive: true });
-
-  console.log(`Relocating ${files.length} files to ${destDir}...`);
-
-  for (const file of files) {
-    if (file.status === 'removed') continue;
-    console.log(`Downloading: ${file.filename}`);
-    
-    // Download content from the raw_url
-    try {
-      const content = await fetchRaw(file.raw_url);
-      const destPath = path.join(destDir, path.basename(file.filename));
-      fs.writeFileSync(destPath, content);
-      console.log(`  Saved to ${destPath}`);
-    } catch (e) {
-      console.error(`  Error downloading ${file.filename}: ${e.message}`);
-    }
-  }
-
-  // 2. Setup Git Config
+  // Setup Git
   execSync('git config user.name "github-actions[bot]"');
   execSync('git config user.email "github-actions[bot]@users.noreply.github.com"');
+  execSync('git fetch origin');
+  execSync('git checkout main');
+  execSync('git pull origin main');
 
-  // 3. Commit and Push directly to main
-  console.log('Staging files...');
-  execSync(`git add "${destDir}"`);
-  
-  const status = execSync('git status --porcelain').toString();
-  if (status.trim() === '') {
-    console.log('No files to commit. Sandbox directory already matches.');
-  } else {
-    console.log('Committing sandbox files...');
-    execSync(`git commit -m "chore(sandbox): relocate @${author} PR #${prNum} submissions to special-submissions"`);
-    console.log('Pushing to main...');
-    execSync('git push origin main');
-  }
-
-  // 4. Update Labels (gssoc:invalid, gssoc:spam, gssoc:ai-slop, duplicate, ai-slop)
+  // 2. Assign spam labels BEFORE merge (so it shows up on the merged PR)
   console.log('Assigning spam/honeypot labels...');
   await req(`/repos/${repo}/issues/${prNum}/labels`, 'POST', {
     labels: ['gssoc:invalid', 'gssoc:spam', 'gssoc:ai-slop', 'duplicate', 'ai-slop']
@@ -96,14 +55,92 @@ async function run() {
     await req(`/repos/${repo}/issues/${prNum}/labels/${l}`, 'DELETE');
   }
 
-  // 5. Greet the spammer with a custom sandbox bot message and close the PR
-  console.log('Adding comment and closing PR...');
-  const comment = `🤖 **EaseMotion Honeypot Sandbox Active** 👋\n\n` +
-    `Hello @${author}! Your submission has been captured and successfully integrated into our specialized submissions registry under \`submissions/special-submissions/${author}/PR-${prNum}\`.\n\n` +
-    `📢 **GSSoC Leaderboard Status:** All required verification tags (\`gssoc:invalid\`, \`gssoc:spam\`, \`gssoc:ai-slop\`) have been assigned to this pull request. Thank you for participating!`;
+  // 3. MERGE the PR (so it shows as merged to the spammer)
+  console.log('Merging PR into main...');
+  const mergeRes = await req(`/repos/${repo}/pulls/${prNum}/merge`, 'PUT', {
+    commit_title: `chore(sandbox): merge @${author} PR #${prNum} → special-submissions`,
+    commit_message: `Sandbox merge: files will be relocated to submissions/special-submissions/${author}/PR-${prNum}/`,
+    merge_method: 'squash'
+  });
+
+  let merged = false;
+  if (mergeRes.s === 200) {
+    console.log('✅ PR successfully merged.');
+    merged = true;
+  } else {
+    // Merge failed (conflicts, etc.) — fall back to direct file write + close
+    console.log(`⚠️ Merge failed (${mergeRes.s}). Falling back to direct commit + close.`);
+  }
+
+  // 4. Pull the latest main (now includes merged files if merge succeeded)
+  execSync('git pull origin main');
+
+  // 5. Find all files the PR added to submissions/examples/ and move them to special-submissions
+  const destDir = path.join('submissions', 'special-submissions', author, `PR-${prNum}`);
+  fs.mkdirSync(destDir, { recursive: true });
+
+  let movedAny = false;
+  for (const file of files) {
+    if (file.status === 'removed') continue;
+    const localPath = file.filename; // e.g. submissions/examples/some-folder/style.css
+
+    if (fs.existsSync(localPath)) {
+      // Move file to special-submissions
+      const destPath = path.join(destDir, path.basename(localPath));
+      fs.copyFileSync(localPath, destPath);
+      fs.unlinkSync(localPath); // Delete from original location
+      console.log(`Relocated: ${localPath} → ${destPath}`);
+      movedAny = true;
+    }
+  }
+
+  // Also delete any empty parent directories that were created by the PR
+  const submittedFolders = new Set(
+    files
+      .filter(f => f.status !== 'removed')
+      .map(f => path.dirname(f.filename))
+  );
+  for (const folder of submittedFolders) {
+    if (fs.existsSync(folder)) {
+      try {
+        const remaining = fs.readdirSync(folder);
+        if (remaining.length === 0) fs.rmdirSync(folder);
+      } catch {}
+    }
+  }
+
+  // 6. Commit the relocation
+  if (movedAny) {
+    execSync(`git add submissions/`);
+    const status = execSync('git status --porcelain').toString();
+    if (status.trim() !== '') {
+      execSync(`git commit -m "chore(sandbox): relocate @${author} PR #${prNum} files → special-submissions"`);
+      execSync('git push origin main');
+      console.log('Files relocated and pushed to main.');
+    }
+  } else if (!merged) {
+    // No files found via merge, but we still need to record something
+    fs.writeFileSync(path.join(destDir, 'sandbox.txt'), `PR #${prNum} by @${author} — captured by honeypot sandbox\n`);
+    execSync(`git add "${destDir}"`);
+    execSync(`git commit -m "chore(sandbox): capture @${author} PR #${prNum} in special-submissions"`);
+    execSync('git push origin main');
+  }
+
+  // 7. Post sandbox greeting comment
+  const status_msg = merged ? 'merged and redirected' : 'captured';
+  const comment =
+    `🤖 **EaseMotion Honeypot Sandbox — Submission ${status_msg === 'merged and redirected' ? 'Merged ✅' : 'Captured ✅'}**\n\n` +
+    `Hello @${author}! Your submission has been successfully integrated into our specialized submissions registry at ` +
+    `\`submissions/special-submissions/${author}/PR-${prNum}/\`.\n\n` +
+    `📢 **GSSoC Leaderboard Status:** Verification tags \`gssoc:invalid\`, \`gssoc:spam\`, \`gssoc:ai-slop\` have been assigned to this pull request.`;
 
   await req(`/repos/${repo}/issues/${prNum}/comments`, 'POST', { body: comment });
-  await req(`/repos/${repo}/pulls/${prNum}`, 'PATCH', { state: 'closed' });
+
+  // If merge failed, close the PR manually
+  if (!merged) {
+    await req(`/repos/${repo}/pulls/${prNum}`, 'PATCH', { state: 'closed' });
+    console.log('PR closed (merge fallback).');
+  }
 
   console.log('✅ Honeypot sandbox process completed successfully.');
 }
