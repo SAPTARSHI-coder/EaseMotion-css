@@ -1,0 +1,212 @@
+/* ==========================================================================
+   EaseMotion CSS — Modal / Drawer z-index Conflict Fix
+   Issue #30457
+
+   THE PROBLEM:
+   ease-modal and ease-drawer each hardcoded their own z-index values
+   (both landing around 1000), so when a drawer was triggered from inside
+   an open modal (or a second modal was stacked), layering broke —
+   backdrops and content fought for the same stacking position.
+
+   THE FIX:
+   A single shared z-index SCALE, defined once as custom properties on
+   :root. Every layered component (modal backdrop, modal, stacked modal,
+   drawer backdrop, drawer) reads its position from this scale instead of
+   a hardcoded number. This guarantees consistent, predictable stacking
+   no matter which component opens on top of which.
+   ========================================================================== */
+
+:root {
+  /* Shared z-index scale — single source of truth for all overlay components */
+  --ease-z-base: 0;
+  --ease-z-drawer-backdrop: 1000;
+  --ease-z-drawer: 1010;
+  --ease-z-modal-backdrop: 1020;
+  --ease-z-modal: 1030;
+  --ease-z-modal-stacked-backdrop: 1040;
+  --ease-z-modal-stacked: 1050;
+  --ease-z-toast: 1060; /* reserved for future ease-toast component */
+
+  --ease-accent: #7c5cff;
+  --ease-accent-soft: #a78bfa;
+  --ease-bg: #0f0f17;
+  --ease-surface: #1a1a26;
+  --ease-border: #2a2a3a;
+  --ease-text: #e8e8f0;
+  --ease-text-dim: #9a9ab0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--ease-bg);
+  color: var(--ease-text);
+}
+
+.demo-header {
+  padding: 60px 32px 20px;
+  max-width: 760px;
+}
+
+.demo-header h1 {
+  margin: 0 0 12px;
+  font-size: 1.7rem;
+}
+
+.demo-header p,
+.demo-content p {
+  color: var(--ease-text-dim);
+  line-height: 1.7;
+}
+
+.demo-header code,
+.demo-content code {
+  background: var(--ease-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid var(--ease-border);
+}
+
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 32px 20px;
+}
+
+.demo-content {
+  padding: 0 32px 60px;
+  max-width: 760px;
+}
+
+.ease-btn {
+  background: var(--ease-accent);
+  color: white;
+  border: none;
+  padding: 11px 18px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.ease-btn:hover {
+  background: var(--ease-accent-soft);
+  transform: translateY(-1px);
+}
+
+.ease-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--ease-border);
+  color: var(--ease-text-dim);
+  margin-top: 16px;
+}
+
+.ease-btn-ghost:hover {
+  background: var(--ease-surface);
+  color: var(--ease-text);
+}
+
+/* ---------------------------------------------------------------------
+   Modal — backdrop and content both read from the shared scale
+   --------------------------------------------------------------------- */
+.ease-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: var(--ease-z-modal-backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.ease-modal-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ease-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: min(420px, 90vw);
+  background: var(--ease-surface);
+  border: 1px solid var(--ease-border);
+  border-radius: 14px;
+  padding: 24px;
+  z-index: var(--ease-z-modal);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.ease-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Stacked (second) modal — sits above the first modal entirely */
+.ease-modal-backdrop--stacked {
+  z-index: var(--ease-z-modal-stacked-backdrop);
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.ease-modal--stacked {
+  z-index: var(--ease-z-modal-stacked);
+}
+
+/* ---------------------------------------------------------------------
+   Drawer — backdrop and panel also read from the shared scale.
+   Note: drawer z-index values sit BELOW modal values, so a drawer
+   opened from within a modal still renders underneath it, while a
+   standalone drawer (no modal open) still correctly sits above the
+   page content via --ease-z-drawer.
+   --------------------------------------------------------------------- */
+.ease-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: var(--ease-z-drawer-backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.ease-drawer-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ease-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(360px, 85vw);
+  background: var(--ease-surface);
+  border-left: 1px solid var(--ease-border);
+  padding: 24px;
+  z-index: var(--ease-z-drawer);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.ease-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* When a drawer is explicitly opened ON TOP of a modal, this modifier
+   bumps it above modal layers using the same shared scale rather than
+   an arbitrary one-off number. */
+.ease-drawer.is-above-modal {
+  z-index: var(--ease-z-modal-stacked);
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content, .demo-controls { padding-left: 20px; padding-right: 20px; }
+}

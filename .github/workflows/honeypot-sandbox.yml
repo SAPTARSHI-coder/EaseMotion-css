@@ -1,0 +1,79 @@
+name: Honeypot Sandbox Registry
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    # Sweep every 5 minutes to catch bots that slip through the event trigger
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_sweep:
+        description: 'Force sweep all spammer open PRs'
+        required: false
+        default: 'true'
+
+permissions:
+  pull-requests: write
+  contents: write
+  issues: write
+
+jobs:
+  # Job 1: Triggered per-PR (event-driven, fast)
+  sandbox-relocate:
+    name: Sandbox Relocate & Tag
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request_target' &&
+      github.event.pull_request.draft != true &&
+      contains(fromJSON('["xenon010101", "saidai-bhuvanesh", "tmdeveloper007", "desireddymohithreddy0925", "sanrishi", "sonusharma6-dsa", "zen-ash-dev", "anushreer22", "ashrion"]'), github.event.pull_request.user.login)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run Sandbox Relocation
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .github/scripts/sandbox-relocate.js
+
+  # Job 2: Scheduled sweep (cron, catches anything that slips through)
+  scheduled-sweep:
+    name: Scheduled Spam Sweep
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          ref: main
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sweep All Open Spammer PRs
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          node .github/scripts/sandbox-sweep.js
