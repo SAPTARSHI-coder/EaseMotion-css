@@ -1,21 +1,26 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-// --- Individual Toast Component ---
+/**
+ * Individual Toast Component
+ *
+ * @param {String} id - Unique identifier for the toast
+ * @param {String} type - Visual variant: 'success' | 'error' | 'info'
+ * @param {String} message - Text content to display
+ * @param {Number} duration - Auto-dismiss timeout in ms (0 = no auto-dismiss)
+ * @param {Function} onRemove - Callback to remove toast from parent stack
+ */
 const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
   const [isLeaving, setIsLeaving] = useState(false);
   const timerRef = useRef(null);
 
-  // Handle the CSS-based removal animation
   const initiateRemoval = useCallback(() => {
     setIsLeaving(true);
-    // Wait for the slide-out animation (400ms) to finish before actually unmounting
     setTimeout(() => {
       onRemove(id);
-    }, 400); 
+    }, 400);
   }, [id, onRemove]);
 
   useEffect(() => {
-    // Auto-dismiss timer
     if (duration > 0) {
       timerRef.current = setTimeout(() => {
         initiateRemoval();
@@ -24,21 +29,19 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
     return () => clearTimeout(timerRef.current);
   }, [duration, initiateRemoval]);
 
-  // Pause timer on hover
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     clearTimeout(timerRef.current);
-  };
+  }, []);
 
-  // Resume timer on mouse leave
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     if (duration > 0) {
+      clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         initiateRemoval();
       }, duration);
     }
-  };
+  }, [duration, initiateRemoval]);
 
-  // Icons based on type
   const getIcon = () => {
     switch (type) {
       case 'success':
@@ -68,7 +71,7 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
   };
 
   return (
-    <div 
+    <div
       className={`ease-toast ease-toast-enter ${isLeaving ? 'ease-toast-leave' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -78,8 +81,8 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
         {getIcon()}
         <span className="ease-toast-message">{message}</span>
       </div>
-      <button 
-        className="ease-toast-close" 
+      <button
+        className="ease-toast-close"
         onClick={initiateRemoval}
         aria-label="Close notification"
       >
@@ -88,11 +91,10 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </button>
-      
-      {/* Progress Bar (pure CSS animation) */}
+
       {duration > 0 && (
-        <div 
-          className={`ease-toast-progress ${type}`} 
+        <div
+          className={`ease-toast-progress ${type}`}
           style={{ animationDuration: `${duration}ms`, animationPlayState: isLeaving ? 'paused' : 'running' }}
         ></div>
       )}
@@ -100,17 +102,17 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
   );
 };
 
-// --- Toast Stack Manager ---
 /**
- * Toast Stack Component
- * Place this once at the root of your app. 
- * Pass `toasts` array and `removeToast` callback from your global state manager (e.g. Context, Zustand).
+ * Toast Stack Manager
+ *
+ * @param {Array} toasts - Array of toast objects { id, type, message, duration }
+ * @param {Function} removeToast - Callback invoked with toast id to remove it
  */
 const ToastStack = ({ toasts, removeToast }) => {
   return (
     <div className="ease-toast-stack" aria-live="polite">
       {toasts.map((toast) => (
-        <Toast 
+        <Toast
           key={toast.id}
           id={toast.id}
           type={toast.type}
