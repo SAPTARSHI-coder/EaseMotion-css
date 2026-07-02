@@ -21,8 +21,7 @@ const SPAMMERS = [
   'sonusharma6-dsa',
   'zen-ash-dev',
   'anushreer22',
-  'ashrion',
-  'pranjalnavgale'
+  'ashrion'
 ];
 
 function req(pathStr, method = 'GET', data = null) {
