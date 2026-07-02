@@ -106,4 +106,4 @@ Supported in all modern browsers supporting:
 - CSS Animations
 - CSS Transforms
 - Pseudo Elements
-- Overflow Hidden
+- Overflow Hidden ...
