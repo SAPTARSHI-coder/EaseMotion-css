@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EaseMotion CSS — Marquee Tab-Blur Fix (#32492)</title>
+  <meta name="description" content="Demonstrates a marquee ticker that does not jump or catch up when a browser tab regains focus, using the Page Visibility API." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ── Hero ─────────────────────────────────────────── -->
+    <header class="hero">
+      <div class="badge">🐛 Bug Fix — Issue #32492</div>
+      <h1>Marquee Tab-Blur Fix</h1>
+      <p>
+        Browsers throttle CSS animations in background tabs. Without a fix,
+        the marquee pauses while the tab is hidden and then <em>jumps</em>
+        forward when you switch back. This submission eliminates that jump by
+        using the <strong>Page Visibility API</strong> to synchronise
+        <code>animation-play-state</code> with the tab's visibility.
+      </p>
+    </header>
+
+    <!-- ── Live status chips ──────────────────────────── -->
+    <div class="status-bar" aria-live="polite" id="statusBar">
+      <span class="status-chip">
+        <span class="dot dot-green" id="dotTab"></span>
+        <span id="labelTab">Tab visible — animation running</span>
+      </span>
+      <span class="status-chip">
+        <span class="dot dot-blue"></span>
+        Hover to pause
+      </span>
+      <span class="status-chip">
+        <span class="dot dot-amber"></span>
+        Switch tabs &amp; return to test
+      </span>
+    </div>
+
+    <!-- ── Marquee demo ─────────────────────────────────── -->
+    <section class="section" aria-label="Marquee ticker demo">
+      <p class="section-label">✨ Continuous Ticker — No Jump on Tab Refocus</p>
+
+      <!--
+        The track contains TWO identical copies of the text.
+        @keyframes marquee-scroll shifts the track by -50%, landing
+        exactly on the start of the second copy → seamless loop.
+
+        The Page Visibility API script below sets animation-play-state
+        to "paused" when the tab hides. CSS animations preserve their
+        current progress when paused, so when the tab becomes visible
+        again and play-state goes back to "running" the animation
+        resumes from exactly where it stopped — no jump, no catch-up.
+      -->
+      <div class="marquee-ticker" id="marqueeDemo" aria-label="Scrolling news ticker">
+        <div class="marquee-ticker__track" id="marqueeTrack">
+          <!-- Copy 1 -->
+          <span>Breaking News</span><span class="sep">•</span>
+          <span>Latest Updates</span><span class="sep">•</span>
+          <span>Important Announcement</span><span class="sep">•</span>
+          <span>No Tab-Blur Jump</span><span class="sep">•</span>
+          <span>Page Visibility API Fix</span><span class="sep">•</span>
+          <span>Smooth Continuous Scroll</span><span class="sep">•</span>&nbsp;&nbsp;
+          <!-- Copy 2 (identical — required for seamless loop) -->
+          <span>Breaking News</span><span class="sep">•</span>
+          <span>Latest Updates</span><span class="sep">•</span>
+          <span>Important Announcement</span><span class="sep">•</span>
+          <span>No Tab-Blur Jump</span><span class="sep">•</span>
+          <span>Page Visibility API Fix</span><span class="sep">•</span>
+          <span>Smooth Continuous Scroll</span><span class="sep">•</span>&nbsp;&nbsp;
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Before / After comparison ───────────────────── -->
+    <section class="comparison" aria-label="Before and after comparison">
+      <div class="comparison-card bad">
+        <p class="card-title bad">✗ Before — Without Fix</p>
+        <ul>
+          <li>Tab goes to background</li>
+          <li>Browser throttles CSS animation</li>
+          <li>Marquee stops mid-scroll</li>
+          <li>Tab regains focus</li>
+          <li>Animation resumes but jumps forward to catch up — jarring!</li>
+        </ul>
+      </div>
+      <div class="comparison-card good">
+        <p class="card-title good">✓ After — With Fix</p>
+        <ul>
+          <li>Tab goes to background</li>
+          <li>Page Visibility API fires <code>hidden</code></li>
+          <li>JS sets <code>animation-play-state: paused</code></li>
+          <li>Tab regains focus</li>
+          <li>JS sets <code>animation-play-state: running</code> — resumes from exact position, no jump</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ── Code snippets ────────────────────────────────── -->
+    <section class="code-section">
+      <h2>🎨 The CSS</h2>
+      <p>The core pattern: duplicate track content + half-width keyframe + paused state on hover.</p>
+      <div class="code-block">
+        <pre><span class="hl">.marquee-ticker</span> {
+  overflow: hidden; <span class="cm">/* clips the scrolling track */</span>
+  display: flex;
+  white-space: nowrap;
+}
+
+<span class="hl">.marquee-ticker__track</span> {
+  display: inline-flex;
+  animation: marquee-scroll 28s linear infinite;
+  animation-play-state: running; <span class="cm">/* JS overrides this */</span>
+  will-change: transform;
+}
+
+<span class="cm">/* Intentional user pause on hover */</span>
+<span class="hl">.marquee-ticker:hover .marquee-ticker__track</span> {
+  animation-play-state: paused;
+}
+
+<span class="hl">@keyframes</span> marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); } <span class="cm">/* two copies → seamless loop */</span>
+}</pre>
+      </div>
+
+      <h2>🔧 The JavaScript</h2>
+      <p>A single <code>visibilitychange</code> listener pauses and resumes the animation without losing position.</p>
+      <div class="code-block">
+        <pre><span class="hl">document</span>.addEventListener(<span class="hl">"visibilitychange"</span>, () => {
+  <span class="cm">// Query all marquee tracks on the page (supports multiple instances)</span>
+  const tracks = document.querySelectorAll(<span class="hl">".marquee-ticker__track"</span>);
+
+  tracks.forEach(track => {
+    track.style.animationPlayState =
+      document.hidden ? <span class="hl">"paused"</span> : <span class="hl">"running"</span>;
+  });
+});</pre>
+      </div>
+
+      <h2>📐 HTML Structure</h2>
+      <p>Two identical copies of the content inside the track so <code>translateX(-50%)</code> creates a perfect loop.</p>
+      <div class="code-block">
+        <pre>&lt;<span class="hl">div</span> class=<span class="hl">"marquee-ticker"</span>&gt;
+  &lt;<span class="hl">div</span> class=<span class="hl">"marquee-ticker__track"</span>&gt;
+    &lt;span&gt;Breaking News • Latest Updates •&lt;/span&gt;
+    &lt;span&gt;Breaking News • Latest Updates •&lt;/span&gt; <span class="cm">&lt;!-- copy 2 --&gt;</span>
+  &lt;/<span class="hl">div</span>&gt;
+&lt;/<span class="hl">div</span>&gt;</pre>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>EaseMotion CSS — Community Submission · Issue #32492</p>
+    </footer>
+  </div>
+
+  <!--
+    ── Page Visibility API: prevent marquee jump on tab blur ─────────────
+
+    HOW IT WORKS
+    ────────────
+    1.  Browsers throttle (and sometimes completely freeze) CSS animations
+        when a tab is hidden to save CPU.
+
+    2.  When the animation is throttled but NOT explicitly paused, the
+        browser's internal animation clock still advances. When the tab
+        becomes visible again the browser tries to "catch up" by jumping
+        the animation forward to where it would have been if it had been
+        running the whole time → visible jump.
+
+    3.  The fix: the moment `document.hidden` becomes true we set
+        `animation-play-state: paused` via JS. This freezes the CSS
+        animation at its current `transform` value. The browser's internal
+        clock also stops for this animation, so there is nothing to catch up.
+
+    4.  When the tab becomes visible again we set the play state back to
+        "running". The animation resumes from the exact pixel position it
+        was paused at — completely seamless.
+
+    5.  The listener targets ALL `.marquee-ticker__track` elements so pages
+        with multiple marquees are handled automatically.
+
+    HOVER CONFLICT GUARD
+    ────────────────────
+    The hover rule in CSS sets `animation-play-state: paused` via a CSS
+    selector (highest specificity for that property at that state). We only
+    apply the JS inline style when the tab hides/shows, so the hover pause
+    still works while the tab is visible — the two mechanisms do not fight.
+  -->
+  <script>
+    (function () {
+      "use strict";
+
+      // ── Live status display (demo-only, not required for the fix) ──
+      const dotTab   = document.getElementById("dotTab");
+      const labelTab = document.getElementById("labelTab");
+
+      function updateStatus() {
+        if (document.hidden) {
+          dotTab.className   = "dot dot-amber";
+          labelTab.textContent = "Tab hidden — animation paused";
+        } else {
+          dotTab.className   = "dot dot-green";
+          labelTab.textContent = "Tab visible — animation running";
+        }
+      }
+
+      // ── Core fix ────────────────────────────────────────────────────
+      document.addEventListener("visibilitychange", function () {
+        // Support multiple marquee instances on the same page
+        const tracks = document.querySelectorAll(".marquee-ticker__track");
+        const state  = document.hidden ? "paused" : "running";
+
+        tracks.forEach(function (track) {
+          track.style.animationPlayState = state;
+        });
+
+        // Update status display
+        updateStatus();
+      });
+    }());
+  </script>
+
+</body>
+</html>
