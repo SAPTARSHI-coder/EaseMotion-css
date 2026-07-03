@@ -52,6 +52,25 @@ jobs:
             const itemAuthor = item.user.login;
             const authorType = item.user.type;
 
+            const SPAMMERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
+            if (SPAMMERS.includes(itemAuthor)) {
+              console.log(`🔒 Spammer @${itemAuthor} detected. Force-tagging spam labels and exiting early.`);
+              const missingSpamLabels = ['gssoc:invalid', 'gssoc:spam', 'gssoc:ai-slop', 'duplicate', 'ai-slop'].filter(l => !currentLabels.includes(l));
+              if (missingSpamLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: issueNumber, labels: missingSpamLabels
+                });
+              }
+              for (const l of ['accepted', 'integrated', 'gssoc:approved', 'level:intermediate', 'level:advanced']) {
+                if (currentLabels.includes(l)) {
+                  try {
+                    await github.rest.issues.removeLabel({ owner, repo, issue_number: issueNumber, name: l });
+                  } catch(e) {}
+                }
+              }
+              return;
+            }
+
             // Helper to add labels
             const addLabels = async (labelsToAdd) => {
               const missing = labelsToAdd.filter(l => !currentLabels.includes(l));
@@ -152,7 +171,7 @@ jobs:
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
             if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
-              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi'];
+              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
               const isSoftBanned = SOFT_BANNED_USERS.includes(itemAuthor);
 
               // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
@@ -173,9 +192,16 @@ jobs:
               const textContent = `${title} ${body}`.toLowerCase();
 
               const additions = isPR ? (item.additions || 0) : 0;
-              // level:advanced for PRs with >500 lines added; level:intermediate for everything else
-              const isAdvanced = isPR && (additions > 500);
-              const level = isAdvanced ? 'level:advanced' : 'level:intermediate';
+              
+              // For issues, preserve any existing level label
+              let level;
+              if (isPR) {
+                const isAdvanced = additions > 500;
+                level = isAdvanced ? 'level:advanced' : 'level:intermediate';
+              } else {
+                const existingLevel = currentLabels.find(l => l.startsWith('level:'));
+                level = existingLevel || 'level:intermediate';
+              }
 
               const computedLabels = [
                 'GSSoC-26',
@@ -313,12 +339,12 @@ jobs:
                 }
               }
 
-              if (isAdvanced) {
-                // Advanced (>500 additions): remove intermediate
+              if (level === 'level:advanced') {
                 await removeLabels(['level:intermediate', 'level:beginner']);
-              } else {
-                // Intermediate (default): remove advanced
+              } else if (level === 'level:intermediate') {
                 await removeLabels(['level:advanced', 'level:beginner']);
+              } else if (level === 'level:beginner') {
+                await removeLabels(['level:advanced', 'level:intermediate']);
               }
 
               await addLabels(computedLabels);

@@ -1,47 +1,59 @@
-# SCSS Utility: Custom Glassmorphism Overlay Utilities (#28413)
+# SCSS Custom Glassmorphism Overlay Utilities
 
-A versatile SCSS module for the EaseMotion CSS framework that dynamically generates modern "frosted glass" (Glassmorphism) UI elements using `backdrop-filter`.
+Reusable SCSS utility for creating modern glassmorphism overlays.
 
-## 📦 What's included?
+---
 
-- `_custom-glassmorphism-overlay-utilities.scss`: The SCSS partial containing the customizable glassmorphism mixin.
-- `style.css`: The raw compiled CSS utility classes (`.ease-glass-*`).
-- `demo.html`: A visually rich demo page proving the blur effects over a vibrant, complex background.
+## Features
 
-## 🛠 Usage via SCSS Mixins
+- Custom glass overlay mixin
+- Adjustable opacity
+- Adjustable blur intensity
+- Custom border color
+- Reusable utility classes
+- Lightweight and customizable
 
-Import the partial into your project. Apply the mixin to any container to instantly apply a frosted glass effect. You can fully customize the color, opacity, blur intensity, and border.
+---
+
+## Parameters
+
+| Parameter | Default | Description |
+|-----------|----------|-------------|
+| `$bg-color` | `#ffffff` | Background color |
+| `$opacity` | `0.15` | Overlay opacity |
+| `$blur` | `16px` | Blur amount |
+| `$border-color` | `rgba(255,255,255,.2)` | Border color |
+
+---
+
+## Usage
 
 ```scss
-@import 'custom-glassmorphism-overlay-utilities';
+.card {
+  @include glass-overlay();
+}
 
-// @include ease-glassmorphism($bg-color, $opacity, $blur-radius, $border-color);
-
-.my-premium-modal {
-  // A sleek, deeply blurred dark glass modal
-  @include ease-glassmorphism(#000000, 0.6, 20px, rgba(255, 255, 255, 0.15));
-  border-radius: 16px;
+.dark-card {
+  @include glass-overlay(
+    #111827,
+    .25,
+    20px,
+    rgba(255,255,255,.08)
+  );
 }
 ```
 
-## 🛠 Usage via HTML Utility Classes
+---
 
-If your project is pre-compiled, four preset utility classes are immediately available to handle standard design scenarios.
+## Generated Utility Classes
 
-```html
-<!-- Best for standard UI cards over dark/vibrant backgrounds -->
-<div class="ease-glass-light">...</div>
+- `.glass-overlay`
+- `.glass-overlay-light`
+- `.glass-overlay-dark`
+- `.glass-overlay-strong`
 
-<!-- Best for MacOS style dashboards -->
-<div class="ease-glass-dark">...</div>
+---
 
-<!-- Best for modals where the background must be obscured -->
-<div class="ease-glass-heavy">...</div>
+## CSS Compilation Result
 
-<!-- Best for sticky navigation bars -->
-<nav class="ease-glass-subtle">...</nav>
-```
-
-## 🚀 Why this fits EaseMotion
-
-The **EaseMotion** philosophy is focused on modern, premium aesthetics that "wow" users. Glassmorphism is a staple of contemporary web design (popularized by iOS and Windows 11), providing a sense of depth and hierarchy. Implementing it manually requires configuring 5 distinct CSS properties (background rgba, backdrop-filter, webkit fallback, border, and box-shadow). This utility abstracts all that complexity into a single mixin or class, instantly elevating the design of any layout or animated component.
+The SCSS compiles into reusable utility classes with customizable blur, transparency, borders, and shadow effects suitable for glassmorphism interfaces.
