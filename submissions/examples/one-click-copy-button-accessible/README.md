@@ -27,7 +27,7 @@ This example demonstrates a reusable **one-click copy** pattern for animation do
 ## Structure
 
 ```
-submissions/examples-v1/one-click-copy-button-accessible/
+submissions/examples/one-click-copy-button-accessible/
 ├── demo.html   — Animation card grid + inline clipboard script
 ├── style.css   — Layout, card grid, copy-button states, demo animations
 └── README.md   — This file
