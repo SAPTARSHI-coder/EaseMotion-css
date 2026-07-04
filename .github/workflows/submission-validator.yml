@@ -6,10 +6,45 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
+  detect-track:
+    name: Detect Submission Track
+    runs-on: ubuntu-latest
+    outputs:
+      is_react_scss_only: ${{ steps.detect.outputs.is_react_scss_only }}
+    steps:
+      - name: Check if PR is React/SCSS only (handled by dedicated validator)
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          all_react_scss=true
+          any_file=false
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            any_file=true
+            if [[ "$file" != submissions/react/* && "$file" != submissions/scss/* ]]; then
+              all_react_scss=false
+              break
+            fi
+          done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+
+          if [ "$any_file" = "true" ] && [ "$all_react_scss" = "true" ]; then
+            echo "is_react_scss_only=true" >> $GITHUB_OUTPUT
+            echo "ℹ️ Pure React/SCSS PR — deferring to react-scss-validator.yml"
+          else
+            echo "is_react_scss_only=false" >> $GITHUB_OUTPUT
+            echo "✅ Standard HTML/CSS PR — proceeding with submission-validator"
+          fi
+
   validate:
     name: Validate Examples
+    needs: detect-track
+    if: needs.detect-track.outputs.is_react_scss_only != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository (Target Branch)
@@ -26,101 +61,129 @@ jobs:
         id: validate
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             const path = require('path');
 
-            // Get changed files in PR
+            // ─── helpers ──────────────────────────────────────────────────────
+            const countNonEmptyLines = (txt) =>
+              txt.split(/\r?\n/).filter(l => l.trim() !== '').length;
+
+            // Detects if a CSS file is a copy-paste from a known template
+            // (all kunal-9090 style exploits start with this exact boilerplate root)
+            const TEMPLATE_CSS_FINGERPRINT =
+              ':root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif}*{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center';
+
+            // ─── collect changed files ────────────────────────────────────────
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
             });
 
-            // Identify unique folders modified under submissions/examples/ or submissions/
+            const failures = [];
+            const successes = [];
+
+            let hasExistingCodeChanges = false;
+            let hasDeletions = false;
+            const modifiedExistingFiles = [];
+
+            for (const file of files) {
+              if (file.status !== 'added') {
+                hasExistingCodeChanges = true;
+                modifiedExistingFiles.push(file.filename);
+              }
+              if ((file.deletions || 0) > 0) {
+                hasDeletions = true;
+              }
+            }
+
+            if (hasExistingCodeChanges || hasDeletions) {
+              const errs = [];
+              if (hasExistingCodeChanges) {
+                errs.push(`Repository rule violation: You are not allowed to change existing code. Modified existing files: ${modifiedExistingFiles.join(', ')}.`);
+              }
+              if (hasDeletions) {
+                errs.push(`Repository rule violation: You are not allowed to delete any code.`);
+              }
+              failures.push({ folder: 'Strict Code Integrity Protection', casingErrors: errs, missing: [], present: [] });
+            }
+
+            // ─── identify submission folders ─────────────────────────────────
             const exampleFolders = new Set();
             const casingErrors = [];
             const folderCaseMap = new Map();
             const coreFiles = [];
 
             for (const file of files) {
+              if (file.status === 'removed') continue;
               const filename = file.filename;
+
               if (filename.startsWith('submissions/')) {
                 const parts = filename.split('/');
                 if (parts.length >= 2) {
-                  let folderPath;
-                  let folderName;
-                  let baseName;
-                  
-                  if (parts[1] === 'examples' && parts.length >= 3) {
-                    folderPath = `${parts[0]}/${parts[1]}/${parts[2]}`;
-                    folderName = parts[2];
-                    if (parts.length === 4) {
-                      baseName = parts[3];
-                    }
-                  } else if (parts[1] !== 'examples') {
-                    folderPath = `${parts[0]}/${parts[1]}`;
-                    folderName = parts[1];
-                    if (parts.length === 3) {
-                      baseName = parts[2];
-                    }
+                  let folderPath, folderName, baseName;
+
+                  if (['examples', 'docs', 'react', 'scss'].includes(parts[1]) && parts.length >= 3) {
+                    folderPath  = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                    folderName  = parts[2];
+                    if (parts.length === 4) baseName = parts[3];
+                  } else if (!['examples', 'docs', 'react', 'scss'].includes(parts[1])) {
+                    casingErrors.push(`Misplaced directory violation: File \`${filename}\` is directly under \`submissions/\`. All contributions MUST be inside one of the 4 valid subdirectories: \`submissions/examples/\`, \`submissions/react/\`, \`submissions/scss/\`, or \`submissions/docs/\`.`);
                   }
-                  
+
                   if (folderPath) {
                     const fullFolderPath = path.join(process.env.GITHUB_WORKSPACE || '', folderPath);
                     if (fs.existsSync(fullFolderPath) && fs.statSync(fullFolderPath).isDirectory()) {
                       exampleFolders.add(folderPath);
-                      
                       const lowerFolder = folderName.toLowerCase();
                       if (folderCaseMap.has(lowerFolder) && folderCaseMap.get(lowerFolder) !== folderName) {
-                        casingErrors.push(`Folder name collision detected: '${folderCaseMap.get(lowerFolder)}' and '${folderName}' differ only by letter casing.`);
+                        casingErrors.push(`Folder name collision: '${folderCaseMap.get(lowerFolder)}' and '${folderName}' differ only in casing.`);
                       } else {
                         folderCaseMap.set(lowerFolder, folderName);
                       }
                     }
                   }
-                  
+
                   if (baseName) {
-                    if (baseName.toLowerCase() === 'readme.md' && baseName !== 'README.md') {
+                    if (baseName.toLowerCase() === 'readme.md' && baseName !== 'README.md')
                       casingErrors.push(`File \`${filename}\` must be named exactly \`README.md\` (case-sensitive).`);
-                    }
-                    if (baseName.toLowerCase() === 'style.css' && baseName !== 'style.css') {
+                    if (baseName.toLowerCase() === 'style.css' && baseName !== 'style.css')
                       casingErrors.push(`File \`${filename}\` must be named exactly \`style.css\` (all lowercase).`);
-                    }
-                    if (baseName.toLowerCase() === 'demo.html' && baseName !== 'demo.html') {
+                    if (baseName.toLowerCase() === 'demo.html' && baseName !== 'demo.html')
                       casingErrors.push(`File \`${filename}\` must be named exactly \`demo.html\` (all lowercase).`);
-                    }
                   }
                 }
               } else {
-                if (!filename.startsWith('docs/') && filename !== 'README.md' && filename !== 'LICENSE' && filename !== 'package.json') {
+                if (
+                  filename !== 'README.md' &&
+                  filename !== 'LICENSE' &&
+                  filename !== 'package.json' &&
+                  filename !== 'easemotion.css' &&
+                  filename !== 'easemotion.min.css'
+                ) {
                   coreFiles.push(filename);
                 }
               }
             }
 
-            const failures = [];
-            const successes = [];
-
             if (coreFiles.length > 0) {
               failures.push({
                 folder: 'Core Framework Protection',
-                casingErrors: [`PR modifies core framework/configuration files: ${coreFiles.join(', ')}. Contributors are only allowed to modify files inside the \`submissions/\` directory.`],
-                missing: [],
-                present: []
+                casingErrors: [`PR modifies core framework/configuration files: ${coreFiles.join(', ')}. Contributors may only modify files inside the \`submissions/\` directory.`],
+                missing: [], present: []
               });
             }
 
             if (exampleFolders.size === 0) {
               failures.push({
                 folder: 'Submission Folder Protection',
-                casingErrors: ['This PR does not contain any modifications or additions inside the `submissions/` directory. Contributors must place their submissions under `submissions/examples/your-feature-name/`.'],
-                missing: [],
-                present: []
+                casingErrors: ['This PR does not contain any additions inside the `submissions/` directory. Contributors must place their submissions under the `submissions/` directory (e.g. `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`).'],
+                missing: [], present: []
               });
             }
 
-            // Required files and their purposes
             const requiredFiles = {
               'demo.html': 'Interactive demo showcasing your feature',
               'style.css': 'CSS styles for the demo',
@@ -128,18 +191,18 @@ jobs:
             };
 
             if (casingErrors.length > 0) {
-              failures.push({
-                folder: 'Casing Violations (Windows Compatibility)',
-                casingErrors,
-                missing: [],
-                present: []
-              });
+              failures.push({ folder: 'Casing Violations (Windows Compatibility)', casingErrors, missing: [], present: [] });
             }
 
+            // ─── per-folder quality checks ────────────────────────────────────
+            let isSpamExploit = false;
+
             for (const folder of exampleFolders) {
-              const missing = [];
-              const present = [];
-              
+              const missing  = [];
+              const present  = [];
+              const qualityErrors = [];
+
+              // ── 1. required file existence ──────────────────────────────────
               for (const [reqFile, purpose] of Object.entries(requiredFiles)) {
                 const filePath = path.join(process.env.GITHUB_WORKSPACE, folder, reqFile);
                 if (!fs.existsSync(filePath)) {
@@ -148,22 +211,104 @@ jobs:
                   present.push({ file: reqFile, purpose });
                 }
               }
-              
-              if (missing.length > 0) {
-                failures.push({ folder, missing, present });
+
+              // ── 2. demo.html quality ────────────────────────────────────────
+              const demoPath = path.join(process.env.GITHUB_WORKSPACE, folder, 'demo.html');
+              if (fs.existsSync(demoPath)) {
+                try {
+                  const html = fs.readFileSync(demoPath, 'utf8');
+                  const htmlLines = countNonEmptyLines(html);
+
+                  if (html.trim().length === 0) {
+                    qualityErrors.push('`demo.html` is completely empty (0 bytes). You must provide a real interactive demo.');
+                    isSpamExploit = true;
+                  } else {
+                    if (htmlLines < 3) {
+                      qualityErrors.push(`\`demo.html\` has only ${htmlLines} non-empty line(s). A proper demo must have at least 3 lines of meaningful HTML.`);
+                      isSpamExploit = true;
+                    }
+                    if (!/<!DOCTYPE\s+html/i.test(html))
+                      qualityErrors.push('`demo.html` must contain a `<!DOCTYPE html>` declaration.');
+                    if (!/\<html/i.test(html))
+                      qualityErrors.push('`demo.html` must contain a `<html>` tag.');
+                    if (!/\<head/i.test(html))
+                      qualityErrors.push('`demo.html` must contain a `<head>` tag.');
+                    if (!/\<body/i.test(html))
+                      qualityErrors.push('`demo.html` must contain a `<body>` tag.');
+                  }
+                } catch (e) {
+                  qualityErrors.push(`Failed to read demo.html: ${e.message}`);
+                }
+              }
+
+              // ── 3. style.css quality ────────────────────────────────────────
+              const cssPath = path.join(process.env.GITHUB_WORKSPACE, folder, 'style.css');
+              if (fs.existsSync(cssPath)) {
+                try {
+                  const css = fs.readFileSync(cssPath, 'utf8');
+                  const cssLines = countNonEmptyLines(css);
+
+                  if (css.trim().length === 0) {
+                    qualityErrors.push('`style.css` is completely empty (0 bytes). You must provide real CSS styles.');
+                    isSpamExploit = true;
+                  } else if (cssLines < 5) {
+                    qualityErrors.push(`\`style.css\` has only ${cssLines} non-empty line(s). A proper stylesheet must have at least 5 lines of meaningful CSS.`);
+                    isSpamExploit = true;
+                  }
+
+                  // ── 4. CSS template cloning detection ───────────────────────
+                  // Catch batch-generated submissions that copy-paste the same boilerplate root
+                  const normalizedCSS = css.replace(/\s+/g, '');
+                  if (normalizedCSS.startsWith(TEMPLATE_CSS_FINGERPRINT.replace(/\s+/g, ''))) {
+                    qualityErrors.push(
+                      '`style.css` appears to be a copy of a mass-generated template (identical boilerplate root detected across multiple PRs). ' +
+                      'Your CSS must be original work that actually implements the claimed feature.'
+                    );
+                    isSpamExploit = true;
+                  }
+                } catch (e) {
+                  qualityErrors.push(`Failed to read style.css: ${e.message}`);
+                }
+              }
+
+              // ── 5. README.md minimum content ────────────────────────────────
+              // NOTE: Short README alone is NOT enough to reject — we only reject
+              // if BOTH readme is empty AND other files are also low-quality.
+              const readmePath = path.join(process.env.GITHUB_WORKSPACE, folder, 'README.md');
+              if (fs.existsSync(readmePath)) {
+                try {
+                  const readme = fs.readFileSync(readmePath, 'utf8');
+                  // Strip markdown headers from line count
+                  const meaningfulLines = readme.split(/\r?\n/)
+                    .filter(l => l.trim() !== '' && !l.trim().startsWith('#'))
+                    .length;
+
+                  if (readme.trim().length === 0 && isSpamExploit) {
+                    // README is empty AND there are other quality issues — reinforce spam flag
+                    qualityErrors.push('`README.md` is completely empty. Please add a brief description of your feature.');
+                  }
+                  // A short README alone (1-2 lines) is NOT a blocking error if demo+css are real.
+                } catch (e) {
+                  qualityErrors.push(`Failed to read README.md: ${e.message}`);
+                }
+              }
+
+              if (missing.length > 0 || qualityErrors.length > 0) {
+                failures.push({ folder, missing, present, htmlErrors: qualityErrors });
               } else {
                 successes.push({ folder, present });
               }
             }
 
-            // Store results for later steps
-            core.setOutput('failures', JSON.stringify(failures));
-            core.setOutput('successes', JSON.stringify(successes));
-            core.setOutput('hasFailures', failures.length > 0);
+            // Store results
+            core.setOutput('failures',      JSON.stringify(failures));
+            core.setOutput('successes',     JSON.stringify(successes));
+            core.setOutput('hasFailures',   failures.length > 0);
+            core.setOutput('isSpamExploit', isSpamExploit ? 'true' : 'false');
 
             if (failures.length > 0) {
-              console.log(`❌ Validation failed for ${failures.length} folder(s)`);
-              core.setFailed('PR is missing required submission files.');
+              console.log(`❌ Validation failed for ${failures.length} issue(s)`);
+              core.setFailed('PR does not meet submission requirements.');
             } else {
               console.log(`✅ All ${successes.length} folder(s) validated successfully!`);
             }
@@ -173,25 +318,33 @@ jobs:
         uses: actions/github-script@v7
         env:
           FAILURES_JSON: ${{ steps.validate.outputs.failures }}
+          IS_SPAM: ${{ steps.validate.outputs.isSpamExploit }}
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const failures = JSON.parse(process.env.FAILURES_JSON);
-            
+            const isSpam   = process.env.IS_SPAM === 'true';
+
             let commentBody = `## ❌ Submission Validation Failed\n\n`;
-            commentBody += `Thank you for your contribution! However, some required files are missing.\n\n`;
+
+            if (isSpam) {
+              commentBody += `> ⚠️ **This PR has been flagged as a low-quality or template-cloned submission.**\n\n`;
+            } else {
+              commentBody += `Thank you for your contribution! However, some required files are missing or incorrect.\n\n`;
+            }
+
             commentBody += `### 📋 Required Structure\n`;
             commentBody += `\`\`\`\n`;
-            commentBody += `submissions/examples/your-feature-name/\n`;
-            commentBody += `├── demo.html     ← Interactive demo (required)\n`;
-            commentBody += `├── style.css     ← CSS styles (required)\n`;
-            commentBody += `└── README.md     ← Documentation (required)\n`;
+            commentBody += `submissions/your-category/your-feature-name/ (e.g., submissions/examples/ or submissions/docs/)\n`;
+            commentBody += `├── demo.html     ← Interactive demo with DOCTYPE, html, head, body tags\n`;
+            commentBody += `├── style.css     ← Your original CSS (not copy-pasted from a template)\n`;
+            commentBody += `└── README.md     ← Brief description of your feature\n`;
             commentBody += `\`\`\`\n\n`;
             commentBody += `### 🔍 Issues Found:\n\n`;
-            
+
             for (const fail of failures) {
               if (fail.casingErrors && fail.casingErrors.length > 0) {
-                commentBody += `#### 🔠 Folder: \`${fail.folder}\`\n\n`;
-                commentBody += `**Case-sensitivity violations found:**\n`;
+                commentBody += `#### 🔠 \`${fail.folder}\`\n\n`;
                 for (const err of fail.casingErrors) {
                   commentBody += `- ❌ ${err}\n`;
                 }
@@ -200,41 +353,48 @@ jobs:
               }
 
               commentBody += `#### 📁 Folder: \`${fail.folder}\`\n\n`;
-              
-              if (fail.missing.length > 0) {
+
+              if (fail.missing && fail.missing.length > 0) {
                 commentBody += `**Missing files:**\n`;
-                for (const missing of fail.missing) {
-                  commentBody += `- ❌ \`${missing.file}\` - ${missing.purpose}\n`;
+                for (const m of fail.missing) {
+                  commentBody += `- ❌ \`${m.file}\` — ${m.purpose}\n`;
                 }
               }
-              
-              if (fail.present.length > 0) {
+
+              if (fail.htmlErrors && fail.htmlErrors.length > 0) {
+                if (fail.missing && fail.missing.length > 0) commentBody += `\n`;
+                commentBody += `**Quality / structure violations:**\n`;
+                for (const err of fail.htmlErrors) {
+                  commentBody += `- ❌ ${err}\n`;
+                }
+              }
+
+              if (fail.present && fail.present.length > 0) {
                 commentBody += `\n**Present files:**\n`;
-                for (const present of fail.present) {
-                  commentBody += `- ✅ \`${present.file}\`\n`;
+                for (const p of fail.present) {
+                  commentBody += `- ✅ \`${p.file}\`\n`;
                 }
               }
               commentBody += `\n---\n\n`;
             }
-            
+
             commentBody += `### 📝 How to Fix:\n`;
-            commentBody += `1. Add the missing files to your branch\n`;
-            commentBody += `2. Push the changes to this PR\n`;
-            commentBody += `3. The validator will automatically re-run\n\n`;
-            commentBody += `📖 See [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md) for guidelines.\n`;
-            
-            // Find existing bot comment
+            commentBody += `1. Ensure all 3 files exist with real, original content\n`;
+            commentBody += `2. \`demo.html\` must have \`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\` tags\n`;
+            commentBody += `3. \`style.css\` must contain your **own** CSS (not copy-pasted boilerplate)\n`;
+            commentBody += `4. Push fixes to this branch — the validator will re-run automatically\n\n`;
+            commentBody += `📖 See [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md) for full guidelines.\n`;
+
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('Submission Validation Failed')
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Submission Validation Failed')
             );
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
@@ -259,50 +419,48 @@ jobs:
         env:
           SUCCESSES_JSON: ${{ steps.validate.outputs.successes }}
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const successes = JSON.parse(process.env.SUCCESSES_JSON);
-            
+
             let commentBody = `## ✅ Submission Validation Passed!\n\n`;
-            commentBody += `Great job! All required files are present.\n\n`;
-            
+            commentBody += `Great job! All required files are present and valid.\n\n`;
+
             for (const success of successes) {
               commentBody += `### 📁 Folder: \`${success.folder}\`\n`;
               commentBody += `**Files found:**\n`;
-              for (const present of success.present) {
-                commentBody += `- ✅ \`${present.file}\`\n`;
+              for (const p of success.present) {
+                commentBody += `- ✅ \`${p.file}\`\n`;
               }
               commentBody += `\n`;
             }
-            
+
             commentBody += `### 🚀 Next Steps:\n`;
-            commentBody += `- The maintainer will review your PR\n`;
+            commentBody += `- A maintainer will review your PR\n`;
             commentBody += `- Respond to any feedback if requested\n`;
             commentBody += `- Once approved, your contribution will be merged!\n\n`;
             commentBody += `Thank you for contributing to EaseMotion CSS! 🎉\n`;
-            
-            // Find existing bot comment
+
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              (comment.body.includes('Submission Validation Failed') || comment.body.includes('Submission Validation Passed'))
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' &&
+              (c.body.includes('Submission Validation Failed') || c.body.includes('Submission Validation Passed'))
             );
-            
+
             if (botComment && botComment.body.includes('Submission Validation Failed')) {
-              // Update the old failure comment to show success
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
                 body: commentBody
               });
-              console.log('✅ Updated existing failure comment to show success.');
+              console.log('✅ Updated failure → success comment.');
             } else if (!botComment) {
-              // Create new success comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -314,49 +472,98 @@ jobs:
               console.log('Success comment already exists.');
             }
 
-      - name: Add Label for Missing Files
+      - name: Add Labels
         if: failure() && steps.validate.outputs.hasFailures == 'true'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             try {
+              const isSpam  = '${{ steps.validate.outputs.isSpamExploit }}' === 'true';
+              const labels  = isSpam
+                ? ['gssoc:invalid', 'invalid-submission', 'spam']
+                : ['needs-files', 'invalid-submission'];
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
-                repo: context.repo.repo,
+                repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                labels: ['needs-files', 'invalid-submission']
+                labels
               });
-              console.log('✅ Added labels: needs-files, invalid-submission');
-            } catch (error) {
-              console.log('⚠️ Could not add labels:', error.message);
+              console.log('✅ Added labels:', labels);
+            } catch (e) {
+              console.log('⚠️ Could not add labels:', e.message);
+            }
+
+      - name: Close Invalid PR
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const owner      = context.repo.owner;
+              const repo       = context.repo.repo;
+              const pullNumber = context.payload.pull_request.number;
+              const prAuthor   = context.payload.pull_request.user.login;
+              const isSpam     = '${{ steps.validate.outputs.isSpamExploit }}' === 'true';
+
+              await github.rest.pulls.update({ owner, repo, pull_number: pullNumber, state: 'closed' });
+              console.log(`✅ Closed PR #${pullNumber}`);
+
+              let body;
+              if (isSpam) {
+                body =
+                  `⚠️ **EXPLOIT / SPAM NOTICE** ⚠️\n\n` +
+                  `Hi @${prAuthor}! 👋\n\n` +
+                  `This PR has been **automatically detected and closed** as a low-quality, template-cloned, or point-farming exploit submission.\n\n` +
+                  `**What was detected:**\n` +
+                  `- Empty files (0 bytes) OR\n` +
+                  `- Missing HTML structure (\`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\`) OR\n` +
+                  `- Extremely low-change placeholder files (e.g. \`style.css\` with < 5 lines or \`demo.html\` with < 3 lines) OR\n` +
+                  `- CSS copied verbatim from a mass-generated template (identical boilerplate detected)\n\n` +
+                  `**EaseMotion's zero-tolerance policy:**\n` +
+                  `Submitting empty, placeholder, template-cloned, or AI mass-generated PRs solely to accumulate GSSoC points is a serious violation.\n` +
+                  `Your account has been flagged. Repeat offences may result in a **permanent ban** from this repository and reported to GSSoC organizers.\n\n` +
+                  `If you believe this is an error, reply below and a maintainer will review manually.`;
+              } else {
+                body =
+                  `🔒 **Pull Request Closed**\n\n` +
+                  `This PR was automatically closed because it failed the submission validation check.\n\n` +
+                  `Please fix the issues listed above, then open a **new** pull request. Thank you!`;
+              }
+
+              await github.rest.issues.createComment({ owner, repo, issue_number: pullNumber, body });
+              console.log('✅ Close comment posted.');
+            } catch (e) {
+              console.log('⚠️ Could not close PR:', e.message);
             }
 
       - name: Remove Labels on Success
         if: success() && steps.validate.outputs.hasFailures == 'false'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             try {
               const { data: labels } = await github.rest.issues.listLabelsOnIssue({
                 owner: context.repo.owner,
-                repo: context.repo.repo,
+                repo:  context.repo.repo,
                 issue_number: context.payload.pull_request.number,
               });
-              
-              const labelsToRemove = ['needs-files', 'invalid-submission'];
+              const toRemove = ['needs-files', 'invalid-submission', 'gssoc:invalid', 'spam'];
               for (const label of labels) {
-                if (labelsToRemove.includes(label.name)) {
+                if (toRemove.includes(label.name)) {
                   await github.rest.issues.removeLabel({
                     owner: context.repo.owner,
-                    repo: context.repo.repo,
+                    repo:  context.repo.repo,
                     issue_number: context.payload.pull_request.number,
                     name: label.name
                   });
                   console.log(`✅ Removed label: ${label.name}`);
                 }
               }
-            } catch (error) {
-              console.log('⚠️ Could not remove labels:', error.message);
+            } catch (e) {
+              console.log('⚠️ Could not remove labels:', e.message);
             }
 
       - name: Summary Output
@@ -367,8 +574,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ "$HAS_FAILURES" == "true" ]; then
             echo "❌ **Status:** Validation Failed" >> $GITHUB_STEP_SUMMARY
-            echo "Please check the comments above for details." >> $GITHUB_STEP_SUMMARY
+            echo "Please check the PR comments for details." >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ **Status:** Validation Passed" >> $GITHUB_STEP_SUMMARY
-            echo "All required files are present." >> $GITHUB_STEP_SUMMARY
+            echo "All required files are present and valid." >> $GITHUB_STEP_SUMMARY
           fi

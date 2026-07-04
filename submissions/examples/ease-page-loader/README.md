@@ -1,97 +1,65 @@
 # ease-page-loader
 
-## What does this do?
+A full-screen animated page loader / splash screen that displays while content loads, then smoothly fades out to reveal the page. Features a pulsing branded logo, an animated progress bar, and a smooth exit transition.
 
-A fullscreen CSS overlay that covers the page on load, displays a centered loading animation, then fades out automatically — driven entirely by `animation-delay` and `animation-fill-mode: forwards`. No JavaScript required.
+## Features
 
-## How is it used?
+- 🎨 Pulsing logo animation (customizable — emoji, text, or SVG)
+- 📊 Animated progress bar that fills over a configurable duration
+- ✨ Smooth fade-out exit transition when loading completes
+- 🔁 Self-hides automatically when the progress animation ends (with a `window.load` fallback), or can be dismissed manually by toggling `.is-hidden`
+- 🎨 Fully customizable via CSS custom properties
+- 🌗 Light/dark mode support via `[data-theme]`
+- 📱 Responsive: logo size and bar width scale down on small screens
+- ♿ Accessible: `role="alert"` + `aria-live="assertive"` + `aria-label` so assistive tech announces the loading state; logo is `aria-hidden` (decorative)
+- 🧠 Respects `prefers-reduced-motion` — loader skips animation and hides immediately
 
-Place the loader as the **first child of `<body>`**. It covers the viewport instantly and exits on its own after `--loader-exit-delay` (default 1.8s):
+## Usage
 
 ```html
-<!-- Spinner variant -->
-<div class="ease-page-loader">
-  <div class="ease-page-loader-spinner"></div>
-</div>
-
-<!-- Dots variant -->
-<div class="ease-page-loader">
-  <div class="ease-page-loader-dots">
-    <div class="ease-page-loader-dot"></div>
-    <div class="ease-page-loader-dot"></div>
-    <div class="ease-page-loader-dot"></div>
+<div class="ease-page-loader" id="pageLoader" role="alert" aria-live="assertive" aria-label="Page is loading">
+  <div class="ease-page-loader__content">
+    <div class="ease-page-loader__logo" aria-hidden="true">⚡</div>
+    <div class="ease-page-loader__bar">
+      <div class="ease-page-loader__progress"></div>
+    </div>
+    <p class="ease-page-loader__text">Loading...</p>
   </div>
 </div>
-
-<!-- Progress bar variant -->
-<div class="ease-page-loader">
-  <div class="ease-page-loader-bar-wrap">
-    <div class="ease-page-loader-bar"></div>
-  </div>
-</div>
-
-<!-- Dark background variant -->
-<div class="ease-page-loader ease-page-loader-dark">
-  <div class="ease-page-loader-spinner"></div>
-</div>
 ```
 
-### Custom color
+To hide the loader once your page/assets are ready, add the `.is-hidden` class:
 
-```html
-<div class="ease-page-loader" style="--loader-color: #22c55e;">
-  <div class="ease-page-loader-spinner"></div>
-</div>
+```js
+document.getElementById('pageLoader').classList.add('is-hidden');
 ```
 
-### Custom timing
+The included demo automatically hides the loader when the progress-bar fill animation finishes (`animationend`), with a `window.load` timeout as a fallback in case the tab was backgrounded.
 
-```html
-<!-- Stay visible for 3 seconds instead of 1.8s -->
-<div class="ease-page-loader" style="--loader-exit-delay: 3s;">
-  <div class="ease-page-loader-spinner"></div>
-</div>
-```
+## CSS Variables
 
-## Why does it fit EaseMotion CSS?
+| Variable                        | Default    | Description                          |
+|-----------------------------------|------------|-----------------------------------------|
+| `--ease-loader-bg`                 | `#0f0f1a`  | Full-screen background color          |
+| `--ease-loader-text`               | `#f1f5f9`  | Primary text color                    |
+| `--ease-loader-muted`              | `#94a3b8`  | "Loading..." text color               |
+| `--ease-loader-accent-start`       | `#6366f1`  | Progress bar gradient start           |
+| `--ease-loader-accent-end`         | `#3b82f6`  | Progress bar gradient end             |
+| `--ease-loader-bar-track`          | `rgba(255,255,255,0.1)` | Progress bar track color |
+| `--ease-loader-bar-width`          | `200px`    | Progress bar width                    |
+| `--ease-loader-bar-height`         | `4px`      | Progress bar height                   |
+| `--ease-loader-logo-size`          | `4rem`     | Logo font size                        |
+| `--ease-loader-pulse-duration`     | `1s`       | Logo pulse animation duration          |
+| `--ease-loader-fill-duration`      | `2s`       | Progress bar fill duration            |
+| `--ease-loader-exit-duration`      | `0.5s`     | Fade-out exit transition duration      |
 
-EaseMotion CSS has inline loaders (skeleton shimmer, bouncing dots, button spinner) but **no fullscreen page-level loader** — these are fundamentally different use cases. This submission fills that gap.
+## Accessibility
 
-The implementation follows EaseMotion's core philosophy exactly:
+- The loader uses `role="alert"` and `aria-live="assertive"` so screen readers immediately announce that the page is loading.
+- `aria-label="Page is loading"` gives a clear description independent of the decorative logo.
+- The logo is marked `aria-hidden="true"` since it conveys no essential information beyond branding.
+- Under `prefers-reduced-motion: reduce`, the loader skips its animations and hides immediately rather than forcing users to wait through a pulse/fill they can't perceive as motion.
 
-- **Pure CSS exit** — `animation-delay` holds the overlay; `animation-fill-mode: forwards` locks it in the final `visibility: hidden` state. Zero JavaScript timeouts
-- **Reuses core keyframes** — the spinner uses `ease-kf-rotate` and the dots use `ease-kf-pulse`, both already defined in `core/animations.css` — no new keyframes added to core
-- **Token-first** — `--loader-color` maps to `--ease-color-primary`; `--loader-bg` to `--ease-color-surface`; `--loader-pulse-speed` to `--ease-speed-slow`
-- **Three variants** — spinner ring, pulse dots, progress bar — covering the most common page load patterns
-- **`prefers-reduced-motion` safe** — animations disabled, overlay still exits at the correct time so content is never permanently hidden
-- **`visibility: hidden` final state** — removes the overlay from the accessibility tree entirely after exit, not just visually
+## Browser Support
 
-## CSS Custom Properties
-
-| Property | Default | Description |
-|---|---|---|
-| `--loader-color` | `var(--ease-color-primary)` | Accent color for spinner, dots, bar |
-| `--loader-color-track` | `var(--ease-color-neutral-200)` | Spinner ring track color |
-| `--loader-bg` | `var(--ease-color-surface)` | Overlay background |
-| `--loader-exit-delay` | `1.8s` | Time overlay stays visible before fading |
-| `--loader-exit-speed` | `400ms` | Duration of the fade-out |
-| `--loader-spin-speed` | `0.8s` | Spinner rotation speed |
-| `--loader-pulse-speed` | `var(--ease-speed-slow)` | Dot pulse cycle duration |
-| `--loader-size` | `48px` | Spinner diameter |
-| `--loader-thickness` | `4px` | Spinner border width |
-
-## Tech Stack
-
-- HTML
-- CSS only (no frameworks, no JavaScript)
-
-## Preview
-
-Open `demo.html` directly in your browser. The live loader fires on actual page load — you'll see it cover the page and exit after 1.8s, revealing the content below.
-
-## Contribution Notes
-
-- Class names used: `.page-loader`, `.page-loader-spinner`, `.page-loader-dots`, `.page-loader-dot`, `.page-loader-bar`, `.page-loader-dark`
-- Maintainer will rename to `ease-page-loader`, `ease-page-loader-spinner`, etc. before merging
-- No changes made to `core/`, `components/`, or any existing files
-- Spinner reuses `ease-kf-rotate` — if integrating into core, the `animation` property just needs to reference that keyframe name directly
+Works in all modern browsers supporting CSS custom properties and `@keyframes` (Chrome, Firefox, Safari, Edge).

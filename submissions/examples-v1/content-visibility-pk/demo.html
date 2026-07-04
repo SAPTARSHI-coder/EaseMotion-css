@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EaseMotion — content-visibility Performance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../easemotion.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title"><code>content-visibility: auto</code></h1>
+    <p class="subtitle">
+      Skip rendering off-screen elements. Improves FCP, LCP, and scroll performance
+      on pages with many animated components.
+      <span class="badge">Chrome 85+</span>
+    </p>
+
+    <div class="browser-note">
+      ⚡ Requires Chrome 85+. Unsupported browsers ignore the property — content remains visible and functional.
+    </div>
+
+    <div class="demo-layout">
+      <div class="demo-col">
+        <h2 class="col-heading col-heading-bad">Without content-visibility</h2>
+        <p class="col-desc">All 200 cards render immediately — even off-screen. Higher paint cost, lower FPS.</p>
+        <div class="card-list" id="list-normal">
+          <div class="stat-bar">📊 Render time: <span id="time-normal">—</span></div>
+        </div>
+        <button class="btn" id="render-normal">Render 200 Cards</button>
+      </div>
+
+      <div class="demo-col">
+        <h2 class="col-heading col-heading-good">With content-visibility</h2>
+        <p class="col-desc">Off-screen cards are skipped. Browser only renders visible ones. ~10x faster initial paint.</p>
+        <div class="card-list" id="list-cv">
+          <div class="stat-bar">📊 Render time: <span id="time-cv">—</span></div>
+        </div>
+        <button class="btn" id="render-cv">Render 200 Cards</button>
+      </div>
+    </div>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <h3>What It Does</h3>
+        <ul>
+          <li>✅ Skips layout, paint, and compositing for off-screen elements</li>
+          <li>✅ Reduces FCP (First Contentful Paint) significantly</li>
+          <li>✅ Improves scroll performance on long pages</li>
+          <li>✅ Preserves element dimensions via <code>contain-intrinsic-size</code></li>
+          <li>⚠️ Animations on off-screen elements don't tick until scrolled into view</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Best For</h3>
+        <ul>
+          <li>📋 Long lists of animated cards</li>
+          <li>🖼️ Image galleries with lazy animations</li>
+          <li>📄 Blog / feed pages with entries below the fold</li>
+          <li>📊 Dashboard grids with many widgets</li>
+          <li>🎬 Components whose entry animation triggers on scroll (via <code>view-timeline</code>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="code-section">
+      <h2>Proposed Utility</h2>
+      <div class="code-block">
+        <div class="code-header">core/utilities.css</div>
+        <pre><code>.ease-content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="code-section">
+      <h2>Usage with Animated Components</h2>
+      <div class="code-block">
+        <pre><code>&lt;div class="ease-content-visibility-auto"&gt;
+  &lt;div class="ease-card ease-anim-fade-in"&gt;
+    Only rendered when visible
+  &lt;/div&gt;
+&lt;/div&gt;
+
+/* For animation cards in a grid */
+.ease-card-grid &gt; * {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 240px;
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="caveat">
+      <h2>Caveats</h2>
+      <ul>
+        <li><strong>Animations on off-screen elements are paused</strong> — the browser stops ticking animation frames until the element scrolls into view. This is usually fine (why animate something no one sees?).</li>
+        <li><strong>Set <code>contain-intrinsic-size</code></strong> — without it, the browser reserves 0px height, causing scrollbar jumps when elements render. Approximate the height of your component.</li>
+        <li><strong>Not a replacement for lazy loading</strong> — images inside still need <code>loading="lazy"</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function createCards(count, useCV) {
+      const container = document.createElement('div');
+      container.style.display = 'grid';
+      container.style.gridTemplateColumns = 'repeat(3, 1fr)';
+      container.style.gap = '10px';
+      container.style.marginTop = '8px';
+
+      for (let i = 0; i < count; i++) {
+        const card = document.createElement('div');
+        card.className = 'perf-card ' + (useCV ? 'perf-card-cv' : '');
+        card.innerHTML = '<div class="perf-card-icon">✦</div><div class="perf-card-title">Card ' + (i + 1) + '</div><div class="perf-card-desc">Animated content</div>';
+        container.appendChild(card);
+      }
+      return container;
+    }
+
+    function measureRender(useCV) {
+      const listId = useCV ? 'list-cv' : 'list-normal';
+      const timeId = useCV ? 'time-cv' : 'time-normal';
+      const list = document.getElementById(listId);
+
+      // Remove existing cards
+      const existing = list.querySelector('.perf-card-grid');
+      if (existing) existing.remove();
+
+      const t0 = performance.now();
+      const cards = createCards(200, useCV);
+      cards.className = 'perf-card-grid';
+      list.appendChild(cards);
+      const t1 = performance.now();
+
+      // Force layout
+      cards.offsetHeight;
+      const t2 = performance.now();
+
+      document.getElementById(timeId).textContent =
+        Math.round(t1 - t0) + 'ms create, ' + Math.round(t2 - t1) + 'ms layout';
+    }
+
+    document.getElementById('render-normal').addEventListener('click', () => measureRender(false));
+    document.getElementById('render-cv').addEventListener('click', () => measureRender(true));
+  </script>
+</body>
+</html>
