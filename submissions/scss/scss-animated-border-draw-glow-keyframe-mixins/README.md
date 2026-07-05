@@ -530,3 +530,4 @@ These mixins are designed to complement the EaseMotion CSS framework:
 ## 📄 License
 
 This submission is part of the EaseMotion CSS project and follows the same license terms.
+>>>>>>> 36b7e57d1 (Add SCSS animated border draw and glow keyframe mixins (#27776))
