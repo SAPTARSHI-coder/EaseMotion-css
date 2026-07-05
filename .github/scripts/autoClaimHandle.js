@@ -43,6 +43,24 @@ async function handleClaim({ github, context }) {
     return;
   }
 
+  // Check if a Pull Request for this issue has already been merged
+  try {
+    const searchMergedPRs = await github.rest.search.issuesAndPullRequests({
+      q: `repo:${owner}/${repo} type:pr is:merged #${issueNumber}`,
+    });
+    if (searchMergedPRs.data.total_count > 0) {
+      await github.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        body: `🔒 **Claim Blocked!** A Pull Request resolving this issue has already been merged, so this issue is now locked for new claims. Only existing assignees can complete their active work. Please search for other open issues! 🔍`,
+      });
+      return;
+    }
+  } catch (err) {
+    console.log(`Failed to check merged PRs: ${err.message}`);
+  }
+
   const currentAssignees = issue.assignees.map((a) =>
     a.login.toLowerCase()
   );

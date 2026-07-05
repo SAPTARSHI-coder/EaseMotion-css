@@ -651,7 +651,7 @@ jobs:
           echo "Linked issues to close: $linked_issues"
 
           for ISSUE_NUM in $linked_issues; do
-            echo "Closing issue #$ISSUE_NUM..."
+            echo "Processing linked issue #$ISSUE_NUM..."
 
             issue_state=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUM --jq '.state' 2>/dev/null || echo "not_found")
             if [ "$issue_state" = "closed" ]; then
@@ -664,17 +664,36 @@ jobs:
             fi
 
             pr_author=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json author --jq '.author.login')
-            curl -s -X POST \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM/comments" \
-              -d "{\"body\":\"✅ **Issue resolved!** This issue was closed automatically after PR #${PR_NUM} by @${pr_author} was merged into \`main\`. Thank you for your contribution! 🎉\"}"
+            
+            # Unassign the PR author from the issue since their task is complete
+            echo "Unassigning @$pr_author from issue #$ISSUE_NUM..."
+            gh api -X DELETE repos/${{ github.repository }}/issues/$ISSUE_NUM/assignees -f "assignees[]=$pr_author" >/dev/null
 
-            curl -s -X PATCH \
-              -H "Authorization: token $GH_TOKEN" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM" \
-              -d '{"state":"closed","state_reason":"completed"}'
+            # Get the updated assignee count
+            assignee_count=$(gh api repos/${{ github.repository }}/issues/$ISSUE_NUM --jq '.assignees | length')
+            echo "Remaining assignee count: $assignee_count"
 
-            echo "✅ Closed issue #$ISSUE_NUM"
+            if [ "$assignee_count" -eq 0 ]; then
+              echo "No active assignees remaining. Closing issue #$ISSUE_NUM..."
+              comment_body="✅ **Issue resolved!** This issue has been successfully resolved and closed after all assigned contributors completed their PRs. Thank you! 🎉"
+              curl -s -X POST \
+                -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM/comments" \
+                -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+
+              curl -s -X PATCH \
+                -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM" \
+                -d '{"state":"closed","state_reason":"completed"}'
+            else
+              echo "Other active assignees exist. Keeping issue #$ISSUE_NUM open."
+              comment_body="✅ **PR Merged:** PR #${PR_NUM} by @${pr_author} has been successfully merged! Other assigned contributors still have time to submit their PRs before their assignments expire! 🚀"
+              curl -s -X POST \
+                -H "Authorization: token $GH_TOKEN" \
+                -H "Accept: application/vnd.github.v3+json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUM/comments" \
+                -d "$(jq -n --arg body "$comment_body" '{body: $body}')"
+            fi
           done
