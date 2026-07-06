@@ -1311,7 +1311,6 @@ EaseMotion CSS is designed, curated, and actively maintained by Saptarshi Sadhu.
 
 ---
 
-
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
