@@ -6,6 +6,8 @@ It improves accessibility for screen readers.
 
 
 ## Files
+
+
 - `demo.html` → Example navbar with corrected logo
 - `style.css` → Basic styling for the demo
 - `README.md` → Explanation of the fix
