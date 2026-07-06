@@ -1311,15 +1311,6 @@ EaseMotion CSS is designed, curated, and actively maintained by Saptarshi Sadhu.
 
 ---
 
-# Fix: Missing alt text on EaseMotion logo
-
-This demo shows the accessibility fix for Issue #36517.  
-The EaseMotion logo now includes `alt="EaseMotion CSS logo"` to improve screen reader support.
-
-## Files
-- `demo.html` → Example navbar with fixed logo
-- `style.css` → Basic styling
-
 
 ## Changelog
 
