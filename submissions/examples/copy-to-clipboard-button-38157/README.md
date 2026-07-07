@@ -25,7 +25,7 @@
 ```html
 <span class="copy-wrapper inline">
   <code class="class-name">ease-hover-grow</code>
-  <button class="copy-btn" aria-label="Copy class name" data-copy-text="ease-hover-grow">
+  <button class="copy-btn" aria-label="Copy class name" data-copy-text="ease-hover-grow" data-tooltip="Copy to clipboard">
     <svg class="icon-copy" ...></svg>
     <svg class="icon-check" ...></svg>
   </button>
@@ -36,10 +36,10 @@
 
 ```html
 <div class="copy-wrapper block">
-  <pre><code>.ease-fade-in {
+  <pre><code id="example-code-1">.ease-fade-in {
   animation: ease-fade-in 0.3s ease;
 }</code></pre>
-  <button class="copy-btn" aria-label="Copy code block" data-copy-target="pre code">
+  <button class="copy-btn" aria-label="Copy code block" data-copy-target="#example-code-1" data-tooltip="Copy to clipboard">
     <svg class="icon-copy" ...></svg>
     <svg class="icon-check" ...></svg>
   </button>
