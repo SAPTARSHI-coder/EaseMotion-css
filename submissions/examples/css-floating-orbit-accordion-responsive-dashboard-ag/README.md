@@ -43,3 +43,4 @@
      --orbit-color: #6366f1; /* Core and satellite accent color */
      --orbit-scale-factor: 1.15; /* Scale multiplier for active indicator ring */
      --accordion-duration: 0.4s; /* Slide down expansion transition speed */
+   ```
