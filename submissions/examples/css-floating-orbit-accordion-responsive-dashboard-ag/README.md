@@ -18,3 +18,20 @@
          <div class="ease-orbit-satellite"></div>
        </div>
 
+       <!-- Label Details -->
+       <div class="ease-header-info">
+         <h3 class="ease-header-title">Title Text</h3>
+         <p class="ease-header-desc">Desc Text</p>
+       </div>
+
+       <!-- Status Badge -->
+       <span class="ease-status-badge ease-cyan">Active</span>
+     </summary>
+
+     <!-- Panel Content -->
+     <div class="ease-accordion-content">
+       <p>Dashboard analytics and graphs...</p>
+     </div>
+   </details>
+   ```
+
