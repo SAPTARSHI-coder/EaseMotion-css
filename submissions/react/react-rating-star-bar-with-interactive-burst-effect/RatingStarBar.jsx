@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+// TEST CHANGE
 /**
  * RatingStarBar
  * A star rating component with an animated "burst" effect
@@ -33,7 +33,7 @@ export default function RatingStarBar({
 
   return (
     <div
-      className="ease-rating-bar"
+      className="ease-rating-bar ease-fade-in"
       style={{ "--rating-star-size": `${size}px`, "--rating-color": color }}
       role="radiogroup"
       aria-label={`Rating: ${rating} out of ${totalStars} stars`}
@@ -46,7 +46,7 @@ export default function RatingStarBar({
           <button
             key={starIndex}
             type="button"
-            className={`rating-star ${filled ? "is-filled" : ""}`}
+            className={`rating-star ease-hover-lift ${filled ? "is-filled" : ""}`}
             role="radio"
             aria-checked={starIndex === rating}
             aria-label={`${starIndex} star${starIndex > 1 ? "s" : ""}`}
