@@ -40,3 +40,4 @@
    ```css
    :root {
      --orbit-duration: 2.6s; /* Circular orbit rotation loop timing */
+     --orbit-color: #6366f1; /* Core and satellite accent color */
