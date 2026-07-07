@@ -46,3 +46,6 @@
      --accordion-easing: cubic-bezier(0.25, 0.8, 0.25, 1);
    }
    ```
+
+3. **Why is it useful?**
+   It provides web developers with a high-fidelity, interactive accordion system natively supported in browsers without needing heavy JavaScript libraries, offering accessible keyboard control, responsiveness, and easy styling using custom properties.
