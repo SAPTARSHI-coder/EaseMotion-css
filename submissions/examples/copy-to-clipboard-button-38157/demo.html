@@ -147,9 +147,13 @@
     </div>
   </div>
 
+  <!-- ARIA live region for screen reader announcements -->
+  <div id="aria-live-region" class="sr-only" aria-live="polite" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;"></div>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const copyButtons = document.querySelectorAll('.copy-btn');
+      const ariaLiveRegion = document.getElementById('aria-live-region');
       
       copyButtons.forEach(button => {
         button.addEventListener('click', async () => {
@@ -166,23 +170,60 @@
           }
           
           if (!textToCopy) return;
-          
-          try {
-            await navigator.clipboard.writeText(textToCopy);
-            
-            // Visual feedback: success state
+
+          const onSuccess = () => {
             button.classList.add('copied');
+            button.classList.remove('error');
+            if (ariaLiveRegion) ariaLiveRegion.textContent = 'Copied to clipboard';
             
-            // Reset state after 2 seconds
             setTimeout(() => {
               button.classList.remove('copied');
-              // Briefly hide tooltip to force re-evaluation on hover if cursor is still there
-              button.blur();
+              if (ariaLiveRegion) ariaLiveRegion.textContent = '';
             }, 2000);
-            
-          } catch (err) {
+          };
+
+          const onError = (err) => {
             console.error('Failed to copy text: ', err);
-            // Fallback for older browsers could go here
+            button.classList.add('error');
+            button.classList.remove('copied');
+            if (ariaLiveRegion) ariaLiveRegion.textContent = 'Failed to copy';
+            
+            setTimeout(() => {
+              button.classList.remove('error');
+              if (ariaLiveRegion) ariaLiveRegion.textContent = '';
+            }, 2000);
+          };
+          
+          if (navigator.clipboard && window.isSecureContext) {
+            try {
+              await navigator.clipboard.writeText(textToCopy);
+              onSuccess();
+            } catch (err) {
+              onError(err);
+            }
+          } else {
+            // Fallback for insecure contexts or unsupported browsers
+            try {
+              const textArea = document.createElement("textarea");
+              textArea.value = textToCopy;
+              textArea.style.position = "fixed";
+              textArea.style.left = "-999999px";
+              textArea.style.top = "-999999px";
+              document.body.appendChild(textArea);
+              textArea.focus();
+              textArea.select();
+              
+              const successful = document.execCommand('copy');
+              document.body.removeChild(textArea);
+              
+              if (successful) {
+                onSuccess();
+              } else {
+                onError(new Error('execCommand copy failed'));
+              }
+            } catch (err) {
+              onError(err);
+            }
           }
         });
       });
