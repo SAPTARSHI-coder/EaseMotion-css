@@ -35,3 +35,8 @@
    </details>
    ```
 
+   **Customizable CSS Custom Properties:**
+
+   ```css
+   :root {
+     --orbit-duration: 2.6s; /* Circular orbit rotation loop timing */
