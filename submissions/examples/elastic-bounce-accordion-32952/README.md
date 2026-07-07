@@ -16,4 +16,4 @@ Use the provided HTML structure in `demo.html` and link `style.css` in your page
 
 ## Why is it useful?
 
-It fits EaseMotion CSS because it combines expressive motion with restraint, making a UI interaction feel more deliberate and polished without becoming noisy.
+It fits EaseMotion CSS because it combines expressive motion with restraint, making a UI interaction feel more deliberate and polished without becoming noisy. The layout also gives each panel a clearer information hierarchy for technical interfaces.
