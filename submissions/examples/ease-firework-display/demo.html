@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firework Display Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Firework Display</h1>
+        <p class="subtitle">Click to launch fireworks</p>
+
+        <!-- FIREWORK DISPLAY COMPONENT -->
+        <div class="firework-container">
+            <div class="firework-wrapper">
+                <div class="firework-canvas-wrapper">
+                    <canvas id="fireworkCanvas"></canvas>
+                    <div class="firework-overlay">
+                        <span class="overlay-icon">🎆</span>
+                        <span class="overlay-text">Click anywhere to launch</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="firework-controls">
+                    <div class="control-group">
+                        <label for="countSlider">Particles:</label>
+                        <input type="range" id="countSlider" min="30" max="150" step="10" value="80" />
+                        <span id="countValue">80</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="gravitySlider">Gravity:</label>
+                        <input type="range" id="gravitySlider" min="0.02" max="0.15" step="0.01" value="0.06" />
+                        <span id="gravityValue">0.06</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="fadeSlider">Fade:</label>
+                        <input type="range" id="fadeSlider" min="0.5" max="2" step="0.1" value="1" />
+                        <span id="fadeValue">1.0</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="firework-actions">
+                    <button class="firework-ctrl-btn" id="launchBtn">🎆 Launch</button>
+                    <button class="firework-ctrl-btn" id="autoBtn">🔄 Auto Fire</button>
+                    <button class="firework-ctrl-btn" id="clearBtn">🗑️ Clear</button>
+                    <button class="firework-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="firework-ctrl-btn" id="toggleTrailsBtn">🌊 Trails</button>
+                </div>
+
+                <div class="firework-status">
+                    <span class="status-label">Particles:</span>
+                    <span class="status-value" id="particleCount">0</span>
+                    <span class="status-label">FPS:</span>
+                    <span class="status-value" id="fpsDisplay">0</span>
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="statusDisplay">Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #43e97b);">
+                        <span>🎆</span>
+                    </div>
+                    <span class="variant-label">Aurora</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>🎆</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>🎆</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>🎆</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('fireworkCanvas');
+            const ctx = canvas.getContext('2d');
+            const particleCount = document.getElementById('particleCount');
+            const fpsDisplay = document.getElementById('fpsDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const countSlider = document.getElementById('countSlider');
+            const gravitySlider = document.getElementById('gravitySlider');
+            const fadeSlider = document.getElementById('fadeSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const countValue = document.getElementById('countValue');
+            const gravityValue = document.getElementById('gravityValue');
+            const fadeValue = document.getElementById('fadeValue');
+            const launchBtn = document.getElementById('launchBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const toggleTrailsBtn = document.getElementById('toggleTrailsBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                particleCount: 80,
+                gravity: 0.06,
+                fade: 1.0,
+                color: '#4facfe',
+                trails: true,
+                onLaunch: function() {
+                    console.log('🎆 Firework launched!');
+                },
+                onClear: function() {
+                    console.log('🗑️ Fireworks cleared');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let particles = [];
+            let trails = [];
+            let animationId = null;
+            let frameCount = 0;
+            let lastFpsUpdate = 0;
+            let currentFps = 0;
+            let isAutoMode = false;
+            let autoTimer = null;
+            let isTrailsEnabled = CONFIG.trails;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // PARTICLE CLASS
+            // ============================================
+            class Particle {
+                constructor(x, y, color, count) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color || CONFIG.color;
+                    this.count = count || CONFIG.particleCount;
+                    
+                    // Random velocity
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 6;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 1;
+                    
+                    this.size = 2 + Math.random() * 3;
+                    this.opacity = 0.8 + Math.random() * 0.2;
+                    this.decay = 0.005 + Math.random() * 0.015;
+                    this.gravity = CONFIG.gravity * (0.8 + Math.random() * 0.4);
+                    this.trail = [];
+                    this.maxTrail = 8;
+                    this.hue = Math.random() * 40 - 20;
+                }
+
+                update() {
+                    // Apply gravity
+                    this.vy += this.gravity;
+                    
+                    // Apply friction
+                    this.vx *= 0.99;
+                    this.vy *= 0.99;
+                    
+                    // Update position
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // Fade out
+                    this.opacity -= this.decay * CONFIG.fade;
+                    
+                    // Store trail
+                    if (isTrailsEnabled) {
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    }
+                    
+                    return this.opacity > 0;
+                }
+
+                draw(ctx) {
+                    const alpha = Math.max(this.opacity, 0);
+                    
+                    // Draw trail
+                    if (isTrailsEnabled && this.trail.length > 1) {
+                        for (let i = 1; i < this.trail.length; i++) {
+                            const trailAlpha = (i / this.trail.length) * alpha * 0.3;
+                            const trailSize = this.size * (i / this.trail.length) * 0.6;
+                            ctx.beginPath();
+                            ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+                            ctx.fillStyle = this.color + Math.floor(trailAlpha * 200).toString(16).padStart(2, '0');
+                            ctx.fill();
+                        }
+                    }
+
+                    // Glow effect
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 4
+                    );
+                    gradient.addColorStop(0, this.color + 'cc');
+                    gradient.addColorStop(0.3, this.color + '66');
+                    gradient.addColorStop(1, this.color + '00');
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // Core particle
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.25, this.y - this.size * 0.25, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.fill();
+                }
+            }
+
+            // ============================================
+            // FIREWORK FUNCTIONS
+            // ============================================
+            function launchFirework(x, y, color, count) {
+                const cx = x || Math.random() * canvas.width;
+                const cy = y || Math.random() * canvas.height * 0.6 + 50;
+                const c = color || CONFIG.color;
+                const n = count || parseInt(countSlider.value);
+                
+                for (let i = 0; i < n; i++) {
+                    particles.push(new Particle(cx, cy, c, n));
+                }
+                
+                CONFIG.onLaunch();
+                statusDisplay.textContent = '🎆 Launched!';
+                setTimeout(() => {
+                    statusDisplay.textContent = isAutoMode ? 'Auto' : 'Ready';
+                }, 1000);
+            }
+
+            function launchRandom() {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height * 0.6 + 50;
+                const colors = ['#4facfe', '#43e97b', '#f093fb', '#f5576c', '#f9d976', '#f39c12', '#ff6b6b', '#ff9ff3', '#54a0ff', '#5f27cd', '#ff9f43', '#00d2d3'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const count = parseInt(countSlider.value) + Math.floor(Math.random() * 40 - 20);
+                launchFirework(x, y, color, Math.max(count, 20));
+            }
+
+            function clearFireworks() {
+                particles = [];
+                trails = [];
+                CONFIG.onClear();
+                statusDisplay.textContent = '🗑️ Cleared';
+                setTimeout(() => {
+                    statusDisplay.textContent = isAutoMode ? 'Auto' : 'Ready';
+                }, 1000);
+            }
+
+            // ============================================
+            // AUTO MODE
+            // ============================================
+            function toggleAutoMode() {
+                isAutoMode = !isAutoMode;
+                if (isAutoMode) {
+                    autoTimer = setInterval(launchRandom, 1200);
+                    autoBtn.textContent = '⏹ Stop Auto';
+                    statusDisplay.textContent = '🎆 Auto';
+                } else {
+                    clearInterval(autoTimer);
+                    autoTimer = null;
+                    autoBtn.textContent = '🔄 Auto Fire';
+                    statusDisplay.textContent = 'Ready';
+                }
+            }
+
+            // ============================================
+            // RENDER LOOP
+            // ============================================
+            function animate(timestamp) {
+                // FPS tracking
+                frameCount++;
+                if (timestamp - lastFpsUpdate > 1000) {
+                    currentFps = frameCount;
+                    frameCount = 0;
+                    lastFpsUpdate = timestamp;
+                    fpsDisplay.textContent = currentFps;
+                }
+
+                // Clear canvas with trail effect
+                if (isTrailsEnabled) {
+                    ctx.fillStyle = 'rgba(10, 10, 26, 0.2)';
+                } else {
+                    ctx.fillStyle = 'rgba(10, 10, 26, 1)';
+                }
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Update and draw particles
+                particleCount.textContent = particles.length;
+                
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    const alive = p.update();
+                    if (alive) {
+                        p.draw(ctx);
+                    } else {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function updateConfig() {
+                CONFIG.particleCount = parseInt(countSlider.value);
+                CONFIG.gravity = parseFloat(gravitySlider.value);
+                CONFIG.fade = parseFloat(fadeSlider.value);
+                CONFIG.color = colorPicker.value;
+                countValue.textContent = CONFIG.particleCount;
+                gravityValue.textContent = CONFIG.gravity.toFixed(2);
+                fadeValue.textContent = CONFIG.fade.toFixed(1);
+            }
+
+            function randomizeColors() {
+                const colors = ['#4facfe', '#43e97b', '#f093fb', '#f5576c', '#f9d976', '#f39c12', '#ff6b6b', '#ff9ff3', '#54a0ff', '#5f27cd', '#ff9f43', '#00d2d3'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+                statusDisplay.textContent = '🎨 Random';
+                setTimeout(() => {
+                    statusDisplay.textContent = isAutoMode ? 'Auto' : 'Ready';
+                }, 1000);
+            }
+
+            function toggleTrails() {
+                isTrailsEnabled = !isTrailsEnabled;
+                toggleTrailsBtn.textContent = isTrailsEnabled ? '🌊 Trails' : '🌊 No Trails';
+                CONFIG.trails = isTrailsEnabled;
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Canvas click to launch
+            canvas.addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                launchFirework(x, y);
+            });
+
+            // Touch support
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                const rect = this.getBoundingClientRect();
+                const touch = e.touches[0];
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (touch.clientX - rect.left) * scaleX;
+                const y = (touch.clientY - rect.top) * scaleY;
+                launchFirework(x, y);
+            }, { passive: false });
+
+            // Controls
+            countSlider.addEventListener('input', updateConfig);
+            gravitySlider.addEventListener('input', updateConfig);
+            fadeSlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+
+            launchBtn.addEventListener('click', function() {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height * 0.6 + 50;
+                launchFirework(x, y);
+            });
+
+            autoBtn.addEventListener('click', toggleAutoMode);
+            clearBtn.addEventListener('click', clearFireworks);
+            randomColorBtn.addEventListener('click', randomizeColors);
+            toggleTrailsBtn.addEventListener('click', toggleTrails);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    launchBtn.click();
+                }
+                if (e.key === 'a' || e.key === 'A') {
+                    toggleAutoMode();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearFireworks();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    randomizeColors();
+                }
+                if (e.key === 't' || e.key === 'T') {
+                    toggleTrails();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Aurora': ['#4facfe', '#43e97b'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#43e97b'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    statusDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        statusDisplay.textContent = isAutoMode ? 'Auto' : 'Ready';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.FireworkDisplay = {
+                launch: launchFirework,
+                launchRandom: launchRandom,
+                clear: clearFireworks,
+                toggleAuto: toggleAutoMode,
+                toggleTrails: toggleTrails,
+                randomizeColor: randomizeColors,
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    CONFIG.color = color;
+                },
+                setCount: (count) => {
+                    countSlider.value = count;
+                    countValue.textContent = count;
+                    CONFIG.particleCount = count;
+                },
+                setGravity: (gravity) => {
+                    gravitySlider.value = gravity;
+                    gravityValue.textContent = gravity.toFixed(2);
+                    CONFIG.gravity = gravity;
+                },
+                setFade: (fade) => {
+                    fadeSlider.value = fade;
+                    fadeValue.textContent = fade.toFixed(1);
+                    CONFIG.fade = fade;
+                },
+                isAuto: () => isAutoMode,
+                getState: () => ({
+                    particleCount: particles.length,
+                    settings: {
+                        count: CONFIG.particleCount,
+                        gravity: CONFIG.gravity,
+                        fade: CONFIG.fade,
+                        color: CONFIG.color,
+                        trails: isTrailsEnabled
+                    }
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.particleCount) {
+                        countSlider.value = config.particleCount;
+                        countValue.textContent = config.particleCount;
+                    }
+                    if (config.gravity) {
+                        gravitySlider.value = config.gravity;
+                        gravityValue.textContent = config.gravity.toFixed(2);
+                    }
+                    if (config.fade) {
+                        fadeSlider.value = config.fade;
+                        fadeValue.textContent = config.fade.toFixed(1);
+                    }
+                    updateConfig();
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            updateConfig();
+            animate(0);
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                }, 200);
+            });
+
+            console.log('✅ Firework Display initialized!');
+            console.log('📖 API: window.FireworkDisplay');
+            console.log('📖 Usage:');
+            console.log('  - Click the canvas to launch fireworks');
+            console.log('  - Keyboard shortcuts: Space (launch), A (auto), C (clear), R (random), T (trails)');
+            console.log('  - Adjust particle count, gravity, and fade');
+
+        })();
+    </script>
+</body>
+</html>
