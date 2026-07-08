@@ -30,3 +30,13 @@ It provides e-commerce builders with a micro-interactive, responsive feedback el
 
 ## Customizable CSS Custom Properties
 
+Expose the following variables in the `:root` pseudo-class to fine-tune the jello physics and layout themes:
+
+| CSS Custom Property              | Default Value                      | Description                                                      |
+| -------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
+| `--ease-jello-duration`          | `0.8s`                             | The total animation duration of the jello wobble.                |
+| `--ease-jello-easing`            | `cubic-bezier(0.25, 0.8, 0.25, 1)` | Easing function applied to the keyframe progression.             |
+| `--ease-jello-s1-x` / `s1-y`     | `1.15` / `0.85`                    | Scaling stretch coefficients along X/Y axes at the first bounce. |
+| `--ease-jello-sk1`               | `-5deg`                            | Skew angle coefficient at the first bounce.                      |
+| `--ease-modal-entrance-duration` | `0.45s`                            | Timing for the spring-pop entrance of the modal.                 |
+| `--checkout-primary`             | `#6366f1` (indigo)                 | Accent brand color for active checkouts.                         |
