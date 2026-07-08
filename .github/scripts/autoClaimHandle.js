@@ -46,7 +46,7 @@ async function handleClaim({ github, context }) {
   // Check if a Pull Request for this issue has already been merged
   try {
     const searchMergedPRs = await github.rest.search.issuesAndPullRequests({
-      q: `repo:${owner}/${repo} type:pr is:merged #${issueNumber}`,
+      q: `repo:${owner}/${repo} type:pr is:merged "${issueNumber}"`,
     });
     if (searchMergedPRs.data.total_count > 0) {
       await github.rest.issues.createComment({
@@ -75,50 +75,18 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  // ── 1-hour cooldown: applies to ALL /claim attempts, even after unassignment ──
-  // Check assignment history regardless of current assignees.
-  try {
-    const { data: events } = await github.rest.issues.listEvents({
-      owner,
-      repo,
-      issue_number: issueNumber,
-      per_page: 100,
-    });
+  // ── 1-hour cooldown: protects the issue opener's exclusive right for the first hour ──
+  const issueCreatedAt = new Date(issue.created_at);
+  const elapsedMs = Date.now() - issueCreatedAt.getTime();
+  const elapsedMinutes = elapsedMs / (1000 * 60);
 
-    const assignEvents = events.filter((e) => e.event === "assigned");
-    if (assignEvents.length > 0) {
-      const lastAssignEvent = assignEvents[assignEvents.length - 1];
-      const assignedAt = new Date(lastAssignEvent.created_at);
-      const elapsedMs = Date.now() - assignedAt.getTime();
-      const elapsedMinutes = elapsedMs / (1000 * 60);
-
-      if (elapsedMinutes < 60) {
-        const minutesLeft = Math.ceil(60 - elapsedMinutes);
-        const lastAssignee = lastAssignEvent.assignee
-          ? `@${lastAssignEvent.assignee.login}`
-          : "Another contributor";
-
-        await github.rest.issues.createComment({
-          owner,
-          repo,
-          issue_number: issueNumber,
-          body: `⏳ **Cooldown Active!** ${lastAssignee} was assigned to this issue less than 1 hour ago (${Math.floor(elapsedMinutes)} minutes ago).\n\nTo give them a fair chance to make progress, there is a **1-hour cooldown** before anyone can claim this issue. Please try again in **${minutesLeft} minute(s)** or look for other open issues! 🔍`,
-        });
-        return;
-      }
-    }
-  } catch (err) {
-    console.log(`Failed to check claim cooldown: ${err.message}`);
-  }
-
-  // ── Already taken by someone else (after cooldown passed) ──
-  if (currentAssignees.length > 0) {
-    const assigneeList = currentAssignees.map((a) => `@${a}`).join(", ");
+  if (elapsedMinutes < 60 && commenter.toLowerCase() !== issue.user.login.toLowerCase()) {
+    const minutesLeft = Math.ceil(60 - elapsedMinutes);
     await github.rest.issues.createComment({
       owner,
       repo,
       issue_number: issueNumber,
-      body: `🤝 **Already taken!** This issue is currently assigned to ${assigneeList}. Please look for another open issue to contribute to! 🔍`,
+      body: `⏳ **Cooldown Active!** This issue was created less than 1 hour ago (${Math.floor(elapsedMinutes)} minutes ago).\n\nTo give the issue opener (@${issue.user.login}) a fair chance to make progress, there is a **1-hour cooldown** before anyone else can claim this issue. Please try again in **${minutesLeft} minute(s)** or look for other open issues! 🔍`,
     });
     return;
   }
@@ -156,7 +124,7 @@ async function handleClaim({ github, context }) {
     owner,
     repo,
     issue_number: issueNumber,
-    body: `🎉 **Assigned!** Welcome aboard, @${commenter}! 🌟\n\n⏳ **Timeframe:** You have **1 hour** of exclusive time to complete the issue and make a Pull Request. Please submit a PR before claiming any other issue.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
+    body: `🎉 **Assigned!** Welcome aboard, @${commenter}! 🌟\n\n⏳ **Timeframe:** You have **24 hours** of exclusive time to complete the issue and make a Pull Request. Please submit a PR before claiming any other issue.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
   });
 }
 
