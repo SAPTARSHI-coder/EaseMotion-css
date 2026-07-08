@@ -39,7 +39,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 >
 > Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
 >
-> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/`, `submissions/react/`, or `submissions/scss/`) will be reviewed and merged.
+> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/`, `submissions/react/`, `submissions/scss/`, or `submissions/docs/`) will be reviewed and merged.
 >
 > This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
 >
@@ -1019,7 +1019,7 @@ Yes. EaseMotion CSS works with any framework that renders standard HTML `class` 
 
 ### How do I submit a new component or utility?
 
-Open or claim an issue first, then submit your work under the appropriate track directory in `submissions/` (e.g., `submissions/examples/` for HTML/CSS, `submissions/react/` for React components, or `submissions/scss/` for SCSS mixins/tokens). The maintainer reviews your submission, standardizes names/tokens, and integrates it into the core framework.
+Open or claim an issue first, then submit your work under the appropriate track directory in `submissions/` (e.g., `submissions/examples/` for HTML/CSS, `submissions/react/` for React components, `submissions/scss/` for SCSS mixins/tokens, or `submissions/docs/` for core bug fixes & docs showcases). The maintainer reviews your submission, standardizes names/tokens, and integrates it into the core framework.
 
 ### Does it work without a build step?
 
@@ -1122,7 +1122,7 @@ EaseMotion CSS is a **curated, maintainer-reviewed framework**. Contributors sub
 ### ✅ What contributors do
 
 ```
-✅ Place submissions inside the correct track folder (submissions/examples/, submissions/react/, or submissions/scss/)
+✅ Place submissions inside the correct track folder (submissions/examples/, submissions/react/, submissions/scss/, or submissions/docs/)
 ✅ Include all required files (e.g. JSX + README for React, SCSS + README for SCSS, or HTML + CSS + README for Standard)
 ✅ Follow the suffix naming rule (e.g. ease-component-yourid) to avoid name collisions
 ✅ Squash commits to keep the repository history clean
