@@ -35,3 +35,18 @@
      </div>
    </details>
    ```
+
+   **Customizable CSS Custom Properties:**
+   ```css
+   :root {
+     --pull-duration: 0.55s;           /* Animation length */
+     --pull-distance: 30px;            /* Initial translate offset distance */
+     --pull-overshoot: 8px;            /* Overshoot distance before settling */
+     --pull-scale-start: 0.94;         /* Starting scale factor */
+     --pull-scale-overshoot: 1.025;    /* Maximum scale factor at overshoot peak */
+     --pull-easing: cubic-bezier(...); /* Smooth transition deceleration curve */
+   }
+   ```
+
+3. **Why is it useful?**
+   It allows designers to implement complex physics-based micro-interactions, elastic overshoot states, and cyberpunk aesthetics directly in CSS without relying on external animation libraries or JavaScript overhead.
