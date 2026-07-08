@@ -1,124 +1,68 @@
-# Smooth Scrollbar Styling & Hover Mixins
+# SCSS Smooth Scrollbar Styling & Hover Mixins
 
-A lightweight, reusable SCSS mixin for EaseMotion CSS that adds clean,
-customizable scrollbar styling with a smooth hover interaction —
-cross-browser support included (WebKit + Firefox).
+A lightweight, reusable SCSS mixin designed to style scrollbars with smooth, customizable appearances and interactive hover states.
 
-## File
+It fully supports modern WebKit-based browsers (Chrome, Edge, Safari, Opera) via the `::-webkit-scrollbar` pseudo-elements, and provides native fallback support for Firefox using the standard `scrollbar-width` and `scrollbar-color` properties.
 
-```
-_smooth-scrollbar-styling-hover-mixins.scss
-```
+## Features
+- **Cross-Browser Compatibility**: Supports both WebKit (Chrome/Safari) and Firefox APIs natively.
+- **Interactive Hover States**: Thumb color automatically brightens or changes when the user hovers over the scrollable container, providing modern tactile feedback.
+- **Active Drag State**: Thumb color darkens slightly while being dragged for immediate interaction feedback.
+- **Smooth Scrolling Integration**: Automatically applies `scroll-behavior: smooth` to the container.
+- **Highly Configurable**: All sizing and colors are exposed as SCSS parameters.
 
-## Mixin: `ease-smooth-scrollbar`
+## Parameters
 
-### Parameters
+| Parameter | Type | Default Value | Description |
+|-----------|------|---------------|-------------|
+| `$width` | Number | `8px` | Thickness of the vertical/horizontal scrollbar |
+| `$track-color` | Color | `#f1f1f1` | Background color of the scrollbar track |
+| `$thumb-color` | Color | `#c1c1c1` | Color of the scrollbar thumb in its default state |
+| `$thumb-hover-color` | Color | `#888888` | Color of the scrollbar thumb when hovered |
+| `$radius` | Number | `4px` | Border radius applied to both the track and the thumb |
+| `$smooth-scroll` | Boolean | `true` | Injects `scroll-behavior: smooth` into the parent element |
 
-| Parameter            | Type    | Default     | Description                                  |
-|-----------------------|---------|-------------|-----------------------------------------------|
-| `$width`              | Number  | `8px`       | Thickness of the scrollbar                    |
-| `$track-color`        | Color   | `#f1f1f1`   | Background color of the scrollbar track       |
-| `$thumb-color`        | Color   | `#c1c1c1`   | Default color of the scrollbar thumb          |
-| `$thumb-hover-color`  | Color   | `#888888`   | Thumb color when the container is hovered     |
-| `$radius`             | Number  | `4px`       | Border radius for track and thumb             |
-| `$smooth-scroll`      | Boolean | `true`      | Enables native `scroll-behavior: smooth`      |
+## Usage Examples
 
-### How it works
+### 1. Basic Usage (Defaults)
 
-- Uses `::-webkit-scrollbar` pseudo-elements for Chrome, Edge, Safari, and Opera
-- Uses standard `scrollbar-width` / `scrollbar-color` for Firefox
-- On container `:hover`, the thumb color brightens for visual feedback
-- On thumb `:active` (drag), the color darkens slightly using `color.adjust()`
-  (modern Sass color module — no deprecated `darken()`)
-
-## Usage
-
-### 1. Import the partial
+Simply include the mixin inside any scrollable container to apply the default light theme.
 
 ```scss
-@use "smooth-scrollbar-styling-hover-mixins" as *;
-```
+@use 'smooth-scrollbar-styling-hover-mixins' as *;
 
-### 2. Basic usage (uses all defaults)
-
-```scss
 .ease-scroll-panel {
+  height: 400px;
+  overflow-y: auto;
+  
   @include ease-smooth-scrollbar();
 }
 ```
 
-### 3. Custom themed usage
+### 2. Custom Themed Usage (Dark Mode)
+
+Easily customize the mixin by passing your own theme variables or raw colors.
 
 ```scss
-.ease-sidebar {
+@use 'smooth-scrollbar-styling-hover-mixins' as *;
+
+.ease-sidebar-dark {
+  overflow-y: scroll;
+  
   @include ease-smooth-scrollbar(
     $width: 10px,
     $track-color: #1e1e1e,
-    $thumb-color: #e63946,
-    $thumb-hover-color: #ff6b6b,
+    $thumb-color: #4a4a4a,
+    $thumb-hover-color: #e63946, // Vibrant hover accent
     $radius: 8px
   );
 }
 ```
 
-### 4. Ready-made utility classes
+## Utility Classes Included
+If you prefer not to write custom SCSS, this module compiles two ready-to-use CSS utility classes:
+- `.ease-scrollbar`: Standard light theme scrollbar.
+- `.ease-scrollbar-dark`: Pre-configured dark theme scrollbar with a vibrant red hover state.
 
-The partial also ships two ready-to-use classes so you don't need to
-write any SCSS at all:
-
-```html
-<div class="ease-scrollbar">...</div>
-<div class="ease-scrollbar-dark">...</div>
-```
-
-## Compiled CSS Output (verified with Dart Sass)
-
-```css
-.ease-scrollbar {
-  scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: #c1c1c1 #f1f1f1;
-}
-.ease-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.ease-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-.ease-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #c1c1c1;
-  border-radius: 4px;
-  transition: background-color 0.25s ease, width 0.25s ease;
-}
-.ease-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: #888888;
-}
-.ease-scrollbar::-webkit-scrollbar-thumb:active {
-  background-color: rgb(110.5, 110.5, 110.5);
-}
-```
-
-> Compiled with Dart Sass (`sass` CLI) — zero deprecation warnings.
-
-## Browser Support
-
-| Browser          | Support                          |
-|-------------------|-----------------------------------|
-| Chrome / Edge      | ✅ Full (`::-webkit-scrollbar`)   |
-| Safari             | ✅ Full (`::-webkit-scrollbar`)   |
-| Firefox            | ✅ Partial (`scrollbar-width`/`scrollbar-color`, no hover state) |
-
-Firefox does not currently support styled hover states on scrollbar
-thumbs via CSS, so the hover effect is WebKit-only. The base color
-styling still applies in Firefox via `scrollbar-color`.
-
-## Why this fits EaseMotion CSS
-
-- Zero dependencies, pure SCSS
-- Fully configurable via mixin parameters
-- Ships with ready-to-use utility classes for instant use
-- Cross-browser, with documented limitations
-- Follows modern Sass standards (`@use`, `sass:color` module — no
-  deprecated global functions)
+## Why it fits EaseMotion CSS
+EaseMotion champions high-fidelity, polished interactions. The default browser scrollbar is often rigid and clashes with modern design aesthetics. By utilizing this mixin, developers can rapidly deploy visually cohesive, interactive scrollbars that respond smoothly to user intent across all major browsers with zero JavaScript.
