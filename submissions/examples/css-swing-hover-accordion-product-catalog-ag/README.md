@@ -41,3 +41,15 @@
    </details>
    ```
 
+   **Customizable CSS Custom Properties:**
+   ```css
+   :root {
+     --swing-duration: 1.1s;         /* Hanging swing animation length */
+     --swing-angle: 18deg;           /* Maximum initial swing rotation angle */
+     --expand-duration: 0.4s;        /* Slide down animation speed */
+     --expand-easing: cubic-bezier(0.215, 0.61, 0.355, 1);
+   }
+   ```
+
+3. **Why is it useful?**
+   It allows designers to add realistic physics-based swinging feedback to micro-interactions on ecommerce pages, utilizing clean code and standard HTML elements to remain lightweight, accessible, and SEO-friendly.
