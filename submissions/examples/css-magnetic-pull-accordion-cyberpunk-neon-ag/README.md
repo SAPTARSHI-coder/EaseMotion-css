@@ -25,3 +25,13 @@
          <span class="ease-status-label">ONLINE</span>
        </div>
 
+       <!-- Futuristic Caret -->
+       <span class="ease-cyber-caret" aria-hidden="true">&gt;</span>
+     </summary>
+
+     <!-- Panel Content -->
+     <div class="ease-cyber-content">
+       <p>Terminal diagnostics and telemetry...</p>
+     </div>
+   </details>
+   ```
