@@ -1,0 +1,157 @@
+/* ==========================================================================
+   EaseMotion CSS — !important Conflict Fix: Utility Classes vs Components
+   Issue #30483
+
+   THE PROBLEM:
+   Both utility classes (.u-hidden, .u-text-center, etc.) and component
+   styles (.ease-card, .ease-alert, etc.) used !important on overlapping
+   properties (display, text-align, visibility). Two !important rules of
+   equal specificity resolve by source order, so depending on how
+   stylesheets were concatenated/merged, a utility class could silently
+   fail to override a component — defeating the entire point of utilities
+   ("always wins, no exceptions").
+
+   THE FIX:
+   1. CSS Cascade Layers (@layer) replace !important entirely for this
+      relationship. Layers are declared in explicit priority order:
+      base < components < utilities. ANY rule in a later layer beats ANY
+      rule in an earlier layer, regardless of specificity or !important —
+      meaning utilities now win deterministically without needing
+      !important at all.
+   2. !important is removed from component styles entirely — components
+      no longer need to "defend" against utilities because the layer
+      order already guarantees utilities win.
+   3. !important is kept ONLY on a small number of true utility
+      overrides (.u-hidden) as a documented, intentional exception for
+      browsers/contexts where @layer support might be absent, but the
+      primary mechanism is now the layer system.
+   ========================================================================== */
+
+@layer base, components, utilities;
+
+@layer base {
+  :root {
+    --ease-bg: #0f0f17;
+    --ease-surface: #1a1a26;
+    --ease-border: #2a2a3a;
+    --ease-text: #e8e8f0;
+    --ease-text-dim: #9a9ab0;
+    --ease-accent: #7c5cff;
+    --ease-danger: #e5484d;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--ease-bg);
+    color: var(--ease-text);
+  }
+
+  .demo-header { padding: 60px 32px 20px; max-width: 760px; }
+  .demo-header h1 { margin: 0 0 12px; font-size: 1.7rem; }
+  .demo-header p, .demo-content p { color: var(--ease-text-dim); line-height: 1.7; }
+  .demo-header code {
+    background: var(--ease-surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    border: 1px solid var(--ease-border);
+  }
+  .demo-content { padding: 0 32px 60px; max-width: 760px; }
+  .demo-block {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: var(--ease-surface);
+    border: 1px solid var(--ease-border);
+    border-radius: 12px;
+  }
+  .demo-block h2 { margin: 0 0 8px; font-size: 1.1rem; }
+  .btn-row { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  #stateLog { font-family: monospace; font-size: 0.85rem; }
+}
+
+/* ---------------------------------------------------------------------
+   COMPONENTS LAYER — no !important anywhere. Components no longer need
+   to defend their own styles; the layer order below already guarantees
+   utilities will win when both apply to the same element.
+   --------------------------------------------------------------------- */
+@layer components {
+  .ease-btn {
+    background: var(--ease-accent);
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .ease-btn:hover { background: #6a4ce0; transform: translateY(-1px); }
+
+  .ease-card {
+    display: block;
+    text-align: left;
+    padding: 20px;
+    background: var(--ease-bg);
+    border: 1px solid var(--ease-border);
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+
+  .ease-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: rgba(229, 72, 77, 0.12);
+    border: 1px solid rgba(229, 72, 77, 0.4);
+    border-radius: 10px;
+    color: var(--ease-text);
+  }
+
+  /* Internal component state — also no longer needs !important, since
+     it lives in the same layer and utilities still win regardless */
+  .ease-alert.is-dismissed {
+    display: none;
+  }
+
+  .ease-alert-close {
+    background: transparent;
+    border: none;
+    color: var(--ease-text-dim);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+  }
+  .ease-alert-close:hover { color: var(--ease-text); }
+}
+
+/* ---------------------------------------------------------------------
+   UTILITIES LAYER — declared LAST in the @layer statement above, so
+   every rule here beats every rule in `components`, regardless of
+   selector specificity. !important is no longer required for this to
+   work; it's kept only on .u-hidden as a defensive fallback for the
+   rare case of mixing with non-layered third-party CSS.
+   --------------------------------------------------------------------- */
+@layer utilities {
+  .u-text-center {
+    text-align: center;
+  }
+
+  .u-hidden {
+    display: none !important; /* defensive fallback only — layer order
+                                  already makes this unnecessary against
+                                  any other rule declared in this file */
+  }
+
+  .u-text-dim {
+    color: var(--ease-text-dim);
+  }
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content { padding-left: 20px; padding-right: 20px; }
+}
