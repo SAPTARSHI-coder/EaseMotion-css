@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cursor Trails Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Cursor Trails</h1>
+        <p class="subtitle">Glowing trail follows cursor</p>
+
+        <!-- CURSOR TRAILS COMPONENT -->
+        <div class="trails-container">
+            <div class="trails-wrapper">
+                <div class="trails-display" id="trailsDisplay">
+                    <canvas id="trailsCanvas"></canvas>
+                    <div class="trails-overlay">
+                        <span class="overlay-icon">✨</span>
+                        <span class="overlay-text">Move your cursor</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="trails-controls">
+                    <div class="control-group">
+                        <label for="lengthSlider">Length:</label>
+                        <input type="range" id="lengthSlider" min="10" max="80" step="5" value="40" />
+                        <span id="lengthValue">40</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="sizeSlider">Size:</label>
+                        <input type="range" id="sizeSlider" min="2" max="15" step="0.5" value="6" />
+                        <span id="sizeValue">6</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1" />
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="trails-actions">
+                    <button class="trails-ctrl-btn" id="toggleBtn">⏸ Toggle</button>
+                    <button class="trails-ctrl-btn" id="resetBtn">⟳ Clear</button>
+                    <button class="trails-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="trails-ctrl-btn" id="toggleTrailBtn">🌊 Trail</button>
+                </div>
+
+                <div class="trails-status">
+                    <span class="status-label">Trail:</span>
+                    <span class="status-value" id="trailStatus">Active</span>
+                    <span class="status-label">Particles:</span>
+                    <span class="status-value" id="particleCount">0</span>
+                    <span class="status-label">FPS:</span>
+                    <span class="status-value" id="fpsDisplay">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #00d2d3);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Ocean</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('trailsCanvas');
+            const ctx = canvas.getContext('2d');
+            const trailStatus = document.getElementById('trailStatus');
+            const particleCount = document.getElementById('particleCount');
+            const fpsDisplay = document.getElementById('fpsDisplay');
+            const lengthSlider = document.getElementById('lengthSlider');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const speedSlider = document.getElementById('speedSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const lengthValue = document.getElementById('lengthValue');
+            const sizeValue = document.getElementById('sizeValue');
+            const speedValue = document.getElementById('speedValue');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const toggleTrailBtn = document.getElementById('toggleTrailBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                trailLength: 40,
+                particleSize: 6,
+                speed: 1,
+                color: '#4facfe',
+                enabled: true,
+                trailEnabled: true,
+                onToggle: function(state) {
+                    console.log(`✨ Trails ${state ? 'enabled' : 'disabled'}`);
+                },
+                onClear: function() {
+                    console.log('🧹 Trails cleared');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let particles = [];
+            let mouseX = -1000;
+            let mouseY = -1000;
+            let isEnabled = CONFIG.enabled;
+            let isTrailEnabled = CONFIG.trailEnabled;
+            let animationId = null;
+            let frameCount = 0;
+            let lastFpsUpdate = 0;
+            let currentFps = 0;
+            let timer = 0;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // PARTICLE CLASS
+            // ============================================
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = CONFIG.particleSize * (0.5 + Math.random() * 0.5);
+                    this.opacity = 0.8 + Math.random() * 0.2;
+                    this.decay = 0.01 + Math.random() * 0.02;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.speed = 0.5 + Math.random() * 0.5;
+                    this.wobble = Math.random() * Math.PI * 2;
+                    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                    this.wobbleAmount = 0.5 + Math.random() * 1.5;
+                    this.color = CONFIG.color;
+                    this.birth = Date.now();
+                    this.life = 1;
+                    this.trail = [];
+                    this.maxTrail = 3;
+                    this.isTrail = false;
+                }
+
+                update() {
+                    // Life decay
+                    this.life -= this.decay * CONFIG.speed;
+                    this.opacity = Math.max(0, this.life * 0.8);
+                    
+                    // Wobble motion
+                    this.wobble += this.wobbleSpeed;
+                    const wobX = Math.sin(this.wobble) * this.wobbleAmount * 0.1;
+                    const wobY = Math.cos(this.wobble * 0.7) * this.wobbleAmount * 0.1;
+                    
+                    // Gentle drift
+                    this.x += Math.sin(this.angle) * this.speed * 0.1 + wobX;
+                    this.y += Math.cos(this.angle) * this.speed * 0.1 + wobY;
+                    
+                    // Trail
+                    if (isTrailEnabled) {
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    }
+                    
+                    return this.life > 0.01;
+                }
+
+                draw(ctx) {
+                    const alpha = this.opacity;
+                    
+                    // Draw trail
+                    if (isTrailEnabled && this.trail.length > 1) {
+                        for (let i = 1; i < this.trail.length; i++) {
+                            const trailAlpha = (i / this.trail.length) * alpha * 0.3;
+                            const trailSize = this.size * (i / this.trail.length) * 0.6;
+                            ctx.beginPath();
+                            ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+                            ctx.fillStyle = this.color + Math.floor(trailAlpha * 200).toString(16).padStart(2, '0');
+                            ctx.fill();
+                        }
+                    }
+
+                    // Glow effect
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 4
+                    );
+                    gradient.addColorStop(0, this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0'));
+                    gradient.addColorStop(0.3, this.color + Math.floor(alpha * 150).toString(16).padStart(2, '0'));
+                    gradient.addColorStop(1, this.color + '00');
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // Core particle
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.8, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Highlight
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,' + (alpha * 0.4) + ')';
+                    ctx.fill();
+                }
+            }
+
+            // ============================================
+            // TRAIL SYSTEM
+            // ============================================
+            function addParticle(x, y) {
+                if (!isEnabled) return;
+                const particle = new Particle(x, y);
+                particles.push(particle);
+            }
+
+            function updateParticles() {
+                // Remove dead particles
+                particles = particles.filter(p => p.life > 0.01);
+                
+                // Update each particle
+                particles.forEach(p => p.update());
+                
+                // Limit particles
+                if (particles.length > 500) {
+                    particles.splice(0, particles.length - 500);
+                }
+                
+                particleCount.textContent = particles.length;
+            }
+
+            function drawParticles() {
+                const w = canvas.width;
+                const h = canvas.height;
+                
+                // Clear with fade effect
+                ctx.fillStyle = 'rgba(10, 10, 26, 0.05)';
+                ctx.fillRect(0, 0, w, h);
+                
+                // Draw particles
+                particles.forEach(p => p.draw(ctx));
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate(timestamp) {
+                // FPS tracking
+                frameCount++;
+                if (timestamp - lastFpsUpdate > 1000) {
+                    currentFps = frameCount;
+                    frameCount = 0;
+                    lastFpsUpdate = timestamp;
+                    fpsDisplay.textContent = currentFps;
+                }
+
+                // Add particle on mouse move
+                if (mouseX > -100 && mouseY > -100) {
+                    timer += 1 * CONFIG.speed;
+                    if (timer >= 1) {
+                        addParticle(mouseX, mouseY);
+                        timer = 0;
+                    }
+                }
+
+                updateParticles();
+                drawParticles();
+                
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function toggleTrails() {
+                isEnabled = !isEnabled;
+                trailStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                trailStatus.style.color = isEnabled ? '#34c759' : '#ff3b30';
+                toggleBtn.textContent = isEnabled ? '⏸ Toggle' : '▶ Toggle';
+                CONFIG.onToggle(isEnabled);
+                if (!isEnabled) {
+                    // Clear particles when disabled
+                    particles = [];
+                }
+            }
+
+            function clearTrails() {
+                particles = [];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                CONFIG.onClear();
+                trailStatus.textContent = 'Cleared';
+                setTimeout(() => {
+                    trailStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                }, 1000);
+            }
+
+            function randomizeColor() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43', '#a29bfe', '#55efc4'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+                // Update existing particles
+                particles.forEach(p => p.color = random);
+            }
+
+            function toggleTrailEffect() {
+                isTrailEnabled = !isTrailEnabled;
+                toggleTrailBtn.textContent = isTrailEnabled ? '🌊 Trail' : '🌊 No Trail';
+                CONFIG.trailEnabled = isTrailEnabled;
+                // Clear trails from existing particles
+                if (!isTrailEnabled) {
+                    particles.forEach(p => p.trail = []);
+                }
+            }
+
+            function updateConfig() {
+                CONFIG.trailLength = parseInt(lengthSlider.value);
+                CONFIG.particleSize = parseFloat(sizeSlider.value);
+                CONFIG.speed = parseFloat(speedSlider.value);
+                CONFIG.color = colorPicker.value;
+                lengthValue.textContent = CONFIG.trailLength;
+                sizeValue.textContent = CONFIG.particleSize.toFixed(1);
+                speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+                // Update existing particles
+                particles.forEach(p => {
+                    p.size = CONFIG.particleSize * (0.5 + Math.random() * 0.5);
+                });
+            }
+
+            // ============================================
+            // MOUSE / TOUCH EVENTS
+            // ============================================
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            });
+
+            canvas.addEventListener('mouseleave', function() {
+                mouseX = -1000;
+                mouseY = -1000;
+            });
+
+            // Touch support
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const rect = this.getBoundingClientRect();
+                const touch = e.touches[0];
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (touch.clientX - rect.left) * scaleX;
+                mouseY = (touch.clientY - rect.top) * scaleY;
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', function() {
+                mouseX = -1000;
+                mouseY = -1000;
+            });
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            lengthSlider.addEventListener('input', updateConfig);
+            sizeSlider.addEventListener('input', updateConfig);
+            speedSlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+
+            toggleBtn.addEventListener('click', toggleTrails);
+            resetBtn.addEventListener('click', clearTrails);
+            randomColorBtn.addEventListener('click', randomizeColor);
+            toggleTrailBtn.addEventListener('click', toggleTrailEffect);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleTrails();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearTrails();
+                }
+                if (e.key === 't' || e.key === 'T') {
+                    toggleTrailEffect();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Ocean': ['#4facfe', '#00d2d3'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#00d2d3'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    particles.forEach(p => p.color = primary);
+                    trailStatus.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        trailStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.CursorTrails = {
+                toggle: toggleTrails,
+                clear: clearTrails,
+                randomize: randomizeColor,
+                toggleTrail: toggleTrailEffect,
+                setLength: (length) => {
+                    lengthSlider.value = length;
+                    updateConfig();
+                },
+                setSize: (size) => {
+                    sizeSlider.value = size;
+                    updateConfig();
+                },
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    updateConfig();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                    particles.forEach(p => p.color = color);
+                },
+                isEnabled: () => isEnabled,
+                getState: () => ({
+                    enabled: isEnabled,
+                    trailLength: CONFIG.trailLength,
+                    particleSize: CONFIG.particleSize,
+                    speed: CONFIG.speed,
+                    color: CONFIG.color,
+                    trailEnabled: isTrailEnabled,
+                    particleCount: particles.length
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.trailLength) {
+                        lengthSlider.value = config.trailLength;
+                    }
+                    if (config.particleSize) {
+                        sizeSlider.value = config.particleSize;
+                    }
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                    }
+                    if (config.enabled !== undefined) {
+                        isEnabled = config.enabled;
+                    }
+                    if (config.trailEnabled !== undefined) {
+                        isTrailEnabled = config.trailEnabled;
+                    }
+                    updateConfig();
+                    trailStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                    toggleBtn.textContent = isEnabled ? '⏸ Toggle' : '▶ Toggle';
+                    toggleTrailBtn.textContent = isTrailEnabled ? '🌊 Trail' : '🌊 No Trail';
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            updateConfig();
+            trailStatus.textContent = 'Active';
+            trailStatus.style.color = '#34c759';
+            animate(0);
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                }, 200);
+            });
+
+            console.log('✨ Cursor Trails initialized!');
+            console.log('📖 API: window.CursorTrails');
+            console.log('📖 Usage:');
+            console.log('  - Move your cursor to see the trail');
+            console.log('  - Keyboard shortcuts: Space (toggle), C (clear), T (trail toggle)');
+            console.log('  - Adjust length, size, speed, and color');
+
+        })();
+    </script>
+</body>
+</html>
