@@ -1,0 +1,142 @@
+/*
+ * infinite-anim-perf-fix-ag
+ * Fix: High CPU usage and frame drops when chaining multiple infinite animations
+ * Issue: #9822
+ *
+ * Applying multiple infinite animations without GPU-compositing hints causes
+ * constant layout recalculations. This demo shows the correct approach:
+ * - Use `will-change: transform, opacity` to promote to GPU layer
+ * - Use `contain: layout style` to limit repaint scope
+ * - Animate only compositor-friendly properties (transform, opacity)
+ */
+
+:root {
+  --perf-duration: 3s;
+  --perf-easing: ease-in-out;
+}
+
+/* ✅ Performant infinite animation */
+.pulse-ring {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  position: relative;
+
+  /* ✅ Key: promote to GPU compositing layer */
+  will-change: transform, opacity;
+
+  /* ✅ Scope repaints to this element only */
+  contain: layout style;
+
+  animation: subtlePulse var(--perf-duration) var(--perf-easing) infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.08); opacity: 0.9; }
+}
+
+/* ✅ Halo ring — uses transform only, no layout properties */
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(6, 182, 212, 0.5);
+  will-change: transform, opacity;
+  animation: haloExpand var(--perf-duration) var(--perf-easing) infinite;
+}
+
+@keyframes haloExpand {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50%       { transform: scale(1.18); opacity: 0; }
+}
+
+/* ✅ Float animation — transform only */
+.float-card {
+  padding: 1.5rem 2rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 1rem;
+  color: #e2e8f0;
+  font-weight: 600;
+  will-change: transform;
+  contain: layout style;
+  animation: floatY 4s ease-in-out infinite;
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ✅ Shimmer — uses background-position shift, offloads to compositor */
+.shimmer-bar {
+  width: 280px;
+  height: 14px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.05) 0%,
+    rgba(255,255,255,0.15) 50%,
+    rgba(255,255,255,0.05) 100%
+  );
+  background-size: 200% 100%;
+  will-change: background-position;
+  animation: shimmerSlide 1.8s linear infinite;
+}
+
+@keyframes shimmerSlide {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* Demo layout */
+.demo-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5rem;
+  font-family: system-ui, sans-serif;
+  background: #080d1a;
+  color: #e2e8f0;
+  padding: 2rem;
+}
+
+h1 { font-size: 1.75rem; font-weight: 700; color: #fff; text-align: center; }
+
+.description {
+  max-width: 520px;
+  text-align: center;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.tip {
+  font-size: 0.8rem;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+/* ✅ Always stop animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring,
+  .pulse-ring::before,
+  .float-card,
+  .shimmer-bar {
+    animation: none;
+    will-change: auto;
+  }
+}
