@@ -1,9 +1,10 @@
-# TODO - Ripple Button Effect (#38704)
+# TODO - Typing Indicator Component (#38858)
 
-- [ ] Create folder: submissions/examples/ripple-button-harshitha/
-- [x] Add demo.html showcasing default "Click Me" button + optional variants (blue/green/purple)
-- [x] Add style.css implementing pure HTML+CSS ripple button effect (pseudo-element + keyframes, overflow hidden, 0.4–0.8s, responsive)
-- [x] Add README.md with: overview, folder structure, HTML usage, customization, browser compatibility
+- [ ] Create folder: submissions/examples/typing-indicator-harshitha/
+- [ ] Add index.html demonstrating default + customized typing indicator
+- [ ] Add style.css implementing 3 animated dots typing indicator with CSS variables
+- [ ] Add README.md with overview + usage + customization variables + compatibility
+- [x] Add preview.png (or preview.gif) demonstrating the component
+- [ ] Quick manual test: open index.html and verify smooth looping + responsive behavior
 
-- [ ] Verify demo.html works by opening in browser (hover + focus-visible)
 
