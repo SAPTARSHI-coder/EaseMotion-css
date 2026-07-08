@@ -34,3 +34,10 @@
        </div>
      </summary>
 
+     <!-- Panel Content -->
+     <div class="ease-catalog-content">
+       <p>Specifications and descriptive text...</p>
+     </div>
+   </details>
+   ```
+
