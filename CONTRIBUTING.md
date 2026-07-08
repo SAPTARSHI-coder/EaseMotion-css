@@ -42,6 +42,41 @@ This model exists to maintain quality, naming consistency, and design coherence 
 
 ---
 
+## Contributing to the Motion Engine
+
+The `easemotion/engine/` directory is the core of the v1.2 engineering architecture. Engine contributions are **architecture-level** and require maintainer approval — but they are the highest-impact work you can do on this project.
+
+### Engine file map
+
+| File | Responsibility |
+|------|---------------|
+| `easemotion/engine/parser.js` | Tokenize `em=""` strings into typed AST objects |
+| `easemotion/engine/compiler.js` | Convert AST → CSS rule strings; manage `className()` hashing |
+| `easemotion/engine/runtime.js` | `MutationObserver` browser runtime; CSS injection |
+| `easemotion/engine/optimizer.js` | Build-time tree-shaker for unused `@keyframes` / classes |
+| `easemotion/index.js` | Public entry point re-exporting all engine APIs |
+
+### Adding a new animation to the engine
+
+1. Ensure the `@keyframes` rule exists in `core/animations.css` with a `ease-kf-<name>` identifier.
+2. Add the animation name to `ANIMATION_NAMES` in `parser.js`.
+3. Add the `ease-kf-<name>` mapping to `KEYFRAME_MAP` in `compiler.js`.
+4. Write a unit test in `tests/engine.test.js` verifying the parse and compile output.
+5. Submit a PR — engine contributions go in `submissions/docs/engine-<name>/` with:
+   - `demo.html` (showing `em="<name>"` usage)
+   - `README.md` (documenting the animation tokens)
+
+### Running engine tests
+
+```bash
+npm test                   # run all 61 tests once
+npm run test:watch         # vitest in interactive watch mode
+```
+
+All engine tests live in `tests/engine.test.js`. They test the parser, compiler, and optimizer in isolation with no DOM dependency (Node.js only).
+
+---
+
 ## Where to Contribute
 
 EaseMotion CSS has four distinct contribution subdirectories depending on your chosen track. Your Pull Request **must only** add files inside one of these subdirectories:
@@ -216,6 +251,34 @@ If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer wi
 
 > **Reminder: Only Saptarshi Sadhu merges pull requests.**  
 > Do not self-merge, even if you have repository write access.
+
+---
+
+## Local Build & Verification
+
+If you are a maintainer or are contributing core framework modifications/documentation showcases, you must ensure that the minified build file (\`easemotion.min.css\`) is kept in sync with the source styles.
+
+We provide several local scripts to build and verify your changes:
+
+*   **Build the CSS bundle:**
+    \`\`\`bash
+    npm run build
+    \`\`\`
+    This bundles all imports in \`easemotion.css\` into a single minified \`easemotion.min.css\` file.
+*   **Watch and build automatically:**
+    \`\`\`bash
+    npm run build:watch
+    \`\`\`
+    This watches core framework files and directories for modifications and automatically rebuilds the minified CSS on every change.
+*   **Lint CSS files:**
+    \`\`\`bash
+    npm run lint:css
+    \`\`\`
+    This runs Stylelint on the stylesheet directory to verify compliance with naming and styling rules.
+
+### CI Verification Check
+
+Our continuous integration pipeline validates that the committed \`easemotion.min.css\` file matches the generated bundle exactly. If you modify any core files, remember to run \`npm run build\` and commit the updated \`easemotion.min.css\` file in your pull request, otherwise the CI build will fail.
 
 ---
 
