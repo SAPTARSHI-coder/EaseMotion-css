@@ -72,8 +72,11 @@ const SearchAutocomplete = ({
   const renderHighlightedText = (text, highlight) => {
     if (!highlight.trim()) return text;
     
+    // Escape special regex characters in the highlight string to prevent ReDoS
+    const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
     // Split on highlight term and include term in splits, ignore case
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    const parts = text.split(new RegExp(`(${escapedHighlight})`, 'gi'));
     
     return parts.map((part, index) => 
       part.toLowerCase() === highlight.toLowerCase() 
