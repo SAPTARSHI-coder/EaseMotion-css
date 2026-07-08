@@ -219,6 +219,34 @@ If an assigned issue has **no progress for 24 hours (1 day)**, the maintainer wi
 
 ---
 
+## Local Build & Verification
+
+If you are a maintainer or are contributing core framework modifications/documentation showcases, you must ensure that the minified build file (\`easemotion.min.css\`) is kept in sync with the source styles.
+
+We provide several local scripts to build and verify your changes:
+
+*   **Build the CSS bundle:**
+    \`\`\`bash
+    npm run build
+    \`\`\`
+    This bundles all imports in \`easemotion.css\` into a single minified \`easemotion.min.css\` file.
+*   **Watch and build automatically:**
+    \`\`\`bash
+    npm run build:watch
+    \`\`\`
+    This watches core framework files and directories for modifications and automatically rebuilds the minified CSS on every change.
+*   **Lint CSS files:**
+    \`\`\`bash
+    npm run lint:css
+    \`\`\`
+    This runs Stylelint on the stylesheet directory to verify compliance with naming and styling rules.
+
+### CI Verification Check
+
+Our continuous integration pipeline validates that the committed \`easemotion.min.css\` file matches the generated bundle exactly. If you modify any core files, remember to run \`npm run build\` and commit the updated \`easemotion.min.css\` file in your pull request, otherwise the CI build will fail.
+
+---
+
 ## 🔒 Core Protection Philosophy
 
 EaseMotion CSS follows a strict **submission-first** pipeline. No PR should ever modify `core/` or `components/` directly.
