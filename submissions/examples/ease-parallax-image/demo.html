@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parallax Image Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Parallax Image</h1>
+        <p class="subtitle">Image shifts based on mouse/cursor</p>
+
+        <!-- PARALLAX IMAGE COMPONENT -->
+        <div class="parallax-container">
+            <div class="parallax-wrapper">
+                <div class="parallax-card" id="parallaxCard">
+                    <div class="parallax-image" id="parallaxImage">
+                        <!-- Gradient background with overlay -->
+                        <div class="image-gradient"></div>
+                        <div class="image-content">
+                            <div class="image-icon">🌄</div>
+                            <div class="image-title">Mountain View</div>
+                            <div class="image-subtitle">Hover or move mouse to explore</div>
+                        </div>
+                    </div>
+                    <div class="parallax-overlay">
+                        <span class="overlay-text">✨ Move your cursor</span>
+                    </div>
+                    <div class="parallax-info">
+                        <span class="info-label">Position:</span>
+                        <span class="info-value" id="positionDisplay">0, 0</span>
+                        <span class="info-label">Intensity:</span>
+                        <span class="info-value" id="intensityDisplay">0%</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="parallax-controls">
+                    <button class="parallax-btn" id="intensityLow">🔽 Low</button>
+                    <button class="parallax-btn" id="intensityMedium">🔄 Medium</button>
+                    <button class="parallax-btn" id="intensityHigh">🔼 High</button>
+                    <button class="parallax-btn" id="toggleEffect">⏸ Toggle Effect</button>
+                    <button class="parallax-btn" id="resetBtn">⟳ Reset</button>
+                </div>
+
+                <div class="parallax-status">
+                    <span class="status-label">Effect:</span>
+                    <span class="status-value" id="effectStatus">Active</span>
+                    <span class="status-label">Intensity:</span>
+                    <span class="status-value" id="intensityStatus">Medium</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-parallax">
+                        <div class="variant-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <span>🌸</span>
+                        </div>
+                    </div>
+                    <span class="variant-label">Nature</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-parallax">
+                        <div class="variant-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <span>🌊</span>
+                        </div>
+                    </div>
+                    <span class="variant-label">Ocean</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-parallax">
+                        <div class="variant-image" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <span>🌿</span>
+                        </div>
+                    </div>
+                    <span class="variant-label">Forest</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-parallax">
+                        <div class="variant-image" style="background: linear-gradient(135deg, #f9d976 0%, #f39c12 100%);">
+                            <span>🌅</span>
+                        </div>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const card = document.getElementById('parallaxCard');
+            const image = document.getElementById('parallaxImage');
+            const positionDisplay = document.getElementById('positionDisplay');
+            const intensityDisplay = document.getElementById('intensityDisplay');
+            const effectStatus = document.getElementById('effectStatus');
+            const intensityStatus = document.getElementById('intensityStatus');
+            const intensityLow = document.getElementById('intensityLow');
+            const intensityMedium = document.getElementById('intensityMedium');
+            const intensityHigh = document.getElementById('intensityHigh');
+            const toggleBtn = document.getElementById('toggleEffect');
+            const resetBtn = document.getElementById('resetBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                intensity: 'medium', // 'low', 'medium', 'high'
+                maxOffset: 30, // pixels
+                smoothing: 0.1, // Smoothing factor (0-1)
+                enabled: true,
+                onMove: function(x, y, intensity) {
+                    console.log(`📍 Position: ${x.toFixed(1)}, ${y.toFixed(1)} - Intensity: ${intensity}%`);
+                },
+                onReset: function() {
+                    console.log('⟳ Parallax reset');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let targetX = 0;
+            let targetY = 0;
+            let currentX = 0;
+            let currentY = 0;
+            let animationId = null;
+            let isHovering = false;
+            let currentIntensity = CONFIG.intensity;
+
+            // ============================================
+            // INTENSITY PRESETS
+            // ============================================
+            const INTENSITY_MAP = {
+                low: { maxOffset: 15, label: 'Low' },
+                medium: { maxOffset: 30, label: 'Medium' },
+                high: { maxOffset: 50, label: 'High' }
+            };
+
+            // ============================================
+            // PARALLAX FUNCTIONS
+            // ============================================
+            function getIntensityConfig() {
+                return INTENSITY_MAP[currentIntensity] || INTENSITY_MAP.medium;
+            }
+
+            function updateParallax() {
+                if (!CONFIG.enabled) {
+                    image.style.transform = 'translate(0, 0) scale(1.05)';
+                    return;
+                }
+
+                // Smooth interpolation
+                currentX += (targetX - currentX) * CONFIG.smoothing;
+                currentY += (targetY - currentY) * CONFIG.smoothing;
+
+                // Apply transform
+                const maxOffset = getIntensityConfig().maxOffset;
+                const offsetX = currentX * maxOffset;
+                const offsetY = currentY * maxOffset;
+                
+                // Calculate intensity percentage
+                const distance = Math.sqrt(currentX * currentX + currentY * currentY);
+                const intensityPercent = Math.min(distance * 100, 100);
+
+                // Apply to image
+                image.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.05)`;
+
+                // Update display
+                positionDisplay.textContent = `${(currentX * 100).toFixed(0)}%, ${(currentY * 100).toFixed(0)}%`;
+                intensityDisplay.textContent = `${intensityPercent.toFixed(0)}%`;
+
+                // Continue animation
+                if (isHovering || Math.abs(currentX) > 0.001 || Math.abs(currentY) > 0.001) {
+                    animationId = requestAnimationFrame(updateParallax);
+                } else {
+                    // Idle state - stop animation
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                }
+
+                // Trigger callback
+                CONFIG.onMove(currentX, currentY, intensityPercent);
+            }
+
+            function setTarget(x, y) {
+                targetX = Math.max(-1, Math.min(1, x));
+                targetY = Math.max(-1, Math.min(1, y));
+                
+                if (!animationId && CONFIG.enabled) {
+                    animationId = requestAnimationFrame(updateParallax);
+                }
+            }
+
+            function resetParallax() {
+                targetX = 0;
+                targetY = 0;
+                isHovering = false;
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                currentX = 0;
+                currentY = 0;
+                image.style.transform = 'translate(0, 0) scale(1.05)';
+                positionDisplay.textContent = '0%, 0%';
+                intensityDisplay.textContent = '0%';
+                CONFIG.onReset();
+            }
+
+            // ============================================
+            // EVENT HANDLERS
+            // ============================================
+            // Mouse move on card
+            card.addEventListener('mousemove', function(e) {
+                if (!CONFIG.enabled) return;
+                
+                const rect = this.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                
+                // Convert to -1 to 1 range
+                const normalizedX = (x * 2) - 1;
+                const normalizedY = (y * 2) - 1;
+                
+                isHovering = true;
+                setTarget(normalizedX, -normalizedY); // Invert Y for natural feel
+            });
+
+            card.addEventListener('mouseleave', function() {
+                isHovering = false;
+                setTarget(0, 0);
+            });
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function setIntensity(level) {
+                if (INTENSITY_MAP[level]) {
+                    currentIntensity = level;
+                    CONFIG.intensity = level;
+                    intensityStatus.textContent = INTENSITY_MAP[level].label;
+                    
+                    // Update button styles
+                    document.querySelectorAll('#intensityLow, #intensityMedium, #intensityHigh').forEach(btn => {
+                        btn.style.opacity = '0.6';
+                    });
+                    const btnMap = {
+                        low: intensityLow,
+                        medium: intensityMedium,
+                        high: intensityHigh
+                    };
+                    if (btnMap[level]) {
+                        btnMap[level].style.opacity = '1';
+                    }
+                }
+            }
+
+            function toggleEffect() {
+                CONFIG.enabled = !CONFIG.enabled;
+                effectStatus.textContent = CONFIG.enabled ? 'Active' : 'Paused';
+                toggleBtn.textContent = CONFIG.enabled ? '⏸ Toggle Effect' : '▶ Toggle Effect';
+                
+                if (!CONFIG.enabled) {
+                    if (animationId) {
+                        cancelAnimationFrame(animationId);
+                        animationId = null;
+                    }
+                    image.style.transform = 'translate(0, 0) scale(1.05)';
+                    positionDisplay.textContent = '0%, 0%';
+                    intensityDisplay.textContent = '0%';
+                } else {
+                    // Resume with current position
+                    if (isHovering) {
+                        animationId = requestAnimationFrame(updateParallax);
+                    }
+                }
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            intensityLow.addEventListener('click', () => setIntensity('low'));
+            intensityMedium.addEventListener('click', () => setIntensity('medium'));
+            intensityHigh.addEventListener('click', () => setIntensity('high'));
+            toggleBtn.addEventListener('click', toggleEffect);
+            resetBtn.addEventListener('click', resetParallax);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleEffect();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetParallax();
+                }
+                if (e.key === '1') setIntensity('low');
+                if (e.key === '2') setIntensity('medium');
+                if (e.key === '3') setIntensity('high');
+            });
+
+            // ============================================
+            // WINDOW RESIZE
+            // ============================================
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    // Recalculate positions if needed
+                    if (isHovering) {
+                        // Trigger a small update
+                        const rect = card.getBoundingClientRect();
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        // Simulate a mouse move at center
+                        const fakeEvent = {
+                            clientX: rect.left + centerX,
+                            clientY: rect.top + centerY
+                        };
+                        const mouseEvent = new MouseEvent('mousemove', fakeEvent);
+                        card.dispatchEvent(mouseEvent);
+                    }
+                }, 200);
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const parallax = card.querySelector('.variant-parallax');
+                const image = card.querySelector('.variant-image');
+                
+                let targetX = 0;
+                let targetY = 0;
+                let currentX = 0;
+                let currentY = 0;
+                let animId = null;
+
+                function updateVariant() {
+                    currentX += (targetX - currentX) * 0.1;
+                    currentY += (targetY - currentY) * 0.1;
+                    
+                    const offsetX = currentX * 20;
+                    const offsetY = currentY * 20;
+                    
+                    image.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.1)`;
+                    
+                    if (Math.abs(currentX) > 0.001 || Math.abs(currentY) > 0.001) {
+                        animId = requestAnimationFrame(updateVariant);
+                    } else {
+                        animId = null;
+                    }
+                }
+
+                parallax.addEventListener('mousemove', function(e) {
+                    const rect = this.getBoundingClientRect();
+                    const x = (e.clientX - rect.left) / rect.width;
+                    const y = (e.clientY - rect.top) / rect.height;
+                    
+                    targetX = (x * 2) - 1;
+                    targetY = (y * 2) - 1;
+                    
+                    if (!animId) {
+                        animId = requestAnimationFrame(updateVariant);
+                    }
+                });
+
+                parallax.addEventListener('mouseleave', function() {
+                    targetX = 0;
+                    targetY = 0;
+                    if (!animId) {
+                        animId = requestAnimationFrame(updateVariant);
+                    }
+                });
+
+                // Initial animation
+                setTimeout(() => {
+                    targetX = 0.3;
+                    targetY = -0.2;
+                    if (!animId) {
+                        animId = requestAnimationFrame(updateVariant);
+                    }
+                }, 500);
+
+                // Reset after a few seconds
+                setTimeout(() => {
+                    targetX = 0;
+                    targetY = 0;
+                }, 3000);
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.ParallaxImage = {
+                setPosition: (x, y) => {
+                    setTarget(x, y);
+                    isHovering = true;
+                },
+                reset: resetParallax,
+                setIntensity: setIntensity,
+                toggle: toggleEffect,
+                isEnabled: () => CONFIG.enabled,
+                getIntensity: () => currentIntensity,
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            // Set initial state
+            setIntensity('medium');
+            effectStatus.textContent = 'Active';
+            intensityStatus.textContent = 'Medium';
+            toggleBtn.textContent = '⏸ Toggle Effect';
+
+            // Initialize with a subtle animation
+            setTimeout(() => {
+                // Gentle float animation
+                let floatPhase = 0;
+                function gentleFloat() {
+                    if (!CONFIG.enabled) return;
+                    if (!isHovering) {
+                        const floatX = Math.sin(floatPhase) * 0.1;
+                        const floatY = Math.cos(floatPhase * 0.7) * 0.1;
+                        setTarget(floatX, floatY);
+                    }
+                    floatPhase += 0.005;
+                    if (!isHovering) {
+                        requestAnimationFrame(gentleFloat);
+                    }
+                }
+                // Start gentle float after a delay
+                setTimeout(gentleFloat, 1000);
+            }, 1000);
+
+            console.log('✅ Parallax Image initialized!');
+            console.log('📖 API: window.ParallaxImage');
+            console.log('📖 Usage:');
+            console.log('  - Hover over the image to see parallax effect');
+            console.log('  - Keyboard shortcuts: Space (toggle), R (reset), 1-3 (intensity)');
+            console.log('  - Variants show different color themes');
+
+        })();
+    </script>
+</body>
+</html>
