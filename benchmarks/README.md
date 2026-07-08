@@ -38,6 +38,6 @@ See [results/latest.json](./results/latest.json) for the most recent benchmark r
 
 | Library | Version tested | Notes |
 |---------|---------------|-------|
-| **EaseMotion CSS** | 1.1.0 | Pure CSS, zero JS |
+| **EaseMotion CSS** | 1.2.0 | Pure CSS, zero JS |
 | Animate.css | 4.1.1 | Pure CSS |
 | motion (Framer) | latest | JS-based |
