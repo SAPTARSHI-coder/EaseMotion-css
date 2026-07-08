@@ -22,3 +22,7 @@ Apply the class `.ease-jello-hover` to any modal card or element to immediately 
 </div>
 ```
 
+### 3. Why is it useful?
+
+It provides e-commerce builders with a micro-interactive, responsive feedback element that captures user attention during checkout using zero-overhead CSS keyframe adjustments rather than expensive JS animation libraries, matching EaseMotion's focus on lightweight performance.
+
