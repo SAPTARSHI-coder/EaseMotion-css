@@ -42,6 +42,41 @@ This model exists to maintain quality, naming consistency, and design coherence 
 
 ---
 
+## Contributing to the Motion Engine
+
+The `easemotion/engine/` directory is the core of the v1.2 engineering architecture. Engine contributions are **architecture-level** and require maintainer approval — but they are the highest-impact work you can do on this project.
+
+### Engine file map
+
+| File | Responsibility |
+|------|---------------|
+| `easemotion/engine/parser.js` | Tokenize `em=""` strings into typed AST objects |
+| `easemotion/engine/compiler.js` | Convert AST → CSS rule strings; manage `className()` hashing |
+| `easemotion/engine/runtime.js` | `MutationObserver` browser runtime; CSS injection |
+| `easemotion/engine/optimizer.js` | Build-time tree-shaker for unused `@keyframes` / classes |
+| `easemotion/index.js` | Public entry point re-exporting all engine APIs |
+
+### Adding a new animation to the engine
+
+1. Ensure the `@keyframes` rule exists in `core/animations.css` with a `ease-kf-<name>` identifier.
+2. Add the animation name to `ANIMATION_NAMES` in `parser.js`.
+3. Add the `ease-kf-<name>` mapping to `KEYFRAME_MAP` in `compiler.js`.
+4. Write a unit test in `tests/engine.test.js` verifying the parse and compile output.
+5. Submit a PR — engine contributions go in `submissions/docs/engine-<name>/` with:
+   - `demo.html` (showing `em="<name>"` usage)
+   - `README.md` (documenting the animation tokens)
+
+### Running engine tests
+
+```bash
+npm test                   # run all 61 tests once
+npm run test:watch         # vitest in interactive watch mode
+```
+
+All engine tests live in `tests/engine.test.js`. They test the parser, compiler, and optimizer in isolation with no DOM dependency (Node.js only).
+
+---
+
 ## Where to Contribute
 
 EaseMotion CSS has four distinct contribution subdirectories depending on your chosen track. Your Pull Request **must only** add files inside one of these subdirectories:
