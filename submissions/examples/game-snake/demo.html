@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐍 Snake · classic</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-wrapper">
+    <div class="header">
+      <div class="score-box"><span>🍎</span> <span id="scoreDisplay">0</span></div>
+      <button class="restart-btn" id="restartButton">↻ restart</button>
+    </div>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <div class="controls-hint">
+      <kbd>⬆</kbd> <kbd>⬇</kbd> <kbd>⬅</kbd> <kbd>➡</kbd>
+      <span style="margin-left: 0.3rem;">·</span>
+      <span style="color:#b4d0d0;">space to pause</span>
+    </div>
+    <div id="statusMessage" class="status-message">▶ press any arrow</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreSpan = document.getElementById('scoreDisplay');
+      const statusDiv = document.getElementById('statusMessage');
+
+      // ---------- constants ----------
+      const GRID_SIZE = 20;          // 20x20 grid
+      const CELL_SIZE = canvas.width / GRID_SIZE;  // 20px
+
+      // directions
+      const DIR = {
+        UP:    { dx: 0, dy: -1 },
+        DOWN:  { dx: 0, dy: 1 },
+        LEFT:  { dx: -1, dy: 0 },
+        RIGHT: { dx: 1, dy: 0 }
+      };
+
+      // ---------- game state ----------
+      let snake = [];          // array of {x, y}
+      let food = { x: 8, y: 10 };
+      let direction = DIR.RIGHT;
+      let nextDirection = DIR.RIGHT;
+      let score = 0;
+      let gameOver = false;
+      let winFlag = false;         // true if win (all cells filled)
+      let paused = false;
+      let gameInterval = null;
+      const MOVE_INTERVAL_MS = 150;
+
+      // ---------- helper functions ----------
+      function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      // generate food at empty cell (returns true if success, false if board full)
+      function generateFood() {
+        const totalCells = GRID_SIZE * GRID_SIZE;
+        if (snake.length >= totalCells) {
+          // board is full → win condition
+          return false;
+        }
+
+        // collect free cells
+        const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
+        if (snakeSet.size === totalCells) return false; // full
+
+        let freeCells = [];
+        for (let y = 0; y < GRID_SIZE; y++) {
+          for (let x = 0; x < GRID_SIZE; x++) {
+            if (!snakeSet.has(`${x},${y}`)) {
+              freeCells.push({ x, y });
+            }
+          }
+        }
+        if (freeCells.length === 0) return false;
+        const randIndex = Math.floor(Math.random() * freeCells.length);
+        food = freeCells[randIndex];
+        return true;
+      }
+
+      // reset game
+      function resetGame() {
+        // stop interval
+        if (gameInterval) {
+          clearInterval(gameInterval);
+          gameInterval = null;
+        }
+
+        // initial snake: 3 cells horizontal
+        snake = [
+          { x: 9, y: 10 },
+          { x: 8, y: 10 },
+          { x: 7, y: 10 }
+        ];
+        direction = DIR.RIGHT;
+        nextDirection = DIR.RIGHT;
+        score = 0;
+        gameOver = false;
+        winFlag = false;
+        paused = false;
+        scoreSpan.textContent = '0';
+        statusDiv.textContent = '▶ press any arrow';
+        statusDiv.style.color = '#f0d89f';
+
+        // place food
+        const foodPlaced = generateFood();
+        if (!foodPlaced) {
+          // extremely unlikely with 3 cells, but fallback
+          food = { x: 5, y: 5 };
+        }
+
+        drawCanvas();
+        startLoop();
+      }
+
+      // ---------- game loop (interval) ----------
+      function startLoop() {
+        if (gameInterval) clearInterval(gameInterval);
+        gameInterval = setInterval(() => {
+          if (!paused && !gameOver && !winFlag) {
+            moveSnake();
+            drawCanvas();
+          }
+        }, MOVE_INTERVAL_MS);
+      }
+
+      // ---------- core movement ----------
+      function moveSnake() {
+        // apply queued direction
+        direction = { ...nextDirection };
+
+        // compute new head
+        const head = snake[0];
+        const newHead = {
+          x: head.x + direction.dx,
+          y: head.y + direction.dy
+        };
+
+        // check wall collision
+        if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+          handleGameOver('wall');
+          return;
+        }
+
+        // check if food eaten
+        const isEating = (newHead.x === food.x && newHead.y === food.y);
+
+        // build new snake array
+        let newSnake = [newHead, ...snake];
+
+        if (!isEating) {
+          newSnake.pop(); // remove tail
+        }
+
+        // check self-collision (new head collides with body except tail if not eating)
+        const headStr = `${newHead.x},${newHead.y}`;
+        // we need to check against the rest of the snake (excluding head itself)
+        // but careful: if we ate, tail is kept, so we check all except index 0
+        const bodyWithoutHead = newSnake.slice(1);
+        const collision = bodyWithoutHead.some(seg => seg.x === newHead.x && seg.y === newHead.y);
+        if (collision) {
+          handleGameOver('self');
+          return;
+        }
+
+        // apply new snake
+        snake = newSnake;
+
+        // handle food eaten
+        if (isEating) {
+          score++;
+          scoreSpan.textContent = score;
+          const success = generateFood();
+          if (!success) {
+            // board is full → win!
+            winFlag = true;
+            gameOver = false;
+            statusDiv.textContent = '🎉 YOU WIN! Perfect board!';
+            statusDiv.style.color = '#b5e6b5';
+            drawCanvas();
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = null;
+            return;
+          }
+        }
+
+        // update status if game is running
+        if (!gameOver && !winFlag) {
+          statusDiv.textContent = `🍎 ${score}`;
+          statusDiv.style.color = '#f0d89f';
+        }
+      }
+
+      // ---------- game over handling ----------
+      function handleGameOver(reason) {
+        if (gameOver) return;
+        gameOver = true;
+        if (gameInterval) {
+          clearInterval(gameInterval);
+          gameInterval = null;
+        }
+        let msg = reason === 'wall' ? '💥 hit the wall' : '🌀 bit own tail';
+        statusDiv.textContent = `💀 game over · ${msg}`;
+        statusDiv.style.color = '#f7a1a1';
+        drawCanvas(); // re-draw with game-over state (we show red overlay)
+      }
+
+      // ---------- drawing ----------
+      function drawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // draw grid (very subtle)
+        ctx.strokeStyle = '#2f4653';
+        ctx.lineWidth = 0.8;
+        for (let i = 0; i <= GRID_SIZE; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * CELL_SIZE, 0);
+          ctx.lineTo(i * CELL_SIZE, canvas.height);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * CELL_SIZE);
+          ctx.lineTo(canvas.width, i * CELL_SIZE);
+          ctx.stroke();
+        }
+
+        // draw food
+        ctx.fillStyle = '#ff5e5e';
+        ctx.shadowColor = '#ff9f6e';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        const fx = food.x * CELL_SIZE + CELL_SIZE/2;
+        const fy = food.y * CELL_SIZE + CELL_SIZE/2;
+        ctx.arc(fx, fy, CELL_SIZE/2 - 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // draw snake
+        snake.forEach((seg, index) => {
+          const x = seg.x * CELL_SIZE;
+          const y = seg.y * CELL_SIZE;
+          const padding = index === 0 ? 1 : 2; // head slightly bigger
+          const radius = 4;
+          ctx.fillStyle = index === 0 ? '#b3e06b' : '#7bc47f';
+          ctx.shadowColor = '#8bc34a';
+          ctx.shadowBlur = index === 0 ? 12 : 6;
+
+          ctx.beginPath();
+          ctx.roundRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2, radius);
+          ctx.fill();
+        });
+        ctx.shadowBlur = 0;
+
+        // if game over: overlay red tint
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(180, 40, 40, 0.25)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 26px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#fce8d0';
+          ctx.shadowColor = '#220000';
+          ctx.shadowBlur = 16;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('☠', canvas.width/2, canvas.height/2 - 8);
+          ctx.shadowBlur = 0;
+        } else if (winFlag) {
+          ctx.fillStyle = 'rgba(120, 200, 120, 0.18)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#d4f0b0';
+          ctx.shadowColor = '#1f4a1f';
+          ctx.shadowBlur = 18;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🏆', canvas.width/2, canvas.height/2 - 6);
+          ctx.shadowBlur = 0;
+        } else if (paused) {
+          ctx.fillStyle = 'rgba(30, 30, 30, 0.45)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#e0e8d0';
+          ctx.shadowColor = '#000000';
+          ctx.shadowBlur = 14;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('⏸', canvas.width/2, canvas.height/2);
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // helper: roundRect
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        return this;
+      };
+
+      // ---------- keyboard control ----------
+      function handleKey(e) {
+        const key = e.key;
+        // prevent page scrolling with arrows / space
+        const controlKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'Space'];
+        if (controlKeys.includes(key) || key === ' ') {
+          e.preventDefault();
+        }
+
+        // restart with 'r' key (bonus)
+        if (key === 'r' || key === 'R') {
+          resetGame();
+          return;
+        }
+
+        // pause with space
+        if (key === ' ' || key === 'Space') {
+          if (!gameOver && !winFlag) {
+            paused = !paused;
+            statusDiv.textContent = paused ? '⏸ paused' : `▶ score ${score}`;
+            statusDiv.style.color = paused ? '#b0d0d0' : '#f0d89f';
+            drawCanvas();
+          }
+          return;
+        }
+
+        // direction change (only if game not over and not win)
+        if (gameOver || winFlag) return;
+
+        let newDir = null;
+        if (key === 'ArrowUp') newDir = DIR.UP;
+        else if (key === 'ArrowDown') newDir = DIR.DOWN;
+        else if (key === 'ArrowLeft') newDir = DIR.LEFT;
+        else if (key === 'ArrowRight') newDir = DIR.RIGHT;
+        else return;
+
+        // prevent 180° reverse
+        if (direction.dx === -newDir.dx && direction.dy === -newDir.dy) {
+          return;
+        }
+
+        // queue next direction
+        nextDirection = newDir;
+        if (paused) {
+          // if paused, we still allow direction change but keep paused
+        }
+        // if game was idle (just started) show status
+        if (!gameOver && !winFlag && !paused) {
+          statusDiv.textContent = `▶ ${score}`;
+          statusDiv.style.color = '#f0d89f';
+        }
+      }
+
+      // ---------- init ----------
+      function init() {
+        resetGame();
+        window.addEventListener('keydown', handleKey);
+        // restart button
+        document.getElementById('restartButton').addEventListener('click', resetGame);
+        // prevent context menu on canvas (optional)
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+      }
+
+      // start everything when DOM ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

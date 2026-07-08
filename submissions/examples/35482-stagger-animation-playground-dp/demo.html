@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stagger Animation Playground — EaseMotion CSS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="hero">
+    <p class="hero__eyebrow">EaseMotion CSS · Examples</p>
+    <h1 class="hero__title">Stagger Animation Playground</h1>
+    <p class="hero__lead">
+      A single keyframe animation, applied to every grid item, timed by a
+      per-item delay. Change how that delay is calculated and the entire
+      flow of motion changes with it.
+    </p>
+  </header>
+
+  <main class="playground">
+
+    <section class="control-panel" aria-labelledby="controls-title">
+      <h2 id="controls-title" class="control-panel__title">Controls</h2>
+
+      <div class="control-field">
+        <label for="preset-select">Stagger Preset</label>
+        <select id="preset-select">
+          <option value="sequential">Sequential</option>
+          <option value="center-out">Center-Out</option>
+          <option value="reverse">Reverse</option>
+          <option value="random">Random</option>
+          <option value="wave">Wave</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label for="stagger-range">Stagger Delay</label>
+        <div class="control-field__row">
+          <input type="range" id="stagger-range" min="0" max="300" step="10" value="80">
+          <output for="stagger-range" id="stagger-output">80ms</output>
+        </div>
+      </div>
+
+      <div class="control-field">
+        <label for="duration-range">Animation Duration</label>
+        <div class="control-field__row">
+          <input type="range" id="duration-range" min="200" max="1600" step="50" value="500">
+          <output for="duration-range" id="duration-output">500ms</output>
+        </div>
+      </div>
+
+      <div class="control-field">
+        <label for="direction-select">Animation Direction</label>
+        <select id="direction-select">
+          <option value="up" selected>Slide Up</option>
+          <option value="down">Slide Down</option>
+          <option value="left">Slide Left</option>
+          <option value="right">Slide Right</option>
+          <option value="scale">Scale In</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label for="ease-select">Easing</label>
+        <select id="ease-select">
+          <option value="ease">ease</option>
+          <option value="ease-in">ease-in</option>
+          <option value="ease-out" selected>ease-out</option>
+          <option value="ease-in-out">ease-in-out</option>
+          <option value="cubic-bezier(.34,1.56,.64,1)">elastic overshoot</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label for="count-range">Number of Items</label>
+        <div class="control-field__row">
+          <input type="range" id="count-range" min="8" max="12" step="1" value="10">
+          <output for="count-range" id="count-output">10</output>
+        </div>
+      </div>
+
+      <div class="control-panel__actions">
+        <button type="button" class="action-button action-button--primary" id="replay-button">
+          Replay
+        </button>
+        <button type="button" class="action-button" id="reset-button">
+          Reset
+        </button>
+      </div>
+
+      <p class="control-panel__status" id="motion-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="preview-panel" aria-labelledby="preview-title">
+      <h2 id="preview-title" class="visually-hidden">Live Stagger Preview</h2>
+      <div class="stagger-grid" id="stagger-grid" aria-hidden="true"></div>
+      <p class="preview-panel__hint">Each tile shares the same animation — only its delay changes.</p>
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    <p>Pure CSS animation timing, driven by per-item custom properties. Minimal JS only computes delays.</p>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var grid = document.getElementById("stagger-grid");
+
+      var presetSelect = document.getElementById("preset-select");
+      var staggerRange = document.getElementById("stagger-range");
+      var durationRange = document.getElementById("duration-range");
+      var directionSelect = document.getElementById("direction-select");
+      var easeSelect = document.getElementById("ease-select");
+      var countRange = document.getElementById("count-range");
+
+      var staggerOutput = document.getElementById("stagger-output");
+      var durationOutput = document.getElementById("duration-output");
+      var countOutput = document.getElementById("count-output");
+
+      var replayButton = document.getElementById("replay-button");
+      var resetButton = document.getElementById("reset-button");
+      var motionStatus = document.getElementById("motion-status");
+
+      var DEFAULTS = {
+        preset: "sequential",
+        stagger: 80,
+        duration: 500,
+        direction: "up",
+        ease: "ease-out",
+        count: 10
+      };
+
+      var randomDelays = [];
+
+      function buildRandomDelays(count) {
+        randomDelays = [];
+        for (var i = 0; i < count; i++) {
+          randomDelays.push(Math.random());
+        }
+      }
+
+      function computeOrderValue(preset, index, count) {
+        var last = count - 1;
+
+        switch (preset) {
+          case "sequential":
+            return index;
+          case "reverse":
+            return last - index;
+          case "center-out": {
+            var center = last / 2;
+            return Math.abs(index - center);
+          }
+          case "wave": {
+            var midpoint = last / 2;
+            return Math.abs(Math.sin((index / last) * Math.PI * 1.5)) * midpoint;
+          }
+          case "random":
+            return randomDelays[index] * last;
+          default:
+            return index;
+        }
+      }
+
+      function renderGrid(count) {
+        grid.innerHTML = "";
+        for (var i = 0; i < count; i++) {
+          var tile = document.createElement("div");
+          tile.className = "stagger-item";
+          tile.style.setProperty("--index", String(i + 1));
+          grid.appendChild(tile);
+        }
+      }
+
+      function applySettings() {
+        var preset = presetSelect.value;
+        var staggerMs = parseInt(staggerRange.value, 10);
+        var durationMs = parseInt(durationRange.value, 10);
+        var direction = directionSelect.value;
+        var ease = easeSelect.value;
+        var count = grid.children.length;
+
+        staggerOutput.textContent = staggerMs + "ms";
+        durationOutput.textContent = durationMs + "ms";
+
+        Array.prototype.forEach.call(grid.children, function (tile, index) {
+          var orderValue = computeOrderValue(preset, index, count);
+          var delayMs = orderValue * staggerMs;
+
+          tile.style.setProperty("--delay", delayMs.toFixed(0) + "ms");
+          tile.style.setProperty("--duration", durationMs + "ms");
+          tile.style.setProperty("--ease", ease);
+          tile.setAttribute("data-direction", direction);
+        });
+      }
+
+      function replay() {
+        Array.prototype.forEach.call(grid.children, function (tile) {
+          tile.style.animation = "none";
+          void tile.offsetWidth;
+          tile.style.animation = "";
+        });
+      }
+
+      function rebuildGrid() {
+        var count = parseInt(countRange.value, 10);
+        countOutput.textContent = String(count);
+        buildRandomDelays(count);
+        renderGrid(count);
+        applySettings();
+      }
+
+      presetSelect.addEventListener("change", function () {
+        if (presetSelect.value === "random") {
+          buildRandomDelays(grid.children.length);
+        }
+        applySettings();
+        replay();
+      });
+
+      [staggerRange, durationRange, directionSelect, easeSelect].forEach(function (control) {
+        control.addEventListener("input", function () {
+          applySettings();
+          replay();
+        });
+      });
+
+      countRange.addEventListener("input", function () {
+        rebuildGrid();
+        replay();
+      });
+
+      replayButton.addEventListener("click", replay);
+
+      resetButton.addEventListener("click", function () {
+        presetSelect.value = DEFAULTS.preset;
+        staggerRange.value = DEFAULTS.stagger;
+        durationRange.value = DEFAULTS.duration;
+        directionSelect.value = DEFAULTS.direction;
+        easeSelect.value = DEFAULTS.ease;
+        countRange.value = DEFAULTS.count;
+
+        rebuildGrid();
+        replay();
+      });
+
+      var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      function updateMotionStatus() {
+        motionStatus.textContent = motionQuery.matches
+          ? "Reduced motion is enabled on your system, so stagger delays are minimized below."
+          : "";
+      }
+
+      updateMotionStatus();
+      if (motionQuery.addEventListener) {
+        motionQuery.addEventListener("change", updateMotionStatus);
+      }
+
+      buildRandomDelays(DEFAULTS.count);
+      renderGrid(DEFAULTS.count);
+      applySettings();
+    })();
+  </script>
+
+</body>
+</html>
