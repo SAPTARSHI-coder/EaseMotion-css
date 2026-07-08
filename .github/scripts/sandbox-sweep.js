@@ -14,7 +14,6 @@ const repo = process.env.GITHUB_REPOSITORY;
 
 const SPAMMERS = [
   'xenon010101',
-  'saidai-bhuvanesh',
   'tmdeveloper007',
   'desireddymohithreddy0925',
   'sanrishi',

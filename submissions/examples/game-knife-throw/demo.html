@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🗡️ Knife Throw</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🗡️ Knife Throw</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🗡️ Knives</span>
+        <span class="stat-value" id="knivesDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🎯 Hits</span>
+        <span class="stat-value" id="hitsDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="500" height="500"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="difficultyBtn">⭐ Medium</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>🖱️ Click or press <kbd>Space</kbd> to throw</span>
+      <span>·</span>
+      <span>🎯 Hit the target areas</span>
+      <span>·</span>
+      <span>⚔️ Avoid hitting other knives!</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">🗡️ Click Start to begin throwing!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const knivesDisplay = document.getElementById('knivesDisplay');
+      const hitsDisplay = document.getElementById('hitsDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const difficultyBtn = document.getElementById('difficultyBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 500;
+      const HEIGHT = 500;
+      const CENTER_X = WIDTH / 2;
+      const CENTER_Y = HEIGHT / 2;
+      const WHEEL_RADIUS = 160;
+      const KNIFE_LENGTH = 30;
+      const KNIFE_WIDTH = 3;
+
+      // ---------- Difficulty Settings ----------
+      const DIFFICULTIES = {
+        easy: { speed: 0.8, knives: 8, label: 'Easy', color: '#4caf50' },
+        medium: { speed: 1.2, knives: 6, label: 'Medium', color: '#ffc107' },
+        hard: { speed: 1.8, knives: 4, label: 'Hard', color: '#f44336' }
+      };
+      let currentDifficulty = 'medium';
+
+      // ---------- Game State ----------
+      let wheel = { angle: 0, speed: 1.2, rotation: 0 };
+      let knives = [];
+      let thrownKnives = [];
+      let score = 0;
+      let totalKnives = 0;
+      let hits = 0;
+      let bestScore = parseInt(localStorage.getItem('knifeThrowBest')) || 0;
+      let gameRunning = false;
+      let gameOver = false;
+      let gameLoop = null;
+      let canThrow = true;
+      let throwCooldown = false;
+
+      // ---------- Best Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Target Areas ----------
+      const TARGETS = [
+        { startAngle: 0, endAngle: 45, points: 10, color: '#ffd54f' },
+        { startAngle: 45, endAngle: 90, points: 20, color: '#ff6b6b' },
+        { startAngle: 90, endAngle: 135, points: 30, color: '#4fc3f7' },
+        { startAngle: 135, endAngle: 180, points: 20, color: '#81c784' },
+        { startAngle: 180, endAngle: 225, points: 10, color: '#ce93d8' },
+        { startAngle: 225, endAngle: 270, points: 30, color: '#ff8a65' },
+        { startAngle: 270, endAngle: 315, points: 20, color: '#4dd0e1' },
+        { startAngle: 315, endAngle: 360, points: 10, color: '#ffd54f' }
+      ];
+
+      // ---------- Knife Class ----------
+      class Knife {
+        constructor(angle, radius) {
+          this.angle = angle;
+          this.radius = radius;
+          this.x = 0;
+          this.y = 0;
+          this.trail = [];
+          this.flying = true;
+          this.stuck = false;
+          this.rotation = 0;
+          this.updatePosition();
+        }
+
+        updatePosition() {
+          this.x = CENTER_X + Math.cos(this.angle) * this.radius;
+          this.y = CENTER_Y + Math.sin(this.angle) * this.radius;
+        }
+
+        draw(ctx, isThrown = false) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          
+          if (isThrown) {
+            ctx.rotate(this.angle + Math.PI / 2);
+          } else {
+            ctx.rotate(this.angle + Math.PI / 2 + Math.sin(Date.now() / 200) * 0.05);
+          }
+
+          // Knife shadow
+          ctx.shadowColor = 'rgba(0,0,0,0.3)';
+          ctx.shadowBlur = 6;
+          
+          // Blade
+          const grad = ctx.createLinearGradient(0, -KNIFE_LENGTH, 0, 0);
+          grad.addColorStop(0, '#e0e0e0');
+          grad.addColorStop(0.5, '#ffffff');
+          grad.addColorStop(1, '#bdbdbd');
+          ctx.fillStyle = grad;
+          ctx.fillRect(-KNIFE_WIDTH/2, -KNIFE_LENGTH, KNIFE_WIDTH, KNIFE_LENGTH * 0.7);
+          
+          // Blade tip
+          ctx.fillStyle = '#f5f5f5';
+          ctx.beginPath();
+          ctx.moveTo(0, -KNIFE_LENGTH);
+          ctx.lineTo(-KNIFE_WIDTH, -KNIFE_LENGTH * 0.7);
+          ctx.lineTo(KNIFE_WIDTH, -KNIFE_LENGTH * 0.7);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Handle
+          const handleGrad = ctx.createLinearGradient(-KNIFE_WIDTH/2, -KNIFE_LENGTH * 0.3, KNIFE_WIDTH/2, 0);
+          handleGrad.addColorStop(0, '#5d4037');
+          handleGrad.addColorStop(0.5, '#8d6e63');
+          handleGrad.addColorStop(1, '#5d4037');
+          ctx.fillStyle = handleGrad;
+          ctx.fillRect(-KNIFE_WIDTH/2, -KNIFE_LENGTH * 0.3, KNIFE_WIDTH, KNIFE_LENGTH * 0.3);
+          
+          // Handle rivets
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#bdbdbd';
+          ctx.beginPath();
+          ctx.arc(0, -KNIFE_LENGTH * 0.2, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(0, -KNIFE_LENGTH * 0.1, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.shadowBlur = 0;
+          ctx.restore();
+        }
+      }
+
+      // ---------- Game Functions ----------
+      function initGame() {
+        const diff = DIFFICULTIES[currentDifficulty];
+        wheel.speed = diff.speed;
+        totalKnives = diff.knives;
+        thrownKnives = [];
+        knives = [];
+        score = 0;
+        hits = 0;
+        gameOver = false;
+        canThrow = true;
+        throwCooldown = false;
+        
+        // Create knives around the wheel
+        for (let i = 0; i < totalKnives; i++) {
+          const angle = (i / totalKnives) * Math.PI * 2;
+          const radius = WHEEL_RADIUS + 40;
+          knives.push(new Knife(angle, radius));
+        }
+        
+        updateUI();
+        setGameStatus(`🗡️ ${totalKnives} knives left! Click to throw.`, true);
+        draw();
+      }
+
+      function throwKnife() {
+        if (!gameRunning || gameOver || !canThrow || throwCooldown) return;
+        if (knives.length === 0) {
+          setGameStatus('🎯 All knives thrown!', true);
+          return;
+        }
+
+        // Get the next knife
+        const knife = knives.pop();
+        const angle = wheel.rotation;
+        const radius = WHEEL_RADIUS + 10;
+        
+        knife.angle = angle;
+        knife.radius = radius;
+        knife.flying = true;
+        knife.stuck = false;
+        knife.updatePosition();
+        
+        thrownKnives.push(knife);
+        canThrow = false;
+        throwCooldown = true;
+        setTimeout(() => { throwCooldown = false; }, 200);
+
+        // Check if knife hits target
+        const target = getTargetAtAngle(angle);
+        if (target) {
+          // Check if any knife is already stuck at this position
+          const collision = thrownKnives.some(k => 
+            k.stuck && 
+            Math.abs(k.angle - angle) < 0.08 && 
+            k !== knife
+          );
+          
+          if (!collision) {
+            knife.stuck = true;
+            knife.flying = false;
+            score += target.points;
+            hits++;
+            createParticles(knife.x, knife.y, target.color);
+            setGameStatus(`🎯 +${target.points} points!`, true);
+          } else {
+            // Hit another knife!
+            knife.flying = false;
+            gameOver = true;
+            gameRunning = false;
+            stopLoop();
+            createExplosion(knife.x, knife.y);
+            setGameStatus('💥 You hit another knife! Game Over!', false);
+            updateBestScore();
+            draw();
+            return;
+          }
+        } else {
+          // Missed the target
+          knife.flying = false;
+          setGameStatus('❌ Missed the target!', false);
+        }
+
+        updateUI();
+        updateBestScore();
+
+        // Check if all knives are thrown
+        if (knives.length === 0) {
+          setTimeout(() => {
+            if (!gameOver) {
+              // Round complete - start new round with more knives
+              const diff = DIFFICULTIES[currentDifficulty];
+              totalKnives = Math.min(diff.knives + Math.floor(score / 50), 12);
+              // Reset knives
+              for (let i = 0; i < totalKnives; i++) {
+                const angle = (i / totalKnives) * Math.PI * 2;
+                const radius = WHEEL_RADIUS + 40;
+                knives.push(new Knife(angle, radius));
+              }
+              thrownKnives = [];
+              canThrow = true;
+              setGameStatus(`🗡️ Round complete! ${totalKnives} knives remaining.`, true);
+              updateUI();
+              draw();
+            }
+          }, 500);
+        }
+
+        draw();
+      }
+
+      function getTargetAtAngle(angle) {
+        let normalized = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        let degrees = normalized * 180 / Math.PI;
+        
+        for (const target of TARGETS) {
+          if (degrees >= target.startAngle && degrees < target.endAngle) {
+            return target;
+          }
+        }
+        return null;
+      }
+
+      // ---------- Particle System ----------
+      let particles = [];
+
+      function createParticles(x, y, color) {
+        for (let i = 0; i < 20; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * 3;
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            life: 20 + Math.random() * 20,
+            maxLife: 40,
+            radius: 2 + Math.random() * 3,
+            color: color
+          });
+        }
+      }
+
+      function createExplosion(x, y) {
+        const colors = ['#ff6b6b', '#ffd93d', '#ff9a9e', '#ff8a65', '#f44336'];
+        for (let i = 0; i < 40; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * 5;
+          particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 1,
+            life: 15 + Math.random() * 20,
+            maxLife: 35,
+            radius: 2 + Math.random() * 4,
+            color: colors[Math.floor(Math.random() * colors.length)]
+          });
+        }
+      }
+
+      // ---------- Update ----------
+      function update() {
+        if (!gameRunning || gameOver) return;
+
+        // Update wheel rotation
+        wheel.rotation += wheel.speed * 0.02;
+
+        // Update thrown knives
+        for (const knife of thrownKnives) {
+          if (knife.flying) {
+            knife.angle += wheel.speed * 0.03;
+            knife.radius -= 0.8;
+            knife.updatePosition();
+            if (knife.radius < WHEEL_RADIUS + 5) {
+              knife.flying = false;
+              knife.stuck = true;
+            }
+          }
+        }
+
+        // Update particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.05;
+          p.life--;
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+
+        // Update knives waiting
+        for (const knife of knives) {
+          const idx = knives.indexOf(knife);
+          knife.angle = (idx / knives.length) * Math.PI * 2 + wheel.rotation * 0.1;
+          knife.updatePosition();
+        }
+
+        draw();
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background
+        const grad = ctx.createRadialGradient(
+          CENTER_X, CENTER_Y, 50,
+          CENTER_X, CENTER_Y, WHEEL_RADIUS + 100
+        );
+        grad.addColorStop(0, '#1a2a4a');
+        grad.addColorStop(0.5, '#0a1a2a');
+        grad.addColorStop(1, '#0a0a1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Draw target ring
+        ctx.save();
+        ctx.translate(CENTER_X, CENTER_Y);
+        ctx.rotate(wheel.rotation);
+
+        // Draw target segments
+        for (const target of TARGETS) {
+          const startRad = target.startAngle * Math.PI / 180;
+          const endRad = target.endAngle * Math.PI / 180;
+          
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, WHEEL_RADIUS, startRad, endRad);
+          ctx.closePath();
+          
+          ctx.fillStyle = target.color;
+          ctx.globalAlpha = 0.3;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        // Target ring border
+        ctx.beginPath();
+        ctx.arc(0, 0, WHEEL_RADIUS, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Inner ring
+        ctx.beginPath();
+        ctx.arc(0, 0, WHEEL_RADIUS * 0.3, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Center dot
+        ctx.fillStyle = 'rgba(255,215,0,0.2)';
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Point labels
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.font = '10px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (const target of TARGETS) {
+          const midAngle = ((target.startAngle + target.endAngle) / 2) * Math.PI / 180;
+          const labelRadius = WHEEL_RADIUS * 0.7;
+          const lx = Math.cos(midAngle) * labelRadius;
+          const ly = Math.sin(midAngle) * labelRadius;
+          ctx.fillStyle = 'rgba(255,255,255,0.15)';
+          ctx.fillText(target.points, lx, ly);
+        }
+
+        ctx.restore();
+
+        // Draw thrown knives that are stuck
+        for (const knife of thrownKnives) {
+          if (knife.stuck) {
+            knife.draw(ctx, true);
+          }
+        }
+
+        // Draw flying knives
+        for (const knife of thrownKnives) {
+          if (knife.flying) {
+            knife.draw(ctx, true);
+          }
+        }
+
+        // Draw waiting knives
+        for (const knife of knives) {
+          knife.draw(ctx, false);
+        }
+
+        // Draw particles
+        for (const p of particles) {
+          const alpha = p.life / p.maxLife;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius * alpha, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        // Game Over overlay
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 40px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ef9a9a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('💥 GAME OVER', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '20px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Score: ${score}`, WIDTH/2, HEIGHT/2 + 40);
+        }
+
+        if (!gameRunning && !gameOver) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = '28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🗡️ Knife Throw', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '16px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.fillText('Click Start to begin', WIDTH/2, HEIGHT/2 + 30);
+        }
+      }
+
+      // ---------- UI Updates ----------
+      function updateUI() {
+        scoreDisplay.textContent = score;
+        knivesDisplay.textContent = knives.length;
+        hitsDisplay.textContent = hits;
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('knifeThrowBest', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function updateBestScore() {
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('knifeThrowBest', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        update();
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        gameRunning = true;
+        gameOver = false;
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        initGame();
+        startLoop();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        particles = [];
+        initGame();
+        setGameStatus('🔄 Game reset. Click Start to play!', true);
+        draw();
+      }
+
+      function toggleDifficulty() {
+        if (gameRunning) return;
+        const diffs = ['easy', 'medium', 'hard'];
+        const idx = diffs.indexOf(currentDifficulty);
+        currentDifficulty = diffs[(idx + 1) % diffs.length];
+        const diff = DIFFICULTIES[currentDifficulty];
+        difficultyBtn.textContent = `⭐ ${diff.label}`;
+        difficultyBtn.style.borderColor = diff.color;
+        setGameStatus(`⭐ Difficulty set to ${diff.label}`, true);
+        resetGame();
+      }
+
+      // ---------- Event Handlers ----------
+      canvas.addEventListener('click', (e) => {
+        if (!gameRunning || gameOver) return;
+        throwKnife();
+      });
+
+      // Touch support
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameRunning || gameOver) return;
+        throwKnife();
+      }, { passive: false });
+
+      // Keyboard
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!gameRunning && !gameOver) {
+            startGame();
+          } else if (gameRunning && !gameOver) {
+            throwKnife();
+          }
+        }
+        if (e.key === 'r' || e.key === 'R') resetGame();
+        if (e.key === 'd' || e.key === 'D') toggleDifficulty();
+      });
+
+      // Button listeners
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      difficultyBtn.addEventListener('click', toggleDifficulty);
+
+      // ---------- Init ----------
+      function init() {
+        const diff = DIFFICULTIES[currentDifficulty];
+        difficultyBtn.textContent = `⭐ ${diff.label}`;
+        difficultyBtn.style.borderColor = diff.color;
+        bestDisplay.textContent = bestScore;
+        initGame();
+        setGameStatus('🗡️ Click Start to begin throwing!', true);
+        draw();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

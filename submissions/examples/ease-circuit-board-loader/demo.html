@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Circuit Board Loader Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Circuit Board Loader</h1>
+        <p class="subtitle">Animated circuit path loading</p>
+
+        <!-- CIRCUIT BOARD LOADER COMPONENT -->
+        <div class="circuit-container">
+            <div class="circuit-wrapper">
+                <div class="circuit-display">
+                    <canvas id="circuitCanvas"></canvas>
+                    <div class="circuit-overlay">
+                        <span class="overlay-icon">⚡</span>
+                        <span class="overlay-text">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="circuit-controls">
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1" />
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="nodesSlider">Nodes:</label>
+                        <input type="range" id="nodesSlider" min="4" max="15" step="1" value="8" />
+                        <span id="nodesValue">8</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                    <div class="control-group">
+                        <label for="bgColorPicker">Background:</label>
+                        <input type="color" id="bgColorPicker" value="#0a0a1a" />
+                    </div>
+                </div>
+
+                <div class="circuit-actions">
+                    <button class="circuit-ctrl-btn" id="toggleBtn">⏸ Pause</button>
+                    <button class="circuit-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="circuit-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="circuit-ctrl-btn" id="regenerateBtn">🔄 Regenerate</button>
+                </div>
+
+                <div class="circuit-status">
+                    <span class="status-label">State:</span>
+                    <span class="status-value" id="stateDisplay">Running</span>
+                    <span class="status-label">Nodes:</span>
+                    <span class="status-value" id="nodesDisplay">8</span>
+                    <span class="status-label">Speed:</span>
+                    <span class="status-value" id="speedDisplay">1.0x</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #00d2d3);">
+                        <span>⚡</span>
+                    </div>
+                    <span class="variant-label">Cyber</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>⚡</span>
+                    </div>
+                    <span class="variant-label">Neon</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #00f260, #0575e6);">
+                        <span>⚡</span>
+                    </div>
+                    <span class="variant-label">Matrix</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #a18cd1);">
+                        <span>⚡</span>
+                    </div>
+                    <span class="variant-label">Aurora</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('circuitCanvas');
+            const ctx = canvas.getContext('2d');
+            const stateDisplay = document.getElementById('stateDisplay');
+            const nodesDisplay = document.getElementById('nodesDisplay');
+            const speedDisplay = document.getElementById('speedDisplay');
+            const speedSlider = document.getElementById('speedSlider');
+            const nodesSlider = document.getElementById('nodesSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            const speedValue = document.getElementById('speedValue');
+            const nodesValue = document.getElementById('nodesValue');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const regenerateBtn = document.getElementById('regenerateBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                speed: 1,
+                nodes: 8,
+                color: '#4facfe',
+                bgColor: '#0a0a1a',
+                onToggle: function(state) {
+                    console.log(`⚡ Circuit ${state ? 'paused' : 'running'}`);
+                },
+                onRegenerate: function() {
+                    console.log('🔄 Circuit regenerated');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let isPaused = false;
+            let animationId = null;
+            let points = [];
+            let flowOffset = 0;
+            let pulsePhase = 0;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // CIRCUIT GENERATION
+            // ============================================
+            function generateCircuit() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const count = parseInt(nodesSlider.value);
+                const margin = 40;
+                points = [];
+
+                // Start point
+                let x = margin + Math.random() * (w - margin * 2);
+                let y = margin + Math.random() * (h - margin * 2);
+                points.push({ x, y });
+
+                for (let i = 1; i < count; i++) {
+                    // Generate next point with some randomness
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = 60 + Math.random() * 100;
+                    let newX = x + Math.cos(angle) * distance;
+                    let newY = y + Math.sin(angle) * distance;
+
+                    // Keep within bounds
+                    newX = Math.max(margin, Math.min(w - margin, newX));
+                    newY = Math.max(margin, Math.min(h - margin, newY));
+
+                    // Ensure minimum distance from previous points
+                    let tooClose = false;
+                    for (const p of points) {
+                        const dx = p.x - newX;
+                        const dy = p.y - newY;
+                        if (Math.sqrt(dx * dx + dy * dy) < 40) {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+
+                    if (tooClose) {
+                        // Try a different angle
+                        const newAngle = angle + Math.PI / 2 + (Math.random() - 0.5) * 1;
+                        newX = x + Math.cos(newAngle) * distance;
+                        newY = y + Math.sin(newAngle) * distance;
+                        newX = Math.max(margin, Math.min(w - margin, newX));
+                        newY = Math.max(margin, Math.min(h - margin, newY));
+                    }
+
+                    points.push({ x: newX, y: newY });
+                    x = newX;
+                    y = newY;
+                }
+
+                // Add some branch points (extra nodes along the path)
+                const extraNodes = Math.floor(count * 0.3);
+                for (let i = 0; i < extraNodes; i++) {
+                    const index = Math.floor(Math.random() * (points.length - 1));
+                    const p1 = points[index];
+                    const p2 = points[index + 1];
+                    const t = 0.2 + Math.random() * 0.6;
+                    const bx = p1.x + (p2.x - p1.x) * t + (Math.random() - 0.5) * 40;
+                    const by = p1.y + (p2.y - p1.y) * t + (Math.random() - 0.5) * 40;
+                    // Clamp
+                    const clampedX = Math.max(margin, Math.min(w - margin, bx));
+                    const clampedY = Math.max(margin, Math.min(h - margin, by));
+                    points.splice(index + 1, 0, { x: clampedX, y: clampedY });
+                }
+            }
+
+            // ============================================
+            // CIRCUIT RENDERER
+            // ============================================
+            function drawCircuit() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const color = colorPicker.value;
+                const bgColor = bgColorPicker.value;
+                const speed = parseFloat(speedSlider.value);
+                const nodeRadius = 4;
+
+                // Clear with background
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, w, h);
+
+                if (points.length < 2) return;
+
+                // Draw circuit traces
+                const totalLength = points.length;
+                const flowProgress = (flowOffset % 100) / 100;
+
+                // Draw glow layers for traces
+                for (let layer = 0; layer < 3; layer++) {
+                    const blur = 15 + layer * 10;
+                    const alpha = 0.2 - layer * 0.05;
+                    
+                    ctx.save();
+                    ctx.shadowColor = color;
+                    ctx.shadowBlur = blur;
+                    ctx.globalAlpha = alpha;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2 + layer * 1;
+
+                    // Draw each segment
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i + 1];
+                        
+                        // Flow effect - only draw portion of the path
+                        const segProgress = i / (points.length - 1);
+                        const flowPos = (segProgress + flowProgress) % 1;
+                        
+                        // Skip drawing if not in flow window
+                        if (flowPos > 0.8) continue;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+
+                // Draw main traces (solid)
+                ctx.save();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 10;
+                ctx.globalAlpha = 0.6;
+
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Draw nodes
+                const nodeColor = color;
+                const pulse = Math.sin(pulsePhase) * 0.3 + 0.7;
+
+                points.forEach((p, index) => {
+                    const isEnd = index === 0 || index === points.length - 1;
+                    const radius = isEnd ? nodeRadius * 1.5 : nodeRadius;
+                    const alpha = isEnd ? 1 : 0.6 + 0.4 * pulse;
+
+                    ctx.save();
+                    ctx.shadowColor = nodeColor;
+                    ctx.shadowBlur = 20 * pulse;
+
+                    // Glow
+                    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 4);
+                    grad.addColorStop(0, nodeColor + '80');
+                    grad.addColorStop(0.5, nodeColor + '30');
+                    grad.addColorStop(1, nodeColor + '00');
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius * 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = nodeColor;
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.globalAlpha = 0.5 * alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x - radius * 0.3, p.y - radius * 0.3, radius * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                });
+
+                // Draw flowing energy particles along the path
+                const particleCount = 5;
+                for (let i = 0; i < particleCount; i++) {
+                    const offset = (i / particleCount + flowProgress) % 1;
+                    const pathIndex = Math.floor(offset * (points.length - 1));
+                    const pathProgress = (offset * (points.length - 1)) % 1;
+                    
+                    if (pathIndex < points.length - 1) {
+                        const p1 = points[pathIndex];
+                        const p2 = points[pathIndex + 1];
+                        const px = p1.x + (p2.x - p1.x) * pathProgress;
+                        const py = p1.y + (p2.y - p1.y) * pathProgress;
+                        
+                        ctx.save();
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 30;
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = 0.8 + 0.2 * Math.sin(pulsePhase * 2 + i);
+                        ctx.beginPath();
+                        ctx.arc(px, py, 3 + Math.sin(pulsePhase + i) * 1, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                // Update animation values
+                if (!isPaused) {
+                    flowOffset += 0.3 * speed;
+                    pulsePhase += 0.03 * speed;
+                }
+
+                // Update displays
+                stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                stateDisplay.style.color = isPaused ? '#f59e0b' : '#34c759';
+                nodesDisplay.textContent = points.length;
+                speedDisplay.textContent = speed.toFixed(1) + 'x';
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate() {
+                drawCircuit();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+                CONFIG.onToggle(isPaused);
+            }
+
+            function resetCircuit() {
+                flowOffset = 0;
+                pulsePhase = 0;
+                if (isPaused) togglePause();
+                CONFIG.onToggle(false);
+            }
+
+            function regenerateCircuit() {
+                generateCircuit();
+                resetCircuit();
+                CONFIG.onRegenerate();
+                stateDisplay.textContent = '🔄 Regenerated';
+                setTimeout(() => {
+                    stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                }, 1000);
+            }
+
+            function randomizeColors() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43', '#a29bfe', '#55efc4'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+            }
+
+            function updateConfig() {
+                CONFIG.speed = parseFloat(speedSlider.value);
+                CONFIG.nodes = parseInt(nodesSlider.value);
+                CONFIG.color = colorPicker.value;
+                CONFIG.bgColor = bgColorPicker.value;
+                speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+                nodesValue.textContent = CONFIG.nodes;
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            speedSlider.addEventListener('input', updateConfig);
+            nodesSlider.addEventListener('input', function() {
+                updateConfig();
+                regenerateCircuit();
+            });
+            colorPicker.addEventListener('input', updateConfig);
+            bgColorPicker.addEventListener('input', updateConfig);
+
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetCircuit);
+            randomColorBtn.addEventListener('click', randomizeColors);
+            regenerateBtn.addEventListener('click', regenerateCircuit);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    regenerateCircuit();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    randomizeColors();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Cyber': ['#4facfe', '#00d2d3'],
+                    'Neon': ['#f093fb', '#f5576c'],
+                    'Matrix': ['#00f260', '#0575e6'],
+                    'Aurora': ['#f093fb', '#a18cd1']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#00d2d3'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    stateDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.CircuitLoader = {
+                toggle: togglePause,
+                reset: resetCircuit,
+                regenerate: regenerateCircuit,
+                randomize: randomizeColors,
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    updateConfig();
+                },
+                setNodes: (nodes) => {
+                    nodesSlider.value = nodes;
+                    updateConfig();
+                    regenerateCircuit();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                },
+                setBgColor: (color) => {
+                    bgColorPicker.value = color;
+                    updateConfig();
+                },
+                isPaused: () => isPaused,
+                getState: () => ({
+                    paused: isPaused,
+                    speed: CONFIG.speed,
+                    nodes: CONFIG.nodes,
+                    color: CONFIG.color,
+                    bgColor: CONFIG.bgColor
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                    }
+                    if (config.nodes) {
+                        nodesSlider.value = config.nodes;
+                    }
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.bgColor) {
+                        bgColorPicker.value = config.bgColor;
+                    }
+                    updateConfig();
+                    regenerateCircuit();
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            generateCircuit();
+            updateConfig();
+            animate();
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                    generateCircuit();
+                }, 200);
+            });
+
+            console.log('⚡ Circuit Board Loader initialized!');
+            console.log('📖 API: window.CircuitLoader');
+            console.log('📖 Usage:');
+            console.log('  - Watch the animated circuit path');
+            console.log('  - Keyboard shortcuts: Space (pause), R (regenerate), C (random color)');
+            console.log('  - Adjust speed, nodes, and colors');
+
+        })();
+    </script>
+</body>
+</html>
