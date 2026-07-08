@@ -1,10 +1,9 @@
-- [x] Create submissions/examples/loading-spinner-harshitha/
-- [x] Add index.html demonstrating the spinner (pure HTML/CSS)
-- [x] Add style.css implementing a responsive pure-CSS infinite spinner
-- [x] Use unique class: .ease-loading-spinner-harshitha
-- [x] Add CSS variables customization (size and color)
-- [x] Add short README.md with usage instructions
-- [ ] Verify spinner markup + styles are consistent
-- [x] Add Animated Floating Notification Card (floating-notification-harshitha)
+# TODO - Ripple Button Effect (#38704)
 
+- [ ] Create folder: submissions/examples/ripple-button-harshitha/
+- [x] Add demo.html showcasing default "Click Me" button + optional variants (blue/green/purple)
+- [x] Add style.css implementing pure HTML+CSS ripple button effect (pseudo-element + keyframes, overflow hidden, 0.4–0.8s, responsive)
+- [x] Add README.md with: overview, folder structure, HTML usage, customization, browser compatibility
+
+- [ ] Verify demo.html works by opening in browser (hover + focus-visible)
 
