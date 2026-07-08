@@ -1,0 +1,89 @@
+// =============================================================================
+// Motion Preset Inheritance Utility
+// -----------------------------------------------------------------------------
+// A framework-agnostic SCSS utility that lets you define hierarchical motion
+// presets, extend them, override individual properties, and output the fully
+// resolved CSS at compile time. Presets can extend one or more parent presets,
+// and extended presets can themselves be extended, giving unlimited nesting.
+// =============================================================================
+
+// Internal registry. Holds every defined preset as a fully-resolved map of
+// CSS property => value. Not intended to be used directly by consumers.
+$__motion-presets: () !default;
+
+// -----------------------------------------------------------------------------
+// motion-preset-exists($name)
+// Returns true if a preset with the given name has already been defined.
+// -----------------------------------------------------------------------------
+@function motion-preset-exists($name) {
+  @return map-has-key($__motion-presets, $name);
+}
+
+// -----------------------------------------------------------------------------
+// motion-preset-get($name)
+// Returns the fully-resolved property map for a defined preset.
+// Errors at compile time if the preset has not been defined yet.
+// -----------------------------------------------------------------------------
+@function motion-preset-get($name) {
+  @if not motion-preset-exists($name) {
+    @error "Motion preset `#{$name}` does not exist. Define it first using define-motion-preset().";
+  }
+  @return map-get($__motion-presets, $name);
+}
+
+// -----------------------------------------------------------------------------
+// define-motion-preset($name, $properties, $extends: null)
+// Registers a new motion preset.
+//
+// $name       : Unique identifier for the preset (string).
+// $properties : Map of CSS property => value for this preset.
+// $extends    : (optional) Name of a single parent preset, or a list of
+//               parent preset names to merge from (later parents win ties).
+//               Parents must already be defined.
+//
+// The resulting preset is stored fully-resolved, so presets that extend an
+// already-extended preset automatically inherit the entire chain.
+// -----------------------------------------------------------------------------
+@mixin define-motion-preset($name, $properties: (), $extends: null) {
+  $resolved: ();
+
+  @if $extends != null {
+    @if type-of($extends) == "list" {
+      @each $parent in $extends {
+        $resolved: map-merge($resolved, motion-preset-get($parent));
+      }
+    } @else {
+      $resolved: map-merge($resolved, motion-preset-get($extends));
+    }
+  }
+
+  $resolved: map-merge($resolved, $properties);
+
+  $__motion-presets: map-merge($__motion-presets, ($name: $resolved)) !global;
+}
+
+// -----------------------------------------------------------------------------
+// extend-motion-preset($base-name, $new-name, $overrides: ())
+// Convenience mixin for creating a new named preset that inherits everything
+// from $base-name, with $overrides layered on top. Equivalent to calling
+// define-motion-preset($new-name, $overrides, $extends: $base-name).
+// Because the new preset is stored fully-resolved, it can be extended again,
+// supporting unlimited nested inheritance chains.
+// -----------------------------------------------------------------------------
+@mixin extend-motion-preset($base-name, $new-name, $overrides: ()) {
+  @include define-motion-preset($new-name, $overrides, $extends: $base-name);
+}
+
+// -----------------------------------------------------------------------------
+// use-motion-preset($name, $overrides: ())
+// Outputs the resolved CSS declarations for a preset. Optional $overrides
+// are applied on top of the stored preset without mutating the registry,
+// letting you tweak a preset per-usage without creating a new named preset.
+// -----------------------------------------------------------------------------
+@mixin use-motion-preset($name, $overrides: ()) {
+  $final: map-merge(motion-preset-get($name), $overrides);
+
+  @each $property, $value in $final {
+    #{$property}: #{$value};
+  }
+}

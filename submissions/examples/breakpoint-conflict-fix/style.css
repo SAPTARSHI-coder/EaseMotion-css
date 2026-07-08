@@ -1,0 +1,175 @@
+/* ==========================================================================
+   EaseMotion CSS — Breakpoint Conflict Fix
+   Issue #30480
+
+   THE PROBLEM:
+   The respond-to() SCSS mixin used one set of breakpoint values
+   (e.g. tablet: 768px), while several component files wrote their own
+   ad-hoc @media queries with slightly different numbers for the "same"
+   named breakpoint (e.g. tablet: 760px in one file, 800px in another).
+   Result: components built with the mixin and components with custom
+   queries shifted layout at different viewport widths, even though both
+   were conceptually targeting "tablet."
+
+   THE FIX:
+   1. A single shared breakpoint scale, defined ONCE as SCSS variables
+      (see the commented SCSS source below) and mirrored as plain CSS
+      media query values here. Every component — whether it uses the
+      respond-to() mixin or writes a "custom" query — pulls from this
+      same scale, so the numbers can never drift apart again.
+   2. The compiled output below shows both an example component built
+      via the mixin pattern and one written with a "custom" query,
+      using IDENTICAL pixel values, to prove the fix in compiled CSS
+      (since browsers only ever see compiled output, not SCSS).
+   3. In the real SCSS source, "custom" queries are discouraged in favor
+      of always calling respond-to($breakpoint), so there is structurally
+      only one place breakpoint numbers can be defined.
+
+   ---------------------------------------------------------------------
+   SCSS SOURCE (for reference — this is what compiles to the CSS below):
+
+   // _breakpoints.scss — single source of truth
+   $ease-breakpoints: (
+     'mobile':  0,
+     'tablet':  768px,
+     'desktop': 1024px,
+     'wide':    1280px
+   );
+
+   @mixin respond-to($name) {
+     $value: map-get($ease-breakpoints, $name);
+     @if $value == null {
+       @error "Unknown breakpoint `#{$name}`. Available: #{map-keys($ease-breakpoints)}";
+     }
+     @media (min-width: $value) {
+       @content;
+     }
+   }
+
+   // Any component needing a "custom" query now still goes through the
+   // same map, e.g.:
+   //   @media (min-width: map-get($ease-breakpoints, 'tablet')) { ... }
+   // instead of hardcoding 760px / 800px / etc. directly.
+   ========================================================================== */
+
+:root {
+  /* Mirrors $ease-breakpoints from SCSS — kept here for components that
+     need the values in JS via getComputedStyle, e.g. the live readout
+     below. These numbers MUST match the SCSS map above exactly. */
+  --ease-bp-mobile: 0;
+  --ease-bp-tablet: 768px;
+  --ease-bp-desktop: 1024px;
+  --ease-bp-wide: 1280px;
+
+  --ease-bg: #0f0f17;
+  --ease-surface: #1a1a26;
+  --ease-border: #2a2a3a;
+  --ease-text: #e8e8f0;
+  --ease-text-dim: #9a9ab0;
+  --ease-accent: #7c5cff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--ease-bg);
+  color: var(--ease-text);
+}
+
+.demo-header { padding: 60px 32px 20px; max-width: 780px; }
+.demo-header h1 { margin: 0 0 12px; font-size: 1.6rem; }
+.demo-header p, .demo-content p { color: var(--ease-text-dim); line-height: 1.7; }
+.demo-header code {
+  background: var(--ease-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid var(--ease-border);
+}
+
+.demo-content { padding: 0 32px 60px; max-width: 780px; }
+
+.demo-block {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: var(--ease-surface);
+  border: 1px solid var(--ease-border);
+  border-radius: 12px;
+}
+.demo-block h2 { margin: 0 0 8px; font-size: 1.05rem; }
+.demo-caption { font-size: 0.85rem; margin-top: 10px; }
+
+.readout-row { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.readout-box {
+  background: var(--ease-bg);
+  border: 1px solid var(--ease-border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  flex: 1;
+  min-width: 160px;
+}
+.readout-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ease-text-dim);
+  margin-bottom: 6px;
+}
+.readout-box strong {
+  font-size: 1.1rem;
+  color: var(--ease-accent);
+}
+
+/* ---------------------------------------------------------------------
+   Component A — "built via respond-to() mixin"
+   Compiles to min-width: 768px / 1024px, taken directly from the
+   shared $ease-breakpoints map.
+   --------------------------------------------------------------------- */
+.ease-grid--mixin {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .ease-grid--mixin { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .ease-grid--mixin { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ---------------------------------------------------------------------
+   Component B — "custom media query," but now pulling from the SAME
+   map values in SCSS (map-get($ease-breakpoints, 'tablet') etc.)
+   instead of a hardcoded one-off number like 760px or 800px.
+   Compiles to the IDENTICAL min-width values as Component A.
+   --------------------------------------------------------------------- */
+.ease-grid--custom {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 768px) {
+  .ease-grid--custom { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .ease-grid--custom { grid-template-columns: repeat(4, 1fr); }
+}
+
+.grid-cell {
+  background: var(--ease-bg);
+  border: 1px solid var(--ease-border);
+  border-radius: 8px;
+  padding: 18px;
+  text-align: center;
+  color: var(--ease-text-dim);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content { padding-left: 20px; padding-right: 20px; }
+}
