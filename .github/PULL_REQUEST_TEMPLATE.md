@@ -18,7 +18,7 @@
 
 > ⚠️ PRs that fail this checklist will be **closed without review**.
 
-- [ ] All changes are inside `submissions/examples/your-feature-name/`
+- [ ] All changes are inside `submissions/` (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`)
 - [ ] Includes `demo.html` — self-contained, opens in browser with no server
 - [ ] Includes `style.css` — raw CSS for the proposed feature
 - [ ] Includes `README.md` — what it does, how to use it, why it fits EaseMotion CSS
@@ -71,4 +71,6 @@
 
 > **Reminder:** Only the repository maintainer may merge pull requests.  
 > Do not self-merge, even if you have write access.  
-> Maximum **2 active assigned issues** per contributor — unassign extras before opening a PR.
+> Maximum **25 active assigned issues** per contributor — unassign extras before opening a PR.
+> 
+> **Tip:** Once you open your PR, feel free to showcase your design or component in the `#showcase` channel on our official [Discord Server](https://discord.gg/hWSdGrccBU)!

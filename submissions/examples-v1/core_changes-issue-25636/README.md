@@ -1,0 +1,3 @@
+1. What does this do? Creates shimmer skeleton placeholders using a `::after` pseudo-element with `transform: translateX()` animation for a sweep effect — variants for text lines, circles, rectangles, avatars, and cards.
+2. How is it used? Add `.skeleton` with modifier classes (`.skeleton--text`, `.skeleton--circle`, `.skeleton--rect`). Combine with `.skeleton-avatar` and `.skeleton-card` for common layouts.
+3. Why is it useful? Skeleton loading improves perceived performance — this implementation uses GPU-accelerated `transform` instead of `background-position` for smoother animation, with configurable variants and reduced-motion support.

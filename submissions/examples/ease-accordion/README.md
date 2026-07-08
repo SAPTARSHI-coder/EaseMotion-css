@@ -1,92 +1,107 @@
-# EaseMotion — `ease-accordion`
+# EaseAccordion — CSS Grid height: auto transitions
 
-Pure-CSS collapsible sections with smooth `max-height` animation. Supports both multi-open (checkbox) and single-open (radio) modes.
+A modern, highly accessible accordion component for EaseMotion CSS.
 
----
+## What is it?
+This component introduces a clean, zero-dependency accordion/collapsible component designed to solve the classic CSS problem: animating height transitions to `height: auto` without hardcoded pixel limits.
 
-## Features
-
-- **CSS-only** — hidden checkbox/radio inputs drive open/close state
-- **Multi-open mode** — each panel toggles independently via checkboxes
-- **Single-open mode** — only one panel open at a time via radio buttons
-- **Animated chevron** — rotates 45° → -135° on open/close
-- **Uses design tokens** — references `--ease-color-*`, `--ease-space-*`, `--ease-speed-*` from `core/variables.css`
-- **Dark mode** — automatic via `prefers-color-scheme: dark`
-- **Reduced motion** — disables transitions when `prefers-reduced-motion: reduce`
+It pairs a layout-trigger structure with modern CSS grid-template-rows interpolation (`0fr` ➔ `1fr`) to transition elements smoothly to their intrinsic container height, without requiring heavy layout-thrashing JavaScript DOM measurements.
 
 ---
 
-## Usage
+## How to use it?
 
-### Multi-open (checkbox)
+### 1. Include Script & Styles
+Load the stylesheet in your HTML:
+```html
+<link rel="stylesheet" href="style.css" />
+```
 
+### 2. Accordion HTML Structure
+Construct the accordion using interactive `<button>` trigger elements and `aria` attributes:
 ```html
 <div class="ease-accordion">
+  
   <div class="ease-accordion-item">
-    <input type="checkbox" id="panel-1" class="ease-accordion-toggle" checked>
-    <label for="panel-1" class="ease-accordion-header">
-      <span>Title</span>
-      <span class="ease-accordion-icon"></span>
-    </label>
-    <div class="ease-accordion-body">
-      <div class="ease-accordion-body-inner">
-        Content goes here...
+    <button class="ease-accordion-trigger" id="acc-trigger-1" aria-expanded="false" aria-controls="acc-content-1">
+      <span>Accordion Section Title</span>
+      <span class="ease-accordion-chevron">▼</span>
+    </button>
+    <div class="ease-accordion-content" id="acc-content-1" role="region" aria-labelledby="acc-trigger-1">
+      <div class="ease-accordion-content-inner">
+        <div class="ease-accordion-body">
+          <p>This is the collapsible panel content that will animate smoothly.</p>
+        </div>
       </div>
     </div>
   </div>
-  <!-- more items -->
+
 </div>
 ```
 
-### Single-open (radio)
-
-```html
-<div class="ease-accordion">
-  <div class="ease-accordion-item">
-    <input type="radio" id="step-1" name="my-accordion" class="ease-accordion-toggle" checked>
-    <label for="step-1" class="ease-accordion-header">...</label>
-    <div class="ease-accordion-body">...</div>
-  </div>
-  <!-- more items with the same name attribute -->
-</div>
+### 3. Add Toggler Script
+Use a minimal, lightweight inline script to toggle accessibility attributes. No CSS style measurements are needed:
+```javascript
+document.querySelectorAll('.ease-accordion-trigger').forEach(trigger => {
+  trigger.addEventListener('click', () => {
+    const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+    trigger.setAttribute('aria-expanded', !isExpanded);
+    trigger.closest('.ease-accordion-item')?.classList.toggle('is-open', !isExpanded);
+  });
+});
 ```
 
 ---
 
-## CSS Variables
+## Technical Deep-Dive: CSS-Grid Height Interpolation
 
-| Variable              | Description                              |
-|-----------------------|------------------------------------------|
-| `--ease-accordion-item-border` | Override the item border (default uses `--ease-color-neutral-200`) |
-| `--ease-accordion-item-bg`     | Override the item background            |
+Standard CSS transitions cannot animate height toward intrinsic dimensions:
+```css
+/* ❌ DOES NOT WORK: browser cannot calculate intermediate values to 'auto' */
+.collapsible-body {
+  height: 0;
+  transition: height 0.3s;
+}
+.collapsible-body.open {
+  height: auto;
+}
+```
+
+### The Grid Fraction (fr) Solution
+Instead of height, we wrap the collapsible body in a grid container and animate `grid-template-rows` from `0fr` to `1fr`:
+```css
+/* Class structure */
+.ease-accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  visibility: hidden;
+}
+
+.ease-accordion-trigger[aria-expanded="true"] + .ease-accordion-content {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+/* Crucial: Child must have min-height set to 0 */
+.ease-accordion-content-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+```
+When `grid-template-rows` is set to `0fr`, the row shrinks to 0. When set to `1fr`, the row dynamically expands to fit the content's exact size. The child element requires `min-height: 0` so the browser allows the grid row size to collapse completely.
+
+### Progressive Enhancement: `interpolate-size`
+Where supported in modern evergreen browsers, you can also utilize the new CSS specification to directly enable transitions on auto sizes. We bundle these overrides seamlessly:
+```css
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+```
 
 ---
 
-## How it works
-
-1. The hidden checkbox/radio toggle receives focus from the `<label>` on click
-2. `:checked ~ .ease-accordion-body` triggers `max-height` transition from `0` to `500px`
-3. `:checked ~ .ease-accordion-header .ease-accordion-icon::after` rotates the chevron
-4. Radio inputs sharing the same `name` attribute automatically close each other
-
----
-
-## Why does it fit EaseMotion CSS?
-
-Accordions are a fundamental UI pattern for FAQ pages, documentation sidebars, settings panels, and feature toggles. The roadmap in VISION.md lists collapsible components as a planned addition. This component provides both multi-open and single-open modes with smooth animation, using existing design tokens.
-
----
-
-## Files
-
-1. **`style.css`** — component CSS with both toggle modes
-2. **`demo.html`** — interactive demo (FAQ + step-by-step workflow)
-3. **`README.md`** — documentation and usage examples
-
----
-
-## Notes
-
-- Uses `max-height: 500px` for the body transition — if your content is taller, increase this value or use the `interpolate-size: allow-keywords` technique (see `@supports`).
-- The chevron is drawn entirely with CSS (`::after` + border + rotate) — no icon font or SVG required.
-- All toggle inputs are visually hidden via `clip: rect()` — fully keyboard accessible.
+## Why it fits EaseMotion CSS
+EaseMotion CSS is dedicated to providing high-quality, lightweight, zero-dependency, human-readable animation utilities. Accordions are one of the most frequently recreated components in modern web interfaces. By shipping a native CSS-grid-based layout solution, EaseMotion allows downstream projects to implement smooth collapsible interfaces without importing bulky JavaScript libraries.

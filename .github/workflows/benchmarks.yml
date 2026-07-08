@@ -1,0 +1,54 @@
+name: Benchmarks
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:   # allow manual trigger
+
+permissions:
+  contents: write      # needed to commit results back
+
+jobs:
+  benchmark:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build minified CSS (ensure dist is current)
+        run: npm run build
+
+      # ── Bundle Size ──────────────────────────────────────────────
+      - name: Run bundle size benchmark
+        run: node benchmarks/bundle-size.mjs
+
+      # ── FPS (Puppeteer) ──────────────────────────────────────────
+      - name: Install Puppeteer
+        run: npm install --no-save puppeteer
+
+      - name: Run FPS benchmark
+        run: node benchmarks/fps-test.mjs
+        timeout-minutes: 5
+
+      # ── Commit results ───────────────────────────────────────────
+      - name: Commit benchmark results
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/results/
+          git diff --cached --quiet || git commit -m "chore: update benchmark results [skip ci]"
+          git push

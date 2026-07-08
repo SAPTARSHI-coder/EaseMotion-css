@@ -1,35 +1,63 @@
-# ease-skeleton
+# EaseSkeleton — Composable Shimmer Loading Placeholders
 
-Pure CSS skeleton loading animation with shimmer effect.
-No JavaScript — only CSS custom properties and @keyframes.
+A clean, modular loading-state placeholder component system for EaseMotion CSS.
 
-## Usage
+## What is it?
+This submission proposes a highly composable skeleton loading system. By combining gray shape blocks (circles, rectangles, lines) with a single shared animated linear gradient sweep (`@keyframes ease-shimmer`), developers can easily mock loading feeds, profiles, and dashboard metrics.
 
+Skeleton loaders reduce perceived wait times and prevent layout shift during asynchronous data fetches compared to standard text spin indicators or empty blank screens.
+
+---
+
+## How to use it?
+
+### 1. Include Stylesheet
+Link the stylesheet in your HTML:
 ```html
-<span class="ease-skeleton"></span>
+<link rel="stylesheet" href="style.css" />
 ```
 
-## Variants
+### 2. Composing Placeholders
+Combine helper classes to construct avatar cards, lists, or tables:
+```html
+<!-- Skeleton Profile Card -->
+<div class="profile-card-loading">
+  <!-- Avatar Circle -->
+  <div class="ease-skeleton ease-skeleton-circle" style="width: 48px;"></div>
+  
+  <!-- Text Metadata Group -->
+  <div class="ease-skeleton-group">
+    <div class="ease-skeleton ease-skeleton-text w-50"></div>
+    <div class="ease-skeleton ease-skeleton-text w-25"></div>
+  </div>
+</div>
+```
 
-| Class | Description |
-|---|---|
-| `ease-skeleton--circle` | Circle shape (avatar) |
-| `ease-skeleton--rounded` | Pill shape |
-| `ease-skeleton--rect` | No border radius |
-| `ease-skeleton--sm/md/lg/xl` | Size variants |
+### Available Helper Classes
+- `.ease-skeleton` — base class applying the sweeping gradient shimmer.
+- `.ease-skeleton-text` — height-optimized rounded-rectangle line placeholder for text.
+- `.ease-skeleton-circle` — circular aspect-ratio placeholder (perfect for avatars or status badges).
+- `.ease-skeleton-rect` — standard rectangular blocks (for image spaces, video players, or entire cards).
+- `.ease-skeleton-group` — stacks placeholder lines vertically with consistent spacing.
 
-## CSS Variables
+### Width Modifiers
+Apply custom width bounds using modifiers:
+- `.w-25` (25% width)
+- `.w-33` (33.3% width)
+- `.w-50` (50% width)
+- `.w-66` (66.6% width)
+- `.w-75` (75% width)
+- `.w-100` (100% width)
 
-| Variable | Default | Description |
-|---|---|---|
-| `--ease-base` | #1e293b | Base color |
-| `--ease-shine` | #334155 | Shimmer highlight |
-| `--ease-radius` | 6px | Border radius |
-| `--ease-duration` | 1.5s | Animation speed |
-| `--ease-width` | 100% | Width |
-| `--ease-height` | 16px | Height |
+---
 
-## How it works
-`linear-gradient` with `background-size: 200%` creates the shimmer.
-`ease-shimmer` keyframe moves `background-position` from -200% to 200%
-— pure CSS, zero JavaScript.
+## Technical Features & Performance
+
+### 1. Single-Keyframe Shimmer Sweep
+Rather than defining separate keyframes per component, all variant blocks share the same `@keyframes ease-shimmer` sweep, which animates `background-position` from `200% 0` to `-200% 0` across a repeating linear gradient.
+
+### 2. Layout Shift Prevention (CLS)
+By using precise heights on placeholders (such as `.ease-skeleton-text` or fixed-ratio circles), the browser reserves the exact dimensions required for the content before it completes loading. Swapping skeleton elements for real DOM elements resolves instantly with **zero Cumulative Layout Shift (CLS)**.
+
+### 3. Accessibility / Reduced Motion
+When a user's system preferences request reduced motion (`prefers-reduced-motion: reduce`), the shimmer sweep animation pauses instantly, converting the placeholders to solid static gray shapes for safety.

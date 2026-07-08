@@ -1,0 +1,106 @@
+$fs-states: () !default;
+$fs-transitions: () !default;
+$fs-state-attribute: "data-state" !default;
+$fs-next-attribute: "data-next" !default;
+
+@function fs-list-contains($list, $value) {
+  @return index($list, $value) != null;
+}
+
+@function fs-has-duplicate-states($states) {
+  $seen: ();
+
+  @each $state in $states {
+    @if fs-list-contains($seen, $state) {
+      @return true;
+    }
+    $seen: append($seen, $state);
+  }
+
+  @return false;
+}
+
+@function fs-transition-key($transition) {
+  @return "#{nth($transition, 1)}->#{nth($transition, 2)}";
+}
+
+@function fs-has-duplicate-transitions($transitions) {
+  $seen: ();
+
+  @each $transition in $transitions {
+    $key: fs-transition-key($transition);
+
+    @if fs-list-contains($seen, $key) {
+      @return true;
+    }
+    $seen: append($seen, $key);
+  }
+
+  @return false;
+}
+
+@mixin fs-validate-states($states) {
+  @if length($states) == 0 {
+    @error "finite-state: the state list is empty. Provide at least one state.";
+  }
+
+  @if fs-has-duplicate-states($states) {
+    @warn "finite-state: duplicate states detected in the provided state list.";
+  }
+}
+
+@mixin fs-validate-transitions($transitions, $states) {
+  @if length($transitions) == 0 {
+    @warn "finite-state-transitions: no transitions were provided, nothing will be generated.";
+  }
+
+  @each $transition in $transitions {
+    @if length($transition) != 2 {
+      @error "finite-state-transitions: each transition must be a (from, to) pair, got `#{$transition}`.";
+    }
+
+    $from: nth($transition, 1);
+    $to: nth($transition, 2);
+
+    @if not fs-list-contains($states, $from) {
+      @error "finite-state-transitions: transition references unknown state `#{$from}`.";
+    }
+
+    @if not fs-list-contains($states, $to) {
+      @error "finite-state-transitions: transition references unknown state `#{$to}`.";
+    }
+  }
+
+  @if fs-has-duplicate-transitions($transitions) {
+    @warn "finite-state-transitions: duplicate transitions detected in the provided transition list.";
+  }
+}
+
+@mixin finite-state($states: $fs-states, $attribute: $fs-state-attribute) {
+  @include fs-validate-states($states);
+
+  @each $state in $states {
+    &[#{$attribute}="#{$state}"] {
+      @content ($state);
+    }
+  }
+}
+
+@mixin finite-state-transitions(
+  $transitions: $fs-transitions,
+  $states: $fs-states,
+  $state-attribute: $fs-state-attribute,
+  $next-attribute: $fs-next-attribute
+) {
+  @include fs-validate-states($states);
+  @include fs-validate-transitions($transitions, $states);
+
+  @each $transition in $transitions {
+    $from: nth($transition, 1);
+    $to: nth($transition, 2);
+
+    &[#{$state-attribute}="#{$from}"][#{$next-attribute}="#{$to}"] {
+      @content ($from, $to);
+    }
+  }
+}

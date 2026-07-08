@@ -107,6 +107,6 @@ async function findDuplicates() {
 }
 
 findDuplicates().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+  console.error('Duplicate check failed:', error);
   process.exitCode = 1;
 });

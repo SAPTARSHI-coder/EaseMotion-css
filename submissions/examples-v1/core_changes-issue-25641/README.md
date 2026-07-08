@@ -1,0 +1,3 @@
+1. What does this do? Provides a shared IntersectionObserver utility with `observe(el, callback, options)` and `unobserve(el)` using a single observer instance with WeakMap-based callback storage.
+2. How is it used? Include `script.js`, then call `observe(element, function(entry) { ... }, { threshold: 0.2, once: true })`. Elements are auto-unobserved after first intersection in once mode.
+3. Why is it useful? Centralizes IntersectionObserver logic to reduce code duplication across components — shared observer instance reduces memory, WeakMap enables automatic cleanup, and configurable threshold/rootMargin/once options cover common scroll-trigger patterns.
