@@ -6,3 +6,22 @@
 2. **How is it used?**
    It uses the native HTML `<details>` and `<summary>` elements with custom classes to style and animate the magnetic overshoot and terminal console layouts.
 
+   **HTML Structure:**
+   ```html
+   <details class="ease-cyber-item">
+     <summary class="ease-cyber-header" aria-expanded="false">
+       <!-- Code Label -->
+       <span class="ease-header-code">[ 01 ]</span>
+
+       <!-- Text Group -->
+       <div class="ease-header-text">
+         <h3 class="ease-header-title">Module Title</h3>
+         <p class="ease-header-desc">Module Desc</p>
+       </div>
+
+       <!-- Status Badge -->
+       <div class="ease-status-wrapper ease-status-online">
+         <div class="ease-status-dot"></div>
+         <span class="ease-status-label">ONLINE</span>
+       </div>
+
