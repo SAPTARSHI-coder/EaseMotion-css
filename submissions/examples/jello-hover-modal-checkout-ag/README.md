@@ -8,3 +8,17 @@ A premium, keyboard-accessible, and fully responsive pure CSS modal component fe
 
 This component displays an interactive secure payment confirmation modal styled like high-end checkout summaries that triggers a playful, elastic "jello" wobble animation on hover.
 
+### 2. How is it used?
+
+Apply the class `.ease-jello-hover` to any modal card or element to immediately enable the jello hover effect, and customize the timing or stretch factors using standard CSS custom properties.
+
+```html
+<!-- Modal Card -->
+<div class="ease-modal-card ease-jello-hover">
+  <!-- Interactive Credit Card Mockup -->
+  <div class="credit-card-mockup ease-jello-hover">
+    <!-- Card content here -->
+  </div>
+</div>
+```
+
