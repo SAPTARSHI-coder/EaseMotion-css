@@ -5,6 +5,7 @@ const FitnessTrackerCard = ({
   title = "Daily Activity",
   subtitle = "Fitness Tracker",
   steps = 8450,
+  progress = 84,
   goal = 10000,
   heartRate = 128,
   calories = 540,
@@ -19,7 +20,7 @@ const FitnessTrackerCard = ({
   <div
     className="fitness-card ease-slide-in-from-bottom ease-card-lift ease-hover-shimmer"
     style={{ "--accent-color": accentColor }}
-  >
+    >
     {/* Header */}
     <div className="fitness-header">
       <div>
@@ -52,6 +53,35 @@ const FitnessTrackerCard = ({
         <span>{goal.toLocaleString()}</span>
       </div>
     </div>
+    {/* Stats */}
+<div className="fitness-stats">
+  <div className="fitness-stat">
+    <h3>{heartRate}</h3>
+    <p>❤️ Heart Rate</p>
+  </div>
+
+  <div className="fitness-stat">
+    <h3>{calories}</h3>
+    <p>🔥 Calories</p>
+  </div>
+
+  <div className="fitness-stat">
+    <h3>{distance}</h3>
+    <p>📏 Distance</p>
+  </div>
+
+  <div className="fitness-stat">
+    <h3>{activeMinutes}</h3>
+    <p>⏱ Active Min</p>
+  </div>
+</div>
+
+<button
+  className="fitness-button ease-hover-grow"
+  onClick={onButtonClick}
+>
+  {buttonText}
+</button>
   </div>
 );
 
