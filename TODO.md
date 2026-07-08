@@ -5,6 +5,7 @@
 - [ ] Add style.css implementing 3 animated dots typing indicator with CSS variables
 - [ ] Add README.md with overview + usage + customization variables + compatibility
 - [x] Add preview.png (or preview.gif) demonstrating the component
-- [ ] Quick manual test: open index.html and verify smooth looping + responsive behavior
+- [x] Quick manual test: open index.html and verify smooth looping + responsive behavior
+
 
 
