@@ -1,111 +1,125 @@
-import React, { useState } from 'react';
-import './style.css';
+import React, { useState, useRef, useEffect } from 'react';
 
-const MENU_DATA = [
-  {
-    id: 'dashboard',
-    title: 'Dashboard',
-    icon: '📊',
-    children: [
-      { id: 'overview', title: 'Overview' },
-      { id: 'analytics', title: 'Analytics' },
-      { id: 'realtime', title: 'Real-time Metrics' }
-    ]
-  },
-  {
-    id: 'management',
-    title: 'Management',
-    icon: '⚙️',
-    children: [
-      { id: 'users', title: 'Team Members' },
-      { id: 'roles', title: 'Permissions' },
-      { id: 'logs', title: 'System Logs' }
-    ]
-  },
-  {
-    id: 'billing',
-    title: 'Billing & Plans',
-    icon: '💳',
-    children: [
-      { id: 'invoices', title: 'Invoices' },
-      { id: 'subscriptions', title: 'Subscriptions' }
-    ]
-  }
-];
+/**
+ * Collapsible Sidebar Menu with Smooth Accordion
+ * 
+ * @param {Array} navItems - Configuration array for navigation menus
+ */
+const Sidebar = ({ navItems }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [openAccordions, setOpenAccordions] = useState({});
 
-export default function Sidebar({ defaultCollapsed = false, uniqueSelection = true }) {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
-  const [openSubMenus, setOpenSubMenus] = useState({});
-
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
-    if (!isCollapsed) {
-      setOpenSubMenus({}); // Collapse all child menus when closing sidebar
+  // Toggle individual accordion sections
+  const toggleAccordion = (id) => {
+    // If sidebar is collapsed, we must open it first before expanding accordion
+    if (!isSidebarOpen) {
+      setIsSidebarOpen(true);
+      // Wait for sidebar expansion before opening accordion for smoother physics
+      setTimeout(() => {
+        setOpenAccordions(prev => ({ ...prev, [id]: !prev[id] }));
+      }, 300);
+      return;
     }
+    
+    setOpenAccordions(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const toggleSubMenu = (menuId) => {
-    if (isCollapsed) {
-      setIsCollapsed(false); // Auto expand sidebar if a hidden icon is clicked
+  // When collapsing the sidebar, close all accordions to reset state
+  useEffect(() => {
+    if (!isSidebarOpen) {
+      setOpenAccordions({});
     }
-
-    setOpenSubMenus((prev) => {
-      if (uniqueSelection) {
-        return { [menuId]: !prev[menuId] }; // Close other submenus
-      }
-      return { ...prev, [menuId]: !prev[menuId] }; // Keep others open
-    });
-  };
+  }, [isSidebarOpen]);
 
   return (
-    <aside className={`sidebar-container ${isCollapsed ? 'is-collapsed' : ''}`}>
-      {/* Sidebar Control Header */}
-      <div className="sidebar-header">
-        <div className="sidebar-logo">
-          <span className="logo-icon">🌀</span>
-          <span className="logo-text">EaseMotion</span>
+    <aside className={`ease-sidebar ${isSidebarOpen ? 'is-open' : 'is-collapsed'}`}>
+      
+      {/* Header / Toggle Button */}
+      <div className="ease-sidebar-header">
+        <div className="ease-sidebar-logo">
+          <div className="ease-logo-mark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <span className="ease-logo-text">Acme Corp</span>
         </div>
+        
         <button 
-          className="collapse-toggle-btn" 
-          onClick={toggleSidebar}
-          aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          className="ease-sidebar-toggle" 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
         >
-          {isCollapsed ? '→' : '←'}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
       </div>
 
-      {/* Navigation Menu List */}
-      <nav className="sidebar-menu">
-        {MENU_DATA.map((menu) => {
-          const isOpen = !!openSubMenus[menu.id];
-          return (
-            <div key={menu.id} className="menu-group">
-              <button
-                className={`menu-trigger-btn ${isOpen ? 'active-parent' : ''}`}
-                onClick={() => toggleSubMenu(menu.id)}
-                aria-expanded={isOpen}
+      {/* Navigation Menu */}
+      <nav className="ease-sidebar-nav">
+        {navItems.map((item) => (
+          <div key={item.id} className="ease-nav-section">
+            
+            {/* Parent Item / Accordion Trigger */}
+            {item.children ? (
+              <button 
+                className={`ease-nav-item ${openAccordions[item.id] ? 'is-active' : ''}`}
+                onClick={() => toggleAccordion(item.id)}
+                aria-expanded={openAccordions[item.id]}
               >
-                <span className="menu-icon">{menu.icon}</span>
-                <span className="menu-title-text">{menu.title}</span>
-                <span className={`chevron-indicator ${isOpen ? 'rotate-down' : ''}`}>
-                  ▼
+                <span className="ease-nav-icon">{item.icon}</span>
+                <span className="ease-nav-label">{item.label}</span>
+                <span className="ease-nav-chevron">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
                 </span>
               </button>
+            ) : (
+              <a href={item.href} className="ease-nav-item">
+                <span className="ease-nav-icon">{item.icon}</span>
+                <span className="ease-nav-label">{item.label}</span>
+              </a>
+            )}
 
-              {/* Smooth Accordion Dropdown Wrapper */}
-              <div className={`submenu-wrapper ${isOpen ? 'is-open' : ''}`}>
-                <div className="submenu-inner-content">
-                  {menu.children.map((child) => (
-                    <a key={child.id} href={`#${child.id}`} className="submenu-item-link">
-                      {child.title}
+            {/* Accordion Content (Sub-items) */}
+            {item.children && (
+              <div 
+                className="ease-accordion-content"
+                style={{ 
+                  // Use CSS grid transition trick for smooth height animation
+                  gridTemplateRows: openAccordions[item.id] ? '1fr' : '0fr' 
+                }}
+              >
+                <div className="ease-accordion-inner">
+                  {item.children.map((child) => (
+                    <a key={child.id} href={child.href} className="ease-sub-nav-item">
+                      {child.label}
                     </a>
                   ))}
                 </div>
               </div>
-            </div>
-          );
-        })}
+            )}
+            
+          </div>
+        ))}
       </nav>
+
+      {/* Footer Profile Section */}
+      <div className="ease-sidebar-footer">
+        <div className="ease-profile-row">
+          <img src="https://i.pravatar.cc/150?img=11" alt="User" className="ease-profile-img" />
+          <div className="ease-profile-info">
+            <p className="ease-profile-name">Jane Doe</p>
+            <p className="ease-profile-role">Admin</p>
+          </div>
+        </div>
+      </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;
