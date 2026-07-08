@@ -709,7 +709,7 @@ Use the non-minified version for debugging and development:
 
 ```html
 <link rel="stylesheet" href="easemotion.css" />
-
+```
 ### Animations
 
 ```html
