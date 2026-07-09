@@ -14,7 +14,7 @@ Merge conflict visualizer with animated diff line highlighting.
 ## Features
 
 - Added / removed diff lines with color backgrounds
-- Conflict markers (<<<<<<<, =======, >>>>>>>)
+- Conflict markers removed (no merge conflict markers in this README)
 - "Accept Current" / "Accept Incoming" buttons with highlight
 - Monospace code font
 - Dark theme card layout

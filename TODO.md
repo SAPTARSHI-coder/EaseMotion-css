@@ -6,6 +6,4 @@
 - [x] Add short README.md with usage instructions
 - [x] Verify spinner markup + styles are consistent
 
-- [ ] Add Animated Floating Notification Card (floating-notification-harshitha)
-
-
+- [x] Add Animated Floating Notification Card (floating-notification-harshitha)
