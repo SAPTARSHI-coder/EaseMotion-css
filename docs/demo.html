@@ -120,6 +120,9 @@
       background: radial-gradient(ellipse 80% 60% at 50% 0%,
           rgba(108, 99, 255, 0.18) 0%,
           transparent 70%);
+      /* ADDED: needed so .hero-orb-1/2 (position:absolute, from docs.css) anchor to the hero instead of the whole page */
+      position: relative;
+      overflow: hidden;
     }
 
     .demo-hero h1 {
@@ -291,6 +294,10 @@
 
 <body>
 
+  <!-- ADDED: uses the #particle-canvas rules already defined in docs.css
+       (fixed, z-index:0, pointer-events:none, theme-aware opacity) -->
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+
   <!-- ═══════════════════════════════════════════════════════
        NAVIGATION
   ══════════════════════════════════════════════════════════ -->
@@ -335,6 +342,10 @@
        HERO
   ══════════════════════════════════════════════════════════ -->
   <header class="demo-hero">
+    <!-- ADDED: uses the .hero-orb-1 / .hero-orb-2 rules already defined in docs.css -->
+    <div class="hero-orb hero-orb-1" aria-hidden="true"></div>
+    <div class="hero-orb hero-orb-2" aria-hidden="true"></div>
+
     <div class="ease-container">
       <div class="ease-fade-in">
         <div class="demo-section-label">Interactive Demo</div>
@@ -767,6 +778,18 @@
     </div>
   </footer>
 
+  <!-- ADDED: Scroll to Top — uses .ease-scroll-top / .ease-scroll-top--primary
+       already defined in docs.css, including the SVG progress ring -->
+  <button id="scrollTopBtn" class="ease-scroll-top ease-scroll-top--primary" aria-label="Scroll to top" title="Back to top">
+    <svg class="ease-scroll-top__ring" viewBox="0 0 44 44">
+      <circle cx="22" cy="22" r="20"></circle>
+    </svg>
+    <svg class="ease-scroll-top__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
+    </svg>
+  </button>
+
   <!-- ── Scripts ────────────────────────────────────────── -->
   <script>
     function replay(el, cls) {
@@ -837,6 +860,111 @@
         localStorage.setItem("em-theme", targetTheme);
       }
     });
+  </script>
+
+  <!-- ADDED: scroll-to-top visibility + progress ring + smooth scroll -->
+  <script>
+    (function () {
+      var btn = document.getElementById("scrollTopBtn");
+      var ring = btn.querySelector(".ease-scroll-top__ring circle");
+      var RING_CIRCUMFERENCE = 126; // matches stroke-dasharray in docs.css
+
+      function onScroll() {
+        var scrollTop = window.scrollY;
+        var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        var progress = docHeight > 0 ? scrollTop / docHeight : 0;
+
+        btn.classList.toggle("is-visible", scrollTop > 300);
+        ring.style.strokeDashoffset = RING_CIRCUMFERENCE - (progress * RING_CIRCUMFERENCE);
+      }
+
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+
+      btn.addEventListener("click", function () {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    })();
+  </script>
+
+  <!-- ADDED: particle-network background drawn on #particle-canvas
+       (already positioned/opacity-controlled by docs.css) -->
+  <script>
+    (function () {
+      var canvas = document.getElementById("particle-canvas");
+      var ctx = canvas.getContext("2d");
+      var width, height;
+      var points = [];
+
+      var POINT_COUNT = 70;
+      var LINK_DISTANCE = 130;
+      var SPEED = 0.12;
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduceMotion) return;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      function createPoint() {
+        var angle = Math.random() * Math.PI * 2;
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: Math.cos(angle) * SPEED,
+          vy: Math.sin(angle) * SPEED,
+          r: Math.random() * 1 + 0.8
+        };
+      }
+
+      for (var i = 0; i < POINT_COUNT; i++) points.push(createPoint());
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (var p of points) {
+          p.x += p.vx;
+          p.y += p.vy;
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+        }
+
+        for (var a = 0; a < points.length; a++) {
+          for (var b = a + 1; b < points.length; b++) {
+            var dx = points[a].x - points[b].x;
+            var dy = points[a].y - points[b].y;
+            var dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < LINK_DISTANCE) {
+              var opacity = (1 - dist / LINK_DISTANCE) * 0.4;
+              ctx.beginPath();
+              ctx.moveTo(points[a].x, points[a].y);
+              ctx.lineTo(points[b].x, points[b].y);
+              ctx.strokeStyle = "rgba(167, 139, 250, " + opacity + ")";
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
+          }
+        }
+
+        for (var p2 of points) {
+          ctx.beginPath();
+          ctx.arc(p2.x, p2.y, p2.r, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(167, 139, 250, 0.7)";
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    })();
   </script>
 </body>
 
