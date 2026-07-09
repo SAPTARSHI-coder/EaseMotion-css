@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦍 Donkey Kong</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🦍 Donkey Kong</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">❤️ Lives</span>
+        <span class="stat-value" id="livesDisplay">3</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📈 Level</span>
+        <span class="stat-value" id="levelDisplay">1</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="560" height="600"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+    </div>
+
+    <div class="controls-hint">
+      <kbd>←</kbd> <kbd>→</kbd> Move &nbsp; <kbd>↑</kbd> Climb Up &nbsp; <kbd>↓</kbd> Climb Down &nbsp; <kbd>Space</kbd> Jump
+    </div>
+
+    <div class="game-status" id="gameStatus">🦍 Press Start or Space to begin!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const livesDisplay = document.getElementById('livesDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const levelDisplay = document.getElementById('levelDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 560;
+      const HEIGHT = 600;
+      const GRAVITY = 0.5;
+      const JUMP_FORCE = -10;
+      const MOVE_SPEED = 3;
+      const CLIMB_SPEED = 2;
+
+      // ---------- Game State ----------
+      let score = 0;
+      let lives = 3;
+      let level = 1;
+      let bestScore = parseInt(localStorage.getItem('donkeyKongBestScore')) || 0;
+      let gameRunning = false;
+      let gameOverFlag = false;
+      let gameLoop = null;
+      let keys = { left: false, right: false, up: false, down: false, jump: false };
+
+      // ---------- Level Data ----------
+      function getLevelData(levelNum) {
+        const baseLevel = {
+          platforms: [],
+          ladders: [],
+          barrels: [],
+          fireballs: [],
+          kongX: 0,
+          kongY: 0,
+          princessX: 0,
+          princessY: 0
+        };
+
+        // Level 1 - Classic layout
+        if (levelNum === 1) {
+          return {
+            platforms: [
+              { x: 20, y: 480, w: 520, h: 10 },
+              { x: 20, y: 380, w: 200, h: 10 },
+              { x: 340, y: 380, w: 200, h: 10 },
+              { x: 20, y: 280, w: 200, h: 10 },
+              { x: 340, y: 280, w: 200, h: 10 },
+              { x: 100, y: 180, w: 360, h: 10 },
+              { x: 20, y: 80, w: 520, h: 10 }
+            ],
+            ladders: [
+              { x: 90, y: 280, h: 100 },
+              { x: 250, y: 180, h: 100 },
+              { x: 310, y: 180, h: 100 },
+              { x: 430, y: 280, h: 100 }
+            ],
+            barrels: [],
+            fireballs: [],
+            kongX: 280,
+            kongY: 60,
+            princessX: 280,
+            princessY: 60
+          };
+        }
+
+        // Level 2 - More complex
+        if (levelNum === 2) {
+          return {
+            platforms: [
+              { x: 20, y: 480, w: 520, h: 10 },
+              { x: 20, y: 380, w: 150, h: 10 },
+              { x: 200, y: 380, w: 160, h: 10 },
+              { x: 390, y: 380, w: 150, h: 10 },
+              { x: 20, y: 280, w: 250, h: 10 },
+              { x: 290, y: 280, w: 250, h: 10 },
+              { x: 100, y: 180, w: 200, h: 10 },
+              { x: 300, y: 180, w: 200, h: 10 },
+              { x: 20, y: 80, w: 520, h: 10 }
+            ],
+            ladders: [
+              { x: 90, y: 280, h: 100 },
+              { x: 180, y: 180, h: 100 },
+              { x: 250, y: 380, h: 100 },
+              { x: 310, y: 380, h: 100 },
+              { x: 380, y: 180, h: 100 },
+              { x: 430, y: 280, h: 100 }
+            ],
+            barrels: [],
+            fireballs: [],
+            kongX: 280,
+            kongY: 60,
+            princessX: 280,
+            princessY: 60
+          };
+        }
+
+        // Level 3+ - Increasing difficulty
+        return {
+          platforms: [
+            { x: 20, y: 480, w: 520, h: 10 },
+            { x: 20, y: 380, w: 120, h: 10 },
+            { x: 160, y: 380, w: 120, h: 10 },
+            { x: 300, y: 380, w: 120, h: 10 },
+            { x: 440, y: 380, w: 100, h: 10 },
+            { x: 20, y: 280, w: 200, h: 10 },
+            { x: 240, y: 280, w: 280, h: 10 },
+            { x: 20, y: 180, w: 200, h: 10 },
+            { x: 240, y: 180, w: 280, h: 10 },
+            { x: 20, y: 80, w: 520, h: 10 }
+          ],
+          ladders: [
+            { x: 50, y: 280, h: 100 },
+            { x: 130, y: 180, h: 100 },
+            { x: 220, y: 380, h: 100 },
+            { x: 300, y: 280, h: 100 },
+            { x: 400, y: 180, h: 100 },
+            { x: 480, y: 280, h: 100 }
+          ],
+          barrels: [],
+          fireballs: [],
+          kongX: 280,
+          kongY: 60,
+          princessX: 280,
+          princessY: 60
+        };
+      }
+
+      // ---------- Player ----------
+      let player = {
+        x: 0,
+        y: 0,
+        w: 24,
+        h: 32,
+        vx: 0,
+        vy: 0,
+        onGround: false,
+        onLadder: false,
+        climbing: false,
+        facing: 1,
+        frame: 0,
+        frameTimer: 0
+      };
+
+      // ---------- Game Objects ----------
+      let platforms = [];
+      let ladders = [];
+      let barrels = [];
+      let fireballs = [];
+      let kong = { x: 0, y: 0 };
+      let princess = { x: 0, y: 0 };
+      let barrelTimer = 0;
+      let barrelSpawnRate = 120;
+      let fireballTimer = 0;
+
+      // ---------- High Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Level Loading ----------
+      function loadLevel(levelNum) {
+        const data = getLevelData(levelNum);
+        platforms = data.platforms;
+        ladders = data.ladders;
+        barrels = [];
+        fireballs = [];
+        kong.x = data.kongX;
+        kong.y = data.kongY;
+        princess.x = data.princessX;
+        princess.y = data.princessY;
+        barrelTimer = 0;
+        barrelSpawnRate = Math.max(60, 120 - levelNum * 10);
+        fireballTimer = 0;
+        resetPlayer();
+      }
+
+      // ---------- Player Functions ----------
+      function resetPlayer() {
+        player.x = 280 - player.w/2;
+        player.y = 470;
+        player.vx = 0;
+        player.vy = 0;
+        player.onGround = true;
+        player.onLadder = false;
+        player.climbing = false;
+        player.facing = 1;
+      }
+
+      // ---------- Barrel Functions ----------
+      function spawnBarrel() {
+        const startX = kong.x + (Math.random() - 0.5) * 40;
+        barrels.push({
+          x: startX,
+          y: kong.y + 20,
+          w: 20,
+          h: 20,
+          vx: (Math.random() > 0.5 ? 1 : -1) * (1 + level * 0.1),
+          vy: 0,
+          onGround: false,
+          rolling: true
+        });
+      }
+
+      // ---------- Fireball Functions ----------
+      function spawnFireball() {
+        const startX = kong.x + (Math.random() - 0.5) * 60;
+        fireballs.push({
+          x: startX,
+          y: kong.y + 40,
+          w: 18,
+          h: 18,
+          vx: (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.15),
+          vy: 0,
+          onGround: false,
+          bouncing: true,
+          bounceTimer: 0
+        });
+      }
+
+      // ---------- Collision Detection ----------
+      function rectCollide(a, b) {
+        return a.x < b.x + b.w &&
+               a.x + a.w > b.x &&
+               a.y < b.y + b.h &&
+               a.y + a.h > b.y;
+      }
+
+      function pointInRect(px, py, rect) {
+        return px >= rect.x && px <= rect.x + rect.w &&
+               py >= rect.y && py <= rect.y + rect.h;
+      }
+
+      function isOnLadder(x, y) {
+        for (const ladder of ladders) {
+          if (x + player.w/2 > ladder.x && x + player.w/2 < ladder.x + 20 &&
+              y + player.h > ladder.y && y < ladder.y + ladder.h) {
+            return ladder;
+          }
+        }
+        return null;
+      }
+
+      // ---------- Update ----------
+      function update() {
+        if (!gameRunning || gameOverFlag) return;
+
+        // ----- Player Movement -----
+        const onLadder = isOnLadder(player.x, player.y);
+        
+        if (onLadder && keys.up) {
+          player.climbing = true;
+          player.vy = -CLIMB_SPEED;
+          player.y += player.vy;
+          player.onGround = false;
+        } else if (onLadder && keys.down) {
+          player.climbing = true;
+          player.vy = CLIMB_SPEED;
+          player.y += player.vy;
+          player.onGround = false;
+        } else if (onLadder && !keys.up && !keys.down) {
+          player.climbing = true;
+          player.vy = 0;
+        } else {
+          player.climbing = false;
+        }
+
+        // Horizontal movement
+        player.vx = 0;
+        if (keys.left) { player.vx = -MOVE_SPEED; player.facing = -1; }
+        if (keys.right) { player.vx = MOVE_SPEED; player.facing = 1; }
+
+        // Jump
+        if (keys.jump && player.onGround && !player.climbing) {
+          player.vy = JUMP_FORCE;
+          player.onGround = false;
+          keys.jump = false; // Single jump
+        }
+
+        // Apply gravity
+        if (!player.climbing) {
+          player.vy += GRAVITY;
+          if (player.vy > 12) player.vy = 12;
+        }
+
+        // Move player
+        player.x += player.vx;
+        player.y += player.vy;
+
+        // Platform collision
+        player.onGround = false;
+        for (const platform of platforms) {
+          if (player.vy >= 0 &&
+              player.x + player.w > platform.x + 5 &&
+              player.x < platform.x + platform.w - 5 &&
+              player.y + player.h > platform.y &&
+              player.y + player.h < platform.y + platform.h + 15) {
+            player.y = platform.y - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          }
+        }
+
+        // Ladder climbing bounds
+        if (player.climbing) {
+          const ladder = isOnLadder(player.x, player.y);
+          if (ladder) {
+            player.x = ladder.x - 2;
+            if (player.y < ladder.y) player.y = ladder.y;
+            if (player.y + player.h > ladder.y + ladder.h) player.y = ladder.y + ladder.h - player.h;
+          } else {
+            player.climbing = false;
+          }
+        }
+
+        // Screen bounds
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.w > WIDTH) player.x = WIDTH - player.w;
+        if (player.y < 0) { player.y = 0; player.vy = 0; }
+        if (player.y + player.h > HEIGHT) {
+          loseLife();
+          return;
+        }
+
+        // ----- Barrel Spawning -----
+        barrelTimer++;
+        if (barrelTimer >= barrelSpawnRate && barrels.length < 5 + level) {
+          spawnBarrel();
+          barrelTimer = 0;
+        }
+
+        // ----- Fireball Spawning (higher levels) -----
+        if (level >= 2) {
+          fireballTimer++;
+          if (fireballTimer >= 300 - level * 20 && fireballs.length < 2 + Math.floor(level / 2)) {
+            spawnFireball();
+            fireballTimer = 0;
+          }
+        }
+
+        // ----- Update Barrels -----
+        for (let i = barrels.length - 1; i >= 0; i--) {
+          const barrel = barrels[i];
+          barrel.x += barrel.vx;
+          barrel.vy += GRAVITY * 0.5;
+          barrel.y += barrel.vy;
+
+          // Platform collision for barrels
+          barrel.onGround = false;
+          for (const platform of platforms) {
+            if (barrel.vy >= 0 &&
+                barrel.x + barrel.w > platform.x + 2 &&
+                barrel.x < platform.x + platform.w - 2 &&
+                barrel.y + barrel.h > platform.y &&
+                barrel.y + barrel.h < platform.y + platform.h + 10) {
+              barrel.y = platform.y - barrel.h;
+              barrel.vy = 0;
+              barrel.onGround = true;
+              // Bounce off edges
+              if (barrel.x < platform.x + 5) barrel.vx = Math.abs(barrel.vx);
+              if (barrel.x + barrel.w > platform.x + platform.w - 5) barrel.vx = -Math.abs(barrel.vx);
+            }
+          }
+
+          // Remove if off screen
+          if (barrel.y > HEIGHT + 50 || barrel.x < -50 || barrel.x > WIDTH + 50) {
+            barrels.splice(i, 1);
+            continue;
+          }
+
+          // Barrel vs Player collision
+          if (rectCollide(player, barrel)) {
+            loseLife();
+            return;
+          }
+        }
+
+        // ----- Update Fireballs -----
+        for (let i = fireballs.length - 1; i >= 0; i--) {
+          const fireball = fireballs[i];
+          fireball.x += fireball.vx;
+          fireball.vy += GRAVITY * 0.6;
+          fireball.y += fireball.vy;
+          fireball.bounceTimer++;
+
+          // Platform collision for fireballs
+          fireball.onGround = false;
+          for (const platform of platforms) {
+            if (fireball.vy >= 0 &&
+                fireball.x + fireball.w > platform.x + 2 &&
+                fireball.x < platform.x + platform.w - 2 &&
+                fireball.y + fireball.h > platform.y &&
+                fireball.y + fireball.h < platform.y + platform.h + 10) {
+              fireball.y = platform.y - fireball.h;
+              fireball.vy = -3 - Math.random() * 2;
+              fireball.onGround = true;
+            }
+          }
+
+          // Bounce off edges
+          if (fireball.x < 5) fireball.vx = Math.abs(fireball.vx);
+          if (fireball.x + fireball.w > WIDTH - 5) fireball.vx = -Math.abs(fireball.vx);
+
+          // Remove if off screen
+          if (fireball.y > HEIGHT + 50) {
+            fireballs.splice(i, 1);
+            continue;
+          }
+
+          // Fireball vs Player collision
+          if (rectCollide(player, fireball)) {
+            loseLife();
+            return;
+          }
+        }
+
+        // ----- Player vs Princess -----
+        if (Math.abs(player.x + player.w/2 - princess.x) < 30 &&
+            Math.abs(player.y + player.h/2 - princess.y) < 30) {
+          // Level complete!
+          score += 100 * level;
+          updateScore();
+          updateBestScore();
+          level++;
+          updateLevel();
+          setGameStatus(`🎉 Level ${level-1} Complete!`, true);
+          loadLevel(level);
+        }
+
+        // ----- Player fall check -----
+        if (player.y > HEIGHT + 50) {
+          loseLife();
+          return;
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background
+        const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        grad.addColorStop(0, '#1a0a2a');
+        grad.addColorStop(0.5, '#2a1a3a');
+        grad.addColorStop(1, '#1a2a3a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Draw platforms (girders)
+        for (const platform of platforms) {
+          // Girder body
+          const grad2 = ctx.createLinearGradient(0, platform.y, 0, platform.y + platform.h);
+          grad2.addColorStop(0, '#5a4a3a');
+          grad2.addColorStop(0.5, '#3a2a1a');
+          grad2.addColorStop(1, '#2a1a0a');
+          ctx.fillStyle = grad2;
+          ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
+          // Rivets
+          ctx.fillStyle = '#6a5a4a';
+          for (let r = platform.x + 10; r < platform.x + platform.w - 10; r += 30) {
+            ctx.beginPath();
+            ctx.arc(r, platform.y + platform.h/2, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          // Highlight
+          ctx.fillStyle = 'rgba(255,200,150,0.1)';
+          ctx.fillRect(platform.x, platform.y, platform.w, 2);
+        }
+
+        // Draw ladders
+        for (const ladder of ladders) {
+          ctx.fillStyle = '#8a7a5a';
+          for (let y = ladder.y; y < ladder.y + ladder.h; y += 10) {
+            ctx.fillRect(ladder.x + 2, y, 16, 2);
+          }
+          ctx.fillStyle = '#6a5a3a';
+          ctx.fillRect(ladder.x + 8, ladder.y, 4, ladder.h);
+        }
+
+        // Draw Donkey Kong
+        ctx.save();
+        ctx.translate(kong.x, kong.y);
+        // Body
+        ctx.fillStyle = '#6a4a2a';
+        ctx.fillRect(-20, -10, 40, 30);
+        // Head
+        ctx.fillStyle = '#8a6a4a';
+        ctx.beginPath();
+        ctx.arc(0, -15, 18, 0, Math.PI * 2);
+        ctx.fill();
+        // Eyes
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(-8, -18, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(8, -18, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(-6, -16, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(10, -16, 3, 0, Math.PI * 2);
+        ctx.fill();
+        // Mouth (grinning)
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -8, 10, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+        // Hat (classic DK hat)
+        ctx.fillStyle = '#c62828';
+        ctx.fillRect(-22, -28, 44, 8);
+        ctx.fillRect(-16, -36, 32, 10);
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillRect(-6, -36, 12, 8);
+        ctx.restore();
+
+        // Draw Princess
+        ctx.save();
+        ctx.translate(princess.x, princess.y);
+        // Dress
+        ctx.fillStyle = '#e91e63';
+        ctx.beginPath();
+        ctx.moveTo(-12, 10);
+        ctx.quadraticCurveTo(-16, 5, -10, -5);
+        ctx.lineTo(-10, -10);
+        ctx.lineTo(10, -10);
+        ctx.lineTo(10, -5);
+        ctx.quadraticCurveTo(16, 5, 12, 10);
+        ctx.closePath();
+        ctx.fill();
+        // Head
+        ctx.fillStyle = '#ffccbc';
+        ctx.beginPath();
+        ctx.arc(0, -15, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // Hair
+        ctx.fillStyle = '#ffd54f';
+        ctx.beginPath();
+        ctx.arc(0, -20, 12, Math.PI, 2 * Math.PI);
+        ctx.fill();
+        // Crown
+        ctx.fillStyle = '#ffd54f';
+        ctx.fillRect(-8, -26, 16, 4);
+        for (let i = -6; i <= 6; i += 4) {
+          ctx.fillRect(i, -30, 2, 6);
+        }
+        ctx.restore();
+
+        // Draw Barrels
+        for (const barrel of barrels) {
+          ctx.save();
+          ctx.translate(barrel.x + barrel.w/2, barrel.y + barrel.h/2);
+          const grad3 = ctx.createRadialGradient(-3, -3, 2, 0, 0, barrel.w/2);
+          grad3.addColorStop(0, '#8a6a4a');
+          grad3.addColorStop(0.7, '#5a3a1a');
+          grad3.addColorStop(1, '#3a2a0a');
+          ctx.fillStyle = grad3;
+          ctx.beginPath();
+          ctx.arc(0, 0, barrel.w/2, 0, Math.PI * 2);
+          ctx.fill();
+          // Barrel bands
+          ctx.strokeStyle = '#4a3a2a';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(0, 0, barrel.w/2 - 3, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(0, 0, barrel.w/2 - 7, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // Draw Fireballs
+        for (const fireball of fireballs) {
+          ctx.save();
+          ctx.translate(fireball.x + fireball.w/2, fireball.y + fireball.h/2);
+          const grad4 = ctx.createRadialGradient(-3, -3, 2, 0, 0, fireball.w/2);
+          grad4.addColorStop(0, '#fff9c4');
+          grad4.addColorStop(0.3, '#ffd54f');
+          grad4.addColorStop(0.7, '#ff6f00');
+          grad4.addColorStop(1, '#bf360c');
+          ctx.fillStyle = grad4;
+          ctx.shadowColor = '#ff6f00';
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(0, 0, fireball.w/2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.restore();
+        }
+
+        // Draw Player (Mario/Jumpman)
+        ctx.save();
+        ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        ctx.scale(player.facing, 1);
+        
+        // Body
+        ctx.fillStyle = '#c62828';
+        ctx.fillRect(-8, -4, 16, 16);
+        // Overalls
+        ctx.fillStyle = '#1565c0';
+        ctx.fillRect(-8, 6, 16, 8);
+        ctx.fillRect(-10, 2, 4, 10);
+        ctx.fillRect(6, 2, 4, 10);
+        // Head
+        ctx.fillStyle = '#ffccbc';
+        ctx.beginPath();
+        ctx.arc(0, -10, 10, 0, Math.PI * 2);
+        ctx.fill();
+        // Hat
+        ctx.fillStyle = '#c62828';
+        ctx.fillRect(-12, -16, 24, 6);
+        ctx.fillRect(-8, -22, 16, 8);
+        // Eyes
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(-4, -12, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(4, -12, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        // Mustache
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(-8, -6, 16, 3);
+        ctx.restore();
+
+        // Game Over overlay
+        if (gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.7)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 48px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ef9a9a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('GAME OVER', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '24px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Score: ${score}`, WIDTH/2, HEIGHT/2 + 40);
+        }
+
+        // Instructions overlay
+        if (!gameRunning && !gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = '28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🦍 Donkey Kong', WIDTH/2, HEIGHT/2 - 30);
+          ctx.font = '18px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.fillText('Press Space or Click Start', WIDTH/2, HEIGHT/2 + 30);
+          ctx.font = '14px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#78909c';
+          ctx.fillText('← → Move · ↑ Climb Up · ↓ Climb Down · Space Jump', WIDTH/2, HEIGHT/2 + 70);
+        }
+      }
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        update();
+        draw();
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameRunning = true;
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Display Updates ----------
+      function updateScore() {
+        scoreDisplay.textContent = score;
+      }
+
+      function updateLives() {
+        livesDisplay.textContent = lives;
+      }
+
+      function updateLevel() {
+        levelDisplay.textContent = level;
+      }
+
+      function updateBestScore() {
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('donkeyKongBestScore', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        resetGameState();
+        gameRunning = true;
+        gameOverFlag = false;
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        setGameStatus('🦍 Rescue the Princess!', true);
+        loadLevel(level);
+        startLoop();
+      }
+
+      function resetGameState() {
+        score = 0;
+        lives = 3;
+        level = 1;
+        barrels = [];
+        fireballs = [];
+        barrelTimer = 0;
+        fireballTimer = 0;
+        updateScore();
+        updateLives();
+        updateLevel();
+        gameOverFlag = false;
+        resetPlayer();
+      }
+
+      function loseLife() {
+        lives--;
+        updateLives();
+        if (lives <= 0) {
+          gameOver();
+        } else {
+          resetPlayer();
+          setGameStatus(`💔 Lost a life! ${lives} remaining`, false);
+        }
+      }
+
+      function gameOver() {
+        gameRunning = false;
+        gameOverFlag = true;
+        stopLoop();
+        updateBestScore();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Play Again';
+        setGameStatus(`💀 Game Over! Score: ${score}`, false);
+        draw();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        gameOverFlag = false;
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        resetGameState();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        setGameStatus('🔄 Game reset. Press Start to play!', true);
+        loadLevel(1);
+        draw();
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(key)) {
+          e.preventDefault();
+        }
+
+        if (key === ' ' || key === 'Space') {
+          if (!gameRunning && !gameOverFlag) {
+            startGame();
+          } else if (gameRunning && !gameOverFlag && !keys.jump) {
+            keys.jump = true;
+          }
+          return;
+        }
+
+        if (key === 'r' || key === 'R') {
+          resetGame();
+          return;
+        }
+
+        if (key === 'ArrowLeft') keys.left = true;
+        if (key === 'ArrowRight') keys.right = true;
+        if (key === 'ArrowUp') keys.up = true;
+        if (key === 'ArrowDown') keys.down = true;
+      });
+
+      document.addEventListener('keyup', (e) => {
+        const key = e.key;
+        if (key === 'ArrowLeft') keys.left = false;
+        if (key === 'ArrowRight') keys.right = false;
+        if (key === 'ArrowUp') keys.up = false;
+        if (key === 'ArrowDown') keys.down = false;
+        if (key === ' ' || key === 'Space') keys.jump = false;
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+
+      // ---------- Init ----------
+      function init() {
+        resetGameState();
+        loadLevel(1);
+        draw();
+        setGameStatus('🦍 Press Start or Space to begin!', true);
+        bestDisplay.textContent = bestScore;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
