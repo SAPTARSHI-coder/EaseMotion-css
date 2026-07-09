@@ -7,6 +7,7 @@ const FitnessTrackerCard = ({
   steps = 8450,
   progress = 84,
   goal = 10000,
+  trend = "+12%",
   heartRate = 128,
   calories = 540,
   distance = "6.8 km",
@@ -29,8 +30,8 @@ const FitnessTrackerCard = ({
       </div>
 
       <span className="fitness-badge">
-        +12%
-      </span>
+        {trend}
+     </span>
     </div>
 
     {/* Steps */}
@@ -77,8 +78,10 @@ const FitnessTrackerCard = ({
 </div>
 
 <button
+  type="button"
   className="fitness-button ease-hover-grow"
   onClick={onButtonClick}
+  aria-label={buttonText}
 >
   {buttonText}
 </button>
