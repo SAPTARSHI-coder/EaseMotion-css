@@ -141,7 +141,7 @@ Most people simply forget. This is your reminder. 😊
 | ⚡ **Classes**       | 80+ utility classes, 20+ animation classes                                                                    |
 | 🎨 **Components**    | Buttons (6 variants), Cards (13 variants)                                                                     |
 | 🔑 **Design Tokens** | 60+ CSS custom properties                                                                                     |
-| ⚖️ **Bundle Size**   | 27.81 kB gzipped · 167.81 kB raw                                                                              |
+| ⚖️ **Bundle Size**   | 28.2 kB gzipped · 174.1 kB raw                                                                               |
 | 📜 **License**       | MIT                                                                                                           |
 | 🔧 **Build Step**    | ❌ None required                                                                                              |
 | 🏗️ **Dependencies**  | ❌ Zero                                                                                                       |
