@@ -1350,3 +1350,26 @@ Built with care &nbsp;·&nbsp; Zero dependencies &nbsp;·&nbsp; Animation-first 
 ## Accessibility
 
 EaseMotion CSS supports the `prefers-reduced-motion` media query to respect users who prefer reduced motion and reduce animation-related discomfort. When enabled at the operating system level, animations and transitions are minimized to provide a more accessible experience.
+
+
+# EaseMotion CSS
+
+EaseMotion CSS is a lightweight SCSS animation library that provides reusable mixins and human‑readable utility classes for smooth transitions, fades, slides, and zoom effects.
+
+---
+
+## ✨ Features
+- Human‑readable class names (`ease-fade-in`, `ease-slide-up`, etc.)
+- Built with SCSS mixins for flexibility
+- Composable and modular design
+- Works across modern browsers
+- Accessibility support with reduced‑motion fallbacks
+
+---
+
+## 📦 Installation
+
+Install via npm:
+
+```bash
+npm install easemotion-css
