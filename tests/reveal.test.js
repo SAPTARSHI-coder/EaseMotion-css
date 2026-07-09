@@ -55,6 +55,19 @@ describe('reveal.js', () => {
     expect(el2.classList.contains('ease-reveal-active')).toBe(true);
   });
 
+  it('should not throw when matchMedia is unavailable', () => {
+    delete window.matchMedia;
+
+    document.body.innerHTML = `
+      <div class="ease-reveal" id="el">Reveal</div>
+    `;
+
+    expect(() => runRevealScript()).not.toThrow();
+
+    const el = document.getElementById('el');
+    expect(el.classList.contains('ease-reveal-active')).toBe(true);
+  });
+
   it('should immediately add ease-reveal-active to elements that are already centered', () => {
     let observedElements = [];
     class MockIntersectionObserver {

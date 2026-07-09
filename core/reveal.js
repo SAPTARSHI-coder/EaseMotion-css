@@ -11,7 +11,11 @@
   }
 
   // Check if user prefers reduced motion
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var prefersReducedMotion = false;
+  if (window.matchMedia) {
+    prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
   if (prefersReducedMotion) {
     var readyReduced = function () {
       var els = document.querySelectorAll('.' + revealClass);
