@@ -4,7 +4,8 @@
 - [x] Use unique class: .ease-loading-spinner-harshitha
 - [x] Add CSS variables customization (size and color)
 - [x] Add short README.md with usage instructions
-- [ ] Verify spinner markup + styles are consistent
+- [x] Verify spinner markup + styles are consistent
+
 - [x] Add Animated Floating Notification Card (floating-notification-harshitha)
 
 
