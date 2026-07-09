@@ -9,3 +9,11 @@
 
 
 
+# TODO - Animated Gradient Border Button with Hover Effects (#39539)
+
+- [x] Create folder: submissions/examples/ease-gradient-border-button-harshitha/
+- [x] Add index.html demo page
+- [x] Add style.css implementing .ease-gradient-border-button-harshitha
+- [x] Add README.md with customization variables + usage
+- [x] Manual test: hover + focus-visible + reduced-motion
+
