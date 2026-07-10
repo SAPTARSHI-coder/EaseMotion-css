@@ -6,6 +6,24 @@
 
 # ⚡ EaseMotion CSS
 
+
+> [!IMPORTANT]
+> **Contributions must live under `submissions/` only.**
+> PRs that touch core framework files outside `submissions/` are auto-closed.
+>
+> Example layout:
+> ```text
+> submissions/
+>   examples/
+>     my-feature-name/
+>       demo.html
+>       style.css
+>   docs/
+>     my-doc-name/
+>       ...
+> ```
+> See CONTRIBUTING for the full checklist.
+
 **A zero-dependency, animation-first CSS framework for faster, more expressive UI.**
 
 EaseMotion CSS lets you build polished interfaces with readable class names such as `ease-fade-in`, `ease-slide-up`, and `ease-hover-grow`. No build step, no complex setup, and no need to memorize shorthand.
