@@ -24,3 +24,10 @@ Wrap the target trigger element (like a button) and the tooltip container inside
 </div>
 ```
 
+### Directional Classes:
+Apply one of the following placement modifier classes on the `.cyber-tooltip` element:
+- `tooltip-top`: Positioned above trigger, slides upward elastically.
+- `tooltip-bottom`: Positioned below trigger, slides downward elastically.
+- `tooltip-left`: Positioned to the left of trigger, slides leftward elastically.
+- `tooltip-right`: Positioned to the right of trigger, slides rightward elastically.
+
