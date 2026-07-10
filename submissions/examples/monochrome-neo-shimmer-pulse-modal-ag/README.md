@@ -17,6 +17,7 @@ Anchor the modal to a trigger link using standard target IDs and wrap the inner 
 <!-- Modal Overlay Wrapper (target ID matches the anchor link href) -->
 <div
   id="neo-modal"
+  class="ease-neo-modal-overlay"
   role="dialog"
   aria-modal="true"
   aria-labelledby="modal-title-id"
