@@ -8,3 +8,7 @@ Use the wrapper `.ease-grid-portal` and nested grid `.ease-glow-grid` containing
 
 3. Why is it useful?  
 It showcases high-performance GPU-accelerated cursor masking and 3D rotations on isolated child wrappers that prevent parent layout stutter.
+
+---
+*Created for ECSoC-26 / GSSoC-26.*
+
