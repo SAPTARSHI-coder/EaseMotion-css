@@ -10,9 +10,9 @@ const bundlePath = path.join(rootDir, "easemotion.min.css");
 
 // Skip validation in CI if the changed files do not affect the CSS bundle.
 // This prevents unnecessary bundle conflicts for example/sandbox PRs.
-if (process.env.GITHUB_ACTIONS === "true") {
+if (process.env.GITHUB_ACTIONS === "true" && process.env.GITHUB_BASE_REF) {
   try {
-    const baseBranch = process.env.GITHUB_BASE_REF || "main";
+    const baseBranch = process.env.GITHUB_BASE_REF;
     execSync(`git fetch origin ${baseBranch} --depth=1`, { stdio: "ignore" });
     
     const changedFiles = execSync(`git diff --name-only origin/${baseBranch}`, { encoding: "utf8" })
