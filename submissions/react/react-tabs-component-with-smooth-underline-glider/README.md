@@ -1,55 +1,66 @@
-# 🧭 Tabs Component with Smooth Underline Glider
+﻿# EaseTabs - Tabs Component with Smooth Underline Glider
 
-A modular, copy-paste ready React tabs component for the **EaseMotion CSS React Track**. Features an animated underline that smoothly glides between tabs on selection, using a spring-style easing curve consistent with EaseMotion's motion language.
+A modular, dependency-free React tabs component with an animated underline
+("glider") that smoothly slides and resizes to match the active tab.
 
----
+## Installation
 
-## Features
-- Zero external dependencies — plain React + CSS.
-- Smooth gliding underline, measured via refs and animated with `transform: translateX`.
-- Spring-style `cubic-bezier(0.34, 1.56, 0.64, 1)` easing to match EaseMotion's motion feel.
-- Accessible — uses `role="tablist"`, `role="tab"`, and `aria-selected`.
+Copy `EaseTabs.jsx` and `EaseTabs.css` into your project. No external
+dependencies beyond React.
 
----
+```
+submissions/react/react-tabs-component-with-smooth-underline-glider/
+- EaseTabs.jsx        (the component)
+- EaseTabs.css        (styles + glider animation)
+- EaseTabsDemo.jsx    (usage example)
+- README.md
+```
 
-## Props Reference
-
-| Prop | Type | Description | Default |
-| :--- | :--- | :--- | :--- |
-| `tabs` | `Array<{ label: string, value: string }>` | List of tabs to render. | `[]` |
-| `defaultActive` | `string` | Value of the tab active on initial render. | First tab's value |
-| `onChange` | `(value: string) => void` | Called with the new active tab's value on click. | `undefined` |
-
----
-
-## Usage Example
+## Usage
 
 ```jsx
-import React from 'react';
-import TabsUnderlineGlider from './submissions/react/react-tabs-component-with-smooth-underline-glider/TabsUnderlineGlider';
+import EaseTabs from "./EaseTabs";
+import "./EaseTabs.css";
+
+const tabs = [
+  { label: "Overview", content: <p>Overview content...</p> },
+  { label: "Features", content: <p>Features content...</p> },
+  { label: "Pricing", content: <p>Pricing content...</p> },
+];
 
 function App() {
-  const tabs = [
-    { label: 'Overview', value: 'overview' },
-    { label: 'Features', value: 'features' },
-    { label: 'Pricing', value: 'pricing' },
-  ];
-
   return (
-    <TabsUnderlineGlider
+    <EaseTabs
       tabs={tabs}
-      defaultActive="overview"
-      onChange={(value) => console.log('Active tab:', value)}
+      defaultIndex={0}
+      onChange={(index) => console.log("Active tab index:", index)}
     />
   );
 }
-
-export default App;
 ```
 
----
+## Props
 
-## Notes
-- Zero console errors on render; tested locally with React 18.
-- No changes made to `core/` or `components/` — isolated submission only.
-- See `demo.html` for a standalone browser preview (uses React UMD builds + Babel standalone, no build step required).
+| Prop           | Type                                            | Default | Description                              |
+|-----------------|--------------------------------------------------|---------|--------------------------------------------|
+| `tabs`          | `Array<{ label: string, content: ReactNode }>`   | `[]`    | Required. Tab definitions.                 |
+| `defaultIndex`  | `number`                                          | `0`     | Initially active tab index.                |
+| `onChange`      | `(index: number) => void`                        | -       | Called whenever the active tab changes.    |
+| `className`     | `string`                                          | `""`    | Extra class applied to the root element.   |
+
+## Behavior
+
+- The underline glider measures the active tab's `offsetLeft`/`offsetWidth`
+  via a ref and animates `transform`/`width` with a CSS transition
+  (`cubic-bezier(0.65, 0, 0.35, 1)`) - GPU-friendly, no layout thrashing.
+- Re-measures on window resize so the glider stays aligned responsively.
+- Fully keyboard accessible: ArrowLeft/ArrowRight move focus and
+  selection between tabs, following the WAI-ARIA tabs pattern (`role="tab"`,
+  `role="tabpanel"`, `aria-selected`, roving `tabIndex`).
+
+## Files
+
+- `EaseTabs.jsx` - the component
+- `EaseTabs.css` - styles and glider animation
+- `EaseTabsDemo.jsx` - minimal usage example
+- `README.md` - this file
