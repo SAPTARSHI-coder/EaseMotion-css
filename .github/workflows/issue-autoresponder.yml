@@ -20,6 +20,7 @@ jobs:
             const issueNo = context.payload.issue.number;
             const owner   = context.repo.owner;
             const repo    = context.repo.repo;
+            const MAX_ASSIGNED_ISSUES = 25;
 
             // Fetch the latest issue state to prevent race conditions on closed issues
             const { data: issue } = await github.rest.issues.get({
@@ -28,6 +29,24 @@ jobs:
 
             if (issue.state === 'closed') {
               console.log(`Issue #${issueNo} is closed. Skipping auto-assign.`);
+              return;
+            }
+
+            // ── Cap check: don't auto-assign if opener already holds ≥25 issues ──
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner, repo,
+              assignee: opener,
+              state: 'open',
+              per_page: 100,
+            });
+            const activeCount = existingIssues.filter(i => !i.pull_request && i.number !== issueNo).length;
+
+            if (activeCount >= MAX_ASSIGNED_ISSUES) {
+              // Don't assign — post a warning comment instead
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issueNo,
+                body: `Hey @${opener}! 👋\n\n⚠️ **Auto-assign blocked:** You already have **${activeCount}/${MAX_ASSIGNED_ISSUES}** active assigned issues. Please complete or \`/unclaim\` some of your current issues before taking new ones.\n\nYour issue has been created and is open for anyone to claim once you have capacity!`,
+              });
               return;
             }
 
@@ -123,3 +142,4 @@ jobs:
               issue_number: issueNo,
               body,
             });
+

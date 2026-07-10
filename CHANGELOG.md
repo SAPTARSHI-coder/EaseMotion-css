@@ -5,6 +5,69 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v1.2.0] — 2026-07-08
+
+### 🚀 Release Highlights
+
+This release transforms EaseMotion CSS from a CSS utility library into a **full animation engineering platform** — adding a runtime motion engine, interactive playground, performance benchmarks, and a comprehensive test suite.
+
+#### Added
+
+##### Motion Engine (`easemotion/engine/`) — opt-in
+A four-module animation DSL compiler and runtime:
+
+- **`parser.js`** — Tokenizes `em=""` attribute strings into a typed AST.  
+  `em="fade-in 500ms ease-out delay-200ms repeat-2"` → structured object.
+- **`compiler.js`** — Converts AST into minimal CSS rules with stable hash-based class names. Automatically injects `prefers-reduced-motion` guards on every compiled rule.
+- **`runtime.js`** — `MutationObserver`-powered browser runtime. Watches for `em=""` attributes, compiles them, and injects CSS on-the-fly. Auto-starts on `import 'easemotion-css/engine'`. Fully degrades when JS is disabled — pure CSS classes still work.
+- **`optimizer.js`** — Build-time CSS tree-shaker. Strips unused `@keyframes` and `.ease-*` classes from the bundle based on what your HTML actually uses.
+- **`easemotion/index.js`** — Public entry point. Re-exports all engine APIs.
+
+Usage example:
+```html
+<!-- No class needed — the engine compiles and injects the CSS -->
+<div em="slide-up 800ms spring delay-100ms"></div>
+
+<script type="module">
+  import 'easemotion-css/engine'; // opt-in
+</script>
+```
+
+##### Interactive Playground (`docs/playground/index.html`)
+Zero-dependency animation studio hosted on GitHub Pages:
+- Live preview of all animations with real-time parameter controls
+- Duration slider (100ms–3000ms), easing selector, delay, repeat
+- Three output modes: **CSS class**, **`em=` attribute**, **npm/CDN snippet**
+- One-click copy button for any output format
+
+##### Benchmarks (`benchmarks/`)
+- `bundle-size.mjs` — measures gzip size vs Animate.css and Framer Motion
+- `benchmarks.yml` — GitHub Actions CI workflow that runs on every release tag and commits results back to `benchmarks/results/latest.json`
+
+##### Tests
+- `tests/engine.test.js` — 29 new unit tests for parser, compiler, and optimizer
+- Total test suite: **61 tests** (up from 32)
+
+#### Changed
+
+- `package.json` bumped to `v1.2.0`
+- Added full ESM `exports` map — tree-shaking-aware bundlers (Vite, Rollup, webpack 5) can now import individual engine modules:
+  ```js
+  import { parse }       from 'easemotion-css/engine/parser';
+  import { compile }     from 'easemotion-css/engine/compiler';
+  import { optimizeHtml } from 'easemotion-css/engine/optimizer';
+  ```
+- Added `benchmark` and `benchmark:fps` npm scripts
+- Added `test:watch` script (`vitest` in watch mode)
+- Description and keywords updated to reflect animation engine positioning
+
+#### Notes
+
+- **Zero breaking changes.** The engine is fully opt-in. Pure CSS users (`<link rel="stylesheet">`) are completely unaffected.
+- The `em=""` runtime requires JavaScript. CSS class-based animations work without any JS.
+
+---
+
 ## [v1.1.0] — 2026-06-28
 
 ### 🚀 Release Highlights
