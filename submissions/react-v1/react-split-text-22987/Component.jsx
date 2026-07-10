@@ -5,7 +5,8 @@ export default function SplitText() {
   return (
     <Animate type="fade-in" className="p-4 border rounded shadow-md">
       <h2 className="text-xl font-bold">Split Text</h2>
-      <p>Component implementation placeholder for PR validation.</p>
+      <p>A heading pattern that lets each word animate independently.</p>
+      <p aria-label="Animate every word"><span>Animate</span> <span>every</span> <span>word</span></p>
     </Animate>
   );
 }
