@@ -53,3 +53,11 @@ Exposed parameters can be modified on `:root` or locally inside custom wrapper c
 - `--modal-duration`: Opening transition speed (default: `0.45s`).
 - `--modal-scale-start`: Beginning scale factor of the content box (default: `0.94`).
 - `--shimmer-duration`: Time duration for the silver sweep gradient loop (default: `1.6s`).
+- `--shimmer-color`: High-contrast highlight sweep color (default: `rgba(255, 255, 255, 0.16)`).
+- `--pulse-color`: Color and alpha glow used during the initial bounce shadow pulse (default: `rgba(255, 255, 255, 0.25)`).
+
+---
+
+## 3. Why is it useful?
+
+It conforms to EaseMotion's framework principles by enabling highly interactive modal states and animations with zero JavaScript overhead. By using standard CSS `:target` triggers, browser-native dialog structures, and optimized keyframe animations, the modal ensures clean rendering, full keyboard accessibility support, and hardware acceleration, while maintaining an elegant design.
