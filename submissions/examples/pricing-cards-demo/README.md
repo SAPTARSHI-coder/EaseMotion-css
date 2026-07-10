@@ -19,13 +19,10 @@ This example demonstrates how existing EaseMotion CSS animation classes can be a
 
 ## Folder Structure
 
-```
 submissions/examples/pricing-cards-demo/
-├── demo.html
-├── style.css
-└── README.md
-```
-
+  - demo.html
+  - style.css
+  - README.md
 ---
 
 ## How to Run
