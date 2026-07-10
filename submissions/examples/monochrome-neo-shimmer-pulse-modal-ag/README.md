@@ -35,3 +35,14 @@ Anchor the modal to a trigger link using standard target IDs and wrap the inner 
     </div>
 
     <p class="modal-desc">
+      Access connection validated. The matrix is running overrides.
+    </p>
+
+    <div class="modal-actions">
+      <a href="#" class="modal-btn-confirm">CONFIRM LINK</a>
+      <a href="#" class="modal-btn-close">TERMINATE</a>
+    </div>
+  </div>
+</div>
+```
+
