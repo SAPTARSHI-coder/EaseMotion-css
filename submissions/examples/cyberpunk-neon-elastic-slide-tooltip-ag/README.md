@@ -40,3 +40,5 @@ Exposed parameters can be customized at the `:root` level or scoped to a specifi
 
 ---
 
+## 3. Why is it useful?
+It aligns with EaseMotion's philosophy of offering human-readable, high-fidelity motion experiences with zero runtime JavaScript overhead. By employing standard CSS transitions combined with carefully tuned cubic-bezier curves, the tooltip achieves physical spring simulation that remains performant, interruptible, and fully keyboard accessible.
