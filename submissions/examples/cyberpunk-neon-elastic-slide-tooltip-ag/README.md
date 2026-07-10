@@ -31,3 +31,10 @@ Apply one of the following placement modifier classes on the `.cyber-tooltip` el
 - `tooltip-left`: Positioned to the left of trigger, slides leftward elastically.
 - `tooltip-right`: Positioned to the right of trigger, slides rightward elastically.
 
+### CSS Custom Properties:
+Exposed parameters can be customized at the `:root` level or scoped to a specific parent class:
+- `--tooltip-duration`: Duration of the fade/slide transition (default: `0.5s`).
+- `--tooltip-ease`: Easing function for the elastic spring/overshoot transition (default: `cubic-bezier(0.34, 1.56, 0.64, 1)`).
+- `--tooltip-slide-offset`: The distance the tooltip slides from (default: `20px`).
+- `--tooltip-scale-factor`: The starting scale when hidden (default: `0.92`).
+
