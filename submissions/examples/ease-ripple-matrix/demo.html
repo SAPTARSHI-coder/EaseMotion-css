@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ripple Matrix</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Ripple Matrix</h1>
+        <p class="subtitle">Grid of circles that ripple outward when hovered</p>
+
+        <div class="matrix-wrapper">
+            <canvas id="rippleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="sizeBtn">Size: 8x8</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌊 Hover to ripple</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('rippleCanvas');
+        const ctx = canvas.getContext('2d');
+        const sizeBtn = document.getElementById('sizeBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let gridSize = 8;
+        let cells = [];
+        let ripples = [];
+        let colorMode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let mouseX = -1000;
+        let mouseY = -1000;
+        let isHovering = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            { 
+                name: 'Rainbow', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 180 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            { 
+                name: 'Ocean', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = 200 + (i / gridSize) * 40 + (j / gridSize) * 20;
+                    const light = 40 + (j / gridSize) * 30 + Math.sin(time + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            { 
+                name: 'Fire', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = 10 + (i / gridSize) * 40 + (j / gridSize) * 20;
+                    const light = 40 + (j / gridSize) * 40 + Math.sin(time * 0.5 + i * 0.7 + j * 0.5) * 10;
+                    return `hsl(${hue}, 90%, ${light}%)`;
+                }
+            },
+            { 
+                name: 'Galaxy', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = 250 + (i / gridSize) * 40 + (j / gridSize) * 30;
+                    const light = 30 + (j / gridSize) * 30 + Math.sin(time * 0.7 + i * 0.6 + j * 0.4) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            { 
+                name: 'Pastel', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 180 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            { 
+                name: 'Neon', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 200 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            { 
+                name: 'Sunset', 
+                fn: (i, j, gridSize, time) => {
+                    const hue = 20 + (i / gridSize) * 40 + (j / gridSize) * 20;
+                    const light = 40 + (j / gridSize) * 40 + Math.sin(time * 0.4 + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            { 
+                name: 'Monochrome', 
+                fn: (i, j, gridSize, time) => {
+                    const val = 40 + (i / gridSize) * 40 + (j / gridSize) * 20 + Math.sin(time * 0.3 + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== GRID SIZE OPTIONS =====
+        const gridSizes = [4, 6, 8, 10, 12, 16];
+
+        // ===== CELL CLASS =====
+        class Cell {
+            constructor(i, j, gridSize) {
+                this.i = i;
+                this.j = j;
+                this.baseScale = 1;
+                this.currentScale = 1;
+                this.targetScale = 1;
+                this.ripplePhase = 0;
+                this.rippleActive = false;
+                this.rippleTime = 0;
+                this.distFromMouse = 0;
+            }
+
+            update(time, mouseX, mouseY, canvasWidth, canvasHeight, gridSize, speed) {
+                const w = canvasWidth / gridSize;
+                const h = canvasHeight / gridSize;
+                const cx = this.i * w + w / 2;
+                const cy = this.j * h + h / 2;
+
+                // Calculate distance from mouse
+                const dx = cx - mouseX;
+                const dy = cy - mouseY;
+                this.distFromMouse = Math.sqrt(dx * dx + dy * dy);
+
+                // Update ripple
+                if (this.rippleActive) {
+                    this.rippleTime += speed * 2;
+                    if (this.rippleTime > 1) {
+                        this.rippleActive = false;
+                        this.rippleTime = 0;
+                    }
+                }
+
+                // Calculate scale based on ripple and mouse
+                let scale = 1;
+                
+                // Mouse hover effect
+                if (this.distFromMouse < 150) {
+                    const hoverStrength = 1 - (this.distFromMouse / 150);
+                    scale += hoverStrength * 0.3;
+                }
+
+                // Ripple effect
+                if (this.rippleActive) {
+                    const rippleProgress = this.rippleTime;
+                    const rippleWave = Math.sin(rippleProgress * Math.PI * 2) * (1 - rippleProgress);
+                    scale += rippleWave * 0.5;
+                }
+
+                // Ripple propagation from nearby cells
+                for (const ripple of ripples) {
+                    const dxr = this.i - ripple.i;
+                    const dyr = this.j - ripple.j;
+                    const dist = Math.sqrt(dxr * dxr + dyr * dyr);
+                    if (dist < 5) {
+                        const wave = Math.sin((dist / 5) * Math.PI * 2 - ripple.time * 0.5) * (1 - dist / 5) * 0.3;
+                        scale += wave * (1 - ripple.time);
+                    }
+                }
+
+                this.currentScale += (scale - this.currentScale) * 0.1;
+            }
+
+            draw(ctx, canvasWidth, canvasHeight, gridSize, time, colorMode) {
+                const w = canvasWidth / gridSize;
+                const h = canvasHeight / gridSize;
+                const x = this.i * w + w / 2;
+                const y = this.j * h + h / 2;
+                const baseRadius = Math.min(w, h) * 0.35;
+                const radius = baseRadius * this.currentScale;
+                const colorFn = colorModes[colorMode].fn;
+
+                // Get color
+                const color = colorFn(this.i, this.j, gridSize, time);
+
+                // Glow effect
+                const glowRadius = radius * 2.5;
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+                gradient.addColorStop(0, color + '80');
+                gradient.addColorStop(0.5, color + '30');
+                gradient.addColorStop(1, color + '00');
+
+                ctx.beginPath();
+                ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.globalAlpha = 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Main circle
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Inner highlight
+                if (radius > 5) {
+                    const innerGrad = ctx.createRadialGradient(
+                        x - radius * 0.3, y - radius * 0.3, 0,
+                        x, y, radius
+                    );
+                    innerGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
+                    innerGrad.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+                    innerGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = innerGrad;
+                    ctx.fill();
+                }
+
+                // Border glow when hovered
+                if (this.distFromMouse < 150) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
+                    ctx.strokeStyle = color + '80';
+                    ctx.lineWidth = 2;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = color + '60';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+        }
+
+        // ===== RIPPLE CLASS =====
+        class Ripple {
+            constructor(i, j) {
+                this.i = i;
+                this.j = j;
+                this.time = 0;
+                this.active = true;
+            }
+
+            update(speed) {
+                this.time += speed * 0.5;
+                if (this.time > 1) {
+                    this.active = false;
+                }
+            }
+        }
+
+        // ===== INIT GRID =====
+        function initGrid(size) {
+            gridSize = size;
+            cells = [];
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    cells.push(new Cell(i, j, gridSize));
+                }
+            }
+        }
+        initGrid(gridSize);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 1;
+            const stepX = w / gridSize;
+            const stepY = h / gridSize;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * stepX, 0);
+                ctx.lineTo(i * stepX, h);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, i * stepY);
+                ctx.lineTo(w, i * stepY);
+                ctx.stroke();
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const time = timestamp / 1000;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                ripples[i].update(speed);
+                if (!ripples[i].active) {
+                    ripples.splice(i, 1);
+                }
+            }
+
+            // Update cells
+            for (const cell of cells) {
+                cell.update(time, mouseX, mouseY, w, h, gridSize, speed);
+                cell.draw(ctx, w, h, gridSize, time, colorMode);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌊 ${cells.length} cells • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse move
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+
+            // Create ripple at nearest cell
+            const w = canvas.width / gridSize;
+            const h = canvas.height / gridSize;
+            const col = Math.floor(mouseX / w);
+            const row = Math.floor(mouseY / h);
+            if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
+                // Check if ripple already exists
+                let exists = false;
+                for (const r of ripples) {
+                    if (r.i === col && r.j === row && r.time < 0.5) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    ripples.push(new Ripple(col, row));
+                    statusText.textContent = `🌊 Ripple at (${col}, ${row})`;
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+
+            const w = canvas.width / gridSize;
+            const h = canvas.height / gridSize;
+            const col = Math.floor(mouseX / w);
+            const row = Math.floor(mouseY / h);
+            if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
+                let exists = false;
+                for (const r of ripples) {
+                    if (r.i === col && r.j === row && r.time < 0.5) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    ripples.push(new Ripple(col, row));
+                }
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isHovering = false;
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // ===== CONTROLS =====
+
+        // Grid size
+        sizeBtn.addEventListener('click', () => {
+            const currentIndex = gridSizes.indexOf(gridSize);
+            const nextIndex = (currentIndex + 1) % gridSizes.length;
+            const newSize = gridSizes[nextIndex];
+            sizeBtn.textContent = `Size: ${newSize}x${newSize}`;
+            initGrid(newSize);
+            ripples = [];
+            statusText.textContent = `📐 ${newSize}x${newSize} grid`;
+            setTimeout(() => {
+                statusText.textContent = `🌊 Hover to ripple`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌊 Hover to ripple`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌊 Hover to ripple`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            gridSize = 8;
+            colorMode = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            ripples = [];
+            
+            sizeBtn.textContent = `Size: 8x8`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            initGrid(8);
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🌊 Hover to ripple`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                sizeBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Clear ripples
+                ripples = [];
+                statusText.textContent = '🧹 Ripples cleared';
+                setTimeout(() => {
+                    statusText.textContent = `🌊 Hover to ripple`;
+                }, 1000);
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initGrid(gridSize);
+        });
+
+        // ===== INIT =====
+        sizeBtn.textContent = `Size: ${gridSize}x${gridSize}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        statusText.textContent = '🌊 Hover to ripple';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌊 Ripple Matrix loaded!');
+        console.log('💡 Hover over circles to create ripples');
+        console.log('💡 G - Change grid size');
+        console.log('💡 C - Change color');
+        console.log('💡 S - Change speed');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Clear ripples');
+    </script>
+</body>
+</html>
