@@ -1,17 +1,19 @@
-# Glitter Card
+
+# Glitter Card Design
 
 ## Overview
 
-The Glitter Card is a lightweight CSS hover animation that creates a shimmering highlight with a subtle sparkle effect. It is designed to add visual interest while maintaining smooth performance and clean, readable code.
+The Glitter Card Design is a lightweight CSS hover animation that creates a shimmering light sweep with a subtle glitter particle effect. It is designed to add visual interest while maintaining smooth performance and clean, readable code.
 
-The animation is built using only HTML and CSS and requires no external libraries or JavaScript.
+The animation is implemented using only HTML and CSS and requires no external libraries or JavaScript.
 
 ---
 
 ## Features
 
-* Smooth glitter sweep animation on hover
-* Subtle sparkle overlay
+* Smooth diagonal glitter sweep animation on hover
+* Subtle glitter particle overlay
+* Smooth card elevation and shadow effects
 * Pure HTML and CSS implementation
 * Lightweight and easy to customize
 * Supports `prefers-reduced-motion`
@@ -22,7 +24,7 @@ The animation is built using only HTML and CSS and requires no external librarie
 ## File Structure
 
 ```text
-glitter-card/
+glitter-card-design/
 ├── demo.html
 ├── style.css
 └── README.md
@@ -32,10 +34,9 @@ glitter-card/
 
 ## Usage
 
-1. Copy the HTML structure from `demo.html`.
-2. Copy the styles from `style.css`.
-3. Link the stylesheet to your project.
-4. Customize colors, spacing, border radius, and animation timing as needed.
+1. Open `demo.html` directly in any modern browser.
+2. Customize the HTML structure or CSS properties according to your project needs.
+3. Modify colors, spacing, border radius, shadows, and animation timing to create different variations.
 
 Example:
 
@@ -63,7 +64,7 @@ This submission aligns with the EaseMotion CSS philosophy by providing:
 
 ## Accessibility
 
-The animation respects the user's motion preferences through the `prefers-reduced-motion` media query, reducing animation for users who request it.
+The animation respects user motion preferences through the `prefers-reduced-motion` media query, reducing animations for users who request reduced motion.
 
 ---
 
