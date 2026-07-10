@@ -23,11 +23,11 @@ describe('EaseMotion-css Smoke Tests', () => {
     const navbar = readFileSync(resolve(componentsDir, 'navbar.css'), 'utf8');
     const scrollProgress = readFileSync(resolve(componentsDir, 'scroll-progress.css'), 'utf8');
     const sidebar = readFileSync(resolve(componentsDir, 'sidebar.css'), 'utf8');
-const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
-const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
-const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
-const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
-const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
+    const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
+    const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
+    const loaders = readFileSync(resolve(componentsDir, 'loaders.css'), 'utf8');
+    const tooltips = readFileSync(resolve(componentsDir, 'tooltips.css'), 'utf8');
+    const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     const commandPalette = readFileSync(resolve(componentsDir, 'command-palette.css'), 'utf8');
     const viewTransitions = readFileSync(resolve(componentsDir, 'view-transitions.css'), 'utf8');
     const toast = readFileSync(resolve(componentsDir, 'toast.css'), 'utf8');
@@ -46,8 +46,10 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     const breadcrumb = readFileSync(resolve(componentsDir, 'breadcrumb.css'), 'utf8');
     const avatar = readFileSync(resolve(componentsDir, 'avatar.css'), 'utf8');
     const announceBar = readFileSync(resolve(componentsDir, 'announce-bar.css'), 'utf8');
+    const easeMarquee = readFileSync(resolve(componentsDir, 'ease-marquee.css'), 'utf8');
+    const forms = readFileSync(resolve(componentsDir, 'forms.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar + easeMarquee + forms;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -146,6 +148,10 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-modal-header');
     expect(css).toContain('.ease-command-palette-overlay');
     expect(css).toContain('.ease-command-palette');
+    expect(css).toContain('.ease-marquee');
+    expect(css).toContain('.ease-marquee-track');
+    expect(css).toContain('.ease-input');
+    expect(css).toContain('.ease-textarea');
   });
 
   it('should have dark mode variables via prefers-color-scheme', () => {
