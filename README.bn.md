@@ -42,8 +42,7 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 />
 ```
 
-**[📖 ডকুমেন্টেশন](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 লাইভ ডেমো](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 অবদান রাখুন](./CONTRIBUTING.md)**
-
+**[📖 ডকুমেন্টেশন](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 লাইভ ডেমো](https://saptarshi-coder.github.io/EaseMotion-css/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 অবদান রাখুন](./CONTRIBUTING.md)**
 </div>
 
 ---
