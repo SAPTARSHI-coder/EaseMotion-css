@@ -49,3 +49,7 @@ Anchor the modal to a trigger link using standard target IDs and wrap the inner 
 ### CSS Custom Properties:
 
 Exposed parameters can be modified on `:root` or locally inside custom wrapper classes:
+
+- `--modal-duration`: Opening transition speed (default: `0.45s`).
+- `--modal-scale-start`: Beginning scale factor of the content box (default: `0.94`).
+- `--shimmer-duration`: Time duration for the silver sweep gradient loop (default: `1.6s`).
