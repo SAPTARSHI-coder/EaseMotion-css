@@ -7,3 +7,13 @@ This component provides a pure CSS overlay modal that fades, scales, and pulses 
 ## 2. How is it used?
 
 Anchor the modal to a trigger link using standard target IDs and wrap the inner contents with a shimmer highlight element.
+
+### HTML Structure:
+
+```html
+<!-- Trigger Anchor Link -->
+<a href="#neo-modal" class="neo-trigger-btn"> INITIALIZE MODAL </a>
+
+<!-- Modal Overlay Wrapper (target ID matches the anchor link href) -->
+<div
+  id="neo-modal"
