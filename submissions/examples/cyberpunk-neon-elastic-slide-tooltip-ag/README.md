@@ -38,3 +38,4 @@ Exposed parameters can be customized at the `:root` level or scoped to a specifi
 - `--tooltip-slide-offset`: The distance the tooltip slides from (default: `20px`).
 - `--tooltip-scale-factor`: The starting scale when hidden (default: `0.92`).
 
+---
