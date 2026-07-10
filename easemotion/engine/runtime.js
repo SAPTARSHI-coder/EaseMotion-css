@@ -26,6 +26,10 @@ const injected = new Set();
 /** Single shared <style> element for all engine rules */
 let styleEl = null;
 
+function isProduction() {
+  return typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
+}
+
 /**
  * Ensure the engine's <style> element exists in <head>.
  * @returns {HTMLStyleElement}
@@ -52,7 +56,7 @@ function processElement(el) {
 
   const ast = parse(value);
   if (!ast) {
-    if (process?.env?.NODE_ENV !== 'production') {
+    if (!isProduction()) {
       console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);
     }
     return;
