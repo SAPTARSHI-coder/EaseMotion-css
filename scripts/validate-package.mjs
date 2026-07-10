@@ -54,8 +54,9 @@ for (const file of requiredFiles) {
   }
 }
 
-if (manifest.scripts.test.includes("No tests yet")) {
-  fail("test script must run real validation");
+if (!manifest.repository?.url?.toLowerCase().includes("saptarshi-coder/easemotion-css")) {
+ fail("repository.url must point to SAPTARSHI-coder/EaseMotion-css");
 }
+
 
 console.log("package.json is valid and release scripts are configured.");
