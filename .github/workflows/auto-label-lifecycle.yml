@@ -240,6 +240,32 @@ jobs:
                       issueLabels.push(...labels);
                       if (labels.includes('gssoc-26')) isGSSoC = true;
                       if (labels.includes('ecsoc26')) isECSoC = true;
+
+                      // Check comments to see how the user assigned themselves
+                      try {
+                        const { data: comments } = await github.rest.issues.listComments({
+                          owner, repo, issue_number: num, per_page: 100
+                        });
+                        const authorComments = comments.filter(c => c.user.login.toLowerCase() === itemAuthor.toLowerCase());
+                        let commentGSSoC = false;
+                        let commentECSoC = false;
+                        for (const comment of authorComments) {
+                          const commentBody = comment.body.trim();
+                          if (commentBody.startsWith('/claim')) {
+                            commentGSSoC = true;
+                          }
+                          if (commentBody.startsWith('/assign')) {
+                            commentECSoC = true;
+                          }
+                        }
+                        // If we found specific claim/assign comments, let them override general issue labels
+                        if (commentGSSoC || commentECSoC) {
+                          isGSSoC = commentGSSoC;
+                          isECSoC = commentECSoC;
+                        }
+                      } catch (e) {
+                        console.log(`Failed to list comments for issue #${num}: ${e.message}`);
+                      }
                       
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
