@@ -23,6 +23,9 @@ import { compile, className } from './compiler.js';
 /** Registry of already-injected class names → avoid duplicate rules */
 const injected = new Set();
 
+/** Element -> currently applied generated class */
+const appliedClasses = new WeakMap();
+
 /** Single shared <style> element for all engine rules */
 let styleEl = null;
 
@@ -52,6 +55,11 @@ function processElement(el) {
 
   const ast = parse(value);
   if (!ast) {
+    const previous = appliedClasses.get(el);
+    if (previous) {
+      el.classList.remove(previous);
+      appliedClasses.delete(el);
+    }
     if (process?.env?.NODE_ENV !== 'production') {
       console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);
     }
@@ -69,10 +77,16 @@ function processElement(el) {
     }
   }
 
+  const previous = appliedClasses.get(el);
+  if (previous && previous !== cls) {
+    el.classList.remove(previous);
+  }
+
   // Apply class to element (idempotent)
   if (!el.classList.contains(cls)) {
     el.classList.add(cls);
   }
+  appliedClasses.set(el, cls);
 }
 
 /**
