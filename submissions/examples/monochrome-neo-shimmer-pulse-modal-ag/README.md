@@ -46,3 +46,6 @@ Anchor the modal to a trigger link using standard target IDs and wrap the inner 
 </div>
 ```
 
+### CSS Custom Properties:
+
+Exposed parameters can be modified on `:root` or locally inside custom wrapper classes:
