@@ -1,21 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 // --- Individual Toast Component ---
-const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
+const Toast = ({ id, type = 'info', title, message, duration = 3000, onRemove }) => {
   const [isLeaving, setIsLeaving] = useState(false);
   const timerRef = useRef(null);
 
-  // Handle the CSS-based removal animation
+  // Handle the CSS-based unmounting delay
   const initiateRemoval = useCallback(() => {
     setIsLeaving(true);
-    // Wait for the slide-out animation (400ms) to finish before actually unmounting
     setTimeout(() => {
       onRemove(id);
-    }, 400); 
+    }, 400);
   }, [id, onRemove]);
 
   useEffect(() => {
-    // Auto-dismiss timer
     if (duration > 0) {
       timerRef.current = setTimeout(() => {
         initiateRemoval();
@@ -24,12 +22,10 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
     return () => clearTimeout(timerRef.current);
   }, [duration, initiateRemoval]);
 
-  // Pause timer on hover
   const handleMouseEnter = () => {
     clearTimeout(timerRef.current);
   };
 
-  // Resume timer on mouse leave
   const handleMouseLeave = () => {
     if (duration > 0) {
       timerRef.current = setTimeout(() => {
@@ -43,40 +39,55 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
     switch (type) {
       case 'success':
         return (
-          <svg className="ease-toast-icon ease-toast-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          <svg className="ease-toast-icon ease-toast-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         );
       case 'error':
         return (
-          <svg className="ease-toast-icon ease-toast-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
+          <svg className="ease-toast-icon ease-toast-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        );
+      case 'warning':
+        return (
+          <svg className="ease-toast-icon ease-toast-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
           </svg>
         );
       default:
         return (
-          <svg className="ease-toast-icon ease-toast-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="16" x2="12" y2="12"></line>
-            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          <svg className="ease-toast-icon ease-toast-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
         );
     }
   };
 
+  const displayTitle = title || (type === 'info' ? 'Information' : type.charAt(0).toUpperCase() + type.slice(1));
+
   return (
     <div 
-      className={`ease-toast ease-toast-enter ${isLeaving ? 'ease-toast-leave' : ''}`}
+      className={`ease-toast ease-toast-enter ease-toast-${type} ${isLeaving ? 'ease-toast-leave' : ''}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       role="alert"
     >
       <div className="ease-toast-content">
-        {getIcon()}
-        <span className="ease-toast-message">{message}</span>
+        <div className="ease-toast-icon-container">
+          {getIcon()}
+        </div>
+        <div className="ease-toast-text">
+          <div className="ease-toast-title">{displayTitle}</div>
+          <div className="ease-toast-message">{message}</div>
+        </div>
       </div>
       <button 
         className="ease-toast-close" 
@@ -101,11 +112,6 @@ const Toast = ({ id, type = 'info', message, duration = 3000, onRemove }) => {
 };
 
 // --- Toast Stack Manager ---
-/**
- * Toast Stack Component
- * Place this once at the root of your app. 
- * Pass `toasts` array and `removeToast` callback from your global state manager (e.g. Context, Zustand).
- */
 const ToastStack = ({ toasts, removeToast }) => {
   return (
     <div className="ease-toast-stack" aria-live="polite">
@@ -114,6 +120,7 @@ const ToastStack = ({ toasts, removeToast }) => {
           key={toast.id}
           id={toast.id}
           type={toast.type}
+          title={toast.title}
           message={toast.message}
           duration={toast.duration}
           onRemove={removeToast}
