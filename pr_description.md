@@ -1,9 +1,6 @@
 ## Pull Request Description
-Resolves #38524
-
-This PR introduces a **CSS Elastic Slide Card (Visual Editor Layout)** component designed for no-code builders and SaaS properties panels.
-
-It implements a pure CSS dynamic, elastic sliding animation (`cubic-bezier(0.34, 1.56, 0.64, 1)`) that smoothly reveals a complex editing controls panel (back) from beneath an element preview card (front) upon hover or focus.
+This PR implements a purely CSS-based animated **Shimmer Pulse Modal** tailored for **Neumorphic Soft Layouts**, addressing #38469. 
+The modal utilizes neumorphic design principles with soft inset and outset shadows. It features a shimmer pulse interaction transition, adding a modern aesthetic pattern to the EaseMotion examples library. This component adds zero JavaScript overhead by relying on the CSS `:target` pseudo-class for state management and is fully responsive.
 
 ---
 
@@ -22,4 +19,4 @@ It implements a pure CSS dynamic, elastic sliding animation (`cubic-bezier(0.34,
 - [x] I have tested my component/utility locally to ensure it works smoothly and has no errors.
 - [x] My CSS/SCSS/React code follows standard styling conventions without relying on external dependencies.
 - [x] The animation or layout performs optimally and responsibly (respects `prefers-reduced-motion` and `prefers-color-scheme: dark`).
-- [x] The branch is appropriately named for the feature (e.g., `feature/css-elastic-slide-card-visual-editor-38524`).
+- [x] The branch is appropriately named for the feature (e.g., `feature/38469-shimmer-pulse-modal-neumorphic-soft`).
