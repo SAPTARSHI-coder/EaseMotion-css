@@ -76,7 +76,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 
 ---
 
-### 🚀 Quick Setup
+### 🚀 Quick Start
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
