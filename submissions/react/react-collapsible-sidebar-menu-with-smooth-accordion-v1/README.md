@@ -4,7 +4,7 @@ A modular, copy-paste ready React component for the EaseMotion CSS framework. Th
 
 ## 📦 What's included?
 
-- `Sidebar.jsx`: The React component that manages the open/collapsed state of the entire sidebar as well as the dictionary of open accordion sub-menus. It includes "smart-open" logic: if a user clicks an accordion trigger while the sidebar is collapsed, it orchestrates expanding the sidebar *first*, then opening the accordion, preventing visual jank.
+- `SidebarComponent.jsx`: The React component that manages the open/collapsed state of the entire sidebar as well as the dictionary of open accordion sub-menus. It includes "smart-open" logic: if a user clicks an accordion trigger while the sidebar is collapsed, it orchestrates expanding the sidebar *first*, then opening the accordion, preventing visual jank.
 - `style.css`: The CSS stylesheet utilizing `grid-template-rows: 0fr -> 1fr` for hardware-accelerated accordion height animations without needing Javascript measurements. It also uses CSS variables (`--sidebar-width-open`) for the width transitions.
 - `demo.html`: A self-contained browser demo running the React component via Babel standalone, including sample navigation data arrays and SVG icons.
 
@@ -16,13 +16,13 @@ A modular, copy-paste ready React component for the EaseMotion CSS framework. Th
 
 ## 🚀 How to use
 
-1. Copy `Sidebar.jsx` into your React project's `components` directory.
+1. Copy `SidebarComponent.jsx` into your React project's `components` directory.
 2. Copy `style.css` and import it.
 3. Pass a configuration array to the `navItems` prop. Items with `children` will automatically render as an accordion.
 
 ```jsx
 import React from 'react';
-import Sidebar from './Sidebar';
+import Sidebar from './SidebarComponent';
 import './style.css'; 
 
 const AppLayout = ({ children }) => {
