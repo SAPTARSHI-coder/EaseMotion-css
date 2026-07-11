@@ -5,6 +5,7 @@ It shows a tooltip on hover or focus with a fade + translate animation.
 
 ## Usage
 
+
 ```html
 <button class="ease-btn" aria-describedby="tip1">
   Hover me
