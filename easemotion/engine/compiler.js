@@ -13,7 +13,7 @@
  * Maps EaseMotion animation names to their @keyframe identifiers
  * in core/animations.css.
  */
-const KEYFRAME_MAP = {
+export const KEYFRAME_MAP = {
   'fade-in':                   'ease-kf-fade-in',
   'fade-out':                  'ease-kf-fade-out',
   'slide-up':                  'ease-kf-slide-up',

@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import { parse }             from '../easemotion/engine/parser.js';
 import { compile, className } from '../easemotion/engine/compiler.js';
-import { extractEmAttributes, extractEaseClasses, pruneKeyframes, pruneClasses } from '../easemotion/engine/optimizer.js';
+import { extractEmAttributes, extractEaseClasses, pruneKeyframes, pruneClasses, optimizeHtml } from '../easemotion/engine/optimizer.js';
 
 // ── Parser ────────────────────────────────────────────────────────
 
@@ -177,6 +177,49 @@ describe('optimizer — extractEaseClasses()', () => {
     const html = `<div class="container flex gap-4"></div>`;
     const classes = extractEaseClasses(html);
     expect(classes.size).toBe(0);
+  });
+});
+
+describe('optimizer — optimizeHtml() em keyframe retention', () => {
+  const css = `
+    @keyframes ease-kf-fade-in { from { opacity:0 } to { opacity:1 } }
+    @keyframes ease-kf-slide-up { from { transform:translateY(24px) } to { transform:none } }
+    @keyframes ease-kf-bounce { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-8px) } }
+  `;
+
+  it('keeps the keyframe referenced by an em-generated rule', async () => {
+    const result = await optimizeHtml('<div em="fade-in"></div>', css);
+    expect(result.css).toContain('_em_');
+    expect(result.css).toContain('@keyframes ease-kf-fade-in');
+  });
+
+  it('does not duplicate a keyframe shared by multiple em elements', async () => {
+    const result = await optimizeHtml(
+      '<div em="fade-in"></div><div em="fade-in 500ms"></div>',
+      css
+    );
+    const matches = result.css.match(/@keyframes ease-kf-fade-in/g) || [];
+    expect(matches.length).toBe(1);
+  });
+
+  it('still prunes keyframes unrelated to any em or class usage', async () => {
+    const result = await optimizeHtml('<div em="fade-in"></div>', css);
+    expect(result.css).not.toContain('@keyframes ease-kf-bounce');
+    expect(result.css).not.toContain('@keyframes ease-kf-slide-up');
+  });
+
+  it('ignores unknown em animation names without adding a phantom keyframe', async () => {
+    const result = await optimizeHtml('<div em="not-a-real-animation"></div>', css);
+    expect(result.stats).toBeDefined();
+    expect(result.css).not.toContain('_em_');
+  });
+
+  it('combines em keyframes with class-based keyframes correctly', async () => {
+    const html = '<div class="ease-slide-up"></div><span em="fade-in"></span>';
+    const result = await optimizeHtml(html, css);
+    expect(result.css).toContain('@keyframes ease-kf-slide-up');
+    expect(result.css).toContain('@keyframes ease-kf-fade-in');
+    expect(result.css).not.toContain('@keyframes ease-kf-bounce');
   });
 });
 
