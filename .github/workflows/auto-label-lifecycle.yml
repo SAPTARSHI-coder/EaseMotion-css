@@ -127,7 +127,7 @@ jobs:
                 const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
                 if (isMerged || wasIntegrated) {
                   await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved', 'ECSoC26', 'good-pr']);
+                  await addLabels(['accepted', 'integrated', 'good-pr']);
                   if (!wasIntegrated) {
                     let userMergedCount = 1;
                     let hoursUntilReset = 24 - new Date().getUTCHours();
@@ -204,9 +204,6 @@ jobs:
               }
 
               const computedLabels = [
-                'GSSoC-26',
-                'gssoc:approved',
-                'ECSoC26',
                 level,
                 'good first issue',
                 'help wanted'
@@ -228,6 +225,8 @@ jobs:
                 
                 // Parse associated issues from PR body to read their labels
                 const issueLabels = [];
+                let isGSSoC = false;
+                let isECSoC = false;
                 const closingPattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#([0-9]+)/gi;
                 let match;
                 while ((match = closingPattern.exec(body)) !== null) {
@@ -237,7 +236,11 @@ jobs:
                       owner, repo, issue_number: num
                     });
                     if (issue && issue.labels) {
-                      issueLabels.push(...issue.labels.map(l => l.name.toLowerCase()));
+                      const labels = issue.labels.map(l => l.name.toLowerCase());
+                      issueLabels.push(...labels);
+                      if (labels.includes('gssoc-26')) isGSSoC = true;
+                      if (labels.includes('ecsoc26')) isECSoC = true;
+
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
                         const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
@@ -255,6 +258,14 @@ jobs:
                   } catch (err) {
                     console.log(`Failed to fetch labels for issue #${num}: ${err.message}`);
                   }
+                }
+
+                // Always push both GSSoC-26 and ECSoC26 to all PRs.
+                // The ECSoC sentinel bot will flag non-ECSoC contributors with ECSoC26-SPAM — that's intentional.
+                computedLabels.push('GSSoC-26', 'gssoc:approved');
+                computedLabels.push('ECSoC26');
+                if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
+                  computedLabels.push('ECSoC26-L1');
                 }
 
                 // Smart GSSoC type labeling logic
@@ -337,6 +348,16 @@ jobs:
                   }
                 } catch (e) {
                   console.log(`Warning: Failed to fetch PR files: ${e.message}`);
+                }
+              } else {
+                if (currentLabels.includes('GSSoC-26')) {
+                  computedLabels.push('GSSoC-26', 'gssoc:approved');
+                }
+                if (currentLabels.includes('ECSoC26')) {
+                  computedLabels.push('ECSoC26');
+                  if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
+                    computedLabels.push('ECSoC26-L1');
+                  }
                 }
               }
 
