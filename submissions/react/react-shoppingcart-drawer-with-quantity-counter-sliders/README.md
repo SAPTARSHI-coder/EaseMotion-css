@@ -1,88 +1,58 @@
-# React Shopping Cart Drawer with Quantity Counter Slider
+# React ShoppingCart Drawer with Quantity Counter Sliders
 
-## Description
-
-A simple, copy-paste ready React Shopping Cart Drawer component built using React Hooks. It allows users to adjust the product quantity using increment/decrement buttons or a quantity slider while utilizing EaseMotion CSS animation utilities.
-
----
+A reusable Shopping Cart Drawer component built with React Hooks and CSS.
 
 ## Features
 
-- Shopping cart drawer layout
-- Quantity counter using React `useState`
-- Increment (`+`) and decrement (`-`) buttons
-- Quantity slider (`input type="range"`)
-- Uses EaseMotion CSS animation classes
+- React Hooks (`useState`)
+- Quantity increment/decrement controls
+- Remove items
+- Automatic total calculation
+- Empty cart state
+- Responsive drawer layout
 - No external dependencies
-- Easy to copy and integrate into any React project
-
----
 
 ## Installation
 
-Copy the `ShoppingCartDrawer.jsx` file into your React project.
+```bash
+import ShoppingCartDrawer from "./ShoppingCartDrawer";
+import "./style.css";
+```
 
----
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| title | string | "Shopping Cart" | Drawer heading |
+| initialCart | array | Demo items | Initial cart items |
 
 ## Usage
 
 ```jsx
-import ShoppingCartDrawer from "./ShoppingCartDrawer";
+<ShoppingCartDrawer
+    title="My Cart"
+    initialCart={products}
+/>
+```
 
-function App() {
-  return (
-    <div>
-      <ShoppingCartDrawer />
-    </div>
-  );
+Each product should have:
+
+```js
+{
+  id:1,
+  name:"Product",
+  price:99,
+  quantity:1
 }
-
-export default App;
 ```
 
----
+## Files
 
-## Props
+- ShoppingCartDrawer.jsx
+- style.css
+- README.md
 
-This component currently does not require any props.
+## Requirements
 
----
-
-## Technologies Used
-
-- React
-- React Hooks (`useState`)
-- EaseMotion CSS animation utilities
-
----
-
-## EaseMotion Classes Used
-
-- `ease-fade-in`
-- `ease-hover-lift` *(if applied to the buttons)*
-
----
-
-## Component Behavior
-
-- Displays a shopping cart with a sample product.
-- Users can increase or decrease the product quantity.
-- Quantity cannot go below **1**.
-- Users can also adjust the quantity using the slider.
-- The displayed quantity updates instantly.
-
----
-
-## Folder Structure
-
-```
-react-shoppingcart-drawer-with-quantity-counter-sliders/
-│── ShoppingCartDrawer.jsx
-└── README.md
-```
-
----
-
-## License
-
-This component is provided as part of the EaseMotion CSS React Track and is intended for learning and reuse.
+- React only
+- No external dependencies

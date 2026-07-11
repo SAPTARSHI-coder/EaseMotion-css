@@ -1,44 +1,101 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import "./style.css";
 
+const initialItems = [
+  {
+    id: 1,
+    name: "Wireless Headphones",
+    price: 89,
+    quantity: 1,
+  },
+  {
+    id: 2,
+    name: "Mechanical Keyboard",
+    price: 129,
+    quantity: 2,
+  },
+];
 
-function ShoppingCartDrawer() {
-    const [qty, setQty] = useState(1)
+export default function ShoppingCartDrawer({
+  title = "Shopping Cart",
+  initialCart = initialItems,
+}) {
+  const [cart, setCart] = useState(initialCart);
+
+  const updateQuantity = (id, delta) => {
+    setCart((items) =>
+      items
+        .map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                quantity: Math.max(1, item.quantity + delta),
+              }
+            : item
+        )
+    );
+  };
+
+  const removeItem = (id) => {
+    setCart((items) => items.filter((item) => item.id !== id));
+  };
+
+  const total = useMemo(
+    () =>
+      cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      ),
+    [cart]
+  );
+
   return (
+    <aside className="cart-drawer">
+      <h2>{title}</h2>
 
-    <div className="ease-fade-in">
-        
-        <h1>Shopping Cart</h1>
+      {cart.length === 0 ? (
+        <div className="empty-cart">
+          <p>Your cart is empty.</p>
+        </div>
+      ) : (
+        <>
+          {cart.map((item) => (
+            <div className="cart-item" key={item.id}>
+              <div>
+                <h3>{item.name}</h3>
+                <p>${item.price}</p>
+              </div>
 
-       <h3>Wireless Mouse</h3>
+              <div className="controls">
+                <button onClick={() => updateQuantity(item.id, -1)}>
+                  −
+                </button>
 
-        <p>Quantity:{qty}</p>
+                <span>{item.quantity}</span>
 
-        <button className="ease-hover-lift" onClick={()=>{
-            if(qty<10)
-                {
-            setQty(qty+1)
-            }
-        }
-        }>+</button>
+                <button onClick={() => updateQuantity(item.id, 1)}>
+                  +
+                </button>
+              </div>
 
-        <button className="ease-hover-lift" onClick={()=>{
-            if(qty>1)
-                {
-                setQty(qty-1)
-            }
-        }
-        }>-</button>
+              <button
+                className="remove"
+                onClick={() => removeItem(item.id)}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
 
-        <input
-            type="range"
-            min="1"
-            max="10"
-            value={qty}
-            onChange={(e) => setQty(Number(e.target.value))}
-        />
+          <div className="footer">
+            <strong>Total: ${total}</strong>
 
-    </div>
-  )
+            <button className="checkout">
+              Checkout
+            </button>
+          </div>
+        </>
+      )}
+    </aside>
+  );
 }
-
-export default ShoppingCartDrawer
