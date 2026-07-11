@@ -7,35 +7,58 @@ import React, {
   forwardRef,
 } from "react";
 
-const validateMinuteStep = (step) => {
+// ============================================================
+// UTILITY FUNCTIONS & CALCULATIONS
+// ============================================================
+
+/**
+ * Validates the minuteStep. Must be an integer divisor of 60.
+ * If invalid, defaults to 1.
+ *
+ * @param {number} step
+ * @returns {number}
+ */
+export const validateMinuteStep = (step) => {
   const parsed = parseInt(step, 10);
-  if (Number.isNaN(parsed) || parsed <= 0 || 60 % parsed !== 0) {
+  if (isNaN(parsed) || parsed <= 0 || 60 % parsed !== 0) {
     return 1;
   }
   return parsed;
 };
 
-const generateHours = (format) => {
+/**
+ * Generates options arrays for hours, minutes, and meridiem.
+ */
+export const generateHours = (format) => {
   if (format === "24") {
-    return Array.from({ length: 24 }, (_, index) => index);
+    return Array.from({ length: 24 }, (_, i) => i);
   }
-  return Array.from({ length: 12 }, (_, index) => index + 1);
+  // 12-hour format options: 1 to 12
+  return Array.from({ length: 12 }, (_, i) => i + 1);
 };
 
-const generateMinutes = (step) => {
+export const generateMinutes = (step) => {
   const validatedStep = validateMinuteStep(step);
   const length = Math.floor(60 / validatedStep);
-  return Array.from({ length }, (_, index) => index * validatedStep);
+  return Array.from({ length }, (_, i) => i * validatedStep);
 };
 
-const alignMinuteToStep = (minute, step) => {
+/**
+ * Align arbitrary minute to the closest step.
+ */
+export const alignMinuteToStep = (minute, step) => {
   const validatedStep = validateMinuteStep(step);
   const index = Math.round(minute / validatedStep);
   const aligned = index * validatedStep;
   return aligned >= 60 ? 0 : aligned;
 };
 
-const parseTimeString = (timeStr, hourFormat) => {
+/**
+ * Parses time string (in "HH:mm" or "hh:mm A" formats) safely.
+ * Returns { hour, minute, ampm } where hour is 24-hour (0-23) and ampm is 'AM'|'PM'.
+ * On parsing error, returns the current system time.
+ */
+export const parseTimeString = (timeStr, hourFormat) => {
   const now = new Date();
   const fallback = {
     hour: now.getHours(),
@@ -48,6 +71,7 @@ const parseTimeString = (timeStr, hourFormat) => {
   }
 
   try {
+    // Try to match "hh:mm A" or "HH:mm"
     const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
     if (!match) {
       return fallback;
@@ -57,7 +81,7 @@ const parseTimeString = (timeStr, hourFormat) => {
     const m = parseInt(match[2], 10);
     const period = match[3] ? match[3].toUpperCase() : null;
 
-    if (Number.isNaN(h) || Number.isNaN(m) || h < 0 || m < 0 || m >= 60) {
+    if (isNaN(h) || isNaN(m) || h < 0 || m < 0 || m >= 60) {
       return fallback;
     }
 
@@ -65,6 +89,7 @@ const parseTimeString = (timeStr, hourFormat) => {
     let ampm = "AM";
 
     if (period) {
+      // 12-hour format with period
       if (h < 1 || h > 12) return fallback;
       ampm = period;
       if (period === "PM" && h !== 12) {
@@ -73,36 +98,44 @@ const parseTimeString = (timeStr, hourFormat) => {
         hour24 = 0;
       }
     } else {
+      // 24-hour format
       if (h >= 24) return fallback;
       ampm = h >= 12 ? "PM" : "AM";
     }
 
     return { hour: hour24, minute: m, ampm };
-  } catch (error) {
+  } catch (e) {
     return fallback;
   }
 };
 
-const formatTimeString = (hour, minute, format) => {
+/**
+ * Formats 24h hour and minute integers into correct string formats.
+ */
+export const formatTimeString = (hour, minute, format) => {
   const mm = minute.toString().padStart(2, "0");
   if (format === "24") {
     const hh = hour.toString().padStart(2, "0");
     return `${hh}:${mm}`;
+  } else {
+    let h12 = hour % 12;
+    if (h12 === 0) h12 = 12;
+    const hh = h12.toString().padStart(2, "0");
+    const period = hour >= 12 ? "PM" : "AM";
+    return `${hh}:${mm} ${period}`;
   }
-
-  let h12 = hour % 12;
-  if (h12 === 0) h12 = 12;
-  const hh = h12.toString().padStart(2, "0");
-  const period = hour >= 12 ? "PM" : "AM";
-  return `${hh}:${mm} ${period}`;
 };
+
+// ============================================================
+// INDIVIDUAL WHEEL COLUMN COMPONENT
+// ============================================================
 
 const Wheel = memo(
   ({
     data,
     selectedValue,
     onSelect,
-    format = (value) => value,
+    format = (v) => v,
     ariaLabel,
     disabled,
     itemHeight,
@@ -110,31 +143,34 @@ const Wheel = memo(
     const scrollRef = useRef(null);
     const isScrolling = useRef(false);
     const scrollTimeoutRef = useRef(null);
+
     const selectedIndex = data.indexOf(selectedValue);
 
+    // Detect prefers-reduced-motion
     const [isReducedMotion, setIsReducedMotion] = useState(false);
-
     useEffect(() => {
-      if (typeof window === "undefined") return undefined;
+      if (typeof window === "undefined") return;
       const media = window.matchMedia("(prefers-reduced-motion: reduce)");
       setIsReducedMotion(media.matches);
-      const listener = (event) => setIsReducedMotion(event.matches);
+      const listener = (e) => setIsReducedMotion(e.matches);
       media.addEventListener("change", listener);
       return () => media.removeEventListener("change", listener);
     }, []);
 
+    // Auto-scroll on mount or when selectedValue changes externally
     useEffect(() => {
       if (scrollRef.current && !isScrolling.current) {
-        const index = data.indexOf(selectedValue);
-        if (index !== -1) {
+        const idx = data.indexOf(selectedValue);
+        if (idx !== -1) {
           scrollRef.current.scrollTo({
-            top: index * itemHeight,
+            top: idx * itemHeight,
             behavior: isReducedMotion ? "auto" : "smooth",
           });
         }
       }
     }, [selectedValue, data, itemHeight, isReducedMotion]);
 
+    // Clean up timers on unmount
     useEffect(() => {
       return () => {
         if (scrollTimeoutRef.current) {
@@ -152,6 +188,7 @@ const Wheel = memo(
         clearTimeout(scrollTimeoutRef.current);
       }
 
+      // Debounce state update until snapping settles
       scrollTimeoutRef.current = setTimeout(() => {
         if (!scrollRef.current) return;
         isScrolling.current = false;
@@ -167,41 +204,45 @@ const Wheel = memo(
       }, 120);
     };
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (e) => {
       if (disabled) return;
 
       let nextIndex = selectedIndex;
 
-      switch (event.key) {
+      switch (e.key) {
         case "ArrowUp":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = Math.max(0, selectedIndex - 1);
           break;
         case "ArrowDown":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = Math.min(data.length - 1, selectedIndex + 1);
           break;
         case "Home":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = 0;
           break;
         case "End":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = data.length - 1;
           break;
         case "PageUp":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = Math.max(0, selectedIndex - 5);
           break;
         case "PageDown":
-          event.preventDefault();
+          e.preventDefault();
           nextIndex = Math.min(data.length - 1, selectedIndex + 5);
           break;
         default:
           return;
       }
 
-      if (nextIndex !== selectedIndex && nextIndex >= 0 && nextIndex < data.length) {
+      if (
+        nextIndex !== selectedIndex &&
+        nextIndex >= 0 &&
+        nextIndex < data.length
+      ) {
         onSelect(data[nextIndex]);
         if (scrollRef.current) {
           scrollRef.current.scrollTo({
@@ -238,6 +279,7 @@ const Wheel = memo(
         {data.map((item, index) => {
           const dist = Math.abs(index - selectedIndex);
           const isCenter = dist === 0;
+
           const itemStyle = {
             "--dist": dist,
             opacity: isCenter ? 1 : Math.max(0.15, 1 - dist * 0.28),
@@ -263,8 +305,11 @@ const Wheel = memo(
     );
   }
 );
-
 Wheel.displayName = "Wheel";
+
+// ============================================================
+// MAIN TIME PICKER COMPONENT
+// ============================================================
 
 const TimePickerWheelSelector = memo(
   forwardRef(
@@ -284,28 +329,41 @@ const TimePickerWheelSelector = memo(
       },
       ref
     ) => {
-      const validatedStep = useMemo(() => validateMinuteStep(minuteStep), [minuteStep]);
+      const validatedStep = useMemo(
+        () => validateMinuteStep(minuteStep),
+        [minuteStep]
+      );
+
+      // Dynamic height configuration
       const itemHeight = useMemo(() => {
         if (size === "sm") return 34;
         if (size === "lg") return 54;
-        return 44;
+        return 44; // default 'md'
       }, [size]);
 
+      // Options arrays
       const hours = useMemo(() => generateHours(hourFormat), [hourFormat]);
-      const minutes = useMemo(() => generateMinutes(validatedStep), [validatedStep]);
+      const minutes = useMemo(
+        () => generateMinutes(validatedStep),
+        [validatedStep]
+      );
       const periods = useMemo(() => ["AM", "PM"], []);
 
+      // Sync state helpers
       const isControlled = value !== undefined;
       const initialParsed = useMemo(() => {
-        const startValue = isControlled ? value : defaultValue;
-        return parseTimeString(startValue || "", hourFormat);
+        const startVal = isControlled ? value : defaultValue;
+        return parseTimeString(startVal || "", hourFormat);
       }, [value, defaultValue, isControlled, hourFormat]);
 
-      const [internalHour, setInternalHour] = useState(() => initialParsed.hour);
+      const [internalHour, setInternalHour] = useState(
+        () => initialParsed.hour
+      );
       const [internalMinute, setInternalMinute] = useState(() =>
         alignMinuteToStep(initialParsed.minute, validatedStep)
       );
 
+      // Sync internally if controlled value is updated
       useEffect(() => {
         if (isControlled && value) {
           const parsed = parseTimeString(value, hourFormat);
@@ -314,6 +372,7 @@ const TimePickerWheelSelector = memo(
         }
       }, [value, isControlled, hourFormat, validatedStep]);
 
+      // Compute active variables
       const activeHour24 = isControlled
         ? parseTimeString(value || "", hourFormat).hour
         : internalHour;
@@ -330,10 +389,13 @@ const TimePickerWheelSelector = memo(
         return h12 === 0 ? 12 : h12;
       }, [activeHour24, hourFormat]);
 
-      const activePeriod = useMemo(() => (activeHour24 >= 12 ? "PM" : "AM"), [activeHour24]);
+      const activePeriod = useMemo(() => {
+        return activeHour24 >= 12 ? "PM" : "AM";
+      }, [activeHour24]);
 
+      // SSR-Safe dynamic stylesheet injection
       useEffect(() => {
-        if (typeof document === "undefined") return undefined;
+        if (typeof document === "undefined") return;
         const styleId = "ease-time-picker-wheel-selector-styles";
         let styleEl = document.getElementById(styleId);
         if (!styleEl) {
@@ -342,7 +404,6 @@ const TimePickerWheelSelector = memo(
           styleEl.textContent = STYLES;
           document.head.appendChild(styleEl);
         }
-        return undefined;
       }, []);
 
       const handleHourSelect = (newHourCol) => {
@@ -406,27 +467,31 @@ const TimePickerWheelSelector = memo(
         >
           <div className={`ease-time-picker-wheels ${animationClass}`}>
             <div className="ease-time-picker-selection-strip" />
+
             <Wheel
               data={hours}
               selectedValue={activeHourCol}
               onSelect={handleHourSelect}
-              format={(value) => value.toString().padStart(2, "0")}
+              format={(v) => v.toString().padStart(2, "0")}
               ariaLabel="Hours"
               disabled={disabled}
               itemHeight={itemHeight}
             />
+
             <div className="ease-time-picker-colon" aria-hidden="true">
               :
             </div>
+
             <Wheel
               data={minutes}
               selectedValue={activeMinute}
               onSelect={handleMinuteSelect}
-              format={(value) => value.toString().padStart(2, "0")}
+              format={(v) => v.toString().padStart(2, "0")}
               ariaLabel="Minutes"
               disabled={disabled}
               itemHeight={itemHeight}
             />
+
             {showPeriodColumn && (
               <>
                 <div className="ease-time-picker-spacer" aria-hidden="true" />
@@ -548,18 +613,16 @@ const STYLES = `
   width: 12px;
 }
 
+/* Sizing configurations */
 .ease-time-picker-container.size-sm {
   max-width: 240px;
 }
-
 .ease-time-picker-container.size-sm .ease-time-picker-item {
   font-size: 1.2rem;
 }
-
 .ease-time-picker-container.size-sm .ease-time-picker-item.is-selected {
   font-size: 1.3rem;
 }
-
 .ease-time-picker-container.size-sm .ease-time-picker-colon {
   font-size: 1.2rem;
 }
@@ -567,15 +630,12 @@ const STYLES = `
 .ease-time-picker-container.size-md {
   max-width: 300px;
 }
-
 .ease-time-picker-container.size-md .ease-time-picker-item {
   font-size: 1.45rem;
 }
-
 .ease-time-picker-container.size-md .ease-time-picker-item.is-selected {
   font-size: 1.6rem;
 }
-
 .ease-time-picker-container.size-md .ease-time-picker-colon {
   font-size: 1.45rem;
 }
@@ -583,25 +643,24 @@ const STYLES = `
 .ease-time-picker-container.size-lg {
   max-width: 360px;
 }
-
 .ease-time-picker-container.size-lg .ease-time-picker-item {
   font-size: 1.7rem;
 }
-
 .ease-time-picker-container.size-lg .ease-time-picker-item.is-selected {
   font-size: 1.9rem;
 }
-
 .ease-time-picker-container.size-lg .ease-time-picker-colon {
   font-size: 1.7rem;
 }
 
+/* Accessible focus ring indicators */
 .ease-time-picker-column:focus-visible {
   outline: 2px solid var(--ease-color-primary, #6c63ff);
   outline-offset: -2px;
   border-radius: 6px;
 }
 
+/* Disabled State overlay and layout shifts */
 .ease-time-picker-container.is-disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -622,33 +681,31 @@ const STYLES = `
   background-color: var(--ease-color-neutral-200, #e2e8f0);
 }
 
+/* Reduced motion settings */
 @media (prefers-reduced-motion: reduce) {
   .ease-time-picker-column {
     scroll-behavior: auto !important;
   }
-
   .ease-time-picker-item {
     transition: none !important;
     transform: none !important;
   }
 }
 
+/* Dark theme color scheme rules */
 @media (prefers-color-scheme: dark) {
   .ease-time-picker-container {
     background: var(--ease-color-surface, #141e33);
     border-color: var(--ease-color-neutral-800, #1e293b);
   }
-
   .ease-time-picker-selection-strip {
     background: var(--ease-color-neutral-800, #1e293b);
     border-top: 1px solid var(--ease-color-neutral-700, #334155);
     border-bottom: 1px solid var(--ease-color-neutral-700, #334155);
   }
-
   .ease-time-picker-item.is-selected {
     color: var(--ease-color-text, #f8fafc);
   }
-
   .ease-time-picker-colon {
     color: var(--ease-color-text, #f8fafc);
   }
