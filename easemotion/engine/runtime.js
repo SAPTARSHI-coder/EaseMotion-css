@@ -17,7 +17,7 @@
  * ============================================================
  */
 
-import { parse }            from './parser.js';
+import { parse } from './parser.js';
 import { compile, className } from './compiler.js';
 
 /** Registry of already-injected class names → avoid duplicate rules */
@@ -52,8 +52,13 @@ function processElement(el) {
 
   const ast = parse(value);
   if (!ast) {
-    if (process?.env?.NODE_ENV !== 'production') {
-      console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);
+    if (
+      typeof process === 'undefined' ||
+      process.env?.NODE_ENV !== 'production'
+    ) {
+      console.warn(
+        `[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`
+      );
     }
     return;
   }
@@ -121,8 +126,8 @@ function start() {
   });
 
   observer.observe(document.body || document.documentElement, {
-    childList:  true,
-    subtree:    true,
+    childList: true,
+    subtree: true,
     attributes: true,
     attributeFilter: ['em'],
   });
