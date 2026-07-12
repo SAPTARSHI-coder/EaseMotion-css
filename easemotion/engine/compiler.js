@@ -36,8 +36,6 @@ const KEYFRAME_MAP = {
   'wobble':                    'ease-kf-wobble',
   'zoom-in':                   'ease-kf-zoom-in',
   'zoom-out':                  'ease-kf-zoom-out',
-  'flip-x':                    'ease-kf-flip-x',
-  'flip-y':                    'ease-kf-flip-y',
   'float':                     'ease-kf-float',
   'heartbeat':                 'ease-kf-heartbeat',
   'rubber-band':               'ease-kf-rubber-band',
@@ -115,3 +113,5 @@ export function compile(ast, cls) {
     `}`,
   ].join('\n');
 }
+
+export { KEYFRAME_MAP };
