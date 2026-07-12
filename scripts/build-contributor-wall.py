@@ -6,6 +6,7 @@ Reads /tmp/contributors.json, replaces content between
 import json
 import re
 import sys
+import html
 
 COLS = 12
 INPUT = "/tmp/contributors.json"
@@ -26,7 +27,7 @@ def build_wall(contributors):
                 f'<td align="center">'
                 f'<a href="https://github.com/{login}">'
                 f'<img src="https://avatars.githubusercontent.com/{login}?s=64" '
-                f'width="52" height="52" alt="{login}" '
+                f'width="52" height="52" alt="{html.escape(login)}" '
                 f'style="border-radius:50%;margin:4px"/>'
                 f"<br/><sub><b>{login}</b></sub>"
                 f"<br/><sub>{count} commits</sub>"
@@ -52,8 +53,10 @@ def main():
     with open(INPUT) as f:
         contributors = json.load(f)
 
-    # Slice to exactly 551 contributors to match the official count
-    contributors = contributors[:551]
+    EXPECTED_COUNT = 551
+    if len(contributors) < EXPECTED_COUNT:
+        print(f"WARNING: Only {len(contributors)} contributors found, expected {EXPECTED_COUNT}", file=sys.stderr)
+    contributors = contributors[:EXPECTED_COUNT]
 
     if not contributors:
         print("ERROR: No contributors found in JSON.", file=sys.stderr)
