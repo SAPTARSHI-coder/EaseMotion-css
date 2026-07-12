@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voronoi Morph</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Voronoi Morph</h1>
+        <p class="subtitle">Voronoi diagram cells that pulse and rearrange</p>
+
+        <div class="voronoi-wrapper">
+            <canvas id="voronoiCanvas"></canvas>
+
+            <div class="controls">
+                <button id="countBtn">Cells: 30</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Morphing cells</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('voronoiCanvas');
+        const ctx = canvas.getContext('2d');
+        const countBtn = document.getElementById('countBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let sites = [];
+        let numSites = 30;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let time = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let imageData = null;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 80%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (i, total, time) => {
+                    const hue = 200 + (i / total) * 40 + Math.sin(time + i * 0.3) * 10;
+                    const light = 40 + (i / total) * 30 + Math.sin(time * 0.5 + i * 0.2) * 10;
+                    return `hsl(${hue}, 70%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Fire',
+                fn: (i, total, time) => {
+                    const hue = 10 + (i / total) * 50 + Math.sin(time * 0.3 + i * 0.4) * 10;
+                    const light = 40 + (i / total) * 40 + Math.sin(time * 0.4 + i * 0.3) * 10;
+                    return `hsl(${hue}, 90%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (i, total, time) => {
+                    const hue = 250 + (i / total) * 50 + Math.sin(time * 0.3 + i * 0.5) * 15;
+                    const light = 30 + (i / total) * 30 + Math.sin(time * 0.5 + i * 0.3) * 15;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (i, total, time) => {
+                    const hue = 20 + (i / total) * 40 + Math.sin(time * 0.2 + i * 0.3) * 10;
+                    const light = 40 + (i / total) * 40 + Math.sin(time * 0.3 + i * 0.2) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (i, total, time) => {
+                    const val = 40 + (i / total) * 40 + Math.sin(time * 0.3 + i * 0.2) * 15;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [10, 20, 30, 50, 80, 120];
+
+        // ===== VORONOI SITE CLASS =====
+        class VoronoiSite {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.targetY = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.size = 2 + Math.random() * 4;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.moveTimer = 0;
+                this.moveInterval = 100 + Math.random() * 200;
+            }
+
+            update(w, h, speed, time) {
+                // Move toward target
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > 0.5) {
+                    const moveSpeed = 1.5 * speed * 10;
+                    this.x += (dx / dist) * moveSpeed;
+                    this.y += (dy / dist) * moveSpeed;
+                }
+
+                // Random wander
+                this.x += Math.sin(time * 0.5 + this.pulsePhase) * 0.1 * speed * 5;
+                this.y += Math.cos(time * 0.7 + this.pulsePhase * 1.3) * 0.1 * speed * 5;
+
+                // Boundary
+                const margin = 20;
+                if (this.x < margin) this.x = margin;
+                if (this.x > w - margin) this.x = w - margin;
+                if (this.y < margin) this.y = margin;
+                if (this.y > h - margin) this.y = h - margin;
+
+                // Update target periodically
+                this.moveTimer++;
+                if (this.moveTimer > this.moveInterval / speed) {
+                    this.moveTimer = 0;
+                    this.moveInterval = 80 + Math.random() * 200;
+                    this.targetX = margin + Math.random() * (w - margin * 2);
+                    this.targetY = margin + Math.random() * (h - margin * 2);
+                }
+
+                // Pulse
+                this.pulsePhase += this.pulseSpeed * speed * 5;
+            }
+
+            draw(ctx, colorFn, total, time) {
+                const pulse = 0.5 + 0.5 * Math.sin(this.pulsePhase);
+                const size = this.size * (0.7 + 0.3 * pulse);
+                const color = colorFn(this, total, time);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Inner glow
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+        }
+
+        // ===== VORONOI DIAGRAM =====
+        function computeVoronoi(sites, w, h) {
+            const pixelData = new Uint8ClampedArray(w * h * 4);
+            const siteCount = sites.length;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let minDist = Infinity;
+                    let minIdx = 0;
+
+                    for (let i = 0; i < siteCount; i++) {
+                        const dx = x - sites[i].x;
+                        const dy = y - sites[i].y;
+                        const dist = dx * dx + dy * dy;
+                        if (dist < minDist) {
+                            minDist = dist;
+                            minIdx = i;
+                        }
+                    }
+
+                    const idx = (y * w + x) * 4;
+                    const colorFn = colorModes[colorMode].fn;
+                    const color = colorFn(minIdx, siteCount, time);
+                    const rgb = hslToRgb(color);
+
+                    pixelData[idx] = rgb[0];
+                    pixelData[idx + 1] = rgb[1];
+                    pixelData[idx + 2] = rgb[2];
+                    pixelData[idx + 3] = 255;
+
+                    // Add glow effect at site centers
+                    const dx = x - sites[minIdx].x;
+                    const dy = y - sites[minIdx].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const glowRadius = 10 + sites[minIdx].size * 3;
+                    if (dist < glowRadius) {
+                        const glow = 1 - dist / glowRadius;
+                        const glowColor = colorFn(minIdx, siteCount, time);
+                        const glowRgb = hslToRgb(glowColor);
+                        pixelData[idx] = Math.min(255, pixelData[idx] + glowRgb[0] * glow * 0.3);
+                        pixelData[idx + 1] = Math.min(255, pixelData[idx + 1] + glowRgb[1] * glow * 0.3);
+                        pixelData[idx + 2] = Math.min(255, pixelData[idx + 2] + glowRgb[2] * glow * 0.3);
+                    }
+                }
+            }
+
+            return pixelData;
+        }
+
+        // ===== HSL TO RGB =====
+        function hslToRgb(hslStr) {
+            const match = hslStr.match(/hsl\(([^,]+),\s*([^%]+)%,\s*([^%]+)%\)/);
+            if (!match) return [0, 0, 0];
+
+            let h = parseFloat(match[1]) / 360;
+            let s = parseFloat(match[2]) / 100;
+            let l = parseFloat(match[3]) / 100;
+
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        // ===== INIT SITES =====
+        function initSites(count) {
+            const w = canvas.width;
+            const h = canvas.height;
+            sites = [];
+            const margin = 40;
+            for (let i = 0; i < count; i++) {
+                const x = margin + Math.random() * (w - margin * 2);
+                const y = margin + Math.random() * (h - margin * 2);
+                sites.push(new VoronoiSite(x, y));
+            }
+            numSites = count;
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Update sites
+            for (const site of sites) {
+                site.update(w, h, speed, time);
+            }
+
+            // Compute Voronoi diagram
+            const pixelData = computeVoronoi(sites, w, h, time);
+            const imageData = ctx.createImageData(w, h);
+            imageData.data.set(pixelData);
+            ctx.putImageData(imageData, 0, 0);
+
+            // Draw site points on top
+            for (const site of sites) {
+                const colorFn = colorModes[colorMode].fn;
+                site.draw(ctx, colorFn, sites.length, time);
+            }
+
+            // Draw cell borders
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 0.5;
+            const borderData = computeVoronoiBorders(sites, w, h);
+            ctx.putImageData(borderData, 0, 0);
+
+            time += speed;
+
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${sites.length} cells • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== COMPUTE VORONOI BORDERS =====
+        function computeVoronoiBorders(sites, w, h) {
+            const pixelData = new Uint8ClampedArray(w * h * 4);
+            const siteCount = sites.length;
+
+            // For each pixel, check if it's near a border
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    let minDist = Infinity;
+                    let minIdx = 0;
+                    let secondMinDist = Infinity;
+
+                    for (let i = 0; i < siteCount; i++) {
+                        const dx = x - sites[i].x;
+                        const dy = y - sites[i].y;
+                        const dist = dx * dx + dy * dy;
+                        if (dist < minDist) {
+                            secondMinDist = minDist;
+                            minDist = dist;
+                            minIdx = i;
+                        } else if (dist < secondMinDist) {
+                            secondMinDist = dist;
+                        }
+                    }
+
+                    // Check if pixel is on border
+                    const borderThreshold = 2;
+                    if (Math.sqrt(secondMinDist) - Math.sqrt(minDist) < borderThreshold) {
+                        const idx = (y * w + x) * 4;
+                        pixelData[idx] = 255;
+                        pixelData[idx + 1] = 255;
+                        pixelData[idx + 2] = 255;
+                        pixelData[idx + 3] = 30;
+                    }
+                }
+            }
+
+            return ctx.createImageData(pixelData, w, h);
+        }
+
+        // ===== CONTROLS =====
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numSites);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Cells: ${newCount}`;
+            initSites(newCount);
+            statusText.textContent = `📐 ${newCount} cells`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${newCount} cells • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${sites.length} cells • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${sites.length} cells • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            initSites(30);
+            
+            countBtn.textContent = `Cells: 30`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${sites.length} cells • ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle pause not implemented
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initSites(numSites);
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Cells: ${numSites}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🌀 ${numSites} cells • ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        initSites(numSites);
+        render(lastFpsUpdate);
+
+        console.log('🌀 Voronoi Morph loaded!');
+        console.log('💡 C - Change cell count');
+        console.log('💡 S - Change speed');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Pause (coming soon)');
+    </script>
+</body>
+</html>

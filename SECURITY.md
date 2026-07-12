@@ -89,7 +89,7 @@ For production applications loading EaseMotion CSS via CDN, use Subresource Inte
 <!-- Generate your SRI hash at: https://www.srihash.org/ -->
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css@1.2.0/easemotion.css"
   integrity="sha384-<YOUR_HASH_HERE>"
   crossorigin="anonymous"
 />
@@ -97,7 +97,7 @@ For production applications loading EaseMotion CSS via CDN, use Subresource Inte
 
 > You can generate the correct SRI hash for any jsDelivr URL at [srihash.org](https://www.srihash.org/) or using:
 > ```bash
-> curl -s https://cdn.jsdelivr.net/npm/easemotion-css@1.0.0/easemotion.css | openssl dgst -sha384 -binary | openssl base64 -A
+> curl -s https://cdn.jsdelivr.net/npm/easemotion-css@1.2.0/easemotion.css | openssl dgst -sha384 -binary | openssl base64 -A
 > ```
 
 ### `@import` Safety

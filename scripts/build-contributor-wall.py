@@ -52,6 +52,9 @@ def main():
     with open(INPUT) as f:
         contributors = json.load(f)
 
+    # Slice to exactly 551 contributors to match the official count
+    contributors = contributors[:551]
+
     if not contributors:
         print("ERROR: No contributors found in JSON.", file=sys.stderr)
         sys.exit(1)

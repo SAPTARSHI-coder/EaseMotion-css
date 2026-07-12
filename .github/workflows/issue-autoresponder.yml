@@ -20,6 +20,7 @@ jobs:
             const issueNo = context.payload.issue.number;
             const owner   = context.repo.owner;
             const repo    = context.repo.repo;
+            const MAX_ASSIGNED_ISSUES = 25;
 
             // Fetch the latest issue state to prevent race conditions on closed issues
             const { data: issue } = await github.rest.issues.get({
@@ -31,11 +32,37 @@ jobs:
               return;
             }
 
+            // ── Cap check: don't auto-assign if opener already holds ≥25 issues ──
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner, repo,
+              assignee: opener,
+              state: 'open',
+              per_page: 100,
+            });
+            const activeCount = existingIssues.filter(i => !i.pull_request && i.number !== issueNo).length;
+
+            if (activeCount >= MAX_ASSIGNED_ISSUES) {
+              // Don't assign — post a warning comment instead
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: issueNo,
+                body: `Hey @${opener}! 👋\n\n⚠️ **Auto-assign blocked:** You already have **${activeCount}/${MAX_ASSIGNED_ISSUES}** active assigned issues. Please complete or \`/unclaim\` some of your current issues before taking new ones.\n\nYour issue has been created and is open for anyone to claim once you have capacity!`,
+              });
+              return;
+            }
+
             await github.rest.issues.addAssignees({
               owner, repo,
               issue_number: issueNo,
               assignees: [opener],
             });
+
+            // Tag every new issue with both program labels.
+            // ECSoC sentinel bot will naturally flag non-ECSoC contributors — that's intentional.
+            await github.rest.issues.addLabels({
+              owner, repo,
+              issue_number: issueNo,
+              labels: ['GSSoC-26', 'ECSoC26'],
+            }).catch(() => {});
 
             // Detect track from labels
             const labels = issue.labels.map(l => l.name.toLowerCase());
@@ -123,3 +150,4 @@ jobs:
               issue_number: issueNo,
               body,
             });
+
