@@ -1,5 +1,4 @@
 import { readFile } from "node:fs/promises";
-
 const manifestPath = new URL("../package.json", import.meta.url);
 const requiredScripts = [
   "build",
@@ -10,6 +9,7 @@ const requiredScripts = [
   "validate:pack",
   "release:check",
 ];
+
 const requiredFiles = [
   "easemotion.css",
   "easemotion.min.css",
@@ -27,7 +27,6 @@ function fail(message) {
 
 const rawManifest = await readFile(manifestPath, "utf8");
 let manifest;
-
 try {
   manifest = JSON.parse(rawManifest);
 } catch (error) {
@@ -38,7 +37,15 @@ if (manifest.name !== "easemotion-css") {
   fail('expected package name to be "easemotion-css"');
 }
 
-if (!manifest.repository?.url?.includes("SAPTARSHI-coder/EaseMotion-css")) {
+const repositoryUrl = (manifest.repository?.url ?? "")
+  .toLowerCase()
+  .replace(/^git\+/, "")
+  .replace(/\.git$/, "");
+
+const expectedRepository =
+  "github.com/saptarshi-coder/easemotion-css";
+
+if (!repositoryUrl.includes(expectedRepository)) {
   fail("repository.url must point to SAPTARSHI-coder/EaseMotion-css");
 }
 
