@@ -42,13 +42,22 @@ function getStyleElement() {
 /**
  * Process a single element's `em=""` attribute.
  * Compiles the animation, injects the CSS rule (if not already done),
- * and applies the generated class to the element.
+ * removes stale generated classes, and applies the current generated class.
  *
  * @param {Element} el
  */
 function processElement(el) {
   const value = el.getAttribute('em');
-  if (!value) return;
+  
+  // If the attribute is removed or empty, clean up all generated classes and bail
+  if (!value) {
+    for (const clsName of Array.from(el.classList)) {
+      if (clsName.startsWith('_em_')) {
+        el.classList.remove(clsName);
+      }
+    }
+    return;
+  }
 
   const ast = parse(value);
   if (!ast) {
@@ -69,7 +78,14 @@ function processElement(el) {
     }
   }
 
-  // Apply class to element (idempotent)
+  // Remove any existing stale generated animation classes (except the current one)
+  for (const clsName of Array.from(el.classList)) {
+    if (clsName.startsWith('_em_') && clsName !== cls) {
+      el.classList.remove(clsName);
+    }
+  }
+
+  // Apply current class to element (idempotent)
   if (!el.classList.contains(cls)) {
     el.classList.add(cls);
   }
