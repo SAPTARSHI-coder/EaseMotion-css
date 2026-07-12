@@ -20,7 +20,7 @@ module.exports = async ({ github, context }) => {
     return;
   }
 
-// predefined comments
+  // predefined comments
   const triggerPhrases = [
     'assign this issue to me',
     'assign this to me',
@@ -75,7 +75,21 @@ module.exports = async ({ github, context }) => {
     `- You can hold a **maximum of 25 active assigned issues** at a time.`,
     `- Make sure to read our **[CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)**.`
   ];
+  // Check if the reminder has already been posted by the bot
+  const { data: comments } = await github.rest.issues.listComments({
+    owner,
+    repo,
+    issue_number: issueNumber,
+  });
 
+  const reminderAlreadyExists = comments.some(comment =>
+    comment.user.type === 'Bot' &&
+    comment.body.includes('## How to Claim an Issue')
+  );
+
+  if (reminderAlreadyExists) {
+    return;
+  }
   // Post comment
   await github.rest.issues.createComment({
     owner,
