@@ -2,74 +2,70 @@
 
 ## Overview
 
-This submission proposes improvements to the responsive layout of the EaseMotion CSS documentation demo.
+This submission proposes a responsive layout showcase for the EaseMotion CSS documentation.
 
-The proposal focuses on improving readability, spacing, alignment, and responsiveness across desktop, tablet, and mobile devices while preserving the existing design language.
+It demonstrates how documentation sections can adapt across desktop, tablet, and mobile devices using responsive containers, flexible navigation, adaptive grids, and scalable spacing.
 
 ---
 
 ## Problem Statement
 
-The current documentation demo can experience inconsistent spacing, layout wrapping, and component alignment on smaller screen sizes.
+Documentation pages should provide a consistent reading experience across all screen sizes.
 
-These issues make the documentation harder to navigate and reduce the overall developer experience.
+Layouts with fixed spacing or rigid grids can become difficult to navigate on tablets and mobile devices.
 
 ---
 
 ## Proposed Improvements
 
-This proposal includes:
-
-- Responsive container sizing
-- Adaptive navigation layout
-- Responsive button groups
-- Flexible card grids
-- Responsive animation gallery
-- Improved hero spacing
-- Better touch targets
-- Consistent spacing using reusable CSS
+- Responsive navigation layout
+- Adaptive card grid
+- Fluid spacing
+- Mobile-friendly typography
+- Responsive containers
+- Better content readability
 
 ---
 
-## Responsive Strategy
+## Demonstration
 
-Desktop (>1200px)
+Open **demo.html** directly in a browser.
 
-- Three-column layouts
-- Horizontal navigation
-- Full spacing
-
-Tablet (768–992px)
-
-- Two-column grids
-- Wrapped navigation
-- Reduced spacing
-
-Mobile (<768px)
-
-- Single-column layouts
-- Full-width buttons
-- Compact spacing
-- Improved touch interactions
+No server or external dependencies are required.
 
 ---
 
 ## Benefits
 
-- Better responsiveness
+- Better mobile usability
 - Improved readability
-- Consistent spacing
-- Better mobile experience
-- Easier maintenance by reducing inline styles
+- Cleaner responsive layouts
+- Easier documentation maintenance
 
 ---
 
 ## Files Included
 
-```text
+```
 submissions/
 └── docs/
-    └── responsive-layout-demo-sm/
+    └── responsive-demo-layout-sm/
         ├── demo.html
         ├── style.css
         └── README.md
+```
+
+---
+
+## Scope
+
+This is a standalone documentation proposal.
+
+It does not modify:
+
+- core/
+- components/
+- docs/
+- Existing framework files
+
+The maintainer may integrate these ideas into the documentation after review.
