@@ -3,11 +3,13 @@ Build the contributor wall HTML for README.md.
 Reads /tmp/contributors.json, replaces content between
 <!-- CONTRIBUTOR-WALL-START --> and <!-- CONTRIBUTOR-WALL-END --> markers.
 """
+import html
 import json
 import re
 import sys
 
 COLS = 12
+EXPECTED_COUNT = 551
 INPUT = "/tmp/contributors.json"
 README = "README.md"
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
@@ -22,13 +24,15 @@ def build_wall(contributors):
         for c in row:
             login = c["login"]
             count = c["contributions"]
+            # Escape HTML to prevent injection
+            safe_login = html.escape(login)
             cells += (
                 f'<td align="center">'
-                f'<a href="https://github.com/{login}">'
-                f'<img src="https://avatars.githubusercontent.com/{login}?s=64" '
-                f'width="52" height="52" alt="{login}" '
+                f'<a href="https://github.com/{safe_login}">'
+                f'<img src="https://avatars.githubusercontent.com/{safe_login}?s=64" '
+                f'width="52" height="52" alt="{safe_login}" '
                 f'style="border-radius:50%;margin:4px"/>'
-                f"<br/><sub><b>{login}</b></sub>"
+                f"<br/><sub><b>{safe_login}</b></sub>"
                 f"<br/><sub>{count} commits</sub>"
                 f"</a></td>"
             )
@@ -52,12 +56,20 @@ def main():
     with open(INPUT) as f:
         contributors = json.load(f)
 
-    # Slice to exactly 551 contributors to match the official count
-    contributors = contributors[:551]
-
     if not contributors:
         print("ERROR: No contributors found in JSON.", file=sys.stderr)
         sys.exit(1)
+
+    # Input validation before slicing
+    if len(contributors) < EXPECTED_COUNT:
+        print(
+            f"WARNING: Only {len(contributors)} contributors found, expected {EXPECTED_COUNT}",
+            file=sys.stderr
+        )
+    
+    # Slice to exactly the expected count if we have enough
+    if len(contributors) >= EXPECTED_COUNT:
+        contributors = contributors[:EXPECTED_COUNT]
 
     wall = build_wall(contributors)
 
