@@ -14,7 +14,7 @@ A modern date picker component with a subtle 3D perspective animation built usin
 ## Files
 
 ```text
-date-picker-perspective-ak/
+perspective-date-picker-ak/
 ├── demo.html
 ├── style.css
 └── README.md
