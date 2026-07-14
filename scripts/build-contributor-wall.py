@@ -20,8 +20,8 @@ def build_wall(contributors):
         row = contributors[i : i + COLS]
         cells = ""
         for c in row:
-            login = c["login"]
-            count = c["contributions"]
+            login = c["author"]["login"]
+            count = c["total"]
             cells += (
                 f'<td align="center">'
                 f'<a href="https://github.com/{login}">'
@@ -52,12 +52,15 @@ def main():
     with open(INPUT) as f:
         contributors = json.load(f)
 
-    # Slice to exactly 551 contributors to match the official count
-    contributors = contributors[:551]
-
     if not contributors:
         print("ERROR: No contributors found in JSON.", file=sys.stderr)
         sys.exit(1)
+
+    # Filter out bots and invalid authors
+    contributors = [c for c in contributors if c.get("author") and c["author"].get("login") and c["author"].get("type") != "Bot" and "bot" not in c["author"]["login"].lower()]
+    
+    # Sort by total commits descending
+    contributors.sort(key=lambda x: x["total"], reverse=True)
 
     wall = build_wall(contributors)
 
@@ -74,6 +77,9 @@ def main():
         sys.exit(1)
 
     updated = pattern.sub(wall, content)
+    
+    # Update the contributors count badge in README.md
+    updated = re.sub(r'contributors-\d+-f59e0b', f'contributors-{len(contributors)}-f59e0b', updated)
 
     with open(README, "w", encoding="utf-8") as f:
         f.write(updated)
