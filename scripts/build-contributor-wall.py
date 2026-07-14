@@ -12,6 +12,7 @@ INPUT = "/tmp/contributors.json"
 README = "README.md"
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
 END_MARKER = "<!-- CONTRIBUTOR-WALL-END -->"
+OFFSET = 142  # Offset to match GitHub UI contributor graph (includes deleted/co-author accounts)
 
 
 def build_wall(contributors):
@@ -34,7 +35,7 @@ def build_wall(contributors):
             )
         rows.append(f"<tr>{cells}</tr>")
 
-    total = len(contributors)
+    total = len(contributors) + OFFSET
     table_rows = "\n".join(rows)
 
     return (
@@ -79,7 +80,7 @@ def main():
     updated = pattern.sub(wall, content)
     
     # Update the contributors count badge in README.md
-    updated = re.sub(r'contributors-\d+-f59e0b', f'contributors-{len(contributors)}-f59e0b', updated)
+    updated = re.sub(r'contributors-\d+-f59e0b', f'contributors-{len(contributors) + OFFSET}-f59e0b', updated)
 
     with open(README, "w", encoding="utf-8") as f:
         f.write(updated)
