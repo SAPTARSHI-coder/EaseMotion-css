@@ -53,7 +53,8 @@ describe('modal.js', () => {
     expect(document.body.style.overflow).toBe('hidden');
 
     const modal = overlay.querySelector('.ease-modal');
-    expect(document.activeElement).toBe(modal);
+    const firstFocusable = overlay.querySelector('#first-el');
+    expect(document.activeElement).toBe(firstFocusable);
     expect(modal.getAttribute('tabindex')).toBe('-1');
   });
 

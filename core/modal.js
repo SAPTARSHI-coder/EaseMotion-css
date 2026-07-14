@@ -3,7 +3,14 @@
 
   let previousFocusedElement = null;
 
+  function getFocusableElements(container) {
+    return container.querySelectorAll(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+    );
+  }
+
   function checkModal() {
+    
     const hash = window.location.hash;
     const body = document.body;
 
@@ -30,7 +37,11 @@
             }
 
             modal.setAttribute('tabindex', '-1');
-            modal.focus();
+
+            const focusableElements = getFocusableElements(modal);
+            const focusTarget = focusableElements.length > 0 ? focusableElements[0] : modal;
+
+            focusTarget.focus();
           }
           return;
         }
@@ -91,9 +102,7 @@
 
       // Tab trap
       if (e.key === 'Tab') {
-        const focusableElements = overlay.querySelectorAll(
-          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
-        );
+        const focusableElements = getFocusableElements(overlay);
         if (focusableElements.length === 0) {
           e.preventDefault();
           return;
