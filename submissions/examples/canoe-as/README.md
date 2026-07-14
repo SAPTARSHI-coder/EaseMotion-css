@@ -17,7 +17,7 @@ It shows a canoe crossing a still lake at sunset. The boat rocks on the water, t
 </div>
 ```
 
-The paddler and the paddle run the same 2.4 second clock, so the body leans exactly when the blade digs in: two separate elements, one rhythm, no JavaScript. The paddle pivots from `transform-origin: 12% 8%`, the point near the top of the shaft where the upper hand would grip, so the blade travels a long arc through the water while the grip barely moves, which is what a real stroke looks like. The hull's curve is a single asymmetric `border-radius` that rounds only the bottom corners.
+The paddler and the paddle run the same 2.4 second clock, so the body leans exactly when the blade digs in: two separate elements, one rhythm, no JavaScript. The shaft and blade carry no transforms of their own: they are rotated together by their wrapper, pivoted at `transform-origin: 50% 8%` near the top of the shaft where the upper hand grips. That keeps the two parts rigidly joined, so the blade travels a long arc into the water while the grip barely moves, which is what a real stroke looks like. The hull's curve is a single asymmetric `border-radius` that rounds only the bottom corners.
 
 ### Why is it useful?
 
