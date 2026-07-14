@@ -212,4 +212,35 @@ describe('optimizer — pruneClasses()', () => {
     const result = pruneClasses(css, new Set(['ease-fade-in']));
     expect(result).not.toContain('.ease-slide-up');
   });
+
+  // Regression test for issue #45911:
+  // pruneClasses was using [^{}]* in its regex, which stopped matching at the
+  // first inner '}' when a rule contained nested CSS (e.g. &:hover { ... }).
+  // This caused the *next* .ease-* rule to be silently dropped from the output.
+  it('keeps rules that follow a nested-CSS rule (#45911)', () => {
+    const nestedCss = [
+      '.ease-fade-in { animation: ease-kf-fade-in 0.3s ease-out;',
+      '  &:hover { animation-play-state: paused; } }',
+      '.ease-fade-in-slow { animation: ease-kf-fade-in 0.6s ease-out; }',
+    ].join('\n');
+
+    const used = new Set(['ease-fade-in', 'ease-fade-in-slow']);
+    const result = pruneClasses(nestedCss, used);
+
+    expect(result).toContain('.ease-fade-in');
+    expect(result).toContain('.ease-fade-in-slow');
+  });
+
+  it('drops a nested-CSS rule when it is not in usedClasses (#45911)', () => {
+    const nestedCss = [
+      '.ease-fade-in { animation: ease-kf-fade-in 0.3s ease-out;',
+      '  &:hover { animation-play-state: paused; } }',
+      '.ease-fade-in-slow { animation: ease-kf-fade-in 0.6s ease-out; }',
+    ].join('\n');
+
+    // Only keep the slow variant; the nested rule should be dropped cleanly.
+    const result = pruneClasses(nestedCss, new Set(['ease-fade-in-slow']));
+    expect(result).not.toContain('.ease-fade-in {');
+    expect(result).toContain('.ease-fade-in-slow');
+  });
 });
