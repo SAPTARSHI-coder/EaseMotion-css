@@ -75,11 +75,52 @@ export function pruneKeyframes(css, usedKeyframes) {
  * @returns {string}
  */
 export function pruneClasses(css, usedClasses) {
-  // Simple: match .ease-something { ... } top-level rules
-  const ruleRe = /\.(ease-[\w-]+)\s*\{[^{}]*\}/g;
-  return css.replace(ruleRe, (block, cls) => {
-    return usedClasses.has(cls) ? block : '';
-  });
+  // Locate each .ease-* selector, then walk forward counting braces so we
+  // capture the full rule body even when it contains nested blocks like
+  // `&:hover { ... }`.  The old [^{}]* regex would stop at the first inner
+  // closing brace and silently drop the rule that followed.
+  const selectorRe = /\.(ease-[\w-]+)\s*(?=[{])/g;
+  let result = '';
+  let cursor = 0;
+  let match;
+
+  while ((match = selectorRe.exec(css)) !== null) {
+    const cls        = match[1];
+    const blockStart = match.index + match[0].length; // points at the opening '{'
+
+    // Walk forward counting braces to find the matching closing '}'.
+    let depth     = 0;
+    let blockEnd  = -1;
+    for (let i = blockStart; i < css.length; i++) {
+      if (css[i] === '{') {
+        depth++;
+      } else if (css[i] === '}') {
+        depth--;
+        if (depth === 0) {
+          blockEnd = i + 1; // include the closing '}'
+          break;
+        }
+      }
+    }
+
+    if (blockEnd === -1) break; // malformed CSS — stop early
+
+    // Append everything between the previous match and this rule's selector.
+    result += css.slice(cursor, match.index);
+
+    if (usedClasses.has(cls)) {
+      // Keep the full rule (selector + body).
+      result += css.slice(match.index, blockEnd);
+    }
+    // If not used we simply skip the block (drop it).
+
+    cursor = blockEnd;
+    selectorRe.lastIndex = blockEnd; // resume scanning after this rule
+  }
+
+  // Append any trailing CSS that comes after the last matched rule.
+  result += css.slice(cursor);
+  return result;
 }
 
 /**
