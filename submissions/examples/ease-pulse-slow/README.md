@@ -1,3 +1,3 @@
-# Ease Pulse Slow
+# ease-pulse-slow
 
-A soft, low-frequency atmospheric scale modulation designed for background graphics and container ambient highlights.
+A high-quality, production-ready animation component designed for seamless UI integration.
