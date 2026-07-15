@@ -8,7 +8,7 @@ Utility classes that automatically trigger animations as elements enter or move 
 |---|---|
 | `.scroll-view` | Required base class — sets up the view timeline |
 | `.scroll-view-fade-up` | Fades in while sliding up 48px |
-| `.scroll-view-scale-in` | Scales from 85% → 100% while fading in |
+| `.scroll-ease-kf-view-scale-in` | Scales from 85% → 100% while fading in |
 | `.scroll-view-slide-left` | Slides in from the left (-60px) |
 | `.scroll-view-slide-right` | Slides in from the right (+60px) |
 | `.scroll-view-rotate-in` | Rotates from -8° to 0° while fading in |
