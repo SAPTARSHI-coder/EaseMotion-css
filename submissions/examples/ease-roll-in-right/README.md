@@ -1,3 +1,3 @@
-# Ease Roll In Right
+# ease-roll-in-right
 
-Translates and spins layout elements from positive right regions across active interface areas.
+A professional-grade, multi-axis rotation and translation animation for modern interfaces.
