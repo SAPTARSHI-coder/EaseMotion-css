@@ -1,3 +1,3 @@
-# Ease Fade In Up
+# ease-fade-in-up
 
-Slides content up into interface positions smoothly, making it ideal for processing lists or grid systems.
+A professional-grade, multi-axis rotation and translation animation for modern interfaces.
