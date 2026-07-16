@@ -1,0 +1,162 @@
+@use "sass:map";
+@use "sass:list";
+
+$motion-graph: () !default;
+$motion-resolved-order: () !default;
+
+@function _motion-list-remove-at($list, $index) {
+  $result: ();
+
+  @for $i from 1 through list.length($list) {
+    @if $i != $index {
+      $result: list.append($result, list.nth($list, $i));
+    }
+  }
+
+  @return $result;
+}
+
+@function _motion-new-state() {
+  @return ("visited": (), "visiting": (), "order": ());
+}
+
+@function _motion-is-registered($graph, $name) {
+  @return map.has-key($graph, $name);
+}
+
+@function _motion-dependency-exists($graph, $dependency) {
+  @return map.has-key($graph, $dependency);
+}
+
+@function _motion-is-circular($state, $name) {
+  @return list.index(map.get($state, "visiting"), $name) != null;
+}
+
+@function _motion-visit($graph, $name, $state) {
+  $visited: map.get($state, "visited");
+
+  @if list.index($visited, $name) != null {
+    @return $state;
+  }
+
+  @if _motion-is-circular($state, $name) {
+    @error "Motion Dependency Graph Generator: circular dependency detected while resolving `#{$name}`.";
+  }
+
+  @if not _motion-is-registered($graph, $name) {
+    @error "Motion Dependency Graph Generator: cannot resolve `#{$name}` because it is not registered in the motion graph.";
+  }
+
+  $visiting: list.append(map.get($state, "visiting"), $name);
+  $state: map.merge(
+    $state,
+    (
+      "visiting": $visiting,
+    )
+  );
+
+  $dependencies: map.get($graph, $name);
+
+  @each $dependency in $dependencies {
+    @if not _motion-dependency-exists($graph, $dependency) {
+      @warn "Motion Dependency Graph Generator: `#{$name}` depends on `#{$dependency}`, which is not registered. Skipping this dependency.";
+    } @else {
+      $state: _motion-visit($graph, $dependency, $state);
+    }
+  }
+
+  $visiting: map.get($state, "visiting");
+  $index: list.index($visiting, $name);
+  $visiting: _motion-list-remove-at($visiting, $index);
+
+  $visited: list.append(map.get($state, "visited"), $name);
+  $order: list.append(map.get($state, "order"), $name);
+
+  @return map.merge(
+    $state,
+    (
+      "visiting": $visiting,
+      "visited": $visited,
+      "order": $order,
+    )
+  );
+}
+
+@function _motion-resolve-graph($graph) {
+  @if list.length(map.keys($graph)) == 0 {
+    @warn "Motion Dependency Graph Generator: the motion graph is empty — nothing to resolve.";
+    @return ();
+  }
+
+  $state: _motion-new-state();
+
+  @each $name, $dependencies in $graph {
+    $state: _motion-visit($graph, $name, $state);
+  }
+
+  @return map.get($state, "order");
+}
+
+@mixin motion-register($name, $dependencies: ()) {
+  @if map.has-key($motion-graph, $name) {
+    @warn "Motion Dependency Graph Generator: `#{$name}` is already registered — overwriting its previous dependency list.";
+  }
+
+  $motion-graph: map.merge(
+    $motion-graph,
+    (
+      $name: $dependencies,
+    )
+  ) !global;
+}
+
+@mixin motion-resolve($graph: $motion-graph) {
+  $order: _motion-resolve-graph($graph);
+  $motion-resolved-order: $order !global;
+}
+
+@mixin motion-emit($graph: $motion-graph, $prefix: "motion") {
+  $order: if(
+    list.length($motion-resolved-order) > 0,
+    $motion-resolved-order,
+    _motion-resolve-graph($graph)
+  );
+
+  $total: list.length($order);
+
+  @if $total == 0 {
+    @warn "Motion Dependency Graph Generator: nothing to emit — the resolved order is empty.";
+  }
+
+  @each $stage in $order {
+    $index: list.index($order, $stage);
+
+    .#{$prefix}-#{$stage} {
+      --motion-order: #{$index - 1};
+      --motion-total: #{$total};
+
+      @content ($stage, $index);
+    }
+  }
+}
+
+$motion-graph-generator-examples: false !default;
+
+@if $motion-graph-generator-examples {
+  $example-graph: (
+    fade: (),
+    scale: (fade),
+    slide: (fade),
+    reveal: (
+        scale,
+        slide,
+      ),
+  );
+
+  @include motion-resolve($example-graph);
+
+  @include motion-emit($example-graph) using ($stage, $index) {
+    animation: #{$stage} 0.3s ease both;
+    animation-delay: #{($index - 1) * 80}ms;
+  }
+}

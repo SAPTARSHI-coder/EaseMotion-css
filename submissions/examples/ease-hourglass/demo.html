@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hourglass Sand Animation</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>⏳ Hourglass</h1>
+        <p class="subtitle">Watch the sand fall frame by frame</p>
+
+        <!-- HOURGLASS COMPONENT -->
+        <div class="hourglass-container" id="hourglassContainer">
+            <!-- Canvas for sand animation -->
+            <canvas id="sandCanvas" width="200" height="300"></canvas>
+
+            <!-- Overlay controls -->
+            <div class="hourglass-controls">
+                <button class="control-btn" id="resetBtn" title="Reset">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="control-btn" id="pauseBtn" title="Pause/Play">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="control-btn" id="speedBtn" title="Toggle Speed">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M10.59 9.17L5.41 4.41 4 5.83l6.59 6.59-6.59 6.59L5.41 20l6.59-6.59L18.59 20 20 18.59l-6.59-6.59L20 5.41 18.59 4z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Status display -->
+            <div class="hourglass-status" id="statusDisplay">
+                <span class="status-text">⏳ Running</span>
+                <span class="sand-count" id="sandCount">Sand: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('sandCanvas');
+            const ctx = canvas.getContext('2d');
+            const resetBtn = document.getElementById('resetBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const speedBtn = document.getElementById('speedBtn');
+            const statusText = document.querySelector('.status-text');
+            const sandCountDisplay = document.getElementById('sandCount');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                maxParticles: 300,
+                particleSize: 2,
+                gravity: 0.15,
+                friction: 0.98,
+                flowRate: 8, // particles per frame
+                topWidth: 70, // width of top chamber
+                bottomWidth: 70, // width of bottom chamber
+                neckWidth: 14, // width of neck
+                chamberHeight: 120, // height of each chamber
+                neckHeight: 25, // height of neck
+                sandColor: '#d4a373',
+                sandColorDark: '#b8864e',
+                // Speed options
+                speeds: [0.5, 1, 2, 3],
+                currentSpeedIndex: 1,
+                isPaused: false,
+                isRunning: true,
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let particles = [];
+            let bottomParticles = [];
+            let animationId = null;
+            let frameCount = 0;
+            let lastTimestamp = 0;
+
+            // ============================================
+            // GEOMETRY HELPERS
+            // ============================================
+            const W = canvas.width;
+            const H = canvas.height;
+
+            // Define hourglass shape
+            function getChamberBounds(y) {
+                const centerX = W / 2;
+                const topY = 10;
+                const bottomY = H - 10;
+
+                // Top chamber
+                if (y >= topY && y < topY + CONFIG.chamberHeight) {
+                    const progress = (y - topY) / CONFIG.chamberHeight;
+                    const width = CONFIG.topWidth - (CONFIG.topWidth - CONFIG.neckWidth) * progress;
+                    return {
+                        left: centerX - width / 2,
+                        right: centerX + width / 2,
+                        isNeck: false
+                    };
+                }
+
+                // Neck
+                if (y >= topY + CONFIG.chamberHeight && y < topY + CONFIG.chamberHeight + CONFIG.neckHeight) {
+                    return {
+                        left: centerX - CONFIG.neckWidth / 2,
+                        right: centerX + CONFIG.neckWidth / 2,
+                        isNeck: true
+                    };
+                }
+
+                // Bottom chamber
+                if (y >= topY + CONFIG.chamberHeight + CONFIG.neckHeight && y < bottomY) {
+                    const progress = (y - (topY + CONFIG.chamberHeight + CONFIG.neckHeight)) / CONFIG.chamberHeight;
+                    const width = CONFIG.neckWidth + (CONFIG.bottomWidth - CONFIG.neckWidth) * progress;
+                    return {
+                        left: centerX - width / 2,
+                        right: centerX + width / 2,
+                        isNeck: false
+                    };
+                }
+
+                return null;
+            }
+
+            function isInsideHourglass(x, y) {
+                const bounds = getChamberBounds(y);
+                if (!bounds) return false;
+                return x >= bounds.left + 2 && x <= bounds.right - 2;
+            }
+
+            function getNeckTop() {
+                return 10 + CONFIG.chamberHeight;
+            }
+
+            function getNeckBottom() {
+                return 10 + CONFIG.chamberHeight + CONFIG.neckHeight;
+            }
+
+            // ============================================
+            // PARTICLE CLASS
+            // ============================================
+            class Particle {
+                constructor(x, y, isBottom = false) {
+                    this.x = x;
+                    this.y = y;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.size = CONFIG.particleSize + (Math.random() - 0.5) * 0.5;
+                    this.isBottom = isBottom;
+                    this.isFalling = false;
+                    this.color = Math.random() > 0.5 ? CONFIG.sandColor : CONFIG.sandColorDark;
+                }
+
+                update() {
+                    if (CONFIG.isPaused) return;
+
+                    // Gravity
+                    this.vy += CONFIG.gravity * 0.5;
+
+                    // Friction
+                    this.vx *= CONFIG.friction;
+                    this.vy *= CONFIG.friction;
+
+                    // Move
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Check bounds
+                    const bounds = getChamberBounds(this.y);
+                    if (!bounds) {
+                        // If particle goes outside, reset to top
+                        if (this.y < 10) {
+                            this.y = 10;
+                            this.vy = 0;
+                        } else if (this.y > H - 10) {
+                            this.y = H - 10;
+                            this.vy = 0;
+                        }
+                        return;
+                    }
+
+                    // Constrain to chamber walls
+                    const padding = this.size;
+                    if (this.x < bounds.left + padding) {
+                        this.x = bounds.left + padding;
+                        this.vx = Math.abs(this.vx) * 0.3;
+                    }
+                    if (this.x > bounds.right - padding) {
+                        this.x = bounds.right - padding;
+                        this.vx = -Math.abs(this.vx) * 0.3;
+                    }
+
+                    // Neck collision - slow down particles in neck
+                    if (bounds.isNeck) {
+                        this.vy *= 0.9;
+                        if (this.vy < 0.1) this.vy = 0.1;
+                    }
+
+                    // Prevent bottom particles from going back up
+                    if (this.isBottom && this.y < getNeckBottom()) {
+                        this.y = getNeckBottom() + 1;
+                        this.vy = 0;
+                        this.vx *= 0.5;
+                    }
+
+                    // Check if particle is falling through neck
+                    if (!this.isBottom && this.y > getNeckTop() && this.y < getNeckBottom()) {
+                        // Particle is in neck, check if it reaches bottom
+                        if (this.y > getNeckBottom() - 5) {
+                            // Move to bottom chamber
+                            this.isBottom = true;
+                            this.isFalling = false;
+                            // Randomize position in bottom
+                            const bottomBounds = getChamberBounds(this.y);
+                            if (bottomBounds) {
+                                this.x = (bottomBounds.left + bottomBounds.right) / 2 +
+                                    (Math.random() - 0.5) * (bottomBounds.right - bottomBounds.left - 10);
+                                this.y = getNeckBottom() + 5 + Math.random() * 5;
+                            }
+                        }
+                    }
+
+                    // Prevent particles from floating above neck in bottom
+                    if (this.isBottom && this.y < getNeckBottom()) {
+                        this.y = getNeckBottom() + 1;
+                        this.vy = 0;
+                    }
+                }
+
+                draw(ctx) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    // Add slight highlight
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 2;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            // ============================================
+            // INIT PARTICLES
+            // ============================================
+            function initParticles() {
+                particles = [];
+                bottomParticles = [];
+
+                // Fill top chamber with sand
+                const topCenterX = W / 2;
+                const topStartY = 15;
+                const topEndY = getNeckTop() - 5;
+
+                const numParticles = CONFIG.maxParticles;
+
+                for (let i = 0; i < numParticles; i++) {
+                    let x, y;
+                    let attempts = 0;
+                    do {
+                        const progress = Math.random();
+                        y = topStartY + progress * (topEndY - topStartY);
+                        const bounds = getChamberBounds(y);
+                        if (bounds) {
+                            const margin = 4;
+                            x = bounds.left + margin + Math.random() * (bounds.right - bounds.left - margin * 2);
+                        } else {
+                            x = topCenterX + (Math.random() - 0.5) * 30;
+                        }
+                        attempts++;
+                    } while (attempts < 50 && !isInsideHourglass(x, y));
+
+                    const particle = new Particle(x, y, false);
+                    // Randomize initial position in sand pile
+                    particle.vy = Math.random() * 0.1;
+                    particle.vx = (Math.random() - 0.5) * 0.1;
+                    particles.push(particle);
+                }
+            }
+
+            // ============================================
+            // SPAWN NEW PARTICLES FROM TOP
+            // ============================================
+            function spawnParticle() {
+                if (particles.length >= CONFIG.maxParticles) return;
+
+                const centerX = W / 2;
+                const topY = 12 + Math.random() * 5;
+                const bounds = getChamberBounds(topY);
+                let x;
+                if (bounds) {
+                    const margin = 4;
+                    x = bounds.left + margin + Math.random() * (bounds.right - bounds.left - margin * 2);
+                } else {
+                    x = centerX + (Math.random() - 0.5) * 20;
+                }
+
+                const particle = new Particle(x, topY, false);
+                particle.vy = Math.random() * 0.2;
+                particle.vx = (Math.random() - 0.5) * 0.2;
+                particles.push(particle);
+            }
+
+            // ============================================
+            // REMOVE PARTICLES FROM BOTTOM (overflow)
+            // ============================================
+            function removeBottomParticles() {
+                const maxBottom = CONFIG.maxParticles * 0.4;
+                const bottomParticles = particles.filter(p => p.isBottom);
+                if (bottomParticles.length > maxBottom) {
+                    // Remove oldest bottom particles
+                    const toRemove = bottomParticles.length - maxBottom;
+                    let removed = 0;
+                    for (let i = particles.length - 1; i >= 0 && removed < toRemove; i--) {
+                        if (particles[i].isBottom) {
+                            particles.splice(i, 1);
+                            removed++;
+                        }
+                    }
+                }
+            }
+
+            // ============================================
+            // DRAW HOURGLASS
+            // ============================================
+            function drawHourglass() {
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw glass body
+                ctx.save();
+
+                // Outer glow
+                const gradient = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, 150);
+                gradient.addColorStop(0, 'rgba(200, 180, 160, 0.05)');
+                gradient.addColorStop(1, 'rgba(200, 180, 160, 0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+
+                // Glass outline - hourglass shape
+                ctx.beginPath();
+                const topY = 10;
+                const bottomY = H - 10;
+                const centerX = W / 2;
+
+                // Left side - top chamber
+                ctx.moveTo(centerX - CONFIG.topWidth / 2, topY);
+                ctx.lineTo(centerX - CONFIG.topWidth / 2, topY + CONFIG.chamberHeight);
+                // Left side - neck
+                ctx.lineTo(centerX - CONFIG.neckWidth / 2, topY + CONFIG.chamberHeight);
+                ctx.lineTo(centerX - CONFIG.neckWidth / 2, topY + CONFIG.chamberHeight + CONFIG.neckHeight);
+                // Left side - bottom chamber
+                ctx.lineTo(centerX - CONFIG.bottomWidth / 2, topY + CONFIG.chamberHeight + CONFIG.neckHeight);
+                ctx.lineTo(centerX - CONFIG.bottomWidth / 2, bottomY);
+
+                // Right side - bottom chamber
+                ctx.lineTo(centerX + CONFIG.bottomWidth / 2, bottomY);
+                ctx.lineTo(centerX + CONFIG.bottomWidth / 2, topY + CONFIG.chamberHeight + CONFIG.neckHeight);
+                // Right side - neck
+                ctx.lineTo(centerX + CONFIG.neckWidth / 2, topY + CONFIG.chamberHeight + CONFIG.neckHeight);
+                ctx.lineTo(centerX + CONFIG.neckWidth / 2, topY + CONFIG.chamberHeight);
+                // Right side - top chamber
+                ctx.lineTo(centerX + CONFIG.topWidth / 2, topY + CONFIG.chamberHeight);
+                ctx.lineTo(centerX + CONFIG.topWidth / 2, topY);
+
+                ctx.closePath();
+
+                // Glass fill (translucent)
+                ctx.fillStyle = 'rgba(255, 252, 245, 0.08)';
+                ctx.fill();
+
+                // Glass stroke
+                ctx.strokeStyle = 'rgba(180, 160, 140, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Glass highlight
+                ctx.beginPath();
+                ctx.moveTo(centerX - CONFIG.topWidth / 2 + 8, topY + 20);
+                ctx.quadraticCurveTo(
+                    centerX - CONFIG.topWidth / 2 + 2,
+                    topY + CONFIG.chamberHeight / 2,
+                    centerX - CONFIG.topWidth / 2 + 8,
+                    topY + CONFIG.chamberHeight - 10
+                );
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Highlight on right
+                ctx.beginPath();
+                ctx.moveTo(centerX + CONFIG.topWidth / 2 - 8, topY + 30);
+                ctx.quadraticCurveTo(
+                    centerX + CONFIG.topWidth / 2 - 2,
+                    topY + CONFIG.chamberHeight / 2,
+                    centerX + CONFIG.topWidth / 2 - 8,
+                    topY + CONFIG.chamberHeight - 20
+                );
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Neck ring
+                ctx.beginPath();
+                ctx.ellipse(centerX, getNeckTop(), CONFIG.neckWidth / 2 + 4, 2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(160, 140, 120, 0.2)';
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(centerX, getNeckBottom(), CONFIG.neckWidth / 2 + 4, 2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(160, 140, 120, 0.2)';
+                ctx.fill();
+
+                ctx.restore();
+
+                // Draw particles
+                particles.forEach(p => p.draw(ctx));
+
+                // Draw sand count in bottom
+                const bottomCount = particles.filter(p => p.isBottom).length;
+                const topCount = particles.filter(p => !p.isBottom).length;
+
+                // Update sand count display
+                sandCountDisplay.textContent = `⬆ ${topCount} ⬇ ${bottomCount}`;
+
+                // Draw sand level indicators
+                ctx.save();
+                ctx.fillStyle = 'rgba(180, 160, 140, 0.6)';
+                ctx.font = '10px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${topCount}`, W / 2, 8);
+                ctx.fillText(`${bottomCount}`, W / 2, H - 4);
+                ctx.restore();
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate(timestamp) {
+                const delta = lastTimestamp ? (timestamp - lastTimestamp) / 16 : 1;
+                lastTimestamp = timestamp;
+
+                if (!CONFIG.isPaused && CONFIG.isRunning) {
+                    // Speed multiplier
+                    const speed = CONFIG.speeds[CONFIG.currentSpeedIndex] || 1;
+
+                    // Spawn particles based on flow rate
+                    const spawnCount = Math.floor(CONFIG.flowRate * speed * delta * 0.5);
+                    for (let i = 0; i < Math.min(spawnCount, 5); i++) {
+                        if (particles.filter(p => !p.isBottom).length < CONFIG.maxParticles * 0.7) {
+                            spawnParticle();
+                        }
+                    }
+
+                    // Update particles
+                    const updatesPerFrame = Math.floor(3 * speed);
+                    for (let i = 0; i < updatesPerFrame; i++) {
+                        particles.forEach(p => p.update());
+                    }
+
+                    // Remove overflow bottom particles
+                    removeBottomParticles();
+
+                    frameCount++;
+                }
+
+                // Draw everything
+                drawHourglass();
+
+                // Update status
+                if (CONFIG.isPaused) {
+                    statusText.textContent = '⏸️ Paused';
+                } else {
+                    statusText.textContent = '⏳ Running';
+                }
+
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            resetBtn.addEventListener('click', () => {
+                // Reset animation
+                particles = [];
+                initParticles();
+                CONFIG.isPaused = false;
+                CONFIG.isRunning = true;
+                pauseBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                    </svg>
+                `;
+                statusText.textContent = '⏳ Running';
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                CONFIG.isPaused = !CONFIG.isPaused;
+                if (CONFIG.isPaused) {
+                    pauseBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        </svg>
+                    `;
+                    statusText.textContent = '⏸️ Paused';
+                } else {
+                    pauseBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                        </svg>
+                    `;
+                    statusText.textContent = '⏳ Running';
+                }
+            });
+
+            speedBtn.addEventListener('click', () => {
+                CONFIG.currentSpeedIndex = (CONFIG.currentSpeedIndex + 1) % CONFIG.speeds.length;
+                const speed = CONFIG.speeds[CONFIG.currentSpeedIndex];
+                const speedLabels = ['0.5x', '1x', '2x', '3x'];
+                speedBtn.innerHTML = `
+                    <span style="font-size:10px;font-weight:bold;color:currentColor;">${speedLabels[CONFIG.currentSpeedIndex]}</span>
+                `;
+                statusText.textContent = `⚡ ${speedLabels[CONFIG.currentSpeedIndex]}`;
+                setTimeout(() => {
+                    if (!CONFIG.isPaused) {
+                        statusText.textContent = '⏳ Running';
+                    } else {
+                        statusText.textContent = '⏸️ Paused';
+                    }
+                }, 1500);
+            });
+
+            // ============================================
+            // KEYBOARD CONTROLS (accessibility)
+            // ============================================
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    pauseBtn.click();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    speedBtn.click();
+                }
+            });
+
+            // ============================================
+            // RESIZE HANDLER
+            // ============================================
+            function handleResize() {
+                // Canvas is fixed size, but we can scale via CSS if needed
+                // For now, just redraw
+            }
+
+            window.addEventListener('resize', handleResize);
+
+            // ============================================
+            // INIT
+            // ============================================
+            initParticles();
+            statusText.textContent = '⏳ Running';
+            speedBtn.innerHTML = `
+                <span style="font-size:10px;font-weight:bold;color:currentColor;">1x</span>
+            `;
+
+            // Start animation
+            animate(0);
+
+            // ============================================
+            // EXPOSE API
+            // ============================================
+            window.Hourglass = {
+                reset: () => resetBtn.click(),
+                pause: () => { if (!CONFIG.isPaused) pauseBtn.click(); },
+                play: () => { if (CONFIG.isPaused) pauseBtn.click(); },
+                toggle: () => pauseBtn.click(),
+                setSpeed: (index) => {
+                    if (index >= 0 && index < CONFIG.speeds.length) {
+                        CONFIG.currentSpeedIndex = index;
+                        const speedLabels = ['0.5x', '1x', '2x', '3x'];
+                        speedBtn.innerHTML = `
+                            <span style="font-size:10px;font-weight:bold;color:currentColor;">${speedLabels[index]}</span>
+                        `;
+                    }
+                },
+                getParticleCount: () => ({
+                    top: particles.filter(p => !p.isBottom).length,
+                    bottom: particles.filter(p => p.isBottom).length,
+                    total: particles.length
+                })
+            };
+
+            console.log('✅ Hourglass Animation initialized!');
+            console.log('📖 Controls: Space (pause), R (reset), S (speed)');
+            console.log('📖 API: window.Hourglass');
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,39 +1,39 @@
-# Skeleton Loading
+# Skeleton Loading Animation
 
-## What does this do?
+This submission implements a skeleton loading placeholder component with shimmer animation for content loading states (Issue **#14157**).
 
-Displays animated placeholder blocks while content is loading — two variants: a moving shimmer highlight (`skeleton-shimmer`) and a gentle opacity pulse (`skeleton-pulse`).
+## What It Does
 
----
+Provides skeleton loading placeholders using a CSS shimmer animation. When content is loading, skeleton shapes smoothly animate with a moving gradient to indicate progress. Once loaded, the skeletons transition to real content.
 
-## How is it used?
+## Variants
 
-Add `.skeleton` to any block element to give it the base placeholder style, then add a variant class:
+| Variant | Description |
+|---------|-------------|
+| `skeleton` | Base class — text line placeholder |
+| `skeleton-circle` | Circular placeholder (avatars, icons) |
+| `skeleton-card` | Card-shaped placeholder |
+| `.line` | Text line with variants `.line-sm` (50%), `.line-xs` (35%), `.line-lg` (18px height) |
+| `.image-block` | Rectangular image placeholder |
+
+## Usage
 
 ```html
-<!-- Shimmer variant -->
-<div class="skeleton skeleton-image skeleton-shimmer"></div>
-<div class="skeleton skeleton-line skeleton-line--wide skeleton-shimmer"></div>
-
-<!-- Pulse variant -->
-<div class="skeleton skeleton-avatar skeleton-pulse"></div>
-<div class="skeleton skeleton-line skeleton-line--medium skeleton-pulse"></div>
+<div class="skeleton" style="width: 100%; height: 14px;"></div>
+<div class="skeleton skeleton-circle" style="width: 56px; height: 56px;"></div>
 ```
 
-Available shape helpers:
+## Files
 
-| Class | Description |
-|---|---|
-| `skeleton-image` | Full-width 160px image band |
-| `skeleton-avatar` | 40px circular avatar |
-| `skeleton-line` | Short text-line bar |
-| `skeleton-line--full` | 100% width |
-| `skeleton-line--wide` | 75% width |
-| `skeleton-line--medium` | 55% width |
-| `skeleton-line--narrow` | 35% width |
+- `demo.html` — Interactive showcase with profile, article, stats & list skeleton cards
+- `style.css` — Shimmer keyframes, skeleton classes, layout, real content styles
+- `README.md` — This documentation
 
----
+## Features
 
-## Why is it useful?
-
-Skeleton screens reduce perceived load time by showing the shape of content before data arrives. This implementation is pure CSS — no JavaScript, no dependencies. It fits EaseMotion CSS's animation-first philosophy: a keyframe animation (`skeleton-shimmer` or `skeleton-pulse`) does all the work, and the effect is composable on any element.
+- Smooth shimmer animation using `background-position`
+- Four skeleton contexts: profile, article, stats dashboard, file list
+- Interactive "Simulate Loading" / "Reset" toggle
+- `prefers-reduced-motion` support disables animation
+- Responsive grid layout
+- Dark theme design

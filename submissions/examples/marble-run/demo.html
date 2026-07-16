@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Marble Run</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Marble Run</h1>
+        <p class="subtitle">Marbles rolling through interactive tracks</p>
+
+        <div class="marble-wrapper">
+            <canvas id="marbleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="dropBtn">🔮 Drop Marble</button>
+                <button id="countBtn">Count: 10</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click to drop marbles</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('marbleCanvas');
+        const ctx = canvas.getContext('2d');
+        const dropBtn = document.getElementById('dropBtn');
+        const countBtn = document.getElementById('countBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let marbles = [];
+        let tracks = [];
+        let numMarbles = 10;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHovering = false;
+        let isDragging = false;
+        let dragTrack = null;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [5, 10, 15, 20, 30, 50];
+
+        // ===== TRACK CLASS =====
+        class Track {
+            constructor(x1, y1, x2, y2) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.type = 'straight';
+                this.radius = 20;
+                this.angle = Math.atan2(y2 - y1, x2 - x1);
+                this.length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                this.isLoop = false;
+                this.loopRadius = 30;
+                this.points = [];
+                this.generatePoints();
+            }
+
+            generatePoints() {
+                this.points = [];
+                const steps = 20;
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const x = this.x1 + (this.x2 - this.x1) * t;
+                    const y = this.y1 + (this.y2 - this.y1) * t;
+                    this.points.push({ x, y });
+                }
+            }
+
+            getPosition(t) {
+                const idx = Math.floor(t * (this.points.length - 1));
+                const idx2 = Math.min(idx + 1, this.points.length - 1);
+                const frac = (t * (this.points.length - 1)) % 1;
+                
+                const p1 = this.points[idx];
+                const p2 = this.points[idx2];
+                
+                return {
+                    x: p1.x + (p2.x - p1.x) * frac,
+                    y: p1.y + (p2.y - p1.y) * frac
+                };
+            }
+
+            getAngle(t) {
+                const idx = Math.floor(t * (this.points.length - 1));
+                const idx2 = Math.min(idx + 1, this.points.length - 1);
+                const p1 = this.points[idx];
+                const p2 = this.points[idx2];
+                return Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            }
+
+            draw(ctx) {
+                // Track glow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(100, 100, 150, 0.1)';
+
+                // Track path
+                ctx.beginPath();
+                for (let i = 0; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    if (i === 0) ctx.moveTo(p.x, p.y);
+                    else ctx.lineTo(p.x, p.y);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                // Track inner glow
+                ctx.beginPath();
+                for (let i = 0; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    if (i === 0) ctx.moveTo(p.x, p.y);
+                    else ctx.lineTo(p.x, p.y);
+                }
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 8;
+                ctx.stroke();
+
+                ctx.shadowBlur = 0;
+
+                // Start and end markers
+                ctx.fillStyle = 'rgba(100, 255, 100, 0.2)';
+                ctx.beginPath();
+                ctx.arc(this.x1, this.y1, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 100, 100, 0.2)';
+                ctx.beginPath();
+                ctx.arc(this.x2, this.y2, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ===== MARBLE CLASS =====
+        class Marble {
+            constructor(color) {
+                this.color = color || colorPalettes[colorMode].fn(Math.random());
+                this.radius = 6 + Math.random() * 4;
+                this.trackIndex = 0;
+                this.progress = 0;
+                this.speed = 0.002 + Math.random() * 0.003;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.trail = [];
+                this.maxTrail = 15 + Math.floor(Math.random() * 10);
+                this.phase = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                this.rotation = 0;
+                this.alive = true;
+                this.bounce = 0.3 + Math.random() * 0.3;
+                
+                // Random starting position
+                this.trackIndex = Math.floor(Math.random() * tracks.length);
+                this.progress = Math.random() * 0.5;
+                this.updatePosition();
+            }
+
+            update() {
+                if (!this.alive) return;
+
+                // Move along track
+                this.progress += this.speed;
+                
+                // Loop track
+                if (this.progress >= 1) {
+                    this.trackIndex = (this.trackIndex + 1) % tracks.length;
+                    this.progress = 0;
+                }
+
+                this.updatePosition();
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.97;
+                }
+
+                this.phase += 0.02;
+                this.rotation += this.rotSpeed;
+
+                // Random speed variation
+                this.speed += (Math.random() - 0.5) * 0.0002;
+                this.speed = Math.max(0.001, Math.min(0.008, this.speed));
+            }
+
+            updatePosition() {
+                if (this.trackIndex < tracks.length) {
+                    const track = tracks[this.trackIndex];
+                    const pos = track.getPosition(this.progress);
+                    this.x = pos.x;
+                    this.y = pos.y;
+                    this.angle = track.getAngle(this.progress);
+                }
+            }
+
+            draw(ctx) {
+                if (!this.alive) return;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.15;
+                    const size = this.radius * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = this.radius * 3 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(0.5, this.color + '20');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.6;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Marble body
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad2 = ctx.createRadialGradient(
+                    -this.radius * 0.2,
+                    -this.radius * 0.3,
+                    0,
+                    0,
+                    0,
+                    this.radius
+                );
+                grad2.addColorStop(0, this.color);
+                grad2.addColorStop(0.5, this.color);
+                grad2.addColorStop(1, this.color + '80');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.2, -this.radius * 0.3, this.radius * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // Secondary highlight
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.15, -this.radius * 0.45, this.radius * 0.12, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+
+                ctx.restore();
+
+                // Track following dot
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fill();
+            }
+
+            isDead() {
+                return !this.alive;
+            }
+        }
+
+        // ===== INIT TRACKS =====
+        function initTracks() {
+            const w = canvas.width;
+            const h = canvas.height;
+            tracks = [];
+            
+            // Create a winding track
+            const points = [
+                { x: w * 0.1, y: h * 0.1 },
+                { x: w * 0.3, y: h * 0.15 },
+                { x: w * 0.5, y: h * 0.1 },
+                { x: w * 0.7, y: h * 0.2 },
+                { x: w * 0.85, y: h * 0.3 },
+                { x: w * 0.8, y: h * 0.5 },
+                { x: w * 0.6, y: h * 0.6 },
+                { x: w * 0.4, y: h * 0.55 },
+                { x: w * 0.2, y: h * 0.6 },
+                { x: w * 0.1, y: h * 0.75 },
+                { x: w * 0.3, y: h * 0.8 },
+                { x: w * 0.5, y: h * 0.75 },
+                { x: w * 0.7, y: h * 0.8 },
+                { x: w * 0.85, y: h * 0.7 },
+            ];
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i];
+                const p2 = points[i + 1];
+                tracks.push(new Track(p1.x, p1.y, p2.x, p2.y));
+            }
+
+            // Connect end to start for loop
+            const last = points[points.length - 1];
+            const first = points[0];
+            tracks.push(new Track(last.x, last.y, first.x, first.y));
+        }
+        initTracks();
+
+        // ===== INIT MARBLES =====
+        function initMarbles(count) {
+            numMarbles = count;
+            marbles = [];
+            for (let i = 0; i < count; i++) {
+                const colorFn = colorPalettes[colorMode].fn;
+                const marble = new Marble(colorFn(i / count));
+                marble.trackIndex = Math.floor(Math.random() * tracks.length);
+                marble.progress = Math.random() * 0.8;
+                marble.speed = 0.002 + Math.random() * 0.004;
+                marble.updatePosition();
+                marbles.push(marble);
+            }
+        }
+        initMarbles(numMarbles);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== DROP MARBLE =====
+        function dropMarble() {
+            const colorFn = colorPalettes[colorMode].fn;
+            const marble = new Marble(colorFn(Math.random()));
+            marble.trackIndex = 0;
+            marble.progress = 0.05;
+            marble.speed = 0.002 + Math.random() * 0.004;
+            marble.updatePosition();
+            marbles.push(marble);
+            statusText.textContent = `🔮 Dropped! (${marbles.length} marbles)`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${marbles.length} marbles rolling`;
+            }, 1000);
+        }
+
+        // ===== RESET =====
+        function resetMarbleRun() {
+            initMarbles(numMarbles);
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${marbles.length} marbles rolling`;
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update marbles
+            for (const marble of marbles) {
+                marble.update();
+            }
+
+            // Remove dead marbles
+            marbles = marbles.filter(m => m.alive);
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw tracks
+            for (const track of tracks) {
+                track.draw(ctx);
+            }
+
+            // Draw marbles
+            for (const marble of marbles) {
+                marble.draw(ctx);
+            }
+
+            // Drop zone indicator
+            if (tracks.length > 0) {
+                const start = tracks[0];
+                ctx.fillStyle = 'rgba(100, 255, 100, 0.05)';
+                ctx.beginPath();
+                ctx.arc(start.x1, start.y1, 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(100, 255, 100, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.arc(start.x1, start.y1, 20, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${marbles.length} marbles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Canvas click
+        canvas.addEventListener('click', (e) => {
+            dropMarble();
+        });
+
+        // Mouse move for hover
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            dropMarble();
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Drop
+        dropBtn.addEventListener('click', dropMarble);
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numMarbles);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Count: ${newCount}`;
+            numMarbles = newCount;
+            initMarbles(newCount);
+            statusText.textContent = `📐 ${newCount} marbles`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${marbles.length} marbles rolling`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            // Update marble colors
+            for (const marble of marbles) {
+                const colorFn = colorPalettes[colorMode].fn;
+                marble.color = colorFn(Math.random());
+            }
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${marbles.length} marbles rolling`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetMarbleRun);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                dropBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                dropBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initTracks();
+            initMarbles(numMarbles);
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Count: ${numMarbles}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = `🌀 ${marbles.length} marbles rolling`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Marble Run loaded!');
+        console.log('💡 D - Drop marble');
+        console.log('💡 C - Change count');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Drop marble');
+        console.log('💡 Click canvas - Drop marble');
+    </script>
+</body>
+</html>

@@ -1,17 +1,30 @@
-# Animation Playground
+# Interactive Animation Playground
 
-## Overview
+A live animation playground where developers can experiment with
+EaseMotion CSS classes in real time — select animation, duration,
+delay, timing, iteration, and direction, then copy the generated class.
 
-Interactive playground for testing EaseMotion animation utilities.
+## Structure
+animation-playground/
 
+├── demo.html
+
+├── style.css
+
+├── script.js
+
+└── README.md
 ## Features
+- 15 animation presets across 6 categories
+- Live preview with instant DOM updates
+- Duration, delay, timing, iteration, direction controls
+- Generated class string displayed live
+- One-click copy to clipboard
+- Replay and Reset buttons
+- Fully responsive
+- Respects `prefers-reduced-motion`
 
-- Animation selection
-- Duration controls
-- Restart animation button
-- Copy generated class names
-- Responsive layout
-
-## Usage
-
-Open `demo.html` in a browser and experiment with different animation settings.
+## Use Cases
+- Learning EaseMotion CSS animations
+- Prototyping animation combinations
+- Developer playground / documentation tool

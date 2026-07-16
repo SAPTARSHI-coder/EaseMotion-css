@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 Sliding Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🧩 Sliding Puzzle</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Moves</span>
+        <span class="stat-value" id="movesDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">⏱️ Time</span>
+        <span class="stat-value" id="timeDisplay">0</span>
+        <span class="stat-unit">s</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">—</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="shuffleBtn">🔀 Shuffle</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="solveBtn">✨ Solve</button>
+    </div>
+
+    <div class="game-status" id="gameStatus">🧩 Click Shuffle to start!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const movesDisplay = document.getElementById('movesDisplay');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const shuffleBtn = document.getElementById('shuffleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const solveBtn = document.getElementById('solveBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const SIZE = 4;
+      const TOTAL_TILES = SIZE * SIZE;
+      const EMPTY = SIZE * SIZE - 1;
+
+      // ---------- Game State ----------
+      let tiles = [];
+      let emptyIndex = EMPTY;
+      let moves = 0;
+      let timer = 0;
+      let timerInterval = null;
+      let gameStarted = false;
+      let gameComplete = false;
+      let isAnimating = false;
+      let bestTime = parseInt(localStorage.getItem('slidingPuzzleBest')) || null;
+
+      // ---------- Canvas Setup ----------
+      let canvasSize = 400;
+      let tileSize = 0;
+      let padding = 0;
+
+      function setupCanvas() {
+        const wrapper = canvas.parentElement;
+        const maxWidth = wrapper.clientWidth || 400;
+        canvasSize = Math.min(maxWidth - 16, 500);
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        tileSize = canvasSize / SIZE;
+        padding = tileSize * 0.05;
+        draw();
+      }
+
+      // ---------- Best Time ----------
+      function updateBestDisplay() {
+        if (bestTime !== null) {
+          bestDisplay.textContent = bestTime + 's';
+        } else {
+          bestDisplay.textContent = '—';
+        }
+      }
+
+      function saveBestTime() {
+        if (bestTime === null || timer < bestTime) {
+          bestTime = timer;
+          localStorage.setItem('slidingPuzzleBest', bestTime.toString());
+          updateBestDisplay();
+        }
+      }
+
+      // ---------- Puzzle Functions ----------
+      function createSolvedPuzzle() {
+        tiles = [];
+        for (let i = 0; i < TOTAL_TILES; i++) {
+          tiles.push(i + 1);
+        }
+        tiles[TOTAL_TILES - 1] = 0; // Empty space
+        emptyIndex = TOTAL_TILES - 1;
+      }
+
+      function getRowCol(index) {
+        return { row: Math.floor(index / SIZE), col: index % SIZE };
+      }
+
+      function getIndex(row, col) {
+        return row * SIZE + col;
+      }
+
+      function getNeighbors(index) {
+        const { row, col } = getRowCol(index);
+        const neighbors = [];
+        if (row > 0) neighbors.push(index - SIZE);
+        if (row < SIZE - 1) neighbors.push(index + SIZE);
+        if (col > 0) neighbors.push(index - 1);
+        if (col < SIZE - 1) neighbors.push(index + 1);
+        return neighbors;
+      }
+
+      function isSolvable(puzzle) {
+        let inversions = 0;
+        const flat = puzzle.filter(t => t !== 0);
+        for (let i = 0; i < flat.length; i++) {
+          for (let j = i + 1; j < flat.length; j++) {
+            if (flat[i] > flat[j]) inversions++;
+          }
+        }
+        const emptyRow = Math.floor(puzzle.indexOf(0) / SIZE);
+        // For even grid size, solvable if inversions + emptyRow is odd
+        return (inversions + emptyRow) % 2 === 1;
+      }
+
+      function shufflePuzzle() {
+        // Reset to solved
+        createSolvedPuzzle();
+        emptyIndex = TOTAL_TILES - 1;
+        
+        // Perform random moves to shuffle
+        const numMoves = 100 + Math.floor(Math.random() * 100);
+        let lastMove = -1;
+        
+        for (let i = 0; i < numMoves; i++) {
+          const neighbors = getNeighbors(emptyIndex);
+          // Filter out the last move to avoid undoing
+          const available = neighbors.filter(n => n !== lastMove);
+          const randomNeighbor = available[Math.floor(Math.random() * available.length)];
+          lastMove = emptyIndex;
+          // Swap
+          tiles[emptyIndex] = tiles[randomNeighbor];
+          tiles[randomNeighbor] = 0;
+          emptyIndex = randomNeighbor;
+        }
+
+        // Ensure puzzle is solvable
+        if (!isSolvable(tiles)) {
+          // Swap two tiles (except empty)
+          const idx1 = Math.floor(Math.random() * (TOTAL_TILES - 1));
+          let idx2 = Math.floor(Math.random() * (TOTAL_TILES - 1));
+          while (idx2 === idx1) {
+            idx2 = Math.floor(Math.random() * (TOTAL_TILES - 1));
+          }
+          // Make sure we don't swap with empty
+          const swap1 = tiles[idx1] === 0 ? idx2 : idx1;
+          const swap2 = tiles[idx2] === 0 ? idx1 : idx2;
+          [tiles[swap1], tiles[swap2]] = [tiles[swap2], tiles[swap1]];
+          // Update empty index if needed
+          if (tiles[swap1] === 0) emptyIndex = swap1;
+          else if (tiles[swap2] === 0) emptyIndex = swap2;
+        }
+
+        moves = 0;
+        timer = 0;
+        gameStarted = true;
+        gameComplete = false;
+        stopTimer();
+        updateMovesDisplay();
+        updateTimeDisplay();
+        setGameStatus('🧩 Solve the puzzle!', true);
+        draw();
+      }
+
+      // ---------- Move Logic ----------
+      function makeMove(index) {
+        if (isAnimating || gameComplete) return;
+        if (!gameStarted) {
+          setGameStatus('👆 Click Shuffle to start!', true);
+          return;
+        }
+
+        const neighbors = getNeighbors(emptyIndex);
+        if (!neighbors.includes(index)) return;
+
+        // Start timer on first move
+        if (moves === 0) {
+          startTimer();
+        }
+
+        // Swap tiles
+        tiles[emptyIndex] = tiles[index];
+        tiles[index] = 0;
+        emptyIndex = index;
+        moves++;
+        updateMovesDisplay();
+
+        draw();
+
+        // Check win
+        checkWin();
+      }
+
+      function checkWin() {
+        for (let i = 0; i < TOTAL_TILES - 1; i++) {
+          if (tiles[i] !== i + 1) return;
+        }
+        if (tiles[TOTAL_TILES - 1] === 0) {
+          // Solved!
+          gameComplete = true;
+          stopTimer();
+          saveBestTime();
+          setGameStatus(`🎉 Solved! ${moves} moves, ${timer}s 🏆`, true);
+          draw();
+        }
+      }
+
+      // ---------- Timer ----------
+      function startTimer() {
+        if (timerInterval) return;
+        timer = 0;
+        timerInterval = setInterval(() => {
+          timer++;
+          updateTimeDisplay();
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      // ---------- Display Updates ----------
+      function updateMovesDisplay() {
+        movesDisplay.textContent = moves;
+      }
+
+      function updateTimeDisplay() {
+        timeDisplay.textContent = timer;
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+        // Background
+        const grad = ctx.createRadialGradient(
+          canvasSize/2, canvasSize/2, 0,
+          canvasSize/2, canvasSize/2, canvasSize/2
+        );
+        grad.addColorStop(0, '#1a2a4a');
+        grad.addColorStop(1, '#0a0e1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+        // Grid background
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        const spacing = tileSize;
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            ctx.fillRect(c * spacing + 1, r * spacing + 1, spacing - 2, spacing - 2);
+          }
+        }
+
+        // Draw tiles
+        for (let i = 0; i < TOTAL_TILES; i++) {
+          if (tiles[i] === 0) continue;
+          
+          const { row, col } = getRowCol(i);
+          const value = tiles[i];
+          const x = col * tileSize + padding;
+          const y = row * tileSize + padding;
+          const size = tileSize - padding * 2;
+
+          // Shadow
+          ctx.shadowColor = 'rgba(0,0,0,0.4)';
+          ctx.shadowBlur = 10;
+          ctx.shadowOffsetX = 3;
+          ctx.shadowOffsetY = 3;
+
+          // Tile body with gradient
+          const grad2 = ctx.createLinearGradient(x, y, x + size, y + size);
+          const hue = (value * 25 + 180) % 360;
+          grad2.addColorStop(0, `hsl(${hue}, 80%, 60%)`);
+          grad2.addColorStop(0.5, `hsl(${hue}, 80%, 50%)`);
+          grad2.addColorStop(1, `hsl(${hue}, 80%, 40%)`);
+          ctx.fillStyle = grad2;
+          
+          // Rounded rectangle
+          const radius = size * 0.12;
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y);
+          ctx.lineTo(x + size - radius, y);
+          ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
+          ctx.lineTo(x + size, y + size - radius);
+          ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
+          ctx.lineTo(x + radius, y + size);
+          ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
+          ctx.lineTo(x, y + radius);
+          ctx.quadraticCurveTo(x, y, x + radius, y);
+          ctx.closePath();
+          ctx.fill();
+
+          // Glossy highlight
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.fillStyle = 'rgba(255,255,255,0.15)';
+          ctx.beginPath();
+          ctx.moveTo(x + radius, y + 2);
+          ctx.lineTo(x + size - radius, y + 2);
+          ctx.quadraticCurveTo(x + size - 2, y + 2, x + size - 2, y + radius);
+          ctx.lineTo(x + size - 2, y + size * 0.4);
+          ctx.lineTo(x + 2, y + size * 0.4);
+          ctx.lineTo(x + 2, y + radius);
+          ctx.quadraticCurveTo(x + 2, y + 2, x + radius, y + 2);
+          ctx.closePath();
+          ctx.fill();
+
+          // Number
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.font = `bold ${size * 0.45}px "Segoe UI", sans-serif`;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(0,0,0,0.3)';
+          ctx.shadowBlur = 5;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          ctx.fillText(value, x + size/2, y + size/2 + 1);
+          ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Number shadow (for depth)
+          ctx.fillStyle = 'rgba(0,0,0,0.15)';
+          ctx.fillText(value, x + size/2 + 1, y + size/2 + 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(value, x + size/2, y + size/2 + 1);
+
+          // Border
+          ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, size, size);
+        }
+
+        // Empty space indicator
+        const { row: emptyRow, col: emptyCol } = getRowCol(emptyIndex);
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        ctx.fillRect(
+          emptyCol * tileSize + 1,
+          emptyRow * tileSize + 1,
+          tileSize - 2,
+          tileSize - 2
+        );
+
+        // Win overlay
+        if (gameComplete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, canvasSize, canvasSize);
+          ctx.font = `bold ${canvasSize * 0.12}px "Segoe UI", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(0,0,0,0.5)';
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = '#81c784';
+          ctx.fillText('🎉', canvasSize/2, canvasSize/2);
+          ctx.shadowBlur = 0;
+          ctx.font = `bold ${canvasSize * 0.06}px "Segoe UI", sans-serif`;
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Solved! ${moves} moves, ${timer}s`, canvasSize/2, canvasSize/2 + canvasSize * 0.12);
+        }
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+          e.preventDefault();
+          const { row, col } = getRowCol(emptyIndex);
+          let targetIndex = -1;
+          if (key === 'ArrowUp' && row < SIZE - 1) targetIndex = emptyIndex + SIZE;
+          if (key === 'ArrowDown' && row > 0) targetIndex = emptyIndex - SIZE;
+          if (key === 'ArrowLeft' && col < SIZE - 1) targetIndex = emptyIndex + 1;
+          if (key === 'ArrowRight' && col > 0) targetIndex = emptyIndex - 1;
+          if (targetIndex !== -1) makeMove(targetIndex);
+        }
+        if (key === 'r' || key === 'R') {
+          shufflePuzzle();
+        }
+        if (key === 's' || key === 'S') {
+          solvePuzzle();
+        }
+      });
+
+      // ---------- Canvas Click Handler ----------
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const col = Math.floor(x / tileSize);
+        const row = Math.floor(y / tileSize);
+        if (row >= 0 && row < SIZE && col >= 0 && col < SIZE) {
+          const index = getIndex(row, col);
+          makeMove(index);
+        }
+      });
+
+      // ---------- Touch Support ----------
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+        touchStartTime = Date.now();
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        const rect = canvas.getBoundingClientRect();
+        const scale = canvas.width / rect.width;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        
+        if (dist > 30) {
+          const { row, col } = getRowCol(emptyIndex);
+          let targetIndex = -1;
+          if (Math.abs(dx) > Math.abs(dy)) {
+            if (dx > 0 && col < SIZE - 1) targetIndex = emptyIndex + 1;
+            else if (dx < 0 && col > 0) targetIndex = emptyIndex - 1;
+          } else {
+            if (dy > 0 && row < SIZE - 1) targetIndex = emptyIndex + SIZE;
+            else if (dy < 0 && row > 0) targetIndex = emptyIndex - SIZE;
+          }
+          if (targetIndex !== -1) {
+            makeMove(targetIndex);
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+          }
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+
+      // ---------- Button Handlers ----------
+      shuffleBtn.addEventListener('click', shufflePuzzle);
+      resetBtn.addEventListener('click', () => {
+        createSolvedPuzzle();
+        emptyIndex = TOTAL_TILES - 1;
+        moves = 0;
+        timer = 0;
+        gameStarted = false;
+        gameComplete = false;
+        stopTimer();
+        updateMovesDisplay();
+        updateTimeDisplay();
+        setGameStatus('🧩 Puzzle reset. Click Shuffle to start!', true);
+        draw();
+      });
+
+      solveBtn.addEventListener('click', solvePuzzle);
+
+      // ---------- Solve Function ----------
+      function solvePuzzle() {
+        if (isAnimating) return;
+        if (gameComplete) {
+          setGameStatus('🎉 Already solved!', true);
+          return;
+        }
+
+        // Simple BFS solver (for small puzzles)
+        const startState = tiles.slice();
+        const startEmpty = emptyIndex;
+        
+        if (isSolvable(startState)) {
+          // Find solution using BFS
+          const solution = findSolution(startState, startEmpty);
+          if (solution) {
+            isAnimating = true;
+            setGameStatus('✨ Solving...', true);
+            let step = 0;
+            
+            function nextStep() {
+              if (step >= solution.length) {
+                isAnimating = false;
+                // Timer continues from when solve started
+                checkWin();
+                if (gameComplete) {
+                  setGameStatus(`🎉 Solved automatically!`, true);
+                }
+                return;
+              }
+              
+              const move = solution[step];
+              const neighbors = getNeighbors(emptyIndex);
+              if (neighbors.includes(move)) {
+                tiles[emptyIndex] = tiles[move];
+                tiles[move] = 0;
+                emptyIndex = move;
+                moves++;
+                updateMovesDisplay();
+                draw();
+                step++;
+                setTimeout(nextStep, 150);
+              } else {
+                // Fallback
+                isAnimating = false;
+                setGameStatus('⚠️ Solution error, try shuffling again', false);
+              }
+            }
+            
+            nextStep();
+          } else {
+            setGameStatus('⚠️ No solution found, try shuffling again', false);
+          }
+        } else {
+          setGameStatus('⚠️ Puzzle is not solvable, shuffling...', false);
+          shufflePuzzle();
+        }
+      }
+
+      // ---------- BFS Solver ----------
+      function findSolution(startState, startEmpty) {
+        const startKey = startState.join(',');
+        const queue = [{ state: startState, empty: startEmpty, path: [] }];
+        const visited = new Set([startKey]);
+        
+        // Limit search to prevent freezing
+        const maxStates = 20000;
+        let statesExplored = 0;
+        
+        while (queue.length > 0 && statesExplored < maxStates) {
+          const current = queue.shift();
+          statesExplored++;
+          
+          // Check if solved
+          let solved = true;
+          for (let i = 0; i < TOTAL_TILES - 1; i++) {
+            if (current.state[i] !== i + 1) { solved = false; break; }
+          }
+          if (solved && current.state[TOTAL_TILES - 1] === 0) {
+            return current.path;
+          }
+          
+          const neighbors = getNeighbors(current.empty);
+          for (const neighbor of neighbors) {
+            const newState = current.state.slice();
+            newState[current.empty] = newState[neighbor];
+            newState[neighbor] = 0;
+            const key = newState.join(',');
+            if (!visited.has(key)) {
+              visited.add(key);
+              const newPath = current.path.slice();
+              newPath.push(neighbor);
+              queue.push({ state: newState, empty: neighbor, path: newPath });
+            }
+          }
+        }
+        return null;
+      }
+
+      // ---------- Window Resize ----------
+      window.addEventListener('resize', () => {
+        setupCanvas();
+      });
+
+      // ---------- Init ----------
+      function init() {
+        createSolvedPuzzle();
+        emptyIndex = TOTAL_TILES - 1;
+        moves = 0;
+        timer = 0;
+        gameStarted = false;
+        gameComplete = false;
+        updateMovesDisplay();
+        updateTimeDisplay();
+        updateBestDisplay();
+        setGameStatus('🧩 Click Shuffle to start!', true);
+        setupCanvas();
+        draw();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

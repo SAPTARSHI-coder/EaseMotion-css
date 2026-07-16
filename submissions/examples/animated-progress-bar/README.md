@@ -1,52 +1,23 @@
-# Animated Progress Bar
+# Animated Progress Bar Component
 
-## What does it do?
-Animates a progress bar from 0 to a target width on page load using CSS transitions.
-No JavaScript required for the animation — only a small script to trigger the loaded class.
+A clean, modern, and fully responsive **Progress Bar Component** with multiple variations and smooth growth animations. This example demonstrates how to combine **EaseMotion CSS** for staggered entrances with custom CSS animations for smooth bar growth effects, creating an engaging progress visualization.
 
-## How is it used?
-Add the class to any HTML element:
+## 🚀 Features
 
-```html
-<!-- Basic -->
-<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 60%;">
-  <div class="ease-progress-bar"></div>
-</div>
+- **Smooth Bar Growth**: All progress bars animate from 0% to their target width using CSS custom properties and keyframe animations.
+- **Six Variations**: Basic, Striped (with moving animation), Gradient, Segmented Steps, Circular, and Multi-Color progress bars.
+- **Staggered Entrances**: Each progress card fades in sequentially using `ease-fade-in-up` and `ease-delay-*`.
+- **Animated Stripes**: The striped variation includes a continuous diagonal stripe movement animation.
+- **Segmented Steps**: Perfect for multi-step processes like checkouts with filled/unfilled segments.
+- **Circular Progress**: SVG-based circular progress indicator with smooth arc drawing animation.
+- **Multi-Color Status**: Shows different project phases with distinct colors and a legend.
+- **Customizable**: Use CSS custom properties (`--width`, `--percent`, `--delay`) to easily customize each bar.
+- **Fully Responsive**: Adapts gracefully to mobile screens with adjusted sizing.
 
-<!-- Gradient -->
-<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 80%;">
-  <div class="ease-progress-bar ease-progress-gradient"></div>
-</div>
+## 📂 File Structure
 
-<!-- Striped + Animated -->
-<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 45%;">
-  <div class="ease-progress-bar ease-progress-striped ease-progress-animated"></div>
-</div>
-
-<!-- With percentage label -->
-<div class="ease-progress-labeled">
-  <div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 75%;">
-    <div class="ease-progress-bar ease-progress-gradient"></div>
-  </div>
-  <span class="ease-progress-label">75%</span>
-</div>
-```
-
-## Variants
-- Default — solid primary color
-- Gradient — two-color gradient fill
-- Striped — diagonal stripe pattern
-- Striped + Animated — moving stripes
-- Labeled — with percentage text
-
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript for animation)
-
-## Preview
-Open `demo.html` directly in your browser to see the effect.
-
-## Contribution Notes
-- Uses CSS custom property `--ease-progress-value` for target width
-- Follows EaseMotion CSS naming conventions
-- Respects `prefers-reduced-motion`
+```text
+submissions/examples/animated-progress-bar/
+├── demo.html    # HTML structure and EaseMotion utility classes
+├── style.css    # Custom CSS for progress bar layouts, animations, and responsive behavior
+└── README.md    # Documentation

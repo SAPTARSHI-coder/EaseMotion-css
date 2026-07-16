@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sleep Tracker — EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 2rem; background: var(--ease-color-bg); font-family: var(--ease-font-sans); }
+    h2 { text-align: center; margin-bottom: 0.25rem; }
+    p.sub { text-align: center; color: var(--ease-color-muted); margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <h2>Sleep Tracker</h2>
+  <p class="sub">Monitor your nightly sleep patterns and quality</p>
+
+  <div class="ease-sleep">
+
+    <!-- Hero stats -->
+    <div class="ease-sleep__hero">
+      <div class="ease-sleep__hero-title">Last Night</div>
+      <div>
+        <div class="ease-sleep__hero-duration" id="hero-duration">— h — m</div>
+        <div class="ease-sleep__hero-sub" id="hero-sub">No data yet</div>
+      </div>
+      <div class="ease-sleep__hero-stats">
+        <div class="ease-sleep__hero-stat">
+          <span class="ease-sleep__hero-stat-value" id="hero-avg">—</span>
+          <span class="ease-sleep__hero-stat-label">7-day avg</span>
+        </div>
+        <div class="ease-sleep__hero-stat">
+          <span class="ease-sleep__hero-stat-value" id="hero-best">—</span>
+          <span class="ease-sleep__hero-stat-label">Best week</span>
+        </div>
+        <div class="ease-sleep__hero-stat">
+          <span class="ease-sleep__stars" id="hero-stars">☆☆☆☆☆</span>
+          <span class="ease-sleep__hero-stat-label">Last quality</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly chart -->
+    <div class="ease-sleep__chart-panel">
+      <div class="ease-sleep__chart-title">
+        Last 7 Days
+        <span class="ease-sleep__goal-line-label">— Goal: 8h</span>
+      </div>
+      <div class="ease-sleep__chart" id="sleep-chart"></div>
+    </div>
+
+    <!-- Insights -->
+    <div class="ease-sleep__insights" id="sleep-insights"></div>
+
+    <!-- Log form -->
+    <div class="ease-sleep__form">
+      <div class="ease-sleep__form-title">Log Sleep</div>
+      <div class="ease-sleep__form-grid">
+        <div class="ease-sleep__field">
+          <label class="ease-sleep__label" for="sleep-date">Date</label>
+          <input class="ease-sleep__input" id="sleep-date" type="date" />
+        </div>
+        <div class="ease-sleep__field">
+          <label class="ease-sleep__label" for="sleep-start">Bedtime</label>
+          <input class="ease-sleep__input" id="sleep-start" type="time" value="23:00" />
+        </div>
+        <div class="ease-sleep__field">
+          <label class="ease-sleep__label" for="sleep-end">Wake Up</label>
+          <input class="ease-sleep__input" id="sleep-end" type="time" value="07:00" />
+        </div>
+        <div class="ease-sleep__field">
+          <label class="ease-sleep__label">Quality</label>
+          <div class="ease-sleep__quality" id="star-picker">
+            <span class="ease-sleep__star" data-v="1">★</span>
+            <span class="ease-sleep__star" data-v="2">★</span>
+            <span class="ease-sleep__star" data-v="3">★</span>
+            <span class="ease-sleep__star active" data-v="4">★</span>
+            <span class="ease-sleep__star" data-v="5">★</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+        <div class="ease-sleep__field" style="flex:1;min-width:180px;">
+          <label class="ease-sleep__label" for="sleep-notes">Notes (optional)</label>
+          <input class="ease-sleep__input" id="sleep-notes" type="text" placeholder="e.g. Woke up once, stress..." />
+        </div>
+        <button class="ease-sleep__log-btn" id="log-sleep-btn">+ Log Sleep</button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="ease-sleep__history">
+      <div class="ease-sleep__history-title">Sleep History</div>
+      <div id="sleep-history"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const GOAL_HRS = 8;
+    let quality = 4;
+    let entries = JSON.parse(localStorage.getItem('ease-sleep-entries') || '[]');
+
+    // Pre-fill sample data if empty
+    if (!entries.length) {
+      const now = new Date();
+      const samples = [
+        { hrs: 7.5, q: 4 }, { hrs: 6.0, q: 2 }, { hrs: 8.5, q: 5 },
+        { hrs: 7.0, q: 3 }, { hrs: 9.0, q: 5 }, { hrs: 6.5, q: 3 },
+      ];
+      samples.forEach((s, i) => {
+        const d = new Date(now);
+        d.setDate(d.getDate() - (samples.length - i));
+        const ds = d.toISOString().split('T')[0];
+        const bedH = 23, bedM = 0;
+        const wakeH = Math.floor(bedH + s.hrs) % 24;
+        const wakeM = Math.round((s.hrs % 1) * 60);
+        entries.push({
+          id: Date.now() - i * 1000,
+          date: ds,
+          start: `${String(bedH).padStart(2,'0')}:${String(bedM).padStart(2,'0')}`,
+          end:   `${String(wakeH).padStart(2,'0')}:${String(wakeM).padStart(2,'0')}`,
+          hrs: s.hrs,
+          quality: s.q,
+          notes: '',
+        });
+      });
+      localStorage.setItem('ease-sleep-entries', JSON.stringify(entries));
+    }
+
+    function fmtHrs(h) {
+      const hh = Math.floor(h);
+      const mm = Math.round((h - hh) * 60);
+      return `${hh}h ${String(mm).padStart(2,'0')}m`;
+    }
+
+    function starsStr(q) {
+      return '★'.repeat(q) + '☆'.repeat(5 - q);
+    }
+
+    function calcHrs(start, end) {
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = end.split(':').map(Number);
+      let diff = (eh * 60 + em) - (sh * 60 + sm);
+      if (diff <= 0) diff += 24 * 60;
+      return diff / 60;
+    }
+
+    // Star picker
+    const stars = document.querySelectorAll('.ease-sleep__star');
+    stars.forEach(s => {
+      s.addEventListener('click', () => {
+        quality = parseInt(s.dataset.v);
+        stars.forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= quality));
+      });
+      s.addEventListener('mouseover', () => {
+        const v = parseInt(s.dataset.v);
+        stars.forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= v));
+      });
+      s.addEventListener('mouseout', () => {
+        stars.forEach(x => x.classList.toggle('active', parseInt(x.dataset.v) <= quality));
+      });
+    });
+
+    // Set today as default date
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('sleep-date').value = today;
+
+    function render() {
+      const sorted = [...entries].sort((a,b) => b.date.localeCompare(a.date));
+      const last = sorted[0];
+
+      // Hero
+      if (last) {
+        document.getElementById('hero-duration').textContent = fmtHrs(last.hrs);
+        document.getElementById('hero-sub').textContent = `${last.start} → ${last.end} · ${last.date}`;
+        document.getElementById('hero-stars').textContent = starsStr(last.quality);
+      }
+
+      const recent7 = sorted.slice(0, 7);
+      const avg7 = recent7.length ? recent7.reduce((s,e)=>s+e.hrs,0)/recent7.length : 0;
+      const best = entries.length ? Math.max(...entries.map(e=>e.hrs)) : 0;
+      document.getElementById('hero-avg').textContent = avg7 ? fmtHrs(avg7) : '—';
+      document.getElementById('hero-best').textContent = best ? fmtHrs(best) : '—';
+
+      // Chart — last 7 days
+      const last7 = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = d.toISOString().split('T')[0];
+        const entry = entries.find(e => e.date === ds);
+        last7.push({ day: d.toLocaleDateString('en-US',{weekday:'short'}), ds, entry });
+      }
+      const maxHrs = Math.max(GOAL_HRS, ...last7.map(d => d.entry?.hrs || 0)) * 1.1;
+      const goalPct = (GOAL_HRS / maxHrs) * 100;
+      const chartEl = document.getElementById('sleep-chart');
+      chartEl.innerHTML = `<div class="ease-sleep__goal-line" style="bottom:${goalPct}%"></div>` +
+        last7.map(d => {
+          const hrs = d.entry?.hrs || 0;
+          const pct = maxHrs > 0 ? (hrs / maxHrs) * 100 : 0;
+          const cls = !hrs ? '' : hrs >= GOAL_HRS ? 'ease-sleep__bar--goal' : hrs < 6 ? 'ease-sleep__bar--under' : '';
+          return `<div class="ease-sleep__bar-col">
+            <div class="ease-sleep__bar-val">${hrs ? fmtHrs(hrs).replace(' ','') : ''}</div>
+            <div class="ease-sleep__bar ${cls}" style="height:${pct}%"></div>
+            <div class="ease-sleep__bar-label">${d.day}</div>
+          </div>`;
+        }).join('');
+
+      // Insights
+      const totalNights = entries.length;
+      const goalNights = entries.filter(e => e.hrs >= GOAL_HRS).length;
+      const avgQuality = totalNights ? (entries.reduce((s,e)=>s+e.quality,0)/totalNights).toFixed(1) : '—';
+      document.getElementById('sleep-insights').innerHTML = [
+        { icon:'🌙', value: totalNights, label: 'Nights logged' },
+        { icon:'✅', value: totalNights ? `${Math.round((goalNights/totalNights)*100)}%` : '—', label: 'Goal achieved' },
+        { icon:'⭐', value: avgQuality !== '—' ? avgQuality + '/5' : '—', label: 'Avg quality' },
+      ].map(c => `
+        <div class="ease-sleep__insight-card">
+          <div class="ease-sleep__insight-icon">${c.icon}</div>
+          <div class="ease-sleep__insight-value">${c.value}</div>
+          <div class="ease-sleep__insight-label">${c.label}</div>
+        </div>
+      `).join('');
+
+      // History
+      const hist = document.getElementById('sleep-history');
+      if (!sorted.length) {
+        hist.innerHTML = '<div class="ease-sleep__empty">No sleep logged yet — add your first entry above 💤</div>';
+        return;
+      }
+      hist.innerHTML = sorted.map(e => `
+        <div class="ease-sleep__history-item">
+          <div class="ease-sleep__history-date">${new Date(e.date + 'T12:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+          <div class="ease-sleep__history-time">${e.start} → ${e.end}</div>
+          <div class="ease-sleep__history-quality">${starsStr(e.quality)}</div>
+          <div class="ease-sleep__history-dur">${fmtHrs(e.hrs)}</div>
+          <button class="ease-sleep__del-btn" onclick="delEntry(${e.id})" aria-label="Delete entry">×</button>
+        </div>
+      `).join('');
+    }
+
+    window.delEntry = function(id) {
+      entries = entries.filter(e => e.id !== id);
+      localStorage.setItem('ease-sleep-entries', JSON.stringify(entries));
+      render();
+    };
+
+    document.getElementById('log-sleep-btn').addEventListener('click', () => {
+      const date  = document.getElementById('sleep-date').value;
+      const start = document.getElementById('sleep-start').value;
+      const end   = document.getElementById('sleep-end').value;
+      const notes = document.getElementById('sleep-notes').value;
+      if (!date || !start || !end) return;
+      const hrs = calcHrs(start, end);
+      entries.push({ id: Date.now(), date, start, end, hrs, quality, notes });
+      localStorage.setItem('ease-sleep-entries', JSON.stringify(entries));
+      render();
+      document.getElementById('sleep-notes').value = '';
+    });
+
+    render();
+  </script>
+</body>
+</html>

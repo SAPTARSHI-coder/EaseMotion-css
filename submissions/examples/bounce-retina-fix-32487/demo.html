@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EaseMotion CSS — Bounce Retina Text-Blur Fix (#32487)</title>
+  <meta name="description" content="Demonstrates how to prevent text from becoming blurry during a bounce animation on retina/high-DPI displays using GPU layer promotion and font-smoothing properties." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ── Hero ──────────────────────────────────────────── -->
+    <header class="hero">
+      <div class="badge">🐛 Bug Fix — Issue #32487</div>
+      <h1>Bounce Retina Text-Blur Fix</h1>
+      <p>
+        On high-DPI (retina) screens, CSS <code>translateY</code> animations
+        promote elements to GPU compositor layers mid-animation. If the layer
+        is created at that moment the browser re-rasterises text at the wrong
+        pixel density, producing blurry, pixelated glyphs. This fix promotes
+        the element to a GPU layer <em>before</em> the first animation frame
+        so rasterisation always happens at full retina resolution.
+      </p>
+      <div class="dpi-bar">
+        <div class="dpi-chip">
+          <span class="dpi-dot dot-purple" id="dpiDot"></span>
+          <span id="dpiLabel">Detecting display DPI…</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Side-by-side demo ─────────────────────────────── -->
+    <section class="section" aria-label="Side-by-side animation comparison">
+      <p class="section-label">✨ Live Comparison — watch text sharpness closely on a retina screen</p>
+
+      <div class="demo-grid">
+
+        <!--
+          BUGGY card
+          No GPU layer pre-promotion. On retina displays the browser
+          creates the compositor layer when translateY() first moves
+          the element, re-rasterising text at the current subpixel
+          position → blurry text during bounce.
+        -->
+        <div class="demo-card bounce-buggy" id="cardBuggy">
+          <span class="card-tag card-tag-bad">✗ Without Fix</span>
+          <span class="card-emoji">🔍</span>
+          <h3>Blurry on Retina</h3>
+          <p>
+            This card uses plain <code>translateY</code> with no GPU
+            layer hints. On a retina display the text will appear
+            soft and blurry at the peak of the bounce.
+          </p>
+          <p class="sharp-sample">
+            ABCDEFGHIJKLM — sample text, watch sharpness
+          </p>
+        </div>
+
+        <!--
+          FIXED card
+          translateZ(0) forces the GPU layer to be created immediately
+          at full DPI, backface-visibility:hidden locks the rasterisation
+          mode, and -webkit-font-smoothing:antialiased selects the
+          greyscale hinting path (the only path safe on composited layers).
+        -->
+        <div class="demo-card bounce-crisp" id="cardCrisp">
+          <span class="card-tag card-tag-good">✓ With Fix</span>
+          <span class="card-emoji">🎯</span>
+          <h3>Always Sharp</h3>
+          <p>
+            This card adds <code>translateZ(0)</code>, <code>backface-visibility:hidden</code>,
+            and <code>-webkit-font-smoothing:antialiased</code>. Text
+            remains pixel-perfect at every frame of the bounce.
+          </p>
+          <p class="sharp-sample">
+            ABCDEFGHIJKLM — sample text, watch sharpness
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Technique table ───────────────────────────────── -->
+    <section aria-label="Property breakdown table">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>What it does</th>
+              <th>Why it fixes blur</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>translateZ(0)</td>
+              <td>Forces GPU compositor layer creation</td>
+              <td class="why">Layer created at full retina DPI <em>before</em> first frame — no mid-animation re-rasterisation</td>
+            </tr>
+            <tr>
+              <td>backface-visibility: hidden</td>
+              <td>Locks rasterisation mode</td>
+              <td class="why">Prevents the browser switching CPU↔GPU paths during transform changes</td>
+            </tr>
+            <tr>
+              <td>-webkit-font-smoothing: antialiased</td>
+              <td>Selects greyscale antialiasing</td>
+              <td class="why">Subpixel antialiasing is disabled on composited layers; this picks the correct fallback path</td>
+            </tr>
+            <tr>
+              <td>-moz-osx-font-smoothing: grayscale</td>
+              <td>Same as above for Firefox/macOS</td>
+              <td class="why">Ensures parity on Firefox on macOS retina screens</td>
+            </tr>
+            <tr>
+              <td>will-change: transform</td>
+              <td>Signals animation intent to browser</td>
+              <td class="why">GPU texture allocated before first frame, eliminating first-frame rasterise cost</td>
+            </tr>
+            <tr>
+              <td>translateZ(0) in keyframes</td>
+              <td>Keeps GPU layer alive at every stop</td>
+              <td class="why">Without this the compositor may drop the layer between keyframes and re-create it on the wrong path</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Code snippets ─────────────────────────────────── -->
+    <section class="code-section">
+      <h2>🎨 The CSS Fix</h2>
+      <p>Apply to the bouncing element. All properties work together; removing any one can re-introduce blur on specific browsers/OS combinations.</p>
+      <div class="code-block">
+        <pre><span class="cm">/* Retina-safe bounce class */</span>
+<span class="hl">.bounce-crisp</span> {
+  <span class="cm">/* ① GPU layer at full retina DPI from the start */</span>
+  <span class="prop">-webkit-transform</span>: <span class="str">translateZ(0)</span>;
+  <span class="prop">transform</span>: <span class="str">translateZ(0)</span>;
+
+  <span class="cm">/* ② Lock rasterisation mode through the animation */</span>
+  <span class="prop">-webkit-backface-visibility</span>: <span class="str">hidden</span>;
+  <span class="prop">backface-visibility</span>: <span class="str">hidden</span>;
+
+  <span class="cm">/* ③ Greyscale antialiasing (safe on composited layers) */</span>
+  <span class="prop">-webkit-font-smoothing</span>: <span class="str">antialiased</span>;
+  <span class="prop">-moz-osx-font-smoothing</span>: <span class="str">grayscale</span>;
+
+  <span class="cm">/* ④ Pre-allocate GPU texture before first frame */</span>
+  <span class="prop">will-change</span>: <span class="str">transform</span>;
+
+  <span class="prop">animation</span>: bounce-crisp 1.8s cubic-bezier(0.8,0,1,1) infinite;
+}
+
+<span class="hl">@keyframes</span> bounce-crisp {
+  0%, 100% {
+    <span class="cm">/* Keep translateZ(0) at every stop */</span>
+    <span class="prop">transform</span>: <span class="str">translateY(0) translateZ(0)</span>;
+    <span class="prop">animation-timing-function</span>: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    <span class="prop">transform</span>: <span class="str">translateY(-22px) translateZ(0)</span>;
+    <span class="prop">animation-timing-function</span>: cubic-bezier(0, 0, 0.2, 1);
+  }
+}</pre>
+      </div>
+
+      <h2>📐 HTML</h2>
+      <p>One class applied to the bouncing wrapper. Children (text, images, etc.) inherit the crisp rendering automatically.</p>
+      <div class="code-block">
+        <pre>&lt;<span class="hl">div</span> class=<span class="str">"bounce-crisp"</span>&gt;
+  &lt;<span class="hl">p</span>&gt;Sharp text during bounce!&lt;/<span class="hl">p</span>&gt;
+&lt;/<span class="hl">div</span>&gt;</pre>
+      </div>
+
+      <h2>♿ Reduced-motion</h2>
+      <p>The animation is stopped entirely for users who prefer reduced motion — bouncing at any speed can be uncomfortable for people with vestibular disorders.</p>
+      <div class="code-block">
+        <pre><span class="hl">@media</span> (prefers-reduced-motion: reduce) {
+  <span class="hl">.bounce-crisp</span> {
+    <span class="prop">animation</span>: <span class="str">none</span> <span class="str">!important</span>;
+    <span class="prop">transform</span>: <span class="str">translateZ(0)</span> <span class="str">!important</span>; <span class="cm">/* preserve GPU layer */</span>
+    <span class="prop">will-change</span>: <span class="str">auto</span>;
+  }
+}</pre>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>EaseMotion CSS — Community Submission · Issue #32487</p>
+    </footer>
+  </div>
+
+  <!--
+    ── Runtime DPI detection (demo display only) ───────────────────────
+
+    This JS is purely for the status chip that shows current device DPI.
+    It is NOT part of the fix itself — the fix is 100% CSS.
+
+    The fix works because:
+    - `translateZ(0)` triggers GPU compositing from the very first paint.
+    - Browsers create compositor layer textures at devicePixelRatio × CSS px.
+    - By forcing layer creation BEFORE the animation starts, the texture is
+      already at full retina resolution when translateY() kicks in.
+    - Without this, the browser creates the layer the first time the element
+      moves, which can happen at a non-integer pixel offset → blurry texture.
+  -->
+  <script>
+    (function () {
+      "use strict";
+
+      var dot   = document.getElementById("dpiDot");
+      var label = document.getElementById("dpiLabel");
+      var dpr   = window.devicePixelRatio || 1;
+
+      if (dpr >= 2) {
+        dot.className   = "dpi-dot dot-green";
+        label.textContent =
+          "Retina display detected (DPR " + dpr + "×) — blur fix is active";
+      } else if (dpr >= 1.5) {
+        dot.className   = "dpi-dot dot-amber";
+        label.textContent =
+          "High-DPI display (DPR " + dpr + "×) — fix recommended";
+      } else {
+        dot.className   = "dpi-dot dot-purple";
+        label.textContent =
+          "Standard display (DPR 1×) — open on a retina screen to see the difference";
+      }
+    }());
+  </script>
+
+</body>
+</html>
