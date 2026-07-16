@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sprouting Seed</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Sprouting Seed</h1>
+        <p class="subtitle">Seed growing into plant with unfolding leaves</p>
+
+        <div class="sprout-wrapper">
+            <canvas id="sproutCanvas"></canvas>
+
+            <div class="controls">
+                <button id="growBtn">🌱 Grow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌱 Ready to grow</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('sproutCanvas');
+        const ctx = canvas.getContext('2d');
+        const growBtn = document.getElementById('growBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let plant = null;
+        let growth = 0;
+        let targetGrowth = 1;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isGrowing = false;
+        let particles = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || `hsl(${100 + Math.random() * 40}, 70%, ${50 + Math.random() * 30}%)`;
+                this.size = 1 + Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -0.5 - Math.random() * 0.5;
+                this.life = 1;
+                this.maxLife = 40 + Math.random() * 60;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.005;
+                this.vx += Math.sin(this.phase) * 0.01;
+                this.phase += 0.05;
+                this.life = 1 - this.age / this.maxLife;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = this.color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== PLANT STRUCTURE =====
+        class Plant {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.stem = [];
+                this.leaves = [];
+                this.roots = [];
+                this.seed = { x: x, y: y, size: 6, cracked: false };
+                this.growthStage = 0; // 0: seed, 1: sprout, 2: seedling, 3: young plant, 4: mature
+                this.height = 0;
+                this.maxHeight = 150;
+                this.leafCount = 0;
+                this.maxLeaves = 8;
+                this.branching = 0;
+                this.growthProgress = 0;
+
+                // Create stem segments
+                const segments = 20;
+                for (let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    const angle = -Math.PI / 2 + Math.sin(t * Math.PI * 2) * 0.05;
+                    const yPos = this.y - t * this.maxHeight * 0.7;
+                    const xPos = this.x + Math.sin(t * Math.PI * 3) * 3 * t;
+                    this.stem.push({
+                        x: xPos,
+                        y: yPos,
+                        angle: angle,
+                        t: t,
+                        grown: 0,
+                        thickness: 4 - t * 2.5
+                    });
+                }
+
+                // Create initial leaves
+                this.leaves = [
+                    { x: 0, y: 0, angle: -0.4, size: 8, grown: 0, side: -1, stage: 0 },
+                    { x: 0, y: 0, angle: 0.4, size: 8, grown: 0, side: 1, stage: 0 },
+                ];
+
+                // Create roots
+                for (let i = 0; i < 5; i++) {
+                    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+                    const length = 10 + Math.random() * 20;
+                    this.roots.push({
+                        x: this.x,
+                        y: this.y,
+                        angle: angle,
+                        length: length,
+                        grown: 0,
+                        thickness: 1 + Math.random() * 1.5
+                    });
+                }
+            }
+
+            update(growth, time) {
+                this.growthProgress = Math.min(growth, 1);
+                
+                // Growth stages
+                const stage1 = 0.15; // Seed cracks
+                const stage2 = 0.35; // Sprout emerges
+                const stage3 = 0.55; // Seedling
+                const stage4 = 0.75; // Young plant
+                const stage5 = 1.0;   // Mature
+
+                // Update stem
+                for (let i = 0; i < this.stem.length; i++) {
+                    const seg = this.stem[i];
+                    const segGrowth = Math.max(0, Math.min(1, (this.growthProgress - seg.t * 0.3) / 0.7));
+                    seg.grown = Math.min(1, segGrowth * 1.5);
+                }
+
+                // Update leaves
+                const leafStart = 0.3;
+                const leafEnd = 0.9;
+                for (const leaf of this.leaves) {
+                    const leafProgress = (this.growthProgress - leafStart) / (leafEnd - leafStart);
+                    leaf.grown = Math.max(0, Math.min(1, leafProgress * 1.5));
+                    
+                    // Leaf position along stem
+                    const stemIndex = Math.floor(leaf.stage / 10 * this.stem.length);
+                    const idx = Math.min(stemIndex, this.stem.length - 1);
+                    if (idx >= 0 && idx < this.stem.length) {
+                        const seg = this.stem[idx];
+                        const nextSeg = this.stem[Math.min(idx + 1, this.stem.length - 1)];
+                        const t = (leaf.stage % 10) / 10;
+                        leaf.x = seg.x + (nextSeg.x - seg.x) * t;
+                        leaf.y = seg.y + (nextSeg.y - seg.y) * t;
+                    }
+                }
+
+                // Update roots
+                for (const root of this.roots) {
+                    root.grown = Math.min(1, this.growthProgress * 2);
+                }
+
+                // Calculate height
+                this.height = this.maxHeight * this.growthProgress * 0.7;
+
+                // Crack seed
+                if (this.growthProgress > stage1) {
+                    this.seed.cracked = true;
+                }
+
+                // Determine growth stage
+                if (this.growthProgress < stage1) this.growthStage = 0;
+                else if (this.growthProgress < stage2) this.growthStage = 1;
+                else if (this.growthProgress < stage3) this.growthStage = 2;
+                else if (this.growthProgress < stage4) this.growthStage = 3;
+                else this.growthStage = 4;
+
+                // Spawn growth particles
+                if (this.growthProgress > 0.1 && this.growthProgress < 0.9 && Math.random() < 0.05) {
+                    const stemIdx = Math.floor(Math.random() * this.stem.length * this.growthProgress);
+                    const idx = Math.min(stemIdx, this.stem.length - 1);
+                    const seg = this.stem[idx];
+                    if (seg && seg.grown > 0.5) {
+                        const color = `hsl(${100 + Math.random() * 40}, 70%, ${50 + Math.random() * 30}%)`;
+                        particles.push(new Particle(
+                            seg.x + (Math.random() - 0.5) * 5,
+                            seg.y + (Math.random() - 0.5) * 5,
+                            color
+                        ));
+                    }
+                }
+            }
+
+            draw(ctx, time) {
+                const w = canvas.width;
+                const h = canvas.height;
+
+                // Draw soil
+                const soilY = this.y + 10;
+                const soilGrad = ctx.createLinearGradient(0, soilY, 0, h);
+                soilGrad.addColorStop(0, 'rgba(40, 30, 20, 0.8)');
+                soilGrad.addColorStop(0.3, 'rgba(50, 40, 30, 0.6)');
+                soilGrad.addColorStop(1, 'rgba(30, 25, 20, 0.2)');
+                ctx.fillStyle = soilGrad;
+                ctx.fillRect(0, soilY, w, h - soilY);
+
+                // Draw soil surface
+                ctx.beginPath();
+                ctx.moveTo(0, soilY);
+                for (let i = 0; i <= w; i += 2) {
+                    const yOffset = Math.sin(i * 0.05 + time * 0.01) * 2;
+                    ctx.lineTo(i, soilY + yOffset);
+                }
+                ctx.lineTo(w, h);
+                ctx.lineTo(0, h);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(40, 35, 30, 0.3)';
+                ctx.fill();
+
+                // Draw roots
+                for (const root of this.roots) {
+                    if (root.grown <= 0) continue;
+                    const grownLen = root.length * root.grown;
+                    const endX = root.x + Math.cos(root.angle) * grownLen;
+                    const endY = root.y + Math.sin(root.angle) * grownLen;
+                    ctx.beginPath();
+                    ctx.moveTo(root.x, root.y);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = `rgba(60, 50, 40, ${0.3 + 0.3 * root.grown})`;
+                    ctx.lineWidth = root.thickness * root.grown;
+                    ctx.stroke();
+
+                    // Root hairs
+                    if (root.grown > 0.5) {
+                        for (let i = 0; i < 3; i++) {
+                            const t = 0.3 + Math.random() * 0.5;
+                            const px = root.x + Math.cos(root.angle) * grownLen * t;
+                            const py = root.y + Math.sin(root.angle) * grownLen * t;
+                            const hairAngle = root.angle + (Math.random() - 0.5) * 1.5;
+                            const hairLen = 2 + Math.random() * 4;
+                            ctx.beginPath();
+                            ctx.moveTo(px, py);
+                            ctx.lineTo(px + Math.cos(hairAngle) * hairLen, py + Math.sin(hairAngle) * hairLen);
+                            ctx.strokeStyle = `rgba(60, 50, 40, ${0.1 + Math.random() * 0.2})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw seed
+                if (this.growthProgress < 0.2) {
+                    // Seed
+                    ctx.beginPath();
+                    ctx.ellipse(this.seed.x, this.seed.y, this.seed.size, this.seed.size * 0.7, 0, 0, Math.PI * 2);
+                    const seedGrad = ctx.createRadialGradient(
+                        this.seed.x - 2, this.seed.y - 2, 0,
+                        this.seed.x, this.seed.y, this.seed.size
+                    );
+                    seedGrad.addColorStop(0, '#8B7355');
+                    seedGrad.addColorStop(0.5, '#6B5335');
+                    seedGrad.addColorStop(1, '#4B3325');
+                    ctx.fillStyle = seedGrad;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Seed highlight
+                    ctx.beginPath();
+                    ctx.ellipse(this.seed.x - 2, this.seed.y - 3, 2, 1.5, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.fill();
+
+                    // Crack
+                    if (this.seed.cracked) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.seed.x - 4, this.seed.y - 2);
+                        ctx.lineTo(this.seed.x + 4, this.seed.y + 2);
+                        ctx.strokeStyle = 'rgba(30,20,15,0.5)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(this.seed.x - 3, this.seed.y + 3);
+                        ctx.lineTo(this.seed.x + 3, this.seed.y - 3);
+                        ctx.stroke();
+                    }
+                }
+
+                // Draw stem
+                for (let i = 1; i < this.stem.length; i++) {
+                    const seg = this.stem[i];
+                    const prev = this.stem[i - 1];
+                    if (seg.grown <= 0 || prev.grown <= 0) continue;
+
+                    const grownEnd = seg.grown;
+                    const grownStart = prev.grown;
+
+                    const x1 = prev.x;
+                    const y1 = prev.y;
+                    const x2 = prev.x + (seg.x - prev.x) * grownEnd;
+                    const y2 = prev.y + (seg.y - prev.y) * grownEnd;
+
+                    const thickness = prev.thickness * (0.3 + 0.7 * grownEnd);
+
+                    // Stem gradient
+                    const stemGrad = ctx.createLinearGradient(x1, y1, x2, y2);
+                    stemGrad.addColorStop(0, `hsl(120, 50%, ${30 + 20 * grownStart}%)`);
+                    stemGrad.addColorStop(1, `hsl(130, 60%, ${40 + 20 * grownEnd}%)`);
+
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = stemGrad;
+                    ctx.lineWidth = thickness * (0.3 + 0.7 * grownEnd);
+                    ctx.lineCap = 'round';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = 'rgba(50, 100, 50, 0.1)';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Draw leaves
+                for (const leaf of this.leaves) {
+                    if (leaf.grown <= 0) continue;
+                    const size = leaf.size * leaf.grown;
+                    const angle = leaf.angle + Math.sin(time * 0.02 + leaf.stage) * 0.05;
+                    const wobble = Math.sin(time * 0.03 + leaf.stage * 2) * 0.02;
+
+                    ctx.save();
+                    ctx.translate(leaf.x, leaf.y);
+                    ctx.rotate(angle + wobble);
+
+                    // Leaf shape
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(size * 0.5 * leaf.side, -size * 0.3, size * leaf.side, 0);
+                    ctx.quadraticCurveTo(size * 0.5 * leaf.side, size * 0.3, 0, 0);
+                    ctx.closePath();
+
+                    const leafGrad = ctx.createLinearGradient(0, -size * 0.3, 0, size * 0.3);
+                    const hue = 100 + Math.random() * 20;
+                    leafGrad.addColorStop(0, `hsl(${hue}, 70%, 50%)`);
+                    leafGrad.addColorStop(0.5, `hsl(${hue + 20}, 80%, 60%)`);
+                    leafGrad.addColorStop(1, `hsl(${hue + 10}, 70%, 40%)`);
+                    ctx.fillStyle = leafGrad;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(50, 150, 50, 0.2)';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Leaf vein
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(size * 0.6 * leaf.side, 0);
+                    ctx.strokeStyle = 'rgba(30, 80, 30, 0.2)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+
+                    // Side veins
+                    for (let i = -1; i <= 1; i++) {
+                        if (i === 0) continue;
+                        const vx = size * 0.3 * leaf.side;
+                        const vy = i * size * 0.15;
+                        ctx.beginPath();
+                        ctx.moveTo(size * 0.2 * leaf.side, 0);
+                        ctx.lineTo(vx, vy);
+                        ctx.strokeStyle = 'rgba(30, 80, 30, 0.15)';
+                        ctx.lineWidth = 0.3;
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+
+                    // Leaf glow
+                    const glowGrad = ctx.createRadialGradient(
+                        leaf.x, leaf.y, 0,
+                        leaf.x, leaf.y, size * 2
+                    );
+                    glowGrad.addColorStop(0, 'rgba(100, 200, 100, 0.05)');
+                    glowGrad.addColorStop(1, 'rgba(100, 200, 100, 0)');
+                    ctx.beginPath();
+                    ctx.arc(leaf.x, leaf.y, size * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = glowGrad;
+                    ctx.fill();
+                }
+
+                // Draw growth particles
+                for (const particle of particles) {
+                    particle.draw(ctx);
+                }
+            }
+
+            addLeaves() {
+                if (this.leafCount < this.maxLeaves) {
+                    const newLeaf = {
+                        x: 0,
+                        y: 0,
+                        angle: (Math.random() - 0.5) * 0.8,
+                        size: 6 + Math.random() * 6,
+                        grown: 0,
+                        side: Math.random() > 0.5 ? 1 : -1,
+                        stage: this.leafCount + 1
+                    };
+                    this.leaves.push(newLeaf);
+                    this.leafCount++;
+                }
+            }
+
+            isComplete() {
+                return this.growthProgress >= 1;
+            }
+        }
+
+        // ===== INIT PLANT =====
+        function initPlant() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const x = w / 2;
+            const y = h * 0.7;
+            plant = new Plant(x, y);
+            growth = 0;
+            targetGrowth = 1;
+            particles = [];
+            isGrowing = false;
+        }
+        initPlant();
+
+        // ===== GROW PLANT =====
+        function growPlant() {
+            if (isGrowing || (plant && plant.isComplete())) return;
+            isGrowing = true;
+            statusText.textContent = '🌱 Growing...';
+
+            if (growth < targetGrowth) {
+                growth += 0.1;
+                if (growth > targetGrowth) growth = targetGrowth;
+
+                // Add leaves as plant grows
+                if (plant && plant.growthProgress > 0.3 && plant.leafCount < plant.maxLeaves) {
+                    if (Math.random() < 0.3) {
+                        plant.addLeaves();
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                isGrowing = false;
+                if (plant && plant.isComplete()) {
+                    statusText.textContent = '🌿 Plant fully grown!';
+                } else {
+                    statusText.textContent = '🌱 Keep growing!';
+                }
+                setTimeout(() => {
+                    statusText.textContent = '🌱 Ready to grow';
+                }, 1500);
+            }, 300);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#0a0a1a');
+            grad.addColorStop(0.3, '#0a1a0a');
+            grad.addColorStop(0.6, '#0a1a0a');
+            grad.addColorStop(0.8, '#0f1f0f');
+            grad.addColorStop(1, '#050f05');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Light rays
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.01 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 20, h);
+                grad2.addColorStop(0, 'rgba(200, 255, 200, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(200, 255, 200, 0.04)');
+                grad2.addColorStop(1, 'rgba(200, 255, 200, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 20, h);
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update plant
+            if (plant) {
+                // Auto-grow slowly
+                if (!isGrowing && growth < targetGrowth && Math.random() < 0.001 * speed * 50) {
+                    growth += 0.005;
+                    if (growth > targetGrowth) growth = targetGrowth;
+                    if (growth > 0.3 && plant.leafCount < plant.maxLeaves && Math.random() < 0.1) {
+                        plant.addLeaves();
+                    }
+                }
+
+                plant.update(growth, time);
+                plant.draw(ctx, time);
+
+                // Update particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    if (p.isDead()) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                if (plant) {
+                    const progress = Math.round(plant.growthProgress * 100);
+                    const stage = ['Seed', 'Sprout', 'Seedling', 'Young Plant', 'Mature'][plant.growthStage] || 'Growing';
+                    statusText.textContent = `🌱 ${stage} • ${progress}% • ${plant.leafCount} leaves`;
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Grow
+        growBtn.addEventListener('click', growPlant);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌱 Ready to grow';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initPlant();
+            speedLevel = 1;
+            speed = speeds[1].value;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌱 Ready to grow';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                growBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                growBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initPlant();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        statusText.textContent = '🌱 Ready to grow';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌱 Sprouting Seed loaded!');
+        console.log('💡 G - Grow');
+        console.log('💡 S - Change speed');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Grow');
+    </script>
+</body>
+</html>

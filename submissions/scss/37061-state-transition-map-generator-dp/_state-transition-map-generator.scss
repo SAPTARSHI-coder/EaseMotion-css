@@ -1,0 +1,74 @@
+$state-map: () !default;
+
+@function _is-map($value) {
+  @return type-of($value) == map;
+}
+
+@function _to-list($value) {
+  @return if(type-of($value) == list, $value, ($value));
+}
+
+@function add-state($map, $name, $targets) {
+  @if map-has-key($map, $name) {
+    @warn "State '#{$name}' is already defined and will be overridden.";
+  }
+
+  @return map-merge(
+    $map,
+    (
+      $name: $targets,
+    )
+  );
+}
+
+@function validate-state-map($map: $state-map) {
+  @if not _is-map($map) {
+    @error "State map must be a map, got #{type-of($map)}.";
+  }
+
+  @if length($map) == 0 {
+    @error "State map is empty. Define at least one state.";
+  }
+
+  @each $state, $targets in $map {
+    @each $target in _to-list($targets) {
+      @if not map-has-key($map, $target) {
+        @error "Undefined target state '#{$target}' referenced from state '#{$state}'.";
+      }
+
+      @if $target == $state {
+        @warn "State '#{$state}' has a direct (circular) transition to itself.";
+      }
+    }
+  }
+
+  @return true;
+}
+
+@function state-exists($state, $map: $state-map) {
+  @return map-has-key($map, $state);
+}
+
+@function transition-map($state, $map: $state-map) {
+  @if not state-exists($state, $map) {
+    @error "Unknown state '#{$state}'. Available states: #{map-keys($map)}.";
+  }
+
+  @return _to-list(map-get($map, $state));
+}
+
+@mixin state-transition-map(
+  $map: $state-map,
+  $state-attr: "data-state",
+  $next-attr: "data-next"
+) {
+  $_valid: validate-state-map($map);
+
+  @each $state, $targets in $map {
+    @each $target in _to-list($targets) {
+      [#{$state-attr}="#{$state}"][#{$next-attr}="#{$target}"] {
+        @content ($state, $target);
+      }
+    }
+  }
+}
