@@ -87,7 +87,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 />
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css"
 />
 ```
 
@@ -138,7 +138,7 @@ Most people simply forget. This is your reminder. 😊
 | Metric               | Value                                                                                                         |
 | -------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 📦 **npm Package**   | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css)                                              |
-| 🌐 **CDN**           | [cdn.jsdelivr.net/gh/...](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css) |
+| 🌐 **CDN**           | [cdn.jsdelivr.net/npm/...](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css) |
 | ⚡ **Classes**       | 80+ utility classes, 20+ animation classes                                                                    |
 | 🎨 **Components**    | Buttons (6 variants), Cards (13 variants)                                                                     |
 | 🔑 **Design Tokens** | 60+ CSS custom properties                                                                                     |
@@ -226,7 +226,7 @@ EaseMotion CSS is a curated, animation-first CSS framework where class names rea
     />
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+      href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css"
     />
   </head>
   <body>
@@ -248,7 +248,7 @@ EaseMotion CSS can also be loaded using alternative CDN providers.
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css"
 />
 ```
 
@@ -1235,7 +1235,7 @@ The project encourages creative variations and parallel implementations rather t
 | 🔀 **Pull Requests**    | [Submit a contribution](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                              |
 | 📖 **Documentation**    | [Full docs site](https://saptarshi-coder.github.io/EaseMotion-css/)                                           |
 | 📦 **npm Package**      | [easemotion-css on npm](https://www.npmjs.com/package/easemotion-css)                                         |
-| 🌐 **CDN**              | [jsDelivr (GitHub CDN)](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css)   |
+| 🌐 **CDN**              | [jsDelivr (npm CDN)](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.min.css)   |
 | 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                   |
 | 💬 **Discord Server (Optional)**   | [Join Discord (Optional)](https://discord.gg/hWSdGrccBU)                                                                 |
 
