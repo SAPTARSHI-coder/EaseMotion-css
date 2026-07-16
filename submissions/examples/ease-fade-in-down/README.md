@@ -1,3 +1,3 @@
-# Ease Fade In Down
+# ease-fade-in-down
 
-An essential, clean navigation utility smoothly animating content downwards while handling transparency updates.
+A professional-grade, multi-axis rotation and translation animation for modern interfaces.
