@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🦘 Doodle Jump</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🦘 Doodle Jump</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">📊 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📈 Height</span>
+        <span class="stat-value" id="heightDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+    </div>
+
+    <div class="game-status" id="gameStatus">🎮 Press "Start Game" or Space to begin!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const heightDisplay = document.getElementById('heightDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 400;
+      const HEIGHT = 600;
+      const GRAVITY = 0.6;
+      const JUMP_SPEED = -12;
+      const MOVE_SPEED = 5;
+      const PLATFORM_WIDTH = 60;
+      const PLATFORM_HEIGHT = 12;
+      const PLAYER_SIZE = 20;
+      const MAX_PLATFORMS = 12;
+      const MIN_PLATFORM_GAP = 60;
+      const MAX_PLATFORM_GAP = 100;
+
+      // ---------- Game State ----------
+      let player = {
+        x: 0,
+        y: 0,
+        width: PLAYER_SIZE,
+        height: PLAYER_SIZE,
+        vy: 0,
+        vx: 0,
+        onGround: false,
+        facing: 1
+      };
+
+      let platforms = [];
+      let score = 0;
+      let bestScore = parseInt(localStorage.getItem('doodleBestScore')) || 0;
+      let height = 0;
+      let gameRunning = false;
+      let gameLoop = null;
+      let gameOverFlag = false;
+      let cameraY = 0;
+      let keys = { left: false, right: false };
+
+      // ---------- High Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Helper Functions ----------
+      function updateScoreDisplay() {
+        scoreDisplay.textContent = score;
+      }
+
+      function updateHeightDisplay() {
+        heightDisplay.textContent = Math.floor(height);
+      }
+
+      function updateBestScore() {
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('doodleBestScore', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Platform Generation ----------
+      function createPlatforms() {
+        platforms = [];
+        // Starting platforms
+        for (let i = 0; i < 8; i++) {
+          const x = Math.random() * (WIDTH - PLATFORM_WIDTH);
+          const y = HEIGHT - 50 - i * 70;
+          platforms.push({
+            x: x,
+            y: y,
+            width: PLATFORM_WIDTH,
+            height: PLATFORM_HEIGHT,
+            type: i === 0 ? 'static' : (Math.random() > 0.7 ? 'moving' : 'static'),
+            vx: (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 2),
+            minX: 10,
+            maxX: WIDTH - PLATFORM_WIDTH - 10
+          });
+        }
+      }
+
+      function addPlatform() {
+        const lastPlatform = platforms[platforms.length - 1];
+        const gap = MIN_PLATFORM_GAP + Math.random() * (MAX_PLATFORM_GAP - MIN_PLATFORM_GAP);
+        const y = lastPlatform.y - gap;
+        const x = Math.random() * (WIDTH - PLATFORM_WIDTH);
+        const type = Math.random() > 0.7 ? 'moving' : 'static';
+        platforms.push({
+          x: x,
+          y: y,
+          width: PLATFORM_WIDTH,
+          height: PLATFORM_HEIGHT,
+          type: type,
+          vx: (Math.random() > 0.5 ? 1 : -1) * (1 + Math.random() * 2),
+          minX: 10,
+          maxX: WIDTH - PLATFORM_WIDTH - 10
+        });
+        // Remove platforms below screen
+        while (platforms.length > MAX_PLATFORMS) {
+          platforms.shift();
+        }
+      }
+
+      // ---------- Player ----------
+      function resetPlayer() {
+        player.x = WIDTH / 2 - PLAYER_SIZE / 2;
+        player.y = HEIGHT - 100;
+        player.vy = 0;
+        player.vx = 0;
+        player.onGround = false;
+        player.facing = 1;
+      }
+
+      // ---------- Collision ----------
+      function checkCollisions() {
+        player.onGround = false;
+        
+        for (const platform of platforms) {
+          // Check if player is on the platform
+          if (player.vy > 0 &&
+              player.x + player.width > platform.x + 5 &&
+              player.x < platform.x + platform.width - 5 &&
+              player.y + player.height > platform.y &&
+              player.y + player.height < platform.y + platform.height + 15) {
+            player.y = platform.y - player.height;
+            player.vy = JUMP_SPEED;
+            player.onGround = true;
+            // Add score for landing on platform
+            if (platform.y < HEIGHT - 100) {
+              score++;
+              updateScoreDisplay();
+              updateBestScore();
+            }
+            break;
+          }
+        }
+      }
+
+      // ---------- Update ----------
+      function update() {
+        if (!gameRunning || gameOverFlag) return;
+
+        // Player horizontal movement
+        if (keys.left) {
+          player.vx = -MOVE_SPEED;
+          player.facing = -1;
+        } else if (keys.right) {
+          player.vx = MOVE_SPEED;
+          player.facing = 1;
+        } else {
+          player.vx *= 0.85;
+          if (Math.abs(player.vx) < 0.1) player.vx = 0;
+        }
+
+        // Apply gravity
+        player.vy += GRAVITY;
+        if (player.vy > 15) player.vy = 15;
+
+        // Move player
+        player.x += player.vx;
+        player.y += player.vy;
+
+        // Wrap player horizontally
+        if (player.x + player.width < 0) {
+          player.x = WIDTH;
+        } else if (player.x > WIDTH) {
+          player.x = -player.width;
+        }
+
+        // Move platforms
+        for (const platform of platforms) {
+          if (platform.type === 'moving') {
+            platform.x += platform.vx;
+            if (platform.x <= platform.minX || platform.x >= platform.maxX) {
+              platform.vx = -platform.vx;
+            }
+          }
+        }
+
+        // Check collisions
+        checkCollisions();
+
+        // Update camera
+        if (player.y < HEIGHT * 0.3) {
+          const diff = HEIGHT * 0.3 - player.y;
+          player.y += diff;
+          // Move platforms down
+          for (const platform of platforms) {
+            platform.y += diff;
+          }
+          // Add height
+          height += diff;
+          updateHeightDisplay();
+        }
+
+        // Check game over
+        if (player.y > HEIGHT + 50) {
+          gameOver();
+          return;
+        }
+
+        // Add new platforms as player goes up
+        const topPlatform = platforms.reduce((min, p) => p.y < min.y ? p : min);
+        if (topPlatform.y > 100) {
+          addPlatform();
+        }
+
+        // Update score based on height
+        const newScore = Math.floor(height / 50);
+        if (newScore > score) {
+          score = newScore;
+          updateScoreDisplay();
+          updateBestScore();
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background gradient
+        const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        gradient.addColorStop(0, '#0a0e2a');
+        gradient.addColorStop(0.5, '#1a2a5a');
+        gradient.addColorStop(1, '#2a1a3a');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Draw stars
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        const starSeed = 12345;
+        for (let i = 0; i < 50; i++) {
+          const sx = ((i * 137 + 31) % WIDTH);
+          const sy = ((i * 251 + 17) % HEIGHT);
+          const size = ((i * 7 + 3) % 3) + 1;
+          ctx.beginPath();
+          ctx.arc(sx, sy, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw platforms
+        for (const platform of platforms) {
+          const x = platform.x;
+          const y = platform.y;
+          
+          // Platform shadow
+          ctx.fillStyle = 'rgba(0,0,0,0.3)';
+          ctx.beginPath();
+          ctx.roundRect(x + 4, y + 4, platform.width, platform.height, 4);
+          ctx.fill();
+
+          // Platform body
+          const grad = ctx.createLinearGradient(x, y, x, y + platform.height);
+          if (platform.type === 'moving') {
+            grad.addColorStop(0, '#4fc3f7');
+            grad.addColorStop(1, '#0288d1');
+          } else {
+            grad.addColorStop(0, '#81c784');
+            grad.addColorStop(1, '#2e7d32');
+          }
+          ctx.fillStyle = grad;
+          ctx.shadowColor = platform.type === 'moving' ? '#4fc3f7' : '#81c784';
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.roundRect(x, y, platform.width, platform.height, 4);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Highlight
+          ctx.fillStyle = 'rgba(255,255,255,0.2)';
+          ctx.fillRect(x + 4, y + 2, platform.width - 8, 3);
+        }
+
+        // Draw player (Doodle character)
+        const px = player.x;
+        const py = player.y;
+        const size = player.width;
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(px + size/2, py + size + 4, size/2, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Body
+        const bodyGrad = ctx.createRadialGradient(px + 6, py + 4, 4, px + size/2, py + size/2, size);
+        bodyGrad.addColorStop(0, '#ffd54f');
+        bodyGrad.addColorStop(0.7, '#f9a825');
+        bodyGrad.addColorStop(1, '#f57f17');
+        ctx.fillStyle = bodyGrad;
+        ctx.shadowColor = '#ffd54f';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.ellipse(px + size/2, py + size/2, size/2, size/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Eyes
+        const eyeOffset = 4;
+        const eyeY = py + 6;
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(px + size/2 - 5 + (player.facing > 0 ? 2 : -2), eyeY, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + size/2 + 5 + (player.facing > 0 ? 2 : -2), eyeY, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pupils
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(px + size/2 - 4 + (player.facing > 0 ? 3 : -1), eyeY + 1, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + size/2 + 6 + (player.facing > 0 ? 3 : -1), eyeY + 1, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mouth (smile)
+        ctx.strokeStyle = '#1a1a2e';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(px + size/2, py + 12, 6, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+
+        // Legs (animated)
+        const legSwing = Math.sin(Date.now() / 200) * 3;
+        ctx.strokeStyle = '#f57f17';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(px + 5, py + size - 2);
+        ctx.lineTo(px + 5 - legSwing, py + size + 6);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(px + size - 5, py + size - 2);
+        ctx.lineTo(px + size - 5 + legSwing, py + size + 6);
+        ctx.stroke();
+
+        // Game Over overlay
+        if (gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 36px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ef9a9a';
+          ctx.shadowColor = '#b71c1c';
+          ctx.shadowBlur = 30;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('💀 GAME OVER', WIDTH/2, HEIGHT/2 - 20);
+          ctx.shadowBlur = 0;
+          ctx.font = '20px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Score: ${score}`, WIDTH/2, HEIGHT/2 + 40);
+        }
+
+        // Controls hint
+        if (!gameRunning && !gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = '22px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🎮 Press Space to Start', WIDTH/2, HEIGHT/2 - 10);
+          ctx.font = '14px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#78909c';
+          ctx.fillText('Use ← → or A/D to move', WIDTH/2, HEIGHT/2 + 35);
+        }
+      }
+
+      // Helper: roundRect
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        return this;
+      };
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        update();
+        draw();
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+        }
+        gameRunning = true;
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        
+        // Reset
+        resetPlayer();
+        createPlatforms();
+        score = 0;
+        height = 0;
+        gameOverFlag = false;
+        updateScoreDisplay();
+        updateHeightDisplay();
+        updateBestScore();
+        
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        setGameStatus('🦘 Jump and climb! Use ← → to move', true);
+        
+        startLoop();
+      }
+
+      function gameOver() {
+        gameOverFlag = true;
+        gameRunning = false;
+        stopLoop();
+        updateBestScore();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Play Again';
+        setGameStatus(`💀 Game Over! Score: ${score}`, false);
+        draw();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        gameOverFlag = false;
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        resetPlayer();
+        createPlatforms();
+        score = 0;
+        height = 0;
+        updateScoreDisplay();
+        updateHeightDisplay();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        setGameStatus('🔄 Game reset. Press Start to play!', true);
+        draw();
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!gameRunning && !gameOverFlag) {
+            startGame();
+          }
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          resetGame();
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          keys.left = true;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          e.preventDefault();
+          keys.right = true;
+        }
+      });
+
+      document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          keys.left = false;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          e.preventDefault();
+          keys.right = false;
+        }
+      });
+
+      // ---------- Touch Controls ----------
+      let touchStartX = 0;
+      let isTouching = false;
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameRunning && !gameOverFlag) {
+          startGame();
+          return;
+        }
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        touchStartX = (touch.clientX - rect.left) * scaleX;
+        isTouching = true;
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!gameRunning || gameOverFlag) return;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const touchX = (touch.clientX - rect.left) * scaleX;
+        
+        if (isTouching) {
+          const diff = touchX - touchStartX;
+          if (diff > 10) {
+            keys.left = false;
+            keys.right = true;
+          } else if (diff < -10) {
+            keys.right = false;
+            keys.left = true;
+          }
+        }
+        touchStartX = touchX;
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isTouching = false;
+        keys.left = false;
+        keys.right = false;
+      }, { passive: false });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+
+      // ---------- Init ----------
+      function init() {
+        resetPlayer();
+        createPlatforms();
+        draw();
+        setGameStatus('🎮 Press "Start Game" or Space to begin!', true);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

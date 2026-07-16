@@ -1,12 +1,14 @@
 # Card Tilt Hover
 
-A high-performance, interactive 3D tilt effect for cards. This component provides a premium, tactile feel to content grids using pure CSS.
+A focused hover and focus-visible effect that gives a card subtle depth without changing surrounding layout.
 
-## What does this do?
-This component applies a high-performance 3D hover tilt effect to a card element, accompanied by a subtle light-sweep animation for visual feedback.
+## Files
 
-## How is it used?
-```html
-<div class="tilt-card">
-  </div> 
-  ```
+- `demo.html` - linked preview card markup.
+- `style.css` - 3D tilt, sheen overlay, focus-visible state, and reduced-motion support.
+
+## Highlights
+
+- Uses `perspective` and `transform-style` for a lightweight depth effect.
+- Provides the same interaction on keyboard focus.
+- Falls back to a simpler lift when reduced motion is requested.
