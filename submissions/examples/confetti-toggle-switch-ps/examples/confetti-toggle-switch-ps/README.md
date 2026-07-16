@@ -1,17 +1,16 @@
 # Confetti Toggle Switch (#41922)
 
-### 1. What does this do?
-This is a modern, dark-mode toggle switch component that launches a colorful radial burst of confetti particles from the sliding toggle thumb when flipped to the active (ON) state.
+A clean, high-performance, and accessible dark-mode party switch component that launches a radial confetti burst completely in pure CSS.
 
-### 2. How is it used?
-Integrate this component into any layout utilizing pure HTML semantic structures with zero script configuration:
+### How to use
+Add the switch markup directly into your document:
 
 ```html
-<div class="toggle-wrapper">
-  <input type="checkbox" id="my-toggle" class="confetti-checkbox">
-  <label for="my-toggle" class="toggle-track">
-    <div class="toggle-thumb">
-      <span class="particle" style="--tx: -30px; --ty: -30px; --bg: #ff007f;"></span>
-    </div>
-  </label>
+<div class="party-switch">
+    <input type="checkbox" id="party-trigger" class="native-input">
+    <label for="party-trigger" class="custom-track">
+        <span class="custom-knob">
+            <i class="burst-dot" style="--angle: 45deg; --dist: 50px; --color: #00ffcc;"></i>
+        </span>
+    </label>
 </div>
