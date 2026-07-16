@@ -1,3 +1,3 @@
-# Ease Blur In Fast
+# ease-blur-in-fast
 
-A high-speed transition sweeping out blur filters rapidly to implement instant cinematic reveals.
+Adds a dynamic, high-quality animation that can be used across multiple UI states.
