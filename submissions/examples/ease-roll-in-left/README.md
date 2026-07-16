@@ -1,3 +1,3 @@
-# Ease Roll In Left
+# ease-roll-in-left
 
-Spins components linearly from negative structural offscreen regions down to zero alignment limits.
+A professional-grade, multi-axis rotation and translation animation for modern interfaces.
