@@ -1,32 +1,119 @@
-# Floating Orbit Popover (sammuuu1115171)
+# Floating Orbit Popover
 
-## What does this do?
+A modern **Floating Orbit Popover** component built using **pure HTML and CSS** for the **EaseMotion CSS** library.
 
-The Floating Orbit Popover is a pure HTML and CSS component that displays a modern popover with a smooth floating orbit animation, minimalist tech-inspired styling, and no JavaScript dependency.
+This component showcases a premium minimalist tech-inspired popover featuring a smooth floating orbit animation, glassmorphism styling, animated gradient border, glowing background effects, and a fully responsive layout. It is designed as a reusable UI component for dashboards, portfolios, admin panels, and modern web applications.
 
 ---
 
-## How is it used?
+## Features
 
-Include the stylesheet and use the following HTML structure:
+- Minimalist Tech UI design
+- Smooth Floating Orbit animation
+- Glassmorphism card effect
+- Animated gradient border
+- Soft glowing background effects
+- CSS-only animations
+- Customizable using CSS variables
+- Fully responsive
+- Keyboard accessible
+- No JavaScript required
 
-```html
-<div class="popover-wrapper">
-    <button class="trigger-btn">
-        Open Popover
-    </button>
+---
 
-    <div class="popover">
-        <!-- Popover Content -->
-    </div>
-</div>
+## Folder Structure
+
+```text
+floating-orbit-popover-sam/
+├── demo.html
+├── style.css
+└── README.md
 ```
 
-Open `demo.html` in any modern browser to see the complete example.
+---
+
+## How to Use
+
+1. Clone the EaseMotion CSS repository.
+
+2. Navigate to:
+
+```text
+submissions/examples/
+```
+
+3. Create a folder:
+
+```text
+floating-orbit-popover-sam
+```
+
+4. Add:
+
+- `demo.html`
+- `style.css`
+- `README.md`
+
+5. Open `demo.html` using **Live Server** in VS Code.
 
 ---
 
-## Why is it useful?
+## Component Highlights
 
-This component provides an elegant, lightweight popover with smooth motion, responsive design, keyboard accessibility, and customizable CSS variables. It aligns with EaseMotion CSS's philosophy of creating modern, reusable UI components using only HTML and CSS.
+- Floating Orbit entrance animation
+- Premium glassmorphism design
+- Animated gradient border
+- Interactive hover effects
+- Responsive popover layout
+- Customizable CSS variables
+- Smooth CSS-only transitions
 
+---
+
+## Technologies Used
+
+- HTML5
+- CSS3
+- EaseMotion CSS
+
+---
+
+## Accessibility
+
+This component includes:
+
+- Semantic HTML
+- Keyboard focus styles
+- `:focus-visible` support
+- Reduced motion support
+- Responsive layout
+- High-contrast typography
+
+---
+
+## Responsive
+
+Optimized for:
+
+- Desktop
+- Laptop
+- Tablet
+- Mobile
+
+---
+
+## Author
+
+**Samruddhi Tapkir**
+
+GitHub: https://github.com/sammuuu11151171
+
+---
+
+## License
+
+This project follows the same license as the EaseMotion CSS repository.
+
+---
+
+Made with ❤️ for **GirlScript Summer of Code 2026 (GSSoC'26)**.
