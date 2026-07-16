@@ -1,43 +1,60 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
-const MagneticButton = ({ children, className = '', strength = 30 }) => {
+/**
+ * MagneticButton
+ *
+ * A reusable React component that applies a physics-based "magnetic" pull
+ * effect to its children. The element follows the cursor at a fraction of
+ * its movement distance and snaps back smoothly on mouse leave.
+ *
+ * @param {React.ReactNode} children  - Content rendered inside the button.
+ * @param {string}          className - Optional extra CSS class(es) for the wrapper.
+ * @param {number}          strength  - Fraction of cursor offset to translate (default 0.25).
+ * @param {...any}          props     - Any additional props forwarded to the <button> element.
+ */
+const MagneticButton = ({
+  children,
+  className = '',
+  strength = 0.25,
+  ...props
+}) => {
   const buttonRef = useRef(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e) => {
-    if (!buttonRef.current) return;
-    
-    const { left, top, width, height } = buttonRef.current.getBoundingClientRect();
-    const centerX = left + width / 2;
-    const centerY = top + height / 2;
-    
-    const deltaX = e.clientX - centerX;
-    const deltaY = e.clientY - centerY;
-    
-    const x = (deltaX / width) * strength;
-    const y = (deltaY / height) * strength;
-    
-    setPosition({ x, y });
+    const btn = buttonRef.current;
+    if (!btn) return;
+
+    const rect = btn.getBoundingClientRect();
+
+    // Distance from cursor to button center
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+
+    // Apply only a fraction of the distance for a subtle magnetic pull
+    const translateX = x * strength;
+    const translateY = y * strength;
+
+    btn.style.transform = `translate(${translateX}px, ${translateY}px)`;
   };
 
   const handleMouseLeave = () => {
-    setPosition({ x: 0, y: 0 });
+    const btn = buttonRef.current;
+    if (!btn) return;
+
+    // Smoothly return to the original position
+    btn.style.transform = 'translate(0px, 0px)';
   };
 
   return (
-    <div
+    <button
       ref={buttonRef}
-      className={`ease-magnetic-wrapper ${className}`}
+      className={`ease-magnetic-btn${className ? ` ${className}` : ''}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      {...props}
     >
-      <div
-        className="ease-magnetic-content"
-        style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
-      >
-        {children}
-      </div>
-    </div>
+      {children}
+    </button>
   );
 };
 

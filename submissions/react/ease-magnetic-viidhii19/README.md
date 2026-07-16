@@ -1,44 +1,94 @@
-# Magnetic Hover Button (ease-magnetic-viidhii19)
+# MagneticButton — `ease-magnetic-viidhii19`
 
-A zero-dependency React component that creates a tactile, physics-based "magnetic" hover effect. The button physically pulls toward the user's cursor when hovered and elastically snaps back when the mouse leaves.
+A zero-dependency React functional component that creates a smooth, physics-inspired **magnetic hover effect**. When the user's cursor enters the button, it physically pulls toward the cursor; when the cursor leaves, it elastically snaps back to its original position.
+
+---
+
+## Features
+
+- **No external dependencies** — pure React + DOM APIs
+- **Accessible** — renders a native `<button>` element; supports all standard button props
+- **Configurable strength** — tune how strongly the button follows the cursor
+- **Smooth transitions** — uses `cubic-bezier` easing for a natural elastic return
+- **60fps performance** — direct `style.transform` mutation (no React re-renders on mouse move)
+
+---
+
+## How It Works
+
+1. `useRef` attaches directly to the `<button>` DOM node.
+2. On `onMouseMove`, `getBoundingClientRect()` retrieves the button's current position and size.
+3. The offset between the cursor and the button's **center** is calculated:
+   ```js
+   const x = e.clientX - rect.left - rect.width  / 2;
+   const y = e.clientY - rect.top  - rect.height / 2;
+   ```
+4. Only a **fraction** of that distance is applied as a transform:
+   ```js
+   btn.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+   ```
+5. On `onMouseLeave`, the transform is reset to `translate(0px, 0px)`. The CSS `transition` on `.ease-magnetic-btn` animates the return smoothly.
+
+---
 
 ## Props
 
-| Prop | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `strength` | `number` | `30` | Controls how strongly the element is pulled toward the cursor. |
-| `children` | `node` | (required) | The element(s) to apply the magnetic effect to. |
-| `className` | `string` | `''` | Optional extra CSS classes applied to the wrapper. |
+| Prop        | Type              | Default  | Description                                                  |
+| :---------- | :---------------- | :------- | :----------------------------------------------------------- |
+| `children`  | `React.ReactNode` | required | Content rendered inside the button.                          |
+| `className` | `string`          | `''`     | Extra CSS class(es) appended to the button element.          |
+| `strength`  | `number`          | `0.25`   | Fraction of cursor offset applied as translation (0–1 range recommended). |
+| `...props`  | `any`             | —        | All other props (e.g. `onClick`, `aria-label`) forwarded to `<button>`. |
+
+---
 
 ## Usage Example
 
 ```jsx
 import React from 'react';
 import MagneticButton from './MagneticButton';
-import './style.css'; // Make sure to import the styles
 
-const App = () => {
-  return (
-    <MagneticButton strength={40} className="my-custom-wrapper">
-      <button className="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill">
-        Hover Me
-      </button>
-    </MagneticButton>
-  );
-};
+const App = () => (
+  <MagneticButton strength={0.3} onClick={() => alert('Clicked!')} aria-label="Submit">
+    Hover Me
+  </MagneticButton>
+);
 
 export default App;
 ```
 
-## Implementation Details
+---
 
-This component relies entirely on native DOM mathematics and React state, ensuring high performance without requiring external physics libraries.
+## Expected Behavior
 
-When the mouse moves over the component (`onMouseMove`), it triggers the following calculation:
-1. It retrieves the element's bounding box using `getBoundingClientRect()`.
-2. It calculates the component's exact center coordinates on the page.
-3. It finds the delta between the center of the component and the `clientX` / `clientY` cursor coordinates.
-4. It normalizes this distance by dividing it by the element's width/height, then multiplies it by the `strength` prop.
-5. The result updates the React state `{x, y}` which is injected as an inline `transform: translate(x, y)` onto the child wrapper.
+| Interaction       | Result                                                       |
+| :---------------- | :----------------------------------------------------------- |
+| Cursor enters     | Button glides toward cursor proportionally to `strength`     |
+| Cursor moves      | Button tracks cursor continuously in real-time               |
+| Cursor leaves     | Button snaps back to `translate(0px, 0px)` with easing      |
+| Tab / focus       | Native `:focus-visible` outline is preserved                 |
 
-Combined with the `ease-magnetic-content` CSS transition, this provides a highly elastic, 60fps physics pull.
+---
+
+## Required CSS
+
+Add the following to your stylesheet (or `style.css` in this folder):
+
+```css
+.ease-magnetic-btn {
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+```
+
+---
+
+## Folder Structure
+
+```
+ease-magnetic-viidhii19/
+├── MagneticButton.jsx   # Reusable React component
+├── demo.html            # Standalone browser demo (React via CDN)
+├── style.css            # Transition & base styles for .ease-magnetic-btn
+└── README.md            # This file
+```
