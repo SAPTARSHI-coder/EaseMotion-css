@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bioluminescent Jellyfish</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🪼 Bioluminescent Jellyfish</h1>
+        <p class="subtitle">Pulsing, translucent jellyfish with trailing tentacles</p>
+
+        <div class="jellyfish-wrapper">
+            <canvas id="jellyfishCanvas"></canvas>
+
+            <div class="controls">
+                <button id="addBtn">➕ Add</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🪼 Swimming</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('jellyfishCanvas');
+        const ctx = canvas.getContext('2d');
+        const addBtn = document.getElementById('addBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let jellyfish = [];
+        let particles = [];
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 80%, 70%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t, time) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 70%, ${60 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t, time) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t, time) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${60 + t * 30}%)`;
+                }
+            },
+        ];
+
+        // ===== JELLYFISH CLASS =====
+        class Jellyfish {
+            constructor(x, y, size) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height;
+                this.size = size || 30 + Math.random() * 40;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.angle = Math.random() * Math.PI * 2;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.moveTimer = 0;
+                this.moveInterval = 100 + Math.random() * 200;
+                this.tentacles = [];
+                this.numTentacles = 8 + Math.floor(Math.random() * 8);
+                this.tentacleLength = this.size * (1.5 + Math.random() * 1.5);
+                this.opacity = 0.3 + Math.random() * 0.3;
+                this.colorOffset = Math.random();
+                this.pulseAmount = 0.3 + Math.random() * 0.3;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.segments = 20 + Math.floor(Math.random() * 10);
+                this.wobbleSpeed = 0.02 + Math.random() * 0.02;
+                this.wobbleAmount = 0.3 + Math.random() * 0.5;
+                this.driftX = (Math.random() - 0.5) * 0.3;
+                this.driftY = (Math.random() - 0.5) * 0.3;
+                this.bioluminescence = 0.5 + Math.random() * 0.5;
+
+                // Create tentacle points
+                for (let i = 0; i < this.numTentacles; i++) {
+                    const angle = (i / this.numTentacles) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                    const points = [];
+                    const len = this.tentacleLength * (0.7 + Math.random() * 0.6);
+                    const segments = 15 + Math.floor(Math.random() * 10);
+                    for (let j = 0; j <= segments; j++) {
+                        points.push({
+                            x: 0,
+                            y: 0,
+                            phase: Math.random() * Math.PI * 2,
+                            speed: 0.02 + Math.random() * 0.03,
+                            amplitude: 0.3 + Math.random() * 0.5
+                        });
+                    }
+                    this.tentacles.push({
+                        angle: angle,
+                        points: points,
+                        length: len,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.01 + Math.random() * 0.02,
+                        baseAngle: angle,
+                        thickness: 1 + Math.random() * 2
+                    });
+                }
+            }
+
+            update(time, speed) {
+                const w = canvas.width;
+                const h = canvas.height;
+
+                // Move toward target
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > 1) {
+                    const moveSpeed = 0.3 * speed * 10;
+                    this.x += (dx / dist) * moveSpeed;
+                    this.y += (dy / dist) * moveSpeed;
+                }
+
+                // Drift
+                this.x += this.driftX * speed * 5;
+                this.y += this.driftY * speed * 5;
+
+                // Boundary
+                const margin = 50;
+                if (this.x < margin) { this.x = margin; this.targetX = margin + 50; }
+                if (this.x > w - margin) { this.x = w - margin; this.targetX = w - margin - 50; }
+                if (this.y < margin) { this.y = margin; this.targetY = margin + 50; }
+                if (this.y > h - margin) { this.y = h - margin; this.targetY = h - margin - 50; }
+
+                // Update target
+                this.moveTimer++;
+                if (this.moveTimer > this.moveInterval / speed) {
+                    this.moveTimer = 0;
+                    this.moveInterval = 80 + Math.random() * 200;
+                    this.targetX = margin + Math.random() * (w - margin * 2);
+                    this.targetY = margin + Math.random() * (h - margin * 2);
+                    this.driftX = (Math.random() - 0.5) * 0.3;
+                    this.driftY = (Math.random() - 0.5) * 0.3;
+                }
+
+                // Pulse
+                this.pulsePhase += this.pulseSpeed * speed * 5;
+                const pulse = 0.5 + 0.5 * Math.sin(this.pulsePhase);
+
+                // Update tentacles
+                for (const tentacle of this.tentacles) {
+                    tentacle.phase += tentacle.speed * speed * 5;
+                    const baseAngle = tentacle.baseAngle + Math.sin(tentacle.phase + time * 0.01) * 0.1;
+
+                    for (let i = 0; i < tentacle.points.length; i++) {
+                        const t = i / tentacle.points.length;
+                        const p = tentacle.points[i];
+                        const wobble = Math.sin(time * p.speed * 10 + p.phase + tentacle.phase) * p.amplitude * this.size * 0.15;
+                        const angleOffset = baseAngle + wobble * (1 - t * 0.3);
+                        const length = tentacle.length * t * (0.8 + 0.2 * pulse);
+                        const x = Math.cos(angleOffset) * length;
+                        const y = Math.sin(angleOffset) * length;
+                        p.x = x;
+                        p.y = y;
+                    }
+                }
+
+                return pulse;
+            }
+
+            draw(ctx, time, pulse) {
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.colorOffset + time * 0.01, time);
+                const glowColor = colorFn((this.colorOffset + 0.3 + time * 0.01) % 1, time);
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                const scale = 0.7 + 0.3 * pulse;
+                ctx.scale(scale, scale);
+
+                // Draw glow
+                const glowSize = this.size * 4 * (0.5 + 0.5 * pulse) * this.glowIntensity;
+                const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+                glowGrad.addColorStop(0, glowColor + '40');
+                glowGrad.addColorStop(0.5, glowColor + '20');
+                glowGrad.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = glowGrad;
+                ctx.globalAlpha = this.opacity * 0.5;
+                ctx.fill();
+
+                // Draw tentacles
+                for (const tentacle of this.tentacles) {
+                    const points = tentacle.points;
+                    ctx.beginPath();
+                    for (let i = 0; i < points.length; i++) {
+                        const p = points[i];
+                        const t = i / points.length;
+                        const alpha = 1 - t * 0.6;
+                        const width = tentacle.thickness * (1 - t * 0.5) * (0.5 + 0.5 * pulse);
+
+                        if (i === 0) {
+                            ctx.moveTo(p.x, p.y);
+                        } else {
+                            ctx.lineTo(p.x, p.y);
+                        }
+                    }
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = this.opacity * (0.3 + 0.7 * pulse) * 0.5;
+                    ctx.lineWidth = tentacle.thickness * (0.3 + 0.7 * pulse);
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = glowColor;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Tentacle glow
+                    for (let i = 0; i < points.length; i += 3) {
+                        const p = points[i];
+                        const t = i / points.length;
+                        const size = tentacle.thickness * (1 - t * 0.5) * (0.5 + 0.5 * pulse) * 1.5;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+                        ctx.fillStyle = glowColor;
+                        ctx.globalAlpha = this.opacity * (1 - t) * 0.2;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = glowColor;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+
+                // Draw bell (dome)
+                const bellPulse = 0.7 + 0.3 * pulse;
+                const bellWidth = this.size * bellPulse;
+                const bellHeight = this.size * 0.7 * (0.8 + 0.2 * pulse);
+
+                // Bell glow
+                const bellGlow = ctx.createRadialGradient(0, -bellHeight * 0.3, 0, 0, 0, bellWidth);
+                bellGlow.addColorStop(0, glowColor + '60');
+                bellGlow.addColorStop(0.5, color + '40');
+                bellGlow.addColorStop(1, color + '10');
+
+                ctx.beginPath();
+                ctx.ellipse(0, -bellHeight * 0.2, bellWidth, bellHeight, 0, 0, Math.PI * 2);
+                ctx.fillStyle = bellGlow;
+                ctx.globalAlpha = this.opacity * (0.5 + 0.5 * pulse);
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = glowColor;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Bell outline
+                ctx.beginPath();
+                ctx.ellipse(0, -bellHeight * 0.2, bellWidth, bellHeight, 0, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = this.opacity * (0.2 + 0.3 * pulse);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Bell veins
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const vx = Math.cos(angle) * bellWidth * 0.7;
+                    const vy = Math.sin(angle) * bellHeight * 0.7;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -bellHeight * 0.2);
+                    ctx.quadraticCurveTo(vx * 0.5, vy * 0.5, vx, vy);
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = this.opacity * (0.1 + 0.2 * pulse);
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+
+                // Center bioluminescent spot
+                const spotSize = this.size * 0.15 * (0.5 + 0.5 * pulse);
+                const spotGrad = ctx.createRadialGradient(0, -bellHeight * 0.2, 0, 0, -bellHeight * 0.2, spotSize * 2);
+                spotGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
+                spotGrad.addColorStop(0.5, glowColor + '40');
+                spotGrad.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, -bellHeight * 0.2, spotSize * 2, 0, Math.PI * 2);
+                ctx.fillStyle = spotGrad;
+                ctx.globalAlpha = this.opacity * (0.5 + 0.5 * pulse) * this.bioluminescence;
+                ctx.fill();
+
+                // Bioluminescent dots on bell
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2 + time * 0.01;
+                    const dist = bellWidth * 0.3 + Math.sin(time * 0.02 + i) * bellWidth * 0.2;
+                    const bx = Math.cos(angle) * dist;
+                    const by = Math.sin(angle) * dist * 0.6 - bellHeight * 0.2;
+                    const dotSize = 1 + Math.sin(time * 0.03 + i * 2) * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(bx, by, dotSize, 0, Math.PI * 2);
+                    ctx.fillStyle = glowColor;
+                    ctx.globalAlpha = this.opacity * (0.3 + 0.4 * pulse) * (0.5 + 0.5 * Math.sin(time * 0.02 + i));
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = glowColor;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.restore();
+
+                // Spawn bioluminescent particles
+                if (Math.random() < 0.02 * speed * 20) {
+                    const px = this.x + (Math.random() - 0.5) * this.size * 2;
+                    const py = this.y + (Math.random() - 0.5) * this.size * 2;
+                    particles.push(new Particle(px, py, this.colorOffset, this.opacity));
+                }
+            }
+        }
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, colorOffset, opacity) {
+                this.x = x;
+                this.y = y;
+                this.colorOffset = colorOffset || Math.random();
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3 - 0.2;
+                this.size = 1 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 80;
+                this.age = 0;
+                this.opacity = opacity || 0.5;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.vx += Math.sin(this.phase) * 0.01;
+                this.phase += 0.05;
+                this.life = Math.max(0, 1 - this.age / this.maxLife);
+            }
+
+            draw(ctx, time) {
+                if (this.life <= 0) return;
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn((this.colorOffset + time * 0.01) % 1, time);
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(1, color + '00');
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * this.opacity * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = this.life * this.opacity * 0.6;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a2e');
+            grad.addColorStop(0.5, '#061020');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Underwater light rays
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.01 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 20, h);
+                grad2.addColorStop(0, 'rgba(100, 200, 255, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(100, 200, 255, 0.05)');
+                grad2.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 20, h);
+            }
+
+            // Distant bioluminescent dots
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.005) * 20;
+                const y = (i * 17 + Math.sin(i * 0.3) * 30) % h;
+                const size = 0.5 + Math.sin(i + time * 0.01) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.05 + Math.sin(i + time * 0.02) * 0.03})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== INIT JELLYFISH =====
+        function initJellyfish(count) {
+            const w = canvas.width;
+            const h = canvas.height;
+            jellyfish = [];
+            const margin = 50;
+            for (let i = 0; i < count; i++) {
+                const x = margin + Math.random() * (w - margin * 2);
+                const y = margin + Math.random() * (h - margin * 2);
+                const size = 25 + Math.random() * 35;
+                const j = new Jellyfish(x, y, size);
+                jellyfish.push(j);
+            }
+        }
+        initJellyfish(3);
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update and draw jellyfish
+            for (const j of jellyfish) {
+                const pulse = j.update(time, speed);
+                j.draw(ctx, time, pulse);
+            }
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw(ctx, time);
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🪼 ${jellyfish.length} jellyfish • ${particles.length} particles`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Add jellyfish
+        addBtn.addEventListener('click', () => {
+            const w = canvas.width;
+            const h = canvas.height;
+            const margin = 50;
+            const x = margin + Math.random() * (w - margin * 2);
+            const y = margin + Math.random() * (h - margin * 2);
+            const size = 25 + Math.random() * 35;
+            const j = new Jellyfish(x, y, size);
+            jellyfish.push(j);
+            statusText.textContent = '🪼 Added!';
+            setTimeout(() => {
+                statusText.textContent = `🪼 ${jellyfish.length} jellyfish`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🪼 ${jellyfish.length} jellyfish`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🪼 ${jellyfish.length} jellyfish`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            particles = [];
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            initJellyfish(3);
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🪼 ${jellyfish.length} jellyfish`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' || e.key === 'A') {
+                addBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                addBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Reposition jellyfish
+            for (const j of jellyfish) {
+                j.x = Math.min(j.x, canvas.width - 50);
+                j.y = Math.min(j.y, canvas.height - 50);
+                j.targetX = Math.min(j.targetX, canvas.width - 50);
+                j.targetY = Math.min(j.targetY, canvas.height - 50);
+            }
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🪼 ${jellyfish.length} jellyfish`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🪼 Bioluminescent Jellyfish loaded!');
+        console.log('💡 A - Add jellyfish');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Add jellyfish');
+    </script>
+</body>
+</html>

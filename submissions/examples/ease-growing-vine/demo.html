@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Growing Vine</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌿 Growing Vine</h1>
+        <p class="subtitle">Animated vine with leaves that grows and curls around objects</p>
+
+        <div class="vine-wrapper">
+            <canvas id="vineCanvas"></canvas>
+
+            <div class="controls">
+                <button id="growBtn">🌱 Grow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="densityBtn">Density: Medium</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌱 Ready to grow</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('vineCanvas');
+        const ctx = canvas.getContext('2d');
+        const growBtn = document.getElementById('growBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const densityBtn = document.getElementById('densityBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let vineSegments = [];
+        let leaves = [];
+        let buds = [];
+        let obstacles = [];
+        let isGrowing = false;
+        let growthProgress = 0;
+        let maxGrowth = 1;
+        let speed = 0.005;
+        let speedLevel = 1;
+        let density = 1;
+        let densityLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.002 },
+            { name: 'Normal', value: 0.005 },
+            { name: 'Fast', value: 0.01 },
+            { name: 'Very Fast', value: 0.02 },
+        ];
+
+        // ===== DENSITY OPTIONS =====
+        const densities = [
+            { name: 'Sparse', value: 0.5 },
+            { name: 'Medium', value: 1 },
+            { name: 'Dense', value: 1.5 },
+            { name: 'Lush', value: 2 },
+        ];
+
+        // ===== OBSTACLES =====
+        function createObstacles() {
+            const w = canvas.width;
+            const h = canvas.height;
+            obstacles = [
+                { x: w * 0.2, y: h * 0.3, r: 30 },
+                { x: w * 0.7, y: h * 0.25, r: 25 },
+                { x: w * 0.5, y: h * 0.7, r: 35 },
+                { x: w * 0.3, y: h * 0.8, r: 20 },
+                { x: w * 0.8, y: h * 0.6, r: 28 },
+                { x: w * 0.1, y: h * 0.6, r: 22 },
+                { x: w * 0.9, y: h * 0.85, r: 18 },
+                { x: w * 0.45, y: h * 0.4, r: 15 },
+            ];
+        }
+        createObstacles();
+
+        // ===== VINE SEGMENT CLASS =====
+        class VineSegment {
+            constructor(x, y, parent, angle, length, thickness) {
+                this.x = x;
+                this.y = y;
+                this.parent = parent;
+                this.angle = angle || Math.random() * Math.PI * 2;
+                this.length = length || 8 + Math.random() * 12;
+                this.thickness = thickness || 3 + Math.random() * 3;
+                this.children = [];
+                this.branchChance = 0.15;
+                this.hasBranched = false;
+                this.age = 0;
+                this.maxAge = 50 + Math.random() * 100;
+                this.curlSpeed = 0.01 + Math.random() * 0.02;
+                this.curlAmount = 0.3 + Math.random() * 0.5;
+                this.grown = 0;
+                this.targetGrown = 1;
+                this.isTip = true;
+                this.endX = x;
+                this.endY = y;
+                this.leafChance = 0.01;
+                this.hasLeaf = false;
+                this.budChance = 0.005;
+                this.hasBud = false;
+                this.obstacleAvoidance = 0.5 + Math.random() * 0.5;
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                
+                // Growth
+                if (this.grown < this.targetGrown) {
+                    this.grown += speed * 1.5 * density;
+                    if (this.grown > this.targetGrown) this.grown = this.targetGrown;
+                }
+
+                // Curl
+                this.angle += Math.sin(time * this.curlSpeed + this.age * 0.01) * this.curlAmount * 0.01;
+
+                // Obstacle avoidance
+                for (const obs of obstacles) {
+                    const dx = this.endX - obs.x;
+                    const dy = this.endY - obs.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < obs.r + 20) {
+                        const pushAngle = Math.atan2(dy, dx);
+                        this.angle += (pushAngle - this.angle) * 0.05 * this.obstacleAvoidance;
+                    }
+                }
+
+                // Calculate end position
+                const grownLength = this.length * this.grown;
+                this.endX = this.x + Math.cos(this.angle) * grownLength;
+                this.endY = this.y + Math.sin(this.angle) * grownLength;
+
+                // Boundary avoidance
+                const margin = 20;
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.endX < margin) this.angle += 0.1;
+                if (this.endX > w - margin) this.angle -= 0.1;
+                if (this.endY < margin) this.angle += 0.1;
+                if (this.endY > h - margin) this.angle -= 0.1;
+
+                // Update children
+                for (const child of this.children) {
+                    child.update(time, speed);
+                }
+
+                // Branching
+                if (!this.hasBranched && this.grown > 0.5 && this.age > 20) {
+                    if (Math.random() < this.branchChance * density * speed * 50) {
+                        this.branch();
+                    }
+                }
+
+                // Leaf generation
+                if (!this.hasLeaf && this.grown > 0.7 && Math.random() < this.leafChance * density * speed * 30) {
+                    this.hasLeaf = true;
+                    leaves.push(new Leaf(this.endX, this.endY, this.angle + Math.PI / 2, this.thickness));
+                }
+
+                // Bud generation
+                if (!this.hasBud && this.grown > 0.9 && Math.random() < this.budChance * density * speed * 20) {
+                    this.hasBud = true;
+                    buds.push(new Bud(this.endX, this.endY, this.angle + Math.PI / 2));
+                }
+            }
+
+            branch() {
+                this.hasBranched = true;
+                const branchAngle = this.angle + (Math.random() - 0.5) * 1.2;
+                const branchLength = this.length * (0.6 + Math.random() * 0.4);
+                const branchThickness = this.thickness * (0.6 + Math.random() * 0.3);
+                const child = new VineSegment(
+                    this.endX,
+                    this.endY,
+                    this,
+                    branchAngle,
+                    branchLength,
+                    branchThickness
+                );
+                child.branchChance = 0.2 + Math.random() * 0.1;
+                child.curlSpeed = 0.01 + Math.random() * 0.02;
+                child.curlAmount = 0.2 + Math.random() * 0.5;
+                this.children.push(child);
+
+                // Sometimes branch again immediately
+                if (Math.random() < 0.3) {
+                    const secondAngle = this.angle + (Math.random() - 0.5) * 1.5;
+                    const secondChild = new VineSegment(
+                        this.endX,
+                        this.endY,
+                        this,
+                        secondAngle,
+                        branchLength * 0.8,
+                        branchThickness * 0.8
+                    );
+                    secondChild.branchChance = 0.15 + Math.random() * 0.1;
+                    secondChild.curlSpeed = 0.01 + Math.random() * 0.02;
+                    secondChild.curlAmount = 0.3 + Math.random() * 0.4;
+                    this.children.push(secondChild);
+                }
+            }
+
+            draw(ctx) {
+                // Draw this segment
+                if (this.grown > 0) {
+                    const grownLength = this.length * this.grown;
+                    const endX = this.x + Math.cos(this.angle) * grownLength;
+                    const endY = this.y + Math.sin(this.angle) * grownLength;
+
+                    // Gradient along the vine
+                    const grad = ctx.createLinearGradient(this.x, this.y, endX, endY);
+                    const green1 = 60 + Math.random() * 20;
+                    const green2 = 100 + Math.random() * 30;
+                    grad.addColorStop(0, `hsl(120, 60%, ${green1}%)`);
+                    grad.addColorStop(1, `hsl(130, 70%, ${green2}%)`);
+
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = this.thickness * (0.3 + 0.7 * this.grown);
+                    ctx.lineCap = 'round';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(50, 200, 50, 0.2)';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Draw children
+                    for (const child of this.children) {
+                        child.draw(ctx);
+                    }
+                }
+            }
+
+            getEndPosition() {
+                const grownLength = this.length * this.grown;
+                return {
+                    x: this.x + Math.cos(this.angle) * grownLength,
+                    y: this.y + Math.sin(this.angle) * grownLength
+                };
+            }
+        }
+
+        // ===== LEAF CLASS =====
+        class Leaf {
+            constructor(x, y, angle, size) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.size = size || 5 + Math.random() * 8;
+                this.growth = 0;
+                this.maxGrowth = 1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                this.color = `hsl(${100 + Math.random() * 40}, ${60 + Math.random() * 30}%, ${40 + Math.random() * 30}%)`;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 300 + Math.random() * 400;
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                if (this.growth < this.maxGrowth) {
+                    this.growth += speed * 2;
+                    if (this.growth > this.maxGrowth) this.growth = this.maxGrowth;
+                }
+                this.phase += this.wobbleSpeed * speed * 10;
+                this.life = Math.max(0, 1 - this.age / this.maxAge);
+            }
+
+            draw(ctx) {
+                if (this.life <= 0 || this.growth <= 0) return;
+
+                const size = this.size * this.growth * this.life;
+                const wobble = Math.sin(this.phase) * 2;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle + wobble * 0.05);
+
+                // Leaf shape
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(size * 0.5, -size * 0.4, size, 0);
+                ctx.quadraticCurveTo(size * 0.5, size * 0.4, 0, 0);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, -size * 0.4, 0, size * 0.4);
+                grad.addColorStop(0, this.color);
+                grad.addColorStop(0.5, `hsl(130, 70%, 50%)`);
+                grad.addColorStop(1, this.color);
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(50, 200, 50, 0.2)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Leaf vein
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(size * 0.8, 0);
+                ctx.strokeStyle = 'rgba(30, 100, 30, 0.3)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+        }
+
+        // ===== BUD CLASS =====
+        class Bud {
+            constructor(x, y, angle) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle;
+                this.growth = 0;
+                this.maxGrowth = 1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.size = 3 + Math.random() * 4;
+                this.color = `hsl(${110 + Math.random() * 30}, ${70 + Math.random() * 20}%, ${50 + Math.random() * 20}%)`;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 200 + Math.random() * 300;
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                if (this.growth < this.maxGrowth) {
+                    this.growth += speed * 1.5;
+                    if (this.growth > this.maxGrowth) this.growth = this.maxGrowth;
+                }
+                this.phase += 0.02 * speed * 10;
+                this.life = Math.max(0, 1 - this.age / this.maxAge);
+            }
+
+            draw(ctx) {
+                if (this.life <= 0 || this.growth <= 0) return;
+
+                const size = this.size * this.growth * this.life;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Bud shape (teardrop)
+                ctx.beginPath();
+                ctx.moveTo(0, -size * 0.5);
+                ctx.quadraticCurveTo(size * 0.8, -size * 0.2, size * 0.6, size * 0.5);
+                ctx.quadraticCurveTo(0, size * 0.3, -size * 0.6, size * 0.5);
+                ctx.quadraticCurveTo(-size * 0.8, -size * 0.2, 0, -size * 0.5);
+                ctx.closePath();
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size);
+                grad.addColorStop(0, `hsl(140, 80%, 65%)`);
+                grad.addColorStop(0.5, this.color);
+                grad.addColorStop(1, `hsl(100, 60%, 35%)`);
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(50, 200, 50, 0.3)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.restore();
+            }
+        }
+
+        // ===== INIT VINE =====
+        function initVine() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const startX = w * 0.1;
+            const startY = h * 0.9;
+            
+            vineSegments = [];
+            leaves = [];
+            buds = [];
+            
+            const root = new VineSegment(startX, startY, null, -Math.PI / 2, 15 + Math.random() * 10, 5 + Math.random() * 3);
+            root.branchChance = 0.2;
+            root.targetGrown = 1;
+            vineSegments.push(root);
+            
+            growthProgress = 0;
+            maxGrowth = 1;
+            isGrowing = false;
+        }
+        initVine();
+
+        // ===== DRAW OBSTACLES =====
+        function drawObstacles(ctx) {
+            for (const obs of obstacles) {
+                ctx.beginPath();
+                ctx.arc(obs.x, obs.y, obs.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(100, 100, 150, 0.1)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(100, 100, 150, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // ===== GROW VINE =====
+        function growVine() {
+            if (isGrowing) return;
+            isGrowing = true;
+            statusText.textContent = '🌱 Growing...';
+            
+            // Add growth to all tip segments
+            growSegments(vineSegments);
+            
+            setTimeout(() => {
+                isGrowing = false;
+                statusText.textContent = '🌿 Vine grown!';
+                setTimeout(() => {
+                    statusText.textContent = '🌱 Ready to grow';
+                }, 1500);
+            }, 500);
+        }
+
+        function growSegments(segments) {
+            for (const seg of segments) {
+                if (seg.isTip && seg.grown >= seg.targetGrown) {
+                    // Extend the vine
+                    const newSeg = new VineSegment(
+                        seg.endX,
+                        seg.endY,
+                        seg,
+                        seg.angle + (Math.random() - 0.5) * 0.8,
+                        seg.length * (0.8 + Math.random() * 0.4),
+                        seg.thickness * (0.7 + Math.random() * 0.3)
+                    );
+                    newSeg.branchChance = 0.12 + Math.random() * 0.08;
+                    newSeg.curlSpeed = 0.01 + Math.random() * 0.02;
+                    newSeg.curlAmount = 0.2 + Math.random() * 0.5;
+                    newSeg.targetGrown = 1;
+                    seg.children.push(newSeg);
+                    vineSegments.push(newSeg);
+                    seg.isTip = false;
+                }
+                
+                // Recursively grow children
+                if (seg.children.length > 0) {
+                    growSegments(seg.children);
+                }
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background
+            const bgGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            bgGrad.addColorStop(0, '#0a1a0a');
+            bgGrad.addColorStop(0.5, '#060f06');
+            bgGrad.addColorStop(1, '#000000');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw obstacles
+            drawObstacles(ctx);
+
+            // Update and draw vine
+            for (const seg of vineSegments) {
+                seg.update(time, speed);
+                seg.draw(ctx);
+            }
+
+            // Update and draw leaves
+            for (const leaf of leaves) {
+                leaf.update(time, speed);
+                leaf.draw(ctx);
+            }
+
+            // Update and draw buds
+            for (const bud of buds) {
+                bud.update(time, speed);
+                bud.draw(ctx);
+            }
+
+            // Draw ground
+            const groundGrad = ctx.createLinearGradient(0, h * 0.92, 0, h);
+            groundGrad.addColorStop(0, 'rgba(20, 50, 20, 0)');
+            groundGrad.addColorStop(1, 'rgba(20, 50, 20, 0.3)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, h * 0.92, w, h * 0.08);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const leafCount = leaves.length;
+                const budCount = buds.length;
+                const segCount = vineSegments.length;
+                statusText.textContent = `🌿 ${segCount} segments • ${leafCount} leaves • ${budCount} buds`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Grow
+        growBtn.addEventListener('click', growVine);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌱 Ready to grow';
+            }, 1000);
+        });
+
+        // Density
+        densityBtn.addEventListener('click', () => {
+            densityLevel = (densityLevel + 1) % densities.length;
+            density = densities[densityLevel].value;
+            densityBtn.textContent = `Density: ${densities[densityLevel].name}`;
+            statusText.textContent = `🌿 ${densities[densityLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌱 Ready to grow';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initVine();
+            createObstacles();
+            speedLevel = 1;
+            speed = speeds[1].value;
+            densityLevel = 1;
+            density = densities[1].value;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            densityBtn.textContent = `Density: ${densities[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌱 Ready to grow';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                growBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                densityBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                growBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initVine();
+            createObstacles();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        densityBtn.textContent = `Density: ${densities[1].name}`;
+        statusText.textContent = '🌱 Ready to grow';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌿 Growing Vine loaded!');
+        console.log('💡 G - Grow vine');
+        console.log('💡 S - Change speed');
+        console.log('💡 D - Change density');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Quick grow');
+    </script>
+</body>
+</html>

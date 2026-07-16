@@ -1,32 +1,22 @@
-# 💰 Animated Pricing Table UI
+# Interactive Pricing Table
 
-A premium, interactive 3-tier pricing section demonstrating layout, card components, hover motion, and looping badge animations built with **EaseMotion CSS**.
+An elegant, fully responsive pricing table built entirely with EaseMotion CSS utility classes.
 
-## ✨ Features
+## Features
+- **Staggered Entry Animations**: Uses `ease-slide-up`, `ease-fade-in`, and `ease-delay-*` to sequentially animate the pricing cards into view.
+- **Interactive Hover States**: Employs `ease-hover-grow` to provide immediate, tactile feedback when users interact with the cards.
+- **Call-to-Action Highlights**: The "Pro" plan is highlighted with an `ease-pulse-border-emphasis` outline and `ease-squish-button` on its primary CTA, drawing user attention.
+- **Responsive Layout**: Uses `ease-grid` and `ease-md-grid-cols-3` to handle mobile to desktop layouts smoothly.
 
-- **Responsive Grid:** Sleek CSS Grid layout (`.pricing-grid`) that scales dynamically from mobile screens up to wide desktops.
-- **EaseMotion Transition Classes:** 
-  - `ease-fade-in` for clean page entry loading.
-  - `ease-slide-up` for staggered card elevations on initial page load.
-  - `ease-hover-grow` for smooth card hover scale feedback.
-  - `ease-btn-hover` for card primary CTA button GPU-accelerated lift + glow effect.
-  - `ease-bounce` for dynamic infinite bounce on the Recommended badge.
-  - `ease-pulse` for subtle, organic pulse attention-grabbing on the discount tag.
-  - `ease-delay-X` (`75ms`, `100ms`, `150ms`, `200ms`, `300ms`, `400ms`) for staggering section loading sequence.
-- **Interactive Switcher:** Smooth Yearly / Monthly pricing toggle updating tier price values dynamically with scale transition animations.
-- **Premium Background Mesh:** A beautiful dark-theme mesh gradient that floats slowly using keyframe loops, showcasing the framework's theme variables.
+## How to use
+You can integrate these pricing cards easily into your project. Here is an example of the card structure:
 
-## 📁 File Structure
+```html
+<div class="ease-bg-white ease-padding-8 ease-rounded-xl ease-shadow ease-hover-grow ease-fade-in ease-slide-up ease-delay-100 ease-stack">
+  <!-- Card Content -->
+  <button class="ease-btn ease-btn-outline ease-w-full ease-rounded-full ease-hover-bounce-text">Get Started</button>
+</div>
+```
 
-- `demo.html` - HTML document defining structural layout, card elements, billing selector, and interactive script.
-- `style.css` - Custom style parameters defining custom gradient background, badge coordinates, and scale modifications.
-- `README.md` - Documentation of this example.
-
-## 🚀 How to Run
-
-This example is completely self-contained and loads EaseMotion CSS via CDN (with a local fallback option).
-
-1. Clone or download this folder.
-2. Ensure `demo.html` and `style.css` are in the same folder.
-3. Open `demo.html` directly in any web browser.
-4. Interact with the Monthly/Yearly toggle and observe the smooth hover and loop animations!
+## Why it fits EaseMotion CSS
+This example demonstrates the core philosophy of EaseMotion CSS: creating rich, interactive, and beautifully animated UI components quickly by combining readable utility classes, without writing custom CSS or JavaScript.

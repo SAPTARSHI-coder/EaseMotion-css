@@ -1,0 +1,110 @@
+$motion-state-selectors: (
+  hover: "&:hover",
+  focus: "&:focus",
+  active: "&:active",
+  disabled: "&[data-disabled]",
+  loading: "&[data-loading]",
+  entering: '&[data-state="entering"]',
+  exiting: '&[data-state="exiting"]',
+) !default;
+
+@function mc-list-contains($list, $value) {
+  @return index($list, $value) != null;
+}
+
+@function mc-find-duplicates($list) {
+  $seen: ();
+  $duplicates: ();
+
+  @each $item in $list {
+    @if mc-list-contains($seen, $item) {
+      @if not mc-list-contains($duplicates, $item) {
+        $duplicates: append($duplicates, $item);
+      }
+    } @else {
+      $seen: append($seen, $item);
+    }
+  }
+
+  @return $duplicates;
+}
+
+@function mc-validate-component($component) {
+  @if type-of($component) != map {
+    @error "motion-contract: expected a component configuration map, got #{type-of($component)}.";
+  }
+
+  @if not map-has-key($component, selector) {
+    @error "motion-contract: component configuration is missing a required \"selector\" key.";
+  }
+
+  $selector: map-get($component, selector);
+
+  @if $selector == null or $selector == "" {
+    @error "motion-contract: component \"selector\" must not be empty.";
+  }
+
+  @if not map-has-key($component, states) {
+    @error "motion-contract: component configuration is missing a required \"states\" key.";
+  }
+
+  $states: map-get($component, states);
+
+  @if length($states) == 0 {
+    @error "motion-contract: component \"#{$selector}\" has an empty state list.";
+  }
+
+  $duplicates: mc-find-duplicates($states);
+
+  @if length($duplicates) > 0 {
+    @warn "motion-contract: component \"#{$selector}\" has duplicate states and they will be ignored: #{$duplicates}.";
+  }
+
+  @return $component;
+}
+
+@function component-selector($component) {
+  $validated: mc-validate-component($component);
+  @return map-get($validated, selector);
+}
+
+@function mc-resolve-state-pattern($state, $overrides) {
+  @if map-has-key($overrides, $state) {
+    @return map-get($overrides, $state);
+  }
+
+  @if map-has-key($motion-state-selectors, $state) {
+    @return map-get($motion-state-selectors, $state);
+  }
+
+  @return '&[data-state="#{$state}"]';
+}
+
+@mixin motion-state($state, $overrides: ()) {
+  $pattern: mc-resolve-state-pattern($state, $overrides);
+
+  @if str-index($pattern, "&") == 1 {
+    $rest: str-slice($pattern, 2);
+    &#{$rest} {
+      @content ($state);
+    }
+  } @else {
+    #{$pattern} {
+      @content ($state);
+    }
+  }
+}
+
+@mixin motion-contract($component, $overrides: ()) {
+  $validated: mc-validate-component($component);
+  $selector: map-get($validated, selector);
+  $states: map-get($validated, states);
+
+  #{$selector} {
+    @each $state in $states {
+      @include motion-state($state, $overrides) using ($resolved-state) {
+        @content ($resolved-state);
+      }
+    }
+  }
+}

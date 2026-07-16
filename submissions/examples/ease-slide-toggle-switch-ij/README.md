@@ -1,14 +1,15 @@
 # Slide Toggle Switch
 
-Sliding toggle switch with thumb animation. Track color changes on toggle via `.sts-on`.
+A CSS-only toggle switch component with smooth sliding thumb animation and active press state.
 
 ## Features
 
-- Sliding thumb animation with bounce
-- Track color change via class toggle
-- Smooth cubic-bezier transitions
-- JS class toggle, CSS handles visuals
+- Smooth sliding thumb with cubic-bezier bounce transition
+- Background color change on toggle
+- Active press state with thumb scale down
+- Clean dark theme settings layout
+- Pure CSS with hidden checkbox input
 
 ## Usage
 
-Toggle `.sts-on` class on `.sts-toggle` element. CSS handles all visual transitions.
+Include `style.css` and structure each toggle with a hidden checkbox `.toggle-input`, `.toggle-track`, and `.toggle-thumb`. The checked state controls the thumb position and track color.

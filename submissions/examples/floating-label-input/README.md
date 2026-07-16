@@ -1,31 +1,16 @@
-# Floating Label Input
+# Input with Floating Label
 
-Material-design inspired floating label form inputs with focus, filled, error, and success states — pure CSS.
+A form input pattern where the label starts inside the field as a placeholder and floats up to the top border when the user focuses or fills in the field. Includes an email input, a text input, and a textarea. The floating label animates smoothly and changes color on focus.
 
-## Features
-- Label floats above on focus/input via :focus and :placeholder-shown
-- Three variants: default, error, success
-- Filled state persistence (ease-floating-input-filled)
-- Custom accent color via `--ease-floating-accent` CSS property
-- Smooth label transition animation
+## EaseMotion CSS classes used
 
-## Expected Classes
-- `.ease-floating-input` — input wrapper
-- `.ease-floating-label` — label that floats on focus
-- `.ease-floating-input-filled` — persistent float when value present
-- `.ease-floating-input-error` / `.ease-floating-input-success` — validation states
-- `.ease-floating-msg` — validation message
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-## Usage
-```html
-<div class="ease-floating-input">
-  <input type="text" id="field" placeholder=" ">
-  <label class="ease-floating-label" for="field">Label</label>
-</div>
-```
+## How to run
 
-## Browser Support
-- Chrome 1+, Firefox 3.5+, Safari 3.1+
+Open `demo.html` in a browser. Click or type in each field to see the label float up.
 
-## Tech Stack
-- HTML + CSS only, no JavaScript
+## Accessibility notes
+
+Uses standard `<label>` elements linked via `for` attribute for screen reader compatibility. The placeholder is a visible label element, not the native `placeholder` attribute. Reduced motion disables the transition.

@@ -52,7 +52,7 @@ jobs:
             const itemAuthor = item.user.login;
             const authorType = item.user.type;
 
-            const SPAMMERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
+            const SPAMMERS = ['xenon010101', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
             if (SPAMMERS.includes(itemAuthor)) {
               console.log(`🔒 Spammer @${itemAuthor} detected. Force-tagging spam labels and exiting early.`);
               const missingSpamLabels = ['gssoc:invalid', 'gssoc:spam', 'gssoc:ai-slop', 'duplicate', 'ai-slop'].filter(l => !currentLabels.includes(l));
@@ -127,7 +127,7 @@ jobs:
                 const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
                 if (isMerged || wasIntegrated) {
                   await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
+                  await addLabels(['accepted', 'integrated', 'good-pr']);
                   if (!wasIntegrated) {
                     let userMergedCount = 1;
                     let hoursUntilReset = 24 - new Date().getUTCHours();
@@ -171,7 +171,7 @@ jobs:
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
             if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
-              const SOFT_BANNED_USERS = ['xenon010101', 'saidai-bhuvanesh', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
+              const SOFT_BANNED_USERS = ['xenon010101', 'tmdeveloper007', 'desireddymohithreddy0925', 'sanrishi', 'sonusharma6-dsa', 'zen-ash-dev', 'anushreer22', 'ashrion'];
               const isSoftBanned = SOFT_BANNED_USERS.includes(itemAuthor);
 
               // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
@@ -204,9 +204,6 @@ jobs:
               }
 
               const computedLabels = [
-                'GSSoC-26',
-                'gssoc:approved',
-                level,
                 'good first issue',
                 'help wanted'
               ];
@@ -227,6 +224,8 @@ jobs:
                 
                 // Parse associated issues from PR body to read their labels
                 const issueLabels = [];
+                let isGSSoC = false;
+                let isECSoC = false;
                 const closingPattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#([0-9]+)/gi;
                 let match;
                 while ((match = closingPattern.exec(body)) !== null) {
@@ -236,7 +235,22 @@ jobs:
                       owner, repo, issue_number: num
                     });
                     if (issue && issue.labels) {
-                      issueLabels.push(...issue.labels.map(l => l.name.toLowerCase()));
+                      const labels = issue.labels.map(l => l.name.toLowerCase());
+                      issueLabels.push(...labels);
+                      if (labels.includes('gssoc-26')) isGSSoC = true;
+                      if (labels.includes('ecsoc26')) isECSoC = true;
+
+                      // Inherit level difficulty from the linked issue — never downgrade
+                      const issueLevel = issue.labels.find(l => l.name.startsWith('level:'));
+                      if (issueLevel) {
+                        const levelWeight = { 'level:beginner': 1, 'level:intermediate': 2, 'level:advanced': 3 };
+                        const issueWeight = levelWeight[issueLevel.name] || 1;
+                        const prWeight = levelWeight[level] || 1;
+                        if (issueWeight > prWeight) {
+                          level = issueLevel.name;
+                        }
+                      }
+
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
                         const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
@@ -253,6 +267,23 @@ jobs:
                     }
                   } catch (err) {
                     console.log(`Failed to fetch labels for issue #${num}: ${err.message}`);
+                  }
+                }
+
+                // Always push both GSSoC-26 and ECSoC26 to all PRs.
+                // But if the external sentinel bot flagged a GSSoC contributor with ECSoC26-SPAM,
+                // we strip all ECSoC labels to clean it up and prevent re-adding.
+                const wasSpamFlagged = currentLabels.includes('ECSoC26-SPAM');
+                const isGSSoCUser = currentLabels.includes('GSSoC-26') || isGSSoC;
+
+                computedLabels.push('GSSoC-26', 'gssoc:approved');
+
+                if (wasSpamFlagged && isGSSoCUser) {
+                  await removeLabels(['ECSoC26', 'ECSoC26-SPAM', 'ECSoC26-L1', 'ECSoC26-L2', 'ECSoC26-L3']);
+                } else {
+                  computedLabels.push('ECSoC26');
+                  if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
+                    computedLabels.push('ECSoC26-L1');
                   }
                 }
 
@@ -337,7 +368,19 @@ jobs:
                 } catch (e) {
                   console.log(`Warning: Failed to fetch PR files: ${e.message}`);
                 }
+              } else {
+                if (currentLabels.includes('GSSoC-26')) {
+                  computedLabels.push('GSSoC-26', 'gssoc:approved');
+                }
+                if (currentLabels.includes('ECSoC26')) {
+                  computedLabels.push('ECSoC26');
+                  if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
+                    computedLabels.push('ECSoC26-L1');
+                  }
+                }
               }
+
+              computedLabels.push(level);
 
               if (level === 'level:advanced') {
                 await removeLabels(['level:intermediate', 'level:beginner']);
