@@ -25,10 +25,7 @@
 
           const modal = overlay.querySelector('.ease-modal');
           if (modal) {
-            if (!overlay.classList.contains('is-active')) {
-              previousFocusedElement = document.activeElement;
-            }
-
+            // REMOVED DEAD CODE: The unreachable if (!overlay.classList.contains('is-active')) block was here.
             modal.setAttribute('tabindex', '-1');
             modal.focus();
           }
