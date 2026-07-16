@@ -8,9 +8,9 @@ Open demo.html in a browser. Click the button to toggle the animation.
 ## Custom Properties
 | Property | Default | Description |
 |----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+| --primary | hsl(72, 77%, 47%) | Primary color |
+| --bg | hsl(72, 12%, 97%) | Background |
+| --duration | 0.40s | Animation speed |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS handles visual transitions via @keyframes. JavaScript toggles state.
