@@ -96,7 +96,7 @@ EaseMotion CSS has four distinct contribution subdirectories depending on your c
 
 To maintain repository stability, review quality, and fair contribution distribution, EaseMotion CSS enforces a soft daily rate limit:
 
-- Contributors may submit up to **150 PRs per day**
+- Contributors may submit up to **25 PRs per day**
 - Focus on quality, originality, accessibility, and proper testing
 - Low-effort, repetitive, or mass-generated PRs may be closed without review
 
@@ -216,16 +216,16 @@ Small fixes (documentation typos, broken demo links) can go directly to a PR.
 
 ## 🕑 Issue Cooldown Rule
 
-**Maximum 25 active assigned issues per contributor at any time.**
+**Maximum 2 active assigned issues per contributor at any time.**
 
 This rule exists to keep assignments fair and ensure active contributors can always pick up work.
 
 ### What this means
 
 ```
-✅ You have 0–24 active assignments → request a new issue freely
-✅ You have 25 active assignments  → finish or unassign one first
-❌ You have 25+ active assignments → new assignment requests will be declined
+✅ You have 0–1 active assignments → request a new issue freely
+✅ You have 2 active assignments  → finish or unassign one first
+❌ You have 2+ active assignments → new assignment requests will be declined
 ```
 
 ### Inactivity
