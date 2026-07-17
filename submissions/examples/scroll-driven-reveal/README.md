@@ -1,15 +1,11 @@
-# Pure CSS Scroll-Driven Viewport Reveal Utilities
+# Scroll-Driven Reveal
 
-A high-performance, modern layout utility class for **EaseMotion CSS** that enables smooth, hardware-accelerated viewport entry animations completely independent of JavaScript.
+Explores CSS scroll-driven animations using `view-timeline` and `animation-timeline: view()`. Demonstrates fade, slide, scale, blur, rotate, flip, zoom, clip, and color reveal effects triggered by viewport visibility.
 
-## 🚀 Features
-- **Zero JavaScript Overhead:** Eliminates the need for heavy scroll-tracking frameworks like AOS or ScrollReveal.
-- **GPU Compositor Threaded:** Uses native CSS `view-timeline` and `animation-range` specs, making animations buttery-smooth and performant.
-- **Human-Readable API:** Simply drop the `.ease-scroll-reveal` utility class onto any element you want to animate on scroll.
+## Usage
 
-## 📂 Submission Structure
-```text
-submissions/examples/scroll-driven-reveal/
-├── demo.html   # Sandbox file displaying the scroll-driven effects
-├── style.css   # Implementation of view-timeline and keyframe interpolation
-└── README.md   # This documentation file
+Open `demo.html` and scroll down. The left comparison column stays static while right column items animate in. Below, ten different reveal effects demonstrate the variety possible with scroll-driven timelines.
+
+## Browser Support
+
+Scroll-driven animations are supported in Chrome 115+, Edge 115+, and are experimental elsewhere. The demo includes `prefers-reduced-motion` fallbacks that force elements to fully visible. Dark theme uses `#0a0f1e` background and `#e2e8f0` text.

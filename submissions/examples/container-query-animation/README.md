@@ -1,22 +1,23 @@
-# Container Query Responsive Animations
+# @container Animation Demo
 
-## Description
+## What does this do?
 
-This feature demonstrates how animations can change based on the width of their parent container using CSS Container Queries.
+Demonstrates container query animations using `@container` — where animation speed, layout direction, and content visibility change based on the container's width, not the viewport.
 
-## Files
+## How is it used?
 
-- demo.html
-- style.css
+```css
+.container { container-type: inline-size; }
 
-## Usage
+@container (min-width: 400px) {
+  .child { animation: fast-pulse 1.5s infinite; }
+}
 
-Resize the container horizontally.
+@container (max-width: 399px) {
+  .child { animation: slow-pulse 3s infinite; }
+}
+```
 
-Below 500px:
-- Fade In
+## Why is it useful?
 
-Above 500px:
-- Slide Up
-
-No JavaScript required.
+Container queries free animations from viewport-based breakpoints, allowing components to adapt their motion based on their own available space — critical for reusable design system components that appear in sidebars, modals, and full-width layouts. This fits EaseMotion CSS's component-oriented, human-readable approach by keeping animation context-aware and self-contained.

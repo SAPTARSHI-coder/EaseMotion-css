@@ -1,11 +1,24 @@
-# Fix ease-badge Reduced Motion Support
+# Fix for Badge Reduced Motion
+
+Resolves Issue #8429.
 
 ## Description
-Implements the `prefers-reduced-motion` media query to disable animations and transformations for the `badge` component when users have OS-level motion sensitivities.
+This submission fixes a WCAG 2.2.2 violation where `.ease-badge-pulse` infinitely pings with no way to stop it, even for users who have requested reduced motion in their OS.
 
-## Usage
-Include the component as usual. The new CSS handles accessibility automatically.
+In `components/badges.css`, the pulsing animation is hardcoded without a `prefers-reduced-motion` fallback. This can trigger symptoms in users with vestibular disorders.
 
-## Accessibility Compliance
-Ensures compliance with WCAG 2.1 Success Criterion 2.3.3 (Animation from Interactions).
-Fixes: #37909
+This fix adds a `@media (prefers-reduced-motion: reduce)` block that forces the animation to `none` when requested.
+
+## How to Apply
+Maintainers should update `components/badges.css` by appending this at the end of the file:
+
+```css
+  /* Reduced motion fallback for pulsing badge */
+  @media (prefers-reduced-motion: reduce) {
+    .em-badge-pulse::after,
+    .ease-badge-pulse::after {
+      animation: none !important;
+      box-shadow: none !important;
+    }
+  }
+```
