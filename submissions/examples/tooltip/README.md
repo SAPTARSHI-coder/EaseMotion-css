@@ -1,12 +1,36 @@
-# ease-tooltip Component
+# ease-tooltip
 
-This submission fixes Issue #40443 by adding a reusable tooltip component.  
-It shows a tooltip on hover or focus with a fade + translate animation.
+A pure CSS tooltip using `data-tip` attribute and `::after` pseudo-element. Zero JavaScript required.
 
 ## Usage
 
 ```html
-<button class="ease-btn" aria-describedby="tip1">
-  Hover me
-  <span class="ease-tooltip" id="tip1">I am a tooltip!</span>
-</button>
+<button data-tip="Hello!">Hover me</button>
+```
+
+## Variants
+
+| Attribute | Value | Description |
+|---|---|---|
+| `data-tip-pos` | `top` (default) | Tooltip appears above |
+| `data-tip-pos` | `bottom` | Tooltip appears below |
+| `data-tip-pos` | `left` | Tooltip appears left |
+| `data-tip-pos` | `right` | Tooltip appears right |
+| `data-tip-color` | `success` | Green tooltip |
+| `data-tip-color` | `danger` | Red tooltip |
+| `data-tip-color` | `info` | Blue tooltip |
+| `data-tip-color` | `warning` | Amber tooltip |
+
+## Delay Variants
+
+```html
+<button data-tip="Delayed" class="ease-delay-100">100ms delay</button>
+<button data-tip="Delayed" class="ease-delay-200">200ms delay</button>
+<button data-tip="Delayed" class="ease-delay-300">300ms delay</button>
+```
+
+## Submission
+
+- **Author:** sudha09-git
+- **Issue:** #2248
+- **Files:** `style.css`, `demo.html`

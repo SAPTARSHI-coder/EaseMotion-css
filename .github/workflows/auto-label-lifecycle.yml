@@ -204,7 +204,6 @@ jobs:
               }
 
               const computedLabels = [
-                level,
                 'good first issue',
                 'help wanted'
               ];
@@ -241,6 +240,17 @@ jobs:
                       if (labels.includes('gssoc-26')) isGSSoC = true;
                       if (labels.includes('ecsoc26')) isECSoC = true;
 
+                      // Inherit level difficulty from the linked issue — never downgrade
+                      const issueLevel = issue.labels.find(l => l.name.startsWith('level:'));
+                      if (issueLevel) {
+                        const levelWeight = { 'level:beginner': 1, 'level:intermediate': 2, 'level:advanced': 3 };
+                        const issueWeight = levelWeight[issueLevel.name] || 1;
+                        const prWeight = levelWeight[level] || 1;
+                        if (issueWeight > prWeight) {
+                          level = issueLevel.name;
+                        }
+                      }
+
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
                         const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
@@ -261,11 +271,20 @@ jobs:
                 }
 
                 // Always push both GSSoC-26 and ECSoC26 to all PRs.
-                // The ECSoC sentinel bot will flag non-ECSoC contributors with ECSoC26-SPAM — that's intentional.
+                // But if the external sentinel bot flagged a GSSoC contributor with ECSoC26-SPAM,
+                // we strip all ECSoC labels to clean it up and prevent re-adding.
+                const wasSpamFlagged = currentLabels.includes('ECSoC26-SPAM');
+                const isGSSoCUser = currentLabels.includes('GSSoC-26') || isGSSoC;
+
                 computedLabels.push('GSSoC-26', 'gssoc:approved');
-                computedLabels.push('ECSoC26');
-                if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
-                  computedLabels.push('ECSoC26-L1');
+
+                if (wasSpamFlagged && isGSSoCUser) {
+                  await removeLabels(['ECSoC26', 'ECSoC26-SPAM', 'ECSoC26-L1', 'ECSoC26-L2', 'ECSoC26-L3']);
+                } else {
+                  computedLabels.push('ECSoC26');
+                  if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
+                    computedLabels.push('ECSoC26-L1');
+                  }
                 }
 
                 // Smart GSSoC type labeling logic
@@ -360,6 +379,8 @@ jobs:
                   }
                 }
               }
+
+              computedLabels.push(level);
 
               if (level === 'level:advanced') {
                 await removeLabels(['level:intermediate', 'level:beginner']);

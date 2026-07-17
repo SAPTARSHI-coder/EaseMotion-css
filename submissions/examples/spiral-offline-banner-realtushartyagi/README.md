@@ -1,4 +1,4 @@
-# [FEATURE] Spiral Offline Banner
+# [FEATURE] Animated Offline Banner (Spiral Style)
 
 A spiral-offline-banner component for EaseMotion CSS.
 

@@ -1,56 +1,47 @@
-# CSS Scrollbar Color Theme Utilities
+# ease-scrollbar-color — Themed Scrollbar Color Utility Classes
 
-Relates to feature request **#41291**.
+Utility classes that apply EaseMotion's brand colors to `scrollbar-color` and the WebKit scrollbar pseudo-elements. `core/utilities.css` already provides `.ease-scrollbar-thin`, `.ease-scrollbar-none`, and `.ease-scrollbar-auto` for width/visibility, but they hardcode a single neutral gray palette with no way to apply brand colors.
 
-## 1. What does this do?
+## Classes
 
-Creates a set of utilities for styling native browser scrollbars using standardized CSS properties (`scrollbar-color`, `scrollbar-width`) with consistent `::webkit-scrollbar` fallbacks for browsers that require vendor-prefixed implementations.
+| Class | Thumb color | Hover color |
+|-------|-------------|-------------|
+| `.ease-scrollbar-primary` | `--ease-color-primary` | `--ease-color-primary-dark` |
+| `.ease-scrollbar-secondary` | `--ease-color-secondary` | `--ease-color-secondary-dark` |
+| `.ease-scrollbar-success` | `--ease-color-success` | `--ease-color-success-dark` |
+| `.ease-scrollbar-danger` | `--ease-color-danger` | `--ease-color-danger-dark` |
 
-## 2. Why is this useful for EaseMotion CSS?
+## Usage
 
-Scrollbar customization is often overlooked despite being an important part of application polish. Providing cross-browser utility classes helps developers create visually consistent interfaces while remaining lightweight and CSS-only.
-
-## 3. Utilities Provided
-
-| Class | Thumb | Track | Width | Use Case |
-|---|---|---|---|---|
-| `.ease-scroll-theme` | `#6c63ff` (purple) | `#ececec` (light) | `thin` | Default light UI |
-| `.ease-scroll-dark` | `#64748b` (grey) | `#1e293b` (dark) | `thin` | Dark mode panels |
-| `.ease-scroll-hidden` | Hidden | Hidden | `none` | Carousels, sliders |
-
-## 4. How is it used?
-
-**HTML** (matching the issue's snippet exactly)
 ```html
-<div class="ease-scroll-theme">
-  Long scrollable content...
+<!-- Branded content panel -->
+<div class="content-panel ease-scrollbar-primary" style="overflow-y: scroll;">
+  ...
+</div>
+
+<!-- Destructive dialog with scrollable body -->
+<div class="modal-body ease-scrollbar-danger" style="overflow-y: scroll;">
+  ...
 </div>
 ```
 
-**CSS** (matching the issue's snippet exactly)
-```css
-.ease-scroll-theme {
-  overflow: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #6c63ff #ececec;
-}
+## When to use each class
 
-.ease-scroll-theme::-webkit-scrollbar {
-  width: 8px;
-}
+| Class | Best for |
+|-------|----------|
+| `.ease-scrollbar-primary` | Default branded scroll containers |
+| `.ease-scrollbar-secondary` | Secondary panels, sidebars, drawers |
+| `.ease-scrollbar-success` | Success/confirmation modals with scroll |
+| `.ease-scrollbar-danger` | Destructive/warning dialogs with scroll |
 
-.ease-scroll-theme::-webkit-scrollbar-thumb {
-  background: #6c63ff;
-  border-radius: 999px;
-}
-```
+## Notes
 
-## 5. Browser Support
+- Track color reuses the same neutral track as `.ease-scrollbar-thin` for visual consistency
+- Falls back gracefully via `var(..., fallback)` if `--ease-color-neutral-100` is unavailable
+- Firefox renders via native `scrollbar-color`; Chrome/Edge/Safari via WebKit pseudo-elements
 
-| Property | Chrome | Firefox | Safari | Edge |
-|---|---|---|---|---|
-| `scrollbar-color` | 121+ | 64+ | 17.4+ | 121+ |
-| `scrollbar-width` | 121+ | 64+ | 17.4+ | 121+ |
-| `::-webkit-scrollbar` | ✅ All | ❌ | ✅ All | ✅ All |
+## Why it fits EaseMotion CSS
 
-> **Tip**: Always include both `scrollbar-color` (standard) and `::-webkit-scrollbar` (vendor prefix) to cover all major browsers.
+`core/utilities.css` already solves scrollbar width/visibility but only ships one neutral color scheme. These classes extend that system with the framework's existing brand color tokens, completing the scrollbar utility set.
+
+Closes #11584

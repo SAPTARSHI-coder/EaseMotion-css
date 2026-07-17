@@ -1,14 +1,7 @@
-# Tab Underline Slide
+# Sliding Underline Interactive Navigation Tabs
 
-A CSS navigation pattern for tab groups and compact settings panels.
+Clean hover tab bar with sliding bottom-underline active indication.
 
-## What it demonstrates
-
-- a sliding underline powered by `:has()`
-- hover and keyboard focus-visible states
-- responsive fallback for narrow screens
-
-## Files
-
-- `demo.html` - tab navigation markup
-- `style.css` - underline motion and tab states
+## How to use
+1. Link the component stylesheet `style.css` in your HTML header.
+2. Embed the structure code into your body sections.
