@@ -1,18 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Animate } from 'easemotion-react';
 
 export default function Typewriter({ text, speed = 50 }) {
   const [displayedText, setDisplayedText] = useState('');
   const [index, setIndex] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    setDisplayedText('');
+    setIndex(0);
+  }, [text]);
 
   useEffect(() => {
     if (index < text.length) {
-      const timeout = setTimeout(() => {
+      timerRef.current = setTimeout(() => {
         setDisplayedText((prev) => prev + text.charAt(index));
-        setIndex(index + 1);
+        setIndex((prev) => prev + 1);
       }, speed);
-      return () => clearTimeout(timeout);
     }
+
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [index, text, speed]);
 
   return (
@@ -20,7 +32,6 @@ export default function Typewriter({ text, speed = 50 }) {
       <Animate type="fade-in" duration="fast">
         {displayedText}
       </Animate>
-      {/* Blinking Cursor */}
       <Animate type="pulse" duration="fast" className="ml-1 w-3 h-8 bg-blue-600 inline-block" />
     </div>
   );
