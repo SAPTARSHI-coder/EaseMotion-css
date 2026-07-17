@@ -1,14 +1,15 @@
 # Kanban Card Lift
 
-A workflow task card that lifts on interaction and expands a priority stripe.
+This example adds a kanban task card that lifts on hover or keyboard focus.
 
 ## Files
 
-- `demo.html` - focusable kanban task card markup.
-- `style.css` - lift motion, priority stripe transition, focus-visible state, and reduced-motion support.
+- `demo.html` contains the kanban lane and task card markup.
+- `style.css` defines the card lift, focus state, and reduced-motion fallback.
 
 ## Highlights
 
-- Mirrors hover behavior on keyboard focus.
-- Uses a pseudo-element for the animated priority stripe.
-- Keeps layout stable while the card lifts.
+- Keyboard-focusable task card using `tabindex="0"`.
+- Stable card sizing with hover movement handled by transform.
+- Visible focus and hover states for the same interaction.
+- Removes transform motion for reduced-motion users.
