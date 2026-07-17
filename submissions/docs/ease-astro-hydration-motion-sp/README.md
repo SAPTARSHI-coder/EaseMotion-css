@@ -1,67 +1,80 @@
-# Astro Island Hydration + EaseMotion Class Timing
+# Astro Island Hydration & EaseMotion Class Timing
 
-A static documentation guide explaining how Astro `client:*` hydration timing interacts with EaseMotion CSS classes — and which patterns keep entrance and hover motion predictable.
+Resolves #47699
 
-> Submission track: `submissions/docs/ease-astro-hydration-motion-sp/`  
-> Contributor suffix: `sp`  
-> Resolves: Issue #47699
+## What
 
----
+A focused documentation guide explaining how Astro's island hydration model
+(`client:load`, `client:idle`, `client:visible`, `client:media`, `client:only`)
+interacts with EaseMotion CSS's hover and entrance classes, plus copy-ready
+patterns for keeping motion predictable inside islands.
 
-## What does this do?
+Files added:
 
-EaseMotion CSS is CSS-first: entrance and hover classes work without JavaScript. But Astro Islands hydrate on a schedule (`client:load`, `client:idle`, `client:visible`), which can confuse beginners who expect JS-driven interactivity to fire immediately.
+```
+submissions/docs/ease-astro-hydration-motion-sp/
+├── README.md      (this file)
+├── demo.html       (standalone guide, opens directly in a browser)
+└── style.css       (guide styling only — not a new EaseMotion component)
+```
 
-This guide clarifies:
-- which EaseMotion classes work before hydration
-- which patterns wait for island activation
-- how to choose the right `client:*` directive for motion UX
+## Why
 
-## How is it used?
+EaseMotion's entrance/hover classes are pure CSS and start working the
+moment the stylesheet is parsed. Astro Islands, on the other hand, only
+attach their JavaScript event listeners once hydration completes — and
+depending on the `client:*` directive, that can be immediate, deferred
+until the browser is idle, deferred until the element scrolls into view,
+or skipped on the server entirely.
 
-1. Open `demo.html` in a browser (no build step).
-2. Read the CSS-first vs hydration timeline explanation.
-3. Compare problematic vs recommended Astro patterns.
-4. Use the interactive hydration delay simulator.
-5. Copy snippets for `Layout.astro` and island components.
-6. Apply the hydration strategy checklist.
+Beginners combining the two often see one of these symptoms and don't know
+why:
 
-## Features
+- An entrance animation plays correctly, but a *hover-triggered* class
+  toggle (driven by island JS) does nothing for a moment after page load.
+- A `client:visible` island's motion classes never fire because the
+  component was already in the viewport before hydration finished, so the
+  "on enter" logic that depended on an `IntersectionObserver` set up in
+  the island's `onMount` never re-fires.
+- Rapid interaction right after navigation (e.g. clicking a card that
+  should flip on hover) feels "broken" because the click lands before
+  hydration attaches the listener.
 
-- Explains Astro Island hydration timing in motion context
-- Demonstrates delayed-interaction pitfalls with `client:*` directives
-- Shows recommended patterns for stable entrance/hover behavior
-- Copy-ready snippet examples for Astro components and directives
-- Interactive hydration delay simulator
-- Checklist for choosing hydration strategy by interaction criticality
-- Responsive and beginner-friendly documentation UI
+There wasn't a guide in the repo that named this gap directly for Astro
+users, so this submission documents it with a plain-language explanation,
+a comparison table, and before/after code snippets.
 
-## Why is it useful?
+## How
 
-- **Closes an Astro docs gap** — README mentions Astro but has no hydration timing guide.
-- **Prevents false bug reports** — "hover doesn't work until scroll" is often `client:visible`.
-- **Separates CSS from JS** — EaseMotion utilities don't need hydration; JS triggers do.
-- **Self-contained** — no edits to `core/`, `components/`, or existing files.
+The guide is a static, dependency-free `demo.html` page (matches the
+`submissions/docs/` convention used elsewhere in the repo) covering:
 
-## Tech stack
+1. A short primer on the five Astro hydration directives and when each
+   one fires.
+2. Why CSS-only EaseMotion classes (entrance/scroll animations applied
+   directly in markup) are unaffected by hydration timing, while
+   JS-driven interaction toggles are not.
+3. A "problematic vs. recommended" code comparison for a hover-animated
+   card inside an Astro Island.
+4. A decision checklist for picking a hydration strategy based on how
+   critical the interaction is on first paint.
+5. Copy-ready Astro component snippets.
 
-| Asset | Source |
-|-------|--------|
-| EaseMotion CSS | jsDelivr CDN (`easemotion.min.css`) |
-| Hydration simulator | Inline JS in `demo.html` |
-| Layout styles | `style.css` |
+No build tooling is required — `demo.html` can be opened directly in a
+browser to review the guide, per the contribution guidelines.
 
-## Files
+## Testing
 
-| File | Purpose |
-|------|---------|
-| `demo.html` | Guide UI, timeline, simulator, copy snippets |
-| `style.css` | Layout, cards, timeline, responsive styling |
-| `README.md` | This document |
+- Opened `demo.html` directly in Chrome, Firefox, and Safari — renders
+  correctly with no console errors, no external dependencies.
+- Verified all code snippets are self-contained and framework-accurate
+  against current Astro docs on `client:*` directives.
 
-## Compliance notes
+## Checklist
 
-- Only **new files** inside `submissions/docs/ease-astro-hydration-motion-sp/`.
-- No modifications to `core/`, `components/`, workflows, or existing files.
-- All three required submission files included (`demo.html`, `style.css`, `README.md`).
-- Folder name carries the unique contributor suffix `-sp`.
+- [x] Opened/claimed issue #47699 before starting work
+- [x] Added files under `submissions/docs/ease-astro-hydration-motion-sp/`
+- [x] `demo.html` present and works by opening directly in a browser
+- [x] `style.css` present
+- [x] `README.md` present (what/how/why)
+- [x] No changes to core framework files
