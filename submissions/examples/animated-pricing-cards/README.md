@@ -1,22 +1,33 @@
 # Animated Pricing Cards
 
-A clean, modern, and fully responsive **Pricing Cards Component** with smooth hover effects, a popular plan highlight, and a monthly/yearly billing toggle. This example demonstrates how to combine **EaseMotion CSS** for staggered card entrances, feature list animations, and interactive hover states to create a compelling pricing page.
+## What does it do?
+SaaS pricing cards with hover elevation, glow, scaling, and entrance animations — pure CSS, no JavaScript.
 
-## 🚀 Features
+## Features
+- Staggered entrance animation via `animation-delay` on cards
+- Hover elevation with `translateY(-6px)`
+- Subtle glow via `box-shadow` on hover
+- Featured card with highlighted border and badge
+- CTA button scales on hover
+- Pure CSS, no JavaScript
 
-- **Staggered Card Entrances**: Each pricing card fades in sequentially using `ease-fade-in-up` and `ease-delay-*` for a cascading load effect.
-- **Popular Plan Highlight**: The recommended plan is visually distinguished with a border, shadow, scale transform, and a bouncy "Most Popular" badge using `ease-bounce-in`.
-- **Interactive Hover States**: Cards lift on hover with enhanced shadows and accent borders using `ease-hover-grow`.
-- **Staggered Feature List**: Each feature item slides in from the left using `ease-fade-in-left` with staggered delays.
-- **Billing Toggle**: Smooth toggle switch between monthly and yearly pricing with active state indicators.
-- **Check/Cross Icons**: Color-coded icons for included and excluded features.
-- **Responsive Design**: Cards stack vertically on mobile, and the popular card's scale effect is removed for better mobile UX.
-- **Accessible Markup**: Uses semantic HTML and proper button elements.
+## Usage
+```html
+<div class="pricing-grid">
+  <div class="pricing-card">
+    <h3 class="plan-name">Starter</h3>
+    <p class="plan-price">$9<span>/mo</span></p>
+    <ul class="plan-features">...</ul>
+    <button class="plan-btn">Get Started</button>
+  </div>
+</div>
+```
 
-## 📂 File Structure
+## Browser Support
+- Chrome 1+, Firefox 3.5+, Safari 3.1+
 
-```text
-submissions/examples/animated-pricing-cards/
-├── demo.html    # HTML structure, EaseMotion utility classes, and JavaScript
-├── style.css    # Custom CSS for layout, toggle, and responsive behavior
-└── README.md    # Documentation
+## Tech Stack
+- HTML + CSS only, no JavaScript
+
+## Preview
+Open `demo.html` directly in browser.
