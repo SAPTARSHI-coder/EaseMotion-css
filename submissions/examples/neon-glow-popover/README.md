@@ -52,3 +52,35 @@ Because closing a `<details>` element removes its content synchronously, there's
 ## Browser support
 
 Works in all modern evergreen browsers (Chrome, Firefox, Safari, Edge). `color-mix()` used for the inner glow gracefully degrades to a solid inset shadow color in older engines.
+# CSS Neon Glow Popover
+
+A pure CSS Neon Glow Popover designed for Interactive Interface layouts.
+
+## Features
+
+- Pure HTML & CSS
+- Neon Glow Animation
+- Interactive Interface Design
+- Responsive Layout
+- Keyboard Accessible
+- CSS Custom Properties
+- No JavaScript
+
+## Technologies
+
+- HTML5
+- CSS3
+
+## Folder Structure
+
+```
+neon-glow-popover/
+├── demo.html
+├── style.css
+└── README.md
+```
+
+## Usage
+
+Open `demo.html` in any modern browser.
+

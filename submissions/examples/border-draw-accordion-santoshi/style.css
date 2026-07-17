@@ -1,0 +1,367 @@
+/* ==========================================================================
+   BORDER DRAW ACCORDION - EaseMotion CSS
+   ==========================================================================
+   Design reasoning, up front:
+   - Built on native <details>/<summary>, so opening/closing, keyboard
+     support (Enter/Space), and independent multi-section expand/collapse
+     all come from the browser for free - no JavaScript, no ARIA state
+     to keep in sync manually.
+   - The border-draw effect uses exactly two pseudo-elements per summary,
+     as specified: ::before traces the top edge then the right edge
+     (pinned to the top-left corner), and ::after traces the bottom edge
+     then the left edge (pinned to the bottom-right corner). Staggering
+     their transition-delays so ::after begins right as ::before finishes
+     produces the illusion of one continuous stroke tracing the full
+     rectangle, rather than four sides animating independently.
+   - Light, clinical palette (white/light gray base, teal accent) to
+     match the "modern medical dashboard" brief while keeping the
+     restrained spacing and typography of Linear/Vercel-style interfaces.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. EaseMotion CSS design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Page */
+  --page-bg: #f4f7f7;
+  --text-primary: #182625;
+  --text-secondary: #5b6b69;
+  --text-muted: #8a9997;
+
+  /* Accordion item surface */
+  --item-bg: #ffffff;
+  --item-border: #e3e9e8;
+  --item-radius: 16px;
+  --item-shadow: 0 6px 18px rgba(20, 40, 38, 0.06);
+  --item-shadow-open: 0 12px 30px rgba(20, 40, 38, 0.1);
+
+  /* Accent (medical teal) */
+  --accent: #0f9d8f;
+  --accent-dark: #0b7a70;
+  --accent-soft: rgba(15, 157, 143, 0.1);
+
+  /* Border-draw stroke */
+  --stroke-width: 2px;
+  --stroke-color: var(--accent);
+
+  /* Spacing */
+  --gap-items: clamp(12px, 2vw, 16px);
+  --summary-padding-y: clamp(16px, 2.4vw, 20px);
+  --summary-padding-x: clamp(18px, 3vw, 26px);
+
+  /* Motion tokens - EaseMotion CSS conventions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-stroke: 0.28s;
+  --duration-fade: 0.45s;
+
+  /* Fonts */
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and page scaffold
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--page-bg);
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  padding: clamp(40px, 7vh, 72px) 20px;
+}
+
+.stage-intro {
+  text-align: center;
+  max-width: 560px;
+}
+
+.stage-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  margin-bottom: 8px;
+}
+
+.stage-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3.6vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.stage-subtitle {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Accordion container
+   -------------------------------------------------------------------------- */
+.accordion {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-items);
+}
+
+/* --------------------------------------------------------------------------
+   4. Accordion item shell
+   -------------------------------------------------------------------------- */
+.accordion-item {
+  background: var(--item-bg);
+  border: 1px solid var(--item-border);
+  border-radius: var(--item-radius);
+  box-shadow: var(--item-shadow);
+  overflow: hidden;
+
+  transition: box-shadow var(--duration-fade) var(--ease-standard);
+}
+
+.accordion-item[open] {
+  box-shadow: var(--item-shadow-open);
+}
+
+/* Remove the default marker triangle the browser draws on <summary> -
+   the custom .summary-chevron below replaces it */
+.accordion-summary {
+  list-style: none;
+}
+
+.accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   5. Summary header layout
+   -------------------------------------------------------------------------- */
+.accordion-summary {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: var(--summary-padding-y) var(--summary-padding-x);
+  cursor: pointer;
+  border-radius: inherit;
+
+  transition: background-color var(--duration-fade) var(--ease-standard);
+}
+
+.accordion-summary:hover {
+  background: var(--accent-soft);
+}
+
+/* Focus is communicated with a clear outline in addition to the border
+   draw, since the drawn border alone (thin, accent-coloured) may not be
+   sufficient as a sole focus indicator for all users */
+.accordion-summary:focus-visible {
+  outline: 2px solid var(--accent-dark);
+  outline-offset: -2px;
+}
+
+/* --------------------------------------------------------------------------
+   6. Border-draw effect (the two required pseudo-elements)
+   -------------------------------------------------------------------------- */
+
+/*
+ * ::before traces the TOP edge, then the RIGHT edge, pinned to the
+ * top-left corner. Both a width and a height transition are defined;
+ * height's transition-delay is set equal to width's duration, so the
+ * right edge only starts drawing once the top edge has fully drawn.
+ */
+.accordion-summary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-top: var(--stroke-width) solid var(--stroke-color);
+  border-right: var(--stroke-width) solid var(--stroke-color);
+  border-top-right-radius: var(--item-radius);
+  pointer-events: none;
+  transition: width var(--duration-stroke) var(--ease-standard),
+    height var(--duration-stroke) var(--ease-standard) var(--duration-stroke);
+}
+
+/*
+ * ::after traces the BOTTOM edge, then the LEFT edge, pinned to the
+ * bottom-right corner - continuing the stroke where ::before left off.
+ */
+.accordion-summary::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-bottom: var(--stroke-width) solid var(--stroke-color);
+  border-left: var(--stroke-width) solid var(--stroke-color);
+  border-bottom-left-radius: var(--item-radius);
+  pointer-events: none;
+  transition: width var(--duration-stroke) var(--ease-standard)
+      calc(var(--duration-stroke) * 2),
+    height var(--duration-stroke) var(--ease-standard) var(--duration-stroke);
+}
+
+/* On hover or focus, both pseudo-elements grow to full size, each side
+   completing in sequence: top -> right -> bottom -> left */
+.accordion-summary:hover::before,
+.accordion-summary:hover::after,
+.accordion-summary:focus-visible::before,
+.accordion-summary:focus-visible::after {
+  width: 100%;
+  height: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   7. Summary content: icon, title, chevron
+   -------------------------------------------------------------------------- */
+.summary-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.summary-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  color: var(--accent);
+  background: var(--accent-soft);
+
+  transition: color var(--duration-fade) var(--ease-standard),
+    background-color var(--duration-fade) var(--ease-standard);
+}
+
+.accordion-summary:hover .summary-icon,
+.accordion-item[open] .summary-icon {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+}
+
+.summary-title {
+  font-family: var(--font-display);
+  font-size: clamp(0.92rem, 1.6vw, 1rem);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Chevron built from a rotated border corner - no image asset needed */
+.summary-chevron {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
+  transform: rotate(45deg);
+  transition: transform var(--duration-fade) var(--ease-emphasized),
+    border-color var(--duration-fade) var(--ease-standard);
+}
+
+.accordion-item[open] .summary-chevron {
+  transform: rotate(-135deg);
+  border-color: var(--accent);
+}
+
+/* --------------------------------------------------------------------------
+   8. Accordion panel content
+   -------------------------------------------------------------------------- */
+.accordion-panel {
+  padding: 0 var(--summary-padding-x) clamp(18px, 2.6vw, 22px);
+  animation: panelFadeIn var(--duration-fade) var(--ease-standard) both;
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.accordion-panel p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+/* --------------------------------------------------------------------------
+   9. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .accordion-summary::before,
+  .accordion-summary::after,
+  .summary-chevron,
+  .accordion-panel,
+  .accordion-item {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .accordion-panel {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. Responsive breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablet: slightly tighter horizontal padding */
+@media (max-width: 768px) {
+  .accordion {
+    max-width: 100%;
+  }
+}
+
+/* Mobile: reduce icon size and gap so the header never wraps or
+   overflows its container */
+@media (max-width: 480px) {
+  .stage {
+    padding: 32px 14px;
+    gap: 28px;
+  }
+
+  .summary-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+  }
+
+  .summary-content {
+    gap: 10px;
+  }
+
+  .accordion-summary {
+    gap: 10px;
+  }
+}
