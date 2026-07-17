@@ -1,17 +1,50 @@
-# Slide Up Keyframes Tests (Example Submission)
+# Slide Up Keyframes — Unit Tests
 
-## Overview
-This submission provides a visual test and structural verification for the `slide-up` keyframes within the EaseMotion CSS engine. As per the contribution guidelines, this serves as an interactive validation inside a `demo.html` environment to ensure the compiler handles the slide up animations robustly under various parameters (duration, spring, delays, infinite repeats).
+Comprehensive unit tests for the **Slide Up** animation keyframe lifecycle in EaseMotion CSS, covering the parser and compiler stages.
 
-## Features Tested
-- Baseline `slide-up 800ms ease-out`
-- Composite definition `slide-up 1.5s spring delay-500ms`
-- Infinite repetition `slide-up 1s ease-in repeat-infinite alternate`
-- Browser-side assertion of AST and compiled CSS structure via the console.
+## Test Coverage — 35 Tests
 
-## How to use
-1. Open `demo.html` in any modern browser.
-2. Observe the animations triggering on page load.
-3. Open the Developer Tools console to view the automated unit test assertions verifying parser and compiler outputs.
+| Category                  | Tests | Description                                                                                                                                            |
+| ------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Parser — Name             | 2     | Basic name parsing, case insensitivity                                                                                                                 |
+| Parser — Duration         | 3     | ms, seconds, default fallback                                                                                                                          |
+| Parser — Easing           | 4     | ease-out, ease-in, spring, linear                                                                                                                      |
+| Parser — Delay            | 2     | ms and seconds                                                                                                                                         |
+| Parser — Repeat           | 2     | Count and infinite                                                                                                                                     |
+| Parser — Fill & Direction | 2     | fill mode, direction                                                                                                                                   |
+| Parser — Full expression  | 1     | All tokens together                                                                                                                                    |
+| Parser — Negative         | 3     | Unknown name, empty, null                                                                                                                              |
+| Compiler — Class name     | 5     | Format, determinism, uniqueness                                                                                                                        |
+| Compiler — CSS output     | 13    | Animation property, duration, easing, delay, iterations, fill, direction, reduced-motion guard, keyframe reference, syntax validity, unknown animation |
 
-This submission fulfills the requirements for testing the `slide-up` keyframes while adhering to the `submissions/examples` directory requirements, providing original structural code in `demo.html` and `style.css`.
+## How to Run
+
+Run the slide-up keyframe tests in isolation:
+
+```bash
+npx vitest run --dir submissions/examples/slide-up-keyframes-tests
+```
+
+Run the full project test suite:
+
+```bash
+npm test
+```
+
+## Expected Output
+
+All 35 tests should pass:
+
+```
+ Test Files  1 passed (1)
+      Tests  35 passed (35)
+```
+
+## Files
+
+| File                   | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `tests/engine.test.js` | 35 test cases covering parser and compiler for slide-up keyframes |
+| `demo.html`            | Interactive demo with live preview and test status                |
+| `style.css`            | Demo page styling                                                 |
+| `README.md`            | This documentation                                                |

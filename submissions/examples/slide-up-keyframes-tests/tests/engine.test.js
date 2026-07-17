@@ -4,7 +4,7 @@
  * Tests for parser.js and compiler.js focused on the
  * "slide-up" animation keyframe lifecycle.
  *
- * Run: npx vitest run submissions/testing/slide-up-keyframes-tests/tests/engine.test.js
+ * Run: npx vitest run --dir submissions/examples/slide-up-keyframes-tests
  * ============================================================
  */
 
@@ -49,6 +49,11 @@ describe("parser — slide-up keyframes", () => {
   it("parses slide-up with linear easing", () => {
     const ast = parse("slide-up linear");
     expect(ast.easing).toBe("linear");
+  });
+
+  it("parses slide-up with ease-in easing", () => {
+    const ast = parse("slide-up ease-in");
+    expect(ast.easing).toBe("cubic-bezier(0.4, 0, 1, 1)");
   });
 
   it("parses slide-up with delay", () => {
@@ -110,11 +115,6 @@ describe("parser — slide-up keyframes", () => {
 
   it("returns null for null input", () => {
     expect(parse(null)).toBeNull();
-  });
-
-  it("parses slide-up with ease-in easing", () => {
-    const ast = parse("slide-up ease-in");
-    expect(ast.easing).toBe("cubic-bezier(0.4, 0, 1, 1)");
   });
 });
 
