@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 /**
- * ThermostatTemperatureControl Component
+ * ThermostatTemperatureControl Component/
  * Uses EaseMotion CSS utility classes to create a fluid, tactile climate adjusting interface.
  */
 export const ThermostatTemperatureControl = ({ 
