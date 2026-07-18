@@ -30,4 +30,4 @@ Customize highlight dimensions and timing via CSS custom properties:
 Provides lightweight, animated, and accessible text highlights for blogs, e-learning platforms, reading interfaces, and portfolios. Fully responsive, wraps perfectly across multi-line text blocks, and functions entirely without JavaScript.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #49046.*
+*Created for GSSoC-26 — Resolves #49046.*

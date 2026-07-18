@@ -1,6 +1,6 @@
-# React Component: Collapsible Sidebar Menu with Smooth Accordion (ECSoC26 Edition)
+# React Component: Collapsible Sidebar Menu with Smooth Accordion (GSSoC-26 Edition)
 
-I am fixing this issue under ECSoC26.
+I am fixing this issue under GSSoC-26.
 
 1. **What does this do?**  
    It renders a modular, copy-paste ready React component for a **Collapsible Sidebar Menu with Smooth Accordion** containing collapsible sidebar width transitions, nested submenus navigation links, and grid fractional rows accordion animation effects.

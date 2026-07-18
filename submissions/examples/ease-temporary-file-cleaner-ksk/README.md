@@ -21,4 +21,4 @@ Add `<input type="checkbox" id="..." class="cleaner-toggle">` immediately preced
 Provides a highly interactive dashboard diagnostic clean-up widget with zero runtime script footprint. Useful for hosting dashboard previews, utility panels, and admin interfaces that demonstrate space optimizations.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #49037.*
+*Created for GSSoC-26 — Resolves #49037.*

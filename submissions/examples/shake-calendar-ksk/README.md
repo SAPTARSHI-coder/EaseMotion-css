@@ -10,4 +10,4 @@ Nest a 7-column calendar grid inside a `.calendar-console` container using `.cal
 It showcases bouncy, organic micro-interactions and periodic alerts suitable for music player screens or alarm systems.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41890.*
+*Created for GSSoC-26 — Resolves #41890.*

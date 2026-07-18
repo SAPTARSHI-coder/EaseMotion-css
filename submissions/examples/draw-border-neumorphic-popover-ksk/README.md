@@ -33,4 +33,4 @@ Support for dark mode is built in simply by overriding the background and shadow
 Neumorphic components often suffer from poor visual borders and accessibility boundaries. The clockwise draw-border technique acts as a strong visual indicator for both hover and active/open states, solving the "soft boundaries" problem of neumorphic designs. Keyboard accessibility is fully supported out of the box using checkbox and label focus patterns.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46755.*
+*Created for GSSoC-26 — Resolves #46755.*

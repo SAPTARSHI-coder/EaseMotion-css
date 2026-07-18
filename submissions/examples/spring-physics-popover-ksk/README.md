@@ -27,4 +27,4 @@ Three easing presets are defined in `:root`:
 The spring triple-transform (scale + translate + rotate simultaneously) creates a physically convincing "pop" that feels alive. The stat-chip stagger-spring inside the card adds a secondary layer of physical feedback after the card lands — ideal for creative portfolio and case study showcases.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46676.*
+*Created for GSSoC-26 — Resolves #46676.*

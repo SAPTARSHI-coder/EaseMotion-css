@@ -1,6 +1,6 @@
-# React Component: Interactive Pricing Tier Switcher (Monthly/Annual) (ECSoC26 Edition)
+# React Component: Interactive Pricing Tier Switcher (Monthly/Annual) (GSSoC-26 Edition)
 
-I am fixing this issue under ECSoC26.
+I am fixing this issue under GSSoC-26.
 
 1. **What does this do?**  
    It renders a modular, copy-paste ready React component for an **Interactive Pricing Tier Switcher (Monthly/Annual)** containing dynamic toggle selections, popular highlights cards, features checklist, and discount tags.
