@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geyser Eruption</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>💨 Geyser Eruption</h1>
+        <p class="subtitle">Hot water bursting from ground with steam</p>
+
+        <div class="geyser-wrapper">
+            <canvas id="geyserCanvas"></canvas>
+
+            <div class="controls">
+                <button id="eruptBtn">💨 Erupt</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Natural</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">💨 Ready to erupt</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('geyserCanvas');
+        const ctx = canvas.getContext('2d');
+        const eruptBtn = document.getElementById('eruptBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let waterParticles = [];
+        let steamParticles = [];
+        let splashParticles = [];
+        let isErupting = false;
+        let eruptionProgress = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let groundY = 0;
+        let ventX = 0;
+        let ventY = 0;
+        let eruptionPower = 0;
+        let steamIntensity = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Natural',
+                water: ['#4a8aba', '#3a7aaa', '#6aaada', '#2a6a9a'],
+                steam: ['#ffffff', '#e8e8e8', '#d0d0d0'],
+                ground: '#5a4a3a',
+                splash: '#8abada'
+            },
+            {
+                name: 'Sunset',
+                water: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948'],
+                steam: ['#ffe4b5', '#ffdab9', '#f5deb3'],
+                ground: '#5a3a2a',
+                splash: '#ffb347'
+            },
+            {
+                name: 'Blue Lagoon',
+                water: ['#006994', '#0077b6', '#00b4d8', '#48cae4'],
+                steam: ['#caf0f8', '#ade8f4', '#90e0ef'],
+                ground: '#2a3a4a',
+                splash: '#4dc9f6'
+            },
+            {
+                name: 'Fire',
+                water: ['#ff0000', '#ff4500', '#ff6b00', '#ff8c00'],
+                steam: ['#ffccaa', '#ffbb99', '#ffaa88'],
+                ground: '#3a1a0a',
+                splash: '#ff6b35'
+            },
+            {
+                name: 'Galaxy',
+                water: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc'],
+                steam: ['#e0a0ff', '#d090ff', '#c080ff'],
+                ground: '#1a0a2a',
+                splash: '#b07cff'
+            },
+            {
+                name: 'Emerald',
+                water: ['#004d40', '#00695c', '#00897b', '#26a69a'],
+                steam: ['#b2dfdb', '#80cbc4', '#4db6ac'],
+                ground: '#1a2a1a',
+                splash: '#4db6ac'
+            },
+        ];
+
+        // ===== WATER PARTICLE CLASS =====
+        class WaterParticle {
+            constructor(x, y) {
+                this.x = x || ventX + (Math.random() - 0.5) * 10;
+                this.y = y || ventY - 5;
+                this.size = 2 + Math.random() * 4;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -Math.random() * 8 - 4;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 40;
+                this.age = 0;
+                this.gravity = 0.1 + Math.random() * 0.05;
+                this.damping = 0.99;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.colorOffset = Math.random();
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.shape = Math.random() > 0.5 ? 'circle' : 'drop';
+                this.opacity = 0.7 + Math.random() * 0.3;
+            }
+
+            update(speed) {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= this.damping;
+                this.vy *= this.damping;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.998;
+                this.phase += 0.05;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.water;
+                const colorIdx = Math.floor(this.colorOffset * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * this.opacity;
+                const size = this.size * this.life;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.2;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 4 * this.glow;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '60');
+                grad.addColorStop(0.5, color + '30');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Main particle
+                if (this.shape === 'drop') {
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - size);
+                    ctx.quadraticCurveTo(this.x + size, this.y, this.x, this.y + size);
+                    ctx.quadraticCurveTo(this.x - size, this.y, this.x, this.y - size);
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(this.x - size * 0.2, this.y - size * 0.3, size * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife || this.y > groundY;
+            }
+        }
+
+        // ===== STEAM PARTICLE CLASS =====
+        class SteamParticle {
+            constructor(x, y) {
+                this.x = x || ventX + (Math.random() - 0.5) * 20;
+                this.y = y || ventY - 10;
+                this.size = 5 + Math.random() * 15;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 1.5 - 0.5;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 80;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.2 + Math.random() * 0.4;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.colorOffset = Math.random();
+                this.density = 0.3 + Math.random() * 0.5;
+                this.opacity = 0.3 + Math.random() * 0.4;
+                this.glow = 0.2 + Math.random() * 0.3;
+            }
+
+            update(speed) {
+                this.age++;
+                this.x += this.vx + Math.sin(this.phase) * 0.1;
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.phase += this.wobbleSpeed * speed * 10;
+                this.life = 1 - this.age / this.maxLife;
+                this.size += 0.1 * speed * 10;
+                this.opacity *= 0.998;
+                this.density *= 0.999;
+                this.vx *= 0.99;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.steam;
+                const colorIdx = Math.floor(this.colorOffset * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * this.opacity * this.density;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                grad.addColorStop(0, `rgba(255,255,255,${alpha * 0.3})`);
+                grad.addColorStop(0.3, `rgba(255,255,255,${alpha * 0.2})`);
+                grad.addColorStop(0.7, `rgba(255,255,255,${alpha * 0.1})`);
+                grad.addColorStop(1, `rgba(255,255,255,0)`);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.6;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(255,255,255,0.05)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Secondary wisp
+                const wispSize = this.size * 0.6;
+                const wispX = this.x + Math.sin(this.phase + 1) * this.size * 0.3;
+                const wispY = this.y + Math.cos(this.phase + 2) * this.size * 0.2;
+                const grad2 = ctx.createRadialGradient(wispX, wispY, 0, wispX, wispY, wispSize);
+                grad2.addColorStop(0, `rgba(255,255,255,${alpha * 0.15})`);
+                grad2.addColorStop(1, `rgba(255,255,255,0)`);
+                ctx.beginPath();
+                ctx.arc(wispX, wispY, wispSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife || this.opacity < 0.01;
+            }
+        }
+
+        // ===== SPLASH PARTICLE CLASS =====
+        class SplashParticle {
+            constructor(x, y) {
+                this.x = x || ventX + (Math.random() - 0.5) * 30;
+                this.y = y || ventY + 5;
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = -Math.random() * 4 - 1;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.1 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+                this.colorOffset = Math.random();
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update(speed) {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+                this.phase += 0.05;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.splash || palette.water;
+                const colorIdx = Math.floor(this.colorOffset * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * 0.8;
+                const size = this.size * this.life;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 3);
+                grad.addColorStop(0, color + '60');
+                grad.addColorStop(0.5, color + '30');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW GROUND =====
+        function drawGround(ctx, w, h) {
+            const palette = colorPalettes[colorMode];
+            const groundColor = palette.ground;
+
+            groundY = h * 0.75;
+            ventX = w / 2;
+            ventY = groundY;
+
+            // Ground gradient
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, groundColor);
+            groundGrad.addColorStop(0.3, groundColor + '80');
+            groundGrad.addColorStop(0.6, groundColor + '60');
+            groundGrad.addColorStop(1, groundColor + '40');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Ground texture
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.005) * 10;
+                const y = groundY + 5 + Math.sin(i * 1.3 + time * 0.008) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.005) * 5,
+                    y + 10 + Math.sin(i * 0.7 + time * 0.01) * 5,
+                    x + Math.sin(i * 1.5 + time * 0.006) * 8,
+                    y + 15 + Math.sin(i * 1.1 + time * 0.01) * 5
+                );
+                ctx.strokeStyle = `rgba(0,0,0,${0.05 + Math.sin(i + time * 0.005) * 0.03})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Vent opening
+            const ventWidth = 20 + eruptionPower * 5;
+            const ventGrad = ctx.createRadialGradient(ventX, groundY + 2, 0, ventX, groundY + 2, ventWidth);
+            ventGrad.addColorStop(0, 'rgba(30,20,10,0.3)');
+            ventGrad.addColorStop(0.5, 'rgba(20,15,10,0.2)');
+            ventGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.beginPath();
+            ctx.ellipse(ventX, groundY + 2, ventWidth, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = ventGrad;
+            ctx.fill();
+
+            // Vent rim
+            ctx.beginPath();
+            ctx.ellipse(ventX, groundY, ventWidth, 3, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(20,15,10,0.2)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Water pool around vent
+            if (isErupting) {
+                const poolRadius = 15 + eruptionPower * 10;
+                const poolGrad = ctx.createRadialGradient(ventX, groundY + 3, 0, ventX, groundY + 3, poolRadius);
+                const palette2 = colorPalettes[colorMode];
+                const waterColor = palette2.water[0];
+                poolGrad.addColorStop(0, waterColor + '40');
+                poolGrad.addColorStop(0.5, waterColor + '20');
+                poolGrad.addColorStop(1, waterColor + '00');
+                ctx.beginPath();
+                ctx.ellipse(ventX, groundY + 3, poolRadius, 8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = poolGrad;
+                ctx.fill();
+            }
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            for (let i = 0; i <= w; i += 2) {
+                const yOffset = Math.sin(i * 0.02 + time * 0.005) * 2;
+                ctx.lineTo(i, groundY + yOffset);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+            const palette = colorPalettes[colorMode];
+            const skyColors = {
+                'Natural': ['#0a0a2e', '#1a1a3e', '#2a2a4e'],
+                'Sunset': ['#1a0a0a', '#2a1a0a', '#3a2a1a'],
+                'Blue Lagoon': ['#0a0a2e', '#0a1a3e', '#0a2a4e'],
+                'Fire': ['#1a0a0a', '#2a0a0a', '#3a1a0a'],
+                'Galaxy': ['#0a0a1a', '#1a0a2a', '#2a0a3a'],
+                'Emerald': ['#0a0a1a', '#0a1a1a', '#0a2a1a'],
+            };
+            const sky = skyColors[palette.name] || skyColors['Natural'];
+            for (let i = 0; i < 3; i++) {
+                const t = i / 2;
+                grad.addColorStop(t, sky[i]);
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h * 0.7);
+
+            // Stars
+            for (let i = 0; i < 40; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % (h * 0.5);
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Mountains in background
+            for (let i = 0; i < 3; i++) {
+                const x = (i / 3) * w + Math.sin(i * 0.5) * 20;
+                const y = h * 0.5 + i * 20;
+                ctx.beginPath();
+                ctx.moveTo(x - 80, y + 30);
+                ctx.quadraticCurveTo(x - 40, y - 30 - i * 10, x, y - 10 - i * 5);
+                ctx.quadraticCurveTo(x + 40, y - 30 - i * 10, x + 80, y + 30);
+                ctx.fillStyle = `rgba(20, 25, 35, ${0.1 + i * 0.05})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== ERUPT =====
+        function erupt() {
+            if (isErupting) return;
+
+            isErupting = true;
+            eruptionProgress = 0;
+            eruptionPower = 1;
+            statusText.textContent = '💨 Erupting!';
+            eruptBtn.textContent = '💨 Erupting...';
+
+            // Initial burst
+            const numWater = 40 + Math.floor(Math.random() * 40);
+            const numSteam = 30 + Math.floor(Math.random() * 30);
+            const numSplash = 20 + Math.floor(Math.random() * 20);
+
+            for (let i = 0; i < numWater; i++) {
+                const p = new WaterParticle();
+                p.vy = -Math.random() * 12 - 6;
+                p.vx = (Math.random() - 0.5) * 3;
+                waterParticles.push(p);
+            }
+
+            for (let i = 0; i < numSteam; i++) {
+                const p = new SteamParticle();
+                p.vy = -Math.random() * 3 - 1;
+                steamParticles.push(p);
+            }
+
+            for (let i = 0; i < numSplash; i++) {
+                const p = new SplashParticle();
+                p.vx = (Math.random() - 0.5) * 8;
+                p.vy = -Math.random() * 6 - 2;
+                splashParticles.push(p);
+            }
+
+            // Eruption sequence
+            const interval = setInterval(() => {
+                eruptionProgress += 0.02;
+                eruptionPower = 0.5 + 0.5 * Math.sin(eruptionProgress * Math.PI);
+
+                // Spawn more particles during eruption
+                if (Math.random() < 0.3) {
+                    const p = new WaterParticle();
+                    p.vy = -Math.random() * 10 - 4;
+                    waterParticles.push(p);
+                }
+                if (Math.random() < 0.2) {
+                    const p = new SteamParticle();
+                    p.vy = -Math.random() * 2.5 - 0.5;
+                    steamParticles.push(p);
+                }
+                if (Math.random() < 0.15) {
+                    const p = new SplashParticle();
+                    p.vx = (Math.random() - 0.5) * 6;
+                    p.vy = -Math.random() * 5 - 1;
+                    splashParticles.push(p);
+                }
+
+                if (eruptionProgress >= 1) {
+                    clearInterval(interval);
+                    isErupting = false;
+                    eruptionPower = 0;
+                    eruptBtn.textContent = '💨 Erupt';
+                    statusText.textContent = '💨 Eruption complete!';
+                    setTimeout(() => {
+                        statusText.textContent = '💨 Ready to erupt';
+                    }, 1500);
+                }
+            }, 80);
+        }
+
+        // ===== RESET =====
+        function resetGeyser() {
+            waterParticles = [];
+            steamParticles = [];
+            splashParticles = [];
+            isErupting = false;
+            eruptionProgress = 0;
+            eruptionPower = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            eruptBtn.textContent = '💨 Erupt';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '💨 Ready to erupt';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update water particles
+            for (let i = waterParticles.length - 1; i >= 0; i--) {
+                const p = waterParticles[i];
+                p.update(speed);
+                if (p.isDead()) {
+                    waterParticles.splice(i, 1);
+                }
+            }
+
+            // Update steam particles
+            for (let i = steamParticles.length - 1; i >= 0; i--) {
+                const p = steamParticles[i];
+                p.update(speed);
+                if (p.isDead()) {
+                    steamParticles.splice(i, 1);
+                }
+            }
+
+            // Update splash particles
+            for (let i = splashParticles.length - 1; i >= 0; i--) {
+                const p = splashParticles[i];
+                p.update(speed);
+                if (p.isDead()) {
+                    splashParticles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawGround(ctx, w, h);
+
+            // Draw splash particles
+            for (const p of splashParticles) {
+                p.draw(ctx);
+            }
+
+            // Draw water particles
+            for (const p of waterParticles) {
+                p.draw(ctx);
+            }
+
+            // Draw steam particles
+            for (const p of steamParticles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const total = waterParticles.length + steamParticles.length + splashParticles.length;
+                const state = isErupting ? '💨 Erupting' : '💨 Ready';
+                statusText.textContent = `${state} • ${total} particles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Erupt
+        eruptBtn.addEventListener('click', erupt);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '💨 Ready to erupt';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '💨 Ready to erupt';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetGeyser);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'e' || e.key === 'E') eruptBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                eruptBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', erupt);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            erupt();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '💨 Ready to erupt';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('💨 Geyser Eruption loaded!');
+        console.log('💡 E - Erupt');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Erupt');
+        console.log('💡 Click canvas - Erupt');
+    </script>
+</body>
+</html>

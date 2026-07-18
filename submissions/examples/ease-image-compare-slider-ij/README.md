@@ -1,33 +1,16 @@
-# Image Compare Slider
+# ease-image-compare-slider
 
-A before/after image comparison slider with a draggable handle. Drag the handle horizontally to reveal either image.
-
-## Features
-
-- Two images overlaid with the modified image clipped via `clip-path: inset`
-- Draggable circular handle with directional arrows
-- Touch and mouse support
-- Smooth transitions on handle and clip updates
-
-## Custom Properties
-
-| Property | Default | Description |
-|---|---|---|
-| `--ic-duration` | `0.3s` | Transition duration for handle and clip |
-| `--ic-handle-color` | `#fff` | Handle and line color |
-| `--ic-handle-size` | `48px` | Handle circle diameter |
-| `--ic-handle-border` | `3px` | Dividing line width |
-| `--ic-overlay-bg` | `rgba(0,0,0,0.4)` | Arrow icon color |
+A smooth, interactive before-and-after image comparison slider utilizing CSS `clip-path` and native range inputs.
 
 ## Usage
+Open demo.html in a browser. Wrap two images (`.ease-compare-before`, `.ease-compare-after`), a range `<input>`, and the `.ease-slider-handle` inside the `.ease-compare-container`.
 
-```html
-<link rel="stylesheet" href="style.css">
-<div class="compare-wrapper">
-  <div class="compare__original"><img src="before.jpg"></div>
-  <div class="compare__modified"><img src="after.jpg"></div>
-  <div class="compare__handle">...</div>
-</div>
-```
+## Custom Properties
+| Property | Default | Description |
+|---|---|---|
+| --slider-handle-color | #ffffff | Center handle button color |
+| --slider-line-color | #ffffff | Vertical separator line color |
+| --slider-shadow | rgba(0,0,0,0.3) | Shadow for depth |
 
-Images should share the same aspect ratio to avoid layout shifts.
+## Notes
+A small script is required to update the `--position` custom CSS variable on the parent container when the range input changes. This variable smoothly adjusts the `clip-path` of the top image.
