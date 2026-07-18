@@ -76,4 +76,4 @@ Combine these structural classes on the main `.offline-banner` container to dict
 - `.banner-modal`: Full-screen takeover overlay modal.
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/text-reveal-offline-banner-motion/*
+*Created as a submission for GSSOC-26  under submissions/examples/text-reveal-offline-banner-motion/*
