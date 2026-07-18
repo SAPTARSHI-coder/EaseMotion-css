@@ -45,4 +45,4 @@ Apply these classes directly to container divs to trigger soft depth:
 - `.neumorphic-recessed`: Creates a sunken tactile tray or field.
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/neumorphic-date-picker-medical/*
+*Created as a submission for GSSOC-26  under submissions/examples/neumorphic-date-picker-medical/*

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Thermal Camera View</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="rig">
+    <header class="rig-header">
+      <h1>Thermal Camera View</h1>
+      <span class="model">MODEL TC-1 &middot; FALSE-COLOR IMAGER</span>
+    </header>
+
+    <div class="viewport">
+      <div class="screen" id="screen">
+        <canvas id="thermal-canvas" width="320" height="240"></canvas>
+        <div class="scanlines"></div>
+        <div class="bracket tl"></div>
+        <div class="bracket tr"></div>
+        <div class="bracket bl"></div>
+        <div class="bracket br"></div>
+        <div class="mode-badge" id="mode-badge" data-mode="demo">
+          <span class="rec-dot"></span><span id="mode-text">DEMO</span>
+        </div>
+        <div class="readout" id="readout">
+          <span class="temp" id="temp-value">--&deg;</span>
+          <span class="hint">point at a spot</span>
+        </div>
+        <div class="crosshair" id="crosshair"></div>
+        <video id="video" autoplay playsinline muted hidden></video>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="camera-btn" type="button">Start Camera</button>
+      <button id="snapshot-btn" type="button">Snapshot</button>
+      <div class="palette-group" role="group" aria-label="Color palette">
+        <button data-palette="iron" aria-pressed="true" type="button">Iron</button>
+        <button data-palette="rainbow" aria-pressed="false" type="button">Rainbow</button>
+        <button data-palette="white" aria-pressed="false" type="button">White-hot</button>
+        <button data-palette="black" aria-pressed="false" type="button">Black-hot</button>
+      </div>
+    </div>
+
+    <div id="status" role="status" aria-live="polite">
+      Demo mode — showing a simulated heat pattern. Click "Start Camera" to use your webcam instead.
+    </div>
+
+    <footer>
+      Palette rendering is a false-color visualization of ordinary image brightness,
+      not real infrared data. Temperature readout is illustrative only. No video is
+      uploaded anywhere — everything runs locally in your browser.
+    </footer>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('thermal-canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const video = document.getElementById('video');
+    const screenEl = document.getElementById('screen');
+    const modeBadge = document.getElementById('mode-badge');
+    const modeText = document.getElementById('mode-text');
+    const statusEl = document.getElementById('status');
+    const cameraBtn = document.getElementById('camera-btn');
+    const snapshotBtn = document.getElementById('snapshot-btn');
+    const crosshair = document.getElementById('crosshair');
+    const tempValue = document.getElementById('temp-value');
+    const paletteButtons = document.querySelectorAll('[data-palette]');
+
+    const WORK_W = 160;
+    const WORK_H = 120;
+    const work = document.createElement('canvas');
+    work.width = WORK_W;
+    work.height = WORK_H;
+    const workCtx = work.getContext('2d', { willReadFrequently: true });
+
+    let mode = 'demo';
+    let stream = null;
+    let palette = 'iron';
+    let rafId = null;
+    let lastFrame = null;
+    let demoTime = 0;
+
+    function setStatus(text, state) {
+      statusEl.textContent = text;
+      if (state) statusEl.setAttribute('data-state', state);
+      else statusEl.removeAttribute('data-state');
+    }
+
+    function setMode(next) {
+      mode = next;
+      modeBadge.setAttribute('data-mode', mode);
+      modeText.textContent = mode === 'live' ? 'LIVE' : 'DEMO';
+      cameraBtn.textContent = mode === 'live' ? 'Stop Camera' : 'Start Camera';
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function stopsToColor(stops, v) {
+      const t = v / 255;
+      for (let i = 0; i < stops.length - 1; i++) {
+        const [p0, c0] = stops[i];
+        const [p1, c1] = stops[i + 1];
+        if (t >= p0 && t <= p1) {
+          const localT = (t - p0) / (p1 - p0 || 1);
+          return [
+            Math.round(lerp(c0[0], c1[0], localT)),
+            Math.round(lerp(c0[1], c1[1], localT)),
+            Math.round(lerp(c0[2], c1[2], localT)),
+          ];
+        }
+      }
+      return stops[stops.length - 1][1];
+    }
+
+    const PALETTES = {
+      iron: (v) =>
+        stopsToColor(
+          [
+            [0, [3, 0, 10]],
+            [0.25, [60, 0, 90]],
+            [0.5, [180, 20, 40]],
+            [0.75, [240, 140, 0]],
+            [1, [255, 255, 200]],
+          ],
+          v
+        ),
+      rainbow: (v) =>
+        stopsToColor(
+          [
+            [0, [10, 10, 90]],
+            [0.33, [0, 160, 200]],
+            [0.5, [40, 200, 60]],
+            [0.75, [230, 210, 20]],
+            [1, [230, 30, 20]],
+          ],
+          v
+        ),
+      white: (v) => [v, v, v],
+      black: (v) => [255 - v, 255 - v, 255 - v],
+    };
+
+    function drawDemoFrame(t) {
+      const w = WORK_W;
+      const h = WORK_H;
+      workCtx.fillStyle = '#000';
+      workCtx.fillRect(0, 0, w, h);
+
+      const blobs = [
+        { x: 0.3 + 0.1 * Math.sin(t * 0.6), y: 0.4 + 0.08 * Math.cos(t * 0.5), r: 34, heat: 1 },
+        { x: 0.65 + 0.08 * Math.cos(t * 0.4), y: 0.55 + 0.1 * Math.sin(t * 0.7), r: 26, heat: 0.7 },
+        { x: 0.5 + 0.15 * Math.sin(t * 0.3 + 1), y: 0.25, r: 18, heat: 0.5 },
+      ];
+
+      for (const b of blobs) {
+        const grad = workCtx.createRadialGradient(
+          b.x * w, b.y * h, 0,
+          b.x * w, b.y * h, b.r
+        );
+        grad.addColorStop(0, `rgba(255,255,255,${b.heat})`);
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        workCtx.fillStyle = grad;
+        workCtx.beginPath();
+        workCtx.arc(b.x * w, b.y * h, b.r, 0, Math.PI * 2);
+        workCtx.fill();
+      }
+    }
+
+    function applyPaletteAndDraw() {
+      const src = workCtx.getImageData(0, 0, WORK_W, WORK_H);
+      const data = src.data;
+      const mapFn = PALETTES[palette];
+
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+        const [r, g, b] = mapFn(lum);
+        data[i] = r;
+        data[i + 1] = g;
+        data[i + 2] = b;
+        data[i + 3] = 255;
+      }
+
+      lastFrame = src;
+      workCtx.putImageData(src, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+    }
+
+    function tick() {
+      if (mode === 'live' && video.readyState >= 2) {
+        workCtx.drawImage(video, 0, 0, WORK_W, WORK_H);
+      } else {
+        demoTime += 0.02;
+        drawDemoFrame(demoTime);
+      }
+      applyPaletteAndDraw();
+      rafId = requestAnimationFrame(tick);
+    }
+
+    async function startCamera() {
+      try {
+        setStatus('Requesting camera access…');
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 320, height: 240 },
+          audio: false,
+        });
+        video.srcObject = stream;
+        await video.play();
+        setMode('live');
+        setStatus('Live camera feed — false-color thermal-style rendering applied locally.');
+      } catch (err) {
+        setStatus('Camera unavailable or permission denied — staying in demo mode.', 'error');
+        setMode('demo');
+      }
+    }
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+        stream = null;
+      }
+      video.srcObject = null;
+      setMode('demo');
+      setStatus('Camera stopped. Back to demo mode.');
+    }
+
+    cameraBtn.addEventListener('click', () => {
+      if (mode === 'live') {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    });
+
+    paletteButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        palette = btn.dataset.palette;
+        paletteButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      });
+    });
+
+    snapshotBtn.addEventListener('click', () => {
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+        a.href = url;
+        a.download = `thermal-snapshot-${stamp}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    });
+
+    screenEl.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      crosshair.style.display = 'block';
+      crosshair.style.left = `${x}px`;
+      crosshair.style.top = `${y}px`;
+
+      if (lastFrame) {
+        const wx = Math.min(WORK_W - 1, Math.max(0, Math.floor((x / rect.width) * WORK_W)));
+        const wy = Math.min(WORK_H - 1, Math.max(0, Math.floor((y / rect.height) * WORK_H)));
+        const idx = (wy * WORK_W + wx) * 4;
+        const lum = 0.299 * lastFrame.data[idx] + 0.587 * lastFrame.data[idx + 1] + 0.114 * lastFrame.data[idx + 2];
+        const approxC = Math.round(15 + (lum / 255) * 45);
+        tempValue.textContent = `~${approxC}\u00B0C`;
+      }
+    });
+
+    screenEl.addEventListener('mouseleave', () => {
+      crosshair.style.display = 'none';
+      tempValue.textContent = '--\u00B0';
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      if (stream) stream.getTracks().forEach((t) => t.stop());
+    });
+
+    setMode('demo');
+    tick();
+  </script>
+</body>
+</html>
