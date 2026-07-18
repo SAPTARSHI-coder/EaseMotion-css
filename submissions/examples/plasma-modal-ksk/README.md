@@ -10,4 +10,4 @@ Pair a hidden `.plasma-toggle` checkbox with a `.plasma-trigger-label` button. T
 Delivers a high-impact SaaS upsell or alert modal with ambient plasma atmosphere using only CSS keyframe animations and the checkbox hack — zero JavaScript.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41872.*
+*Created for GSSoC-26 — Resolves #41872.*
