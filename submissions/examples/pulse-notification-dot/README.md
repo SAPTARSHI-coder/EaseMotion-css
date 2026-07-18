@@ -11,6 +11,7 @@ The Pulse Notification Dot provides a smooth pulsing effect for displaying notif
 - Pure CSS implementation
 - Customizable using CSS variables
 - Lightweight and reusable
+- Accessible with reduced-motion support
 
 ## Usage
 
