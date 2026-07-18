@@ -1,25 +1,23 @@
-# CSS-Only Skeleton Loader Component
+# EaseMotion Skeleton Loader Example
 
-## What does this do?
-Provides a set of pure CSS skeleton loading placeholder classes for cards, text blocks, and avatars. These use a shimmering gradient animation to indicate content is loading, with no JavaScript required.
+This directory provides a standalone, pure CSS example of a skeleton loading state using EaseMotion-inspired CSS utility classes.
 
-## How is it used?
-```html
-<!-- Skeleton card -->
-<div class="ease-skeleton-card">
-  <div class="ease-skeleton-avatar"></div>
-  <div class="ease-skeleton-text ease-skeleton-text--lg"></div>
-  <div class="ease-skeleton-text ease-skeleton-text--md"></div>
-  <div class="ease-skeleton-text ease-skeleton-text--sm"></div>
-</div>
-```
+## What is a Skeleton Loader?
+A skeleton loader is a placeholder UI that closely mimics the layout of the actual content being fetched from the server. It reduces the perceived waiting time for users and prevents jarring layout shifts when the real content finally renders.
 
-## Why is it useful?
-Skeleton screens dramatically improve perceived performance by showing users the shape of incoming content before data loads. This implementation uses `background-size` and `background-position` animation on a shimmer gradient, keeping it entirely on the compositor thread for buttery-smooth 60fps performance.
+## The `.ease-shimmer` Utility
+Unlike spinners that use SVG rotations, this skeleton effect relies on animating a `linear-gradient` background.
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+### How it Works:
+1. **The Gradient**: We define a horizontal gradient that starts with a base color (`#e2e8f0`), transitions to a bright highlight (`#f8fafc`), and returns to the base color.
+2. **The Size**: We set `background-size: 200% 100%`. This stretches the background to be twice as wide as the actual element.
+3. **The Animation**: The `@keyframes ease-shimmer` continuously shifts the `background-position` from `200% 0` to `-200% 0`. Because the background is oversized, this shift creates the illusion of a bright sheen moving horizontally across the element.
 
-## Preview
-Open `demo.html` directly in your browser to see the shimmer effect.
+## Performance Considerations
+This approach is highly performant. 
+- It avoids animating layout-triggering properties like `width`, `margin`, or `left`.
+- Animating `background-position` is generally paint-friendly and handled efficiently by modern browsers.
+- Using a single utility class ensures that multiple skeleton elements can be rendered concurrently without choking the main thread.
+
+## Accessibility (a11y)
+The implementation fully respects the `@media (prefers-reduced-motion: reduce)` query. If reduced motion is preferred by the user, the `.ease-shimmer` animation is forced to `none`, and the background position is locked. The placeholder blocks remain fully visible to indicate a loading state, ensuring usability is preserved without inducing motion sickness.
