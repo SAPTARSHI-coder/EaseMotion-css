@@ -1,0 +1,12 @@
+const { test, expect } = require('@playwright/test');
+const freezeAnimations = require('../scripts/freezeAnimation');
+
+test('slide-up animation renders correctly at 500ms', async ({ page }) => {
+  await page.goto('/slide-up.html');
+
+  // Freeze animation halfway through to capture reliable snapshot
+  await freezeAnimations(page, 500);
+
+  // Assert visual regression
+  await expect(page).toHaveScreenshot('slide-up-500ms.png');
+});
