@@ -10,7 +10,7 @@ The maintainer can copy the section structure `<section id="performance">` from 
 It maintains user layout persistence (preventing users from dropping out of the sidebar navigation frame when clicking the Performance Guide) and ensures style and UX coherence across all document views.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #44519.*
+*Created for GSSoC-26 — Resolves #44519.*
 
 ## Required Core Changes
 
