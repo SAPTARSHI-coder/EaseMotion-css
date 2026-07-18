@@ -23,4 +23,4 @@ Wrap `<input class="ease-draw-toggle">` + `.ease-draw-wrap` together. Inside add
 The draw-border effect is a visually distinctive focus indicator — particularly effective for accessible web layouts where clear focus states matter. The animated border doubles as a keyboard-visible state, meeting WCAG 2.4.11 focus appearance requirements.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46759.*
+*Created for GSSoC-26 — Resolves #46759.*
