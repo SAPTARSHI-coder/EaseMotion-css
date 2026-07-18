@@ -19,4 +19,4 @@ Add a `.progress-fill` div inside a `.progress-track`. Set the per-bar width and
 Provides an animated skill/stats section component with no JavaScript. Five pre-built colour variants (purple, cyan, pink, green, amber) are ready to use out of the box.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41555.*
+*Created for GSSoC-26 — Resolves #41555.*

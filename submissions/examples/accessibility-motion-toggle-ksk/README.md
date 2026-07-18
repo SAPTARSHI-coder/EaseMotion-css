@@ -30,4 +30,4 @@ localStorage.setItem('ease-reduced-motion-pref', isReduced);
 Meets WCAG 2.1 SC 2.3.3 by giving users manual control over motion — independent of OS-level preferences. Useful for automated UI testing, snapshot testing, and user settings panels.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #44506.*
+*Created for GSSoC-26 — Resolves #44506.*
