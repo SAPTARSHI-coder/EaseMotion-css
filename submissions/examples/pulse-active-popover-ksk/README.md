@@ -22,4 +22,4 @@ Wrap a `<input type="checkbox" class="ease-pop-toggle">` + `.ease-popover-wrap` 
 Delivers a visually arresting "hotspot" popover pattern ideal for portfolio case-study overlays, image annotations, and project previews — with full keyboard accessibility and zero JavaScript.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46533.*
+*Created for GSSoC-26 — Resolves #46533.*
