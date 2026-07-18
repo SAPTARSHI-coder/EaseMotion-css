@@ -10,4 +10,4 @@ Nest the image/SVG inside a `.avatar-img-wrap` element, placed adjacent to a `.a
 It provides a high-performance profile card micro-interaction using GPU-friendly CSS rotation transforms and filters, perfect for modern blog designs.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41924.*
+*Created for GSSoC-26 — Resolves #41924.*

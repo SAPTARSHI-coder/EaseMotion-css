@@ -10,4 +10,4 @@ Pair `<input type="checkbox" class="plasma-v2-toggle">` with `<label for="...">`
 Provides a premium-feel SaaS upgrade/upsell modal with living plasma atmosphere, feature checklist, and dual action buttons — zero JavaScript required.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41872.*
+*Created for GSSoC-26 — Resolves #41872.*

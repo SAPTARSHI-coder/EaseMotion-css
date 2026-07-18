@@ -22,4 +22,4 @@ Wrap a trigger and the `.ease-tooltip` card inside `.ease-tooltip-wrap`. Rows in
 Delivers accessible, information-rich tooltips with a polished staggered reveal — no JavaScript required. Works with hover and keyboard focus (`tabindex`) making it WCAG-friendly.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46272.*
+*Created for GSSoC-26 — Resolves #46272.*
