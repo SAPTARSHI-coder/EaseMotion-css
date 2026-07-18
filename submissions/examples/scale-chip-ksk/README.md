@@ -10,4 +10,4 @@ Associate a hidden checkbox input `.chip-input` with a label `.scale-chip` conta
 It provides a responsive, highly tactile filtering element built purely with CSS 3D transforms, avoiding JavaScript selection state listeners.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41899.*
+*Created for GSSoC-26 — Resolves #41899.*

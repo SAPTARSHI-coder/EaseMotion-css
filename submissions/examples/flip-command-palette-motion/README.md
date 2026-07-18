@@ -65,4 +65,4 @@ To define categorizations for filtering search elements inside the list, apply t
 - `.cat-sys`: Matches Ship Lifesupport/Reactor Commands.
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/flip-command-palette-motion/*
+*Created as a submission for GSSOC-26  under submissions/examples/flip-command-palette-motion/*
