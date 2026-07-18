@@ -8,7 +8,7 @@ transform: translateY(0): The hover state which smoothly pulls the element back 
 Backdrop Filter: Integrated a subtle blur(12px) glass effect to ensure text legibility over any product image.
 
 Standard Component Classes
-.ease-catalog-grid — Layout wrapper.
-.ease-product-card — The anchor parent element and trigger bounding box.
-.ease-slide-popover — The main animated overlay component.
-.ease-buy-btn — Standardized interaction button within the popover.
+.ease-catalog-grid - Layout wrapper.
+.ease-product-card - The anchor parent element and trigger bounding box.
+.ease-slide-popover - The main animated overlay component.
+.ease-buy-btn - Standardized interaction button within the popover.
