@@ -20,7 +20,15 @@ Use a hidden checkbox toggle, a label trigger, and a scene wrapper containing a 
 </div>
 ```
 
-All timing, easing, and scale are customizable via CSS custom properties (e.g. `--flip-duration`, `--flip-easing`, `--flip-scale`, `--flip-perspective`).
+Customize via CSS custom properties:
+
+| Property | Default | Description |
+|---|---|---|
+| `--flip-duration` | `0.6s` | Flip animation speed |
+| `--flip-easing` | `cubic-bezier(0.4, 0.0, 0.2, 1)` | Front-face easing curve |
+| `--flip-back-easing` | `cubic-bezier(0.4, 0.0, 0.2, 1)` | Back-face easing curve |
+| `--flip-scale` | `0.9` | Initial scale factor |
+| `--flip-perspective` | `800px` | 3D perspective depth |
 
 ### 3. Why is it useful?
 Dashboard analytics layouts frequently need to show concise metric summaries with the ability to expand into detailed breakdowns. This component provides that pattern with a visually engaging 3D flip animation, full keyboard accessibility (Space/Enter to toggle), `prefers-reduced-motion` support, and complete responsiveness — all without any JavaScript dependency, aligning with EaseMotion CSS's zero-runtime philosophy.
