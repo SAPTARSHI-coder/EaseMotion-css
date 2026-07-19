@@ -2,25 +2,28 @@
 
 ## What does this do?
 
-An avatar that gently expands as a loading indicator.
+An avatar that gently expands and contracts as a loading / attention indicator.
 
 ## How is it used?
 
-Open `demo.html` in a browser:
+Open `demo.html` in a browser to see the expand loop.
 
 ```html
-<div class="expand-avatar-sp">Hover me</div>
+<div class="expand-avatar-ab">Hover me</div>
+<div class="expand-avatar-sp is-loading-sp" role="img" aria-label="User avatar loading" aria-busy="true">
+  SP
+</div>
 ```
 
 ## Why is it useful?
 
-Expanding avatars give a soft loading signal on profile/chat UIs without a separate spinner. The pattern is readable and easy to reuse.
+Expand motion is a clear, lightweight loading signal for profile cards, chat headers, and skeleton-style avatar placeholders.
 
 ## Accessibility
 
-- `role="status"` and `aria-live="polite"` announce loading state
-- Screen-reader text: “Loading…”
-- Under `prefers-reduced-motion: reduce`, motion stops and a dashed outline remains as a static cue
+- Uses `role="img"`, `aria-label`, and `aria-busy="true"` while loading
+- Status text uses `aria-live="polite"`
+- Under `prefers-reduced-motion: reduce`, animation stops and a dashed outline indicates loading
 
 ## Files
 
