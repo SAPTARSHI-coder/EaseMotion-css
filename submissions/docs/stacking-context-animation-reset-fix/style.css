@@ -1,0 +1,316 @@
+/* ============================================================
+   Fix: Animation State Resets When Ancestor Receives New
+   Stacking Context
+   Relates to bug #40957
+
+   ROOT CAUSE: CSS properties like `transform`, `filter`,
+   `perspective`, `contain`, and `will-change` create a new
+   stacking context and force the browser to promote child
+   elements to a new GPU compositor layer. When this happens
+   mid-animation, the browser restarts the animation timeline
+   from 0%, causing a visible flicker or restart.
+
+   FIX 1: Pre-promote the animated element with
+     `will-change: transform`
+   — the child already has its own compositor layer, so parent
+     layer changes don't force a restart.
+
+   FIX 2: Pre-establish the stacking context on the parent
+     wrapper from the start using `transform: translateZ(0)`
+     or `isolation: isolate`.
+   — no new context is ever created mid-animation.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+code {
+  background: #1e293b;
+  color: #a78bfa;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.page-header {
+  text-align: center;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.page-header h1 {
+  font-size: 1.7rem;
+  background: linear-gradient(135deg, #f87171, #fb923c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-header p {
+  color: #94a3b8;
+  line-height: 1.65;
+}
+
+/* ── Demo Sections ───────────────────────────────────────── */
+
+.demo-section {
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.demo-section h2 {
+  font-size: 1.1rem;
+  border-left: 3px solid #a78bfa;
+  padding-left: 0.75rem;
+}
+
+.demo-desc {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+/* ── Controls ────────────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  background: #334155;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.controls button:hover {
+  background: #475569;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.off {
+  background: #1e293b;
+  color: #64748b;
+  border: 1px solid #334155;
+}
+
+.status-badge.on {
+  background: #7c3aed22;
+  color: #a78bfa;
+  border: 1px solid #7c3aed;
+}
+
+/* ── Shared Box ──────────────────────────────────────────── */
+
+.demo-box {
+  width: 200px;
+  height: 120px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.demo-box span {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.demo-box small {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  line-height: 1.4;
+}
+
+/* ── Shared float keyframe ───────────────────────────────── */
+
+@keyframes ease-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+/* ── BUGGY DEMO ──────────────────────────────────────────── */
+
+.buggy-wrapper {
+  padding: 2rem;
+  background: #1e293b;
+  border: 1px solid #ef4444;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  /* NO transform/will-change here initially — that's the bug trigger */
+  transition: box-shadow 0.3s;
+}
+
+/* Toggling .active adds transform, creating a new stacking context */
+.buggy-wrapper.active {
+  transform: translateZ(0);
+  box-shadow: 0 0 0 2px #ef4444;
+}
+
+.floating-box {
+  background: linear-gradient(135deg, #ef444433, #f9731633);
+  border: 1px solid #ef4444;
+  /* Animation starts normally */
+  animation: ease-float 2s ease-in-out infinite;
+}
+
+/* ── FIX 1: Pre-promote child with will-change ───────────── */
+
+.fix1-wrapper {
+  padding: 2rem;
+  background: #1e293b;
+  border: 1px solid #22c55e;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  transition: box-shadow 0.3s;
+}
+
+.fix1-wrapper.active {
+  transform: translateZ(0);
+  box-shadow: 0 0 0 2px #22c55e;
+}
+
+.fix1-box {
+  background: linear-gradient(135deg, #22c55e22, #6c63ff22);
+  border: 1px solid #22c55e;
+  animation: ease-float 2s ease-in-out infinite;
+
+  /*
+   * FIX 1: Tell the browser to pre-promote this element to its own
+   * compositor layer BEFORE the parent creates a stacking context.
+   * When the parent's context changes, the child layer is unaffected.
+   */
+  will-change: transform;
+}
+
+/* ── FIX 2: Pre-establish stacking context on wrapper ───── */
+
+.fix2-wrapper {
+  padding: 2rem;
+  background: #1e293b;
+  border: 1px solid #38bdf8;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+
+  /*
+   * FIX 2: Apply the stacking context trigger IMMEDIATELY so it's
+   * already established before the animation starts. No mid-animation
+   * layer promotion ever happens — nothing to cause a restart.
+   */
+  transform: translateZ(0);
+  /* Alternatively: isolation: isolate; */
+}
+
+.fix2-wrapper.extra {
+  box-shadow: 0 0 0 2px #38bdf8;
+}
+
+.fix2-box {
+  background: linear-gradient(135deg, #38bdf822, #a78bfa22);
+  border: 1px solid #38bdf8;
+  animation: ease-float 2s ease-in-out infinite;
+}
+
+/* ── Info Section ────────────────────────────────────────── */
+
+.info-section {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 1.75rem;
+}
+
+.explanation {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.explanation p {
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.75;
+}
+
+.explanation strong {
+  color: #f8fafc;
+}
+
+.fix-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.fix-row {
+  display: grid;
+  grid-template-columns: 1.4fr 2fr 1.6fr;
+  gap: 1px;
+  font-size: 0.82rem;
+  background: #334155;
+}
+
+.fix-row > span {
+  background: #0f172a;
+  padding: 0.65rem 0.9rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.header-row > span {
+  background: #1e293b;
+  color: #a78bfa;
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}

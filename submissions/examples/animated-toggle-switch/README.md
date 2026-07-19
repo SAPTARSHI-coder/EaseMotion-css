@@ -1,15 +1,22 @@
 # Animated Toggle Switch
 
-An iOS-style toggle switch built on a native checkbox for accessibility, styled entirely with CSS.
+A responsive animated toggle switch component built using pure HTML and CSS.
+
+## Features
+
+- Animated switch transitions
+- Active and inactive states
+- Hover interactions
+- Responsive layouts
+- Smooth motion effects
+- Pure CSS implementation
 
 ## Usage
-Wrap a checkbox input inside `.toggle-switch > .toggle-track > .toggle-thumb`. The `:checked` state drives the track color and thumb position via CSS sibling selectors.
 
-## Accessibility
-Uses a real `<input type="checkbox">` under the hood, so it's keyboard-navigable and screen-reader friendly. Includes a `:focus-visible` outline for keyboard users.
+Open `demo.html` in a browser to view the animated toggle switch component.
 
-## Browser support
-Works in all modern browsers — uses `transform`, `transition`, and the `~` sibling selector.
+## Files
 
-## Notes
-No JavaScript required.
+- `demo.html` → Toggle switch structure
+- `style.css` → Toggle styles and animations
+- `README.md` → Documentation

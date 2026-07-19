@@ -1,21 +1,61 @@
-# Animated Pagination Component
+# Animated Pagination Showcase
 
-A clean, modern, and fully responsive **Pagination Component** with smooth transitions and animated active indicators. This example demonstrates how to combine **EaseMotion CSS** for staggered page number entrances, smooth hover effects, and a shimmering active page indicator to create a polished navigation experience.
+Issue: #ISSUE_NUMBER
 
-## 🚀 Features
+Built for EaseMotion CSS — a lightweight CSS framework focused on reusable animations, interactive effects, and human-readable class naming.
 
-- **Staggered Page Number Entrances**: Each page number fades in sequentially using `ease-fade-in-up` and `ease-delay-*` for a cascading load effect.
-- **Animated Active Indicator**: The active page features a shimmering gradient animation that continuously moves across the button.
-- **Interactive Hover States**: Page numbers lift on hover with accent-colored borders and enhanced shadows using `ease-hover-grow`.
-- **Arrow Animations**: Previous/Next button arrows smoothly translate in their respective directions on hover.
-- **Responsive Design**: On mobile, button text is hidden and pagination adapts to smaller screens with adjusted sizing.
-- **Accessible**: Includes proper `aria-label` attributes for screen readers.
-- **Ellipsis Support**: Shows "..." for truncated page ranges with proper styling.
+## Overview
 
-## 📂 File Structure
+A modern animated pagination component featuring active page highlighting, hover animations, animated navigation controls, and responsive layouts.
 
-```text
-submissions/examples/animated-pagination/
-├── demo.html    # HTML structure and EaseMotion utility classes
-├── style.css    # Custom CSS for layout, hover effects, and active indicator
-└── README.md    # Documentation
+Suitable for dashboards, data tables, blogs, e-commerce catalogs, and admin panels.
+
+## Features
+
+- Animated active page indicator
+- Previous and next navigation buttons
+- Hover scale animations
+- Gradient active states
+- Compact pagination layout
+- Dashboard pagination example
+- Responsive design
+- Pure HTML and CSS
+- No JavaScript required
+
+## Usage
+
+```html
+<nav class="ease-pagination">
+  <button class="nav-btn">←</button>
+
+  <button class="page-btn active">1</button>
+
+  <button class="page-btn">2</button>
+
+  <button class="nav-btn">→</button>
+</nav>
+```
+
+## Main Classes
+
+```css
+.ease-pagination
+.page-btn
+.nav-btn
+.active
+```
+
+## Why It Fits EaseMotion CSS
+
+- Animation-first interaction
+- Human-readable class names
+- Reusable navigation component
+- Practical dashboard use case
+- Lightweight implementation
+- Responsive design
+
+## Files
+
+- demo.html
+- style.css
+- README.md

@@ -10,4 +10,4 @@ Use the card wrapper `.flip-card-container` containing a `.flip-card-inner` body
 It shows developers how to achieve rich, hardware-accelerated 3D micro-animations without JavaScript, enhancing dashboard conversion elements.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #39591.*
+*Created for GSSoC-26 — Resolves #39591.*

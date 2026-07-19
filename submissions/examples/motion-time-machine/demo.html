@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Time Machine — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Time Machine</h1>
+    <p>
+      Record every tweak made to an animation during development. Scrub through previous versions,
+      compare changes frame-by-frame, and safely experiment with motion design without losing
+      your previous work.
+    </p>
+    <div class="badges">
+      <span class="badge">⏪ Version History</span>
+      <span class="badge">🔄 Restore State</span>
+      <span class="badge">📤 JSON Export</span>
+    </div>
+  </header>
+
+  <main class="time-machine-container">
+
+    <!-- ── EDITOR & TARGET ──────────────────────────────────── -->
+    <section class="panel editor-panel">
+      <div class="panel-header">
+        <span class="section-label">1. Animation Editor</span>
+        <button id="commitBtn" class="ease-btn small">Save Revision 💾</button>
+      </div>
+
+      <div class="editor-grid">
+        <div class="input-group">
+          <label>EaseMotion Classes</label>
+          <input type="text" id="classInput" class="ease-input" value="ease-card ease-fade-up" />
+        </div>
+        <div class="input-group">
+          <label>Duration (ms)</label>
+          <input type="number" id="durationInput" class="ease-input" value="250" step="50" />
+        </div>
+        <div class="input-group">
+          <label>Easing</label>
+          <select id="easingInput" class="ease-input">
+            <option value="ease-out" selected>ease-out</option>
+            <option value="ease-in">ease-in</option>
+            <option value="ease-in-out">ease-in-out</option>
+            <option value="linear">linear</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="target-wrapper">
+        <!-- Exact match for issue HTML snippet -->
+        <div id="animationTarget" class="ease-card ease-fade-up">
+          Motion History Demo
+        </div>
+      </div>
+      
+      <div class="target-controls">
+        <button id="replayBtn" class="test-btn">▶ Replay Current State</button>
+      </div>
+    </section>
+
+    <!-- ── HISTORY TIMELINE ─────────────────────────────────── -->
+    <section class="panel history-panel">
+      <div class="panel-header">
+        <span class="section-label">2. Version History</span>
+        <div class="history-actions">
+          <button id="simulateBtn" class="test-btn border">Simulate Edits</button>
+          <button id="exportBtn" class="test-btn border">Export History</button>
+        </div>
+      </div>
+
+      <div id="timelineContainer" class="timeline-container">
+        <!-- Revisions injected here -->
+      </div>
+    </section>
+
+    <!-- ── EXPORT OUTPUT ────────────────────────────────────── -->
+    <section class="panel export-panel" id="exportPanel" style="display: none;">
+      <div class="panel-header">
+        <span class="section-label">History Export</span>
+        <button id="closeExportBtn" class="test-btn">Close</button>
+      </div>
+      <div class="export-body">
+        <pre><code id="exportOutput"></code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Time Machine Logic
+     * Maintains an array of animation configurations (revisions).
+     */
+
+    const classInput = document.getElementById('classInput');
+    const durationInput = document.getElementById('durationInput');
+    const easingInput = document.getElementById('easingInput');
+    const commitBtn = document.getElementById('commitBtn');
+    const replayBtn = document.getElementById('replayBtn');
+    const animationTarget = document.getElementById('animationTarget');
+    const timelineContainer = document.getElementById('timelineContainer');
+    
+    const simulateBtn = document.getElementById('simulateBtn');
+    const exportBtn = document.getElementById('exportBtn');
+    const exportPanel = document.getElementById('exportPanel');
+    const exportOutput = document.getElementById('exportOutput');
+    const closeExportBtn = document.getElementById('closeExportBtn');
+
+    let history = [];
+    let currentRevIndex = -1;
+
+    // 1. Initial State Commit
+    commitRevision("Initial creation");
+
+    // ── Event Listeners ───────────────────────────────────────
+
+    commitBtn.addEventListener('click', () => {
+      // Auto-generate a commit message based on what changed
+      const msg = generateCommitMessage();
+      commitRevision(msg);
+    });
+
+    replayBtn.addEventListener('click', () => applyStateToTarget(history[currentRevIndex]));
+
+    simulateBtn.addEventListener('click', () => {
+      // Create a sequence of edits matching the issue snippet
+      setTimeout(() => {
+        durationInput.value = 350;
+        commitRevision("Duration: 350ms");
+      }, 200);
+
+      setTimeout(() => {
+        classInput.value = "ease-card ease-fade-up ease-scale";
+        commitRevision("Added ease-scale");
+      }, 600);
+
+      setTimeout(() => {
+        easingInput.value = "ease-in-out";
+        commitRevision("Changed easing ease-in-out");
+      }, 1000);
+    });
+
+    exportBtn.addEventListener('click', () => {
+      // Generate the exact CSS snippet text requested in the issue
+      const snippetLines = ['/* Example History */\n'];
+      
+      history.forEach((rev, idx) => {
+        snippetLines.push(`Revision #${idx + 1}`);
+        if (rev.message !== "Initial creation") {
+          snippetLines.push(rev.message);
+        } else {
+          snippetLines.push(`Duration: ${rev.state.duration}ms`);
+        }
+        snippetLines.push(''); // blank line
+      });
+
+      exportOutput.textContent = snippetLines.join('\n');
+      exportPanel.style.display = 'block';
+    });
+
+    closeExportBtn.addEventListener('click', () => {
+      exportPanel.style.display = 'none';
+    });
+
+    // ── Core Logic ────────────────────────────────────────────
+
+    function getCurrentState() {
+      return {
+        classes: classInput.value.trim(),
+        duration: parseInt(durationInput.value, 10),
+        easing: easingInput.value,
+      };
+    }
+
+    function generateCommitMessage() {
+      if (history.length === 0) return "Initial creation";
+      
+      const prev = history[history.length - 1].state;
+      const curr = getCurrentState();
+      const diffs = [];
+
+      if (prev.duration !== curr.duration) diffs.push(`Duration: ${curr.duration}ms`);
+      if (prev.easing !== curr.easing) diffs.push(`Changed easing ${curr.easing}`);
+      if (prev.classes !== curr.classes) {
+        // Very basic class diffing
+        const prevArr = prev.classes.split(' ');
+        const currArr = curr.classes.split(' ');
+        const added = currArr.filter(c => !prevArr.includes(c));
+        const removed = prevArr.filter(c => !currArr.includes(c));
+        
+        if (added.length) diffs.push(`Added ${added.join(', ')}`);
+        if (removed.length) diffs.push(`Removed ${removed.join(', ')}`);
+      }
+
+      if (diffs.length === 0) return "Manual save (No changes)";
+      return diffs.join(' | ');
+    }
+
+    function commitRevision(message) {
+      const state = getCurrentState();
+      
+      // If we are appending after navigating back, truncate future history
+      if (currentRevIndex < history.length - 1) {
+        history = history.slice(0, currentRevIndex + 1);
+      }
+
+      const rev = {
+        id: Date.now(),
+        index: history.length + 1,
+        message: message,
+        state: state
+      };
+
+      history.push(rev);
+      currentRevIndex = history.length - 1;
+      
+      renderTimeline();
+      applyStateToTarget(rev);
+    }
+
+    function restoreRevision(index) {
+      currentRevIndex = index;
+      const rev = history[index];
+      
+      // Update UI inputs
+      classInput.value = rev.state.classes;
+      durationInput.value = rev.state.duration;
+      easingInput.value = rev.state.easing;
+
+      renderTimeline();
+      applyStateToTarget(rev);
+    }
+
+    function applyStateToTarget(rev) {
+      animationTarget.className = 'ease-card'; // reset
+      void animationTarget.offsetWidth; // force reflow
+      
+      animationTarget.style.animationDuration = `${rev.state.duration}ms`;
+      animationTarget.style.animationTimingFunction = rev.state.easing;
+      animationTarget.className = rev.state.classes;
+    }
+
+    function renderTimeline() {
+      timelineContainer.innerHTML = history.map((rev, i) => {
+        const isCurrent = i === currentRevIndex;
+        const statusClass = isCurrent ? 'current' : (i > currentRevIndex ? 'future' : 'past');
+        
+        return `
+          <div class="timeline-node ${statusClass}" onclick="restoreRevision(${i})">
+            <div class="node-marker"></div>
+            <div class="node-content">
+              <div class="node-header">
+                <span class="rev-num">Revision #${rev.index}</span>
+                ${isCurrent ? '<span class="active-badge">Active</span>' : ''}
+              </div>
+              <div class="node-msg">${rev.message}</div>
+            </div>
+            <button class="restore-btn" ${isCurrent ? 'disabled' : ''}>Restore</button>
+          </div>
+        `;
+      }).join('');
+      
+      // Scroll to bottom
+      timelineContainer.scrollTop = timelineContainer.scrollHeight;
+    }
+
+  </script>
+
+</body>
+</html>

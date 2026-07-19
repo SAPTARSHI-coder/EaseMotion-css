@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tsunami Wave</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 Tsunami Wave</h1>
+        <p class="subtitle">Massive wave that builds and crashes with particle splash</p>
+
+        <div class="tsunami-wrapper">
+            <canvas id="tsunamiCanvas"></canvas>
+
+            <div class="controls">
+                <button id="waveBtn">🌊 Wave</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Ocean</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌊 Ready</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('tsunamiCanvas');
+        const ctx = canvas.getContext('2d');
+        const waveBtn = document.getElementById('waveBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let wave = {
+            progress: 0,
+            building: false,
+            crashing: false,
+            height: 0,
+            speed: 0.005,
+            foam: [],
+            splashes: [],
+            particles: [],
+            wavePoints: [],
+            curlPoints: [],
+            spray: [],
+            foamLine: [],
+            ripple: [],
+        };
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isWaveActive = false;
+        let waterLevel = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Ocean',
+                deep: '#006994',
+                mid: '#0077b6',
+                light: '#00b4d8',
+                crest: '#90e0ef',
+                foam: '#ffffff',
+                spray: '#caf0f8'
+            },
+            {
+                name: 'Sunset',
+                deep: '#ff6b35',
+                mid: '#f7931e',
+                light: '#fbb03b',
+                crest: '#f7c948',
+                foam: '#ffe4b5',
+                spray: '#ffe8a0'
+            },
+            {
+                name: 'Emerald',
+                deep: '#004d40',
+                mid: '#00695c',
+                light: '#00897b',
+                crest: '#26a69a',
+                foam: '#b2dfdb',
+                spray: '#e0f2f1'
+            },
+            {
+                name: 'Storm',
+                deep: '#1a1a2e',
+                mid: '#16213e',
+                light: '#0f3460',
+                crest: '#533483',
+                foam: '#a8a8a8',
+                spray: '#d4d4d4'
+            },
+            {
+                name: 'Galaxy',
+                deep: '#1a0033',
+                mid: '#2d004d',
+                light: '#4a0066',
+                crest: '#7a0088',
+                foam: '#e0a0ff',
+                spray: '#f0d0ff'
+            },
+            {
+                name: 'Tropical',
+                deep: '#006994',
+                mid: '#00b4d8',
+                light: '#48cae4',
+                crest: '#90e0ef',
+                foam: '#ffd93d',
+                spray: '#ffec8b'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class SplashParticle {
+            constructor(x, y, vx, vy, color, size) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx || (Math.random() - 0.5) * 8;
+                this.vy = vy || -Math.random() * 10 - 2;
+                this.size = size || 2 + Math.random() * 6;
+                this.color = color || '#90e0ef';
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 50;
+                this.age = 0;
+                this.gravity = 0.1 + Math.random() * 0.05;
+                this.damping = 0.99;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.1;
+                this.shape = Math.random() > 0.5 ? 'circle' : 'drop';
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= this.damping;
+                this.vy *= this.damping;
+                this.rotation += this.rotSpeed;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.998;
+                this.phase += 0.05;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.8;
+                const size = this.size * this.life;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Glow
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 3);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '30');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Main particle
+                if (this.shape === 'drop') {
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size);
+                    ctx.quadraticCurveTo(size, 0, 0, size);
+                    ctx.quadraticCurveTo(-size, 0, 0, -size);
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Highlight
+                if (size > 2) {
+                    ctx.beginPath();
+                    ctx.arc(-size * 0.2, -size * 0.3, size * 0.2, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.globalAlpha = alpha * 0.5;
+                    ctx.fill();
+                }
+
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== FOAM CLASS =====
+        class FoamParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffffff';
+                this.size = 2 + Math.random() * 8;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -Math.random() * 1 - 0.5;
+                this.gravity = 0.02;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.phase = Math.random() * Math.PI * 2;
+                this.bubble = Math.random() > 0.5;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx + Math.sin(this.phase) * 0.1;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.phase += 0.05;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 1.002;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.6;
+
+                if (this.bubble) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.strokeStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.4;
+                    ctx.lineWidth = 0.5;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    // Bubble highlight
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.15, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.2;
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.4;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '30';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW WAVE =====
+        function drawWave(ctx, w, h) {
+            const palette = colorPalettes[colorMode];
+            const cx = w / 2;
+            const cy = h * 0.7;
+            const progress = wave.progress;
+            const height = wave.height;
+            const maxHeight = h * 0.5;
+
+            // Water surface (background)
+            const waterGrad = ctx.createLinearGradient(0, cy, 0, h);
+            waterGrad.addColorStop(0, palette.deep + '40');
+            waterGrad.addColorStop(0.5, palette.mid + '30');
+            waterGrad.addColorStop(1, palette.deep + '20');
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, cy, w, h - cy);
+
+            // Wave shape
+            const wavePoints = [];
+            const numPoints = 80;
+            const waveWidth = w * 0.9;
+            const startX = (w - waveWidth) / 2;
+
+            // Calculate wave shape
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                const x = startX + t * waveWidth;
+                
+                // Wave profile
+                let yOffset = 0;
+                const waveShape = Math.sin(t * Math.PI) * height;
+                const waveCurl = Math.sin(t * Math.PI * 2 + progress * 0.5) * 10 * (1 - t);
+                
+                // Building wave
+                if (progress < 0.5) {
+                    const buildProgress = progress / 0.5;
+                    yOffset = -waveShape * buildProgress;
+                } else {
+                    // Crashing wave
+                    const crashProgress = (progress - 0.5) / 0.5;
+                    yOffset = -waveShape * (1 - crashProgress * 0.3);
+                    // Add curl
+                    yOffset += Math.sin(t * Math.PI * 3 + crashProgress * 5) * 15 * crashProgress;
+                }
+                
+                const y = cy + yOffset + waveCurl * (1 - progress);
+                wavePoints.push({ x, y, t });
+            }
+
+            // Draw wave body
+            ctx.beginPath();
+            ctx.moveTo(wavePoints[0].x, cy);
+            for (const p of wavePoints) {
+                ctx.lineTo(p.x, p.y);
+            }
+            ctx.lineTo(wavePoints[wavePoints.length - 1].x, cy);
+            ctx.closePath();
+
+            const waveGrad = ctx.createLinearGradient(0, cy - height, 0, cy);
+            waveGrad.addColorStop(0, palette.crest);
+            waveGrad.addColorStop(0.3, palette.light);
+            waveGrad.addColorStop(0.6, palette.mid);
+            waveGrad.addColorStop(1, palette.deep);
+            ctx.fillStyle = waveGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = palette.light + '40';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Wave crest foam
+            if (progress > 0.3) {
+                const foamAlpha = Math.min(1, (progress - 0.3) / 0.2);
+                ctx.beginPath();
+                for (let i = 0; i < wavePoints.length - 1; i++) {
+                    const p = wavePoints[i];
+                    const p2 = wavePoints[i + 1];
+                    const midY = (p.y + p2.y) / 2 - 5;
+                    if (i === 0) ctx.moveTo(p.x, p.y - 3);
+                    ctx.lineTo(p.x, p.y - 3 - Math.sin(i * 0.5 + time) * 2);
+                }
+                ctx.strokeStyle = palette.foam;
+                ctx.globalAlpha = foamAlpha * 0.6;
+                ctx.lineWidth = 3 + Math.sin(time * 2) * 1;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = palette.foam + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Spray particles
+            if (progress > 0.4 && progress < 0.9) {
+                const sprayRate = Math.random() * 0.3;
+                for (let i = 0; i < wavePoints.length; i += 3) {
+                    if (Math.random() < sprayRate) {
+                        const p = wavePoints[i];
+                        const color = palette.spray;
+                        const particle = new SplashParticle(
+                            p.x + (Math.random() - 0.5) * 10,
+                            p.y + (Math.random() - 0.5) * 5,
+                            (Math.random() - 0.5) * 6,
+                            -Math.random() * 8 - 3,
+                            color,
+                            2 + Math.random() * 4
+                        );
+                        wave.particles.push(particle);
+                    }
+                }
+            }
+
+            // Wave foam line
+            if (progress > 0.5) {
+                const foamLine = wavePoints.filter((p, i) => i % 3 === 0);
+                for (const p of foamLine) {
+                    if (Math.random() < 0.1) {
+                        const foam = new FoamParticle(
+                            p.x + (Math.random() - 0.5) * 5,
+                            p.y + (Math.random() - 0.5) * 5,
+                            palette.foam
+                        );
+                        wave.foam.push(foam);
+                    }
+                }
+            }
+
+            // Update particles
+            for (let i = wave.particles.length - 1; i >= 0; i--) {
+                const p = wave.particles[i];
+                p.update();
+                if (p.isDead()) {
+                    wave.particles.splice(i, 1);
+                }
+            }
+
+            // Update foam
+            for (let i = wave.foam.length - 1; i >= 0; i--) {
+                const f = wave.foam[i];
+                f.update();
+                if (f.isDead()) {
+                    wave.foam.splice(i, 1);
+                }
+            }
+
+            // Draw particles
+            for (const p of wave.particles) {
+                p.draw(ctx);
+            }
+
+            // Draw foam
+            for (const f of wave.foam) {
+                f.draw(ctx);
+            }
+
+            // Water ripples
+            for (let i = 0; i < 10; i++) {
+                const x = (i / 10) * w + Math.sin(time * 0.01 + i) * 10;
+                const y = cy + 20 + Math.sin(time * 0.02 + i * 0.5) * 5;
+                ctx.beginPath();
+                ctx.arc(x, y, 5 + Math.sin(time * 0.01 + i) * 2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255,255,255,${0.02 + Math.sin(time * 0.02 + i) * 0.02})`;
+                ctx.fill();
+            }
+
+            // Progress indicator
+            if (wave.progress > 0 && wave.progress < 1) {
+                const barWidth = w * 0.3;
+                const barX = (w - barWidth) / 2;
+                const barY = h - 30;
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.fillRect(barX, barY, barWidth, 4);
+                ctx.fillStyle = palette.light;
+                ctx.globalAlpha = 0.5;
+                ctx.fillRect(barX, barY, barWidth * wave.progress, 4);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            const skyColors = [
+                ['#0a0a2e', '#1a1a3e', '#2a1a3e', '#1a1a2e'],
+                ['#1a0a1a', '#2a1a2a', '#3a2a1a', '#1a1a2a'],
+                ['#0a1a0a', '#1a2a1a', '#2a3a1a', '#1a1a2a'],
+            ];
+            const sky = skyColors[colorMode % skyColors.length];
+            for (let i = 0; i < 4; i++) {
+                const t = i / 3;
+                grad.addColorStop(t, sky[i]);
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Clouds
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(i * 0.5 + time * 0.002) * 30;
+                const y = 30 + i * 20 + Math.sin(i + time * 0.001) * 15;
+                const size = 20 + Math.sin(i * 0.7) * 10;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 200, 255, ${0.02 + Math.sin(i + time * 0.003) * 0.02})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + size * 0.8, y - size * 0.2, size * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x - size * 0.7, y + size * 0.1, size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Horizon line
+            const horizonY = h * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(0, horizonY);
+            ctx.lineTo(w, horizonY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // ===== TRIGGER WAVE =====
+        function triggerWave() {
+            if (wave.building) return;
+
+            wave.building = true;
+            wave.progress = 0;
+            wave.height = 0;
+            wave.particles = [];
+            wave.foam = [];
+            statusText.textContent = '🌊 Building...';
+            waveBtn.textContent = '🌊 Building...';
+
+            const interval = setInterval(() => {
+                wave.progress += 0.008 * speed * 10;
+                wave.height = Math.sin(wave.progress * Math.PI) * 150;
+
+                if (wave.progress >= 1) {
+                    clearInterval(interval);
+                    wave.building = false;
+                    wave.crashing = true;
+                    statusText.textContent = '🌊 Crash!';
+                    waveBtn.textContent = '🌊 Crashing...';
+
+                    // Massive splash at crash
+                    const w = canvas.width;
+                    const h = canvas.height;
+                    const palette = colorPalettes[colorMode];
+                    for (let i = 0; i < 50; i++) {
+                        const p = new SplashParticle(
+                            w / 2 + (Math.random() - 0.5) * 200,
+                            h * 0.5 + (Math.random() - 0.5) * 50,
+                            (Math.random() - 0.5) * 12,
+                            -Math.random() * 15 - 5,
+                            palette.spray,
+                            3 + Math.random() * 8
+                        );
+                        wave.particles.push(p);
+                    }
+
+                    setTimeout(() => {
+                        wave.crashing = false;
+                        wave.progress = 0;
+                        wave.height = 0;
+                        waveBtn.textContent = '🌊 Wave';
+                        statusText.textContent = '🌊 Ready';
+                    }, 3000);
+                }
+            }, 50);
+        }
+
+        // ===== RESET =====
+        function resetTsunami() {
+            wave.progress = 0;
+            wave.height = 0;
+            wave.building = false;
+            wave.crashing = false;
+            wave.particles = [];
+            wave.foam = [];
+            waveBtn.textContent = '🌊 Wave';
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌊 Ready';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawWave(ctx, w, h);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = wave.building ? '🌊 Building' : (wave.crashing ? '🌊 Crashing' : '🌊 Ready');
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        waveBtn.addEventListener('click', triggerWave);
+
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌊 Ready';
+            }, 1000);
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌊 Ready';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetTsunami);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') waveBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                waveBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', triggerWave);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            triggerWave();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌊 Ready';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🌊 Tsunami Wave loaded!');
+        console.log('💡 W - Trigger wave');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Trigger wave');
+        console.log('💡 Click canvas - Trigger wave');
+    </script>
+</body>
+</html>

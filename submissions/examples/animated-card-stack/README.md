@@ -1,22 +1,16 @@
-# Animated Card Stack/Deck
+# Animated Card Stack / Deck Spread
 
-A visually impressive, fully responsive **Card Stack Component** that displays cards in a layered 3D stack and fans them out on hover. This example demonstrates how to combine **EaseMotion CSS** for staggered card entrances with advanced CSS 3D transforms for the stacked positioning and interactive fan-out effect.
+A set of five gradient cards that toggle between a stacked pile and a fan spread layout. In the stack view, cards overlap with slight offset and reduced opacity. In the spread view, they fan out horizontally with rotation.
 
-## 🚀 Features
+## EaseMotion CSS classes used
 
-- **Staggered Card Entrances**: Each card fades in sequentially using `ease-fade-in-up` and `ease-delay-*` for a cascading load effect.
-- **3D Stacked Layout**: Cards are positioned in a layered stack with decreasing scale and opacity to create depth.
-- **Interactive Fan-Out**: Hovering over the stack smoothly fans out all cards with rotation and translation transforms.
-- **Individual Card Hover**: Each card can be hovered individually to lift and scale up with enhanced shadows.
-- **Color-Coded Cards**: Each card has a unique accent color on the top border and icon for visual distinction.
-- **Smooth Transitions**: All movements use cubic-bezier easing for natural, fluid animations.
-- **Responsive Design**: The fan-out effect adjusts for smaller screens to prevent cards from going off-screen.
-- **Dark Theme**: Professional dark mode design with gradient background accents.
+- `ease-flex` — page-level centering
+- `ease-center` — vertical and horizontal centering
 
-## 📂 File Structure
+## How to run
 
-```text
-submissions/examples/animated-card-stack/
-├── demo.html    # HTML structure and EaseMotion utility classes
-├── style.css    # Custom CSS for 3D stacking, fan-out effect, and responsive behavior
-└── README.md    # Documentation
+Open `demo.html` in a browser. Click "Toggle Spread" to switch between stacked and spread layouts.
+
+## Accessibility notes
+
+Cards are decorative gradients. The toggle button uses a `<button>` element. Reduced motion disables the transition.

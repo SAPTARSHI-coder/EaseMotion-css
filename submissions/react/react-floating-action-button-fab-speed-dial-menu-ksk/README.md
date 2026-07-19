@@ -3,7 +3,7 @@
 A copy-paste ready, modular React component for a Floating Action Button (FAB) that expands into a speed dial list of actions when clicked. Works with zero external dependencies outside React.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #40231.*
+*Created for GSSoC-26 — Resolves #40231.*
 
 ## Installation
 

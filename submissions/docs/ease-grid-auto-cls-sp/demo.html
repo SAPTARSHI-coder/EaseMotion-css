@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grid Auto-Fit + Entrance Animations CLS Mini-Lab</title>
+  <meta
+    name="description"
+    content="Reproduce CLS when ease-grid-auto cards use ease-zoom-in, and learn before/after containment patterns."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+  />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="lab-header ease-fade-in">
+    <p class="lab-eyebrow">EaseMotion CSS · Documentation Showcase · Issue #47545</p>
+    <h1>Grid Auto-Fit + Entrance Animations CLS Mini-Lab</h1>
+    <p class="lab-subtitle">
+      <code>ease-grid-auto</code> cards with <code>ease-zoom-in</code> can cause
+      visible reflow and Cumulative Layout Shift. This lab reproduces the combo
+      and documents containment patterns that keep the grid stable —
+      distinct from reveal-CLS or loop-CPU issues.
+    </p>
+    <button type="button" class="ease-btn ease-btn-primary" id="replay-btn">
+      Replay entrance animations
+    </button>
+  </header>
+
+  <main class="lab-main">
+    <!-- ── Why it happens ──────────────────────────────────── -->
+    <section class="lab-section lab-panel" aria-labelledby="why-title">
+      <h2 id="why-title">Why this combo shifts layout</h2>
+      <ol class="why-list">
+        <li>
+          <strong><code>ease-zoom-in</code></strong> starts at
+          <code>scale(0.85)</code> and uses bounce easing that can overshoot past
+          <code>scale(1)</code>.
+        </li>
+        <li>
+          <strong><code>ease-grid-auto</code></strong> uses
+          <code>repeat(auto-fit, minmax(...))</code> — track sizes react to
+          content and overflow.
+        </li>
+        <li>
+          When zoom is applied <em>on the grid item itself</em>, overshoot +
+          overflow can expand rows, nudge neighbors, or flash scrollbars —
+          registered as layout shift.
+        </li>
+      </ol>
+      <div class="cls-metrics" role="status" aria-live="polite">
+        <div class="cls-metric">
+          <span class="cls-metric-label">Broken panel CLS</span>
+          <span class="cls-metric-value cls-bad" id="cls-broken">0.000</span>
+        </div>
+        <div class="cls-metric">
+          <span class="cls-metric-label">Fixed panel CLS</span>
+          <span class="cls-metric-value cls-good" id="cls-fixed">0.000</span>
+        </div>
+        <p class="cls-hint">
+          Scores use <code>PerformanceObserver</code> layout-shift entries when
+          available. Aim for CLS &lt; 0.1.
+        </p>
+      </div>
+    </section>
+
+    <!-- ── Before / After ──────────────────────────────────── -->
+    <div class="compare-row">
+      <section class="lab-panel panel-broken" aria-labelledby="broken-title" id="broken-panel">
+        <div class="panel-head">
+          <h2 id="broken-title">Before — zoom on grid items</h2>
+          <span class="badge badge-bad">High CLS risk</span>
+        </div>
+        <p class="lab-lead">
+          Each card is both the grid item <em>and</em> the animated node.
+          Bounce overshoot can spill into neighbors and reflow the auto-fit grid.
+        </p>
+
+        <div class="ease-grid ease-grid-auto ease-gap demo-grid" id="broken-grid">
+          <article class="demo-card broken-card ease-zoom-in ease-delay-75">
+            <h3>Alpha</h3>
+            <p>Zoom applied on the grid child.</p>
+          </article>
+          <article class="demo-card broken-card ease-zoom-in ease-delay-150">
+            <h3>Beta</h3>
+            <p>Overshoot can collide with neighbors.</p>
+          </article>
+          <article class="demo-card broken-card ease-zoom-in ease-delay-200">
+            <h3>Gamma</h3>
+            <p>Auto-fit tracks feel unstable.</p>
+          </article>
+          <article class="demo-card broken-card ease-zoom-in ease-delay-300">
+            <h3>Delta</h3>
+            <p>Stagger makes reflow more obvious.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="lab-panel panel-fixed" aria-labelledby="fixed-title" id="fixed-panel">
+        <div class="panel-head">
+          <h2 id="fixed-title">After — contained shells</h2>
+          <span class="badge badge-good">CLS-safer</span>
+        </div>
+        <p class="lab-lead">
+          Grid items are stable layout shells. <code>ease-zoom-in</code> runs on
+          an <em>inner</em> wrapper with overflow contained.
+        </p>
+
+        <div class="ease-grid ease-grid-auto ease-gap demo-grid" id="fixed-grid">
+          <article class="demo-shell">
+            <div class="demo-card fixed-inner ease-zoom-in ease-delay-75">
+              <h3>Alpha</h3>
+              <p>Layout box reserved by the shell.</p>
+            </div>
+          </article>
+          <article class="demo-shell">
+            <div class="demo-card fixed-inner ease-zoom-in ease-delay-150">
+              <h3>Beta</h3>
+              <p>Overshoot stays inside the card.</p>
+            </div>
+          </article>
+          <article class="demo-shell">
+            <div class="demo-card fixed-inner ease-zoom-in ease-delay-200">
+              <h3>Gamma</h3>
+              <p>Auto-fit tracks stay put.</p>
+            </div>
+          </article>
+          <article class="demo-shell">
+            <div class="demo-card fixed-inner ease-zoom-in ease-delay-300">
+              <h3>Delta</h3>
+              <p>Motion without grid reflow.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <!-- ── Patterns ────────────────────────────────────────── -->
+    <section class="lab-section lab-panel" aria-labelledby="patterns-title">
+      <h2 id="patterns-title">Containment patterns (copy-friendly)</h2>
+      <p class="lab-lead">
+        Keep motion. Isolate it from the auto-fit grid item. No core edits required.
+      </p>
+
+      <div class="pattern-grid">
+        <article class="pattern-card">
+          <h3>1. Broken (avoid)</h3>
+          <pre class="lab-code" tabindex="0"><code>&lt;div class="ease-grid ease-grid-auto ease-gap"&gt;
+  &lt;article class="card ease-zoom-in"&gt;…&lt;/article&gt;
+  &lt;article class="card ease-zoom-in ease-delay-200"&gt;…&lt;/article&gt;
+&lt;/div&gt;</code></pre>
+          <p>Animation target = grid child. Overshoot can disturb tracks.</p>
+        </article>
+
+        <article class="pattern-card">
+          <h3>2. Shell + inner zoom (preferred)</h3>
+          <pre class="lab-code" tabindex="0"><code>&lt;div class="ease-grid ease-grid-auto ease-gap"&gt;
+  &lt;article class="card-shell"&gt;
+    &lt;div class="card-inner ease-zoom-in"&gt;…&lt;/div&gt;
+  &lt;/article&gt;
+&lt;/div&gt;</code></pre>
+          <pre class="lab-code" tabindex="0"><code>.card-shell {
+  min-height: 8rem;      /* reserve space */
+  overflow: hidden;      /* clip overshoot */
+  contain: layout;       /* isolate reflow */
+}
+.card-inner { height: 100%; }</code></pre>
+        </article>
+
+        <article class="pattern-card">
+          <h3>3. Prefer fade/slide on grid items</h3>
+          <pre class="lab-code" tabindex="0"><code>&lt;!-- Safer on the grid child itself --&gt;
+&lt;article class="card ease-fade-in ease-delay-200"&gt;…&lt;/article&gt;</code></pre>
+          <p>
+            Opacity-only entrances do not scale the box. Save zoom for inner
+            media or hero elements.
+          </p>
+        </article>
+
+        <article class="pattern-card">
+          <h3>4. When to use which</h3>
+          <ul class="pattern-list">
+            <li><strong>Shell + inner</strong> — you want zoom on auto-fit cards</li>
+            <li><strong>Fade / slide</strong> — simplest CLS-safe entrance</li>
+            <li><strong>Avoid</strong> — <code>ease-zoom-in</code> directly on <code>ease-grid-auto</code> children</li>
+            <li><strong>Do not</strong> — change core utilities for a page-level fix</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lab-footer">
+    <p>
+      Self-contained submission ·
+      <code>submissions/docs/ease-grid-auto-cls-sp/</code> ·
+      no core edits
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      var brokenScore = 0;
+      var fixedScore = 0;
+      var brokenEl = document.getElementById("cls-broken");
+      var fixedEl = document.getElementById("cls-fixed");
+      var brokenPanel = document.getElementById("broken-panel");
+      var fixedPanel = document.getElementById("fixed-panel");
+
+      function format(n) {
+        return n.toFixed(3);
+      }
+
+      function inPanel(node, panel) {
+        return panel && panel.contains(node);
+      }
+
+      if ("PerformanceObserver" in window) {
+        try {
+          var observer = new PerformanceObserver(function (list) {
+            list.getEntries().forEach(function (entry) {
+              if (entry.hadRecentInput) return;
+              var sources = entry.sources || [];
+              var attributed = false;
+              sources.forEach(function (src) {
+                if (!src.node) return;
+                if (inPanel(src.node, brokenPanel)) {
+                  brokenScore += entry.value;
+                  attributed = true;
+                } else if (inPanel(src.node, fixedPanel)) {
+                  fixedScore += entry.value;
+                  attributed = true;
+                }
+              });
+              if (!attributed && sources.length === 0) {
+                /* Fallback: accumulate to broken during early paint if unattributed */
+              }
+              brokenEl.textContent = format(brokenScore);
+              fixedEl.textContent = format(fixedScore);
+            });
+          });
+          observer.observe({ type: "layout-shift", buffered: true });
+        } catch (e) {
+          brokenEl.textContent = "n/a";
+          fixedEl.textContent = "n/a";
+        }
+      } else {
+        brokenEl.textContent = "n/a";
+        fixedEl.textContent = "n/a";
+      }
+
+      function replay(el) {
+        el.style.animation = "none";
+        void el.offsetWidth;
+        el.style.animation = "";
+      }
+
+      document.getElementById("replay-btn").addEventListener("click", function () {
+        brokenScore = 0;
+        fixedScore = 0;
+        brokenEl.textContent = format(0);
+        fixedEl.textContent = format(0);
+        document
+          .querySelectorAll(".broken-card, .fixed-inner")
+          .forEach(replay);
+      });
+    })();
+  </script>
+</body>
+</html>

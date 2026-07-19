@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Octopus Tentacles</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🐙 Octopus Tentacles</h1>
+        <p class="subtitle">Tentacles waving with random motion</p>
+
+        <div class="octopus-wrapper">
+            <canvas id="octopusCanvas"></canvas>
+
+            <div class="controls">
+                <button id="tentacleBtn">➕ Add Tentacle</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🐙 Tentacles waving</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('octopusCanvas');
+        const ctx = canvas.getContext('2d');
+        const tentacleBtn = document.getElementById('tentacleBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let tentacles = [];
+        let numTentacles = 8;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let particles = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 80%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t, time) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 70%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t, time) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t, time) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+        ];
+
+        // ===== TENTACLE CLASS =====
+        class Tentacle {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total || 8;
+                this.segments = 20 + Math.floor(Math.random() * 10);
+                this.length = 80 + Math.random() * 60;
+                this.thickness = 6 + Math.random() * 4;
+                this.angle = (index / this.total) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                this.baseAngle = this.angle;
+                this.phase = Math.random() * Math.PI * 2;
+                this.speed = 0.01 + Math.random() * 0.02;
+                this.wobble = 0.5 + Math.random() * 0.8;
+                this.amplitude = 0.3 + Math.random() * 0.4;
+                this.colorOffset = Math.random();
+                this.points = [];
+                this.trail = [];
+                this.maxTrail = 10 + Math.floor(Math.random() * 10);
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.suctionCups = 3 + Math.floor(Math.random() * 4);
+                this.tipSize = 2 + Math.random() * 3;
+                this.segmentLength = this.length / this.segments;
+                
+                // Initialize points
+                for (let i = 0; i <= this.segments; i++) {
+                    this.points.push({
+                        x: 0,
+                        y: 0,
+                        angle: 0,
+                        dist: i * this.segmentLength
+                    });
+                }
+                this.updatePoints(0);
+            }
+
+            updatePoints(time, speed) {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2 - 20;
+                const baseAngle = this.baseAngle;
+                
+                // Update phase
+                this.phase += this.speed * speed * 10;
+                
+                // Calculate wave
+                const wave = Math.sin(this.phase + time * 0.01) * this.wobble;
+                const wave2 = Math.sin(this.phase * 0.7 + time * 0.015 + 1) * this.wobble * 0.5;
+                
+                let currentAngle = baseAngle + Math.sin(time * 0.005 + this.index) * 0.05;
+                
+                // Build tentacle points
+                for (let i = 0; i <= this.segments; i++) {
+                    const t = i / this.segments;
+                    const dist = t * this.length;
+                    
+                    // Wobble along the tentacle
+                    const wobbleAmount = Math.sin(t * 3 + this.phase + time * 0.01) * this.wobble * 0.2;
+                    const wobbleAmount2 = Math.sin(t * 5 + this.phase * 0.5 + time * 0.015) * this.wobble * 0.15;
+                    const wobbleAmount3 = Math.sin(t * 7 + this.phase * 0.3 + time * 0.02) * this.wobble * 0.1;
+                    
+                    // Wave propagation from base to tip
+                    const waveProp = Math.sin(t * 2 + this.phase + time * 0.01) * this.amplitude * (1 + t * 0.5);
+                    const waveProp2 = Math.sin(t * 3 + this.phase * 0.7 + time * 0.015) * this.amplitude * 0.5 * (1 + t * 0.3);
+                    
+                    // Random motion
+                    const randomMotion = Math.sin(t * 1.5 + this.index + time * 0.02) * 0.1;
+                    
+                    // Angle variation
+                    const angleVar = waveProp * 0.02 + waveProp2 * 0.01 + wobbleAmount * 0.01 + randomMotion;
+                    currentAngle += angleVar;
+                    
+                    const x = cx + Math.cos(currentAngle) * dist;
+                    const y = cy + Math.sin(currentAngle) * dist + wobbleAmount * 2 + wobbleAmount2 * 1.5 + wobbleAmount3;
+                    
+                    this.points[i].x = x;
+                    this.points[i].y = y;
+                    this.points[i].angle = currentAngle;
+                }
+                
+                // Trail
+                const tip = this.points[this.points.length - 1];
+                this.trail.push({ x: tip.x, y: tip.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.96;
+                }
+            }
+
+            draw(ctx, time) {
+                const colorFn = colorPalettes[colorMode].fn;
+                const color = colorFn(this.colorOffset + time * 0.01, time);
+                const color2 = colorFn((this.colorOffset + 0.2 + time * 0.01) % 1, time);
+                
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.08;
+                    const trailSize = this.thickness * (0.1 + (i / this.trail.length) * 0.2);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Tentacle glow
+                const grad = ctx.createRadialGradient(
+                    this.points[0].x, this.points[0].y, 0,
+                    this.points[0].x, this.points[0].y, this.length * 0.5
+                );
+                grad.addColorStop(0, color + '20');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.points[0].x, this.points[0].y, this.length * 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Draw tentacle
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                
+                // Thickness gradient
+                for (let i = 1; i < this.points.length; i++) {
+                    const t = i / this.points.length;
+                    const width = this.thickness * (1 - t * 0.6);
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                
+                // Gradient along tentacle
+                const grad2 = ctx.createLinearGradient(
+                    this.points[0].x, this.points[0].y,
+                    this.points[this.points.length - 1].x, this.points[this.points.length - 1].y
+                );
+                grad2.addColorStop(0, color);
+                grad2.addColorStop(0.5, color2);
+                grad2.addColorStop(1, color2 + '80');
+                
+                ctx.strokeStyle = grad2;
+                ctx.lineWidth = this.thickness;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '60';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Suction cups
+                for (let i = 0; i < this.suctionCups; i++) {
+                    const idx = Math.floor(4 + i * (this.points.length - 8) / this.suctionCups);
+                    if (idx < this.points.length) {
+                        const p = this.points[idx];
+                        const t = idx / this.points.length;
+                        const size = 2 + t * 4;
+                        const angle = p.angle + Math.PI / 2;
+                        const offset = 3 + t * 3;
+                        
+                        const sx = p.x + Math.cos(angle) * offset;
+                        const sy = p.y + Math.sin(angle) * offset;
+                        
+                        ctx.beginPath();
+                        ctx.ellipse(sx, sy, size * 0.6, size * 0.8, angle, 0, Math.PI * 2);
+                        ctx.fillStyle = color2;
+                        ctx.globalAlpha = 0.3 + t * 0.2;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = color2 + '40';
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1;
+                        
+                        // Suction cup center
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, size * 0.3, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = 0.2;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                // Tip glow
+                const tip = this.points[this.points.length - 1];
+                const tipGrad = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, this.tipSize * 3);
+                tipGrad.addColorStop(0, color + '80');
+                tipGrad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(tip.x, tip.y, this.tipSize * 3, 0, Math.PI * 2);
+                ctx.fillStyle = tipGrad;
+                ctx.fill();
+
+                // Tip dot
+                ctx.beginPath();
+                ctx.arc(tip.x, tip.y, this.tipSize, 0, Math.PI * 2);
+                ctx.fillStyle = color2;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight on tentacle
+                for (let i = 1; i < this.points.length; i += 3) {
+                    const p = this.points[i];
+                    const t = i / this.points.length;
+                    const angle = p.angle - Math.PI / 2;
+                    const offset = 2 + t * 3;
+                    const hx = p.x + Math.cos(angle) * offset;
+                    const hy = p.y + Math.sin(angle) * offset;
+                    
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 1 + t * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.fill();
+                }
+            }
+        }
+
+        // ===== INIT TENTACLES =====
+        function initTentacles(count) {
+            numTentacles = count;
+            tentacles = [];
+            for (let i = 0; i < count; i++) {
+                tentacles.push(new Tentacle(i, count));
+            }
+        }
+        initTentacles(8);
+
+        // ===== ADD TENTACLE =====
+        function addTentacle() {
+            const count = tentacles.length + 1;
+            initTentacles(count);
+            statusText.textContent = `🐙 ${count} tentacles`;
+            setTimeout(() => {
+                statusText.textContent = `🐙 ${count} tentacles waving`;
+            }, 1000);
+        }
+
+        // ===== RESET =====
+        function resetTentacles() {
+            initTentacles(8);
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            particles = [];
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🐙 8 tentacles waving';
+            }, 1000);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a2e');
+            grad.addColorStop(0.3, '#061020');
+            grad.addColorStop(0.6, '#030a15');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Light rays from above
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.005 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 20, h);
+                grad2.addColorStop(0, 'rgba(100, 200, 255, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(100, 200, 255, 0.04)');
+                grad2.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 20, h);
+            }
+
+            // Sandy bottom
+            const groundY = h * 0.85;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(40, 60, 50, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(40, 60, 50, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(40, 60, 50, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(40, 60, 50, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Distant particles (plankton)
+            for (let i = 0; i < 30; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3 + time * 0.002) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5 + time * 0.003) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.03 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Update tentacles
+            for (const tentacle of tentacles) {
+                tentacle.updatePoints(time, speed);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw tentacles (back to front)
+            for (const tentacle of tentacles) {
+                tentacle.draw(ctx, time);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🐙 ${tentacles.length} tentacles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Add Tentacle
+        tentacleBtn.addEventListener('click', addTentacle);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🐙 ${tentacles.length} tentacles waving`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🐙 ${tentacles.length} tentacles waving`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetTentacles);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                tentacleBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                tentacleBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Reposition tentacles
+            for (const tentacle of tentacles) {
+                tentacle.updatePoints(time, speed);
+            }
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = `🐙 ${tentacles.length} tentacles waving`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🐙 Octopus Tentacles loaded!');
+        console.log('💡 T - Add tentacle');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Add tentacle');
+    </script>
+</body>
+</html>
