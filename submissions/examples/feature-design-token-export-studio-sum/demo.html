@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design Token Export Studio</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="token-studio-sum">
+      <header class="token-studio-sum__header">
+        <h1>Design Token Export Studio</h1>
+        <p>Tune local CSS variables and export a ready-to-paste snippet.</p>
+      </header>
+
+      <div class="token-studio-sum__layout">
+        <section class="token-studio-sum__panel" aria-labelledby="token-controls-title">
+          <h2 id="token-controls-title">Token Controls</h2>
+
+          <div class="token-studio-sum__control">
+            <label for="color-primary-sum">
+              <span>--ease-color-primary</span>
+              <output id="color-primary-out-sum">#6c63ff</output>
+            </label>
+            <input id="color-primary-sum" type="range" min="0" max="360" value="245" aria-valuetext="#6c63ff" />
+          </div>
+
+          <div class="token-studio-sum__control">
+            <label for="speed-medium-sum">
+              <span>--ease-speed-medium</span>
+              <output id="speed-medium-out-sum">320ms</output>
+            </label>
+            <input id="speed-medium-sum" type="range" min="120" max="800" step="20" value="320" />
+          </div>
+
+          <div class="token-studio-sum__control">
+            <label for="radius-sum">
+              <span>--ease-radius</span>
+              <output id="radius-out-sum">12px</output>
+            </label>
+            <input id="radius-sum" type="range" min="4" max="28" step="2" value="12" />
+          </div>
+
+          <div class="token-studio-sum__actions">
+            <button type="button" class="token-studio-sum__btn token-studio-sum__btn--primary" id="export-css-sum">Export CSS</button>
+            <button type="button" class="token-studio-sum__btn" id="export-json-sum">Export JSON</button>
+            <button type="button" class="token-studio-sum__btn" id="copy-export-sum">Copy</button>
+            <button type="button" class="token-studio-sum__btn" id="download-export-sum">Download</button>
+            <button type="button" class="token-studio-sum__btn" id="reset-tokens-sum">Reset</button>
+          </div>
+        </section>
+
+        <section class="token-studio-sum__preview" aria-label="Live preview">
+          <nav class="token-studio-sum__nav" aria-label="Sample navigation">
+            <a class="token-studio-sum__nav-link token-studio-sum__nav-link--active" href="#">Home</a>
+            <a class="token-studio-sum__nav-link" href="#">Features</a>
+            <a class="token-studio-sum__nav-link" href="#">Pricing</a>
+          </nav>
+
+          <article class="token-studio-sum__card">
+            <h3>Preview Card</h3>
+            <p>Buttons, cards, and nav inherit your token values in real time.</p>
+            <button type="button" class="token-studio-sum__cta">Primary Action</button>
+          </article>
+        </section>
+      </div>
+
+      <section class="token-studio-sum__export" aria-labelledby="export-output-title">
+        <h2 id="export-output-title">Export Output</h2>
+        <textarea class="token-studio-sum__textarea" id="export-output-sum" readonly aria-label="Export output"></textarea>
+        <p class="token-studio-sum__status" id="export-status-sum" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var defaults = {
+          colorHue: 245,
+          speed: 320,
+          radius: 12
+        };
+        var exportMode = "css";
+
+        var colorInput = document.getElementById("color-primary-sum");
+        var speedInput = document.getElementById("speed-medium-sum");
+        var radiusInput = document.getElementById("radius-sum");
+        var colorOut = document.getElementById("color-primary-out-sum");
+        var speedOut = document.getElementById("speed-medium-out-sum");
+        var radiusOut = document.getElementById("radius-out-sum");
+        var output = document.getElementById("export-output-sum");
+        var status = document.getElementById("export-status-sum");
+
+        function hslToHex(h, s, l) {
+          s /= 100;
+          l /= 100;
+          var c = (1 - Math.abs(2 * l - 1)) * s;
+          var x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+          var m = l - c / 2;
+          var rgb = [0, 0, 0];
+
+          if (h < 60) rgb = [c, x, 0];
+          else if (h < 120) rgb = [x, c, 0];
+          else if (h < 180) rgb = [0, c, x];
+          else if (h < 240) rgb = [0, x, c];
+          else if (h < 300) rgb = [x, 0, c];
+          else rgb = [c, 0, x];
+
+          return (
+            "#" +
+            rgb
+              .map(function (v) {
+                var hex = Math.round((v + m) * 255).toString(16);
+                return hex.length === 1 ? "0" + hex : hex;
+              })
+              .join("")
+          );
+        }
+
+        function getTokens() {
+          var color = hslToHex(Number(colorInput.value), 78, 62);
+          var speed = Number(speedInput.value);
+          var radius = Number(radiusInput.value);
+          return {
+            "--ease-color-primary": color,
+            "--ease-speed-medium": speed + "ms",
+            "--ease-radius": radius + "px"
+          };
+        }
+
+        function applyTokens() {
+          var tokens = getTokens();
+          root.style.setProperty("--ease-color-primary-sum", tokens["--ease-color-primary"]);
+          root.style.setProperty("--ease-speed-medium-sum", tokens["--ease-speed-medium"]);
+          root.style.setProperty("--ease-radius-sum", tokens["--ease-radius"]);
+
+          colorOut.textContent = tokens["--ease-color-primary"];
+          speedOut.textContent = tokens["--ease-speed-medium"];
+          radiusOut.textContent = tokens["--ease-radius"];
+          colorInput.setAttribute("aria-valuetext", tokens["--ease-color-primary"]);
+
+          if (exportMode === "css") renderCssExport();
+          else renderJsonExport();
+        }
+
+        function renderCssExport() {
+          var tokens = getTokens();
+          output.value =
+            ":root {\n" +
+            "  --ease-color-primary: " +
+            tokens["--ease-color-primary"] +
+            ";\n" +
+            "  --ease-speed-medium: " +
+            tokens["--ease-speed-medium"] +
+            ";\n" +
+            "  --ease-radius: " +
+            tokens["--ease-radius"] +
+            ";\n" +
+            "}";
+        }
+
+        function renderJsonExport() {
+          output.value = JSON.stringify(getTokens(), null, 2);
+        }
+
+        function setStatus(message) {
+          status.textContent = message;
+          window.clearTimeout(setStatus._timer);
+          setStatus._timer = window.setTimeout(function () {
+            status.textContent = "";
+          }, 2400);
+        }
+
+        colorInput.addEventListener("input", applyTokens);
+        speedInput.addEventListener("input", applyTokens);
+        radiusInput.addEventListener("input", applyTokens);
+
+        document.getElementById("export-css-sum").addEventListener("click", function () {
+          exportMode = "css";
+          renderCssExport();
+          setStatus("CSS snippet ready.");
+        });
+
+        document.getElementById("export-json-sum").addEventListener("click", function () {
+          exportMode = "json";
+          renderJsonExport();
+          setStatus("JSON map ready.");
+        });
+
+        document.getElementById("copy-export-sum").addEventListener("click", function () {
+          output.select();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(output.value).then(function () {
+              setStatus("Copied to clipboard.");
+            });
+          } else {
+            document.execCommand("copy");
+            setStatus("Copied to clipboard.");
+          }
+        });
+
+        document.getElementById("download-export-sum").addEventListener("click", function () {
+          var ext = exportMode === "css" ? "css" : "json";
+          var blob = new Blob([output.value], { type: "text/plain" });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "ease-tokens." + ext;
+          link.click();
+          URL.revokeObjectURL(url);
+          setStatus("Download started.");
+        });
+
+        document.getElementById("reset-tokens-sum").addEventListener("click", function () {
+          colorInput.value = String(defaults.colorHue);
+          speedInput.value = String(defaults.speed);
+          radiusInput.value = String(defaults.radius);
+          exportMode = "css";
+          applyTokens();
+          setStatus("Defaults restored.");
+        });
+
+        applyTokens();
+      })();
+    </script>
+  </body>
+</html>
