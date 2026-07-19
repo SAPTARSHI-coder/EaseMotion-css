@@ -204,7 +204,6 @@ jobs:
               }
 
               const computedLabels = [
-                level,
                 'good first issue',
                 'help wanted'
               ];
@@ -226,7 +225,6 @@ jobs:
                 // Parse associated issues from PR body to read their labels
                 const issueLabels = [];
                 let isGSSoC = false;
-                let isECSoC = false;
                 const closingPattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#([0-9]+)/gi;
                 let match;
                 while ((match = closingPattern.exec(body)) !== null) {
@@ -239,7 +237,17 @@ jobs:
                       const labels = issue.labels.map(l => l.name.toLowerCase());
                       issueLabels.push(...labels);
                       if (labels.includes('gssoc-26')) isGSSoC = true;
-                      if (labels.includes('ecsoc26')) isECSoC = true;
+
+                      // Inherit level difficulty from the linked issue — never downgrade
+                      const issueLevel = issue.labels.find(l => l.name.startsWith('level:'));
+                      if (issueLevel) {
+                        const levelWeight = { 'level:beginner': 1, 'level:intermediate': 2, 'level:advanced': 3 };
+                        const issueWeight = levelWeight[issueLevel.name] || 1;
+                        const prWeight = levelWeight[level] || 1;
+                        if (issueWeight > prWeight) {
+                          level = issueLevel.name;
+                        }
+                      }
 
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
@@ -260,13 +268,7 @@ jobs:
                   }
                 }
 
-                // Always push both GSSoC-26 and ECSoC26 to all PRs.
-                // The ECSoC sentinel bot will flag non-ECSoC contributors with ECSoC26-SPAM — that's intentional.
                 computedLabels.push('GSSoC-26', 'gssoc:approved');
-                computedLabels.push('ECSoC26');
-                if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
-                  computedLabels.push('ECSoC26-L1');
-                }
 
                 // Smart GSSoC type labeling logic
                 const isFix = titleLower.startsWith('fix:') || titleLower.startsWith('fix ') || titleLower.includes('bug') || issueLabels.includes('bug') || issueLabels.includes('type:bug') || currentLabels.includes('bug');
@@ -353,13 +355,10 @@ jobs:
                 if (currentLabels.includes('GSSoC-26')) {
                   computedLabels.push('GSSoC-26', 'gssoc:approved');
                 }
-                if (currentLabels.includes('ECSoC26')) {
-                  computedLabels.push('ECSoC26');
-                  if (!currentLabels.includes('ECSoC26-L2') && !currentLabels.includes('ECSoC26-L3')) {
-                    computedLabels.push('ECSoC26-L1');
-                  }
-                }
+
               }
+
+              computedLabels.push(level);
 
               if (level === 'level:advanced') {
                 await removeLabels(['level:intermediate', 'level:beginner']);

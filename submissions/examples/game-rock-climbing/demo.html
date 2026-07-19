@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧗 Rock Climbing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🧗 Rock Climbing</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">📊 Height</span>
+        <span class="stat-value" id="heightDisplay">0</span>
+        <span class="stat-unit">m</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+        <span class="stat-unit">m</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">❤️ Grip</span>
+        <span class="stat-value" id="gripDisplay">100</span>
+        <span class="stat-unit">%</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas"></canvas>
+      <div class="controls-overlay">
+        <div class="control-hint" id="leftHint">Left<br>Hold</div>
+        <div class="control-hint" id="rightHint">Right<br>Hold</div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Climbing</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+    </div>
+
+    <div class="controls-hint">
+      <kbd>←</kbd> Left Hold &nbsp; <kbd>→</kbd> Right Hold &nbsp; <kbd>Space</kbd> Jump
+    </div>
+
+    <div class="game-status" id="gameStatus">🧗 Press Start to begin climbing!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const heightDisplay = document.getElementById('heightDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const gripDisplay = document.getElementById('gripDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+      const leftHint = document.getElementById('leftHint');
+      const rightHint = document.getElementById('rightHint');
+
+      // ---------- Constants ----------
+      const WIDTH = 400;
+      const HEIGHT = 600;
+      const PLAYER_WIDTH = 30;
+      const PLAYER_HEIGHT = 40;
+      const GRIP_RADIUS = 20;
+      const GRIP_REACH = 70;
+      const GRIP_DISTANCE = 50;
+      const GRAVITY = 0.4;
+      const JUMP_FORCE = -7;
+      const GRIP_DRAIN = 0.3;
+      const GRIP_REGEN = 0.05;
+
+      // ---------- Game State ----------
+      let player = {
+        x: 0,
+        y: 0,
+        vx: 0,
+        vy: 0,
+        width: PLAYER_WIDTH,
+        height: PLAYER_HEIGHT,
+        onGround: false,
+        climbing: false,
+        leftGrip: null,
+        rightGrip: null,
+        leftHolding: false,
+        rightHolding: false,
+        gripStrength: 100,
+        facing: 1
+      };
+
+      let grips = [];
+      let height = 0;
+      let bestHeight = parseInt(localStorage.getItem('climbingBestHeight')) || 0;
+      let gameRunning = false;
+      let gameOverFlag = false;
+      let gameLoop = null;
+      let keys = { left: false, right: false, jump: false };
+      let lastMouseX = 0;
+      let lastMouseY = 0;
+      let holdCount = 0;
+
+      // ---------- High Score ----------
+      bestDisplay.textContent = bestHeight;
+
+      // ---------- Canvas Setup ----------
+      function setupCanvas() {
+        const wrapper = canvas.parentElement;
+        const maxWidth = wrapper.clientWidth || 400;
+        const size = Math.min(maxWidth - 16, 400);
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        canvas.style.width = size + 'px';
+        canvas.style.height = (size * HEIGHT / WIDTH) + 'px';
+      }
+
+      // ---------- Grip Generation ----------
+      function generateGrips(startY) {
+        grips = [];
+        const cols = 3;
+        const spacing = 60;
+        const totalGrips = 30;
+        
+        for (let i = 0; i < totalGrips; i++) {
+          const y = startY - i * spacing - Math.random() * 20;
+          const col = Math.floor(Math.random() * cols);
+          const x = 60 + col * 140 + Math.random() * 20;
+          const size = 16 + Math.random() * 12;
+          const type = Math.random() > 0.3 ? 'hold' : 'sloper';
+          const color = `hsl(${Math.random() * 60 + 20}, 80%, ${50 + Math.random() * 30}%)`;
+          
+          grips.push({
+            x: x,
+            y: y,
+            radius: size,
+            type: type,
+            color: color,
+            occupied: false,
+            occupiedBy: null,
+            reachable: false
+          });
+        }
+      }
+
+      // ---------- Player ----------
+      function resetPlayer() {
+        player.x = WIDTH / 2 - PLAYER_WIDTH / 2;
+        player.y = HEIGHT - 100;
+        player.vx = 0;
+        player.vy = 0;
+        player.onGround = false;
+        player.climbing = false;
+        player.leftGrip = null;
+        player.rightGrip = null;
+        player.leftHolding = false;
+        player.rightHolding = false;
+        player.gripStrength = 100;
+        player.facing = 1;
+        height = 0;
+        updateHeight();
+        updateGrip();
+      }
+
+      // ---------- Grip Interaction ----------
+      function findNearestGrip(x, y) {
+        let nearest = null;
+        let minDist = GRIP_REACH;
+        
+        for (const grip of grips) {
+          if (grip.occupied) continue;
+          const dist = Math.sqrt((grip.x - x) ** 2 + (grip.y - y) ** 2);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = grip;
+          }
+        }
+        return nearest;
+      }
+
+      function grabGrip(hand, x, y) {
+        if (player.gripStrength < 20) return false;
+        
+        const grip = findNearestGrip(x, y);
+        if (!grip) return false;
+        
+        // Check if within reach
+        const dist = Math.sqrt((grip.x - x) ** 2 + (grip.y - y) ** 2);
+        if (dist > GRIP_REACH) return false;
+        
+        // Occupying logic
+        if (hand === 'left') {
+          if (player.leftGrip) {
+            player.leftGrip.occupied = false;
+            player.leftGrip.occupiedBy = null;
+          }
+          player.leftGrip = grip;
+          player.leftHolding = true;
+          grip.occupied = true;
+          grip.occupiedBy = 'left';
+          player.x = grip.x - PLAYER_WIDTH / 2;
+          return true;
+        } else if (hand === 'right') {
+          if (player.rightGrip) {
+            player.rightGrip.occupied = false;
+            player.rightGrip.occupiedBy = null;
+          }
+          player.rightGrip = grip;
+          player.rightHolding = true;
+          grip.occupied = true;
+          grip.occupiedBy = 'right';
+          player.x = grip.x - PLAYER_WIDTH / 2;
+          return true;
+        }
+        return false;
+      }
+
+      function releaseGrip(hand) {
+        if (hand === 'left' && player.leftGrip) {
+          player.leftGrip.occupied = false;
+          player.leftGrip.occupiedBy = null;
+          player.leftGrip = null;
+          player.leftHolding = false;
+        } else if (hand === 'right' && player.rightGrip) {
+          player.rightGrip.occupied = false;
+          player.rightGrip.occupiedBy = null;
+          player.rightGrip = null;
+          player.rightHolding = false;
+        }
+      }
+
+      function releaseAllGrips() {
+        releaseGrip('left');
+        releaseGrip('right');
+        player.climbing = false;
+      }
+
+      // ---------- Update ----------
+      function update() {
+        if (!gameRunning || gameOverFlag) return;
+
+        // Grip strength regeneration
+        if (!player.leftHolding && !player.rightHolding) {
+          player.gripStrength = Math.min(100, player.gripStrength + GRIP_REGEN);
+        }
+
+        // Left hand hold
+        if (keys.left && !player.leftHolding) {
+          const success = grabGrip('left', player.x + PLAYER_WIDTH/2 - GRIP_DISTANCE, player.y - 10);
+          if (success) {
+            player.facing = -1;
+            // Drain grip
+            player.gripStrength -= GRIP_DRAIN;
+          }
+          keys.left = false;
+        }
+
+        // Right hand hold
+        if (keys.right && !player.rightHolding) {
+          const success = grabGrip('right', player.x + PLAYER_WIDTH/2 + GRIP_DISTANCE, player.y - 10);
+          if (success) {
+            player.facing = 1;
+            player.gripStrength -= GRIP_DRAIN;
+          }
+          keys.right = false;
+        }
+
+        // Release grips
+        if (keys.left && player.leftHolding) {
+          releaseGrip('left');
+          keys.left = false;
+        }
+        if (keys.right && player.rightHolding) {
+          releaseGrip('right');
+          keys.right = false;
+        }
+
+        // Jump
+        if (keys.jump && (player.onGround || player.climbing)) {
+          player.vy = JUMP_FORCE;
+          player.onGround = false;
+          releaseAllGrips();
+          keys.jump = false;
+        }
+
+        // Physics
+        player.vy += GRAVITY;
+        if (player.vy > 15) player.vy = 15;
+
+        // Move player
+        player.x += player.vx;
+        player.y += player.vy;
+
+        // Wall collision
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > WIDTH) player.x = WIDTH - player.width;
+
+        // Ground collision
+        if (player.y + player.height > HEIGHT) {
+          player.y = HEIGHT - player.height;
+          player.vy = 0;
+          player.onGround = true;
+          releaseAllGrips();
+        }
+
+        // Climbing logic - if holding grips
+        if (player.leftHolding || player.rightHolding) {
+          player.climbing = true;
+          // Center player between grips if both held
+          if (player.leftHolding && player.rightHolding) {
+            const midX = (player.leftGrip.x + player.rightGrip.x) / 2;
+            player.x = midX - PLAYER_WIDTH / 2;
+            // Pull up slowly
+            const targetY = Math.min(player.leftGrip.y, player.rightGrip.y) - PLAYER_HEIGHT + 10;
+            player.y += (targetY - player.y) * 0.08;
+            player.vy = 0;
+            // Update height
+            const newHeight = Math.floor((HEIGHT - player.y) / 10);
+            if (newHeight > height) {
+              height = newHeight;
+              updateHeight();
+              updateBestHeight();
+            }
+          } else if (player.leftHolding) {
+            // Hang from left grip
+            player.x = player.leftGrip.x - PLAYER_WIDTH / 2;
+            player.y = player.leftGrip.y - PLAYER_HEIGHT + 10;
+            player.vy = 0;
+          } else if (player.rightHolding) {
+            player.x = player.rightGrip.x - PLAYER_WIDTH / 2;
+            player.y = player.rightGrip.y - PLAYER_HEIGHT + 10;
+            player.vy = 0;
+          }
+        }
+
+        // Grip strength drain while holding
+        if (player.leftHolding || player.rightHolding) {
+          const drainRate = player.leftHolding && player.rightHolding ? GRIP_DRAIN * 1.5 : GRIP_DRAIN;
+          player.gripStrength -= drainRate;
+          if (player.gripStrength < 0) player.gripStrength = 0;
+          updateGrip();
+          
+          // Fall if grip strength too low
+          if (player.gripStrength < 5) {
+            releaseAllGrips();
+            player.gripStrength = 10;
+            updateGrip();
+            setGameStatus('💪 Grip failed! Try again.', false);
+          }
+        }
+
+        // Check if player fell off screen
+        if (player.y > HEIGHT + 50) {
+          gameOver();
+          return;
+        }
+
+        // Update hint positions
+        updateHints();
+
+        // Check win condition (reached top)
+        if (player.y < -50) {
+          // Victory!
+          gameRunning = false;
+          gameOverFlag = true;
+          stopLoop();
+          updateBestHeight();
+          setGameStatus(`🎉 You reached the top! Height: ${height}m 🏆`, true);
+          draw();
+          return;
+        }
+
+        draw();
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        grad.addColorStop(0, '#1a0a2a');
+        grad.addColorStop(0.3, '#1a2a4a');
+        grad.addColorStop(0.6, '#2a1a3a');
+        grad.addColorStop(1, '#0a0e1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Draw background mountain silhouette
+        ctx.fillStyle = 'rgba(30, 20, 40, 0.3)';
+        ctx.beginPath();
+        ctx.moveTo(0, HEIGHT);
+        for (let x = 0; x <= WIDTH; x += 10) {
+          const y = HEIGHT - 100 - Math.sin(x * 0.02) * 80 - Math.sin(x * 0.05 + 1) * 40;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(WIDTH, HEIGHT);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw grips
+        for (const grip of grips) {
+          const x = grip.x;
+          const y = grip.y;
+          
+          // Glow for reachable grips
+          if (grip.reachable && !grip.occupied) {
+            ctx.shadowColor = grip.color;
+            ctx.shadowBlur = 20;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+          
+          // Grip body
+          const grad2 = ctx.createRadialGradient(
+            x - grip.radius * 0.3, y - grip.radius * 0.3, grip.radius * 0.2,
+            x, y, grip.radius
+          );
+          grad2.addColorStop(0, lightenColor(grip.color, 30));
+          grad2.addColorStop(0.7, grip.color);
+          grad2.addColorStop(1, darkenColor(grip.color, 30));
+          ctx.fillStyle = grad2;
+          
+          if (grip.type === 'sloper') {
+            // Sloper - oval/egg shaped
+            ctx.beginPath();
+            ctx.ellipse(x, y + grip.radius * 0.2, grip.radius * 0.9, grip.radius * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Hold - round
+            ctx.beginPath();
+            ctx.arc(x, y, grip.radius, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.shadowBlur = 0;
+          
+          // Occupied indicator
+          if (grip.occupied) {
+            ctx.strokeStyle = grip.occupiedBy === 'left' ? '#4fc3f7' : '#ffd54f';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(x, y, grip.radius + 4, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+
+        // Draw reach indicators
+        if (player.onGround || player.climbing) {
+          // Left reach
+          const lx = player.x + PLAYER_WIDTH/2 - GRIP_DISTANCE;
+          const ly = player.y - 10;
+          ctx.strokeStyle = 'rgba(79, 195, 247, 0.2)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.arc(lx, ly, GRIP_REACH, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Right reach
+          const rx = player.x + PLAYER_WIDTH/2 + GRIP_DISTANCE;
+          const ry = player.y - 10;
+          ctx.strokeStyle = 'rgba(255, 213, 79, 0.2)';
+          ctx.beginPath();
+          ctx.arc(rx, ry, GRIP_REACH, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Draw player
+        ctx.save();
+        const px = player.x;
+        const py = player.y;
+        
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(px + PLAYER_WIDTH/2, py + PLAYER_HEIGHT + 4, PLAYER_WIDTH/2, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Body
+        const bodyGrad = ctx.createLinearGradient(px, py, px + PLAYER_WIDTH, py + PLAYER_HEIGHT);
+        bodyGrad.addColorStop(0, '#4fc3f7');
+        bodyGrad.addColorStop(0.5, '#29b6f6');
+        bodyGrad.addColorStop(1, '#0288d1');
+        ctx.fillStyle = bodyGrad;
+        ctx.shadowColor = 'rgba(79, 195, 247, 0.3)';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.roundRect(px + 2, py + 4, PLAYER_WIDTH - 4, PLAYER_HEIGHT - 8, 6);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Head
+        ctx.fillStyle = '#ffccbc';
+        ctx.beginPath();
+        ctx.arc(px + PLAYER_WIDTH/2, py + 8, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Hair
+        ctx.fillStyle = '#3a2a1a';
+        ctx.beginPath();
+        ctx.arc(px + PLAYER_WIDTH/2, py + 4, 12, Math.PI, 2 * Math.PI);
+        ctx.fill();
+        
+        // Eyes
+        const eyeX = player.facing > 0 ? 4 : -4;
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(px + PLAYER_WIDTH/2 - 4 + eyeX, py + 6, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + PLAYER_WIDTH/2 + 4 + eyeX, py + 6, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Arms
+        ctx.strokeStyle = '#ffccbc';
+        ctx.lineWidth = 4;
+        // Left arm
+        ctx.beginPath();
+        ctx.moveTo(px + 4, py + 14);
+        if (player.leftHolding && player.leftGrip) {
+          ctx.lineTo(player.leftGrip.x, player.leftGrip.y - 4);
+        } else {
+          ctx.lineTo(px - 8, py + 24);
+        }
+        ctx.stroke();
+        
+        // Right arm
+        ctx.beginPath();
+        ctx.moveTo(px + PLAYER_WIDTH - 4, py + 14);
+        if (player.rightHolding && player.rightGrip) {
+          ctx.lineTo(player.rightGrip.x, player.rightGrip.y - 4);
+        } else {
+          ctx.lineTo(px + PLAYER_WIDTH + 8, py + 24);
+        }
+        ctx.stroke();
+        
+        // Legs
+        ctx.strokeStyle = '#1565c0';
+        ctx.lineWidth = 4;
+        const legSwing = Math.sin(Date.now() / 300) * 3;
+        ctx.beginPath();
+        ctx.moveTo(px + 8, py + PLAYER_HEIGHT - 4);
+        ctx.lineTo(px + 4 + legSwing, py + PLAYER_HEIGHT + 8);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(px + PLAYER_WIDTH - 8, py + PLAYER_HEIGHT - 4);
+        ctx.lineTo(px + PLAYER_WIDTH - 4 - legSwing, py + PLAYER_HEIGHT + 8);
+        ctx.stroke();
+        
+        ctx.restore();
+
+        // Game Over overlay
+        if (gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 40px "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          if (player.y < -50) {
+            ctx.fillStyle = '#81c784';
+            ctx.fillText('🏆', WIDTH/2, HEIGHT/2 - 10);
+            ctx.font = '24px "Segoe UI", sans-serif';
+            ctx.fillStyle = '#ffd54f';
+            ctx.fillText(`Summit! ${height}m`, WIDTH/2, HEIGHT/2 + 50);
+          } else {
+            ctx.fillStyle = '#ef9a9a';
+            ctx.fillText('💀', WIDTH/2, HEIGHT/2 - 10);
+            ctx.font = '24px "Segoe UI", sans-serif';
+            ctx.fillStyle = '#ffd54f';
+            ctx.fillText(`Height: ${height}m`, WIDTH/2, HEIGHT/2 + 50);
+          }
+        }
+      }
+
+      // ---------- Helper Functions ----------
+      function roundRect(ctx, x, y, w, h, r) {
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        return ctx;
+      }
+
+      function lightenColor(color, amount) {
+        // Simple lighten for hsl
+        return color.replace(/(\d+)%\)/, (match, p1) => {
+          const val = Math.min(100, parseInt(p1) + amount);
+          return val + '%)';
+        });
+      }
+
+      function darkenColor(color, amount) {
+        return color.replace(/(\d+)%\)/, (match, p1) => {
+          const val = Math.max(0, parseInt(p1) - amount);
+          return val + '%)';
+        });
+      }
+
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        return this;
+      };
+
+      // ---------- Display Updates ----------
+      function updateHeight() {
+        heightDisplay.textContent = Math.floor(height);
+      }
+
+      function updateBestHeight() {
+        if (height > bestHeight) {
+          bestHeight = height;
+          localStorage.setItem('climbingBestHeight', bestHeight.toString());
+          bestDisplay.textContent = bestHeight;
+        }
+      }
+
+      function updateGrip() {
+        gripDisplay.textContent = Math.floor(player.gripStrength);
+        if (player.gripStrength < 30) {
+          gripDisplay.style.color = '#ff7a7a';
+        } else {
+          gripDisplay.style.color = '#ffd54f';
+        }
+      }
+
+      function updateHints() {
+        if (player.onGround || player.climbing) {
+          leftHint.style.display = 'block';
+          rightHint.style.display = 'block';
+          leftHint.style.opacity = player.leftHolding ? '0.5' : '1';
+          rightHint.style.opacity = player.rightHolding ? '0.5' : '1';
+        } else {
+          leftHint.style.display = 'none';
+          rightHint.style.display = 'none';
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        update();
+        draw();
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameRunning = true;
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        resetGameState();
+        gameRunning = true;
+        gameOverFlag = false;
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Climbing...';
+        setGameStatus('🧗 Use arrow keys to grab holds!', true);
+        generateGrips(HEIGHT - 50);
+        resetPlayer();
+        startLoop();
+      }
+
+      function resetGameState() {
+        height = 0;
+        player.gripStrength = 100;
+        gameOverFlag = false;
+        releaseAllGrips();
+        updateHeight();
+        updateGrip();
+        updateBestDisplay();
+      }
+
+      function gameOver() {
+        gameRunning = false;
+        gameOverFlag = true;
+        stopLoop();
+        updateBestHeight();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Try Again';
+        setGameStatus(`💀 Fell! Height: ${height}m`, false);
+        draw();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        gameOverFlag = false;
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        resetGameState();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Climbing';
+        setGameStatus('🔄 Game reset. Press Start to climb!', true);
+        generateGrips(HEIGHT - 50);
+        resetPlayer();
+        draw();
+      }
+
+      function updateBestDisplay() {
+        bestDisplay.textContent = bestHeight;
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (['ArrowLeft', 'ArrowRight', ' ', 'Space'].includes(key)) {
+          e.preventDefault();
+        }
+
+        if (key === ' ' || key === 'Space') {
+          if (gameRunning && !gameOverFlag) {
+            keys.jump = true;
+          } else if (!gameRunning && !gameOverFlag) {
+            startGame();
+          }
+          return;
+        }
+
+        if (key === 'r' || key === 'R') {
+          resetGame();
+          return;
+        }
+
+        if (key === 'ArrowLeft') {
+          keys.left = true;
+        }
+        if (key === 'ArrowRight') {
+          keys.right = true;
+        }
+      });
+
+      document.addEventListener('keyup', (e) => {
+        const key = e.key;
+        if (key === 'ArrowLeft') {
+          keys.left = false;
+        }
+        if (key === 'ArrowRight') {
+          keys.right = false;
+        }
+        if (key === ' ' || key === 'Space') {
+          keys.jump = false;
+        }
+      });
+
+      // ---------- Touch Controls ----------
+      let touchX = 0;
+      let touchY = 0;
+      let isTouching = false;
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        touchX = (touch.clientX - rect.left) * scaleX;
+        touchY = (touch.clientY - rect.top) * scaleY;
+        isTouching = true;
+        
+        // Determine if left or right side of canvas
+        if (touchX < WIDTH / 2) {
+          keys.left = true;
+          setTimeout(() => { keys.left = false; }, 100);
+        } else {
+          keys.right = true;
+          setTimeout(() => { keys.right = false; }, 100);
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const newX = (touch.clientX - rect.left) * scaleX;
+        const newY = (touch.clientY - rect.top) * scaleY;
+        
+        if (newY < touchY - 30 && (gameRunning && !gameOverFlag)) {
+          keys.jump = true;
+          setTimeout(() => { keys.jump = false; }, 100);
+        }
+        touchX = newX;
+        touchY = newY;
+      }, { passive: false });
+
+      canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isTouching = false;
+        keys.left = false;
+        keys.right = false;
+        keys.jump = false;
+      }, { passive: false });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+
+      // ---------- Window Resize ----------
+      window.addEventListener('resize', setupCanvas);
+
+      // ---------- Init ----------
+      function init() {
+        setupCanvas();
+        resetGameState();
+        generateGrips(HEIGHT - 50);
+        resetPlayer();
+        draw();
+        setGameStatus('🧗 Press Start to begin climbing!', true);
+        bestDisplay.textContent = bestHeight;
+        updateHints();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breathing Flower</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌸 Breathing Flower</h1>
+        <p class="subtitle">Flower opening and closing like breathing</p>
+
+        <div class="flower-wrapper">
+            <canvas id="flowerCanvas"></canvas>
+
+            <div class="controls">
+                <button id="breatheBtn">🌬️ Breathe</button>
+                <button id="colorBtn">Color: Pink</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌸 Breathing</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('flowerCanvas');
+        const ctx = canvas.getContext('2d');
+        const breatheBtn = document.getElementById('breatheBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let breathPhase = 0;
+        let breathSpeed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let petals = [];
+        let particles = [];
+        let isBreathing = true;
+        let breathDepth = 0;
+        let targetDepth = 0;
+        let glowIntensity = 0.5;
+        let pollen = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Pink',
+                petals: ['#ff6b9d', '#ff8fab', '#ffb3c6', '#ffc8dd', '#ffe5ec'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#4a7a4a',
+                leaf: '#5a9a5a'
+            },
+            {
+                name: 'Rose',
+                petals: ['#e8434a', '#d63333', '#c92a2a', '#bb2020', '#ad1a1a'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#3a5a3a',
+                leaf: '#4a7a4a'
+            },
+            {
+                name: 'Sunset',
+                petals: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e'],
+                center: ['#8B4513', '#6B3410', '#5a2a0a'],
+                stem: '#4a6a3a',
+                leaf: '#5a8a4a'
+            },
+            {
+                name: 'Lavender',
+                petals: ['#9b59b6', '#a66bbf', '#b37dc8', '#c08fd1', '#cda1da'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#3a5a4a',
+                leaf: '#4a7a5a'
+            },
+            {
+                name: 'Ocean',
+                petals: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#2a5a4a',
+                leaf: '#3a7a5a'
+            },
+            {
+                name: 'Rainbow',
+                petals: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#4a7a4a',
+                leaf: '#5a9a5a'
+            },
+            {
+                name: 'Peach',
+                petals: ['#ffb07c', '#ffbe9e', '#ffccb0', '#ffdac2', '#ffe8d4'],
+                center: ['#ffd93d', '#f5c842', '#e8b835'],
+                stem: '#4a6a3a',
+                leaf: '#5a8a4a'
+            },
+        ];
+
+        // ===== PETAL CLASS =====
+        class Petal {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.angle = (index / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.1;
+                this.length = 60 + Math.random() * 30;
+                this.width = 25 + Math.random() * 15;
+                this.phase = Math.random() * Math.PI * 2;
+                this.curl = 0.3 + Math.random() * 0.3;
+                this.wobble = 0.5 + Math.random() * 0.5;
+                this.opacity = 0.7 + Math.random() * 0.3;
+                this.offset = (Math.random() - 0.5) * 5;
+                this.colorOffset = Math.floor(Math.random() * 5);
+            }
+
+            update(breath, time) {
+                this.phase += 0.01;
+                this.curl = 0.3 + 0.3 * breath + 0.1 * Math.sin(this.phase);
+                this.wobble = 0.5 + 0.3 * Math.sin(this.phase * 0.7 + time * 0.01);
+            }
+
+            draw(ctx, cx, cy, breath, time) {
+                const palette = colorPalettes[colorMode];
+                const colors = palette.petals;
+                const color = colors[this.colorOffset % colors.length];
+                
+                const openFactor = 0.5 + 0.5 * breath;
+                const angleOffset = this.angle + time * 0.003;
+                const lengthScale = 0.6 + 0.4 * openFactor;
+                const widthScale = 0.5 + 0.5 * openFactor;
+                
+                const len = this.length * lengthScale;
+                const wid = this.width * widthScale;
+                const curl = this.curl * openFactor;
+                
+                // Petal shape with bezier curves
+                const x1 = cx + Math.cos(angleOffset) * 10;
+                const y1 = cy + Math.sin(angleOffset) * 10;
+                
+                const midX = cx + Math.cos(angleOffset) * len * 0.6;
+                const midY = cy + Math.sin(angleOffset) * len * 0.6;
+                
+                const tipX = cx + Math.cos(angleOffset) * len;
+                const tipY = cy + Math.sin(angleOffset) * len;
+                
+                const perpAngle = angleOffset + Math.PI / 2;
+                const perpX = Math.cos(perpAngle) * wid * 0.5;
+                const perpY = Math.sin(perpAngle) * wid * 0.5;
+                
+                // Draw petal with gradient
+                ctx.save();
+                
+                const grad = ctx.createLinearGradient(x1, y1, tipX, tipY);
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.5, color);
+                grad.addColorStop(1, color + '80');
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.quadraticCurveTo(
+                    midX + perpX * (0.3 + 0.2 * curl),
+                    midY + perpY * (0.3 + 0.2 * curl),
+                    tipX + Math.cos(angleOffset + 0.2) * 5 * curl,
+                    tipY + Math.sin(angleOffset + 0.2) * 5 * curl
+                );
+                ctx.quadraticCurveTo(
+                    midX + perpX * 0.1,
+                    midY + perpY * 0.1,
+                    tipX + Math.cos(angleOffset) * 3,
+                    tipY + Math.sin(angleOffset) * 3
+                );
+                ctx.quadraticCurveTo(
+                    midX - perpX * 0.1,
+                    midY - perpY * 0.1,
+                    tipX - Math.cos(angleOffset + 0.2) * 5 * curl,
+                    tipY - Math.sin(angleOffset + 0.2) * 5 * curl
+                );
+                ctx.quadraticCurveTo(
+                    midX - perpX * (0.3 + 0.2 * curl),
+                    midY - perpY * (0.3 + 0.2 * curl),
+                    x1, y1
+                );
+                ctx.closePath();
+                
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.opacity;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Petal vein
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.quadraticCurveTo(
+                    (x1 + tipX) / 2 + Math.sin(angleOffset) * 3,
+                    (y1 + tipY) / 2 - Math.cos(angleOffset) * 3,
+                    tipX, tipY
+                );
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+        }
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5 - 0.2;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 80;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.gravity = 0.005 + Math.random() * 0.01;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx += Math.sin(this.phase) * 0.005;
+                this.phase += 0.05;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.998;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(0.5, this.color + '20');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== INIT PETALS =====
+        function initPetals() {
+            petals = [];
+            const numPetals = 18 + Math.floor(Math.random() * 6);
+            for (let i = 0; i < numPetals; i++) {
+                petals.push(new Petal(i, numPetals));
+            }
+        }
+        initPetals();
+
+        // ===== DRAW STEM =====
+        function drawStem(ctx, cx, cy, breath) {
+            const palette = colorPalettes[colorMode];
+            const stemColor = palette.stem;
+            const leafColor = palette.leaf;
+            
+            const stemLen = 100 + 20 * breath;
+            const stemEndX = cx + Math.sin(time * 0.02) * 5;
+            const stemEndY = cy + stemLen;
+            
+            // Stem
+            ctx.save();
+            const grad = ctx.createLinearGradient(cx, cy, stemEndX, stemEndY);
+            grad.addColorStop(0, stemColor);
+            grad.addColorStop(1, stemColor + '80');
+            
+            ctx.beginPath();
+            ctx.moveTo(cx - 3, cy);
+            ctx.quadraticCurveTo(
+                (cx + stemEndX) / 2 + Math.sin(time * 0.03) * 3,
+                (cy + stemEndY) / 2,
+                stemEndX - 3, stemEndY
+            );
+            ctx.quadraticCurveTo(
+                (cx + stemEndX) / 2 + Math.sin(time * 0.03) * 3 + 6,
+                (cy + stemEndY) / 2 + 2,
+                stemEndX + 3, stemEndY
+            );
+            ctx.quadraticCurveTo(
+                (cx + stemEndX) / 2 + Math.sin(time * 0.03) * 3 + 3,
+                (cy + stemEndY) / 2,
+                cx + 3, cy
+            );
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,20,0,0.2)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Leaves
+            for (let i = 0; i < 2; i++) {
+                const leafPos = 0.3 + i * 0.4;
+                const lx = cx + (stemEndX - cx) * leafPos + Math.sin(time * 0.03 + i) * 3;
+                const ly = cy + (stemEndY - cy) * leafPos;
+                const leafAngle = -0.8 + i * 1.6 + Math.sin(time * 0.02 + i * 2) * 0.1;
+                const leafSize = 15 + 5 * breath;
+                
+                ctx.save();
+                ctx.translate(lx, ly);
+                ctx.rotate(leafAngle);
+                
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.quadraticCurveTo(leafSize * 0.5, -leafSize * 0.4, leafSize, 0);
+                ctx.quadraticCurveTo(leafSize * 0.5, leafSize * 0.4, 0, 0);
+                ctx.closePath();
+                
+                const leafGrad = ctx.createLinearGradient(0, -leafSize * 0.4, 0, leafSize * 0.4);
+                leafGrad.addColorStop(0, leafColor);
+                leafGrad.addColorStop(0.5, leafColor);
+                leafGrad.addColorStop(1, leafColor + '80');
+                ctx.fillStyle = leafGrad;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,30,0,0.2)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Leaf vein
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(leafSize * 0.7, 0);
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+            
+            ctx.restore();
+        }
+
+        // ===== DRAW CENTER =====
+        function drawCenter(ctx, cx, cy, breath) {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.center;
+            const radius = 12 + 8 * breath;
+            
+            // Glow
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 3);
+            const centerColor = colors[0];
+            grad.addColorStop(0, centerColor + '30');
+            grad.addColorStop(0.5, centerColor + '15');
+            grad.addColorStop(1, centerColor + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 3, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+            
+            // Center circle
+            const grad2 = ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, 0, cx, cy, radius);
+            for (let i = 0; i < colors.length; i++) {
+                const t = i / (colors.length - 1);
+                grad2.addColorStop(t, colors[i]);
+            }
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad2;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = centerColor + '40';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Center dots (pollen)
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 + time * 0.01;
+                const dist = radius * (0.3 + 0.3 * breath);
+                const dotX = cx + Math.cos(angle) * dist;
+                const dotY = cy + Math.sin(angle) * dist;
+                const dotSize = 1 + 0.5 * breath + Math.sin(time * 0.02 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff';
+                ctx.globalAlpha = 0.3 + 0.2 * breath;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== DRAW FLOWER =====
+        function drawFlower(ctx, cx, cy, breath, time) {
+            // Draw stem first (behind flower)
+            drawStem(ctx, cx, cy, breath);
+            
+            // Draw petals
+            for (const petal of petals) {
+                petal.update(breath, time);
+                petal.draw(ctx, cx, cy, breath, time);
+            }
+            
+            // Draw center
+            drawCenter(ctx, cx, cy, breath);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a0e');
+            grad.addColorStop(0.5, '#060f06');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const glowGrad = ctx.createRadialGradient(w/2, h/2 - 20, 0, w/2, h/2 - 20, Math.max(w, h) * 0.3);
+            const palette = colorPalettes[colorMode];
+            const color = palette.petals[0];
+            glowGrad.addColorStop(0, color + '08');
+            glowGrad.addColorStop(1, color + '00');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Floating pollen particles
+            for (let i = 0; i < 15; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3 + time * 0.002) * 30) % w;
+                const y = (i * 23 + Math.cos(i * 0.5 + time * 0.003) * 20) % h;
+                const size = 0.5 + Math.sin(i + time * 0.01) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 200, 150, ${0.02 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== BREATHE =====
+        function toggleBreath() {
+            isBreathing = !isBreathing;
+            breatheBtn.textContent = isBreathing ? '🌬️ Breathe' : '⏸️ Pause';
+            statusText.textContent = isBreathing ? '🌸 Breathing' : '⏸️ Paused';
+            if (isBreathing) {
+                setTimeout(() => {
+                    statusText.textContent = '🌸 Breathing';
+                }, 1000);
+            }
+        }
+
+        // ===== RESET =====
+        function resetFlower() {
+            breathPhase = 0;
+            breathDepth = 0;
+            targetDepth = 0;
+            speedLevel = 1;
+            breathSpeed = speeds[1].value;
+            colorMode = 0;
+            isBreathing = true;
+            breatheBtn.textContent = '🌬️ Breathe';
+            initPetals();
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌸 Breathing';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 - 20;
+            time += 0.01;
+
+            // Breathing
+            if (isBreathing) {
+                breathPhase += breathSpeed;
+                breathDepth = 0.5 + 0.5 * Math.sin(breathPhase);
+            }
+
+            // Glow pulse
+            glowIntensity = 0.5 + 0.3 * Math.sin(breathPhase * 0.5);
+
+            // Spawn pollen particles
+            if (Math.random() < 0.02 * breathDepth) {
+                const palette = colorPalettes[colorMode];
+                const color = palette.center[0];
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 20,
+                    cy - 30 + (Math.random() - 0.5) * 20,
+                    color
+                );
+                p.vx = (Math.random() - 0.5) * 0.3;
+                p.vy = -0.2 - Math.random() * 0.3;
+                p.size = 1 + Math.random() * 2;
+                particles.push(p);
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+            
+            // Draw flower
+            drawFlower(ctx, cx, cy, breathDepth, time);
+            
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isBreathing ? 'Breathing' : 'Paused';
+                statusText.textContent = `🌸 ${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Breathe
+        breatheBtn.addEventListener('click', toggleBreath);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌸 Breathing';
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            breathSpeed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌸 Breathing';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetFlower);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') {
+                breatheBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                breatheBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌸 Breathing';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌸 Breathing Flower loaded!');
+        console.log('💡 B - Toggle breathe');
+        console.log('💡 C - Change color');
+        console.log('💡 S - Change speed');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle breathe');
+    </script>
+</body>
+</html>
