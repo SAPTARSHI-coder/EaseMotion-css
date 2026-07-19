@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessibility Motion Report Generator</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="a11y-report-sum">
+      <header class="a11y-report-sum__header">
+        <h1>Accessibility Motion Report Generator</h1>
+        <p>Scan a sample DOM for common motion and accessibility issues, then export the results.</p>
+      </header>
+
+      <div class="a11y-report-sum__toolbar">
+        <button type="button" class="a11y-report-sum__btn a11y-report-sum__btn--primary" id="scan-btn-sum">Run Scan</button>
+        <button type="button" class="a11y-report-sum__btn" id="download-txt-sum">Download TXT</button>
+        <button type="button" class="a11y-report-sum__btn" id="download-json-sum">Download JSON</button>
+      </div>
+
+      <div class="a11y-report-sum__grid">
+        <section class="a11y-report-sum__panel" id="demo-dom-sum" aria-label="Sample demo DOM">
+          <h2>Sample DOM (mixed quality)</h2>
+          <div class="a11y-report-sum__demo">
+            <div class="a11y-report-sum__card">
+              <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%236c63ff' width='48' height='48' rx='8'/%3E%3C/svg%3E" alt="" width="48" height="48" />
+              <p class="a11y-report-sum__low-contrast">Low contrast promotional text</p>
+            </div>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='40'%3E%3Crect fill='%2394a3b8' width='64' height='40'/%3E%3C/svg%3E" width="64" height="40" />
+            <button type="button" class="a11y-report-sum__animated-btn" id="bad-animated-btn-sum">Animated CTA</button>
+            <button type="button" class="a11y-report-sum__good-btn">Accessible button with label</button>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%2316a34a' width='48' height='48' rx='8'/%3E%3C/svg%3E" alt="Verified badge icon" width="48" height="48" />
+          </div>
+        </section>
+
+        <section class="a11y-report-sum__panel" aria-labelledby="results-title-sum">
+          <h2 id="results-title-sum">Scan Results</h2>
+          <ul class="a11y-report-sum__results" id="results-list-sum" aria-live="polite"></ul>
+          <p class="a11y-report-sum__summary" id="summary-sum">Run a scan to generate a report.</p>
+        </section>
+      </div>
+
+      <section class="a11y-report-sum__export">
+        <h2>Report Export</h2>
+        <textarea class="a11y-report-sum__textarea" id="report-output-sum" readonly aria-label="Report export output"></textarea>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var resultsList = document.getElementById("results-list-sum");
+        var summary = document.getElementById("summary-sum");
+        var reportOutput = document.getElementById("report-output-sum");
+        var lastReport = null;
+
+        function relativeLuminance(r, g, b) {
+          var channels = [r, g, b].map(function (c) {
+            c /= 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+          });
+          return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+        }
+
+        function contrastRatio(fg, bg) {
+          var l1 = relativeLuminance(fg.r, fg.g, fg.b);
+          var l2 = relativeLuminance(bg.r, bg.g, bg.b);
+          var lighter = Math.max(l1, l2);
+          var darker = Math.min(l1, l2);
+          return (lighter + 0.05) / (darker + 0.05);
+        }
+
+        function parseRgb(color) {
+          var match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (!match) return null;
+          return { r: Number(match[1]), g: Number(match[2]), b: Number(match[3]) };
+        }
+
+        function checkImages(root) {
+          var findings = [];
+          root.querySelectorAll("img").forEach(function (img, index) {
+            var alt = img.getAttribute("alt");
+            if (alt === null) {
+              findings.push({ id: "img-" + index, status: "fail", message: "Image missing alt attribute.", element: img.outerHTML.slice(0, 80) });
+            } else if (alt.trim() === "") {
+              findings.push({ id: "img-empty-" + index, status: "warn", message: "Image has empty alt — verify if decorative.", element: img.outerHTML.slice(0, 80) });
+            } else {
+              findings.push({ id: "img-ok-" + index, status: "pass", message: "Image alt text present.", element: img.outerHTML.slice(0, 80) });
+            }
+          });
+          return findings;
+        }
+
+        function checkContrast(root) {
+          var findings = [];
+          root.querySelectorAll("p, span, button").forEach(function (el, index) {
+            var style = window.getComputedStyle(el);
+            var fg = parseRgb(style.color);
+            var bg = parseRgb(style.backgroundColor);
+            if (!fg || !bg || style.backgroundColor === "rgba(0, 0, 0, 0)") return;
+            var ratio = contrastRatio(fg, bg);
+            if (ratio < 4.5) {
+              findings.push({ id: "contrast-" + index, status: "fail", message: "Low contrast text (" + ratio.toFixed(2) + ":1).", element: el.textContent.trim().slice(0, 60) });
+            }
+          });
+          if (!findings.length) {
+            findings.push({ id: "contrast-ok", status: "pass", message: "No obvious low-contrast text detected in sample.", element: "p, span, button" });
+          }
+          return findings;
+        }
+
+        function checkAnimatedFocusables(root) {
+          var findings = [];
+          root.querySelectorAll("button, a, input, select, textarea, [tabindex]").forEach(function (el) {
+            var style = window.getComputedStyle(el);
+            var name = style.animationName;
+            if (name && name !== "none") {
+              findings.push({ id: "anim-" + (el.id || el.className), status: "warn", message: "Focusable element uses CSS animation.", element: el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") });
+            }
+          });
+          if (!findings.length) {
+            findings.push({ id: "anim-ok", status: "pass", message: "No animated focusable elements found.", element: "interactive controls" });
+          }
+          return findings;
+        }
+
+        function checkReducedMotionCss() {
+          var hasRule = false;
+          try {
+            for (var i = 0; i < document.styleSheets.length; i++) {
+              var sheet = document.styleSheets[i];
+              var rules;
+              try {
+                rules = sheet.cssRules || sheet.rules;
+              } catch (e) {
+                continue;
+              }
+              if (!rules) continue;
+              for (var j = 0; j < rules.length; j++) {
+                if (rules[j].conditionText && rules[j].conditionText.indexOf("prefers-reduced-motion") !== -1) {
+                  hasRule = true;
+                  break;
+                }
+              }
+              if (hasRule) break;
+            }
+          } catch (e) {
+            hasRule = false;
+          }
+          return [{
+            id: "reduced-motion-css",
+            status: hasRule ? "pass" : "fail",
+            message: hasRule ? "Stylesheet includes prefers-reduced-motion coverage." : "No prefers-reduced-motion rule found in linked CSS.",
+            element: "style.css"
+          }];
+        }
+
+        function renderResults(report) {
+          resultsList.innerHTML = "";
+          report.findings.forEach(function (item) {
+            var li = document.createElement("li");
+            li.className = "a11y-report-sum__result a11y-report-sum__result--" + item.status;
+            li.textContent = item.message + " (" + item.status.toUpperCase() + ")";
+            resultsList.appendChild(li);
+          });
+          summary.textContent =
+            "Pass: " + report.pass + " · Fail: " + report.fail + " · Warn: " + report.warn;
+          reportOutput.value = report.text;
+        }
+
+        function buildReport(findings) {
+          var pass = findings.filter(function (f) { return f.status === "pass"; }).length;
+          var fail = findings.filter(function (f) { return f.status === "fail"; }).length;
+          var warn = findings.filter(function (f) { return f.status === "warn"; }).length;
+          var lines = ["Accessibility Motion Report", "Generated: " + new Date().toISOString(), "", "Summary: pass=" + pass + " fail=" + fail + " warn=" + warn, ""];
+          findings.forEach(function (f) {
+            lines.push("[" + f.status.toUpperCase() + "] " + f.message);
+            lines.push("  Element: " + f.element);
+          });
+          return {
+            generatedAt: new Date().toISOString(),
+            pass: pass,
+            fail: fail,
+            warn: warn,
+            findings: findings,
+            text: lines.join("\n")
+          };
+        }
+
+        document.getElementById("scan-btn-sum").addEventListener("click", function () {
+          var root = document.getElementById("demo-dom-sum");
+          var findings = []
+            .concat(checkImages(root))
+            .concat(checkContrast(root))
+            .concat(checkAnimatedFocusables(root))
+            .concat(checkReducedMotionCss());
+          lastReport = buildReport(findings);
+          renderResults(lastReport);
+        });
+
+        function download(filename, content) {
+          var blob = new Blob([content], { type: "text/plain" });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          link.click();
+          URL.revokeObjectURL(url);
+        }
+
+        document.getElementById("download-txt-sum").addEventListener("click", function () {
+          if (!lastReport) return;
+          download("a11y-motion-report.txt", lastReport.text);
+        });
+
+        document.getElementById("download-json-sum").addEventListener("click", function () {
+          if (!lastReport) return;
+          download("a11y-motion-report.json", JSON.stringify(lastReport, null, 2));
+        });
+      })();
+    </script>
+  </body>
+</html>
