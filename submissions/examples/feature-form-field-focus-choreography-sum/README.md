@@ -3,6 +3,7 @@
 1. **What does this do?**  
    A self-contained form demo that choreographs floating labels, helper slide-in, error shake, and success check draw.
 
+
 2. **How is it used?**  
    Open `demo.html`, focus fields, then submit with valid or invalid values:
    ```html
