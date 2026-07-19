@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import postcss from "postcss";
+import autoprefixer from "autoprefixer";
 import { watch } from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -156,7 +158,10 @@ async function build() {
 
   const bundledCss = await bundleCss(entryFile, state);
   const externalImportsBlock = [...state.externalImports].join("");
-  const minifiedCss = minifyCss(`${externalImportsBlock}\n${bundledCss}`);
+  const cssString = `${externalImportsBlock}\n${bundledCss}`;
+
+  const processedCss = await postcss([autoprefixer]).process(cssString, { from: undefined });
+  const minifiedCss = minifyCss(processedCss.css);
 
   await mkdir(path.dirname(outputFile), { recursive: true });
   await writeFile(outputFile, `${minifiedCss}\n`, "utf8");
