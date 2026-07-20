@@ -1,3 +1,17 @@
-import React from 'react';
-const Checkbox = () => <div className='ease-bounceout'>Checkbox</div>;
+import React, { useState } from 'react';
+import './style.css';
+
+const Checkbox = ({ title = "Default Title" }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    return (
+        <div 
+            className="ease-bounceout checkbox-wrapper"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <h2>{title}</h2>
+            <p>Hover status: {isHovered ? "Hovered!" : "Normal"}</p>
+        </div>
+    );
+};
 export default Checkbox;
