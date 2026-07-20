@@ -1,34 +1,68 @@
-# Expandable Floating Action Button (FAB) Menu
+# Expandable Floating Action Button Component
 
-A reusable, pure CSS expandable Floating Action Button (FAB) menu explicitly designed for mobile-first interfaces and dashboards. Integrates effortlessly with EaseMotion CSS animation utilities.
+A modern, highly responsive, accessible, and framework-independent Floating Action Button (FAB) component featuring fluid staggered animations and light/dark theme compatibility.
 
-## Features
+---
 
-- 🚀 **Pure CSS Toggling:** Uses the "checkbox hack" (`<input type="checkbox">` paired with `<label>`) to handle click states, completely eliminating the need for JavaScript.
-- ✨ **Staggered Animations:** Menu items animate upwards seamlessly with staggered delays for a premium feel.
-- ♿ **Keyboard Accessible:** Both the trigger and the expanded items are fully focusable and usable via keyboard navigation. Hidden items are safely removed from the focus order (`visibility: hidden`) until the menu is opened.
-- 📱 **Mobile-First:** Fixed positioning stays perfectly in the bottom-right corner across all device sizes.
-- 🛑 **Prefers-Reduced-Motion:** Automatically disables all staggering, rotation, and scaling animations if a user has reduced motion configured.
+### 1. What does this component do?
 
-## Usage
+This component provides a floating action button fixed to the bottom-right corner of the viewport. When clicked or activated via keyboard, it expands upwards to reveal an interactive menu containing five action buttons (Home, Search, Favorite, Share, Settings). The action buttons feature staggered scale and slide animations, tooltips on hover, and clear visual click logging feedback.
 
-1. Copy the HTML structure from `demo.html` into the `<body>` of your layout.
-2. Include the `style.css` which powers the fixed positioning, checkbox logic, and staggered transitions.
-3. Replace the placeholder icons (`📄`, `📤`, etc.) with SVGs or icon fonts of your choice.
+---
 
-## Customization
+### 2. How is it used?
 
-Easily adjust the FAB colors, sizing, and transition speeds using the CSS variables placed at the top of `style.css`:
+#### Example HTML Usage
 
-```css
-:root {
-  --fab-primary: #3b82f6;
-  --fab-secondary: #ffffff;
-  --fab-size: 56px;
-  --fab-item-size: 48px;
-  --transition-speed: 0.3s;
-}
+Include the structure below in your HTML document:
+
+```html
+<!-- FAB Container -->
+<div class="fab-container" id="fab-container" data-expanded="false">
+  
+  <!-- Primary Toggle Button -->
+  <button 
+    class="fab-trigger" 
+    id="fab-trigger" 
+    type="button"
+    aria-expanded="false" 
+    aria-haspopup="true" 
+    aria-controls="fab-menu" 
+    aria-label="Toggle action menu"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19" stroke-linecap="round"></line>
+      <line x1="5" y1="12" x2="19" y2="12" stroke-linecap="round"></line>
+    </svg>
+  </button>
+
+  <!-- Expandable Menu -->
+  <ul class="fab-menu" id="fab-menu" role="menu" aria-labelledby="fab-trigger">
+    <li class="fab-menu-item" data-item="home" role="none">
+      <button class="btn-action" type="button" role="menuitem" tabindex="-1" data-tooltip="Home" aria-label="Navigate to Home">
+        <!-- SVG Icon -->
+      </button>
+    </li>
+    <li class="fab-menu-item" data-item="search" role="none">
+      <button class="btn-action" type="button" role="menuitem" tabindex="-1" data-tooltip="Search" aria-label="Open Search">
+        <!-- SVG Icon -->
+      </button>
+    </li>
+    <!-- Additional list items for Favorite, Share, and Settings -->
+  </ul>
+</div>
 ```
 
-## Contributed by
-- Man1ac-1773
+Ensure `style.css` is loaded to provide transitions, staggered animation delays, theme variables, and position positioning. Toggling the `data-expanded="true/false"` state on the `.fab-container` will trigger the animations automatically.
+
+---
+
+### 3. Why is it useful?
+
+This component aligns perfectly with EaseMotion CSS's philosophy of offering **lightweight, highly performant, and accessible animated UI components**:
+
+- **Staggered Motion Choreography:** The action items expand and collapse with a fluid CSS delay cascade (`transition-delay`), delivering a highly premium, micro-interactive user experience.
+- **Strict Accessibility Compliance:** Full keyboard navigation support (Enter/Space to toggle, Tab to traverse, and Escape to collapse), dynamic ARIA attribute management (`aria-expanded`, `aria-haspopup`, `aria-controls`), and custom focus outlines that appear only when navigating via keyboard (`:focus-visible`).
+- **No External Dependencies:** Eliminates heavy external icon packages (such as FontAwesome) and utility libraries (such as Tailwind or jQuery) by utilizing standard inline SVG shapes and clean, vanilla web APIs.
+- **Robust responsive scaling:** Adapts cleanly across mobile, tablet, and desktop viewports, altering button touch targets and spacing sizes dynamically without causing layout shifting or overflow.
+- **Built-in Dark Mode:** Built with dynamic CSS custom properties (variables) that seamlessly integrate with light and dark color schemes.
