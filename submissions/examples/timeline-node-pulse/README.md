@@ -1,14 +1,15 @@
 # Timeline Node Pulse
 
-A vertical timeline where the current step uses a pulsing node while completed steps remain static.
+A CSS-only timeline component with completed, active, and pending states plus a pulsing active node.
 
 ## Files
 
-- `demo.html` - ordered timeline markup.
-- `style.css` - timeline cards, active node pulse, and reduced-motion fallback.
+- `demo.html` defines three timeline entries.
+- `style.css` contains the connector line, node states, pulse animation, and responsive spacing.
 
-## Highlights
+## What it demonstrates
 
-- Uses semantic ordered list markup.
-- Keeps the current timeline item visually distinct.
-- Stops the pulse for reduced-motion users.
+- Timeline state styling for workflow progress.
+- Active node emphasis with a repeating pulse animation.
+- Hover scaling for timeline nodes.
+- A compact vertical layout for status views.
