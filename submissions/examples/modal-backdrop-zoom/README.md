@@ -1,14 +1,15 @@
 # Modal Backdrop Zoom
 
-A modal-style overlay preview that combines a soft backdrop fade with a focused dialog zoom.
+A CSS-only modal presentation with a softly zooming backdrop glow and a pop-in dialog entrance.
 
 ## Files
 
-- `demo.html` - preview overlay, backdrop, and dialog markup.
-- `style.css` - backdrop fade, dialog zoom, and reduced-motion handling.
+- `demo.html` contains a static dialog layout with action buttons.
+- `style.css` defines the animated backdrop, modal entrance, button feedback, and mobile action layout.
 
-## Highlights
+## What it demonstrates
 
-- Separates backdrop and dialog motion for a clearer entrance pattern.
-- Keeps the dialog centered in a fixed preview area.
-- Removes animation when reduced motion is requested.
+- Backdrop motion using a radial-gradient pseudo-element.
+- Dialog entrance animation with transform and opacity.
+- Button hover and focus-visible feedback.
+- Responsive modal actions for narrow screens.
