@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Underwater Caustics</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 Underwater Caustics</h1>
+        <p class="subtitle">Light patterns rippling on underwater surfaces</p>
+
+        <div class="caustics-wrapper">
+            <canvas id="causticsCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Ocean</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌊 Rippling light</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('causticsCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let caustics = [];
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = -1000;
+        let mouseY = -1000;
+        let isHovering = false;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#caf0f8'],
+                bg: '#0a1a2e'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#ffe4b5'],
+                bg: '#1a0a0a'
+            },
+            {
+                name: 'Emerald',
+                colors: ['#004d40', '#00695c', '#00897b', '#26a69a', '#4db6ac', '#80cbc4'],
+                bg: '#0a1a0a'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa', '#e0a0ff'],
+                bg: '#0a0a1a'
+            },
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                bg: '#0a0a1a'
+            },
+            {
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff'],
+                bg: '#1a1a2a'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00aa', '#00ff80'],
+                bg: '#0a0a1a'
+            },
+        ];
+
+        // ===== CAUSTIC LIGHT CLASS =====
+        class CausticLight {
+            constructor() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.radius = 20 + Math.random() * 40;
+                this.speed = 0.005 + Math.random() * 0.015;
+                this.angle = Math.random() * Math.PI * 2;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.3 + Math.random() * 0.5;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.intensity = 0.3 + Math.random() * 0.5;
+                this.colorOffset = Math.random() * 0.5;
+                this.shape = Math.random() > 0.5 ? 'circle' : 'irregular';
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.pulseSpeed = 0.01 + Math.random() * 0.02;
+                this.driftX = (Math.random() - 0.5) * 0.2;
+                this.driftY = (Math.random() - 0.5) * 0.2;
+                this.points = [];
+                this.generatePoints();
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            generatePoints() {
+                this.points = [];
+                const numPoints = 6 + Math.floor(Math.random() * 6);
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * Math.PI * 2;
+                    const r = this.radius * (0.5 + 0.5 * Math.sin(angle * 2 + this.phase + Math.random() * 0.3));
+                    this.points.push({
+                        x: Math.cos(angle) * r,
+                        y: Math.sin(angle) * r
+                    });
+                }
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.wobbleSpeed * speed * 5;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+                this.rotation += this.rotSpeed * speed * 10;
+                this.x += this.driftX * speed * 10 + Math.sin(this.phase + time * 0.01) * 0.1;
+                this.y += this.driftY * speed * 10 + Math.cos(this.phase * 0.7 + time * 0.01) * 0.1;
+                this.intensity = 0.3 + 0.4 * this.pulse;
+
+                // Boundary
+                const w = canvas.width;
+                const h = canvas.height;
+                const margin = 20;
+                if (this.x < margin) this.x = margin;
+                if (this.x > w - margin) this.x = w - margin;
+                if (this.y < margin) this.y = margin;
+                if (this.y > h - margin) this.y = h - margin;
+
+                if (this.age > this.maxLife) {
+                    this.reset();
+                }
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.radius = 20 + Math.random() * 40;
+                this.phase = Math.random() * Math.PI * 2;
+                this.colorOffset = Math.random() * 0.5;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+                this.generatePoints();
+            }
+
+            draw(ctx, time) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+
+                const size = this.radius * (0.7 + 0.3 * this.pulse) * this.life;
+                const alpha = this.intensity * this.life * 0.6;
+
+                // Inner glow
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 2);
+                grad.addColorStop(0, color + '40');
+                grad.addColorStop(0.5, color + '20');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                // Main shape
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.scale(1 + 0.2 * Math.sin(this.phase), 1 + 0.2 * Math.cos(this.phase * 0.7));
+
+                ctx.beginPath();
+                for (let i = 0; i < this.points.length; i++) {
+                    const p = this.points[i];
+                    const wobble = 1 + 0.1 * Math.sin(this.phase + i);
+                    const x = p.x * wobble * (0.5 + 0.5 * this.pulse);
+                    const y = p.y * wobble * (0.5 + 0.5 * this.pulse);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+
+                // Fill with gradient
+                const grad2 = ctx.createRadialGradient(-size * 0.2, -size * 0.2, 0, 0, 0, size);
+                grad2.addColorStop(0, color + '60');
+                grad2.addColorStop(0.5, color + '40');
+                grad2.addColorStop(1, color + '20');
+                ctx.fillStyle = grad2;
+                ctx.globalAlpha = alpha * 0.8;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Edge glow
+                ctx.strokeStyle = color + '40';
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Bright center
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+                ctx.restore();
+
+                // Distortion effect (light rays)
+                if (this.intensity > 0.5) {
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i / 3) * Math.PI * 2 + this.rotation + time * 0.01;
+                        const dist = size * (0.5 + 0.5 * this.pulse);
+                        const x2 = this.x + Math.cos(angle) * dist;
+                        const y2 = this.y + Math.sin(angle) * dist;
+                        ctx.beginPath();
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = color;
+                        ctx.globalAlpha = alpha * 0.05;
+                        ctx.lineWidth = 1;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = color + '20';
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const palette = colorPalettes[colorMode];
+            const bgColor = palette.bg;
+
+            // Deep water gradient
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, bgColor);
+            grad.addColorStop(0.5, bgColor);
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle water texture
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3 + time * 0.001) * 30) % w;
+                const y = (i * 23 + Math.cos(i * 0.5 + time * 0.002) * 20) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.01 + Math.sin(i + time * 0.005) * 0.01})`;
+                ctx.fill();
+            }
+
+            // Water surface light rays
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.003 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 30, h);
+                grad2.addColorStop(0, 'rgba(200, 230, 255, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(200, 230, 255, 0.04)');
+                grad2.addColorStop(1, 'rgba(200, 230, 255, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 30, h);
+            }
+        }
+
+        // ===== INIT CAUSTICS =====
+        function initCaustics(count) {
+            caustics = [];
+            for (let i = 0; i < count; i++) {
+                caustics.push(new CausticLight());
+            }
+        }
+        initCaustics(30);
+
+        // ===== RESET =====
+        function resetCaustics() {
+            initCaustics(30);
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌊 Rippling light';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update caustics
+            for (const c of caustics) {
+                c.update(time, speed);
+            }
+
+            // Remove dead caustics and spawn new ones
+            caustics = caustics.filter(c => !c.isDead());
+            while (caustics.length < 30) {
+                caustics.push(new CausticLight());
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw caustics (sorted by intensity for depth)
+            caustics.sort((a, b) => a.intensity - b.intensity);
+            for (const c of caustics) {
+                c.draw(ctx, time);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌊 ${caustics.length} light patterns • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌊 Rippling light';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌊 Rippling light';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetCaustics);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle pause not implemented
+            }
+        });
+
+        // ===== MOUSE INTERACTION =====
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initCaustics(30);
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌊 Rippling light';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🌊 Underwater Caustics loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>
