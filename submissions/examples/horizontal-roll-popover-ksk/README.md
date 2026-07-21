@@ -32,4 +32,4 @@ Full set of custom properties:
 Provides a distinctive, directional popover entrance that feels physically grounded — the roll rotation gives the card a sense of momentum as it slides open. Zero JavaScript required.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46636.*
+*Created for GSSoC-26 — Resolves #46636.*

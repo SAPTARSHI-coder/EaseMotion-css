@@ -22,4 +22,4 @@ Pair `<input class="ease-tech-toggle">` + `.ease-tech-wrap` with a `.ease-tech-t
 Provides an inline API reference popover pattern — no page navigation required. The thin draw-border and monospace typography signal "developer tool" while the clip-path animation keeps the interaction feeling modern and intentional. Three colour themes (green, blue, purple) ship ready to use.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46751.*
+*Created for GSSoC-26 — Resolves #46751.*

@@ -39,4 +39,4 @@ Full custom property set:
 Delivers an animated plan-detail popover perfect for SaaS pricing pages — the draw-border effect draws the eye to the selected plan while the feature list inside lets users compare plans without leaving the page. Three colour themes (green, purple, amber) ship ready-to-use.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #46747.*
+*Created for GSSoC-26 — Resolves #46747.*

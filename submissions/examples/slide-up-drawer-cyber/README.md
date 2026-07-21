@@ -61,4 +61,4 @@ You can configure color accents and transitions directly inside parent container
 | `--cyber-neon-yellow` | Alert warning yellow stripes | `#ffee00` |
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/slide-up-drawer-cyber/*
+*Created as a submission for GSSOC-26  under submissions/examples/slide-up-drawer-cyber/*

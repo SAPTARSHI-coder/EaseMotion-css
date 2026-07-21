@@ -10,4 +10,4 @@ Nest the `.calendar-card` dashboard widget inside a `.calendar-perspective` fram
 It showcases advanced CSS-only 3D transforms (`transform-style: preserve-3d`) and Z-axis elevation changes, providing a premium SaaS component layout.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #42204.*
+*Created for GSSoC-26 — Resolves #42204.*

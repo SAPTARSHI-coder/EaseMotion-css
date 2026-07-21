@@ -10,4 +10,4 @@ Place `.tw-card` items inside a `.tw-gallery` grid. Each `.tw-title` uses CSS cu
 Provides a polished, attention-directing gallery reveal pattern with zero JavaScript — using CSS `steps()` timing, `overflow: hidden`, and `border-right` cursor blinking to simulate realistic character-by-character typing.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41495.*
+*Created for GSSoC-26 — Resolves #41495.*
