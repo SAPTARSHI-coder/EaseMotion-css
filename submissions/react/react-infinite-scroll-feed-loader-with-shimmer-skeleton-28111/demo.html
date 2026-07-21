@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Infinite Scroll Feed Loader Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f1f5f9;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      padding: 2rem 1rem;
+    }
+
+    .demo-wrapper {
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .demo-header {
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .demo-header h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+    }
+
+    .demo-header p {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback } = React;
+
+    /* ── Mock data generator ── */
+    const POSTS = [
+      { emoji:'🚀', color:'#dbeafe', category:'Tech',     authorColor:'#3b82f6', title:'The Future of WebAssembly in 2026',           description:'WebAssembly is reshaping browser performance. Here\'s what developers need to know about WASM 2.0 and its new capabilities.',      author:'Alex Rivera',  date:'Jul 2, 2026', readTime:'5 min read' },
+      { emoji:'🎨', color:'#fce7f3', category:'Design',   authorColor:'#ec4899', title:'Micro-Interactions That Delight Users',         description:'Small animations and feedback loops that make interfaces feel alive. A deep dive into the psychology of motion design.',                 author:'Sara Chen',    date:'Jul 1, 2026', readTime:'7 min read' },
+      { emoji:'🌿', color:'#dcfce7', category:'Nature',   authorColor:'#10b981', title:'How Cities Are Going Green in 2026',            description:'Urban forests, vertical gardens and solar-powered microgrids — the green city revolution is accelerating faster than expected.',        author:'Leo Martin',   date:'Jun 30, 2026', readTime:'4 min read' },
+      { emoji:'🎵', color:'#ede9fe', category:'Music',    authorColor:'#8b5cf6', title:'AI-Generated Music: Threat or Tool?',           description:'Artists weigh in on whether generative AI is killing creativity or opening entirely new frontiers of sonic experimentation.',          author:'Mia Johnson',  date:'Jun 29, 2026', readTime:'6 min read' },
+      { emoji:'📊', color:'#fef9c3', category:'Finance',  authorColor:'#f59e0b', title:'Understanding Quantum Finance',                 description:'Quantum computing is entering the financial sector. Portfolio optimisation at quantum speed could redefine hedge fund strategy.',       author:'Tom Brooks',   date:'Jun 28, 2026', readTime:'8 min read' },
+      { emoji:'🏔️', color:'#e0f2fe', category:'Travel',   authorColor:'#0ea5e9', title:'Solo Trekking the Himalayas in 2026',           description:'A first-person account of a 21-day solo trek across the Annapurna Circuit with nothing but a backpack and a satellite phone.',        author:'Priya Das',    date:'Jun 27, 2026', readTime:'10 min read' },
+      { emoji:'🧬', color:'#fef2f2', category:'Science',  authorColor:'#ef4444', title:'CRISPR Breakthrough: Editing Without Cuts',      description:'Scientists have achieved base editing at unprecedented precision. What this means for treating inherited genetic diseases.',            author:'Dr. Wu Lei',   date:'Jun 26, 2026', readTime:'9 min read' },
+      { emoji:'🤖', color:'#f0fdf4', category:'AI',       authorColor:'#22c55e', title:'Agents Are Eating Software',                    description:'Autonomous AI agents are moving from demos to production. We examine 5 real deployments and what engineers learned from each.',        author:'Nina Patel',   date:'Jun 25, 2026', readTime:'7 min read' },
+      { emoji:'☕', color:'#fdf4ff', category:'Lifestyle', authorColor:'#a855f7', title:'The Science of the Perfect Morning Routine',    description:'Chronobiology meets habit design: research-backed strategies to optimise your first 90 minutes and sustain peak energy all day.',      author:'Jake Wilson',  date:'Jun 24, 2026', readTime:'5 min read' },
+      { emoji:'🎮', color:'#fff7ed', category:'Gaming',   authorColor:'#f97316', title:'How Indie Games Are Winning 2026',              description:'With AAA studios stumbling, indie developers are capturing hearts and wallets. We look at five breakout hits and what made them click.', author:'Zoe Kim',      date:'Jun 23, 2026', readTime:'6 min read' },
+      { emoji:'🌊', color:'#ecfeff', category:'Climate',  authorColor:'#06b6d4', title:'Ocean Heat Records Broken — Again',             description:'New NOAA data shows the Atlantic has hit thermal records for the third consecutive quarter. Climate scientists explain the cascade.',   author:'Dr. Ana Cruz', date:'Jun 22, 2026', readTime:'8 min read' },
+      { emoji:'📱', color:'#fafafa', category:'Tech',     authorColor:'#6366f1', title:'Foldable Phones Have Finally Grown Up',         description:'After years of niche appeal, foldable form factors are hitting mainstream adoption. Here\'s what changed and who\'s winning.',          author:'Carlos Vega',  date:'Jun 21, 2026', readTime:'5 min read' },
+    ];
+
+    /* ── Shimmer Skeleton ── */
+    const SkeletonCard = () => (
+      <div className="ease-feed-card ease-feed-skeleton">
+        <div className="ease-feed-skeleton-img" />
+        <div className="ease-feed-skeleton-body">
+          <div className="ease-feed-skeleton-line ease-feed-skeleton-line--title" />
+          <div className="ease-feed-skeleton-line ease-feed-skeleton-line--sub" />
+          <div className="ease-feed-skeleton-line ease-feed-skeleton-line--sub ease-feed-skeleton-line--short" />
+          <div className="ease-feed-skeleton-meta">
+            <div className="ease-feed-skeleton-avatar" />
+            <div className="ease-feed-skeleton-line ease-feed-skeleton-line--name" />
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ── Real Feed Card ── */
+    const FeedCard = ({ item, index }) => (
+      <div className="ease-feed-card ease-feed-card--real" style={{ animationDelay: `${index * 60}ms` }}>
+        <div className="ease-feed-img" style={{ background: item.color }}>
+          <span className="ease-feed-emoji">{item.emoji}</span>
+        </div>
+        <div className="ease-feed-body">
+          <span className="ease-feed-category">{item.category}</span>
+          <h2 className="ease-feed-title">{item.title}</h2>
+          <p className="ease-feed-desc">{item.description}</p>
+          <div className="ease-feed-meta">
+            <div className="ease-feed-avatar" style={{ background: item.authorColor }}>{item.author[0]}</div>
+            <div className="ease-feed-meta-info">
+              <span className="ease-feed-author">{item.author}</span>
+              <span className="ease-feed-date">{item.date}</span>
+            </div>
+            <span className="ease-feed-read">{item.readTime}</span>
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ── End of feed ── */
+    const EndOfFeed = () => (
+      <div className="ease-feed-end">
+        <span className="ease-feed-end-icon">✦</span>
+        <p className="ease-feed-end-text">You've reached the end</p>
+      </div>
+    );
+
+    /* ── Fake async fetch ── */
+    const fakeFetch = (page, pageSize) =>
+      new Promise((resolve) => {
+        setTimeout(() => {
+          const start = (page - 1) * pageSize;
+          const slice = POSTS.slice(start, start + pageSize).map((p, i) => ({
+            ...p,
+            id: `post-${start + i}`,
+          }));
+          resolve(slice);
+        }, 1200); // 1.2s simulated network delay
+      });
+
+    /* ── InfiniteScrollFeed ── */
+    const InfiniteScrollFeed = ({ fetchItems, pageSize = 4, skeletonCount = 3 }) => {
+      const [items, setItems]     = useState([]);
+      const [page, setPage]       = useState(1);
+      const [loading, setLoading] = useState(false);
+      const [hasMore, setHasMore] = useState(true);
+      const sentinelRef           = useRef(null);
+      const loadingRef            = useRef(false);
+      const pageRef               = useRef(1);
+
+      const load = useCallback(async () => {
+        if (loadingRef.current) return;
+        loadingRef.current = true;
+        setLoading(true);
+        try {
+          const newItems = await fetchItems(pageRef.current, pageSize);
+          setItems(prev => [...prev, ...newItems]);
+          if (newItems.length < pageSize) { setHasMore(false); }
+          else { pageRef.current += 1; setPage(p => p + 1); }
+        } finally {
+          setLoading(false);
+          loadingRef.current = false;
+        }
+      }, [fetchItems, pageSize]);
+
+      useEffect(() => { load(); }, []);
+
+      useEffect(() => {
+        const el = sentinelRef.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+          ([entry]) => { if (entry.isIntersecting && !loadingRef.current) load(); },
+          { rootMargin: '200px' }
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+      }, [load, hasMore]);
+
+      return (
+        <div className="ease-feed-root">
+          {items.map((item, i) => <FeedCard key={item.id} item={item} index={i % pageSize} />)}
+          {loading && Array.from({ length: skeletonCount }).map((_, i) => <SkeletonCard key={`sk-${i}`} />)}
+          {hasMore && !loading && <div ref={sentinelRef} className="ease-feed-sentinel" />}
+          {!hasMore && !loading && <EndOfFeed />}
+        </div>
+      );
+    };
+
+    /* ── App ── */
+    const App = () => (
+      <div className="demo-wrapper">
+        <div className="demo-header">
+          <h1>EaseMotion Feed</h1>
+          <p>Scroll down to load more articles — shimmer skeletons appear during fetch</p>
+        </div>
+        <InfiniteScrollFeed fetchItems={fakeFetch} pageSize={4} skeletonCount={3} />
+      </div>
+    );
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

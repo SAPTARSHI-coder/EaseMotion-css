@@ -1,0 +1,497 @@
+name: React & SCSS Submission Validator
+
+# ─────────────────────────────────────────────────────────────────────────────
+# This workflow handles ALL pull requests that touch the submissions/react/ or
+# submissions/scss/ directories.
+#
+# When it detects a React/SCSS PR it:
+#   1. Prevents the plain HTML autoresponder from applying (by running first
+#      and setting a gate output — the HTML validator skips PRs already handled)
+#   2. Enforces the React/SCSS submission rules:
+#        • PR must ONLY add files under submissions/react/ or submissions/scss/
+#        • No editing or deleting existing files
+#        • No modifications to any other directory
+#        • Required file structure (see below)
+#        • No generic spam / empty / copy-paste content
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  detect-react-scss:
+    name: Detect React/SCSS PR
+    runs-on: ubuntu-latest
+    outputs:
+      is_react_scss: ${{ steps.detect.outputs.is_react_scss }}
+      tracks: ${{ steps.detect.outputs.tracks }}
+    steps:
+      - name: Detect if PR touches submissions/react/ or submissions/scss/
+        id: detect
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          has_react=false
+          has_scss=false
+
+          while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            if [[ "$file" =~ ^submissions/react/ ]]; then has_react=true; fi
+            if [[ "$file" =~ ^submissions/scss/ ]];  then has_scss=true;  fi
+          done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
+
+          if [ "$has_react" = "true" ] || [ "$has_scss" = "true" ]; then
+            echo "is_react_scss=true" >> $GITHUB_OUTPUT
+            tracks=""
+            [ "$has_react" = "true" ] && tracks="react"
+            [ "$has_scss"  = "true" ] && tracks="$tracks scss"
+            echo "tracks=$tracks" >> $GITHUB_OUTPUT
+            echo "✅ React/SCSS PR detected. Tracks: $tracks"
+          else
+            echo "is_react_scss=false" >> $GITHUB_OUTPUT
+            echo "tracks=" >> $GITHUB_OUTPUT
+            echo "ℹ️ Not a React/SCSS PR. Skipping."
+          fi
+
+  validate-react-scss:
+    name: Validate React/SCSS Submission
+    needs: detect-react-scss
+    if: needs.detect-react-scss.outputs.is_react_scss == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Fetch PR submissions
+        run: |
+          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr-branch
+          git checkout pr-branch -- submissions 2>/dev/null || true
+
+      - name: Validate React/SCSS Submission
+        id: validate
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            const fs   = require('fs');
+            const path = require('path');
+
+            const WORKSPACE = process.env.GITHUB_WORKSPACE || '';
+            const PR_NUM    = context.payload.pull_request.number;
+            const PR_AUTHOR = context.payload.pull_request.user.login;
+
+            // ── 1. Fetch all changed files ─────────────────────────────────
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: PR_NUM,
+            });
+
+            const failures  = [];
+            const successes = [];
+
+            // ── 2. Check for forbidden changes ─────────────────────────────
+            const forbidden = [];
+            const outsideReactScss = [];
+
+            for (const file of files) {
+              if (!file.filename.startsWith('submissions/react/') &&
+                  !file.filename.startsWith('submissions/scss/')) {
+                outsideReactScss.push(file.filename);
+              }
+              if (file.status !== 'added') {
+                forbidden.push(file.filename);
+              }
+            }
+
+            if (outsideReactScss.length > 0) {
+              failures.push({
+                rule: 'Out-of-scope files',
+                errors: [
+                  `This PR modifies files outside \`submissions/react/\` and \`submissions/scss/\`.`,
+                  `Affected files: ${outsideReactScss.join(', ')}`,
+                  `React and SCSS submissions **must only** add files under:`,
+                  `- \`submissions/react/your-component-name/\``,
+                  `- \`submissions/scss/your-mixin-name/\``,
+                ]
+              });
+            }
+
+            if (forbidden.length > 0) {
+              failures.push({
+                rule: 'Code integrity violation',
+                errors: [
+                  `You are **not allowed** to edit or delete existing files.`,
+                  `Only new file additions are permitted.`,
+                  `Modified/deleted files: ${forbidden.join(', ')}`,
+                ]
+              });
+            }
+
+            // ── 3. Identify submission folders ─────────────────────────────
+            const reactFolders = new Set();
+            const scssFolders  = new Set();
+
+            for (const file of files) {
+              if (file.status === 'removed') continue;
+              const parts = file.filename.split('/');
+              if (parts[0] === 'submissions' && parts.length >= 3) {
+                const track  = parts[1];
+                const folder = `${parts[0]}/${parts[1]}/${parts[2]}`;
+                // FIX: Do NOT rely on fs.existsSync — for fork PRs the checkout may
+                // fail silently, leaving the folder absent on disk even though the
+                // contributor did add files correctly. Use the API data instead.
+                if (track === 'react') reactFolders.add(folder);
+                if (track === 'scss')  scssFolders.add(folder);
+              }
+            }
+
+            if (reactFolders.size === 0 && scssFolders.size === 0) {
+              failures.push({
+                rule: 'Missing submission folder',
+                errors: [
+                  'No valid submission folder found under `submissions/react/` or `submissions/scss/`.',
+                  'Create a folder like `submissions/react/your-component-name/` and add your files inside it.',
+                ]
+              });
+            }
+
+            // ── 4. Per-folder quality checks — React ───────────────────────
+            for (const folder of reactFolders) {
+              const folderErrors = [];
+              const present      = [];
+
+              const folderDisk = path.join(WORKSPACE, folder);
+              // FIX: Fall back to PR file list from API if disk checkout failed (fork PRs)
+              const allFilesFromApi = files
+                .filter(f => f.filename.startsWith(folder + '/') && f.status !== 'removed')
+                .map(f => path.basename(f.filename));
+              const allFiles = fs.existsSync(folderDisk)
+                ? fs.readdirSync(folderDisk, { withFileTypes: true })
+                    .filter(e => e.isFile())
+                    .map(e => e.name)
+                : allFilesFromApi;
+
+              const hasJsx    = allFiles.some(f => f.endsWith('.jsx') || f.endsWith('.tsx'));
+              const hasReadme = allFiles.some(f => f.toLowerCase() === 'readme.md');
+              const hasStyle  = allFiles.some(f => f.endsWith('.css') || f.endsWith('.scss'));
+
+              if (!hasJsx) {
+                folderErrors.push('Missing a `.jsx` or `.tsx` file. Every React submission must include at least one React component file.');
+              } else {
+                present.push('✅ React component file (.jsx/.tsx)');
+                for (const f of allFiles.filter(f => f.endsWith('.jsx') || f.endsWith('.tsx'))) {
+                  let content = '';
+                  try {
+                    content = fs.readFileSync(path.join(WORKSPACE, folder, f), 'utf8');
+                  } catch (err) {
+                    folderErrors.push(`Failed to read \`${f}\` from disk: ${err.message}`);
+                    continue;
+                  }
+                  const nonEmpty = content.split(/\r?\n/).filter(l => l.trim() !== '').length;
+                  if (content.trim().length === 0) {
+                    folderErrors.push(`\`${f}\` is completely empty. You must provide a real React component.`);
+                  } else if (nonEmpty < 5) {
+                    folderErrors.push(`\`${f}\` has only ${nonEmpty} non-empty lines. A real component needs at least 5 lines.`);
+                  }
+                }
+              }
+
+              if (!hasReadme) {
+                folderErrors.push('Missing `README.md`. Please add a brief description of your component, its props, and usage example.');
+              } else {
+                const readmeName = allFiles.find(f => f.toLowerCase() === 'readme.md');
+                let readmeContent = '';
+                try {
+                  readmeContent = fs.readFileSync(path.join(WORKSPACE, folder, readmeName), 'utf8');
+                } catch (err) {
+                  folderErrors.push(`Failed to read README.md from disk: ${err.message}`);
+                }
+                if (readmeContent.trim().length < 50) {
+                  folderErrors.push('`README.md` is too short (less than 50 characters). Add a real description with usage instructions.');
+                } else {
+                  present.push('✅ README.md');
+                }
+              }
+
+              if (hasStyle) present.push('✅ CSS/SCSS stylesheet');
+
+              if (folderErrors.length > 0) {
+                failures.push({ rule: `React folder: \`${folder}\``, errors: folderErrors });
+              } else {
+                successes.push({ folder, present, track: 'react' });
+              }
+            }
+
+            // ── 5. Per-folder quality checks — SCSS ────────────────────────
+            for (const folder of scssFolders) {
+              const folderErrors = [];
+              const present      = [];
+
+              const folderDisk = path.join(WORKSPACE, folder);
+              // FIX: Fall back to PR file list from API if disk checkout failed (fork PRs)
+              const allFilesFromApiScss = files
+                .filter(f => f.filename.startsWith(folder + '/') && f.status !== 'removed')
+                .map(f => path.basename(f.filename));
+              const allFiles = fs.existsSync(folderDisk)
+                ? fs.readdirSync(folderDisk, { withFileTypes: true })
+                    .filter(e => e.isFile())
+                    .map(e => e.name)
+                : allFilesFromApiScss;
+
+              const hasScss   = allFiles.some(f => f.endsWith('.scss'));
+              const hasReadme = allFiles.some(f => f.toLowerCase() === 'readme.md');
+
+              if (!hasScss) {
+                folderErrors.push('Missing a `.scss` file. Every SCSS submission must include at least one `.scss` partial or mixin file.');
+              } else {
+                for (const f of allFiles.filter(f => f.endsWith('.scss'))) {
+                  let content = '';
+                  try {
+                    content = fs.readFileSync(path.join(WORKSPACE, folder, f), 'utf8');
+                  } catch (err) {
+                    folderErrors.push(`Failed to read \`${f}\` from disk: ${err.message}`);
+                    continue;
+                  }
+                  const nonEmpty = content.split(/\r?\n/).filter(l => l.trim() !== '').length;
+                  if (content.trim().length === 0) {
+                    folderErrors.push(`\`${f}\` is completely empty. You must provide real SCSS code.`);
+                  } else if (nonEmpty < 3) {
+                    folderErrors.push(`\`${f}\` has only ${nonEmpty} non-empty lines. A real SCSS partial needs at least 3 lines.`);
+                  } else {
+                    present.push(`✅ ${f}`);
+                  }
+                }
+              }
+
+              if (!hasReadme) {
+                folderErrors.push('Missing `README.md`. Please add a description of the mixin/partial, its parameters, and a usage example.');
+              } else {
+                const readmeName = allFiles.find(f => f.toLowerCase() === 'readme.md');
+                let readmeContent = '';
+                try {
+                  readmeContent = fs.readFileSync(path.join(WORKSPACE, folder, readmeName), 'utf8');
+                } catch (err) {
+                  folderErrors.push(`Failed to read README.md from disk: ${err.message}`);
+                }
+                if (readmeContent.trim().length < 50) {
+                  folderErrors.push('`README.md` is too short. Add a real description with a `@include` usage example.');
+                } else {
+                  present.push('✅ README.md');
+                }
+              }
+
+              if (folderErrors.length > 0) {
+                failures.push({ rule: `SCSS folder: \`${folder}\``, errors: folderErrors });
+              } else {
+                successes.push({ folder, present, track: 'scss' });
+              }
+            }
+
+            // ── 6. Output results ──────────────────────────────────────────
+            core.setOutput('failures',    JSON.stringify(failures));
+            core.setOutput('successes',   JSON.stringify(successes));
+            core.setOutput('hasFailures', failures.length > 0 ? 'true' : 'false');
+            core.setOutput('prAuthor',    PR_AUTHOR);
+
+            if (failures.length > 0) {
+              console.log(`❌ Validation failed: ${failures.length} issue(s)`);
+              core.setFailed('React/SCSS submission does not meet requirements.');
+            } else {
+              console.log(`✅ All ${successes.length} folder(s) validated successfully.`);
+            }
+
+      - name: Post Failure Comment
+        if: failure() && steps.validate.outputs.hasFailures == 'true'
+        uses: actions/github-script@v7
+        env:
+          FAILURES_JSON: ${{ steps.validate.outputs.failures }}
+          TRACKS: ${{ needs.detect-react-scss.outputs.tracks }}
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            const failures = JSON.parse(process.env.FAILURES_JSON);
+            const tracks   = process.env.TRACKS;
+            const prAuthor = context.payload.pull_request.user.login;
+
+            let body = `## ❌ React/SCSS Submission Validation Failed\n\n`;
+            body += `Hey @${prAuthor}! 👋 Thank you for contributing to the React/SCSS track.\n\n`;
+            body += `Your PR was checked against the **React & SCSS contribution rules** and found the following issues:\n\n`;
+
+            for (const fail of failures) {
+              body += `### 🔴 ${fail.rule}\n`;
+              for (const err of fail.errors) {
+                body += `- ❌ ${err}\n`;
+              }
+              body += `\n`;
+            }
+
+            if (tracks.includes('react')) {
+              body += `---\n### ⚛️ Required Structure for React Submissions\n`;
+              body += `\`\`\`\n`;
+              body += `submissions/react/your-component-name/\n`;
+              body += `├── YourComponent.jsx   ← Your React component (required)\n`;
+              body += `├── style.css           ← CSS styles (optional but encouraged)\n`;
+              body += `└── README.md           ← Description, props table, and usage example (required)\n`;
+              body += `\`\`\`\n\n`;
+              body += `**Rules:**\n`;
+              body += `- Component file must be a real, working React component\n`;
+              body += `- Must use EaseMotion CSS classes (e.g. \`ease-fade-in\`, \`ease-hover-lift\`)\n`;
+              body += `- No editing existing files, no deletions\n`;
+              body += `- Only add files inside \`submissions/react/\`\n\n`;
+            }
+
+            if (tracks.includes('scss')) {
+              body += `---\n### 💅 Required Structure for SCSS Submissions\n`;
+              body += `\`\`\`\n`;
+              body += `submissions/scss/your-mixin-name/\n`;
+              body += `├── _your-mixin.scss    ← Your SCSS partial/mixin (required)\n`;
+              body += `└── README.md           ← Description, parameters, and @include example (required)\n`;
+              body += `\`\`\`\n\n`;
+              body += `**Rules:**\n`;
+              body += `- SCSS file must contain real, working SCSS code\n`;
+              body += `- No editing existing files, no deletions\n`;
+              body += `- Only add files inside \`submissions/scss/\`\n\n`;
+            }
+
+            body += `---\n### 📝 How to Fix\n`;
+            body += `1. Fix the issues listed above\n`;
+            body += `2. Push the corrected files to your branch\n`;
+            body += `3. This validator will re-run automatically\n\n`;
+            body += `📖 Questions? See [CONTRIBUTING.md](https://github.com/${context.repo.owner}/${context.repo.repo}/blob/main/CONTRIBUTING.md) or ask on our [Discord](https://discord.gg/hWSdGrccBU).\n`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('React/SCSS Submission Validation')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }
+
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: ['invalid-submission', 'needs-files'],
+              });
+            } catch(e) { console.log('Could not add labels:', e.message); }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: 'closed',
+            });
+
+      - name: Post Success Comment
+        if: success() && steps.validate.outputs.hasFailures == 'false'
+        uses: actions/github-script@v7
+        env:
+          SUCCESSES_JSON: ${{ steps.validate.outputs.successes }}
+          TRACKS: ${{ needs.detect-react-scss.outputs.tracks }}
+        with:
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
+          script: |
+            const successes = JSON.parse(process.env.SUCCESSES_JSON);
+            const tracks    = process.env.TRACKS;
+            const prAuthor  = context.payload.pull_request.user.login;
+
+            let body = `## ✅ React/SCSS Submission Validated!\n\n`;
+            body += `Great work @${prAuthor}! 🎉 Your ${tracks.trim()} submission passed all quality checks.\n\n`;
+
+            for (const s of successes) {
+              const icon = s.track === 'react' ? '⚛️' : '💅';
+              body += `### ${icon} Folder: \`${s.folder}\`\n`;
+              for (const p of s.present) body += `- ${p}\n`;
+              body += `\n`;
+            }
+
+            body += `### 🚀 What happens next?\n`;
+            body += `- A maintainer will review your ${tracks.includes('react') ? 'React component' : 'SCSS partial'}\n`;
+            body += `- Respond promptly to any feedback\n`;
+            body += `- Once approved, it will be merged into \`main\`!\n\n`;
+            body += `Thank you for contributing to EaseMotion CSS! ⚡\n`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+            });
+
+            const existing = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('React/SCSS Submission Validation')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }
+
+            try {
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+              });
+              const toRemove = ['invalid-submission', 'needs-files', 'spam', 'gssoc:invalid'];
+              for (const label of labels) {
+                if (toRemove.includes(label.name)) {
+                  await github.rest.issues.removeLabel({
+                    owner: context.repo.owner,
+                    repo:  context.repo.repo,
+                    issue_number: context.payload.pull_request.number,
+                    name: label.name,
+                  });
+                }
+              }
+              const trackLabels = [];
+              if (process.env.TRACKS.includes('react')) trackLabels.push('react');
+              if (process.env.TRACKS.includes('scss'))  trackLabels.push('scss');
+              if (trackLabels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  labels: trackLabels,
+                });
+              }
+            } catch(e) { console.log('Label update error:', e.message); }

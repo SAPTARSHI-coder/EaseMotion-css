@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crystal Ball Glow</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 Crystal Ball Glow</h1>
+        <p class="subtitle">Floating orb with swirling mist inside</p>
+
+        <div class="crystal-wrapper">
+            <canvas id="crystalCanvas"></canvas>
+
+            <div class="controls">
+                <button id="glowBtn">✨ Glow</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🔮 Mystical energies</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('crystalCanvas');
+        const ctx = canvas.getContext('2d');
+        const glowBtn = document.getElementById('glowBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let mistParticles = [];
+        let glowParticles = [];
+        let sparkles = [];
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let glowIntensity = 0;
+        let targetGlow = 0;
+        let isGlowing = false;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                glow: '#ffd93d'
+            },
+            {
+                name: 'Mystic',
+                colors: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                glow: '#a78bfa'
+            },
+            {
+                name: 'Fire',
+                colors: ['#ff6b00', '#ff4500', '#ff8c00', '#ffa500', '#ffcc00'],
+                glow: '#ff6b00'
+            },
+            {
+                name: 'Ice',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                glow: '#48cae4'
+            },
+            {
+                name: 'Gold',
+                colors: ['#d4a02a', '#c4901a', '#b4800a', '#a4700a', '#94600a'],
+                glow: '#ffd700'
+            },
+            {
+                name: 'Nature',
+                colors: ['#2d7d46', '#3a8a55', '#4a9a65', '#5aaa75', '#6aba8a'],
+                glow: '#6aba8a'
+            },
+        ];
+
+        // ===== HSL TO RGB HELPER =====
+        function hslToRgb(h, s, l) {
+            h = h / 360;
+            s = s / 100;
+            l = l / 100;
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        function getMistColor(offset, alpha) {
+            const hue = (offset * 360 + time * 20) % 360;
+            const [r, g, b] = hslToRgb(hue, 80, 70);
+            return `rgba(${r}, ${g}, ${b}, ${alpha || 0.6})`;
+        }
+
+        // ===== MIST PARTICLE CLASS =====
+        class MistParticle {
+            constructor() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) * 0.25;
+                
+                this.angle = Math.random() * Math.PI * 2;
+                this.distance = Math.random() * radius * 1.2;
+                this.speed = 0.003 + Math.random() * 0.01;
+                this.size = 4 + Math.random() * 10;
+                this.phase = Math.random() * Math.PI * 2;
+                this.alpha = 0.4 + Math.random() * 0.5;
+                this.wobble = 0.3 + Math.random() * 0.6;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.colorOffset = Math.random();
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.x = 0;
+                this.y = 0;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.angle += this.speed * speed * 10;
+                this.phase += this.wobbleSpeed * speed * 5;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const radius = Math.min(canvas.width, canvas.height) * 0.25;
+                const dist = this.distance * (0.7 + 0.3 * Math.sin(this.phase + time * 0.01));
+
+                this.x = cx + Math.cos(this.angle + time * 0.001) * dist + Math.sin(this.phase + time * 0.01) * this.wobble * 2;
+                this.y = cy + Math.sin(this.angle + time * 0.001) * dist * 0.8 + Math.cos(this.phase * 0.7 + time * 0.01) * this.wobble * 2;
+
+                if (this.age > this.maxLife) {
+                    this.reset();
+                }
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) * 0.25;
+                
+                this.angle = Math.random() * Math.PI * 2;
+                this.distance = Math.random() * radius * 1.2;
+                this.speed = 0.003 + Math.random() * 0.01;
+                this.size = 4 + Math.random() * 10;
+                this.phase = Math.random() * Math.PI * 2;
+                this.alpha = 0.4 + Math.random() * 0.5;
+                this.wobble = 0.3 + Math.random() * 0.6;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.colorOffset = Math.random();
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+                this.pulse = 0.5 + Math.random() * 0.5;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const size = this.size * (0.6 + 0.4 * this.pulse) * this.life;
+                const alpha = this.alpha * this.life * (0.6 + 0.4 * this.pulse);
+                const color = getMistColor(this.colorOffset, alpha * 0.9);
+
+                // Glow
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 3);
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.6, color);
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.8;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 0.7, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.9;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== GLOW PARTICLE CLASS =====
+        class GlowParticle {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 80;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 80;
+                this.size = 1 + Math.random() * 3;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 40;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.distance = 0;
+                this.maxDistance = 20 + Math.random() * 30;
+                this.angle = Math.random() * Math.PI * 2;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.speed = 0.5 + Math.random() * 0.5;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.distance += this.speed * speed * 5;
+                this.angle += 0.02 * speed * 10;
+                if (this.distance > this.maxDistance) {
+                    this.distance = this.maxDistance;
+                }
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+                this.x += Math.cos(this.angle) * 0.1 * speed * 10;
+                this.y += Math.sin(this.angle) * 0.1 * speed * 10;
+                this.phase += 0.01 * speed * 10;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const color = palette.glow;
+                const size = this.size * this.life * (0.5 + 0.5 * this.pulse);
+                const alpha = this.life * 0.6;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 4);
+                grad.addColorStop(0, color + '99');
+                grad.addColorStop(0.5, color + '44');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.8;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SPARKLE CLASS =====
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 100;
+                this.size = 1 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.twinkleSpeed = 0.05 + Math.random() * 0.1;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.twinkleSpeed * speed * 10;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase);
+                this.rotation += this.rotSpeed * speed * 10;
+                this.size *= 1.005;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const color = palette.glow;
+                const size = this.size * this.life * (0.5 + 0.5 * this.pulse);
+                const alpha = this.life * 0.8;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 5);
+                grad.addColorStop(0, color + '99');
+                grad.addColorStop(0.5, color + '44');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fill();
+
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                    const r = i % 2 === 0 ? size : size * 0.4;
+                    const px = Math.cos(angle + this.phase) * r;
+                    const py = Math.sin(angle + this.phase) * r;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW CRYSTAL BALL =====
+        function drawCrystalBall(ctx, cx, cy, radius) {
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.glow;
+
+            // Outer glow
+            const glowSize = radius * 1.5 * (0.3 + 0.7 * glowIntensity);
+            const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+            glowGrad.addColorStop(0, glowColor + '66');
+            glowGrad.addColorStop(0.3, glowColor + '44');
+            glowGrad.addColorStop(0.7, glowColor + '22');
+            glowGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Ball base (dark glass)
+            const ballGrad = ctx.createRadialGradient(
+                cx - radius * 0.2,
+                cy - radius * 0.3,
+                0,
+                cx,
+                cy,
+                radius
+            );
+            ballGrad.addColorStop(0, 'rgba(30, 20, 50, 0.5)');
+            ballGrad.addColorStop(0.3, 'rgba(20, 15, 40, 0.6)');
+            ballGrad.addColorStop(0.7, 'rgba(15, 10, 30, 0.7)');
+            ballGrad.addColorStop(1, 'rgba(10, 5, 20, 0.8)');
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = ballGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Mist particles are drawn BEFORE this overlay
+            // Ball overlay with slight glow
+            const overlayGrad = ctx.createRadialGradient(cx - radius * 0.1, cy - radius * 0.1, 0, cx, cy, radius);
+            overlayGrad.addColorStop(0, glowColor + '15');
+            overlayGrad.addColorStop(0.5, glowColor + '08');
+            overlayGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = overlayGrad;
+            ctx.fill();
+
+            // Glass reflection
+            ctx.beginPath();
+            ctx.ellipse(cx - radius * 0.15, cy - radius * 0.25, radius * 0.3, radius * 0.15, -0.5, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.12)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(cx - radius * 0.1, cy - radius * 0.35, radius * 0.15, radius * 0.08, -0.3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.06)';
+            ctx.fill();
+
+            // Ball outline
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Rim highlight
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.95, -Math.PI * 0.3, Math.PI * 0.2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Pulsing ring
+            const pulseRing = radius * 0.55 + Math.sin(time * 0.02) * 5;
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseRing, 0, Math.PI * 2);
+            ctx.strokeStyle = glowColor;
+            ctx.globalAlpha = 0.08 + 0.06 * Math.sin(time * 0.02);
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.glow;
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.2);
+            ambientGlow.addColorStop(0, glowColor + '10');
+            ambientGlow.addColorStop(1, glowColor + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== TOGGLE GLOW =====
+        function toggleGlow() {
+            isGlowing = !isGlowing;
+            targetGlow = isGlowing ? 1 : 0;
+            glowBtn.textContent = isGlowing ? '✨ Glowing' : '✨ Glow';
+            statusText.textContent = isGlowing ? '✨ Glowing!' : '🔮 Mystical energies';
+
+            if (isGlowing) {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                for (let i = 0; i < 15; i++) {
+                    const g = new GlowParticle(
+                        cx + (Math.random() - 0.5) * 100,
+                        cy + (Math.random() - 0.5) * 100
+                    );
+                    glowParticles.push(g);
+                }
+                for (let i = 0; i < 10; i++) {
+                    const s = new Sparkle(
+                        cx + (Math.random() - 0.5) * 120,
+                        cy + (Math.random() - 0.5) * 120
+                    );
+                    sparkles.push(s);
+                }
+            }
+        }
+
+        // ===== RESET =====
+        function resetCrystal() {
+            isGlowing = false;
+            glowIntensity = 0;
+            targetGlow = 0;
+            glowBtn.textContent = '✨ Glow';
+            glowParticles = [];
+            sparkles = [];
+            mistParticles = [];
+            colorMode = 0;
+            initMist();
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🔮 Mystical energies';
+            }, 1000);
+        }
+
+        // ===== INIT MIST =====
+        function initMist() {
+            mistParticles = [];
+            for (let i = 0; i < 100; i++) {
+                mistParticles.push(new MistParticle());
+            }
+        }
+        initMist();
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 - 10;
+            const radius = Math.min(w, h) * 0.22;
+            time += 0.01;
+
+            // Glow intensity
+            glowIntensity += (targetGlow - glowIntensity) * 0.03;
+
+            // Update mist
+            for (const p of mistParticles) {
+                p.update(0.02);
+            }
+
+            // Update glow particles
+            for (let i = glowParticles.length - 1; i >= 0; i--) {
+                const g = glowParticles[i];
+                g.update(0.02);
+                if (g.isDead()) {
+                    glowParticles.splice(i, 1);
+                }
+            }
+
+            // Update sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                const s = sparkles[i];
+                s.update(0.02);
+                if (s.isDead()) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
+            // Spawn new glow particles when glowing
+            if (isGlowing && Math.random() < 0.03) {
+                const g = new GlowParticle(
+                    cx + (Math.random() - 0.5) * 80,
+                    cy + (Math.random() - 0.5) * 80
+                );
+                glowParticles.push(g);
+            }
+
+            if (isGlowing && Math.random() < 0.02) {
+                const s = new Sparkle(
+                    cx + (Math.random() - 0.5) * 100,
+                    cy + (Math.random() - 0.5) * 100
+                );
+                sparkles.push(s);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw glow particles (behind ball)
+            for (const g of glowParticles) {
+                g.draw(ctx);
+            }
+
+            // Draw sparkles (behind ball)
+            for (const s of sparkles) {
+                s.draw(ctx);
+            }
+
+            // Draw mist particles (inside ball)
+            for (const p of mistParticles) {
+                p.draw(ctx);
+            }
+
+            // Draw crystal ball (on top of mist)
+            drawCrystalBall(ctx, cx, cy, radius);
+
+            if (frameCount % 30 === 0) {
+                const state = isGlowing ? '✨ Glowing' : '🔮 Mystical';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        glowBtn.addEventListener('click', toggleGlow);
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔮 Mystical energies';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetCrystal);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                glowBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                glowBtn.click();
+            }
+        });
+
+        canvas.addEventListener('click', toggleGlow);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            toggleGlow();
+        }, { passive: false });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🔮 Mystical energies';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🔮 Crystal Ball Glow loaded!');
+        console.log('💡 G - Toggle glow');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle glow');
+        console.log('💡 Click crystal - Toggle glow');
+    </script>
+</body>
+</html>

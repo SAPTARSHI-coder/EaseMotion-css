@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Replay Recorder — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Replay Recorder</h1>
+    <p>
+      Capture the complete execution timeline of an EaseMotion animation using the Web Animations API.
+      Inspect keyframes, durations, and transforms at every frame, then export the recording
+      as JSON, CSS, or a Timeline Report — perfect for debugging and sharing.
+    </p>
+    <div class="badges">
+      <span class="badge">📹 Timeline Capture</span>
+      <span class="badge">🔍 Frame Inspector</span>
+      <span class="badge">📤 JSON / CSS Export</span>
+    </div>
+  </header>
+
+  <main class="recorder-container">
+
+    <!-- ── STAGE ────────────────────────────────────────────── -->
+    <section class="panel stage-panel">
+      <div class="panel-header">
+        <span class="section-label">Target Element</span>
+        <div id="statusDot" class="status-dot idle">● IDLE</div>
+      </div>
+
+      <div class="stage-area">
+        <!-- From the issue's HTML snippet exactly -->
+        <div id="animationTarget" class="ease-card ease-float ease-glow">
+          Record This Animation
+        </div>
+      </div>
+
+      <div class="controls">
+        <input
+          type="text"
+          id="classInput"
+          class="ease-input"
+          value="ease-float ease-glow"
+          placeholder="EaseMotion classes…"
+        />
+        <div class="btn-row">
+          <!-- From the issue's HTML snippet exactly -->
+          <button id="ease-record" class="ease-record" onclick="startRecording()">
+            Start Recording
+          </button>
+          <button id="replayBtn" class="ease-replay" onclick="replay()" disabled>
+            ▶ Replay
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TIMELINE ──────────────────────────────────────────── -->
+    <section class="panel timeline-panel">
+      <div class="panel-header">
+        <span class="section-label">Recorded Timeline</span>
+        <div class="export-btns" id="exportBtns" style="display:none;">
+          <button class="export-btn" onclick="exportJSON()">JSON</button>
+          <button class="export-btn" onclick="exportCSS()">CSS</button>
+          <button class="export-btn" onclick="exportReport()">Report</button>
+        </div>
+      </div>
+
+      <div id="frameContainer" class="frame-container">
+        <div class="empty-state">Press "Start Recording" to capture animation frames.</div>
+      </div>
+    </section>
+
+    <!-- ── EXPORT OUTPUT ─────────────────────────────────────── -->
+    <section class="panel export-panel" id="exportPanel" style="display:none;">
+      <div class="panel-header">
+        <span class="section-label" id="exportLabel">Export Output</span>
+      </div>
+      <pre><code id="exportOutput"></code></pre>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Replay Recorder
+     * Uses the Web Animations API to sample keyframe data from a running animation,
+     * building a frame-by-frame timeline that can be exported to JSON, CSS, or a report.
+     */
+
+    const TRACKED_PROPS = ['opacity', 'transform'];
+    const SAMPLE_RATE_MS = 16; // ~60fps
+    let frames = [];
+    let replayData = null;
+
+    const target = document.getElementById('animationTarget');
+    const classInput = document.getElementById('classInput');
+    const frameContainer = document.getElementById('frameContainer');
+    const statusDot = document.getElementById('statusDot');
+    const exportBtns = document.getElementById('exportBtns');
+    const replayBtn = document.getElementById('replayBtn');
+    const exportPanel = document.getElementById('exportPanel');
+
+    async function startRecording() {
+      const classes = classInput.value.trim();
+      if (!classes) return;
+
+      frames = [];
+      replayData = null;
+      exportBtns.style.display = 'none';
+      exportPanel.style.display = 'none';
+      replayBtn.disabled = true;
+
+      // Reset and apply animation
+      target.className = 'ease-card';
+      void target.offsetWidth; // force reflow
+
+      setStatus('recording', '● REC');
+      target.className = `ease-card ${classes}`;
+
+      // Wait one rAF for animation to attach
+      await new Promise(r => requestAnimationFrame(r));
+
+      const animations = target.getAnimations();
+      if (animations.length === 0) {
+        setStatus('idle', '● IDLE');
+        frameContainer.innerHTML = '<div class="empty-state error">No animations found. Please check your class names.</div>';
+        return;
+      }
+
+      const anim = animations[0];
+      const duration = anim.effect?.getTiming?.()?.duration ?? 1000;
+
+      anim.pause();
+
+      // Sample frames
+      const totalFrames = Math.ceil(duration / SAMPLE_RATE_MS);
+      for (let i = 0; i <= totalFrames; i++) {
+        const time = Math.min(i * SAMPLE_RATE_MS, duration);
+        anim.currentTime = time;
+
+        const computed = window.getComputedStyle(target);
+        const frameData = {
+          frame: i,
+          time: Math.round(time),
+          props: {}
+        };
+        TRACKED_PROPS.forEach(p => {
+          frameData.props[p] = computed.getPropertyValue(p);
+        });
+        frames.push(frameData);
+      }
+
+      replayData = { classes, duration, frames: [...frames] };
+      anim.cancel();
+
+      setStatus('done', '✔ DONE');
+      renderFrames(frames);
+      exportBtns.style.display = 'flex';
+      replayBtn.disabled = false;
+    }
+
+    function replay() {
+      if (!replayData) return;
+      target.className = 'ease-card';
+      void target.offsetWidth;
+      setStatus('recording', '● PLAY');
+      target.className = `ease-card ${replayData.classes}`;
+      setTimeout(() => setStatus('idle', '● IDLE'), replayData.duration + 100);
+    }
+
+    function setStatus(type, label) {
+      statusDot.textContent = label;
+      statusDot.className = `status-dot ${type}`;
+    }
+
+    function renderFrames(frames) {
+      // Show approx every 6th frame (~10fps display rate) to keep UI clean
+      const display = frames.filter((_, i) => i % 6 === 0);
+      frameContainer.innerHTML = display.map(f => {
+        const transform = f.props.transform !== 'none' ? 'active' : 'none';
+        const opacity = parseFloat(f.props.opacity).toFixed(2);
+        return `
+          <div class="frame-card">
+            <div class="frame-header">Frame ${f.frame} <span class="frame-time">${f.time}ms</span></div>
+            <div class="frame-props">
+              <div class="prop-row"><span>Opacity:</span><code>${opacity}</code></div>
+              <div class="prop-row"><span>Transform:</span><code>${transform}</code></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function exportJSON() {
+      document.getElementById('exportLabel').textContent = 'Export: JSON';
+      document.getElementById('exportOutput').textContent = JSON.stringify(replayData, null, 2);
+      exportPanel.style.display = 'block';
+    }
+
+    function exportCSS() {
+      // Build a @keyframes block from sampled frames
+      const kfLines = frames.filter((_, i) => i % 6 === 0).map(f => {
+        const pct = Math.round((f.time / replayData.duration) * 100);
+        const op = parseFloat(f.props.opacity).toFixed(2);
+        const tr = f.props.transform !== 'none' ? f.props.transform : 'none';
+        return `  ${pct}% { opacity: ${op}; transform: ${tr}; }`;
+      }).join('\n');
+
+      const css = `@keyframes recorded-animation {\n${kfLines}\n}\n\n.ease-recorded {\n  animation: recorded-animation ${replayData.duration}ms ease forwards;\n}`;
+      document.getElementById('exportLabel').textContent = 'Export: CSS';
+      document.getElementById('exportOutput').textContent = css;
+      exportPanel.style.display = 'block';
+    }
+
+    function exportReport() {
+      // Matches the issue's snippet format exactly
+      const display = frames.filter((_, i) => i % 6 === 0);
+      const lines = display.map(f => {
+        const op = parseFloat(f.props.opacity).toFixed(2);
+        const tr = f.props.transform !== 'none' ? f.props.transform : 'none';
+        return `Frame ${f.frame}\nOpacity: ${op}\nTransform: ${tr}`;
+      }).join('\n\n');
+
+      const report = `/* Example exported timeline */\n\n${lines}\n\nExport Format:\nJSON\nCSS\nTimeline Report`;
+      document.getElementById('exportLabel').textContent = 'Export: Timeline Report';
+      document.getElementById('exportOutput').textContent = report;
+      exportPanel.style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>

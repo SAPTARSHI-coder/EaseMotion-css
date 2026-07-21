@@ -1,0 +1,5 @@
+# Dual Range Slider
+
+1. What does this do? A CSS-only Dual Range Slider component.
+2. How is it used? Apply the class .ease-slider-dual to a container element.
+3. Why is it useful? It fits EaseMotion CSS's human-readable, animation-first philosophy by providing a clean, reusable component.

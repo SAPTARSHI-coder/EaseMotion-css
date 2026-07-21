@@ -19,12 +19,14 @@ async function findExistingAssignments(
 }
 
 // change to increase/decrease the cap
-const MAX_ASSIGNED_ISSUES = 30;
+const MAX_ASSIGNED_ISSUES = 25;
 
 async function handleClaim({ github, context }) {
   const { owner, repo } = context.repo;
   const issueNumber = context.payload.issue.number;
   const commenter = context.payload.comment.user.login;
+  const bodyText = context.payload.comment.body.trim();
+  const programName = 'GSSoC-26';
 
   // Fetch the latest issue state to prevent race conditions on closed issues
   const { data: issue } = await github.rest.issues.get({
@@ -43,21 +45,27 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) =>
+  // Check if a Pull Request for this issue has already been merged
+  try {
+    const searchMergedPRs = await github.rest.search.issuesAndPullRequests({
+      q: `repo:${owner}/${repo} type:pr is:merged "${issueNumber}"`,
+    });
+    if (searchMergedPRs.data.total_count > 0) {
+      await github.rest.issues.createComment({
+        owner,
+        repo,
+        issue_number: issueNumber,
+        body: `🔒 **Claim Blocked!** A Pull Request resolving this issue has already been merged, so this issue is now locked for new claims. Only existing assignees can complete their active work. Please search for other open issues! 🔍`,
+      });
+      return;
+    }
+  } catch (err) {
+    console.log(`Failed to check merged PRs: ${err.message}`);
+  }
+
+  const currentAssignees = issue.assignees.map((a) =>
     a.login.toLowerCase()
   );
-  const issueLabels = context.payload.issue.labels.map((l) =>
-    l.name.toLowerCase()
-  );
-  const issueTitle = (context.payload.issue.title || "").toLowerCase();
-  const issueBody = (context.payload.issue.body || "").toLowerCase();
-
-  const isSubmissionIssue =
-    issueLabels.some(
-      (label) => label.includes("submission") || label.includes("gssoc")
-    ) ||
-    issueTitle.includes("submission") ||
-    issueBody.includes("submission");
 
   if (currentAssignees.includes(commenter.toLowerCase())) {
     await github.rest.issues.createComment({
@@ -69,13 +77,18 @@ async function handleClaim({ github, context }) {
     return;
   }
 
-  if (currentAssignees.length > 0 && !isSubmissionIssue) {
-    const assigneeList = currentAssignees.map((a) => `@${a}`).join(", ");
+  // ── 1-hour cooldown: protects the issue opener's exclusive right for the first hour ──
+  const issueCreatedAt = new Date(issue.created_at);
+  const elapsedMs = Date.now() - issueCreatedAt.getTime();
+  const elapsedMinutes = elapsedMs / (1000 * 60);
+
+  if (elapsedMinutes < 60 && commenter.toLowerCase() !== issue.user.login.toLowerCase()) {
+    const minutesLeft = Math.ceil(60 - elapsedMinutes);
     await github.rest.issues.createComment({
       owner,
       repo,
       issue_number: issueNumber,
-      body: `🤝 **Already taken!** This issue is currently assigned to ${assigneeList}. Please look for another open issue to contribute to! 🔍`,
+      body: `⏳ **Cooldown Active!** This issue was created less than 1 hour ago (${Math.floor(elapsedMinutes)} minutes ago).\n\nTo give the issue opener (@${issue.user.login}) a fair chance to make progress, there is a **1-hour cooldown** before anyone else can claim this issue. Please try again in **${minutesLeft} minute(s)** or look for other open issues! 🔍`,
     });
     return;
   }
@@ -107,13 +120,23 @@ async function handleClaim({ github, context }) {
     assignees: [commenter],
   });
 
+  // Label the issue with GSSoC-26 if missing
+  if (!issue.labels.some((l) => l.name === 'GSSoC-26')) {
+    await github.rest.issues.addLabels({
+      owner,
+      repo,
+      issue_number: issueNumber,
+      labels: ['GSSoC-26', 'gssoc:approved'],
+    }).catch(() => {});
+  }
+
   // comment message
   const contributingUrl = `https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md`;
   await github.rest.issues.createComment({
     owner,
     repo,
     issue_number: issueNumber,
-    body: `🎉 **Assigned!** Welcome aboard, @${commenter}! 🌟\n\n⏳ **Timeframe:** You have **1 day (24 hours)** to submit a Pull Request before it becomes open for others to claim.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
+    body: `🎉 **Assigned!** Welcome aboard, @${commenter} (${programName})! 🌟\n\n⏳ **Timeframe:** You have **24 hours** of exclusive time to complete the issue and make a Pull Request. Please submit a PR before claiming any other issue.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
   });
 }
 
