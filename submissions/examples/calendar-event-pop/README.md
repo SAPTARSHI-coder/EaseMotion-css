@@ -1,14 +1,15 @@
 # Calendar Event Pop
 
-A calendar date tile where the event marker pops into view on hover or keyboard focus.
+A CSS-only calendar interaction that highlights scheduled days with a pulsing marker and reveals short event labels on hover or keyboard focus.
 
 ## Files
 
-- `demo.html` - accessible date tile button markup.
-- `style.css` - tile lift, event marker pop, focus-visible state, and reduced-motion support.
+- `demo.html` builds a compact weekly calendar layout.
+- `style.css` handles the event marker pulse, tile lift, active day state, and responsive grid.
 
-## Highlights
+## What it demonstrates
 
-- Uses a native button for interaction.
-- Keeps the event marker readable before and after motion.
-- Preserves keyboard focus styling.
+- Animated event indicators with `box-shadow` keyframes.
+- Revealed event labels using transforms and opacity.
+- Keyboard-friendly `:focus-visible` states.
+- A mobile layout that keeps calendar tiles readable.
