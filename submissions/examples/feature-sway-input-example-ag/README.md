@@ -1,0 +1,1 @@
+# Sway Input Example\n\nStandard implementation.
