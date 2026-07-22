@@ -84,4 +84,4 @@ You can override custom property tokens directly in inline styles or scoped styl
 | `--neon-color` | Solid base color of glow & stroke | `var(--ease-color-cyan)` | Presets: `.color-cyan`, `.color-magenta`, `.color-green`, `.color-yellow` |
 
 ---
-*Created as a submission for GSSoC-26 / ECSoC-26 under submissions/examples/neon-progress-ring-glow/*
+*Created as a submission for GSSoC-26  under submissions/examples/neon-progress-ring-glow/*

@@ -49,4 +49,4 @@ The cockpit interface can be configured directly inside parent container scopes 
 | `--slider-thumb-size` | Diameter of circular star thumb | `20px` | Length value |
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/fade-in-range-slider-space/*
+*Created as a submission for GSSOC-26  under submissions/examples/fade-in-range-slider-space/*
