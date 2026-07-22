@@ -12,7 +12,7 @@ INPUT = "/tmp/contributors.json"
 README = "README.md"
 START_MARKER = "<!-- CONTRIBUTOR-WALL-START -->"
 END_MARKER = "<!-- CONTRIBUTOR-WALL-END -->"
-OFFSET = 142  # Offset to match GitHub UI contributor graph (includes deleted/co-author accounts)
+OFFSET = 151  # Offset to match GitHub UI contributor graph (includes deleted/co-author accounts)
 
 
 def build_wall(contributors):
