@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ease-markdown-editor — demo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="eme-hr18" id="emeRoot" data-theme="light">
+  <div class="eme-wrap-hr18">
+
+    <header class="eme-header-hr18">
+      <div>
+        <span class="eme-eyebrow-hr18">EaseMotion-css · component</span>
+        <h1>Markdown editor</h1>
+      </div>
+      <button type="button" class="eme-theme-toggle-hr18" id="emeThemeToggle" aria-pressed="false">
+        <span id="emeThemeIcon" aria-hidden="true">&#9789;</span>
+        <span id="emeThemeLabel">Dark mode</span>
+      </button>
+    </header>
+
+    <div class="eme-editor-shell-hr18">
+      <div class="eme-toolbar-hr18" role="toolbar" aria-label="Formatting">
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="bold" aria-label="Bold"><strong>B</strong></button>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="italic" aria-label="Italic"><em>I</em></button>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="heading" aria-label="Heading">H</button>
+        <span class="eme-tool-sep-hr18"></span>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="link" aria-label="Link">&#128279;</button>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="code" aria-label="Inline code">&lt;/&gt;</button>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="quote" aria-label="Blockquote">&#8220;</button>
+        <span class="eme-tool-sep-hr18"></span>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="ul" aria-label="Bulleted list">&#8226;</button>
+        <button type="button" class="eme-tool-btn-hr18" data-cmd="ol" aria-label="Numbered list">1.</button>
+
+        <div class="eme-view-tabs-hr18" role="tablist" aria-label="Editor view">
+          <button type="button" class="eme-view-tab-hr18" role="tab" aria-selected="true" data-view="edit">Edit</button>
+          <button type="button" class="eme-view-tab-hr18" role="tab" aria-selected="false" data-view="preview">Preview</button>
+        </div>
+      </div>
+
+      <div class="eme-panes-hr18" id="emePanes" data-view="edit">
+        <div class="eme-pane-hr18 eme-editor-pane-hr18">
+          <label class="eme-pane-label-hr18" for="emeTextarea">Markdown</label>
+          <textarea class="eme-textarea-hr18" id="emeTextarea" spellcheck="false"># Welcome to the editor
+
+Type **Markdown** on the left, see it rendered on the right.
+
+- Live preview
+- Formatting toolbar
+- Dark mode
+- Fully responsive
+
+> Try the toolbar buttons above, or just type `**bold**`, `*italic*`, or a [link](https://example.com).</textarea>
+        </div>
+        <div class="eme-pane-hr18 eme-preview-pane-hr18">
+          <span class="eme-pane-label-hr18">Preview</span>
+          <div class="eme-preview-hr18" id="emePreview" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="eme-footnote-hr18">submissions/examples/ease-markdown-editor-hr18 &middot; no build tools or external CDN required</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var root = document.getElementById("emeRoot");
+  var textarea = document.getElementById("emeTextarea");
+  var preview = document.getElementById("emePreview");
+  var panes = document.getElementById("emePanes");
+
+  /* ---------------- Minimal Markdown renderer ----------------
+     A small, dependency-free subset parser: headings, bold, italic,
+     inline code, fenced code blocks, blockquotes, links, unordered and
+     ordered lists, horizontal rules, and paragraphs. Not a full
+     CommonMark implementation — enough for a lightweight docs/notes
+     editor. HTML is escaped before any markdown transform is applied. */
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function renderInline(text) {
+    text = text.replace(/`([^`]+)`/g, "<code>$1</code>");
+    text = text.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return text;
+  }
+
+  function renderMarkdown(raw) {
+    var escaped = escapeHtml(raw);
+    var lines = escaped.split("\n");
+    var html = [];
+    var i = 0;
+
+    while (i < lines.length) {
+      var line = lines[i];
+
+      // Fenced code block.
+      if (/^```/.test(line)) {
+        var codeLines = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        html.push("<pre><code>" + codeLines.join("\n") + "</code></pre>");
+        i++;
+        continue;
+      }
+
+      // Headings.
+      var headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
+      if (headingMatch) {
+        var level = headingMatch[1].length;
+        html.push("<h" + level + ">" + renderInline(headingMatch[2]) + "</h" + level + ">");
+        i++;
+        continue;
+      }
+
+      // Horizontal rule.
+      if (/^-{3,}$/.test(line.trim())) {
+        html.push("<hr>");
+        i++;
+        continue;
+      }
+
+      // Blockquote (consecutive lines).
+      if (/^&gt;\s?/.test(line)) {
+        var quoteLines = [];
+        while (i < lines.length && /^&gt;\s?/.test(lines[i])) {
+          quoteLines.push(lines[i].replace(/^&gt;\s?/, ""));
+          i++;
+        }
+        html.push("<blockquote>" + renderInline(quoteLines.join(" ")) + "</blockquote>");
+        continue;
+      }
+
+      // Unordered list.
+      if (/^[-*]\s+/.test(line)) {
+        var ulItems = [];
+        while (i < lines.length && /^[-*]\s+/.test(lines[i])) {
+          ulItems.push("<li>" + renderInline(lines[i].replace(/^[-*]\s+/, "")) + "</li>");
+          i++;
+        }
+        html.push("<ul>" + ulItems.join("") + "</ul>");
+        continue;
+      }
+
+      // Ordered list.
+      if (/^\d+\.\s+/.test(line)) {
+        var olItems = [];
+        while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+          olItems.push("<li>" + renderInline(lines[i].replace(/^\d+\.\s+/, "")) + "</li>");
+          i++;
+        }
+        html.push("<ol>" + olItems.join("") + "</ol>");
+        continue;
+      }
+
+      // Blank line — skip.
+      if (line.trim() === "") {
+        i++;
+        continue;
+      }
+
+      // Paragraph (consecutive non-blank, non-special lines).
+      var pLines = [];
+      while (
+        i < lines.length &&
+        lines[i].trim() !== "" &&
+        !/^(#{1,3})\s+/.test(lines[i]) &&
+        !/^```/.test(lines[i]) &&
+        !/^[-*]\s+/.test(lines[i]) &&
+        !/^\d+\.\s+/.test(lines[i]) &&
+        !/^&gt;\s?/.test(lines[i]) &&
+        !/^-{3,}$/.test(lines[i].trim())
+      ) {
+        pLines.push(lines[i]);
+        i++;
+      }
+      html.push("<p>" + renderInline(pLines.join(" ")) + "</p>");
+    }
+
+    return html.join("\n");
+  }
+
+  function updatePreview() {
+    var value = textarea.value;
+    if (!value.trim()) {
+      preview.innerHTML = '<p class="eme-preview-empty-hr18">Nothing to preview yet &mdash; start typing on the left.</p>';
+      return;
+    }
+    preview.innerHTML = renderMarkdown(value);
+  }
+
+  textarea.addEventListener("input", updatePreview);
+  updatePreview();
+
+  /* ---------------- Toolbar: wrap/insert at cursor ---------------- */
+  function applyCommand(cmd) {
+    var start = textarea.selectionStart;
+    var end = textarea.selectionEnd;
+    var value = textarea.value;
+    var selected = value.slice(start, end);
+    var before = value.slice(0, start);
+    var after = value.slice(end);
+    var insertText = selected;
+    var cursorOffset = 0;
+
+    function wrap(marker, placeholder) {
+      var text = selected || placeholder;
+      insertText = marker + text + marker;
+      cursorOffset = selected ? insertText.length : marker.length;
+    }
+
+    function linePrefix(prefix, placeholder) {
+      var text = selected || placeholder;
+      insertText = prefix + text;
+      cursorOffset = insertText.length;
+    }
+
+    switch (cmd) {
+      case "bold":
+        wrap("**", "bold text");
+        break;
+      case "italic":
+        wrap("*", "italic text");
+        break;
+      case "code":
+        wrap("`", "code");
+        break;
+      case "heading":
+        linePrefix("## ", "Heading");
+        break;
+      case "quote":
+        linePrefix("> ", "Quote");
+        break;
+      case "ul":
+        linePrefix("- ", "List item");
+        break;
+      case "ol":
+        linePrefix("1. ", "List item");
+        break;
+      case "link":
+        var linkText = selected || "link text";
+        insertText = "[" + linkText + "](https://)";
+        cursorOffset = insertText.length;
+        break;
+      default:
+        return;
+    }
+
+    textarea.value = before + insertText + after;
+    var newPos = start + cursorOffset;
+    textarea.focus();
+    textarea.setSelectionRange(newPos, newPos);
+    updatePreview();
+  }
+
+  document.querySelectorAll(".eme-tool-btn-hr18").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      applyCommand(btn.getAttribute("data-cmd"));
+    });
+  });
+
+  /* ---------------- Mobile view tabs ---------------- */
+  var viewTabs = document.querySelectorAll(".eme-view-tab-hr18");
+  viewTabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      viewTabs.forEach(function (t) { t.setAttribute("aria-selected", "false"); });
+      tab.setAttribute("aria-selected", "true");
+      panes.setAttribute("data-view", tab.getAttribute("data-view"));
+    });
+  });
+
+  /* ---------------- Dark mode toggle ---------------- */
+  var themeToggle = document.getElementById("emeThemeToggle");
+  var themeLabel = document.getElementById("emeThemeLabel");
+  var themeIcon = document.getElementById("emeThemeIcon");
+
+  themeToggle.addEventListener("click", function () {
+    var isDark = root.getAttribute("data-theme") === "dark";
+    var next = isDark ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    themeToggle.setAttribute("aria-pressed", String(!isDark));
+    themeLabel.textContent = next === "dark" ? "Light mode" : "Dark mode";
+    themeIcon.textContent = next === "dark" ? "\u2600" : "\u263D";
+  });
+})();
+</script>
+</body>
+</html>
