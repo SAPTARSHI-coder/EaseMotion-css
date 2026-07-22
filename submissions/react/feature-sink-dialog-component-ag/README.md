@@ -1,0 +1,1 @@
+# Sink Dialog Component\n\nReact component implementation.

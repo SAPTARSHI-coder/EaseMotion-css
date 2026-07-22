@@ -1,0 +1,1 @@
+import React from "react";\nimport "./style.css";\n\nexport default function SinkDialog() {\n  return <div className="sink-dialog-component-ag">Content</div>;\n}
