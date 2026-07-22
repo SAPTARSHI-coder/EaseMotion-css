@@ -1,0 +1,1 @@
+import React from "react";\nimport "./style.css";\n\nexport default function TumbleProgress() {\n  return <div className="tumble-progress-component-ag">Content</div>;\n}
