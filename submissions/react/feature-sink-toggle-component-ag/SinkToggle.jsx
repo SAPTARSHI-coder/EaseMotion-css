@@ -1,0 +1,1 @@
+import React from "react";\nimport "./style.css";\n\nexport default function SinkToggle() {\n  return <div className="sink-toggle-component-ag">Content</div>;\n}
