@@ -1,4 +1,4 @@
-# CSS Fade-In Carousel for Product Catalog Layouts
+# CSS Fade-In Carousel for Product Catalog Layouts 
 
 A pure CSS, JavaScript-free animated carousel specifically designed for premium product catalogs. It utilizes smooth fade-in transitions, scale effects, and backdrop blurs to showcase products elegantly.
 
