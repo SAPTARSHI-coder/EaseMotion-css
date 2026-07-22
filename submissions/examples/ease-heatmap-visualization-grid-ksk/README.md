@@ -10,4 +10,4 @@ Use the container `.heatmap-container` containing a `.heatmap-grid` grid, popula
 It provides developers with a modular, lightweight data-visualization pattern for analytics, logs, and activity reports with layout-stable hover transforms.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #43111.*
+*Created for GSSoC-26 — Resolves #43111.*

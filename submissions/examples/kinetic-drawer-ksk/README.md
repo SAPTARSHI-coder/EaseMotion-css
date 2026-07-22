@@ -10,4 +10,4 @@ Bind a hidden toggle `#drawer-toggle` checkbox, a full-screen `<label>` backdrop
 It implements an advanced dashboard navigation system using pure CSS transitions and 3D transforms without JavaScript, optimizing paint performance.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #41919.*
+*Created for GSSoC-26 — Resolves #41919.*

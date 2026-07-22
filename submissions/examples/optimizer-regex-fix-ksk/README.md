@@ -34,4 +34,4 @@
 Open `demo.html` to interactively test any HTML snippet against both the buggy and fixed regex — side-by-side comparison with preset test cases.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #40061.*
+*Created for GSSoC-26 — Resolves #40061.*

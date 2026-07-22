@@ -10,4 +10,4 @@ Wrap the checkbox toggler, trigger label, and list of anchor elements inside a `
 It provides a high-performance, responsive radial navigation pattern that is lightweight, layout-stable, and customizable with CSS variables.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #40051.*
+*Created for GSSoC-26 — Resolves #40051.*
