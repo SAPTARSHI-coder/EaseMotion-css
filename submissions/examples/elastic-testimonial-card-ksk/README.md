@@ -10,4 +10,4 @@ Wrap testimonial content inside a `.elastic-card` container placed inside a `.te
 Delivers a physically intuitive, tactile testimonial section that feels alive without any JavaScript — leveraging CSS animation staggering and elastic `cubic-bezier` curves.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #42612.*
+*Created for GSSoC-26 — Resolves #42612.*

@@ -10,4 +10,4 @@ Pair a hidden `.gdpr-toggle` checkbox with a `.gdpr-trigger-label` button. The `
 Provides a legally-compliant, accessible GDPR cookie consent UI with toggle-style preference controls, all without any JavaScript.
 
 ---
-*Created for ECSoC-26 / GSSoC-26 — Resolves #42490.*
+*Created for GSSoC-26 — Resolves #42490.*

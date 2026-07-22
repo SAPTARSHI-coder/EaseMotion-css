@@ -53,4 +53,4 @@ To adjust layer projection depths inside parent stylesheet files, customize thes
 - `--accent-orange`: Orange theme glow color.
 
 ---
-*Created as a submission for GSSOC-26 / ECSoC-26 under submissions/examples/parallax-feature-card-glow/*
+*Created as a submission for GSSOC-26  under submissions/examples/parallax-feature-card-glow/*
