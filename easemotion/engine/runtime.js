@@ -52,9 +52,14 @@ function processElement(el) {
 
   const ast = parse(value);
   if (!ast) {
-    if (process?.env?.NODE_ENV !== 'production') {
-      console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);
-    }
+    if(
+  typeof process !== 'undefined' &&
+  process.env?.NODE_ENV !== 'production'
+) {
+  console.warn(
+    `[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`
+  );
+}
     return;
   }
 
