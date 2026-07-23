@@ -6,7 +6,7 @@ Motion Engine `em=""` DSL, instead of hand-writing `useEffect` +
 animation.
 
 > Submission track: `submissions/react/react-use-ease-motion-adrish/`
-> Resolves: #<55062>
+> Resolves: #55062
 
 ---
 
