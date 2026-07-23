@@ -1,26 +1,27 @@
-# Spin Alert Mixin
+# Spin Alert SCSS Mixin
 
 ## What does this do?
-This submission implements a premium SCSS mixin (`ease-spin-alert-mixin-ag`) under the `submissions/scss/` track. The mixin applies a smooth rotation (slight spin wiggle) and pulse shadow effect on an alert or notification banner to catch user attention elegantly.
+This submission implements a reusable SCSS mixin (`spin-alert-ag`) under the `submissions/scss/` track. It applies an elastic rotational entrance animation ("Spin Alert") to notification boxes, alert popups, or banner containers.
 
 ## How is it used?
-Import the partial and use the `@include` directive:
-```scss
-@use 'spin-alert-mixin' as *;
+Import the partial and use `@include spin-alert-ag()` inside your stylesheet:
 
-.danger-alert-ag {
-  background-color: #fef2f2;
-  border: 1px solid #fee2e2;
-  padding: 16px;
-  border-radius: 8px;
-  
-  // Apply the spin alert idle animation with custom duration
-  @include ease-spin-alert-mixin-ag(2s, infinite);
+```scss
+@use './spin-alert-ag' as *;
+
+.alert-banner {
+    background-color: #1e1b4b;
+    color: #e0e7ff;
+    padding: 16px 24px;
+    border-radius: 12px;
+    
+    // Apply spin alert animation
+    @include spin-alert-ag(0.7s);
 }
 ```
 
 ## Parameters
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
-| `$duration` | `String (time)` | `1.8s` | Speed/duration of the spin animation sequence |
-| `$iteration` | `String / Number` | `infinite` | Number of times the animation should run |
+| `$duration` | `Time` | `0.6s` | Duration of the rotational entrance animation |
+| `$timing-function` | `String` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Easing curve for the elastic spin effect |
