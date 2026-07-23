@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessibility Motion Report Generator</title>
+    <link rel="stylesheet" href="style.css" />
+    <style id="intentional-bad-styles">
+      /* Intentionally missing prefers-reduced-motion overrides for samplePulse */
+      .sample-dom .sample-animated-btn {
+        animation: samplePulse 1.2s ease infinite;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="report-page">
+      <header class="report-header">
+        <h1>Accessibility Motion Report Generator</h1>
+        <p>
+          Scan a sample page region for common motion and accessibility issues: missing alt text,
+          animated focusable controls, low-contrast text, and reduced-motion coverage in stylesheets.
+        </p>
+      </header>
+
+      <div class="report-toolbar">
+        <button type="button" class="report-btn report-btn--scan" id="run-scan">Run accessibility scan</button>
+        <button type="button" class="report-btn report-btn--download" id="download-txt" disabled>Download .txt</button>
+        <button type="button" class="report-btn report-btn--download" id="download-json" disabled>Download .json</button>
+      </div>
+
+      <div class="report-layout">
+        <section class="report-panel" aria-labelledby="sample-heading">
+          <h2 id="sample-heading">Sample DOM (intentional issues)</h2>
+          <p class="report-panel-note">
+            This sandbox includes deliberate problems for the scanner to detect.
+          </p>
+          <div class="sample-dom" id="scan-target">
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='120' viewBox='0 0 320 120'%3E%3Crect fill='%235b4fcf' width='320' height='120' rx='8'/%3E%3Ctext x='160' y='68' fill='white' font-family='system-ui' font-size='18' text-anchor='middle'%3EDemo banner%3C/text%3E%3C/svg%3E"
+            />
+            <img
+              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Ccircle fill='%2394a3b8' cx='40' cy='40' r='40'/%3E%3C/svg%3E"
+              alt=""
+            />
+            <p class="sample-low-contrast" id="low-contrast-block">
+              This paragraph uses intentionally low contrast (#c8c8c8 on #fafafa).
+            </p>
+            <button type="button" class="sample-animated-btn" id="animated-submit">Animated Submit</button>
+          </div>
+        </section>
+
+        <section class="report-panel" aria-labelledby="results-heading">
+          <h2 id="results-heading">Scan report</h2>
+          <div class="report-summary" id="report-summary" hidden>
+            <div class="report-stat report-stat--pass">
+              <span class="report-stat-value" id="pass-count">0</span>
+              <span class="report-stat-label">Passed</span>
+            </div>
+            <div class="report-stat report-stat--fail">
+              <span class="report-stat-value" id="fail-count">0</span>
+              <span class="report-stat-label">Failed</span>
+            </div>
+          </div>
+          <ul class="report-list" id="report-list">
+            <li class="report-empty">Run a scan to generate results.</li>
+          </ul>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var scanTarget = document.getElementById("scan-target");
+        var reportList = document.getElementById("report-list");
+        var reportSummary = document.getElementById("report-summary");
+        var passCountEl = document.getElementById("pass-count");
+        var failCountEl = document.getElementById("fail-count");
+        var downloadTxtBtn = document.getElementById("download-txt");
+        var downloadJsonBtn = document.getElementById("download-json");
+        var lastReport = null;
+
+        function relativeLuminance(r, g, b) {
+          var rs = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+          var gs = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+          var bs = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+          return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+        }
+
+        function parseColor(colorStr) {
+          if (!colorStr || colorStr === "transparent") return null;
+          var canvas = document.createElement("canvas");
+          canvas.width = canvas.height = 1;
+          var ctx = canvas.getContext("2d");
+          ctx.fillStyle = colorStr;
+          ctx.fillRect(0, 0, 1, 1);
+          var data = ctx.getImageData(0, 0, 1, 1).data;
+          return { r: data[0] / 255, g: data[1] / 255, b: data[2] / 255 };
+        }
+
+        function contrastRatio(fg, bg) {
+          var l1 = relativeLuminance(fg.r, fg.g, fg.b);
+          var l2 = relativeLuminance(bg.r, bg.g, bg.b);
+          var lighter = Math.max(l1, l2);
+          var darker = Math.min(l1, l2);
+          return (lighter + 0.05) / (darker + 0.05);
+        }
+
+        function isFocusable(el) {
+          var tag = el.tagName.toLowerCase();
+          if (tag === "button" || tag === "a" || tag === "input" || tag === "select" || tag === "textarea") {
+            if (el.disabled) return false;
+            if (el.getAttribute("tabindex") === "-1") return false;
+            return true;
+          }
+          var tabindex = el.getAttribute("tabindex");
+          return tabindex !== null && parseInt(tabindex, 10) >= 0;
+        }
+
+        function hasAnimation(el) {
+          var style = window.getComputedStyle(el);
+          var animationName = style.animationName;
+          var transitionDuration = parseFloat(style.transitionDuration) || 0;
+          if (animationName && animationName !== "none") return true;
+          if (transitionDuration > 0 && style.transitionProperty !== "none") return true;
+          return false;
+        }
+
+        function checkMissingAlt(root) {
+          var images = root.querySelectorAll("img");
+          var issues = [];
+          images.forEach(function (img, index) {
+            if (!img.hasAttribute("alt")) {
+              issues.push("Image #" + (index + 1) + " is missing an alt attribute.");
+            } else if (img.getAttribute("alt").trim() === "" && !img.getAttribute("role")) {
+              issues.push("Image #" + (index + 1) + " has an empty alt attribute (decorative images should use role=\"presentation\" or aria-hidden).");
+            }
+          });
+          return {
+            id: "missing-alt",
+            title: "Image alt text",
+            pass: issues.length === 0,
+            details: issues.length ? issues : ["All images have alt attributes with meaningful or intentional empty values."]
+          };
+        }
+
+        function checkAnimatedFocusable(root) {
+          var focusable = [];
+          root.querySelectorAll("*").forEach(function (el) {
+            if (isFocusable(el) && hasAnimation(el)) {
+              focusable.push(el.tagName.toLowerCase() + (el.id ? "#" + el.id : "") + (el.className ? "." + String(el.className).trim().split(/\s+/)[0] : ""));
+            }
+          });
+          return {
+            id: "animated-focusable",
+            title: "Animated focusable elements",
+            pass: focusable.length === 0,
+            details: focusable.length
+              ? ["Found " + focusable.length + " focusable element(s) with CSS animation or transition: " + focusable.join(", ") + ". Consider disabling motion under prefers-reduced-motion."]
+              : ["No focusable elements with active CSS animation detected."]
+          };
+        }
+
+        function checkContrast(root) {
+          var issues = [];
+          var candidates = root.querySelectorAll("p, span, button, a, li, h1, h2, h3, h4");
+          candidates.forEach(function (el) {
+            var style = window.getComputedStyle(el);
+            var fg = parseColor(style.color);
+            var bg = parseColor(style.backgroundColor);
+            if (!fg || !bg) return;
+            var ratio = contrastRatio(fg, bg);
+            if (ratio < 4.5 && el.textContent.trim().length > 0) {
+              issues.push(
+                el.tagName.toLowerCase() +
+                  (el.id ? "#" + el.id : "") +
+                  " contrast ratio ~" +
+                  ratio.toFixed(2) +
+                  ":1 (below 4.5:1 for normal text)."
+              );
+            }
+          });
+          return {
+            id: "contrast",
+            title: "Text contrast heuristic",
+            pass: issues.length === 0,
+            details: issues.length ? issues : ["Sample text blocks meet the 4.5:1 contrast heuristic."]
+          };
+        }
+
+        function checkReducedMotionCoverage() {
+          var issues = [];
+          var styleTags = document.querySelectorAll("style");
+
+          styleTags.forEach(function (tag, index) {
+            var text = tag.textContent || "";
+            var hasAnimation = /@keyframes\s+\w+/i.test(text) || /animation\s*:/i.test(text);
+            var hasReduced = /@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(text);
+            if (hasAnimation && !hasReduced) {
+              issues.push(
+                "Inline <style> block #" + (index + 1) + " defines animation but lacks prefers-reduced-motion: reduce overrides."
+              );
+            }
+          });
+
+          var linkedCss = "";
+          for (var i = 0; i < document.styleSheets.length; i++) {
+            try {
+              var sheet = document.styleSheets[i];
+              if (sheet.href && sheet.href.indexOf("style.css") !== -1) {
+                var rules = sheet.cssRules || sheet.rules;
+                if (rules) {
+                  for (var j = 0; j < rules.length; j++) {
+                    linkedCss += rules[j].cssText + "\n";
+                  }
+                }
+              }
+            } catch (e) {
+              /* cross-origin sheets may throw */
+            }
+          }
+
+          var linkedHasKeyframes = /@keyframes\s+\w+/i.test(linkedCss);
+          var linkedHasReduced = /@media\s*\(\s*prefers-reduced-motion\s*:\s*reduce\s*\)/i.test(linkedCss);
+          if (linkedHasKeyframes && !linkedHasReduced) {
+            issues.push("Linked style.css contains @keyframes but no prefers-reduced-motion: reduce block.");
+          }
+
+          return {
+            id: "reduced-motion",
+            title: "prefers-reduced-motion coverage",
+            pass: issues.length === 0,
+            details: issues.length
+              ? issues
+              : ["Animations in stylesheets and inline style tags include prefers-reduced-motion fallbacks."]
+          };
+        }
+
+        function runScan() {
+          var checks = [
+            checkMissingAlt(scanTarget),
+            checkAnimatedFocusable(scanTarget),
+            checkContrast(scanTarget),
+            checkReducedMotionCoverage()
+          ];
+
+          var passCount = checks.filter(function (c) { return c.pass; }).length;
+          var failCount = checks.length - passCount;
+
+          lastReport = {
+            generatedAt: new Date().toISOString(),
+            summary: { passed: passCount, failed: failCount, total: checks.length },
+            checks: checks
+          };
+
+          renderReport(checks, passCount, failCount);
+          downloadTxtBtn.disabled = false;
+          downloadJsonBtn.disabled = false;
+        }
+
+        function renderReport(checks, passCount, failCount) {
+          reportSummary.hidden = false;
+          passCountEl.textContent = String(passCount);
+          failCountEl.textContent = String(failCount);
+          reportList.innerHTML = "";
+
+          checks.forEach(function (check) {
+            var li = document.createElement("li");
+            li.className = "report-item report-item--" + (check.pass ? "pass" : "fail");
+
+            var title = document.createElement("p");
+            title.className = "report-item-title";
+            title.textContent = (check.pass ? "PASS" : "FAIL") + " — " + check.title;
+
+            li.appendChild(title);
+
+            check.details.forEach(function (detail) {
+              var p = document.createElement("p");
+              p.className = "report-item-detail";
+              p.textContent = detail;
+              li.appendChild(p);
+            });
+
+            reportList.appendChild(li);
+          });
+        }
+
+        function downloadFile(content, filename, mime) {
+          var blob = new Blob([content], { type: mime });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        function buildTxtReport(report) {
+          var lines = [
+            "Accessibility Motion Report",
+            "Generated: " + report.generatedAt,
+            "",
+            "Summary: " + report.summary.passed + " passed, " + report.summary.failed + " failed (" + report.summary.total + " checks)",
+            ""
+          ];
+
+          report.checks.forEach(function (check) {
+            lines.push((check.pass ? "[PASS]" : "[FAIL]") + " " + check.title);
+            check.details.forEach(function (d) {
+              lines.push("  - " + d);
+            });
+            lines.push("");
+          });
+
+          return lines.join("\n");
+        }
+
+        document.getElementById("run-scan").addEventListener("click", runScan);
+
+        document.getElementById("download-txt").addEventListener("click", function () {
+          if (!lastReport) return;
+          downloadFile(buildTxtReport(lastReport), "accessibility-motion-report.txt", "text/plain");
+        });
+
+        document.getElementById("download-json").addEventListener("click", function () {
+          if (!lastReport) return;
+          downloadFile(JSON.stringify(lastReport, null, 2), "accessibility-motion-report.json", "application/json");
+        });
+      })();
+    </script>
+  </body>
+</html>

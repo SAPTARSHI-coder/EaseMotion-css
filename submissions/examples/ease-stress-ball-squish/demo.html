@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stress Ball Squish</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Stress Ball Squish</h1>
+        <p class="subtitle">Object that squishes and deforms when clicked or dragged</p>
+
+        <div class="stress-wrapper">
+            <canvas id="stressCanvas"></canvas>
+
+            <div class="controls">
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click and drag to squish</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('stressCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let ball = {
+            x: 0,
+            y: 0,
+            radius: 60,
+            targetRadius: 60,
+            squishX: 1,
+            squishY: 1,
+            targetSquishX: 1,
+            targetSquishY: 1,
+            rotation: 0,
+            velocityX: 0,
+            velocityY: 0,
+            color: 0,
+            glowIntensity: 1,
+            bouncePhase: 0,
+            isBeingSquished: false,
+            squishAmount: 0,
+            trail: [],
+            maxTrail: 15,
+            particles: [],
+            wobblePhase: 0,
+        };
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let isHovering = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let colorMode = 0;
+        let squishVelocity = 0;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                },
+                glow: (t) => {
+                    const hue = (t * 360 + time * 30 + 60) % 360;
+                    return `hsl(${hue}, 90%, 70%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                },
+                glow: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + 0.5) * 10;
+                    return `hsl(${hue}, 80%, ${60 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                },
+                glow: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + 0.5) * 10;
+                    return `hsl(${hue}, 80%, ${60 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                },
+                glow: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + 0.5) * 15;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                },
+                glow: (t) => {
+                    const hue = (t * 360 + time * 40 + 60) % 360;
+                    return `hsl(${hue}, 100%, 65%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                },
+                glow: (t) => {
+                    const hue = (t * 360 + time * 20 + 60) % 360;
+                    return `hsl(${hue}, 60%, 85%)`;
+                }
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class SquishParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6 - 3;
+                this.size = 2 + Math.random() * 4;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${Math.random() * 360}, 80%, 60%)`;
+                this.phase = Math.random() * Math.PI * 2;
+                this.gravity = 0.05 + Math.random() * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += 0.05;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW BALL =====
+        function drawBall() {
+            const cx = ball.x;
+            const cy = ball.y;
+            const radius = ball.radius;
+            const squishX = ball.squishX;
+            const squishY = ball.squishY;
+            const rotation = ball.rotation;
+            const colorFn = colorPalettes[colorMode].fn;
+            const glowFn = colorPalettes[colorMode].glow;
+
+            // Trail
+            for (let i = 0; i < ball.trail.length; i++) {
+                const t = ball.trail[i];
+                const alpha = (i / ball.trail.length) * 0.15;
+                const size = radius * (0.3 + (i / ball.trail.length) * 0.3);
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = colorFn(i / ball.trail.length);
+                ctx.globalAlpha = alpha;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = glowFn(i / ball.trail.length);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(rotation);
+            ctx.scale(squishX, squishY);
+
+            // Glow
+            const glowSize = radius * 3 * ball.glowIntensity;
+            const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+            const glowColor = glowFn(0.5);
+            glowGrad.addColorStop(0, glowColor + '30');
+            glowGrad.addColorStop(0.5, glowColor + '15');
+            glowGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Main ball
+            const grad = ctx.createRadialGradient(
+                -radius * 0.3, -radius * 0.4, radius * 0.1,
+                0, 0, radius
+            );
+            const color1 = colorFn(0.3);
+            const color2 = colorFn(0.6);
+            const color3 = colorFn(0.9);
+            grad.addColorStop(0, color1);
+            grad.addColorStop(0.5, color2);
+            grad.addColorStop(1, color3);
+
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = glowFn(0.5) + '40';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Highlight
+            ctx.beginPath();
+            ctx.ellipse(
+                -radius * 0.2,
+                -radius * 0.3,
+                radius * 0.3,
+                radius * 0.15,
+                -0.5,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.fill();
+
+            // Secondary highlight
+            ctx.beginPath();
+            ctx.ellipse(
+                -radius * 0.15,
+                -radius * 0.45,
+                radius * 0.15,
+                radius * 0.08,
+                -0.3,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.fill();
+
+            // Squish wrinkles
+            if (ball.squishAmount > 0.1) {
+                const numWrinkles = Math.floor(ball.squishAmount * 8);
+                for (let i = 0; i < numWrinkles; i++) {
+                    const angle = (i / numWrinkles) * Math.PI * 2 + ball.wobblePhase;
+                    const dist = radius * (0.85 + 0.15 * Math.sin(angle * 2 + ball.wobblePhase));
+                    const x = Math.cos(angle) * dist;
+                    const y = Math.sin(angle) * dist;
+                    const size = 2 + ball.squishAmount * 3;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 0, 0, ${ball.squishAmount * 0.05})`;
+                    ctx.fill();
+                }
+            }
+
+            // Glow dots
+            if (ball.squishAmount > 0.3) {
+                const numDots = Math.floor(ball.squishAmount * 6);
+                for (let i = 0; i < numDots; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = radius * (0.2 + Math.random() * 0.4);
+                    const x = Math.cos(angle) * dist;
+                    const y = Math.sin(angle) * dist;
+                    const size = 1 + Math.random() * 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.2})`;
+                    ctx.fill();
+                }
+            }
+
+            ctx.restore();
+
+            // Draw particles
+            for (const p of ball.particles) {
+                p.draw(ctx);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== UPDATE BALL =====
+        function updateBall() {
+            const speed = 0.15;
+
+            // Smooth squish
+            ball.squishX += (ball.targetSquishX - ball.squishX) * speed;
+            ball.squishY += (ball.targetSquishY - ball.squishY) * speed;
+
+            // Smooth radius
+            ball.radius += (ball.targetRadius - ball.radius) * speed;
+
+            // Update squish amount
+            ball.squishAmount = 1 - (ball.squishX + ball.squishY) / 2;
+
+            // Glow intensity
+            ball.glowIntensity = 0.8 + 0.2 * Math.sin(time * 0.02 + ball.wobblePhase);
+
+            // Wobble
+            ball.wobblePhase += 0.02;
+
+            // Rotation
+            if (isDragging) {
+                const dx = mouseX - lastMouseX;
+                const dy = mouseY - lastMouseY;
+                ball.rotation += (dx * 0.01 + dy * 0.005) * 0.5;
+            } else {
+                ball.rotation *= 0.98;
+            }
+
+            // Trail
+            ball.trail.push({ x: ball.x, y: ball.y });
+            if (ball.trail.length > ball.maxTrail) {
+                ball.trail.shift();
+            }
+
+            // Update particles
+            for (let i = ball.particles.length - 1; i >= 0; i--) {
+                const p = ball.particles[i];
+                p.update();
+                if (p.isDead()) {
+                    ball.particles.splice(i, 1);
+                }
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isDragging ? 'Squishing!' : (isHovering ? 'Hover' : 'Ready');
+                statusText.textContent = `🌀 ${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            lastMouseX = mouseX;
+            lastMouseY = mouseY;
+        }
+
+        // ===== SQUISH BALL =====
+        function squishBall(x, y, force) {
+            const dx = x - ball.x;
+            const dy = y - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const maxDist = ball.radius * 2;
+
+            if (dist < maxDist) {
+                const strength = Math.min(1, 1 - dist / maxDist) * (force || 1);
+                
+                // Squish direction
+                const angle = Math.atan2(dy, dx);
+                const squishFactor = 1 - strength * 0.5;
+                const stretchFactor = 1 + strength * 0.3;
+
+                ball.targetSquishX = 1 + (stretchFactor - 1) * Math.abs(Math.cos(angle));
+                ball.targetSquishY = 1 + (stretchFactor - 1) * Math.abs(Math.sin(angle));
+                ball.targetSquishX *= squishFactor;
+                ball.targetSquishY *= squishFactor;
+
+                // Create particles
+                const numParticles = Math.floor(3 + strength * 5);
+                const colorFn = colorPalettes[colorMode].fn;
+                for (let i = 0; i < numParticles; i++) {
+                    const angle2 = Math.random() * Math.PI * 2;
+                    const dist2 = ball.radius * (0.5 + Math.random() * 0.5);
+                    const px = ball.x + Math.cos(angle2) * dist2;
+                    const py = ball.y + Math.sin(angle2) * dist2;
+                    const color = colorFn(Math.random());
+                    const p = new SquishParticle(px, py, color);
+                    p.vx += (Math.random() - 0.5) * 3;
+                    p.vy += (Math.random() - 0.5) * 3 - 1;
+                    ball.particles.push(p);
+                }
+
+                // Squish sound effect (visual)
+                ball.squishAmount = strength;
+                
+                // Shrink ball slightly
+                ball.targetRadius = ball.radius * (1 - strength * 0.05);
+
+                // Bounce
+                ball.bouncePhase = 0;
+
+                return true;
+            }
+            return false;
+        }
+
+        // ===== RESET BALL =====
+        function resetBall() {
+            ball.targetSquishX = 1;
+            ball.targetSquishY = 1;
+            ball.targetRadius = 60;
+            ball.rotation = 0;
+            ball.particles = [];
+            ball.trail = [];
+            ball.squishAmount = 0;
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Initialize ball position if not set
+            if (ball.x === 0 && ball.y === 0) {
+                ball.x = w / 2;
+                ball.y = h / 2;
+            }
+
+            // Update mouse position for hover
+            if (!isDragging) {
+                // Check if mouse is over ball
+                if (isHovering) {
+                    const dx = mouseX - ball.x;
+                    const dy = mouseY - ball.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < ball.radius * 1.5) {
+                        // Hover squish
+                        ball.targetSquishX = 0.95 + 0.05 * Math.cos(time * 2);
+                        ball.targetSquishY = 0.95 + 0.05 * Math.sin(time * 2);
+                    } else {
+                        resetBall();
+                    }
+                } else {
+                    resetBall();
+                }
+            }
+
+            // Update ball
+            updateBall();
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawBall();
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            const dx = x - ball.x;
+            const dy = y - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < ball.radius * 2) {
+                isDragging = true;
+                dragStartX = x;
+                dragStartY = y;
+                squishBall(x, y, 0.5);
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+
+            const dx = mouseX - ball.x;
+            const dy = mouseY - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (!isDragging) {
+                if (dist < ball.radius * 1.5) {
+                    isHovering = true;
+                    canvas.style.cursor = 'grab';
+                    // Hover squish
+                    ball.targetSquishX = 0.9 + 0.1 * Math.cos(time * 2);
+                    ball.targetSquishY = 0.9 + 0.1 * Math.sin(time * 2);
+                } else {
+                    isHovering = false;
+                    canvas.style.cursor = 'default';
+                    resetBall();
+                }
+            } else {
+                // Drag squish
+                const dragDx = mouseX - dragStartX;
+                const dragDy = mouseY - dragStartY;
+                const dragDist = Math.sqrt(dragDx * dragDx + dragDy * dragDy);
+                if (dragDist > 5) {
+                    const force = Math.min(1, dragDist / 100);
+                    squishBall(mouseX, mouseY, force);
+                    
+                    // Move ball slightly
+                    ball.x += dragDx * 0.02;
+                    ball.y += dragDy * 0.02;
+                }
+
+                // Update drag start to prevent drift
+                dragStartX += (mouseX - dragStartX) * 0.1;
+                dragStartY += (mouseY - dragStartY) * 0.1;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                canvas.style.cursor = 'default';
+                // Release squish with bounce
+                ball.targetSquishX = 1;
+                ball.targetSquishY = 1;
+                ball.targetRadius = 60;
+                
+                // Create release particles
+                const colorFn = colorPalettes[colorMode].fn;
+                for (let i = 0; i < 10; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = ball.radius * 0.5;
+                    const px = ball.x + Math.cos(angle) * dist;
+                    const py = ball.y + Math.sin(angle) * dist;
+                    const color = colorFn(Math.random());
+                    const p = new SquishParticle(px, py, color);
+                    p.vx += (Math.random() - 0.5) * 4;
+                    p.vy += (Math.random() - 0.5) * 4 - 2;
+                    ball.particles.push(p);
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            if (!isDragging) {
+                canvas.style.cursor = 'default';
+                resetBall();
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            const dx = x - ball.x;
+            const dy = y - ball.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < ball.radius * 2) {
+                isDragging = true;
+                dragStartX = x;
+                dragStartY = y;
+                squishBall(x, y, 0.5);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+
+            if (isDragging) {
+                const dragDx = mouseX - dragStartX;
+                const dragDy = mouseY - dragStartY;
+                const dragDist = Math.sqrt(dragDx * dragDx + dragDy * dragDy);
+                if (dragDist > 5) {
+                    const force = Math.min(1, dragDist / 100);
+                    squishBall(mouseX, mouseY, force);
+                    ball.x += dragDx * 0.02;
+                    ball.y += dragDy * 0.02;
+                }
+                dragStartX += (mouseX - dragStartX) * 0.1;
+                dragStartY += (mouseY - dragStartY) * 0.1;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            if (isDragging) {
+                isDragging = false;
+                ball.targetSquishX = 1;
+                ball.targetSquishY = 1;
+                ball.targetRadius = 60;
+                
+                const colorFn = colorPalettes[colorMode].fn;
+                for (let i = 0; i < 10; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = ball.radius * 0.5;
+                    const px = ball.x + Math.cos(angle) * dist;
+                    const py = ball.y + Math.sin(angle) * dist;
+                    const color = colorFn(Math.random());
+                    const p = new SquishParticle(px, py, color);
+                    p.vx += (Math.random() - 0.5) * 4;
+                    p.vy += (Math.random() - 0.5) * 4 - 2;
+                    ball.particles.push(p);
+                }
+            }
+        });
+
+        // ===== CONTROLS =====
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click and drag to squish';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            const w = canvas.width;
+            const h = canvas.height;
+            ball.x = w / 2;
+            ball.y = h / 2;
+            resetBall();
+            ball.particles = [];
+            ball.trail = [];
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click and drag to squish';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Random squish
+                const angle = Math.random() * Math.PI * 2;
+                const dist = ball.radius * 0.7;
+                const x = ball.x + Math.cos(angle) * dist;
+                const y = ball.y + Math.sin(angle) * dist;
+                squishBall(x, y, 0.7);
+                setTimeout(() => {
+                    resetBall();
+                }, 300);
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        const w = canvas.width;
+        const h = canvas.height;
+        ball.x = w / 2;
+        ball.y = h / 2;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Click and drag to squish';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Stress Ball Squish loaded!');
+        console.log('💡 Click and drag to squish the ball');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Random squish');
+    </script>
+</body>
+</html>

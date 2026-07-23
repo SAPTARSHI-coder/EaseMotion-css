@@ -1,0 +1,122 @@
+// _multi-layer-box-shadow-elevation-scale-tw.scss
+//
+// A multi-layer elevation system for EaseMotion CSS, modeled on the
+// "ambient + key light" approach used by Material-style design systems:
+// each elevation level stacks a soft, low-opacity ambient shadow with a
+// tighter, more directional key shadow, so surfaces read as physically
+// "lifted" rather than just blurred.
+//
+// Usage is two-part:
+//   1. `ease-elevation-shadow($level)`  → returns a box-shadow value
+//   2. `ease-elevation($level)`         → mixin that applies it (+ optional transition)
+
+// ---------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------
+
+/// Base shadow color. Kept as a plain RGB triplet (not rgba) so opacity
+/// can be layered per-level via rgba() below.
+$ease-elevation-color: 15, 17, 23 !default; // near-black, matches dark UI surfaces
+
+/// Duration used when `ease-elevation` applies a transition between levels.
+$ease-elevation-transition-duration: 200ms !default;
+$ease-elevation-transition-timing: ease !default;
+
+/// Elevation map: level → list of shadow layers.
+/// Each layer is (x-offset, y-offset, blur, spread, opacity).
+/// Levels are unitless keys (0–5) representing increasing "height".
+$ease-elevation-levels: (
+  0: (
+    (0, 0, 0, 0, 0)
+  ),
+  1: (
+    (0, 1px, 2px, 0, 0.10),
+    (0, 1px, 3px, 1px, 0.08)
+  ),
+  2: (
+    (0, 2px, 4px, 0, 0.12),
+    (0, 3px, 6px, 2px, 0.10)
+  ),
+  3: (
+    (0, 4px, 8px, 0, 0.14),
+    (0, 6px, 12px, 3px, 0.12)
+  ),
+  4: (
+    (0, 8px, 16px, 0, 0.16),
+    (0, 10px, 20px, 4px, 0.14)
+  ),
+  5: (
+    (0, 16px, 28px, 0, 0.18),
+    (0, 20px, 36px, 6px, 0.16)
+  )
+) !default;
+
+// ---------------------------------------------------------------------
+// Function
+// ---------------------------------------------------------------------
+
+/// Builds the box-shadow value for a given elevation level by
+/// concatenating all of its shadow layers into one comma-separated
+/// box-shadow declaration.
+///
+/// @param {Number} $level - Elevation level key present in $ease-elevation-levels.
+/// @return {List} A box-shadow-ready value, e.g. `0 1px 2px 0 rgba(...), 0 1px 3px 1px rgba(...)`
+///
+/// @example scss
+///   .card {
+///     box-shadow: ease-elevation-shadow(2);
+///   }
+@function ease-elevation-shadow($level) {
+  @if not map-has-key($ease-elevation-levels, $level) {
+    @warn "ease-elevation-shadow: level `#{$level}` not found in $ease-elevation-levels. Falling back to level 0.";
+    $level: 0;
+  }
+
+  $layers: map-get($ease-elevation-levels, $level);
+  $shadow-list: ();
+
+  @each $layer in $layers {
+    $x: nth($layer, 1);
+    $y: nth($layer, 2);
+    $blur: nth($layer, 3);
+    $spread: nth($layer, 4);
+    $opacity: nth($layer, 5);
+
+    $shadow: $x $y $blur $spread rgba($ease-elevation-color, $opacity);
+    $shadow-list: append($shadow-list, $shadow, comma);
+  }
+
+  @return $shadow-list;
+}
+
+// ---------------------------------------------------------------------
+// Mixin
+// ---------------------------------------------------------------------
+
+/// Applies a full multi-layer elevation shadow to an element, with an
+/// optional smooth transition for use on interactive elements that
+/// change elevation on hover/focus (e.g. cards, buttons, modals).
+///
+/// @param {Number} $level - Elevation level to apply.
+/// @param {Boolean} $transition [true] - Whether to include a box-shadow transition.
+///
+/// @example scss - Static elevation
+///   .card {
+///     @include ease-elevation(1);
+///   }
+///
+/// @example scss - Elevation that rises on hover
+///   .card {
+///     @include ease-elevation(1);
+///
+///     &:hover {
+///       @include ease-elevation(3, $transition: false); // transition already set above
+///     }
+///   }
+@mixin ease-elevation($level, $transition: true) {
+  box-shadow: ease-elevation-shadow($level);
+
+  @if $transition {
+    transition: box-shadow $ease-elevation-transition-duration $ease-elevation-transition-timing;
+  }
+}

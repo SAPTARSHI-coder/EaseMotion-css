@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Timezone Converter — EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 2rem; background: var(--ease-color-bg); font-family: var(--ease-font-sans); }
+    h2 { text-align: center; margin-bottom: 0.25rem; }
+    p.sub { text-align: center; color: var(--ease-color-muted); margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <h2>Timezone Converter</h2>
+  <p class="sub">Convert any time across the world instantly</p>
+
+  <div class="ease-tz-converter">
+
+    <div class="ease-tz-converter__input-row">
+      <div class="ease-tz-converter__field">
+        <label class="ease-tz-converter__label" for="tz-time">Time</label>
+        <input class="ease-tz-converter__input" type="time" id="tz-time" />
+      </div>
+      <div class="ease-tz-converter__field">
+        <label class="ease-tz-converter__label" for="tz-source">From Timezone</label>
+        <select class="ease-tz-converter__select" id="tz-source"></select>
+      </div>
+      <button class="ease-tz-converter__btn" id="tz-now-btn" aria-label="Use current time">
+        Now
+      </button>
+    </div>
+
+    <div class="ease-tz-converter__now" id="tz-now-display"></div>
+
+    <div class="ease-tz-converter__results" id="tz-results"></div>
+
+  </div>
+
+  <script>
+    const ZONES = [
+      { city: 'New York',     tz: 'America/New_York',       flag: '🇺🇸' },
+      { city: 'Los Angeles',  tz: 'America/Los_Angeles',    flag: '🇺🇸' },
+      { city: 'Chicago',      tz: 'America/Chicago',        flag: '🇺🇸' },
+      { city: 'London',       tz: 'Europe/London',          flag: '🇬🇧' },
+      { city: 'Paris',        tz: 'Europe/Paris',           flag: '🇫🇷' },
+      { city: 'Berlin',       tz: 'Europe/Berlin',          flag: '🇩🇪' },
+      { city: 'Dubai',        tz: 'Asia/Dubai',             flag: '🇦🇪' },
+      { city: 'Mumbai',       tz: 'Asia/Kolkata',           flag: '🇮🇳' },
+      { city: 'Singapore',    tz: 'Asia/Singapore',         flag: '🇸🇬' },
+      { city: 'Tokyo',        tz: 'Asia/Tokyo',             flag: '🇯🇵' },
+      { city: 'Sydney',       tz: 'Australia/Sydney',       flag: '🇦🇺' },
+      { city: 'São Paulo',    tz: 'America/Sao_Paulo',      flag: '🇧🇷' },
+      { city: 'Mexico City',  tz: 'America/Mexico_City',    flag: '🇲🇽' },
+      { city: 'Toronto',      tz: 'America/Toronto',        flag: '🇨🇦' },
+      { city: 'Seoul',        tz: 'Asia/Seoul',             flag: '🇰🇷' },
+      { city: 'Hong Kong',    tz: 'Asia/Hong_Kong',         flag: '🇭🇰' },
+      { city: 'Johannesburg', tz: 'Africa/Johannesburg',    flag: '🇿🇦' },
+      { city: 'Cairo',        tz: 'Africa/Cairo',           flag: '🇪🇬' },
+      { city: 'Moscow',       tz: 'Europe/Moscow',          flag: '🇷🇺' },
+      { city: 'Auckland',     tz: 'Pacific/Auckland',       flag: '🇳🇿' },
+    ];
+
+    // Populate source select
+    const sourceSelect = document.getElementById('tz-source');
+    ZONES.forEach((z, i) => {
+      const opt = document.createElement('option');
+      opt.value = z.tz;
+      opt.textContent = z.flag + ' ' + z.city;
+      // Default to local timezone
+      if (z.tz === Intl.DateTimeFormat().resolvedOptions().timeZone) opt.selected = true;
+      sourceSelect.appendChild(opt);
+    });
+
+    // Set current time as default
+    function setNow() {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('tz-time').value = hh + ':' + mm;
+      update();
+    }
+
+    function getOffset(tz, date) {
+      const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+      const local = new Date(utc + 3600000 * getUTCOffset(tz, date));
+      return local;
+    }
+
+    function getUTCOffset(tz, date) {
+      const formatter = new Intl.DateTimeFormat('en', {
+        timeZone: tz, timeZoneName: 'shortOffset'
+      });
+      const parts = formatter.formatToParts(date);
+      const tzPart = parts.find(p => p.type === 'timeZoneName')?.value || '';
+      const match = tzPart.match(/GMT([+-]\d+(?::\d+)?)?/);
+      if (!match || !match[1]) return 0;
+      const [h, m = 0] = match[1].split(':').map(Number);
+      return h + (h < 0 ? -m/60 : m/60);
+    }
+
+    function formatTime(date, tz) {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: true
+      }).format(date);
+    }
+
+    function formatDate(date, tz) {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, weekday: 'short', month: 'short', day: 'numeric'
+      }).format(date);
+    }
+
+    function formatOffsetLabel(tz, date) {
+      const parts = new Intl.DateTimeFormat('en', {
+        timeZone: tz, timeZoneName: 'shortOffset'
+      }).formatToParts(date);
+      return parts.find(p => p.type === 'timeZoneName')?.value || tz;
+    }
+
+    function update() {
+      const timeVal = document.getElementById('tz-time').value;
+      const sourceTz = sourceSelect.value;
+      if (!timeVal) return;
+
+      const [hh, mm] = timeVal.split(':').map(Number);
+      // Build a date in the source timezone
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-CA', { timeZone: sourceTz });
+      const sourceDate = new Date(\`\${dateStr}T\${String(hh).padStart(2,'0')}:\${String(mm).padStart(2,'0')}:00\`);
+
+      // Convert to UTC using source tz offset
+      const srcOffset = getUTCOffset(sourceTz, sourceDate);
+      const utcMs = sourceDate.getTime() - srcOffset * 3600000;
+      const utcDate = new Date(utcMs);
+
+      // Now banner
+      document.getElementById('tz-now-display').textContent =
+        \`Converting \${formatTime(sourceDate, sourceTz)} \${formatOffsetLabel(sourceTz, sourceDate)} — \${formatDate(sourceDate, sourceTz)}\`;
+
+      // Results
+      const sourceZone = ZONES.find(z => z.tz === sourceTz) || { city: sourceTz, flag: '🌐' };
+      const results = document.getElementById('tz-results');
+      results.innerHTML = [
+        // Source first
+        { ...sourceZone, isSource: true },
+        ...ZONES.filter(z => z.tz !== sourceTz)
+      ].map(z => {
+        const t = formatTime(utcDate, z.tz);
+        const d = formatDate(utcDate, z.tz);
+        const off = formatOffsetLabel(z.tz, utcDate);
+        return \`
+          <div class="ease-tz-converter__card\${z.isSource ? ' ease-tz-converter__card--source' : ''}">
+            <div class="ease-tz-converter__card-left">
+              <div class="ease-tz-converter__card-city">\${z.flag} \${z.city}</div>
+              <div class="ease-tz-converter__card-tz">\${z.tz}</div>
+              <div><span class="ease-tz-converter__card-offset">\${off}</span></div>
+            </div>
+            <div class="ease-tz-converter__card-right">
+              <div class="ease-tz-converter__card-time">\${t}</div>
+              <div class="ease-tz-converter__card-date">\${d}</div>
+            </div>
+          </div>
+        \`;
+      }).join('');
+    }
+
+    document.getElementById('tz-time').addEventListener('input', update);
+    document.getElementById('tz-source').addEventListener('change', update);
+    document.getElementById('tz-now-btn').addEventListener('click', setNow);
+    setNow();
+  </script>
+</body>
+</html>

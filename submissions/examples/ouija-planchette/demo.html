@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ouija Planchette — Pure CSS + JS Component</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="ouija-page">
+    <h1 class="demo-title">Ouija Planchette</h1>
+    <p class="demo-subtitle">A mystical spirit board animation — pure CSS + vanilla JavaScript, zero dependencies.</p>
+
+    <div class="ouija-container">
+      <div class="ouija-board" id="ouijaBoard" role="button" tabindex="0" aria-label="Click to ask the spirits">
+        <div class="board-glow" id="boardGlow"></div>
+
+        <div class="corner-symbol symbol-sun" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><g stroke-width="1.6"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g></svg>
+        </div>
+        <div class="corner-symbol symbol-moon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M20 14.5A9 9 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+        </div>
+
+        <div class="board-word word-yes" data-char="YES">YES</div>
+        <div class="board-word word-no" data-char="NO">NO</div>
+
+        <div class="letters-arc" id="lettersArc"></div>
+        <div class="numbers-row" id="numbersRow"></div>
+
+        <div class="board-word word-goodbye" data-char="GOODBYE">GOODBYE</div>
+
+        <div class="corner-symbol symbol-star" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 1l2.9 7.6L23 11l-6.8 4.6L18 23l-6-4.5L6 23l1.8-7.4L1 11l8.1-2.4z"/></svg>
+        </div>
+        <div class="corner-symbol symbol-diamond" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2l7 10-7 10-7-10z"/></svg>
+        </div>
+
+        <div class="planchette" id="planchette">
+          <div class="planchette-trail" id="planchetteTrail"></div>
+          <svg class="planchette-body" viewBox="0 0 100 100" aria-hidden="true">
+            <path d="M50 92
+                     C 20 72, 4 50, 4 32
+                     C 4 14, 18 4, 32 4
+                     C 42 4, 50 12, 50 20
+                     C 50 12, 58 4, 68 4
+                     C 82 4, 96 14, 96 32
+                     C 96 50, 80 72, 50 92 Z"/>
+          </svg>
+          <div class="planchette-window"></div>
+        </div>
+      </div>
+
+      <div class="message-display" id="messageDisplay" aria-live="polite">
+        <span class="message-placeholder">The spirits await your question&hellip;</span>
+      </div>
+
+      <div class="ouija-controls">
+        <button class="ouija-btn primary" id="moveBtn">Ask the Spirits</button>
+        <button class="ouija-btn" id="resetBtn">Reset</button>
+
+        <label class="ouija-slider-label">
+          Speed
+          <input type="range" id="speedSlider" min="150" max="900" value="450" step="50" />
+        </label>
+
+        <label class="ouija-slider-label">
+          Glow
+          <input type="range" id="glowSlider" min="0" max="100" value="60" step="5" />
+        </label>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const board = document.getElementById('ouijaBoard');
+  const lettersArc = document.getElementById('lettersArc');
+  const numbersRow = document.getElementById('numbersRow');
+  const planchette = document.getElementById('planchette');
+  const trail = document.getElementById('planchetteTrail');
+  const messageDisplay = document.getElementById('messageDisplay');
+  const moveBtn = document.getElementById('moveBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const speedSlider = document.getElementById('speedSlider');
+  const glowSlider = document.getElementById('glowSlider');
+  const boardGlow = document.getElementById('boardGlow');
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const MESSAGES = [
+    'YES', 'NO', 'HELLO', 'BEWARE', 'RUN', 'LEAVE', 'HELP',
+    'DANGER', 'GOODBYE', 'SOON', 'WATCH', 'LISTEN', 'NEAR'
+  ];
+
+  const charEls = {}; // char -> element
+  let isMoving = false;
+  let currentX = 50; // percentages within board
+  let currentY = 50;
+
+  // ---- Build the alphabet arc (two curved rows) ----
+  const ALPHA_ROW_1 = 'ABCDEFGHIJKLM'.split('');
+  const ALPHA_ROW_2 = 'NOPQRSTUVWXYZ'.split('');
+
+  function placeArcRow(letters, container, centerYPercent, radiusXPercent, radiusYPercent, startDeg, endDeg) {
+    const count = letters.length;
+    letters.forEach((ch, i) => {
+      const t = count === 1 ? 0.5 : i / (count - 1);
+      const deg = startDeg + (endDeg - startDeg) * t;
+      const rad = (deg * Math.PI) / 180;
+      const x = 50 + radiusXPercent * Math.cos(rad);
+      const y = centerYPercent - radiusYPercent * Math.sin(rad);
+      const el = document.createElement('span');
+      el.className = 'board-letter';
+      el.textContent = ch;
+      el.dataset.char = ch;
+      el.style.left = x + '%';
+      el.style.top = y + '%';
+      container.appendChild(el);
+      charEls[ch] = el;
+    });
+  }
+
+  placeArcRow(ALPHA_ROW_1, lettersArc, 40, 44, 20, 160, 20);
+  placeArcRow(ALPHA_ROW_2, lettersArc, 54, 42, 16, 165, 15);
+
+  // ---- Build the number row ----
+  '0123456789'.split('').forEach((n, i) => {
+    const el = document.createElement('span');
+    el.className = 'board-number';
+    el.textContent = n;
+    el.dataset.char = n;
+    el.style.left = (14 + i * 7.5) + '%';
+    numbersRow.appendChild(el);
+    charEls[n] = el;
+  });
+
+  charEls['YES'] = document.querySelector('.word-yes');
+  charEls['NO'] = document.querySelector('.word-no');
+  charEls['GOODBYE'] = document.querySelector('.word-goodbye');
+
+  // ---- Positioning helpers ----
+  function percentPositionOf(el) {
+    const boardRect = board.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const x = ((elRect.left + elRect.width / 2) - boardRect.left) / boardRect.width * 100;
+    const y = ((elRect.top + elRect.height / 2) - boardRect.top) / boardRect.height * 100;
+    return { x, y };
+  }
+
+  function setPlanchette(x, y, duration) {
+    currentX = x;
+    currentY = y;
+    planchette.style.transitionDuration = duration + 'ms';
+    planchette.style.left = x + '%';
+    planchette.style.top = y + '%';
+  }
+
+  function pulseLetter(el) {
+    el.classList.add('is-active');
+    setTimeout(() => el.classList.remove('is-active'), 500);
+  }
+
+  function appendMessageLetter(ch) {
+    if (messageDisplay.querySelector('.message-placeholder')) {
+      messageDisplay.innerHTML = '';
+    }
+    const span = document.createElement('span');
+    span.className = 'message-letter';
+    span.textContent = ch;
+    messageDisplay.appendChild(span);
+  }
+
+  function clearMessage() {
+    messageDisplay.innerHTML = '<span class="message-placeholder">The spirits await your question&hellip;</span>';
+  }
+
+  // ---- Core spelling sequence ----
+  function spellMessage(word) {
+    if (isMoving) return;
+    isMoving = true;
+    moveBtn.disabled = true;
+    clearMessage();
+
+    const speed = prefersReducedMotion ? 0 : parseInt(speedSlider.value, 10);
+    const chars = ['YES', 'NO', 'GOODBYE'].includes(word) ? [word] : word.split('');
+
+    let i = 0;
+    function step() {
+      if (i >= chars.length) {
+        isMoving = false;
+        moveBtn.disabled = false;
+        return;
+      }
+      const ch = chars[i];
+      const el = charEls[ch];
+      if (el) {
+        const pos = percentPositionOf(el);
+        setPlanchette(pos.x, pos.y, prefersReducedMotion ? 0 : Math.max(speed, 120));
+        setTimeout(() => {
+          pulseLetter(el);
+          appendMessageLetter(ch.length > 1 ? ch : ch);
+        }, prefersReducedMotion ? 0 : Math.max(speed, 120));
+      }
+      i++;
+      setTimeout(step, prefersReducedMotion ? 250 : Math.max(speed, 120) + 250);
+    }
+    step();
+  }
+
+  function askSpirits() {
+    if (isMoving) return;
+    const word = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+    spellMessage(word);
+  }
+
+  function resetPlanchette() {
+    isMoving = false;
+    moveBtn.disabled = false;
+    setPlanchette(50, 50, prefersReducedMotion ? 0 : 500);
+    clearMessage();
+  }
+
+  // ---- Controls ----
+  moveBtn.addEventListener('click', askSpirits);
+  resetBtn.addEventListener('click', resetPlanchette);
+
+  board.addEventListener('click', (e) => {
+    if (e.target === moveBtn || e.target === resetBtn) return;
+    askSpirits();
+  });
+  board.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      askSpirits();
+    }
+  });
+
+  glowSlider.addEventListener('input', () => {
+    const val = glowSlider.value / 100;
+    board.style.setProperty('--glow-intensity', val);
+  });
+
+  // init defaults
+  board.style.setProperty('--glow-intensity', glowSlider.value / 100);
+  window.addEventListener('resize', () => setPlanchette(currentX, currentY, 0));
+  setPlanchette(50, 50, 0);
+})();
+</script>
+</body>
+</html>

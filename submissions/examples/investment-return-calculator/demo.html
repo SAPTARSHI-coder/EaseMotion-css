@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Return Calculator — EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { padding: 2rem; background: var(--ease-color-bg); font-family: var(--ease-font-sans); }
+    h2 { text-align: center; margin-bottom: 0.25rem; }
+    p.sub { text-align: center; color: var(--ease-color-muted); margin-bottom: 2rem; }
+  </style>
+</head>
+<body>
+  <h2>Investment Return Calculator</h2>
+  <p class="sub">Visualize compound growth with monthly contributions</p>
+
+  <div class="ease-invest">
+
+    <!-- Inputs -->
+    <div class="ease-invest__panel">
+      <h3 class="ease-invest__panel-title">Investment Parameters</h3>
+      <div class="ease-invest__grid">
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-principal">Initial Investment</label>
+          <div class="ease-invest__input-wrap">
+            <span class="ease-invest__prefix">$</span>
+            <input class="ease-invest__input ease-invest__input--prefix" id="inv-principal" type="number" min="0" value="10000" />
+          </div>
+        </div>
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-monthly">Monthly Contribution</label>
+          <div class="ease-invest__input-wrap">
+            <span class="ease-invest__prefix">$</span>
+            <input class="ease-invest__input ease-invest__input--prefix" id="inv-monthly" type="number" min="0" value="500" />
+          </div>
+        </div>
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-rate">Annual Return Rate: <span id="rate-label">8%</span></label>
+          <input class="ease-invest__slider" id="inv-rate" type="range" min="1" max="30" step="0.5" value="8" />
+        </div>
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-years">Investment Period: <span id="years-label">20 years</span></label>
+          <input class="ease-invest__slider" id="inv-years" type="range" min="1" max="40" step="1" value="20" />
+        </div>
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-compound">Compounding Frequency</label>
+          <select class="ease-invest__input" id="inv-compound">
+            <option value="12" selected>Monthly</option>
+            <option value="4">Quarterly</option>
+            <option value="2">Semi-Annually</option>
+            <option value="1">Annually</option>
+          </select>
+        </div>
+        <div class="ease-invest__field">
+          <label class="ease-invest__label" for="inv-inflation">Inflation Rate: <span id="inflation-label">2.5%</span></label>
+          <input class="ease-invest__slider" id="inv-inflation" type="range" min="0" max="10" step="0.5" value="2.5" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="ease-invest__results" id="inv-results"></div>
+
+    <!-- Chart -->
+    <div class="ease-invest__chart-section">
+      <div class="ease-invest__chart-title">Year-by-Year Growth</div>
+      <div class="ease-invest__chart" id="inv-chart"></div>
+      <div class="ease-invest__legend">
+        <div class="ease-invest__legend-item">
+          <div class="ease-invest__legend-dot" style="background:var(--ease-color-neutral-300)"></div>
+          Initial Principal
+        </div>
+        <div class="ease-invest__legend-item">
+          <div class="ease-invest__legend-dot" style="background:var(--ease-color-primary-light)"></div>
+          Contributions
+        </div>
+        <div class="ease-invest__legend-item">
+          <div class="ease-invest__legend-dot" style="background:var(--ease-color-primary)"></div>
+          Interest Earned
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="ease-invest__table-wrap">
+      <table class="ease-invest__table" id="inv-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Balance</th>
+            <th>Contributions</th>
+            <th>Interest</th>
+            <th>Total Gain</th>
+          </tr>
+        </thead>
+        <tbody id="inv-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    function fmt(n) {
+      return '$' + Math.round(n).toLocaleString('en-US');
+    }
+    function fmtPct(n) { return n.toFixed(1) + '%'; }
+
+    function calculate() {
+      const P  = parseFloat(document.getElementById('inv-principal').value) || 0;
+      const m  = parseFloat(document.getElementById('inv-monthly').value) || 0;
+      const r  = parseFloat(document.getElementById('inv-rate').value) / 100;
+      const yr = parseInt(document.getElementById('inv-years').value);
+      const n  = parseInt(document.getElementById('inv-compound').value);
+      const inf = parseFloat(document.getElementById('inv-inflation').value) / 100;
+
+      document.getElementById('rate-label').textContent = fmtPct(r * 100);
+      document.getElementById('years-label').textContent = yr + ' year' + (yr !== 1 ? 's' : '');
+      document.getElementById('inflation-label').textContent = fmtPct(inf * 100);
+
+      // Build year-by-year data
+      const data = [];
+      let balance = P;
+      const ratePerPeriod = r / n;
+      const periodsPerYear = n;
+      const monthlyToContrib = m * 12; // annual contribution
+
+      for (let y = 1; y <= yr; y++) {
+        const prevBal = data.length ? data[data.length-1].balance : P;
+        // Compound interest with monthly contributions
+        // FV = P(1+r/n)^(ny) + PMT * ((1+r/n)^(ny)-1)/(r/n)
+        const periods = y * periodsPerYear;
+        const factor = Math.pow(1 + ratePerPeriod, periods);
+        const fvPrincipal = P * factor;
+        const fvContrib = m > 0 ? m * (factor - 1) / ratePerPeriod : 0;
+        balance = fvPrincipal + fvContrib;
+        const totalContrib = m * 12 * y;
+        const interest = balance - P - totalContrib;
+        const realBalance = balance / Math.pow(1 + inf, y);
+        data.push({ year: y, balance, totalContrib, interest, realBalance });
+      }
+
+      const final = data[data.length - 1];
+      const totalContrib = m * 12 * yr;
+      const interest = final.balance - P - totalContrib;
+      const roi = P + totalContrib > 0 ? ((final.balance - P - totalContrib) / (P + totalContrib)) * 100 : 0;
+
+      // Results cards
+      document.getElementById('inv-results').innerHTML = [
+        { label: 'Final Balance',         value: fmt(final.balance),       sub: 'Total portfolio value',              primary: true },
+        { label: 'Total Interest Earned', value: fmt(interest),            sub: fmtPct(roi) + ' return on invested capital' },
+        { label: 'Real Value (inflation-adj)', value: fmt(final.realBalance), sub: 'At ' + fmtPct(inf * 100) + ' annual inflation' },
+      ].map(c => `
+        <div class="ease-invest__result-card${c.primary ? ' ease-invest__result-card--primary' : ''}">
+          <div class="ease-invest__result-label">${c.label}</div>
+          <div class="ease-invest__result-value">${c.value}</div>
+          <div class="ease-invest__result-sub">${c.sub}</div>
+        </div>
+      `).join('');
+
+      // Chart — show every year or sample if many years
+      const maxBal = final.balance;
+      const step = yr <= 20 ? 1 : Math.ceil(yr / 20);
+      const chartData = data.filter((d,i) => i % step === 0 || i === data.length-1);
+      document.getElementById('inv-chart').innerHTML = chartData.map(d => {
+        const totalH = (d.balance / maxBal) * 100;
+        const principalH = (P / maxBal) * 100;
+        const contribH = (d.totalContrib / maxBal) * 100;
+        const interestH = Math.max(0, totalH - principalH - contribH);
+        return `
+          <div class="ease-invest__bar-group">
+            <div class="ease-invest__bar-stack" style="height:${totalH}%">
+              <div class="ease-invest__bar-interest" style="height:${interestH}%"></div>
+              <div class="ease-invest__bar-contributions" style="height:${contribH}%"></div>
+              <div class="ease-invest__bar-principal" style="height:${principalH}%"></div>
+            </div>
+            <div class="ease-invest__bar-label">Yr ${d.year}</div>
+          </div>
+        `;
+      }).join('');
+
+      // Table (show every 5 years + final)
+      const tableStep = yr <= 10 ? 1 : 5;
+      const tableData = data.filter((d,i) => d.year % tableStep === 0 || i === data.length-1);
+      document.getElementById('inv-tbody').innerHTML = tableData.map(d => `
+        <tr>
+          <td>${d.year}</td>
+          <td>${fmt(d.balance)}</td>
+          <td>${fmt(P + d.totalContrib)}</td>
+          <td class="gain">${fmt(d.interest)}</td>
+          <td class="gain">+${fmtPct((d.interest / (P + d.totalContrib)) * 100)}</td>
+        </tr>
+      `).join('');
+    }
+
+    ['inv-principal','inv-monthly','inv-rate','inv-years','inv-compound','inv-inflation']
+      .forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+    calculate();
+  </script>
+</body>
+</html>

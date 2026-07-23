@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EaseMotion Playground</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="playground-tj">
+
+<div class="playground-tj__layout">
+
+  <div class="playground-tj__panel">
+    <h1>EaseMotion Playground</h1>
+
+    <div class="playground-tj__field">
+      <label for="pg-duration">Duration (ms)</label>
+      <input type="number" id="pg-duration" value="800" min="50" step="50" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-delay">Delay (ms)</label>
+      <input type="number" id="pg-delay" value="0" min="0" step="50" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-easing">Easing</label>
+      <select id="pg-easing">
+        <option value="ease">ease</option>
+        <option value="ease-in-out">ease-in-out</option>
+        <option value="cubic-bezier(.68,-0.55,.27,1.55)">back</option>
+        <option value="cubic-bezier(.22,1,.36,1)">expo-out</option>
+      </select>
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-rotate">Rotation (deg)</label>
+      <input type="number" id="pg-rotate" value="360" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-scale">Scale</label>
+      <input type="number" id="pg-scale" value="1.3" step="0.1" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-color-start">Start color</label>
+      <input type="color" id="pg-color-start" value="#5b5bd6" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-color-end">End color</label>
+      <input type="color" id="pg-color-end" value="#d65b9c" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-direction">Direction</label>
+      <select id="pg-direction">
+        <option value="normal">normal</option>
+        <option value="reverse">reverse</option>
+        <option value="alternate">alternate</option>
+      </select>
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-iterations">Iterations</label>
+      <input type="text" id="pg-iterations" value="1" />
+    </div>
+
+    <div class="playground-tj__field">
+      <label for="pg-theme">Theme</label>
+      <select id="pg-theme">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+
+    <button class="playground-tj__btn" id="pg-replay">Replay</button>
+    <button class="playground-tj__btn playground-tj__btn--ghost" id="pg-share">Copy shareable link</button>
+  </div>
+
+  <div class="playground-tj__preview">
+    <div class="playground-tj__subject" id="pg-subject"></div>
+  </div>
+
+  <div class="playground-tj__output">
+    <button class="playground-tj__btn" id="pg-copy">Copy CSS</button>
+    <button class="playground-tj__btn playground-tj__btn--ghost" id="pg-export">Export JSON</button>
+    <pre id="pg-css-output"></pre>
+    <div class="playground-tj__status" id="pg-status" aria-live="polite"></div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- Centralized state (single source of truth) ----
+  const state = {
+    duration: 800,
+    delay: 0,
+    easing: "ease",
+    rotate: 360,
+    scale: 1.3,
+    colorStart: "#5b5bd6",
+    colorEnd: "#d65b9c",
+    direction: "normal",
+    iterations: "1",
+    theme: "light"
+  };
+
+  const el = (id) => document.getElementById(id);
+  const fields = {
+    duration: el("pg-duration"),
+    delay: el("pg-delay"),
+    easing: el("pg-easing"),
+    rotate: el("pg-rotate"),
+    scale: el("pg-scale"),
+    colorStart: el("pg-color-start"),
+    colorEnd: el("pg-color-end"),
+    direction: el("pg-direction"),
+    iterations: el("pg-iterations"),
+    theme: el("pg-theme")
+  };
+
+  const subject = el("pg-subject");
+  const output = el("pg-css-output");
+  const status = el("pg-status");
+
+  const STYLE_TAG_ID = "playground-tj-dynamic-keyframes";
+
+  // ---- Load state from URL if present (shareable presets) ----
+  function loadFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    let found = false;
+    Object.keys(state).forEach((key) => {
+      if (params.has(key)) {
+        state[key] = params.get(key);
+        found = true;
+      }
+    });
+    if (found) {
+      state.duration = Number(state.duration);
+      state.delay = Number(state.delay);
+      state.rotate = Number(state.rotate);
+      state.scale = Number(state.scale);
+    }
+  }
+
+  function syncFieldsFromState() {
+    fields.duration.value = state.duration;
+    fields.delay.value = state.delay;
+    fields.easing.value = state.easing;
+    fields.rotate.value = state.rotate;
+    fields.scale.value = state.scale;
+    fields.colorStart.value = state.colorStart;
+    fields.colorEnd.value = state.colorEnd;
+    fields.direction.value = state.direction;
+    fields.iterations.value = state.iterations;
+    fields.theme.value = state.theme;
+  }
+
+  function readStateFromFields() {
+    state.duration = Number(fields.duration.value) || 0;
+    state.delay = Number(fields.delay.value) || 0;
+    state.easing = fields.easing.value;
+    state.rotate = Number(fields.rotate.value) || 0;
+    state.scale = Number(fields.scale.value) || 1;
+    state.colorStart = fields.colorStart.value;
+    state.colorEnd = fields.colorEnd.value;
+    state.direction = fields.direction.value;
+    state.iterations = fields.iterations.value;
+    state.theme = fields.theme.value;
+  }
+
+  // ---- Dynamic @keyframes generation via CSSOM ----
+  function ensureStyleSheet() {
+    let tag = document.getElementById(STYLE_TAG_ID);
+    if (!tag) {
+      tag = document.createElement("style");
+      tag.id = STYLE_TAG_ID;
+      document.head.appendChild(tag);
+    }
+    return tag.sheet;
+  }
+
+  function buildKeyframeRule() {
+    return `@keyframes playground-tj-anim {
+      from { transform: rotate(0deg) scale(1); background-color: ${state.colorStart}; }
+      to { transform: rotate(${state.rotate}deg) scale(${state.scale}); background-color: ${state.colorEnd}; }
+    }`;
+  }
+
+  function render() {
+    const sheet = ensureStyleSheet();
+    while (sheet.cssRules.length > 0) sheet.deleteRule(0);
+    sheet.insertRule(buildKeyframeRule(), 0);
+
+    subject.style.animation = "none";
+    // force reflow so the animation restarts cleanly
+    void subject.offsetWidth;
+    subject.style.animation = `playground-tj-anim ${state.duration}ms ${state.easing} ${state.delay}ms ${state.iterations} ${state.direction} both`;
+
+    document.documentElement.setAttribute("data-theme", state.theme);
+
+    output.textContent =
+`.your-element {
+  animation: playground-tj-anim ${state.duration}ms ${state.easing} ${state.delay}ms ${state.iterations} ${state.direction} both;
+}
+
+@keyframes playground-tj-anim {
+  from { transform: rotate(0deg) scale(1); background-color: ${state.colorStart}; }
+  to { transform: rotate(${state.rotate}deg) scale(${state.scale}); background-color: ${state.colorEnd}; }
+}`;
+  }
+
+  // ---- Event wiring ----
+  Object.values(fields).forEach((f) => {
+    f.addEventListener("input", () => {
+      readStateFromFields();
+      render();
+    });
+  });
+
+  el("pg-replay").addEventListener("click", render);
+
+  el("pg-copy").addEventListener("click", async () => {
+    const text = output.textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      status.textContent = "CSS copied to clipboard.";
+    } catch (err) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        status.textContent = "CSS copied to clipboard.";
+      } catch (e) {
+        status.textContent = "Copy failed — please copy manually.";
+      }
+      document.body.removeChild(ta);
+    }
+  });
+
+  el("pg-share").addEventListener("click", async () => {
+    const params = new URLSearchParams(state);
+    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      status.textContent = "Shareable link copied.";
+    } catch (err) {
+      status.textContent = url;
+    }
+  });
+
+  el("pg-export").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "playground-tj-preset.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    status.textContent = "Preset exported as JSON.";
+  });
+
+  // ---- Init ----
+  loadFromURL();
+  syncFieldsFromState();
+  render();
+})();
+</script>
+
+</body>
+</html>

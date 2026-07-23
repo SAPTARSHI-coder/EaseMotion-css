@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fish Swimming</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🐟 Fish Swimming</h1>
+        <p class="subtitle">Fish swimming in circle with fluid motion</p>
+
+        <div class="fish-wrapper">
+            <canvas id="fishCanvas"></canvas>
+
+            <div class="controls">
+                <button id="addBtn">➕ Add Fish</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🐟 Swimming</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('fishCanvas');
+        const ctx = canvas.getContext('2d');
+        const addBtn = document.getElementById('addBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let fish = [];
+        let bubbles = [];
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let numFish = 5;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                body: (t) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 80%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                body: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 70%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Tropical',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e'],
+                body: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                body: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00aa'],
+                body: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'],
+                body: (t) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+        ];
+
+        // ===== BUBBLE CLASS =====
+        class Bubble {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || canvas.height + 20;
+                this.size = 2 + Math.random() * 4;
+                this.speed = 0.3 + Math.random() * 0.5;
+                this.wobble = 0.3 + Math.random() * 0.5;
+                this.phase = Math.random() * Math.PI * 2;
+                this.alpha = 0.3 + Math.random() * 0.4;
+                this.life = 1;
+                this.maxLife = 200 + Math.random() * 300;
+                this.age = 0;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.y -= this.speed * speed * 20;
+                this.x += Math.sin(this.phase + this.age * 0.01) * this.wobble * 0.2;
+                this.phase += 0.02 * speed * 10;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 1.001;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(200, 230, 255, ${this.alpha * this.life * 0.5})`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * this.life * 0.2})`;
+                ctx.fill();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.y < -20;
+            }
+        }
+
+        // ===== FISH CLASS =====
+        class Fish {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const maxDim = Math.max(w, h);
+                
+                this.x = w / 2 + (Math.random() - 0.5) * 100;
+                this.y = h / 2 + (Math.random() - 0.5) * 100;
+                this.radius = 20 + Math.random() * 15;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 0.2 + Math.random() * 0.3;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.phase = Math.random() * Math.PI * 2;
+                this.tailPhase = Math.random() * Math.PI * 2;
+                this.tailSpeed = 0.05 + Math.random() * 0.05;
+                this.colorOffset = Math.random();
+                this.size = 0.7 + Math.random() * 0.6;
+                this.orbitRadius = 50 + Math.random() * 80;
+                this.orbitSpeed = 0.002 + Math.random() * 0.004;
+                this.orbitAngle = Math.random() * Math.PI * 2;
+                this.flip = Math.random() > 0.5 ? 1 : -1;
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.depth = Math.random() * 0.5 + 0.5;
+                this.trail = [];
+                this.maxTrail = 10 + Math.floor(Math.random() * 10);
+                this.swimPhase = Math.random() * Math.PI * 2;
+                this.swimSpeed = 0.02 + Math.random() * 0.02;
+            }
+
+            update(time, speed) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Orbit movement
+                this.orbitAngle += this.orbitSpeed * speed * 10;
+                
+                // Slight vertical oscillation
+                const verticalOsc = Math.sin(this.orbitAngle * 0.7 + this.phase) * 10 * this.depth;
+                const horizontalOsc = Math.cos(this.orbitAngle * 0.5 + this.phase) * 5 * this.depth;
+
+                // Position on orbit
+                const orbitRadius = this.orbitRadius * (0.8 + 0.2 * Math.sin(this.orbitAngle * 0.3));
+                this.x = cx + Math.cos(this.orbitAngle) * orbitRadius + horizontalOsc;
+                this.y = cy + Math.sin(this.orbitAngle) * orbitRadius * 0.6 + verticalOsc;
+
+                // Heading direction (follows orbit)
+                this.angle = Math.atan2(
+                    Math.cos(this.orbitAngle) * orbitRadius * 0.6,
+                    -Math.sin(this.orbitAngle) * orbitRadius
+                ) + Math.PI / 2;
+
+                // Swim phase
+                this.swimPhase += this.swimSpeed * speed * 10;
+
+                // Tail phase
+                this.tailPhase += this.tailSpeed * speed * 10;
+
+                // Flip based on angle
+                this.flip = Math.cos(this.angle) > 0 ? 1 : -1;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.96;
+                }
+
+                // Spawn bubbles occasionally
+                if (Math.random() < 0.002 * speed * 20) {
+                    bubbles.push(new Bubble(
+                        this.x + (Math.random() - 0.5) * 10,
+                        this.y + (Math.random() - 0.5) * 10
+                    ));
+                }
+            }
+
+            draw(ctx, time) {
+                const colorFn = colorPalettes[colorMode].body;
+                const color = colorFn(this.colorOffset);
+                const s = this.size;
+                const r = this.radius * s;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.1;
+                    const trailSize = r * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.scale(this.flip, 1);
+
+                // Glow
+                const glowSize = r * 3 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+                grad.addColorStop(0, color + '30');
+                grad.addColorStop(0.5, color + '15');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Body
+                const bodyGrad = ctx.createRadialGradient(
+                    -r * 0.2, -r * 0.3, 0,
+                    0, 0, r
+                );
+                bodyGrad.addColorStop(0, color);
+                bodyGrad.addColorStop(0.5, color);
+                bodyGrad.addColorStop(1, color + '80');
+
+                ctx.beginPath();
+                // Fish body shape (ellipse with pointed ends)
+                ctx.ellipse(0, 0, r * 1.4, r * 0.9, 0, 0, Math.PI * 2);
+                ctx.fillStyle = bodyGrad;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Head (nose)
+                ctx.beginPath();
+                ctx.ellipse(r * 1.2, 0, r * 0.3, r * 0.4, 0, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Eye
+                const eyeX = r * 0.5;
+                const eyeY = -r * 0.15;
+                ctx.beginPath();
+                ctx.arc(eyeX, eyeY, r * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(eyeX + r * 0.08, eyeY, r * 0.08, 0, Math.PI * 2);
+                ctx.fillStyle = '#222';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(eyeX + r * 0.12, eyeY - r * 0.03, r * 0.03, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+
+                // Tail (with swimming motion)
+                const tailWag = Math.sin(this.tailPhase) * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(-r * 1.3, 0);
+                ctx.quadraticCurveTo(
+                    -r * 1.6,
+                    -r * 0.7 + tailWag * r * 0.3,
+                    -r * 1.8,
+                    -r * 0.3 + tailWag * r * 0.4
+                );
+                ctx.quadraticCurveTo(
+                    -r * 1.5,
+                    0,
+                    -r * 1.8,
+                    r * 0.3 + tailWag * r * 0.4
+                );
+                ctx.quadraticCurveTo(
+                    -r * 1.6,
+                    r * 0.7 + tailWag * r * 0.3,
+                    -r * 1.3,
+                    0
+                );
+                ctx.closePath();
+                ctx.fillStyle = color + '80';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Dorsal fin
+                ctx.beginPath();
+                ctx.moveTo(r * 0.1, -r * 0.8);
+                ctx.quadraticCurveTo(
+                    r * 0.4,
+                    -r * 1.3,
+                    r * 0.8,
+                    -r * 0.9
+                );
+                ctx.closePath();
+                ctx.fillStyle = color + '60';
+                ctx.fill();
+
+                // Pectoral fin
+                ctx.beginPath();
+                ctx.moveTo(r * 0.3, r * 0.1);
+                ctx.quadraticCurveTo(
+                    r * 0.6,
+                    r * 0.6,
+                    r * 0.1,
+                    r * 0.5
+                );
+                ctx.closePath();
+                ctx.fillStyle = color + '50';
+                ctx.fill();
+
+                // Belly highlight
+                ctx.beginPath();
+                ctx.ellipse(0, r * 0.3, r * 0.6, r * 0.2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fill();
+
+                // Scales (decorative dots)
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 + this.phase;
+                    const dist = r * 0.5;
+                    const sx = Math.cos(angle) * dist;
+                    const sy = Math.sin(angle) * dist * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, r * 0.06, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // ===== INIT FISH =====
+        function initFish(count) {
+            fish = [];
+            for (let i = 0; i < count; i++) {
+                const f = new Fish();
+                f.orbitAngle = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+                f.orbitRadius = 60 + Math.random() * 100;
+                f.orbitSpeed = 0.002 + Math.random() * 0.004;
+                fish.push(f);
+            }
+        }
+        initFish(5);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            // Water gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#0a1a2e');
+            grad.addColorStop(0.3, '#0a1a2e');
+            grad.addColorStop(0.6, '#061520');
+            grad.addColorStop(1, '#030a10');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Light rays from above
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.005 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 20, h);
+                grad2.addColorStop(0, 'rgba(100, 200, 255, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(100, 200, 255, 0.04)');
+                grad2.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 20, h);
+            }
+
+            // Sandy bottom
+            const groundY = h * 0.85;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(40, 60, 50, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(40, 60, 50, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(40, 60, 50, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(40, 60, 50, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Seaweed
+            for (let i = 0; i < 6; i++) {
+                const x = (i / 6) * w + 20 + Math.sin(i * 0.7) * 15;
+                const y = groundY + 5;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                for (let j = 0; j < 20; j++) {
+                    const t = j / 20;
+                    const px = x + Math.sin(t * 3 + time * 0.005 + i * 0.5) * (5 + t * 10);
+                    const py = y - t * 60;
+                    ctx.lineTo(px, py);
+                }
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.1 + Math.sin(i + time * 0.005) * 0.05})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Distant fish silhouettes
+            for (let i = 0; i < 3; i++) {
+                const x = (i / 3) * w + Math.sin(time * 0.003 + i * 2) * 50;
+                const y = 50 + i * 40 + Math.sin(time * 0.004 + i) * 20;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.scale(0.3, 0.3);
+                ctx.globalAlpha = 0.05;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 30, 15, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(-30, 0);
+                ctx.lineTo(-45, -10);
+                ctx.lineTo(-45, 10);
+                ctx.closePath();
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+        }
+
+        // ===== ADD FISH =====
+        function addFish() {
+            const f = new Fish();
+            f.orbitAngle = Math.random() * Math.PI * 2;
+            f.orbitRadius = 40 + Math.random() * 120;
+            f.orbitSpeed = 0.002 + Math.random() * 0.005;
+            f.size = 0.5 + Math.random() * 0.8;
+            fish.push(f);
+            statusText.textContent = `🐟 Added! (${fish.length} fish)`;
+            setTimeout(() => {
+                statusText.textContent = `🐟 ${fish.length} fish swimming`;
+            }, 1000);
+        }
+
+        // ===== RESET =====
+        function resetFish() {
+            fish = [];
+            bubbles = [];
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            numFish = 5;
+            initFish(numFish);
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🐟 ${fish.length} fish swimming`;
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Update fish
+            for (const f of fish) {
+                f.update(time, speed);
+            }
+
+            // Update bubbles
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                b.update(speed);
+                if (b.isDead()) {
+                    bubbles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw bubbles
+            for (const b of bubbles) {
+                b.draw(ctx);
+            }
+
+            // Draw fish
+            for (const f of fish) {
+                f.draw(ctx, time);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🐟 ${fish.length} fish • ${bubbles.length} bubbles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Add
+        addBtn.addEventListener('click', addFish);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🐟 ${fish.length} fish swimming`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🐟 ${fish.length} fish swimming`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetFish);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'a' || e.key === 'A') {
+                addBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                addBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Reposition fish
+            for (const f of fish) {
+                f.x = Math.min(f.x, canvas.width - 10);
+                f.y = Math.min(f.y, canvas.height - 10);
+            }
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = `🐟 ${fish.length} fish swimming`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🐟 Fish Swimming loaded!');
+        console.log('💡 A - Add fish');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Add fish');
+    </script>
+</body>
+</html>

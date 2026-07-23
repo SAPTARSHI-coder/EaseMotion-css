@@ -1,0 +1,237 @@
+<!-- demo.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Will-o'-the-Wisp – EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="demo-wrapper">
+    <h1>🕯️ Will-o'-the-Wisp</h1>
+    <p class="subtitle">Mysterious floating blue flame</p>
+
+    <div class="wisp-container">
+      <div class="wisp-scene">
+        <!-- The main wisp flame -->
+        <div class="wisp">
+          <div class="flame-core"></div>
+          <div class="flame-inner"></div>
+          <div class="flame-outer"></div>
+          <div class="flame-glow"></div>
+          <div class="flame-trail"></div>
+        </div>
+
+        <!-- Floating particle orbs -->
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="orb orb-5"></div>
+
+        <!-- Ground mist -->
+        <div class="mist mist-1"></div>
+        <div class="mist mist-2"></div>
+        <div class="mist mist-3"></div>
+
+        <!-- Ambient glow -->
+        <div class="ambient-glow"></div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label>
+        Float Speed
+        <input type="range" id="speedControl" min="0.3" max="3" step="0.1" value="1" />
+      </label>
+      <label>
+        Glow Intensity
+        <input type="range" id="intensityControl" min="0.3" max="2" step="0.05" value="1" />
+      </label>
+      <button id="resetBtn">⟳ Reset Wisp</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const wisp = document.querySelector('.wisp');
+      const glow = document.querySelector('.ambient-glow');
+      const flameCore = document.querySelector('.flame-core');
+      const flameInner = document.querySelector('.flame-inner');
+      const flameOuter = document.querySelector('.flame-outer');
+      const flameGlow = document.querySelector('.flame-glow');
+      const trail = document.querySelector('.flame-trail');
+      const orbs = document.querySelectorAll('.orb');
+      const mist = document.querySelectorAll('.mist');
+
+      const speedInput = document.getElementById('speedControl');
+      const intensityInput = document.getElementById('intensityControl');
+      const resetBtn = document.getElementById('resetBtn');
+
+      let speedMultiplier = 1;
+      let intensityMultiplier = 1;
+      let animationFrame = null;
+      let lastTimestamp = 0;
+
+      // ----- Apply speed to all animations -----
+      function applySpeed() {
+        const duration = 4 / speedMultiplier;
+        const floatDuration = 6 / speedMultiplier;
+        const pulseDuration = 1.2 / speedMultiplier;
+
+        // Main wisp float
+        wisp.style.setProperty('--wisp-float-duration', floatDuration + 's');
+        wisp.style.setProperty('--wisp-pulse-duration', pulseDuration + 's');
+
+        // Flame animations
+        flameCore.style.setProperty('--flame-core-duration', (1.6 / speedMultiplier) + 's');
+        flameInner.style.setProperty('--flame-inner-duration', (2.2 / speedMultiplier) + 's');
+        flameOuter.style.setProperty('--flame-outer-duration', (3.0 / speedMultiplier) + 's');
+        flameGlow.style.setProperty('--flame-glow-duration', (2.8 / speedMultiplier) + 's');
+
+        // Trail
+        trail.style.setProperty('--trail-duration', (3.2 / speedMultiplier) + 's');
+
+        // Orbs
+        orbs.forEach((orb, i) => {
+          const baseDuration = 5 + i * 0.8;
+          orb.style.setProperty('--orb-duration', (baseDuration / speedMultiplier) + 's');
+        });
+
+        // Mist
+        mist.forEach((m, i) => {
+          const baseDuration = 12 + i * 3;
+          m.style.setProperty('--mist-duration', (baseDuration / speedMultiplier) + 's');
+        });
+      }
+
+      // ----- Apply intensity (glow, brightness, scale) -----
+      function applyIntensity() {
+        const baseGlow = 0.7;
+        const intensity = baseGlow * intensityMultiplier;
+
+        // Ambient glow
+        glow.style.opacity = Math.min(intensity * 1.2, 2.0);
+
+        // Glow ring around flame
+        flameGlow.style.setProperty('--glow-intensity', intensityMultiplier);
+        flameGlow.style.transform = `scale(${0.8 + intensityMultiplier * 0.2})`;
+
+        // Core brightness
+        const bright = Math.min(100 * intensityMultiplier, 180);
+        flameCore.style.setProperty('--core-brightness', bright + '%');
+        flameInner.style.setProperty('--inner-brightness', Math.min(80 * intensityMultiplier, 150) + '%');
+        flameOuter.style.setProperty('--outer-brightness', Math.min(60 * intensityMultiplier, 130) + '%');
+
+        // Orb brightness and scale
+        orbs.forEach((orb, i) => {
+          const baseOpacity = 0.2 + i * 0.08;
+          orb.style.opacity = Math.min(baseOpacity * intensityMultiplier, 0.9);
+          orb.style.transform = `scale(${0.7 + intensityMultiplier * 0.3})`;
+        });
+      }
+
+      // ----- Reset animation -----
+      function resetWisp() {
+        // Remove and re-add animation classes to force restart
+        const animElements = [
+          wisp,
+          flameCore,
+          flameInner,
+          flameOuter,
+          flameGlow,
+          trail,
+          ...orbs,
+          ...mist
+        ];
+
+        animElements.forEach(el => {
+          el.classList.remove('animate');
+          void el.offsetWidth; // Force reflow
+          el.classList.add('animate');
+        });
+
+        // Also reset glow pulse
+        glow.classList.remove('pulse');
+        void glow.offsetWidth;
+        glow.classList.add('pulse');
+      }
+
+      // ----- Extra glow pulse via JS (smoother than CSS alone) -----
+      function animateGlow(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const delta = (timestamp - lastTimestamp) / 1000;
+        lastTimestamp = timestamp;
+
+        // Subtle ambient glow pulse
+        const pulse = Math.sin(timestamp / 1200) * 0.08 + 0.92;
+        const currentOpacity = parseFloat(glow.style.opacity) || 0.8;
+        const targetOpacity = Math.min(0.6 * intensityMultiplier * pulse * 1.2, 2.0);
+        glow.style.opacity = currentOpacity * 0.92 + targetOpacity * 0.08;
+
+        // Slight wisp scale breathing
+        const breath = Math.sin(timestamp / 1500) * 0.02 + 0.98;
+        const baseScale = 0.9 + intensityMultiplier * 0.1;
+        wisp.style.transform = `scale(${baseScale * breath})`;
+
+        animationFrame = requestAnimationFrame(animateGlow);
+      }
+
+      // ----- Update functions -----
+      function updateSpeed(value) {
+        speedMultiplier = parseFloat(value);
+        applySpeed();
+      }
+
+      function updateIntensity(value) {
+        intensityMultiplier = parseFloat(value);
+        applyIntensity();
+      }
+
+      // ----- Init -----
+      function init() {
+        // Set initial animation classes
+        wisp.classList.add('animate');
+        flameCore.classList.add('animate');
+        flameInner.classList.add('animate');
+        flameOuter.classList.add('animate');
+        flameGlow.classList.add('animate');
+        trail.classList.add('animate');
+        orbs.forEach(orb => orb.classList.add('animate'));
+        mist.forEach(m => m.classList.add('animate'));
+        glow.classList.add('pulse');
+
+        // Apply initial values
+        updateSpeed(speedInput.value);
+        updateIntensity(intensityInput.value);
+
+        // Start glow loop
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        lastTimestamp = 0;
+        animationFrame = requestAnimationFrame(animateGlow);
+      }
+
+      // ----- Event listeners -----
+      speedInput.addEventListener('input', function() {
+        updateSpeed(this.value);
+      });
+
+      intensityInput.addEventListener('input', function() {
+        updateIntensity(this.value);
+      });
+
+      resetBtn.addEventListener('click', resetWisp);
+
+      // Cleanup
+      window.addEventListener('beforeunload', function() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+      });
+
+      init();
+    })();
+  </script>
+
+</body>
+</html>
