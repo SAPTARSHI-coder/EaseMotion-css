@@ -102,6 +102,7 @@ No existing hook wraps the `em=""` engine DSL itself.
 | `useEaseMotion.js` | The reusable hook |
 | `AnimatedCard.jsx` | Demo component consuming the hook, using real `ease-card` classes |
 | `README.md` | This document |
+| `demo.html` | Self-contained browser demo (CDN React + Babel, no build step) |
 
 ## Compliance notes
 
