@@ -1,16 +1,15 @@
 # Password Strength Meter
 
-A real-time password strength meter that evaluates input against five criteria (length, uppercase, digits, symbols). Displays a segmented progress bar that transitions from red (weak) to amber (medium) to green (strong) with corresponding hint text.
+A CSS-only password strength meter for sign-up forms. The example shows a focused password input, animated strength fill, and completed requirement chips.
 
-## EaseMotion CSS classes used
+## Files
 
-- `ease-flex` — page-level centering
-- `ease-center` — vertical and horizontal centering
+- `demo.html` contains the password field, strength meter, helper copy, and requirement list.
+- `style.css` defines the focus state, animated strength bar, completed checklist chips, and responsive spacing.
 
-## How to run
+## What it demonstrates
 
-Open `demo.html` in a browser. Type a password to see the strength evaluation update in real time.
-
-## Accessibility notes
-
-The input is a standard password field. Strength feedback is provided via text and color, not solely by color. Reduced motion disables the bar and color transitions.
+- Form-focused feedback without JavaScript.
+- Strength meter fill animation using transform scaling.
+- Completed requirement states with subtle pulse motion.
+- A compact card layout for authentication flows.
