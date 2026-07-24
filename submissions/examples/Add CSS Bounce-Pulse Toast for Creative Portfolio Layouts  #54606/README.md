@@ -41,7 +41,7 @@ The design is heavily customizable using CSS variables located in the `:root` se
   --em-toast-bg: rgba(30, 41, 59, 0.85);
   --em-accent: #3b82f6;
   
-  /* Layout & Shadows */
+  /* Layout & Shadows   */
   --em-toast-radius: 16px;
   --em-toast-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   
