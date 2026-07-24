@@ -10,13 +10,14 @@ Add the `ease-float` class to any element:
 <div class="ease-float">
   🚀 Launch Your Project
 </div>
-## Animation
+```
+Animation
+
 The element smoothly moves upward and returns to its original position in a continuous loop.
 
 Features
 Pure CSS animation
 No JavaScript required
 Lightweight and reusable
-Suitable for icons, badges, cards, buttons, and hero elements
-
+Suitable for icons, badges, cards, buttons, and hero elements.
 
