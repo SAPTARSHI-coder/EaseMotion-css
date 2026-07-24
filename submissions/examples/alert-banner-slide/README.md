@@ -1,15 +1,15 @@
 # Alert Banner Slide
 
-This example adds an alert banner that slides into place from above.
+A CSS-only alert banner that slides into view, pulses its status icon, and provides a clear action link.
 
 ## Files
 
-- `demo.html` contains the alert banner markup.
-- `style.css` defines the slide animation, visual state, and reduced-motion fallback.
+- `demo.html` contains the alert content, status icon, and action link.
+- `style.css` defines the slide-in entrance, icon pulse, button feedback, and responsive stacking.
 
-## Highlights
+## What it demonstrates
 
-- Uses `role="alert"` for the demo alert semantics.
-- Keeps the banner height stable while animating with transforms.
-- Uses a clear accent border for status visibility.
-- Disables the slide animation when reduced motion is requested.
+- Alert and billing-warning UI motion without JavaScript.
+- Entrance animation with transform and opacity.
+- Pulsing status icon for urgency.
+- Responsive banner layout for mobile screens.
