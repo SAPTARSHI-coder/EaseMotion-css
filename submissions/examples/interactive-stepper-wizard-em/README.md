@@ -15,8 +15,8 @@
 
 ```
 submissions/examples/interactive-stepper-wizard-em/
-├── index.html   — HTML structure for stepper navigation, panels, and actions
-├── styles.css   — Design tokens, animations, layout, and responsive breakpoints
+├── demo.html    — HTML structure for stepper navigation, panels, and actions
+├── style.css    — Design tokens, animations, layout, and responsive breakpoints
 ├── script.js    — Step state navigation & panel visibility logic
 └── README.md    — Component documentation
 ```
