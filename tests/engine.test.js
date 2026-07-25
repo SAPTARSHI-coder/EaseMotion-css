@@ -86,6 +86,15 @@ describe('parser — parse()', () => {
     expect(ast.animation).toBe('fade-in');
     expect(ast.duration).toBe(500);
   });
+
+  it('parses all 6 previously-broken engine animations', () => {
+    const names = ['spin', 'wobble', 'flip-x', 'flip-y', 'heartbeat', 'rubber-band'];
+    for (const name of names) {
+      const ast = parse(name);
+      expect(ast).not.toBeNull();
+      expect(ast.animation).toBe(name);
+    }
+  });
 });
 
 // ── Compiler ──────────────────────────────────────────────────────
@@ -140,6 +149,19 @@ describe('compiler — compile()', () => {
     const ast = { animation: 'nonexistent', duration: 300, easing: 'linear', delay: 0, iterations: 1, fill: 'both', direction: 'normal' };
     const css = compile(ast, '_em_test01');
     expect(css).toBe('');
+  });
+
+  it('compiles all 6 previously-broken animations into valid CSS', () => {
+    const names = ['spin', 'wobble', 'flip-x', 'flip-y', 'heartbeat', 'rubber-band'];
+    const kfs   = ['ease-kf-spin','ease-kf-wobble','ease-kf-flip-x','ease-kf-flip-y','ease-kf-heartbeat','ease-kf-rubber-band'];
+    for (let i = 0; i < names.length; i++) {
+      const ast = parse(names[i]);
+      const cls = className(ast);
+      const css = compile(ast, cls);
+      expect(css).toContain(kfs[i]);
+      expect(css).toContain(`.${cls}`);
+      expect(css).not.toBe('');
+    }
   });
 });
 
