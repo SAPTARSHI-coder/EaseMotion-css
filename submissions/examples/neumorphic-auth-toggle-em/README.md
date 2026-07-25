@@ -23,8 +23,8 @@
 
 ```
 submissions/examples/neumorphic-auth-toggle-em/
-├── index.html   — Demo page with 6 toggle variants (3 light + 3 dark)
-├── styles.css   — All styles, design tokens, and responsive rules
+├── demo.html    — Demo page with 6 toggle variants (3 light + 3 dark)
+├── style.css    — All styles, design tokens, and responsive rules
 └── README.md    — This file
 ```
 
