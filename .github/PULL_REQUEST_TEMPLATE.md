@@ -18,10 +18,9 @@
 
 > ⚠️ PRs that fail this checklist will be **closed without review**.
 
-- [ ] All changes are inside `submissions/` (e.g., `submissions/examples/your-feature-name/` or `submissions/docs/your-feature-name/`)
-- [ ] Includes `demo.html` — self-contained, opens in browser with no server
-- [ ] Includes `style.css` — raw CSS for the proposed feature
-- [ ] Includes `README.md` — what it does, how to use it, why it fits EaseMotion CSS
+- [ ] All changes are inside one of the 4 allowed track folders in `submissions/` (`examples/`, `react/`, `scss/`, or `docs/`)
+- [ ] Includes track-required files (`demo.html` + `style.css` for HTML/Docs; `YourComponent.jsx` for React; `_your-mixin.scss` for SCSS)
+- [ ] Includes `README.md` — description, usage instructions, and explanation fitting EaseMotion CSS philosophy
 - [ ] **No changes to `core/`**
 - [ ] **No changes to `components/`**
 - [ ] One feature per PR (no bundled unrelated changes)
@@ -37,7 +36,7 @@
 **How does a developer use it?**
 
 ```html
-<!-- Show the class usage in HTML -->
+<!-- Show the class/component/mixin usage -->
 ```
 
 **Why does it fit EaseMotion CSS?**
@@ -48,7 +47,7 @@
 
 ## Demo
 
-- [ ] Demo added (`demo.html` works by opening directly in a browser)
+- [ ] Demo or usage example provided (`demo.html` works directly in browser, or React/SCSS usage documented in `README.md`)
 
 ---
 
