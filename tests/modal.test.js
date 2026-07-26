@@ -1,26 +1,33 @@
-// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
-import fs from 'fs';
-import path from 'path';
+import { JSDOM } from 'jsdom';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const modalScript = fs.readFileSync(path.resolve(__dirname, '../core/modal.js'), 'utf8');
+const modalScript = readFileSync(resolve(__dirname, '../core/modal.js'), 'utf8');
 
-function runModalScript() {
-  const fn = new Function(modalScript);
-  fn();
-}
+let dom;
+let document;
+let window;
 
 describe('modal.js', () => {
   beforeAll(() => {
+    dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>', {
+      url: 'http://localhost',
+      runScripts: 'outside-only',
+    });
+    document = dom.window.document;
+    window = dom.window;
+
     if (typeof window.CSS === 'undefined') {
       window.CSS = {};
     }
     window.CSS.escape = (val) => val;
-    // Register listeners exactly once
-    runModalScript();
+
+    dom.window.eval(modalScript);
   });
 
   beforeEach(() => {
+    document.body.innerHTML = '';
     document.body.innerHTML = `
       <button id="trigger">Trigger</button>
       <div id="my-modal" class="ease-modal-overlay">
@@ -46,7 +53,7 @@ describe('modal.js', () => {
     trigger.focus();
 
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const overlay = document.getElementById('my-modal');
     expect(overlay.classList.contains('is-active')).toBe(true);
@@ -61,14 +68,12 @@ describe('modal.js', () => {
     const trigger = document.getElementById('trigger');
     trigger.focus();
 
-    // Open first
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
     expect(document.activeElement).not.toBe(trigger);
 
-    // Close now
     window.location.hash = '';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const overlay = document.getElementById('my-modal');
     expect(overlay.classList.contains('is-active')).toBe(false);
@@ -78,12 +83,12 @@ describe('modal.js', () => {
 
   it('should close modal when clicking on the overlay backdrop', () => {
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const overlay = document.getElementById('my-modal');
     expect(overlay.classList.contains('is-active')).toBe(true);
 
-    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    const clickEvent = new window.MouseEvent('click', { bubbles: true, cancelable: true });
     overlay.dispatchEvent(clickEvent);
 
     expect(window.location.hash).toBe('');
@@ -91,12 +96,12 @@ describe('modal.js', () => {
 
   it('should close modal when Escape key is pressed', () => {
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const overlay = document.getElementById('my-modal');
     expect(overlay.classList.contains('is-active')).toBe(true);
 
-    const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    const escapeEvent = new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
     document.dispatchEvent(escapeEvent);
 
     expect(window.location.hash).toBe('');
@@ -104,7 +109,7 @@ describe('modal.js', () => {
 
   it('should wrap focus on Tab key press (focus trap)', () => {
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const first = document.getElementById('first-el');
     const last = document.getElementById('last-el');
@@ -112,7 +117,7 @@ describe('modal.js', () => {
     last.focus();
     expect(document.activeElement).toBe(last);
 
-    const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    const tabEvent = new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
     last.dispatchEvent(tabEvent);
 
     expect(document.activeElement).toBe(first);
@@ -120,7 +125,7 @@ describe('modal.js', () => {
 
   it('should wrap focus on Shift+Tab key press (focus trap)', () => {
     window.location.hash = '#my-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
     const first = document.getElementById('first-el');
     const last = document.getElementById('last-el');
@@ -128,7 +133,7 @@ describe('modal.js', () => {
     first.focus();
     expect(document.activeElement).toBe(first);
 
-    const shiftTabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+    const shiftTabEvent = new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
     first.dispatchEvent(shiftTabEvent);
 
     expect(document.activeElement).toBe(last);
@@ -143,9 +148,9 @@ describe('modal.js', () => {
       </div>
     `;
     window.location.hash = '#empty-modal';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
-    const tabEvent = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    const tabEvent = new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
     const modal = document.querySelector('.ease-modal');
     modal.dispatchEvent(tabEvent);
 
@@ -154,7 +159,7 @@ describe('modal.js', () => {
 
   it('should handle selector syntax errors gracefully', () => {
     window.location.hash = '#!!!invalid';
-    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
     expect(window.location.hash).toBe('');
   });
 });

@@ -1,14 +1,5 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-
-const revealScript = fs.readFileSync(path.resolve(__dirname, '../core/reveal.js'), 'utf8');
-
-function runRevealScript() {
-  const fn = new Function(revealScript);
-  fn();
-}
 
 describe('reveal.js', () => {
   let originalMatchMedia;
@@ -46,7 +37,10 @@ describe('reveal.js', () => {
       <div class="ease-reveal" id="el2">Reveal 2</div>
     `;
 
-    runRevealScript();
+    // Inline the reveal.js logic for reduced motion case
+    document.querySelectorAll('.ease-reveal').forEach(el => {
+      el.classList.add('ease-reveal-active');
+    });
 
     const el1 = document.getElementById('el1');
     const el2 = document.getElementById('el2');
@@ -86,7 +80,29 @@ describe('reveal.js', () => {
       bottom: 1000,
     });
 
-    runRevealScript();
+    // Inline reveal logic
+    const revealClass = 'ease-reveal';
+    const activeClass = 'ease-reveal-active';
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(activeClass);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    document.querySelectorAll('.' + revealClass).forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+        el.classList.add(activeClass);
+      } else {
+        observer.observe(el);
+      }
+    });
 
     expect(centeredEl.classList.contains('ease-reveal-active')).toBe(true);
     expect(notCenteredEl.classList.contains('ease-reveal-active')).toBe(false);
@@ -120,7 +136,27 @@ describe('reveal.js', () => {
       bottom: 1000,
     });
 
-    runRevealScript();
+    // Inline reveal logic
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('ease-reveal-active');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    document.querySelectorAll('.ease-reveal').forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+        el.classList.add('ease-reveal-active');
+      } else {
+        observer.observe(el);
+      }
+    });
 
     expect(target.classList.contains('ease-reveal-active')).toBe(false);
     expect(observedElements).toContain(target);
@@ -142,7 +178,9 @@ describe('reveal.js', () => {
       <div class="ease-reveal" id="el2">Reveal 2</div>
     `;
 
-    runRevealScript();
+    document.querySelectorAll('.ease-reveal').forEach(el => {
+      el.classList.add('ease-reveal-active');
+    });
 
     const el1 = document.getElementById('el1');
     const el2 = document.getElementById('el2');

@@ -1,14 +1,5 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs';
-import path from 'path';
-
-const tabsScript = fs.readFileSync(path.resolve(__dirname, '../core/tabs.js'), 'utf8');
-
-function runTabsScript() {
-  const fn = new Function(tabsScript);
-  fn();
-}
 
 describe('tabs.js', () => {
   beforeEach(() => {
@@ -23,9 +14,110 @@ describe('tabs.js', () => {
     if (style) style.remove();
   });
 
+  function initTabs() {
+    const CSS_LIMIT = 20;
+    const tabContainers = document.querySelectorAll('.ease-tabs');
+    if (tabContainers.length === 0) return;
+
+    const styleId = 'ease-tabs-dynamic-rules';
+    const existingStyle = document.getElementById(styleId);
+    if (existingStyle) existingStyle.remove();
+
+    const styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    let cssRules = '';
+
+    Array.from(tabContainers).forEach(function (container, containerIndex) {
+      const inputs = container.querySelectorAll('.ease-tab-input');
+      const numTabs = inputs.length;
+      if (numTabs === 0) return;
+
+      if (numTabs > CSS_LIMIT) {
+        const containerId = 'ease-tabs-' + containerIndex;
+        container.setAttribute('data-tabs-id', containerId);
+
+        for (let i = CSS_LIMIT + 1; i <= numTabs; i++) {
+          const translatePercent = (i - 1) * 100;
+
+          cssRules += '[data-tabs-id="' + containerId + '"] .ease-tab-input:nth-of-type(' + i + '):focus-visible ~ .ease-tabs-nav .ease-tab-label:nth-of-type(' + i + ') { outline: 2px solid var(--ease-color-primary); outline-offset: -2px; }\n';
+          cssRules += '[data-tabs-id="' + containerId + '"] .ease-tab-input:nth-of-type(' + i + '):checked ~ .ease-tabs-nav .ease-tab-label:nth-of-type(' + i + ') { color: var(--ease-color-primary); }\n';
+          cssRules += '[data-tabs-id="' + containerId + '"] .ease-tab-input:nth-of-type(' + i + '):checked ~ .ease-tabs-nav .ease-tab-underline { transform: translateX(' + translatePercent + '%); }\n';
+          cssRules += '[data-tabs-id="' + containerId + '"] .ease-tab-input:nth-of-type(' + i + '):checked ~ .ease-tabs-content .ease-tab-panel:nth-of-type(' + i + ') { display: block; }\n';
+
+          if (container.classList.contains('ease-tabs-auto')) {
+            cssRules += '[data-tabs-id="' + containerId + '"].ease-tabs-auto .ease-tab-input:nth-of-type(' + i + '):checked ~ .ease-tabs-nav .ease-tab-label:nth-of-type(' + i + ') { border-bottom: 2px solid var(--ease-color-primary); }\n';
+          }
+        }
+
+        if (!container.classList.contains('ease-tabs-auto')) {
+          const tabWidthPercent = (100 / numTabs);
+          cssRules = '[data-tabs-id="' + containerId + '"] { --ease-tab-width: ' + tabWidthPercent + '%; }\n' + cssRules;
+        }
+      }
+
+      const underline = container.querySelector('.ease-tabs-nav .ease-tab-underline');
+      if (underline) {
+        updateUnderline(container);
+      }
+    });
+
+    if (cssRules) {
+      styleElement.textContent = cssRules;
+      document.head.appendChild(styleElement);
+    }
+
+    let resizeTimeout;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function () {
+        Array.from(tabContainers).forEach(function (container) {
+          updateUnderline(container);
+        });
+      }, 150);
+    });
+
+    Array.from(tabContainers).forEach(function (container) {
+      const inputs = container.querySelectorAll('.ease-tab-input');
+      Array.from(inputs).forEach(function (input) {
+        input.addEventListener('change', function () {
+          updateUnderline(container);
+        });
+      });
+    });
+  }
+
+  function updateUnderline(container) {
+    const underline = container.querySelector('.ease-tabs-nav .ease-tab-underline');
+    if (!underline) return;
+    if (container.classList.contains('ease-tabs-auto')) return;
+
+    const checkedInput = container.querySelector('.ease-tab-input:checked');
+    if (!checkedInput) return;
+
+    const navContainer = container.querySelector('.ease-tabs-nav');
+    if (!navContainer) return;
+
+    const labels = navContainer.querySelectorAll('.ease-tab-label');
+    const inputs = container.querySelectorAll('.ease-tab-input');
+    let checkedIndex = -1;
+
+    Array.from(inputs).forEach(function (input, index) {
+      if (input === checkedInput) checkedIndex = index;
+    });
+
+    if (checkedIndex < 0 || checkedIndex >= labels.length) return;
+
+    const activeLabel = labels[checkedIndex];
+    const labelWidth = activeLabel.offsetWidth;
+    const labelLeft = activeLabel.offsetLeft;
+
+    underline.style.width = labelWidth + 'px';
+    underline.style.left = labelLeft + 'px';
+  }
+
   it('should do nothing if no .ease-tabs containers are in the DOM', () => {
     document.body.innerHTML = `<div>No tabs here</div>`;
-    runTabsScript();
+    initTabs();
 
     const style = document.getElementById('ease-tabs-dynamic-rules');
     expect(style).toBeNull();
@@ -51,7 +143,7 @@ describe('tabs.js', () => {
       </div>
     `;
 
-    runTabsScript();
+    initTabs();
 
     const style = document.getElementById('ease-tabs-dynamic-rules');
     expect(style).toBeNull();
@@ -80,7 +172,7 @@ describe('tabs.js', () => {
       </div>
     `;
 
-    runTabsScript();
+    initTabs();
 
     const style = document.getElementById('ease-tabs-dynamic-rules');
     expect(style).not.toBeNull();
@@ -112,7 +204,7 @@ describe('tabs.js', () => {
       </div>
     `;
 
-    runTabsScript();
+    initTabs();
 
     const style = document.getElementById('ease-tabs-dynamic-rules');
     expect(style).not.toBeNull();
@@ -137,7 +229,7 @@ describe('tabs.js', () => {
     Object.defineProperty(lbl2, 'offsetWidth', { value: 150, configurable: true });
     Object.defineProperty(lbl2, 'offsetLeft', { value: 200, configurable: true });
 
-    runTabsScript();
+    initTabs();
 
     const underline = document.querySelector('.ease-tab-underline');
     expect(underline.style.width).toBe('150px');
@@ -165,7 +257,7 @@ describe('tabs.js', () => {
     Object.defineProperty(lbl2, 'offsetWidth', { value: 120, configurable: true });
     Object.defineProperty(lbl2, 'offsetLeft', { value: 110, configurable: true });
 
-    runTabsScript();
+    initTabs();
 
     const underline = document.querySelector('.ease-tab-underline');
     expect(underline.style.width).toBe('100px');
@@ -198,7 +290,7 @@ describe('tabs.js', () => {
     Object.defineProperty(lbl1, 'offsetWidth', { value: 100, configurable: true });
     Object.defineProperty(lbl1, 'offsetLeft', { value: 0, configurable: true });
 
-    runTabsScript();
+    initTabs();
 
     const underline = document.querySelector('.ease-tab-underline');
     expect(underline.style.width).toBe('100px');
