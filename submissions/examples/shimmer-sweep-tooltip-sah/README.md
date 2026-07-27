@@ -1,16 +1,15 @@
-# Shimmer-Sweep Creative Portfolio Tooltip (`#54553`)
+# Shimmer-Sweep Accessible Tooltip (`#54298`)
 
 ## What does this do?
-Provides a high-tech metallic tooltip whose lettering is illuminated by a continuous sweeping shimmer light refraction when triggered.
+Provides an enterprise accessible WAI-ARIA contextual tooltip across whose high-contrast guidance card a continuous metallic light beam refracts diagonally.
 
 ## How is it used?
-Wrap buttons and tooltip blocks inside an `ease-shimmer-group` container:
+Organize ARIA guidance tooltips inside an `ease-tooltip-shimmer-sweep` enterprise container equipped with a luminous sheen element:
 ```html
-<div class="ease-shimmer-group">
-  <button>Hover Me</button>
-  <div class="ease-tooltip-shimmer"><span class="text">Shimmer Text</span></div>
+<div class="ease-tooltip-shimmer-sweep">
+  <div class="sheen-tip open-s" id="tip-sheen" role="tooltip"><div class="beam-light"></div>...</div>
 </div>
 ```
 
 ## Why is it useful?
-Solves issue #54553 by providing creative portfolios with striking cyberpunk-style optical luster on descriptive metadata previews.
+Solves issue #54298 by enriching accessible WAI-ARIA tooltip guidance cards with upscale metallic light reflection dynamics.
