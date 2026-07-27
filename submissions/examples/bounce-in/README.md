@@ -1,53 +1,14 @@
-# ease-bounce-in
+# Bounce In Animations
 
-> Bouncy entrance animation utility for EaseMotion CSS
+**What does this do?**
+Provides a family of entrance animations (`bounce-in-top`, `bounce-in-bottom`, `bounce-in-left`, `bounce-in-right`) that introduce elements with a playful, gravity-simulated bouncing physics.
 
-## What it does
+**How is it used?**
+Apply the utility classes to the elements you want to bounce into view:
+```html
+<div class="bounce-in-top-ag">Drops in and bounces</div>
+<div class="bounce-in-left-ag">Slides in and bounces against a wall</div>
+```
 
-Animates elements into view with a satisfying bounce effect.
-Five direction variants, two speed variants, and full compatibility
-with existing ease-delay-* classes. Pure CSS, zero JavaScript.
-
-## Usage
-
-    <div class="ease-bounce-in">Bounces in from center</div>
-    <div class="ease-bounce-in-up">Bounces in from bottom</div>
-    <div class="ease-bounce-in-down">Bounces in from top</div>
-    <div class="ease-bounce-in-left">Bounces in from left</div>
-    <div class="ease-bounce-in-right">Bounces in from right</div>
-
-## Class Reference
-
-| Class | Description |
-|---|---|
-| ease-bounce-in | Base — bounces in from center (scale) |
-| ease-bounce-in-up | Bounces in from bottom |
-| ease-bounce-in-down | Bounces in from top |
-| ease-bounce-in-left | Bounces in from left |
-| ease-bounce-in-right | Bounces in from right |
-| ease-bounce-in-fast | Faster entrance speed |
-| ease-bounce-in-slow | Slower entrance speed |
-
-## Staggered sequence
-
-    <div class="ease-bounce-in-up">1</div>
-    <div class="ease-bounce-in-up ease-delay-100">2</div>
-    <div class="ease-bounce-in-up ease-delay-200">3</div>
-    <div class="ease-bounce-in-up ease-delay-300">4</div>
-
-## CSS Variables used
-
-| Token | Role |
-|---|---|
-| --ease-speed-slow | Default animation duration |
-| --ease-speed-medium | Fast variant duration |
-
-## Browser support
-
-| Feature | Chrome | Edge | Firefox | Safari |
-|---|---|---|---|---|
-| CSS transform | yes | yes | yes | yes |
-| CSS custom properties | yes | yes | yes | yes |
-| animation-fill-mode | yes | yes | yes | yes |
-
-Submitted under MIT License · EaseMotion CSS · Closes #3877 · 2026
+**Why is it useful?**
+Bouncing physics create a sense of weight and physical realism. They are highly effective for drawing attention to playful UI elements, toast notifications, or gamified rewards without writing custom JavaScript physics engines.
