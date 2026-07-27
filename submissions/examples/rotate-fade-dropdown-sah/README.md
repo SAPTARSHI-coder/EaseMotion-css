@@ -1,16 +1,17 @@
-# Rotate-Fade Creative Portfolio Dropdown (`#54620`)
+# Rotate-Fade Accessible Dropdown (`#54365`)
 
 ## What does this do?
-Introduces an orbital rotating reveal animation combined with smooth alpha transparency fading for creative agency and artist portfolio headers.
+Provides an accessible WAI-ARIA dropdown navigation menu whose options pivot diagonally upward along an orbital tilt while alpha fading into sharpness upon expanding.
 
 ## How is it used?
-Enclose your portfolio navigation links inside an `ease-dropdown-portfolio` wrapper:
+Organize ARIA menu options inside an `ease-nav-rotate-fade` navigation container:
 ```html
-<div class="ease-dropdown-portfolio">
-  <button>Exhibitions ✦</button>
-  <div class="ease-menu-rotate-fade">...</div>
-</div>
+<nav class="ease-nav-rotate-fade" aria-label="Orbital Navigation">
+  <div class="rotate-dropdown open" role="menu">
+    <a href="#" class="rotate-item i1 prime-rot" role="menuitem">...</a>
+  </div>
+</nav>
 ```
 
 ## Why is it useful?
-Solves issue #54620 by injecting avant-garde animated motion into design showcase navigation layouts.
+Solves issue #54365 by giving accessible navigation dropdown lists smooth orbital diagonal kinetic entrance transitions.
