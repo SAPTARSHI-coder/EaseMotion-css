@@ -1,36 +1,13 @@
-# ease-tooltip
+# Animated Tooltip Component
 
-A pure CSS tooltip using `data-tip` attribute and `::after` pseudo-element. Zero JavaScript required.
+**What does this do?**
+Provides a lightweight, pure-CSS tooltip component that displays data from a custom HTML attribute and animates into view using a smooth fade-in-up physics curve.
 
-## Usage
-
+**How is it used?**
+Apply the `.tooltip-ag` class to any inline or block element, and supply the tooltip text via the `data-tooltip` attribute.
 ```html
-<button data-tip="Hello!">Hover me</button>
+<span class="tooltip-ag" data-tooltip="This is the tooltip text">Hover me!</span>
 ```
 
-## Variants
-
-| Attribute | Value | Description |
-|---|---|---|
-| `data-tip-pos` | `top` (default) | Tooltip appears above |
-| `data-tip-pos` | `bottom` | Tooltip appears below |
-| `data-tip-pos` | `left` | Tooltip appears left |
-| `data-tip-pos` | `right` | Tooltip appears right |
-| `data-tip-color` | `success` | Green tooltip |
-| `data-tip-color` | `danger` | Red tooltip |
-| `data-tip-color` | `info` | Blue tooltip |
-| `data-tip-color` | `warning` | Amber tooltip |
-
-## Delay Variants
-
-```html
-<button data-tip="Delayed" class="ease-delay-100">100ms delay</button>
-<button data-tip="Delayed" class="ease-delay-200">200ms delay</button>
-<button data-tip="Delayed" class="ease-delay-300">300ms delay</button>
-```
-
-## Submission
-
-- **Author:** sudha09-git
-- **Issue:** #2248
-- **Files:** `style.css`, `demo.html`
+**Why is it useful?**
+Tooltips are notorious for requiring heavy JavaScript libraries (like Popper.js) just to render a simple text box. This component leverages CSS pseudo-elements (`::before` for the pointer triangle, `::after` for the text box) and the `attr()` function to generate a perfect, performant tooltip entirely via CSS.
