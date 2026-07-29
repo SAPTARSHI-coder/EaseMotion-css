@@ -1,32 +1,17 @@
-# ease-text-gradient
+# Flowing Animated Gradient Text (`.ease-text-gradient`)
 
-Applies a gradient fill to text using `background-clip: text`.
-Fully customizable via CSS variables.
+## Description
+This submission fulfills Issue #57089. It introduces a highly requested modern web design utility class that applies an animated, flowing color gradient to typography.
 
-## Usage
-```html
-<!-- Default gradient -->
-<h1 class="ease-text-gradient">Gradient Text</h1>
+By utilizing `-webkit-background-clip: text` and animating the `background-position`, this component creates a premium, cinematic feel for hero sections and headers without relying on any JavaScript or heavy canvas rendering.
 
-<!-- Custom colors -->
-<h1 class="ease-text-gradient" style="--ease-gradient-from: #f97316; --ease-gradient-to: #eab308;">
-  Custom Gradient
-</h1>
-```
+## Features
+- **Zero JavaScript:** Fully powered by CSS `@keyframes`.
+- **Seamless Looping:** The gradient variants are carefully designed so the start and end colors match, resulting in a perfect, continuous infinite loop animation.
+- **Pre-configured Variants:** Includes `.ease-text-gradient-sunset`, `.ease-text-gradient-ocean`, and `.ease-text-gradient-cyber` out of the box.
+- **Accessible:** Respects the `prefers-reduced-motion` media query by locking the gradient to its first frame and stopping the animation entirely for users who prefer reduced motion.
 
-## CSS Output
-```css
-.ease-text-gradient {
-  --ease-gradient-from: #6366f1;
-  --ease-gradient-to: #ec4899;
-  background: linear-gradient(to right, var(--ease-gradient-from), var(--ease-gradient-to));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-```
-
-## Use Case
-Hero headings, section titles, and any text that needs visual emphasis.
-Override `--ease-gradient-from` and `--ease-gradient-to` for custom colors.
-`-webkit-background-clip` included for Safari compatibility.
+## Files Included
+- `demo.html`: A presentation of the three included gradient variants.
+- `style.css`: The component CSS, ready to be integrated into the core framework.
+- `README.md`: This documentation.
