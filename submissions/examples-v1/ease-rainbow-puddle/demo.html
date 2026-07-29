@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rainbow Puddle</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌈 Rainbow Puddle</h1>
+        <p class="subtitle">Colorful reflections in a puddle</p>
+
+        <div class="puddle-wrapper">
+            <canvas id="puddleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="rippleBtn">💧 Ripple</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌈 Reflecting</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('puddleCanvas');
+        const ctx = canvas.getContext('2d');
+        const rippleBtn = document.getElementById('rippleBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let ripples = [];
+        let reflections = [];
+        let shimmerParticles = [];
+        let colorMode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = -1000;
+        let mouseY = -1000;
+        let isHovering = false;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                bg: '#0a0a1a'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#ffe4b5'],
+                bg: '#1a0a0a'
+            },
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#caf0f8'],
+                bg: '#0a1a2e'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa', '#e0a0ff'],
+                bg: '#0a0a1a'
+            },
+            {
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff'],
+                bg: '#1a1a2a'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00aa', '#00ff80'],
+                bg: '#0a0a1a'
+            },
+        ];
+
+        // ===== RIPPLE CLASS =====
+        class Ripple {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 80;
+                this.radius = 2;
+                this.maxRadius = 30 + Math.random() * 40;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.life = 1;
+                this.maxLife = 40 + Math.random() * 40;
+                this.age = 0;
+                this.alpha = 0.3 + Math.random() * 0.4;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.colorOffset = Math.random();
+                this.layers = 2 + Math.floor(Math.random() * 3);
+                this.thickness = 0.5 + Math.random() * 0.5;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.radius += this.speed * speed * 15;
+                this.phase += 0.02 * speed * 10;
+                this.alpha = this.life * 0.4;
+
+                if (this.radius > this.maxRadius) {
+                    this.radius = this.maxRadius;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+
+                for (let layer = 0; layer < this.layers; layer++) {
+                    const layerOffset = layer * (this.maxRadius / this.layers) * 0.3;
+                    const r = this.radius - layerOffset;
+                    if (r < 0) continue;
+
+                    const layerAlpha = this.alpha * (1 - layer / this.layers);
+                    const hue = (this.colorOffset * 360 + time * 20 + layer * 30) % 360;
+                    const color = `hsla(${hue}, 100%, 70%, ${layerAlpha})`;
+                    const colorGlow = `hsla(${hue}, 100%, 70%, ${layerAlpha * 0.2})`;
+
+                    // Glow ring
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                    ctx.strokeStyle = colorGlow;
+                    ctx.globalAlpha = layerAlpha * 0.5;
+                    ctx.lineWidth = this.thickness * 3;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = color;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Main ring
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = layerAlpha * 0.8;
+                    ctx.lineWidth = this.thickness * (1 - layer * 0.2);
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = color + '60';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Wave distortion
+                    if (r > 5) {
+                        ctx.beginPath();
+                        for (let i = 0; i < 20; i++) {
+                            const angle = (i / 20) * Math.PI * 2;
+                            const wave = Math.sin(angle * 3 + this.phase + r * 0.05) * 1.5;
+                            const px = this.x + (r + wave) * Math.cos(angle);
+                            const py = this.y + (r + wave) * Math.sin(angle);
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.strokeStyle = color;
+                        ctx.globalAlpha = layerAlpha * 0.2;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+
+                ctx.globalAlpha = 1;
+
+                // Center glow
+                const centerGrad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 0.3);
+                const centerColor = `hsla(${(this.colorOffset * 360 + time * 20) % 360}, 100%, 70%, ${this.alpha * 0.5})`;
+                centerGrad.addColorStop(0, centerColor);
+                centerGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = centerGrad;
+                ctx.globalAlpha = this.alpha * 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== REFLECTION CLASS =====
+        class Reflection {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.size = 1 + Math.random() * 3;
+                this.speed = 0.003 + Math.random() * 0.01;
+                this.phase = Math.random() * Math.PI * 2;
+                this.alpha = 0.1 + Math.random() * 0.2;
+                this.colorOffset = Math.random();
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 200 + Math.random() * 300;
+                this.age = 0;
+                this.wobble = 0.2 + Math.random() * 0.3;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.driftX = (Math.random() - 0.5) * 0.01;
+                this.driftY = (Math.random() - 0.5) * 0.01;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.pulseSpeed = 0.01 + Math.random() * 0.02;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.wobbleSpeed * speed * 5;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+                this.x += this.driftX * speed * 10 + Math.sin(this.phase + time * 0.01) * 0.1;
+                this.y += this.driftY * speed * 10 + Math.cos(this.phase * 0.7 + time * 0.01) * 0.1;
+                this.alpha = (0.1 + 0.2 * this.pulse) * this.life;
+
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.x < 0) this.x = w;
+                if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h;
+                if (this.y > h) this.y = 0;
+
+                if (this.age > this.maxLife) {
+                    this.reset();
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const size = this.size * (0.5 + 0.5 * this.pulse) * this.life;
+                const alpha = this.alpha * 0.5;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 2);
+                grad.addColorStop(0, color + `${Math.floor(alpha * 80)}`);
+                grad.addColorStop(0.5, color + `${Math.floor(alpha * 40)}`);
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.6;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SHIMMER PARTICLE CLASS =====
+        class ShimmerParticle {
+            constructor() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.size = 0.5 + Math.random() * 1.5;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 50;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.twinkleSpeed = 0.05 + Math.random() * 0.1;
+                this.colorOffset = Math.random();
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.vx = (Math.random() - 0.5) * 0.1;
+                this.vy = (Math.random() - 0.5) * 0.1;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.twinkleSpeed * speed * 10;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase);
+                this.x += this.vx * speed * 10;
+                this.y += this.vy * speed * 10;
+
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.x < 0) this.x = w;
+                if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h;
+                if (this.y > h) this.y = 0;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const size = this.size * this.life * (0.5 + 0.5 * this.pulse);
+                const alpha = this.life * 0.6;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW PUDDLE =====
+        function drawPuddle(ctx, w, h) {
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+            const radius = Math.min(w, h) * 0.35;
+            const palette = colorPalettes[colorMode];
+            const bgColor = palette.bg;
+
+            // Puddle base
+            const puddleGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            puddleGrad.addColorStop(0, 'rgba(20, 25, 40, 0.2)');
+            puddleGrad.addColorStop(0.5, 'rgba(15, 20, 35, 0.3)');
+            puddleGrad.addColorStop(0.8, 'rgba(10, 15, 30, 0.4)');
+            puddleGrad.addColorStop(1, 'rgba(5, 10, 20, 0.5)');
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, radius, radius * 0.7, 0, 0, Math.PI * 2);
+            ctx.fillStyle = puddleGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Puddle edge
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, radius, radius * 0.7, 0, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Puddle inner glow
+            const innerGrad = ctx.createRadialGradient(cx, cy - radius * 0.1, 0, cx, cy, radius * 0.5);
+            innerGrad.addColorStop(0, 'rgba(100, 150, 200, 0.05)');
+            innerGrad.addColorStop(1, 'rgba(100, 150, 200, 0)');
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, radius * 0.5, radius * 0.35, 0, 0, Math.PI * 2);
+            ctx.fillStyle = innerGrad;
+            ctx.fill();
+
+            // Puddle rim light
+            ctx.beginPath();
+            ctx.ellipse(cx - radius * 0.1, cy - radius * 0.1, radius * 0.8, radius * 0.4, -0.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.02)';
+            ctx.fill();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const palette = colorPalettes[colorMode];
+            const bgColor = palette.bg;
+
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, bgColor);
+            grad.addColorStop(0.5, bgColor);
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground texture
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.005) * 10;
+                const y = h * 0.7 + Math.sin(i * 1.3 + time * 0.008) * 5;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.005) * 5,
+                    y + 15 + Math.sin(i * 0.7 + time * 0.01) * 5,
+                    x + Math.sin(i * 1.5 + time * 0.006) * 8,
+                    y + 25 + Math.sin(i * 1.1 + time * 0.01) * 5
+                );
+                ctx.strokeStyle = `rgba(30, 30, 40, ${0.03 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Ground line
+            const groundY = h * 0.7;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // ===== ADD RIPPLE =====
+        function addRipple(x, y) {
+            const ripple = new Ripple(x, y);
+            ripples.push(ripple);
+
+            // Spawn shimmer particles
+            for (let i = 0; i < 5; i++) {
+                const s = new ShimmerParticle();
+                s.x = x + (Math.random() - 0.5) * 20;
+                s.y = y + (Math.random() - 0.5) * 20;
+                shimmerParticles.push(s);
+            }
+        }
+
+        // ===== RESET =====
+        function resetPuddle() {
+            ripples = [];
+            reflections = [];
+            shimmerParticles = [];
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌈 Reflecting';
+            }, 1000);
+
+            // Initialize reflections
+            for (let i = 0; i < 20; i++) {
+                reflections.push(new Reflection());
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.update(speed);
+                if (r.isDead()) {
+                    ripples.splice(i, 1);
+                }
+            }
+
+            // Update reflections
+            for (const r of reflections) {
+                r.update(speed);
+            }
+
+            // Update shimmer particles
+            for (let i = shimmerParticles.length - 1; i >= 0; i--) {
+                const s = shimmerParticles[i];
+                s.update(speed);
+                if (s.isDead()) {
+                    shimmerParticles.splice(i, 1);
+                }
+            }
+
+            // Spawn shimmer particles
+            if (Math.random() < 0.02 * speed * 20) {
+                const s = new ShimmerParticle();
+                shimmerParticles.push(s);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawPuddle(ctx, w, h);
+
+            // Draw reflections (behind ripples)
+            for (const r of reflections) {
+                r.draw(ctx);
+            }
+
+            // Draw shimmer particles
+            for (const s of shimmerParticles) {
+                s.draw(ctx);
+            }
+
+            // Draw ripples
+            for (const r of ripples) {
+                r.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌈 ${ripples.length} ripples • ${reflections.length} reflections • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== CONTROLS =====
+
+        // Ripple
+        rippleBtn.addEventListener('click', () => {
+            const w = canvas.width;
+            const h = canvas.height;
+            addRipple(w / 2 + (Math.random() - 0.5) * 100, h / 2 + (Math.random() - 0.5) * 60);
+            statusText.textContent = '💧 Ripple!';
+            setTimeout(() => {
+                statusText.textContent = '🌈 Reflecting';
+            }, 500);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌈 Reflecting';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌈 Reflecting';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetPuddle);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') rippleBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'x' || e.key === 'X') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                rippleBtn.click();
+            }
+        });
+
+        // ===== MOUSE INTERACTION =====
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            addRipple(x, y);
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            addRipple(x, y);
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌈 Reflecting';
+
+        // Initialize reflections
+        for (let i = 0; i < 20; i++) {
+            reflections.push(new Reflection());
+        }
+
+        lastFpsUpdate = performance.now();
+        render(lastFpsUpdate);
+
+        console.log('🌈 Rainbow Puddle loaded!');
+        console.log('💡 R - Add ripple');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 X - Reset');
+        console.log('💡 SPACE - Add ripple');
+        console.log('💡 Click puddle - Add ripple');
+    </script>
+</body>
+</html>

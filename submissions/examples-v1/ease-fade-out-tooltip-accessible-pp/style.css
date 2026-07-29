@@ -1,0 +1,649 @@
+/* ==========================================================================
+   EaseMotion CSS — Fade-Out Tooltip for Accessible Web Layouts
+   Component : Pure CSS animated tooltip with a smooth Fade-Out transition
+   Track     : submissions/examples/ease-fade-out-tooltip-accessible-pp
+   Author    : Pratyush Panda (pp)
+   Resolves  : https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/46237
+   --------------------------------------------------------------------------
+   Design goals
+   - Pure CSS (zero JavaScript for the animation itself)
+   - Smooth "fade-out" interaction: tooltip fades + lifts away on unhover/blur,
+     and fades + settles in on hover/focus.
+   - Accessible Web aesthetic: high contrast, WCAG AA compliant colors,
+     clear focus indicators, reduced motion support, semantic HTML.
+   - Fully responsive + keyboard accessible (focus-within + tabindex).
+   - Exposes tunable parameters via standard CSS custom properties.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Design tokens & CSS custom properties
+   -------------------------------------------------------------------------- */
+:root {
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    Menlo, monospace;
+
+  /* App surface (light Accessible Web theme) */
+  --bg-app: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f5f5f5;
+
+  /* Text — WCAG AA compliant contrast ratios */
+  --text-strong: #1a1a2e;
+  --text-primary: #2d2d2d;
+  --text-secondary: #4a4a4a;
+  --text-muted: #6b6b6b;
+
+  /* Brand / accent — accessible blue (4.5:1 on white) */
+  --accent-1: #0052cc;
+  --accent-2: #0066ff;
+  --accent-soft: rgba(0, 82, 204, 0.12);
+
+  /* Status colors — all WCAG AA on white */
+  --success: #007030;
+  --warning: #b85600;
+  --danger: #cc0000;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.12),
+    0 2px 4px -2px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.18),
+    0 6px 12px -6px rgba(0, 0, 0, 0.12);
+  --shadow-tooltip: 0 8px 20px -6px rgba(0, 82, 204, 0.35),
+    0 4px 10px -4px rgba(0, 0, 0, 0.15);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ----------------------------------------------------------------------
+     2. Tooltip tunable parameters (override these anywhere)
+     ---------------------------------------------------------------------- */
+  --tooltip-fade-duration: 200ms;          /* fade in/out length          */
+  --tooltip-fade-easing: var(--ease-out-soft);
+  --tooltip-fade-lift: 6px;                /* vertical travel while fading */
+  --tooltip-fade-blur: 0px;                /* optional blur on entry       */
+  --tooltip-bg: #1a1a2e;                   /* tooltip surface             */
+  --tooltip-fg: #ffffff;                   /* tooltip text                */
+  --tooltip-radius: var(--radius-sm);
+  --tooltip-padding-y: 8px;
+  --tooltip-padding-x: 12px;
+  --tooltip-font-size: 0.8125rem;
+  --tooltip-max-width: 260px;
+  --tooltip-gap: 10px;                     /* gap from trigger            */
+  --tooltip-z-index: 9999;
+  --tooltip-arrow-size: 7px;
+  --tooltip-glow: 0 0 0 2px rgba(0, 82, 204, 0.25),
+    0 8px 20px -6px rgba(0, 82, 204, 0.4);
+}
+
+/* Dark theme overrides — maintain WCAG AA contrast */
+[data-theme="dark"] {
+  --bg-app: #121212;
+  --bg-surface: #1e1e1e;
+  --bg-subtle: #2a2a2a;
+  --text-strong: #f5f5f5;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
+  --accent-1: #4da3ff;
+  --accent-2: #6eb4ff;
+  --accent-soft: rgba(77, 163, 255, 0.18);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 8px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 24px -8px rgba(0, 0, 0, 0.65);
+  --tooltip-bg: #f5f5f5;
+  --tooltip-fg: #1a1a2e;
+  --tooltip-glow: 0 0 0 2px rgba(77, 163, 255, 0.35),
+    0 8px 20px -6px rgba(0, 0, 0, 0.7);
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  :root {
+    --accent-1: #003d99;
+    --accent-2: #0052cc;
+    --success: #005a25;
+    --warning: #994400;
+    --danger: #aa0000;
+    --tooltip-glow: 0 0 0 3px currentColor;
+  }
+  [data-theme="dark"] {
+    --accent-1: #80bfff;
+    --accent-2: #a6d0ff;
+    --success: #66cc66;
+    --warning: #ffcc33;
+    --danger: #ff6666;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. Page scaffolding (demo only — not part of the component contract)
+   -------------------------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background:
+    radial-gradient(1100px 560px at 85% -10%, var(--accent-soft), transparent 60%),
+    radial-gradient(900px 520px at -10% 110%, rgba(0, 82, 204, 0.04), transparent 55%),
+    var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.pp-theme-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 10000;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--bg-subtle);
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s var(--ease-out-soft), color 0.2s ease;
+}
+.pp-theme-toggle:hover {
+  transform: translateY(-2px) rotate(12deg);
+  color: var(--accent-2);
+}
+.pp-theme-toggle:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+.pp-theme-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.pp-header {
+  padding: 72px 24px 24px;
+  text-align: center;
+}
+.pp-container {
+  width: min(1080px, 100% - 48px);
+  margin-inline: auto;
+}
+.pp-eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-1);
+  background: var(--accent-soft);
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+}
+.pp-header h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  margin: 16px 0 8px;
+  color: var(--text-strong);
+  letter-spacing: -0.02em;
+}
+.pp-subtitle {
+  max-width: 640px;
+  margin: 0 auto;
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+.pp-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-subtle);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.pp-meta-badge span {
+  font-weight: 700;
+  color: var(--accent-1);
+}
+
+.pp-main-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  padding: 32px 24px 80px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .pp-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pp-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-subtle);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-md);
+}
+.pp-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  margin: 0 0 6px;
+  color: var(--text-strong);
+}
+.pp-card-title svg {
+  color: var(--accent-1);
+}
+.pp-card-desc {
+  margin: 0 0 22px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Stage where the tooltip is demonstrated */
+.pp-stage {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  padding: 28px;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, var(--bg-subtle), transparent 70%),
+    var(--bg-app);
+  border: 1px dashed var(--bg-subtle);
+}
+@media (max-width: 520px) {
+  .pp-stage {
+    grid-template-columns: 1fr;
+  }
+}
+.pp-stage-cell {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+}
+
+/* Accessible Web trigger button */
+.pp-a11y-btn {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  background: var(--accent-1);
+  box-shadow: 0 4px 12px -4px rgba(0, 82, 204, 0.5);
+  transition: transform 0.2s var(--ease-out-soft), box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+.pp-a11y-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -6px rgba(0, 82, 204, 0.6);
+  background: var(--accent-2);
+}
+.pp-a11y-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.pp-a11y-btn:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+.pp-a11y-btn--ghost {
+  color: var(--accent-1);
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+.pp-a11y-btn--ghost:hover {
+  background: var(--accent-soft);
+  box-shadow: var(--shadow-sm);
+}
+.pp-a11y-btn--ghost:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+/* Icon trigger (round, accessible) */
+.pp-icon-trigger {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--bg-subtle);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s var(--ease-out-soft), color 0.2s ease;
+}
+.pp-icon-trigger:hover {
+  transform: translateY(-2px);
+  color: var(--accent-1);
+}
+.pp-icon-trigger:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 3px;
+}
+.pp-icon-trigger svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --------------------------------------------------------------------------
+   4. THE COMPONENT — Fade-Out Tooltip (Accessible Web)
+   --------------------------------------------------------------------------
+   Usage:
+     <div class="pp-tooltip-trigger" tabindex="0">
+       <button class="pp-a11y-btn">Hover me</button>
+       <div class="pp-fade-tooltip pp-fade-tooltip--top" role="tooltip">
+         Tooltip text
+       </div>
+     </div>
+
+   The trigger wrapper is focusable so keyboard users can reveal the tooltip
+   via :focus-within. The tooltip fades + lifts in on reveal and fades + lifts
+   away on dismiss (the "fade-out" interaction).
+   -------------------------------------------------------------------------- */
+.pp-tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+  outline: none;
+}
+.pp-tooltip-trigger:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 4px;
+  border-radius: var(--radius-full);
+}
+
+.pp-fade-tooltip {
+  position: absolute;
+  z-index: var(--tooltip-z-index);
+  max-width: var(--tooltip-max-width);
+  padding: var(--tooltip-padding-y) var(--tooltip-padding-x);
+  border-radius: var(--tooltip-radius);
+  background: var(--tooltip-bg);
+  color: var(--tooltip-fg);
+  font-size: var(--tooltip-font-size);
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
+  white-space: normal;
+  box-shadow: var(--tooltip-glow, var(--shadow-tooltip));
+  pointer-events: none;
+
+  /* Hidden initial state — transparent + lifted + blurred */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(var(--tooltip-fade-lift) * -1));
+  filter: blur(var(--tooltip-fade-blur));
+  transition:
+    opacity var(--tooltip-fade-duration) var(--tooltip-fade-easing),
+    transform var(--tooltip-fade-duration) var(--tooltip-fade-easing),
+    visibility 0s linear var(--tooltip-fade-duration),
+    filter var(--tooltip-fade-duration) var(--tooltip-fade-easing);
+}
+
+/* Arrow (shared base) */
+.pp-fade-tooltip::after {
+  content: "";
+  position: absolute;
+  width: var(--tooltip-arrow-size);
+  height: var(--tooltip-arrow-size);
+  background: var(--tooltip-bg);
+  transform: rotate(45deg);
+}
+
+/* Reveal on hover OR keyboard focus */
+.pp-tooltip-trigger:hover .pp-fade-tooltip,
+.pp-tooltip-trigger:focus-within .pp-fade-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  filter: blur(0);
+  transition:
+    opacity var(--tooltip-fade-duration) var(--tooltip-fade-easing),
+    transform var(--tooltip-fade-duration) var(--tooltip-fade-easing),
+    visibility 0s linear 0s,
+    filter var(--tooltip-fade-duration) var(--tooltip-fade-easing);
+}
+
+/* --- Position variants ------------------------------------------------ */
+.pp-fade-tooltip--top {
+  bottom: 100%;
+  left: 50%;
+  margin-bottom: var(--tooltip-gap);
+  transform-origin: bottom center;
+  transform: translate(-50%, var(--tooltip-fade-lift));
+}
+.pp-tooltip-trigger:hover .pp-fade-tooltip--top,
+.pp-tooltip-trigger:focus-within .pp-fade-tooltip--top {
+  transform: translate(-50%, 0);
+}
+.pp-fade-tooltip--top::after {
+  top: 100%;
+  left: 50%;
+  margin-left: calc(var(--tooltip-arrow-size) / -2);
+  margin-top: calc(var(--tooltip-arrow-size) / -2);
+}
+
+.pp-fade-tooltip--bottom {
+  top: 100%;
+  left: 50%;
+  margin-top: var(--tooltip-gap);
+  transform-origin: top center;
+  transform: translate(-50%, calc(var(--tooltip-fade-lift) * -1));
+}
+.pp-tooltip-trigger:hover .pp-fade-tooltip--bottom,
+.pp-tooltip-trigger:focus-within .pp-fade-tooltip--bottom {
+  transform: translate(-50%, 0);
+}
+.pp-fade-tooltip--bottom::after {
+  bottom: 100%;
+  left: 50%;
+  margin-left: calc(var(--tooltip-arrow-size) / -2);
+  margin-bottom: calc(var(--tooltip-arrow-size) / -2);
+}
+
+.pp-fade-tooltip--left {
+  right: 100%;
+  top: 50%;
+  margin-right: var(--tooltip-gap);
+  transform-origin: right center;
+  transform: translate(var(--tooltip-fade-lift), -50%);
+}
+.pp-tooltip-trigger:hover .pp-fade-tooltip--left,
+.pp-tooltip-trigger:focus-within .pp-fade-tooltip--left {
+  transform: translate(0, -50%);
+}
+.pp-fade-tooltip--left::after {
+  left: 100%;
+  top: 50%;
+  margin-top: calc(var(--tooltip-arrow-size) / -2);
+  margin-left: calc(var(--tooltip-arrow-size) / -2);
+}
+
+.pp-fade-tooltip--right {
+  left: 100%;
+  top: 50%;
+  margin-left: var(--tooltip-gap);
+  transform-origin: left center;
+  transform: translate(calc(var(--tooltip-fade-lift) * -1), -50%);
+}
+.pp-tooltip-trigger:hover .pp-fade-tooltip--right,
+.pp-tooltip-trigger:focus-within .pp-fade-tooltip--right {
+  transform: translate(0, -50%);
+}
+.pp-fade-tooltip--right::after {
+  right: 100%;
+  top: 50%;
+  margin-top: calc(var(--tooltip-arrow-size) / -2);
+  margin-right: calc(var(--tooltip-arrow-size) / -2);
+}
+
+/* --- Accent / variant skins ------------------------------------------- */
+.pp-fade-tooltip--accent {
+  background: var(--accent-1);
+  color: #fff;
+  box-shadow: 0 8px 20px -6px rgba(0, 82, 204, 0.55);
+}
+.pp-fade-tooltip--accent::after {
+  background: var(--accent-1);
+}
+.pp-fade-tooltip--success {
+  background: var(--success);
+  color: #fff;
+}
+.pp-fade-tooltip--success::after {
+  background: var(--success);
+}
+.pp-fade-tooltip--danger {
+  background: var(--danger);
+  color: #fff;
+}
+.pp-fade-tooltip--danger::after {
+  background: var(--danger);
+}
+
+/* Rich tooltip with title + body */
+.pp-fade-tooltip__title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+.pp-fade-tooltip__body {
+  display: block;
+  font-weight: 400;
+  opacity: 0.85;
+  font-size: 0.78rem;
+}
+
+/* --------------------------------------------------------------------------
+   5. Control dashboard (demo only)
+   -------------------------------------------------------------------------- */
+.pp-controls {
+  display: grid;
+  gap: 16px;
+}
+.pp-control {
+  display: grid;
+  gap: 6px;
+}
+.pp-control label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+}
+.pp-control label span {
+  color: var(--accent-1);
+  font-family: var(--font-mono);
+}
+.pp-control input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent-1);
+}
+.pp-control select {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--bg-subtle);
+  background: var(--bg-app);
+  color: var(--text-primary);
+}
+.pp-reset {
+  margin-top: 4px;
+  padding: 10px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--bg-subtle);
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.pp-reset:hover {
+  background: var(--accent-soft);
+  color: var(--accent-1);
+}
+.pp-reset:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* Code preview */
+.pp-code {
+  margin-top: 18px;
+  background: #1a1a2e;
+  color: #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.pp-code .tok-tag { color: #7dd3fc; }
+.pp-code .tok-attr { color: #fcd34d; }
+.pp-code .tok-str { color: #86efac; }
+
+/* Accessibility note */
+.pp-a11y-note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent-1);
+  background: var(--accent-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .pp-fade-tooltip {
+    transition: opacity 0.01ms linear, visibility 0s linear 0s !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .pp-tooltip-trigger:hover .pp-fade-tooltip,
+  .pp-tooltip-trigger:focus-within .pp-fade-tooltip {
+    transform: none !important;
+  }
+}

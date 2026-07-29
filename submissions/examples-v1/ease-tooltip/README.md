@@ -1,8 +1,29 @@
-# CSS-Only Tooltip Component
+# Ease Tooltip
 
-A lightweight, JavaScript-free tooltip modifier component driven entirely by raw data attributes and native pseudo-elements.
+A pure CSS animated tooltip component for buttons, icons, and links.
 
-## Technical Details
-- Extracts display strings using the native `attr(data-tip)` structural selector.
-- Handles floating overlay maps utilizing absolute placement translation coordinates.
-- Drops transitional animation metrics instantly under system `prefers-reduced-motion` settings.
+## Features
+
+- Smooth hover animation
+- No JavaScript required
+- Lightweight CSS component
+- Accessible tooltip structure
+- Responsive design
+
+
+## Usage
+
+HTML:
+
+```html
+<div class="ease-tooltip-wrapper">
+
+  <button>
+    Hover Me
+  </button>
+
+  <span class="ease-tooltip">
+    Tooltip text
+  </span>
+
+</div>

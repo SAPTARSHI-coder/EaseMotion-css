@@ -1,0 +1,366 @@
+/* ==========================================================================
+   3D TILT NAVIGATION BAR - EaseMotion CSS
+   ==========================================================================
+   Design reasoning, up front:
+   - This is a genuine 3D tilt built from CSS perspective + rotateX/
+     rotateY/translateZ + transform-style: preserve-3d - not a 2D hover
+     effect faked with a shadow. Each link has its own small 3D scene:
+     a face that rotates, a glow layer sitting behind it in Z-space, and
+     a label that pops slightly forward, all inside a shared perspective.
+   - What this does NOT do is track the live cursor position to tilt
+     proportionally to where you're hovering (the "vanilla-tilt.js"
+     style effect) - that requires reading pointer coordinates, which is
+     only possible with JavaScript. Instead every link tilts toward a
+     fixed, deliberate angle on :hover/:focus-visible, as if lit from a
+     single consistent light source above the bar. This keeps the effect
+     fully keyboard-operable, since focus triggers the identical tilt.
+   - Structured into clearly commented sections per the component brief.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. EaseMotion CSS design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Page */
+  --page-bg-start: #0a0b12;
+  --page-bg-end: #14151f;
+  --text-primary: #f2f3fb;
+  --text-secondary: #9297b3;
+
+  /* Glass navbar surface */
+  --nav-bg: rgba(22, 24, 36, 0.55);
+  --nav-border: rgba(255, 255, 255, 0.12);
+  --nav-blur: 20px;
+  --nav-radius: 999px;
+
+  /* Link surface */
+  --link-bg: rgba(255, 255, 255, 0.03);
+  --link-bg-hover: rgba(255, 255, 255, 0.07);
+  --link-text: #c7cadb;
+  --link-text-hover: #ffffff;
+
+  /* Accent + glow */
+  --accent-start: #6d8cff;
+  --accent-end: #7ef0d8;
+  --accent-glow: rgba(109, 140, 255, 0.45);
+
+  /* Depth / shadow */
+  --shadow-ambient: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --shadow-face-rest: 0 2px 6px rgba(0, 0, 0, 0.25);
+  --shadow-face-hover: 0 22px 34px rgba(0, 0, 0, 0.45);
+
+  /* Spacing (fluid, avoids fixed px where practical) */
+  --nav-padding-y: clamp(8px, 1.2vw, 12px);
+  --nav-padding-x: clamp(8px, 1.4vw, 14px);
+  --nav-gap: clamp(2px, 1vw, 8px);
+  --link-padding-y: clamp(10px, 1.4vw, 13px);
+  --link-padding-x: clamp(16px, 2.4vw, 24px);
+
+  /* Motion tokens - EaseMotion CSS conventions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-tilt: 0.45s;
+  --duration-fade: 0.6s;
+
+  /* Perspective depth */
+  --tilt-perspective: 900px;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and page scaffold
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-primary);
+  background: linear-gradient(160deg, var(--page-bg-start), var(--page-bg-end));
+  min-height: 100vh;
+}
+
+/* --------------------------------------------------------------------------
+   3. Accessibility: skip link
+   -------------------------------------------------------------------------- */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: auto;
+  background: var(--accent-start);
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  z-index: 200;
+}
+
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Navbar shell (glassmorphism + perspective container)
+   -------------------------------------------------------------------------- */
+.tilt-navbar {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: clamp(20px, 4vw, 36px) 16px 0;
+
+  /* The perspective lives here, on the ancestor of every tilting link,
+     so all links share one consistent 3D vantage point */
+  perspective: var(--tilt-perspective);
+}
+
+.tilt-navbar-inner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--nav-gap);
+  max-width: 100%;
+  padding: var(--nav-padding-y) var(--nav-padding-x);
+
+  background: var(--nav-bg);
+  border: 1px solid var(--nav-border);
+  border-radius: var(--nav-radius);
+  backdrop-filter: blur(var(--nav-blur));
+  -webkit-backdrop-filter: blur(var(--nav-blur));
+  box-shadow: var(--shadow-ambient);
+
+  transform-style: preserve-3d;
+}
+
+/* --------------------------------------------------------------------------
+   5. Nav item wrapper - each link's own 3D scene
+   -------------------------------------------------------------------------- */
+.tilt-item {
+  position: relative;
+  display: flex;
+  text-decoration: none;
+  color: var(--link-text);
+  border-radius: var(--nav-radius);
+  transform-style: preserve-3d;
+}
+
+/* --------------------------------------------------------------------------
+   6. Tilt face - the surface that actually rotates
+   -------------------------------------------------------------------------- */
+.tilt-face {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--link-padding-y) var(--link-padding-x);
+  border-radius: var(--nav-radius);
+  background: var(--link-bg);
+
+  transform-style: preserve-3d;
+  transform: rotateX(0deg) rotateY(0deg) translateZ(0px);
+  box-shadow: var(--shadow-face-rest);
+
+  transition: transform var(--duration-tilt) var(--ease-spring),
+    box-shadow var(--duration-tilt) var(--ease-standard),
+    background-color var(--duration-tilt) var(--ease-standard);
+}
+
+/* Hover: tilt toward a fixed angle, lift forward in Z, and deepen the
+   shadow to sell the sense of the face rising off the bar */
+.tilt-item:hover .tilt-face {
+  transform: rotateX(16deg) rotateY(-12deg) translateZ(20px);
+  box-shadow: var(--shadow-face-hover);
+  background: var(--link-bg-hover);
+}
+
+/* Keyboard focus gets the identical tilt, so the effect - and the
+   information it conveys - is available without a mouse */
+.tilt-item:focus-visible .tilt-face {
+  transform: rotateX(16deg) rotateY(-12deg) translateZ(20px);
+  box-shadow: var(--shadow-face-hover);
+  background: var(--link-bg-hover);
+}
+
+.tilt-item:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   7. Glow layer - sits behind the face in Z-space
+   -------------------------------------------------------------------------- */
+.tilt-glow {
+  position: absolute;
+  inset: -30%;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 20%, var(--accent-glow), transparent 70%);
+  opacity: 0;
+  transform: translateZ(-24px);
+
+  transition: opacity var(--duration-tilt) var(--ease-standard);
+}
+
+.tilt-item:hover .tilt-glow,
+.tilt-item:focus-visible .tilt-glow {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   8. Label - pops slightly forward of the face plane
+   -------------------------------------------------------------------------- */
+.tilt-label {
+  position: relative;
+  font-size: clamp(0.85rem, 1vw, 0.92rem);
+  font-weight: 500;
+  white-space: nowrap;
+  transform: translateZ(6px);
+  transition: color var(--duration-tilt) var(--ease-standard);
+}
+
+.tilt-item:hover .tilt-label,
+.tilt-item:focus-visible .tilt-label {
+  color: var(--link-text-hover);
+}
+
+/* --------------------------------------------------------------------------
+   9. Active navigation indicator
+   -------------------------------------------------------------------------- */
+
+/* Active link gets a permanently brighter face and gradient text */
+.tilt-item[aria-current="page"] .tilt-face {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.tilt-item[aria-current="page"] .tilt-label {
+  background: linear-gradient(120deg, var(--accent-start), var(--accent-end));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+}
+
+/* Floating indicator dot beneath the active item, animated in and
+   gently pulsing to draw the eye without being distracting */
+.tilt-item[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: linear-gradient(120deg, var(--accent-start), var(--accent-end));
+  transform: translateX(-50%) translateZ(14px);
+  box-shadow: 0 0 10px var(--accent-glow);
+  animation: indicatorPulse 2.4s var(--ease-standard) infinite;
+}
+
+@keyframes indicatorPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translateX(-50%) translateZ(14px) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) translateZ(14px) scale(1.4);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. Demo page content (context around the navbar)
+   -------------------------------------------------------------------------- */
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(48px, 10vh, 120px) 20px;
+}
+
+.stage-intro {
+  max-width: 520px;
+}
+
+.stage-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-start);
+  margin-bottom: 10px;
+}
+
+.stage-title {
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.stage-subtitle {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   11. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .tilt-face,
+  .tilt-glow,
+  .tilt-label,
+  .tilt-item::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .tilt-item:hover .tilt-face,
+  .tilt-item:focus-visible .tilt-face {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. Responsive breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablet: slightly reduce the tilt so it feels proportional at a
+   smaller bar size, rather than shrinking the whole effect uniformly */
+@media (max-width: 768px) {
+  .tilt-item:hover .tilt-face,
+  .tilt-item:focus-visible .tilt-face {
+    transform: rotateX(10deg) rotateY(-8deg) translateZ(14px);
+  }
+}
+
+/* Mobile: the navbar wraps onto multiple rows (handled by flex-wrap on
+   .tilt-navbar-inner above); tilt angles are further reduced so the
+   effect doesn't feel exaggerated on a compact bar */
+@media (max-width: 480px) {
+  .tilt-navbar {
+    padding-top: 24px;
+  }
+
+  .tilt-navbar-inner {
+    border-radius: 26px;
+    gap: 4px;
+  }
+
+  .tilt-item,
+  .tilt-face {
+    border-radius: 18px;
+  }
+
+  .tilt-item:hover .tilt-face,
+  .tilt-item:focus-visible .tilt-face {
+    transform: rotateX(6deg) rotateY(-5deg) translateZ(8px);
+  }
+
+  .stage {
+    padding: 40px 16px;
+  }
+}

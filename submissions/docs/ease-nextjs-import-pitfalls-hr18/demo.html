@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Next.js App Router Import Placement Pitfalls</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="nip-hr18">
+  <div class="nip-wrap-hr18">
+
+    <header class="nip-header-hr18">
+      <span class="nip-eyebrow-hr18">EaseMotion-css · submissions/docs</span>
+      <h1>Next.js App Router Import Placement Pitfalls</h1>
+      <p>EaseMotion is a single global stylesheet import, but <em>where</em> you
+        put that import in a Next.js App Router project changes what a visitor
+        actually sees. Import it in the wrong file and you can get a flash of
+        unstyled content (FOUC) every time someone navigates. This guide shows
+        why, and where the import actually belongs.</p>
+    </header>
+
+    <!-- Live FOUC demo -->
+    <section class="nip-section-hr18" aria-labelledby="nipDemoHeading">
+      <h2 id="nipDemoHeading">See the flash</h2>
+      <p class="nip-lede-hr18">Click "Simulate navigation" on each window to see
+        what a route change looks like depending on where the import lives.</p>
+
+      <div class="nip-demo-grid-hr18">
+
+        <div class="nip-demo-card-hr18">
+          <div class="nip-window-chrome-hr18">
+            <span class="nip-dot-hr18"></span><span class="nip-dot-hr18"></span><span class="nip-dot-hr18"></span>
+            <span class="nip-window-url-hr18">app/page.js imports styles</span>
+          </div>
+          <div class="nip-window-body-hr18 styled-hr18" id="nipWrongWindow">
+            <p class="nip-fake-title-hr18">Welcome back</p>
+            <span class="nip-fake-btn-hr18">Continue</span>
+          </div>
+          <div class="nip-demo-controls-hr18">
+            <p>Import scoped to the page — reloads (and briefly flashes) on every navigation.</p>
+            <button type="button" class="nip-replay-btn-hr18" id="nipWrongBtn">Simulate navigation</button>
+          </div>
+        </div>
+
+        <div class="nip-demo-card-hr18">
+          <div class="nip-window-chrome-hr18">
+            <span class="nip-dot-hr18"></span><span class="nip-dot-hr18"></span><span class="nip-dot-hr18"></span>
+            <span class="nip-window-url-hr18">app/layout.js imports styles</span>
+          </div>
+          <div class="nip-window-body-hr18 styled-hr18" id="nipCorrectWindow">
+            <p class="nip-fake-title-hr18">Welcome back</p>
+            <span class="nip-fake-btn-hr18">Continue</span>
+          </div>
+          <div class="nip-demo-controls-hr18">
+            <p>Import lives in the persistent root layout — already applied, no flash.</p>
+            <button type="button" class="nip-replay-btn-hr18" id="nipCorrectBtn">Simulate navigation</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Wrong vs correct -->
+    <section class="nip-section-hr18" aria-labelledby="nipPatternHeading">
+      <h2 id="nipPatternHeading">Wrong vs correct import placement</h2>
+      <p class="nip-lede-hr18">The App Router re-renders <code>page.js</code> on
+        every navigation to that route, but keeps a shared <code>layout.js</code>
+        mounted across all of them — which is exactly why import location
+        matters here in a way it didn't in the old Pages Router.</p>
+
+      <div class="nip-pattern-grid-hr18">
+        <article class="nip-pattern-card-hr18 wrong">
+          <div class="nip-pattern-head-hr18">&#10007; app/page.js</div>
+          <pre class="nip-pattern-code-hr18">// app/page.js
+import "easemotion-css/min";
+
+export default function Page() {
+  return (
+    &lt;main className="ease-fade-in"&gt;
+      &lt;h1&gt;Home&lt;/h1&gt;
+    &lt;/main&gt;
+  );
+}</pre>
+          <p class="nip-pattern-note-hr18">Works on the first load, but every
+            other route (<code>app/about/page.js</code>, etc.) needs its own
+            copy of this import — miss one and that page silently renders
+            unstyled. Even where it is imported, Next.js can reload the chunk
+            on navigation, producing a brief unstyled flash.</p>
+        </article>
+
+        <article class="nip-pattern-card-hr18 correct">
+          <div class="nip-pattern-head-hr18">&#10003; app/layout.js</div>
+          <pre class="nip-pattern-code-hr18">// app/layout.js
+import "easemotion-css/min";
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</pre>
+          <p class="nip-pattern-note-hr18">Imported exactly once, in the file
+            that wraps every route. The stylesheet is applied before any page
+            renders and stays applied across client-side navigations, since
+            the root layout never unmounts.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- FOUC explanation -->
+    <section class="nip-section-hr18" aria-labelledby="nipFoucHeading">
+      <h2 id="nipFoucHeading">Why the flash happens — and how to prevent it</h2>
+      <div class="nip-callout-grid-hr18">
+        <div class="nip-callout-hr18">
+          <h3>Cause: per-route imports</h3>
+          <p>A CSS import inside <code>page.js</code> is scoped to that route's
+            bundle. On navigation, React has to mount the new page (and its
+            styles) before they can apply — there's a real, if brief, unstyled
+            window.</p>
+        </div>
+        <div class="nip-callout-hr18">
+          <h3>Cause: duplicate imports</h3>
+          <p>Importing the same stylesheet in multiple page files doesn't
+            error, but it does nothing for consistency — each route still only
+            gets styled once its own bundle loads.</p>
+        </div>
+        <div class="nip-callout-hr18">
+          <h3>Prevention: import once, at the root</h3>
+          <p>Put the import in <code>app/layout.js</code> (or
+            <code>app/globals.css</code>'s own import chain). It loads with the
+            shell that wraps every page, so there's nothing left to flash.</p>
+        </div>
+        <div class="nip-callout-hr18">
+          <h3>Prevention: don't nest it in Client Components</h3>
+          <p>Keep the import in a Server Component layout. Pushing it into a
+            deeply nested <code>"use client"</code> component ties the
+            stylesheet to that component's hydration timing instead of the
+            initial HTML response.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Server component note -->
+    <section class="nip-section-hr18" aria-labelledby="nipServerHeading">
+      <h2 id="nipServerHeading">Server Component compatibility</h2>
+      <div class="nip-note-box-hr18">
+        <strong>EaseMotion's classes are plain CSS</strong>, so importing the
+        stylesheet needs no <code>"use client"</code> directive and works
+        fine inside a Server Component like the default <code>app/layout.js</code>.
+        You only need <code>"use client"</code> for a component if it also
+        uses React state, effects, or browser-only APIs — not just because it
+        happens to have EaseMotion classes on its markup.
+      </div>
+    </section>
+
+    <!-- Copy-ready snippets -->
+    <section class="nip-section-hr18" aria-labelledby="nipSnippetHeading">
+      <h2 id="nipSnippetHeading">Copy-ready imports</h2>
+      <p class="nip-lede-hr18">Pick the file you're editing.</p>
+
+      <div class="nip-tabs-hr18" role="tablist" aria-label="Snippet target file">
+        <button type="button" class="nip-tab-hr18" role="tab" aria-selected="true" id="nipTabLayout" data-target="nipCodeLayout">layout.js</button>
+        <button type="button" class="nip-tab-hr18" role="tab" aria-selected="false" id="nipTabPage" data-target="nipCodePage">page.js</button>
+      </div>
+
+      <div class="nip-snippet-card-hr18">
+        <div class="nip-snippet-head-hr18">
+          <button type="button" class="nip-copy-btn-hr18" id="nipCopyBtn">Copy snippet</button>
+        </div>
+        <pre class="nip-snippet-code-hr18" id="nipCodeLayout">// app/layout.js
+import "easemotion-css/min";
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;{children}&lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</pre>
+        <pre class="nip-snippet-code-hr18" id="nipCodePage" hidden>// app/page.js
+// No stylesheet import here — it already loads
+// once, globally, from app/layout.js.
+
+export default function Page() {
+  return (
+    &lt;main className="ease-fade-in"&gt;
+      &lt;h1&gt;Home&lt;/h1&gt;
+    &lt;/main&gt;
+  );
+}</pre>
+        <p class="nip-status-hr18" id="nipSnippetStatus" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- Checklist -->
+    <section class="nip-section-hr18" aria-labelledby="nipChecklistHeading">
+      <h2 id="nipChecklistHeading">Pitfall checklist</h2>
+      <ul class="nip-checklist-hr18">
+        <li><strong>Import order</strong> — if you also have a custom <code>globals.css</code>, import EaseMotion before it so your own overrides win the cascade.</li>
+        <li><strong>Global scope</strong> — the import should appear exactly once, in <code>app/layout.js</code>, not repeated per route.</li>
+        <li><strong>Duplicate imports</strong> — search your <code>app/</code> tree for other <code>easemotion-css</code> imports before adding a new one; a second import doesn't break anything but is a sign the first one is in the wrong place.</li>
+        <li><strong>No unnecessary "use client"</strong> — importing the stylesheet doesn't require marking the file a Client Component.</li>
+      </ul>
+    </section>
+
+    <p class="nip-footnote-hr18">submissions/docs/ease-nextjs-import-pitfalls-hr18 &middot; no build tools or external CDN required</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- FOUC demo ----
+  var wrongWindow = document.getElementById("nipWrongWindow");
+  var wrongBtn = document.getElementById("nipWrongBtn");
+  var correctWindow = document.getElementById("nipCorrectWindow");
+  var correctBtn = document.getElementById("nipCorrectBtn");
+
+  wrongBtn.addEventListener("click", function () {
+    wrongWindow.classList.remove("styled-hr18");
+    wrongWindow.classList.add("unstyled-hr18");
+    window.setTimeout(function () {
+      wrongWindow.classList.remove("unstyled-hr18");
+      wrongWindow.classList.add("styled-hr18");
+    }, 550);
+  });
+
+  correctBtn.addEventListener("click", function () {
+    // Layout never unmounts, so styling never drops out — just a quick
+    // re-affirm animation on the content, no unstyled phase.
+    var title = correctWindow.querySelector(".nip-fake-title-hr18");
+    title.style.animation = "none";
+    void title.offsetWidth;
+    title.style.animation = "";
+  });
+
+  // ---- Tabs ----
+  var tabs = document.querySelectorAll(".nip-tab-hr18");
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) {
+        t.setAttribute("aria-selected", "false");
+        document.getElementById(t.getAttribute("data-target")).hidden = true;
+      });
+      tab.setAttribute("aria-selected", "true");
+      document.getElementById(tab.getAttribute("data-target")).hidden = false;
+    });
+  });
+
+  // ---- Copy ----
+  var copyBtn = document.getElementById("nipCopyBtn");
+  var status = document.getElementById("nipSnippetStatus");
+
+  function announce(message) {
+    status.textContent = message;
+    window.setTimeout(function () {
+      status.textContent = "";
+    }, 3000);
+  }
+
+  function fallbackCopy(text) {
+    var textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    try {
+      var ok = document.execCommand("copy");
+      announce(ok ? "Copied to clipboard." : "Copy failed \u2014 select and copy manually.");
+    } catch (err) {
+      announce("Copy failed \u2014 select and copy manually.");
+    }
+    document.body.removeChild(textarea);
+  }
+
+  copyBtn.addEventListener("click", function () {
+    var visible = document.querySelector(".nip-snippet-code-hr18:not([hidden])");
+    var text = visible.textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        announce("Copied to clipboard.");
+      }, function () {
+        fallbackCopy(text);
+      });
+    } else {
+      fallbackCopy(text);
+    }
+  });
+})();
+</script>
+</body>
+</html>

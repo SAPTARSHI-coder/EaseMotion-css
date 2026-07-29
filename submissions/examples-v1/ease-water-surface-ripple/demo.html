@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Water Surface Ripple</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌊 Water Surface Ripple</h1>
+        <p class="subtitle">Interactive ripples with reflections and distortion</p>
+
+        <div class="water-wrapper">
+            <canvas id="waterCanvas"></canvas>
+
+            <div class="controls">
+                <button id="rippleBtn">💧 Ripple</button>
+                <button id="intensityBtn">Intensity: Medium</button>
+                <button id="colorBtn">Color: Ocean</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">💧 Tap to ripple</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('waterCanvas');
+        const ctx = canvas.getContext('2d');
+        const rippleBtn = document.getElementById('rippleBtn');
+        const intensityBtn = document.getElementById('intensityBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let ripples = [];
+        let waterData = [];
+        let reflectionData = [];
+        let distortionMap = [];
+        let width = 0;
+        let height = 0;
+        let intensity = 30;
+        let intensityLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = -100;
+        let mouseY = -100;
+        let isHovering = false;
+
+        // ===== INTENSITY OPTIONS =====
+        const intensities = [
+            { name: 'Light', value: 15 },
+            { name: 'Medium', value: 30 },
+            { name: 'Strong', value: 50 },
+            { name: 'Extreme', value: 80 },
+        ];
+
+        // ===== COLOR OPTIONS =====
+        const colorModes = [
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#ade8f4'],
+                reflection: '#caf0f8'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#f8e4a0'],
+                reflection: '#ffe4b5'
+            },
+            {
+                name: 'Emerald',
+                colors: ['#004d40', '#00695c', '#00897b', '#26a69a', '#4db6ac', '#80cbc4'],
+                reflection: '#b2dfdb'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa', '#cc00cc'],
+                reflection: '#e0a0ff'
+            },
+            {
+                name: 'Fire',
+                colors: ['#ff0000', '#ff3300', '#ff6600', '#ff9900', '#ffcc00', '#ffe500'],
+                reflection: '#ffd700'
+            },
+            {
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff'],
+                reflection: '#f0e6ff'
+            },
+        ];
+
+        // ===== RIPPLE CLASS =====
+        class Ripple {
+            constructor(x, y, radius, strength) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius || 5;
+                this.maxRadius = radius ? radius * 8 : 150 + Math.random() * 100;
+                this.strength = strength || 0.5 + Math.random() * 0.5;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 60 + Math.random() * 40;
+                this.phase = Math.random() * Math.PI * 2;
+                this.speed = 0.02 + Math.random() * 0.03;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.active = true;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxAge;
+                this.radius += (0.5 + Math.random() * 0.5) * (1 + this.life * 0.5);
+                this.phase += this.speed;
+                this.active = this.life > 0 && this.radius < this.maxRadius;
+            }
+
+            getHeight(x, y) {
+                if (!this.active) return 0;
+                const dx = x - this.x;
+                const dy = y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist > this.radius) return 0;
+                
+                const wave = Math.sin(dist * 0.1 - this.phase * 2) * (1 - dist / this.radius);
+                const height = wave * this.strength * this.life * intensity / 30;
+                return height;
+            }
+
+            isDead() {
+                return !this.active || this.life <= 0 || this.radius >= this.maxRadius;
+            }
+        }
+
+        // ===== INIT WATER DATA =====
+        function initWaterData() {
+            width = canvas.width;
+            height = canvas.height;
+            waterData = [];
+            reflectionData = [];
+            distortionMap = [];
+
+            const size = 2;
+            const cols = Math.ceil(width / size);
+            const rows = Math.ceil(height / size);
+
+            for (let i = 0; i < cols; i++) {
+                waterData[i] = [];
+                reflectionData[i] = [];
+                distortionMap[i] = [];
+                for (let j = 0; j < rows; j++) {
+                    waterData[i][j] = 0;
+                    reflectionData[i][j] = 0;
+                    distortionMap[i][j] = 0;
+                }
+            }
+        }
+        initWaterData();
+
+        // ===== CREATE RIPPLE =====
+        function createRipple(x, y) {
+            const strength = 0.3 + Math.random() * 0.7;
+            const radius = 10 + Math.random() * 20;
+            const ripple = new Ripple(x, y, radius, strength);
+            ripples.push(ripple);
+            
+            // Update water data
+            updateWaterData(ripple);
+        }
+
+        // ===== UPDATE WATER DATA =====
+        function updateWaterData(ripple) {
+            const size = 2;
+            const cols = Math.ceil(width / size);
+            const rows = Math.ceil(height / size);
+
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = i * size + size / 2;
+                    const y = j * size + size / 2;
+                    const height = ripple.getHeight(x, y);
+                    if (height !== 0) {
+                        waterData[i][j] += height * 0.5;
+                        distortionMap[i][j] += height * 0.3;
+                    }
+                }
+            }
+        }
+
+        // ===== DRAW WATER =====
+        function drawWater() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const palette = colorModes[colorMode];
+            const colors = palette.colors;
+            const reflectionColor = palette.reflection;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+            bgGrad.addColorStop(0, '#0a0a1a');
+            bgGrad.addColorStop(0.3, '#0a1a2a');
+            bgGrad.addColorStop(0.6, '#0a1a2a');
+            bgGrad.addColorStop(1, '#050a10');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw reflection
+            const reflectionGrad = ctx.createLinearGradient(0, h * 0.1, 0, h * 0.5);
+            reflectionGrad.addColorStop(0, reflectionColor + '20');
+            reflectionGrad.addColorStop(0.5, reflectionColor + '10');
+            reflectionGrad.addColorStop(1, reflectionColor + '00');
+            ctx.fillStyle = reflectionGrad;
+            ctx.fillRect(0, 0, w, h * 0.5);
+
+            // Draw water with ripples
+            const size = 2;
+            const cols = Math.ceil(w / size);
+            const rows = Math.ceil(h / size);
+
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = i * size + size / 2;
+                    const y = j * size + size / 2;
+                    const height = waterData[i][j] || 0;
+                    const distortion = distortionMap[i][j] || 0;
+
+                    // Base color
+                    const t = y / h;
+                    const colorIndex = Math.floor(t * (colors.length - 1));
+                    const nextIndex = Math.min(colorIndex + 1, colors.length - 1);
+                    const frac = (t * (colors.length - 1)) % 1;
+                    const baseColor = colors[colorIndex];
+                    const nextColor = colors[nextIndex];
+
+                    // Apply distortion
+                    const dx = Math.sin(height * 0.5 + time * 0.01) * 2;
+                    const dy = Math.cos(height * 0.3 + time * 0.015) * 2;
+                    
+                    // Blend colors with height
+                    const brightness = 1 + height * 0.1;
+                    const r1 = parseInt(baseColor.slice(1,3), 16);
+                    const g1 = parseInt(baseColor.slice(3,5), 16);
+                    const b1 = parseInt(baseColor.slice(5,7), 16);
+                    const r2 = parseInt(nextColor.slice(1,3), 16);
+                    const g2 = parseInt(nextColor.slice(3,5), 16);
+                    const b2 = parseInt(nextColor.slice(5,7), 16);
+                    
+                    let r = (r1 + (r2 - r1) * frac) * brightness;
+                    let g = (g1 + (g2 - g1) * frac) * brightness;
+                    let b = (b1 + (b2 - b1) * frac) * brightness;
+
+                    // Add highlight on ripples
+                    if (height > 0.5) {
+                        const highlight = Math.min(1, height * 0.5);
+                        r += (255 - r) * highlight * 0.2;
+                        g += (255 - g) * highlight * 0.2;
+                        b += (255 - b) * highlight * 0.2;
+                    }
+
+                    // Shadow in valleys
+                    if (height < -0.5) {
+                        const shadow = Math.min(1, -height * 0.3);
+                        r *= (1 - shadow * 0.3);
+                        g *= (1 - shadow * 0.3);
+                        b *= (1 - shadow * 0.3);
+                    }
+
+                    ctx.fillStyle = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+                    ctx.globalAlpha = 0.5 + 0.5 * (1 - t * 0.5);
+                    ctx.fillRect(x + dx, y + dy, size, size);
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            // Draw reflection highlights
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(time * 0.01 + i * 0.5) * 10;
+                const y = 20 + Math.sin(time * 0.02 + i * 0.7) * 15;
+                const size2 = 1 + Math.sin(time * 0.01 + i * 0.3) * 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size2, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.03 + Math.sin(time * 0.01 + i) * 0.02})`;
+                ctx.fill();
+            }
+
+            // Draw ripple highlights
+            for (const ripple of ripples) {
+                if (ripple.life > 0.3) {
+                    const alpha = ripple.life * 0.1;
+                    const radius = ripple.radius * 0.5;
+                    const grad = ctx.createRadialGradient(
+                        ripple.x, ripple.y, 0,
+                        ripple.x, ripple.y, radius
+                    );
+                    grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.5})`);
+                    grad.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.2})`);
+                    grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                    ctx.beginPath();
+                    ctx.arc(ripple.x, ripple.y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+            }
+        }
+
+        // ===== UPDATE Ripples =====
+        function updateRipples() {
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const ripple = ripples[i];
+                ripple.update();
+                if (ripple.isDead()) {
+                    ripples.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            // Update ripples
+            updateRipples();
+
+            // Decay water data
+            const decay = 0.995;
+            const cols = Math.ceil(width / 2);
+            const rows = Math.ceil(height / 2);
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    waterData[i][j] *= decay;
+                    distortionMap[i][j] *= decay;
+                    if (Math.abs(waterData[i][j]) < 0.001) waterData[i][j] = 0;
+                    if (Math.abs(distortionMap[i][j]) < 0.001) distortionMap[i][j] = 0;
+                }
+            }
+
+            // Draw water
+            drawWater();
+
+            // Status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `💧 ${ripples.length} ripples • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Ripple
+        rippleBtn.addEventListener('click', () => {
+            const x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+            const y = canvas.height / 2 + (Math.random() - 0.5) * 100;
+            createRipple(x, y);
+            statusText.textContent = '💧 Ripple!';
+            setTimeout(() => {
+                statusText.textContent = `💧 ${ripples.length} ripples`;
+            }, 500);
+        });
+
+        // Intensity
+        intensityBtn.addEventListener('click', () => {
+            intensityLevel = (intensityLevel + 1) % intensities.length;
+            intensity = intensities[intensityLevel].value;
+            intensityBtn.textContent = `Intensity: ${intensities[intensityLevel].name}`;
+            statusText.textContent = `⚡ ${intensities[intensityLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `💧 ${ripples.length} ripples`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `💧 ${ripples.length} ripples`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            ripples = [];
+            initWaterData();
+            intensityLevel = 1;
+            intensity = intensities[1].value;
+            colorMode = 0;
+            
+            intensityBtn.textContent = `Intensity: ${intensities[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `💧 ${ripples.length} ripples`;
+            }, 1000);
+        });
+
+        // ===== MOUSE INTERACTION =====
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            createRipple(x, y);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+
+            // Create ripples on hover with some randomness
+            if (Math.random() < 0.02) {
+                createRipple(
+                    mouseX + (Math.random() - 0.5) * 20,
+                    mouseY + (Math.random() - 0.5) * 20
+                );
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+        });
+
+        // ===== TOUCH SUPPORT =====
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            createRipple(x, y);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            if (Math.random() < 0.05) {
+                createRipple(x + (Math.random() - 0.5) * 20, y + (Math.random() - 0.5) * 20);
+            }
+        }, { passive: false });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                rippleBtn.click();
+            }
+            if (e.key === 'i' || e.key === 'I') {
+                intensityBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'x' || e.key === 'X') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                rippleBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initWaterData();
+        });
+
+        // ===== INIT =====
+        intensityBtn.textContent = `Intensity: ${intensities[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `💧 ${ripples.length} ripples`;
+        lastFpsUpdate = performance.now();
+
+        // Create initial ripples
+        setTimeout(() => {
+            const w = canvas.width;
+            const h = canvas.height;
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    createRipple(
+                        w * 0.3 + Math.random() * w * 0.4,
+                        h * 0.3 + Math.random() * h * 0.4
+                    );
+                }, i * 300);
+            }
+        }, 500);
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌊 Water Surface Ripple loaded!');
+        console.log('💡 R - Create ripple');
+        console.log('💡 I - Change intensity');
+        console.log('💡 C - Change color');
+        console.log('💡 X - Reset');
+        console.log('💡 SPACE - Create ripple');
+        console.log('💡 Click/drag on water - Create ripples');
+    </script>
+</body>
+</html>

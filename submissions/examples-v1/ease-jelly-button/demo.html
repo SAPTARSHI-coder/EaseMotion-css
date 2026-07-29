@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jelly Button</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🍮 Jelly Button</h1>
+        <p class="subtitle">Button that wobbles like jelly on hover</p>
+
+        <div class="jelly-wrapper">
+            <div class="jelly-container">
+                <canvas id="jellyCanvas"></canvas>
+
+                <div class="controls">
+                    <button id="colorBtn">Color: Rainbow</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+
+                <div class="status">
+                    <span id="statusText">🍮 Hover to wobble</span>
+                    <span id="fpsDisplay">FPS: 60</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('jellyCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 500;
+            canvas.height = Math.min(400, window.innerHeight - 300);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let wobble = {
+            x: 0,
+            y: 0,
+            targetX: 0,
+            targetY: 0,
+            velocityX: 0,
+            velocityY: 0,
+            scaleX: 1,
+            scaleY: 1,
+            targetScaleX: 1,
+            targetScaleY: 1,
+            rotation: 0,
+            targetRotation: 0,
+            stretchX: 0,
+            stretchY: 0,
+            phase: 0,
+            intensity: 0,
+        };
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isHovering = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let clickCount = 0;
+        let isClicked = false;
+        let clickTime = 0;
+        let particles = [];
+        let glowIntensity = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                text: '#ffffff',
+                glow: '#ff6b6b'
+            },
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                text: '#ffffff',
+                glow: '#48cae4'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e'],
+                text: '#ffffff',
+                glow: '#f7931e'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#4a0080', '#6a00a0', '#8a00c0', '#aa00e0', '#cc00ff'],
+                text: '#ffffff',
+                glow: '#aa00e0'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00aa'],
+                text: '#ffffff',
+                glow: '#ff00ff'
+            },
+            {
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'],
+                text: '#333333',
+                glow: '#bae1ff'
+            },
+            {
+                name: 'Candy',
+                colors: ['#ff6b9d', '#ff8fab', '#ffb3c6', '#ffc8dd', '#ffe5ec'],
+                text: '#ffffff',
+                glow: '#ff6b9d'
+            },
+            {
+                name: 'Monochrome',
+                colors: ['#666666', '#888888', '#aaaaaa', '#cccccc', '#eeeeee'],
+                text: '#ffffff',
+                glow: '#aaaaaa'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6 - 3;
+                this.size = 2 + Math.random() * 4;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${Math.random() * 360}, 80%, 60%)`;
+                this.phase = Math.random() * Math.PI * 2;
+                this.gravity = 0.05 + Math.random() * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW JELLY BUTTON =====
+        function drawJellyButton() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.3;
+            const palette = colorPalettes[colorMode];
+
+            // Jelly deformation
+            const scaleX = wobble.scaleX + wobble.stretchX * 0.1;
+            const scaleY = wobble.scaleY + wobble.stretchY * 0.1;
+            const rot = wobble.rotation;
+
+            // Glow
+            const glowSize = radius * 1.5 * (0.5 + 0.5 * glowIntensity);
+            const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+            glowGrad.addColorStop(0, palette.glow + '40');
+            glowGrad.addColorStop(0.5, palette.glow + '20');
+            glowGrad.addColorStop(1, palette.glow + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Main button
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(rot);
+            ctx.scale(scaleX, scaleY);
+
+            // Jelly shape (rounded rectangle with wobble)
+            const grad = ctx.createRadialGradient(
+                -radius * 0.2, -radius * 0.3, radius * 0.1,
+                0, 0, radius
+            );
+            const colors = palette.colors;
+            grad.addColorStop(0, colors[0]);
+            grad.addColorStop(0.3, colors[1]);
+            grad.addColorStop(0.6, colors[2]);
+            grad.addColorStop(0.8, colors[3]);
+            grad.addColorStop(1, colors[4]);
+
+            // Wobbly shape
+            const segments = 60;
+            const wobbleAmount = wobble.intensity * 0.15;
+            ctx.beginPath();
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const wave = Math.sin(angle * 3 + wobble.phase) * wobbleAmount * radius;
+                const wave2 = Math.sin(angle * 5 + wobble.phase * 1.5) * wobbleAmount * radius * 0.5;
+                const r = radius + wave + wave2;
+                const x = Math.cos(angle) * r;
+                const y = Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+
+            // Shadow
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Stroke
+            ctx.strokeStyle = colors[4] + '40';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Highlight
+            const highlightGrad = ctx.createRadialGradient(
+                -radius * 0.3, -radius * 0.4, 0,
+                -radius * 0.3, -radius * 0.4, radius * 0.6
+            );
+            highlightGrad.addColorStop(0, 'rgba(255,255,255,0.4)');
+            highlightGrad.addColorStop(0.5, 'rgba(255,255,255,0.1)');
+            highlightGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.beginPath();
+            for (let i = 0; i <= segments; i++) {
+                const angle = (i / segments) * Math.PI * 2;
+                const wave = Math.sin(angle * 3 + wobble.phase) * wobbleAmount * radius;
+                const wave2 = Math.sin(angle * 5 + wobble.phase * 1.5) * wobbleAmount * radius * 0.5;
+                const r = radius + wave + wave2;
+                const x = Math.cos(angle) * r;
+                const y = Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = highlightGrad;
+            ctx.fill();
+
+            // Text
+            ctx.fillStyle = palette.text;
+            ctx.font = `bold ${radius * 0.5}px -apple-system, BlinkMacSystemFont, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fillText('🍮', 0, -radius * 0.05);
+            ctx.shadowBlur = 0;
+
+            // Small decorative dots
+            const dotCount = 8;
+            for (let i = 0; i < dotCount; i++) {
+                const angle = (i / dotCount) * Math.PI * 2 + time * 0.01;
+                const dist = radius * 0.65;
+                const x = Math.cos(angle) * dist;
+                const y = Math.sin(angle) * dist;
+                const dotSize = 2 + Math.sin(time * 0.02 + i * 1.5) * 1;
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = palette.text;
+                ctx.globalAlpha = 0.1 + Math.sin(time * 0.02 + i) * 0.05;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.restore();
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== UPDATE JELLY =====
+        function updateJelly() {
+            const spring = 0.08;
+            const damping = 0.92;
+            const wobbleSpeed = 0.05;
+
+            // Target values based on hover
+            if (isHovering) {
+                const dx = mouseX - canvas.width / 2;
+                const dy = mouseY - canvas.height / 2;
+                const maxDist = Math.min(canvas.width, canvas.height) * 0.3;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const strength = Math.min(1, dist / maxDist);
+
+                wobble.targetX = dx * 0.02;
+                wobble.targetY = dy * 0.02;
+                wobble.targetScaleX = 1 + strength * 0.05;
+                wobble.targetScaleY = 1 - strength * 0.03;
+                wobble.targetRotation = dx * 0.001;
+                wobble.intensity = 0.5 + strength * 0.5;
+
+                // Stretch based on mouse movement
+                const moveX = dx - wobble.x * 50;
+                const moveY = dy - wobble.y * 50;
+                wobble.stretchX += (moveX * 0.001 - wobble.stretchX) * 0.05;
+                wobble.stretchY += (moveY * 0.001 - wobble.stretchY) * 0.05;
+            } else {
+                wobble.targetX = 0;
+                wobble.targetY = 0;
+                wobble.targetScaleX = 1;
+                wobble.targetScaleY = 1;
+                wobble.targetRotation = 0;
+                wobble.intensity *= 0.98;
+                wobble.stretchX *= 0.98;
+                wobble.stretchY *= 0.98;
+            }
+
+            // Spring physics
+            wobble.velocityX += (wobble.targetX - wobble.x) * spring;
+            wobble.velocityY += (wobble.targetY - wobble.y) * spring;
+            wobble.velocityX *= damping;
+            wobble.velocityY *= damping;
+            wobble.x += wobble.velocityX;
+            wobble.y += wobble.velocityY;
+
+            // Scale spring
+            wobble.scaleX += (wobble.targetScaleX - wobble.scaleX) * 0.08;
+            wobble.scaleY += (wobble.targetScaleY - wobble.scaleY) * 0.08;
+
+            // Rotation spring
+            wobble.rotation += (wobble.targetRotation - wobble.rotation) * 0.08;
+
+            // Phase
+            wobble.phase += wobbleSpeed;
+
+            // Glow intensity
+            glowIntensity += (isHovering ? 0.1 : -0.05);
+            glowIntensity = Math.max(0, Math.min(1, glowIntensity));
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== CREATE CLICK PARTICLES =====
+        function createClickParticles() {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+
+            for (let i = 0; i < 20; i++) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 20,
+                    cy + (Math.random() - 0.5) * 20,
+                    color
+                );
+                p.vx = (Math.random() - 0.5) * 10;
+                p.vy = (Math.random() - 0.5) * 10 - 5;
+                p.size = 2 + Math.random() * 6;
+                particles.push(p);
+            }
+
+            // Update status
+            clickCount++;
+            statusText.textContent = `🍮 Clicked! (${clickCount})`;
+            setTimeout(() => {
+                statusText.textContent = isHovering ? '🍮 Wobbling!' : '🍮 Hover to wobble';
+            }, 1000);
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            updateJelly();
+
+            drawBackground();
+            drawJellyButton();
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+            canvas.style.cursor = 'pointer';
+            statusText.textContent = '🍮 Wobbling!';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            canvas.style.cursor = 'default';
+            statusText.textContent = '🍮 Hover to wobble';
+        });
+
+        canvas.addEventListener('click', () => {
+            createClickParticles();
+            // Jiggle on click
+            wobble.targetScaleX = 1.15;
+            wobble.targetScaleY = 0.85;
+            setTimeout(() => {
+                wobble.targetScaleX = 1;
+                wobble.targetScaleY = 1;
+            }, 200);
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+            createClickParticles();
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isHovering = false;
+        });
+
+        // ===== CONTROLS =====
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = isHovering ? '🍮 Wobbling!' : '🍮 Hover to wobble';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            wobble.x = 0;
+            wobble.y = 0;
+            wobble.velocityX = 0;
+            wobble.velocityY = 0;
+            wobble.scaleX = 1;
+            wobble.scaleY = 1;
+            wobble.rotation = 0;
+            wobble.stretchX = 0;
+            wobble.stretchY = 0;
+            wobble.intensity = 0;
+            particles = [];
+            clickCount = 0;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🍮 Hover to wobble';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                createClickParticles();
+                wobble.targetScaleX = 1.15;
+                wobble.targetScaleY = 0.85;
+                setTimeout(() => {
+                    wobble.targetScaleX = 1;
+                    wobble.targetScaleY = 1;
+                }, 200);
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🍮 Hover to wobble';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🍮 Jelly Button loaded!');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Click effect');
+        console.log('💡 Hover over button to wobble');
+    </script>
+</body>
+</html>

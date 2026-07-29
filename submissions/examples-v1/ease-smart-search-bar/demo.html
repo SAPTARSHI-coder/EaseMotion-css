@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Search Bar</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Smart Search Bar</h1>
+        <p class="subtitle">Search bar that expands and glows with auto-suggestions</p>
+
+        <div class="search-wrapper">
+            <div class="search-container">
+                <div class="search-box">
+                    <div class="search-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="Search for anything..." autocomplete="off" />
+                    <button id="clearBtn" class="clear-btn">✕</button>
+                </div>
+                <div class="suggestions-container" id="suggestionsContainer">
+                    <div class="suggestions-list" id="suggestionsList">
+                        <!-- Suggestions will be injected here -->
+                    </div>
+                    <div class="suggestions-footer">
+                        <span>Press <kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                        <span><kbd>Enter</kbd> to select</span>
+                        <span><kbd>Esc</kbd> to close</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-stats">
+                <span id="resultCount">0 results</span>
+                <span id="searchStatus">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const searchInput = document.getElementById('searchInput');
+        const suggestionsContainer = document.getElementById('suggestionsContainer');
+        const suggestionsList = document.getElementById('suggestionsList');
+        const clearBtn = document.getElementById('clearBtn');
+        const resultCount = document.getElementById('resultCount');
+        const searchStatus = document.getElementById('searchStatus');
+
+        // ===== STATE =====
+        let suggestions = [];
+        let selectedIndex = -1;
+        let isOpen = false;
+        let searchTimeout = null;
+        let history = [];
+        let currentQuery = '';
+
+        // ===== SAMPLE DATA =====
+        const data = [
+            'Apple',
+            'Banana',
+            'Blueberry',
+            'Cherry',
+            'Coconut',
+            'Grape',
+            'Lemon',
+            'Mango',
+            'Orange',
+            'Papaya',
+            'Peach',
+            'Pear',
+            'Pineapple',
+            'Strawberry',
+            'Watermelon',
+            'Avocado',
+            'Blackberry',
+            'Cantaloupe',
+            'Date',
+            'Fig',
+            'Guava',
+            'Kiwi',
+            'Lime',
+            'Melon',
+            'Nectarine',
+            'Olive',
+            'Plum',
+            'Pomegranate',
+            'Raspberry',
+            'Tangerine',
+            'Tomato',
+            'Ugli fruit',
+            'Vanilla',
+            'Xigua',
+            'Yellow watermelon',
+            'Zucchini',
+            'Almond',
+            'Brazil nut',
+            'Cashew',
+            'Chestnut',
+            'Hazelnut',
+            'Macadamia',
+            'Peanut',
+            'Pecan',
+            'Pistachio',
+            'Walnut',
+            'Acai',
+            'Acerola',
+            'Breadfruit',
+            'Cactus pear',
+            'Crabapple',
+            'Dragon fruit',
+            'Elderberry',
+            'Gooseberry',
+            'Jackfruit',
+            'Jambolan',
+            'Loquat',
+            'Lychee',
+            'Marula',
+            'Mulberry',
+            'Passion fruit',
+            'Persimmon',
+            'Plantain',
+            'Prickly pear',
+            'Quince',
+            'Rose hip',
+            'Sapodilla',
+            'Star fruit',
+            'Surinam cherry',
+            'Tamarind',
+            'Uva',
+            'Yuzu',
+            'Apple crisp',
+            'Apple pie',
+            'Apple juice',
+            'Apple cider',
+            'Apple sauce',
+            'Apple butter',
+            'Apple strudel',
+            'Apple turnover',
+            'Banana bread',
+            'Banana split',
+            'Banana smoothie',
+            'Berry smoothie',
+            'Blueberry muffin',
+            'Cherry pie',
+            'Coconut milk',
+            'Grape juice',
+            'Lemonade',
+            'Mango smoothie',
+            'Orange juice',
+            'Papaya smoothie',
+            'Peach cobbler',
+            'Pear crisp',
+            'Pineapple juice',
+            'Strawberry jam',
+            'Watermelon juice',
+        ];
+
+        // ===== SUGGESTION ENGINE =====
+        function getSuggestions(query) {
+            if (!query || query.length === 0) return [];
+            
+            const lowerQuery = query.toLowerCase();
+            
+            // Check exact matches first
+            const exactMatches = data.filter(item => 
+                item.toLowerCase() === lowerQuery
+            );
+            
+            // Check starts with
+            const startsWith = data.filter(item => 
+                item.toLowerCase().startsWith(lowerQuery) && 
+                !exactMatches.includes(item)
+            );
+            
+            // Check contains
+            const contains = data.filter(item => 
+                item.toLowerCase().includes(lowerQuery) && 
+                !exactMatches.includes(item) && 
+                !startsWith.includes(item)
+            );
+            
+            // Check history
+            const historyMatches = history.filter(item => 
+                item.toLowerCase().includes(lowerQuery) && 
+                !exactMatches.includes(item) && 
+                !startsWith.includes(item) && 
+                !contains.includes(item)
+            );
+            
+            // Combine and limit
+            const results = [
+                ...historyMatches.slice(0, 3),
+                ...exactMatches,
+                ...startsWith.slice(0, 5),
+                ...contains.slice(0, 10)
+            ];
+            
+            // Remove duplicates
+            return [...new Set(results)].slice(0, 15);
+        }
+
+        // ===== RENDER SUGGESTIONS =====
+        function renderSuggestions(query, results) {
+            suggestionsList.innerHTML = '';
+            
+            if (results.length === 0) {
+                if (query.length > 0) {
+                    const noResult = document.createElement('div');
+                    noResult.className = 'suggestion-item no-result';
+                    noResult.innerHTML = `
+                        <span class="suggestion-icon">🔍</span>
+                        <span>No results found for "<strong>${query}</strong>"</span>
+                    `;
+                    suggestionsList.appendChild(noResult);
+                }
+                resultCount.textContent = '0 results';
+                return;
+            }
+
+            resultCount.textContent = `${results.length} results`;
+
+            results.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                if (index === selectedIndex) {
+                    div.classList.add('active');
+                }
+                
+                // Highlight matching part
+                const lowerQuery = query.toLowerCase();
+                const lowerItem = item.toLowerCase();
+                const startIndex = lowerItem.indexOf(lowerQuery);
+                
+                let displayText = item;
+                if (startIndex !== -1) {
+                    const before = item.substring(0, startIndex);
+                    const match = item.substring(startIndex, startIndex + query.length);
+                    const after = item.substring(startIndex + query.length);
+                    displayText = `${before}<mark>${match}</mark>${after}`;
+                }
+                
+                div.innerHTML = `
+                    <span class="suggestion-icon">${getIconForItem(item)}</span>
+                    <span class="suggestion-text">${displayText}</span>
+                    <span class="suggestion-hint">${getHintForItem(item)}</span>
+                `;
+                
+                div.addEventListener('click', () => selectSuggestion(item));
+                div.addEventListener('mouseenter', () => {
+                    selectedIndex = index;
+                    updateActiveState();
+                });
+                
+                suggestionsList.appendChild(div);
+            });
+        }
+
+        function getIconForItem(item) {
+            const lower = item.toLowerCase();
+            if (lower.includes('juice') || lower.includes('smoothie') || lower.includes('cider')) return '🥤';
+            if (lower.includes('pie') || lower.includes('cobbler') || lower.includes('crisp') || lower.includes('strudel')) return '🥧';
+            if (lower.includes('bread') || lower.includes('muffin')) return '🍞';
+            if (lower.includes('butter') || lower.includes('sauce')) return '🧈';
+            if (lower.includes('jam')) return '🍯';
+            if (lower.includes('milk')) return '🥛';
+            if (lower.includes('nut') || lower.includes('almond') || lower.includes('cashew') || lower.includes('pecan')) return '🥜';
+            return '🍎';
+        }
+
+        function getHintForItem(item) {
+            const lower = item.toLowerCase();
+            if (lower.includes('juice')) return 'Beverage';
+            if (lower.includes('smoothie')) return 'Beverage';
+            if (lower.includes('pie')) return 'Dessert';
+            if (lower.includes('bread')) return 'Baked';
+            if (lower.includes('muffin')) return 'Baked';
+            if (lower.includes('nut')) return 'Nut';
+            if (lower.includes('butter')) return 'Spread';
+            if (lower.includes('sauce')) return 'Condiment';
+            return 'Fruit';
+        }
+
+        // ===== UPDATE ACTIVE STATE =====
+        function updateActiveState() {
+            const items = suggestionsList.querySelectorAll('.suggestion-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === selectedIndex);
+            });
+            
+            // Scroll active item into view
+            if (selectedIndex >= 0 && selectedIndex < items.length) {
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // ===== SELECT SUGGESTION =====
+        function selectSuggestion(item) {
+            searchInput.value = item;
+            currentQuery = item;
+            suggestions = [];
+            closeSuggestions();
+            
+            // Add to history
+            if (!history.includes(item)) {
+                history.unshift(item);
+                if (history.length > 10) history.pop();
+            }
+            
+            searchStatus.textContent = `Selected: ${item}`;
+            searchStatus.style.color = '#6bcb77';
+            setTimeout(() => {
+                searchStatus.textContent = 'Ready';
+                searchStatus.style.color = 'rgba(255,255,255,0.5)';
+            }, 1500);
+            
+            // Trigger search (simulated)
+            performSearch(item);
+        }
+
+        // ===== PERFORM SEARCH =====
+        function performSearch(query) {
+            if (query.length === 0) {
+                resultCount.textContent = '0 results';
+                return;
+            }
+            
+            const results = data.filter(item => 
+                item.toLowerCase().includes(query.toLowerCase())
+            );
+            resultCount.textContent = `${results.length} results found`;
+            searchStatus.textContent = `Searching "${query}"...`;
+            searchStatus.style.color = '#4d96ff';
+            
+            setTimeout(() => {
+                searchStatus.textContent = `Found ${results.length} results`;
+                searchStatus.style.color = '#6bcb77';
+                setTimeout(() => {
+                    searchStatus.textContent = 'Ready';
+                    searchStatus.style.color = 'rgba(255,255,255,0.5)';
+                }, 1000);
+            }, 500);
+        }
+
+        // ===== OPEN/CLOSE SUGGESTIONS =====
+        function openSuggestions() {
+            if (!isOpen && suggestions.length > 0) {
+                isOpen = true;
+                suggestionsContainer.classList.add('open');
+            }
+        }
+
+        function closeSuggestions() {
+            isOpen = false;
+            suggestionsContainer.classList.remove('open');
+            selectedIndex = -1;
+        }
+
+        // ===== SEARCH INPUT HANDLER =====
+        function handleSearchInput() {
+            const query = searchInput.value;
+            currentQuery = query;
+            
+            if (query.length === 0) {
+                suggestions = [];
+                closeSuggestions();
+                resultCount.textContent = '0 results';
+                clearBtn.classList.remove('visible');
+                return;
+            }
+            
+            clearBtn.classList.add('visible');
+            
+            // Debounce search
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                suggestions = getSuggestions(query);
+                renderSuggestions(query, suggestions);
+                if (suggestions.length > 0) {
+                    selectedIndex = -1;
+                    openSuggestions();
+                } else {
+                    closeSuggestions();
+                }
+            }, 150);
+        }
+
+        // ===== KEYBOARD NAVIGATION =====
+        function handleKeydown(e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!isOpen) {
+                    suggestions = getSuggestions(searchInput.value);
+                    renderSuggestions(searchInput.value, suggestions);
+                    openSuggestions();
+                } else {
+                    const items = suggestionsList.querySelectorAll('.suggestion-item');
+                    if (items.length > 0) {
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateActiveState();
+                    }
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (isOpen) {
+                    const items = suggestionsList.querySelectorAll('.suggestion-item');
+                    if (items.length > 0) {
+                        selectedIndex = Math.max(selectedIndex - 1, 0);
+                        updateActiveState();
+                    }
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (selectedIndex >= 0) {
+                    const items = suggestionsList.querySelectorAll('.suggestion-item');
+                    if (selectedIndex < items.length) {
+                        const item = items[selectedIndex].querySelector('.suggestion-text')?.textContent;
+                        if (item) {
+                            selectSuggestion(item);
+                            return;
+                        }
+                    }
+                }
+                // If no selection, perform search
+                if (searchInput.value.length > 0) {
+                    performSearch(searchInput.value);
+                    closeSuggestions();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closeSuggestions();
+                searchInput.blur();
+            } else if (e.key === 'Backspace' && searchInput.value.length === 0) {
+                closeSuggestions();
+            }
+        }
+
+        // ===== CLEAR SEARCH =====
+        function clearSearch() {
+            searchInput.value = '';
+            currentQuery = '';
+            suggestions = [];
+            closeSuggestions();
+            resultCount.textContent = '0 results';
+            clearBtn.classList.remove('visible');
+            searchInput.focus();
+            searchStatus.textContent = 'Cleared';
+            setTimeout(() => {
+                searchStatus.textContent = 'Ready';
+            }, 1000);
+        }
+
+        // ===== EVENT LISTENERS =====
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('focus', () => {
+            if (searchInput.value.length > 0) {
+                suggestions = getSuggestions(searchInput.value);
+                renderSuggestions(searchInput.value, suggestions);
+                if (suggestions.length > 0) {
+                    openSuggestions();
+                }
+            }
+        });
+        searchInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (!suggestionsContainer.matches(':hover')) {
+                    closeSuggestions();
+                }
+            }, 200);
+        });
+        searchInput.addEventListener('keydown', handleKeydown);
+
+        clearBtn.addEventListener('click', clearSearch);
+
+        // ===== CLOSE ON ESCAPE =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isOpen) {
+                closeSuggestions();
+                searchInput.blur();
+            }
+        });
+
+        // ===== CLICK OUTSIDE =====
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                closeSuggestions();
+            }
+        });
+
+        // ===== TOUCH SUPPORT =====
+        document.addEventListener('touchstart', (e) => {
+            if (!e.target.closest('.search-container')) {
+                closeSuggestions();
+            }
+        }, { passive: true });
+
+        // ===== KEYBOARD SHORTCUT =====
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+                searchStatus.textContent = 'Search mode';
+                setTimeout(() => {
+                    searchStatus.textContent = 'Ready';
+                }, 1000);
+            }
+        });
+
+        // ===== INIT =====
+        resultCount.textContent = '0 results';
+        searchStatus.textContent = 'Ready';
+
+        console.log('🔍 Smart Search Bar loaded!');
+        console.log('💡 Type to search with auto-suggestions');
+        console.log('💡 ↑ ↓ to navigate, Enter to select');
+        console.log('💡 Esc to close');
+        console.log('💡 Ctrl+K to focus search');
+    </script>
+</body>
+</html>
