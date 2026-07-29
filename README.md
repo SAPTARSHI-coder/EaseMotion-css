@@ -64,6 +64,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 - [Philosophy](#philosophy)
 - [Usage and Examples](#usage-and-examples)
 - [Customization](#customization)
+- [Accessibility Best Practices](#accessibility-best-practices)
 - [FAQ](#faq)
 - [File Structure](#file-structure)
 - [Roadmap](#roadmap)
@@ -1005,6 +1006,34 @@ EaseMotion wraps all its CSS behind `@layer` cascade layers. Your own styles alw
 ```
 
 No `!important` needed.
+
+---
+
+## Accessibility Best Practices
+
+EaseMotion CSS is designed to make animations expressive while ensuring an inclusive experience for all users. Following accessibility best practices helps create interfaces that are easier to use across different devices and assistive technologies.
+
+### Recommendations
+
+- Respect the `prefers-reduced-motion` media query to reduce motion for users who are sensitive to animations.
+- Use semantic HTML elements such as `<button>`, `<nav>`, `<main>`, and `<section>` whenever appropriate.
+- Maintain sufficient color contrast between text and backgrounds for better readability.
+- Ensure all interactive elements can be accessed and operated using only a keyboard.
+- Provide meaningful ARIA labels for interactive controls when native semantics are not enough.
+- Avoid excessive or distracting animations that may negatively impact usability.
+
+### Example
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+```
+
+By following these recommendations, you can build interfaces that are visually engaging while remaining accessible and user-friendly.
 
 ---
 
