@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎮 Simon Says</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🎮 Simon Says</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">📊 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📈 Level</span>
+        <span class="stat-value" id="levelDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="simon-board" id="simonBoard">
+      <div class="color-btn green" id="green" data-color="green"></div>
+      <div class="color-btn red" id="red" data-color="red"></div>
+      <div class="color-btn yellow" id="yellow" data-color="yellow"></div>
+      <div class="color-btn blue" id="blue" data-color="blue"></div>
+      <div class="center-circle" id="centerCircle">
+        <span id="centerText">▶</span>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+    </div>
+
+    <div class="game-status" id="gameStatus">🎮 Press "Start Game" or click the center to begin!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const greenBtn = document.getElementById('green');
+      const redBtn = document.getElementById('red');
+      const yellowBtn = document.getElementById('yellow');
+      const blueBtn = document.getElementById('blue');
+      const centerCircle = document.getElementById('centerCircle');
+      const centerText = document.getElementById('centerText');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const levelDisplay = document.getElementById('levelDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Game State ----------
+      const COLORS = ['green', 'red', 'yellow', 'blue'];
+      const COLOR_MAP = {
+        green: { element: greenBtn, color: '#4caf50', light: '#81c784', sound: 261.63 },
+        red: { element: redBtn, color: '#f44336', light: '#ef9a9a', sound: 293.66 },
+        yellow: { element: yellowBtn, color: '#ffc107', light: '#ffd54f', sound: 329.63 },
+        blue: { element: blueBtn, color: '#2196f3', light: '#64b5f6', sound: 392.00 }
+      };
+
+      let sequence = [];
+      let playerSequence = [];
+      let score = 0;
+      let bestScore = parseInt(localStorage.getItem('simonBestScore')) || 0;
+      let level = 0;
+      let isPlaying = false;
+      let isPlayerTurn = false;
+      let isAnimating = false;
+      let gameOverFlag = false;
+      let timeoutId = null;
+
+      // ---------- High Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Audio Context ----------
+      let audioCtx = null;
+
+      function playTone(frequency, duration = 200) {
+        try {
+          if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          oscillator.type = 'sine';
+          oscillator.frequency.value = frequency;
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + duration / 1000);
+        } catch (e) {
+          // Audio not available, silently fail
+        }
+      }
+
+      // ---------- Helper Functions ----------
+      function updateScoreDisplay() {
+        scoreDisplay.textContent = score;
+      }
+
+      function updateLevelDisplay() {
+        levelDisplay.textContent = level;
+      }
+
+      function updateBestScore() {
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('simonBestScore', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      function setCenterText(text) {
+        centerText.textContent = text;
+      }
+
+      // ---------- Button Animations ----------
+      function lightUp(color, callback) {
+        const btn = COLOR_MAP[color].element;
+        const originalBg = btn.style.background;
+        const lightColor = COLOR_MAP[color].light;
+        
+        btn.style.background = lightColor;
+        btn.style.transform = 'scale(1.1)';
+        btn.style.boxShadow = `0 0 30px ${lightColor}`;
+        playTone(COLOR_MAP[color].sound);
+        
+        setTimeout(() => {
+          btn.style.background = originalBg;
+          btn.style.transform = 'scale(1)';
+          btn.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+          if (callback) callback();
+        }, 400);
+      }
+
+      function flashError() {
+        document.getElementById('simonBoard').style.animation = 'shake 0.5s ease';
+        setTimeout(() => {
+          document.getElementById('simonBoard').style.animation = '';
+        }, 500);
+      }
+
+      // ---------- Game Logic ----------
+      function generateSequence() {
+        const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+        sequence.push(randomColor);
+        level = sequence.length;
+        updateLevelDisplay();
+        return sequence;
+      }
+
+      function playSequence() {
+        isAnimating = true;
+        isPlayerTurn = false;
+        setGameStatus('👀 Watch the sequence...', true);
+        setCenterText('👀');
+        
+        let index = 0;
+        
+        function playNext() {
+          if (index >= sequence.length) {
+            isAnimating = false;
+            isPlayerTurn = true;
+            playerSequence = [];
+            setGameStatus('🎯 Your turn! Repeat the sequence', true);
+            setCenterText('🎯');
+            return;
+          }
+          
+          const color = sequence[index];
+          lightUp(color, () => {
+            index++;
+            setTimeout(playNext, 300);
+          });
+        }
+        
+        setTimeout(playNext, 500);
+      }
+
+      function handlePlayerClick(color) {
+        if (!isPlayerTurn || isAnimating || gameOverFlag) return;
+        
+        playerSequence.push(color);
+        lightUp(color);
+        playTone(COLOR_MAP[color].sound);
+        
+        const currentIndex = playerSequence.length - 1;
+        
+        if (playerSequence[currentIndex] !== sequence[currentIndex]) {
+          // Wrong! Game Over
+          gameOver();
+          return;
+        }
+        
+        if (playerSequence.length === sequence.length) {
+          // Correct! Next level
+          isPlayerTurn = false;
+          score++;
+          updateScoreDisplay();
+          updateBestScore();
+          setGameStatus(`✅ Correct! Score: ${score}`, true);
+          setCenterText('✅');
+          
+          setTimeout(() => {
+            if (!gameOverFlag) {
+              generateSequence();
+              playSequence();
+            }
+          }, 800);
+        } else {
+          setGameStatus(`🎯 ${playerSequence.length}/${sequence.length} correct`, true);
+        }
+      }
+
+      function startGame() {
+        if (isPlaying) return;
+        
+        // Reset state
+        sequence = [];
+        playerSequence = [];
+        score = 0;
+        level = 0;
+        gameOverFlag = false;
+        isPlaying = true;
+        isPlayerTurn = false;
+        isAnimating = false;
+        
+        updateScoreDisplay();
+        updateLevelDisplay();
+        setGameStatus('🎮 Game started! Watch the sequence...', true);
+        setCenterText('👀');
+        
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        
+        // Initialize audio context on user interaction
+        if (!audioCtx) {
+          try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {}
+        }
+        
+        // Start first sequence
+        generateSequence();
+        setTimeout(playSequence, 600);
+      }
+
+      function gameOver() {
+        gameOverFlag = true;
+        isPlaying = false;
+        isPlayerTurn = false;
+        isAnimating = false;
+        
+        flashError();
+        updateBestScore();
+        setGameStatus(`💀 Game Over! Score: ${score}`, false);
+        setCenterText('❌');
+        
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Play Again';
+      }
+
+      function resetGame() {
+        // Stop any ongoing animations
+        isPlaying = false;
+        isPlayerTurn = false;
+        isAnimating = false;
+        gameOverFlag = false;
+        
+        sequence = [];
+        playerSequence = [];
+        score = 0;
+        level = 0;
+        
+        updateScoreDisplay();
+        updateLevelDisplay();
+        setGameStatus('🔄 Game reset. Press Start to play!', true);
+        setCenterText('▶');
+        
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        
+        // Reset button styles
+        COLORS.forEach(color => {
+          const btn = COLOR_MAP[color].element;
+          btn.style.background = '';
+          btn.style.transform = 'scale(1)';
+          btn.style.boxShadow = '0 6px 20px rgba(0,0,0,0.4)';
+        });
+        
+        document.getElementById('simonBoard').style.animation = '';
+      }
+
+      // ---------- Event Listeners ----------
+      COLORS.forEach(color => {
+        const btn = COLOR_MAP[color].element;
+        btn.addEventListener('click', () => {
+          handlePlayerClick(color);
+        });
+        // Touch support
+        btn.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handlePlayerClick(color);
+        }, { passive: false });
+      });
+
+      centerCircle.addEventListener('click', () => {
+        if (!isPlaying && !gameOverFlag) {
+          startGame();
+        }
+      });
+
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!isPlaying && !gameOverFlag) {
+            startGame();
+          }
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          resetGame();
+        }
+        // Number keys for quick color input
+        if (e.key === '1') handlePlayerClick('green');
+        if (e.key === '2') handlePlayerClick('red');
+        if (e.key === '3') handlePlayerClick('yellow');
+        if (e.key === '4') handlePlayerClick('blue');
+      });
+
+      // ---------- CSS Animation ----------
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10% { transform: translateX(-10px) rotate(-2deg); }
+          20% { transform: translateX(10px) rotate(2deg); }
+          30% { transform: translateX(-10px); }
+          40% { transform: translateX(10px); }
+          50% { transform: translateX(-5px); }
+          60% { transform: translateX(5px); }
+          70% { transform: translateX(-3px); }
+          80% { transform: translateX(3px); }
+          90% { transform: translateX(-1px); }
+        }
+      `;
+      document.head.appendChild(style);
+
+      // ---------- Init ----------
+      function init() {
+        resetGame();
+        setGameStatus('🎮 Press "Start Game" or click the center to begin!', true);
+        setCenterText('▶');
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

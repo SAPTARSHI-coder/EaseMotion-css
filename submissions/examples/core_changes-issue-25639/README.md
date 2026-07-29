@@ -1,0 +1,3 @@
+1. What does this do? An animated countdown timer with an SVG circular progress ring, hours/minutes/seconds digit segments, tick animation on each second, and blinking colon separators.
+2. How is it used? Set `totalSeconds` and the timer auto-starts. Each second decrements remaining time, triggers a scale-tick animation on changed digits, and updates the SVG ring `stroke-dashoffset` proportionally.
+3. Why is it useful? Provides a reusable countdown component for flash sales, event landing pages, and time-limited offers — with `prefers-reduced-motion: reduce` support that disables tick and blink animations.

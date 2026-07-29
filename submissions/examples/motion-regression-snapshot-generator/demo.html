@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Regression Snapshot Generator — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Snapshot Generator</h1>
+    <p>
+      Capture visual and data snapshots of EaseMotion animations at configurable time intervals.
+      Use this tool to verify animation states and detect regressions during development.
+    </p>
+    <div class="badges">
+      <span class="badge">📸 Snapshot Capture</span>
+      <span class="badge">⏱️ Timeline Sampling</span>
+      <span class="badge">🛡️ Regression Testing</span>
+    </div>
+  </header>
+
+  <main class="generator-container">
+
+    <!-- ── INPUT SECTION ──────────────────────────────────────── -->
+    <section class="panel input-panel">
+      <div class="panel-header">
+        <span class="section-label">1. Configuration</span>
+      </div>
+      
+      <div class="config-grid">
+        <div class="input-group">
+          <label>EaseMotion Classes</label>
+          <input type="text" id="classInput" class="ease-input" value="ease-slide-up ease-fade" placeholder="e.g., ease-slide-up ease-fade">
+        </div>
+        
+        <div class="input-group">
+          <label>Animation Duration (ms)</label>
+          <input type="number" id="durationInput" class="ease-input" value="400" min="100" step="50">
+        </div>
+        
+        <div class="input-group">
+          <label>Interval Step (ms)</label>
+          <input type="number" id="intervalInput" class="ease-input" value="100" min="10" step="10">
+        </div>
+      </div>
+      
+      <button id="generateBtn" class="ease-btn">Generate Snapshots 📸</button>
+    </section>
+
+    <!-- ── LIVE TARGET SECTION ────────────────────────────────── -->
+    <section class="panel target-panel">
+      <div class="panel-header">
+        <span class="section-label">2. Target Element</span>
+      </div>
+      <div class="target-wrapper">
+        <div id="animationTarget" class="animation-target">
+          Snapshot Test
+        </div>
+      </div>
+    </section>
+
+    <!-- ── RESULTS SECTION ────────────────────────────────────── -->
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <span class="section-label">3. Snapshot Timeline</span>
+      </div>
+      
+      <div id="snapshotContainer" class="snapshot-container">
+        <!-- Snapshots injected here -->
+        <div class="empty-state">Click "Generate Snapshots" to start sampling.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Regression Snapshot Generator
+     * Uses the Web Animations API (WAAPI) to pause an animation at specific 
+     * timestamps and record the computed styles to generate a "snapshot".
+     */
+
+    const classInput = document.getElementById('classInput');
+    const durationInput = document.getElementById('durationInput');
+    const intervalInput = document.getElementById('intervalInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const animationTarget = document.getElementById('animationTarget');
+    const snapshotContainer = document.getElementById('snapshotContainer');
+
+    // The properties we want to track for regressions
+    const TRACKED_PROPERTIES = ['opacity', 'transform', 'box-shadow', 'background-color'];
+
+    generateBtn.addEventListener('click', async () => {
+      // 1. Setup
+      const classes = classInput.value.trim();
+      const duration = parseInt(durationInput.value, 10);
+      const interval = parseInt(intervalInput.value, 10);
+
+      if (!classes) return;
+
+      snapshotContainer.innerHTML = '<div class="loader">Sampling timeline...</div>';
+      
+      // Reset target
+      animationTarget.className = 'animation-target';
+      animationTarget.style.animationDuration = `${duration}ms`;
+      
+      // Force reflow
+      void animationTarget.offsetWidth;
+      
+      // Apply classes
+      animationTarget.className = `animation-target ${classes}`;
+
+      // 2. Wait for animation to attach to the element
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      const animations = animationTarget.getAnimations();
+
+      if (animations.length === 0) {
+        snapshotContainer.innerHTML = '<div class="empty-state">No animations detected. Ensure you entered valid CSS animation classes.</div>';
+        return;
+      }
+
+      const anim = animations[0]; // Assuming the primary combined animation
+      anim.pause();
+
+      const snapshots = [];
+      const steps = Math.floor(duration / interval);
+
+      // 3. Sample the timeline
+      for (let i = 0; i <= steps; i++) {
+        const currentTime = Math.min(i * interval, duration);
+        anim.currentTime = currentTime;
+
+        // Force browser to recalculate styles at this specific time
+        const computedStyle = window.getComputedStyle(animationTarget);
+        
+        const state = {};
+        TRACKED_PROPERTIES.forEach(prop => {
+          state[prop] = computedStyle.getPropertyValue(prop);
+        });
+
+        snapshots.push({ time: currentTime, state });
+      }
+
+      // Cleanup
+      anim.cancel();
+
+      // 4. Render Results
+      renderSnapshots(snapshots);
+    });
+
+    function renderSnapshots(snapshots) {
+      snapshotContainer.innerHTML = '';
+
+      snapshots.forEach(snap => {
+        const card = document.createElement('div');
+        card.className = 'snapshot-card';
+
+        let propsHtml = '';
+        
+        // Format properties
+        Object.entries(snap.state).forEach(([prop, val]) => {
+          // Simplify transform matrices for readability in demo
+          if (val === 'none') return; // Skip unused props
+          if (prop === 'transform' && val !== 'none') {
+             // Just show it's active instead of the complex matrix string for the demo
+             val = 'active (matrix)'; 
+          }
+          if (prop === 'opacity') {
+            val = Number.parseFloat(val).toFixed(2);
+          }
+
+          propsHtml += `<div class="prop-row"><span class="prop-name">${prop}:</span> <span class="prop-val">${val}</span></div>`;
+        });
+
+        if (propsHtml === '') {
+           propsHtml = `<div class="prop-row"><span class="prop-val">No tracked properties changed</span></div>`;
+        }
+
+        card.innerHTML = `
+          <div class="time-header">${snap.time}ms</div>
+          <div class="prop-list">
+            ${propsHtml}
+          </div>
+        `;
+
+        snapshotContainer.appendChild(card);
+      });
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+A pure CSS modal dialog that appears with a smooth scale and opacity animation using the `:target` pseudo-class. The backdrop has a blur effect, and the card slides in from the center with a spring-like cubic-bezier curve. Fully respects `prefers-reduced-motion` and opens directly from the filesystem with no JavaScript or external dependencies.

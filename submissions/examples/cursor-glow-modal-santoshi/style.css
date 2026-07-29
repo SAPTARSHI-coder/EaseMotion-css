@@ -1,0 +1,769 @@
+/* ==========================================================================
+   CURSOR GLOW MODAL - EaseMotion CSS
+   ----------------------------------------------------------------------
+   Design reasoning, up front:
+   - Opening/closing/backdrop/light-dismiss/Escape-to-close are all
+     handled by the native HTML Popover API (`popover`, `popovertarget`,
+     `popovertargetaction`) - genuinely zero JavaScript for the modal
+     mechanics themselves.
+   - The one exception is the cursor-following glow: CSS has no way to
+     read live pointer coordinates into a custom property, so a small,
+     scoped mousemove script updates --glow-x/--glow-y. If that script
+     is unavailable, the glow simply stays centered - the modal remains
+     fully open, readable, and operable either way.
+   - "ease-*" naming below refers to the EaseMotion CSS motion tokens
+     (--ease-standard, --ease-emphasized) reused from other components
+     in this library, kept consistent rather than inventing new curves.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. EaseMotion CSS design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Page */
+  --page-bg-start: #12111c;
+  --page-bg-end: #1d1a2b;
+  --text-primary: #f3f1fb;
+  --text-secondary: #a6a1c2;
+
+  /* Modal surface (glassmorphism) */
+  --modal-bg: rgba(30, 27, 46, 0.55);
+  --modal-border: rgba(255, 255, 255, 0.14);
+  --modal-blur: 22px;
+  --modal-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  --modal-radius: 22px;
+
+  /* Backdrop overlay */
+  --backdrop-color: rgba(10, 9, 16, 0.55);
+  --backdrop-blur: 8px;
+
+  /* Cursor glow */
+  --glow-x: 50%;
+  --glow-y: 40%;
+  --glow-color: rgba(157, 122, 255, 0.35);
+  --glow-size: 320px;
+
+  /* Accent + buttons */
+  --accent-start: #9d7aff;
+  --accent-end: #5b8def;
+  --danger-text: #ffb4b4;
+
+  /* Motion tokens - EaseMotion CSS conventions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fade: 0.35s;
+
+  /* Fonts */
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and page scaffold
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: linear-gradient(160deg, var(--page-bg-start), var(--page-bg-end));
+  min-height: 100vh;
+}
+
+.stage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stage-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-start);
+  margin-bottom: 8px;
+}
+
+.stage-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.stage-subtitle {
+  max-width: 46ch;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Trigger button
+   -------------------------------------------------------------------------- */
+.open-btn {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 12px 26px rgba(157, 122, 255, 0.3);
+  transition: transform var(--duration-fade) var(--ease-standard),
+    box-shadow var(--duration-fade) var(--ease-standard);
+}
+
+.open-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(157, 122, 255, 0.4);
+}
+
+.open-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Modal shell (native Popover API element)
+   -------------------------------------------------------------------------- */
+
+/* The [popover] UA stylesheet already removes the element from normal
+   flow and centers it via inset/margin defaults in supporting browsers;
+   these rules make that explicit and add the glassmorphism treatment */
+.glow-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 0;
+  border: 1px solid var(--modal-border);
+  border-radius: var(--modal-radius);
+  overflow: hidden;
+
+  background: var(--modal-bg);
+  backdrop-filter: blur(var(--modal-blur));
+  -webkit-backdrop-filter: blur(var(--modal-blur));
+  box-shadow: var(--modal-shadow);
+}
+
+/* Backdrop overlay behind the popover - native ::backdrop pseudo-element,
+   no wrapper <div> required */
+.glow-modal::backdrop {
+  background: var(--backdrop-color);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+}
+
+/* --------------------------------------------------------------------------
+   5. Fade-in open animation (progressive enhancement)
+   -------------------------------------------------------------------------- */
+
+/* @starting-style defines the "before" state for a newly-shown popover so
+   the browser can transition from it - this is what actually produces
+   the fade-in the first time the modal opens */
+@starting-style {
+  .glow-modal:popover-open {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+
+  .glow-modal:popover-open::backdrop {
+    opacity: 0;
+  }
+}
+
+.glow-modal {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity var(--duration-fade) var(--ease-emphasized),
+    transform var(--duration-fade) var(--ease-emphasized),
+    overlay var(--duration-fade) var(--ease-emphasized) allow-discrete,
+    display var(--duration-fade) var(--ease-emphasized) allow-discrete;
+}
+
+.glow-modal::backdrop {
+  opacity: 1;
+  transition: opacity var(--duration-fade) var(--ease-standard);
+}
+
+/* --------------------------------------------------------------------------
+   6. Cursor glow layer
+   -------------------------------------------------------------------------- */
+.glow-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Positioned using --glow-x / --glow-y, updated on mousemove (see
+     demo.html). Defaults to a fixed point so the modal still looks
+     intentional if the script hasn't run yet. */
+  background: radial-gradient(
+    circle var(--glow-size) at var(--glow-x) var(--glow-y),
+    var(--glow-color),
+    transparent 70%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   7. Modal content
+   -------------------------------------------------------------------------- */
+.modal-content {
+  position: relative;
+  z-index: 1;
+  padding: 28px 26px 26px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--modal-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--duration-fade) var(--ease-standard),
+    background-color var(--duration-fade) var(--ease-standard);
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.close-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* --------------------------------------------------------------------------
+   8. Action buttons
+   -------------------------------------------------------------------------- */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-btn {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--duration-fade) var(--ease-standard),
+    box-shadow var(--duration-fade) var(--ease-standard),
+    background-color var(--duration-fade) var(--ease-standard),
+    border-color var(--duration-fade) var(--ease-standard);
+}
+
+.modal-btn--ghost {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.modal-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-btn--primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 10px 22px rgba(157, 122, 255, 0.32);
+}
+
+.modal-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(157, 122, 255, 0.42);
+}
+
+.modal-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   9. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .glow-modal,
+  .glow-modal::backdrop,
+  .open-btn,
+  .modal-btn,
+  .close-btn {
+    transition: none !important;
+  }
+
+  @starting-style {
+    .glow-modal:popover-open,
+    .glow-modal:popover-open::backdrop {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. Responsive breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .glow-modal {
+    width: min(380px, calc(100vw - 28px));
+  }
+}
+
+/* Mobile: near-full-width modal, stacked action buttons for larger,
+   easier-to-tap targets */
+@media (max-width: 480px) {
+  .stage-title {
+    font-size: 1.6rem;
+  }
+
+  .glow-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 48px);
+  }
+
+  .modal-content {
+    padding: 24px 20px 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}/* ==========================================================================
+   CURSOR GLOW MODAL - EaseMotion CSS
+   ----------------------------------------------------------------------
+   Design reasoning, up front:
+   - Opening/closing/backdrop/light-dismiss/Escape-to-close are all
+     handled by the native HTML Popover API (`popover`, `popovertarget`,
+     `popovertargetaction`) - genuinely zero JavaScript for the modal
+     mechanics themselves.
+   - The one exception is the cursor-following glow: CSS has no way to
+     read live pointer coordinates into a custom property, so a small,
+     scoped mousemove script updates --glow-x/--glow-y. If that script
+     is unavailable, the glow simply stays centered - the modal remains
+     fully open, readable, and operable either way.
+   - "ease-*" naming below refers to the EaseMotion CSS motion tokens
+     (--ease-standard, --ease-emphasized) reused from other components
+     in this library, kept consistent rather than inventing new curves.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. EaseMotion CSS design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Page */
+  --page-bg-start: #12111c;
+  --page-bg-end: #1d1a2b;
+  --text-primary: #f3f1fb;
+  --text-secondary: #a6a1c2;
+
+  /* Modal surface (glassmorphism) */
+  --modal-bg: rgba(30, 27, 46, 0.55);
+  --modal-border: rgba(255, 255, 255, 0.14);
+  --modal-blur: 22px;
+  --modal-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+  --modal-radius: 22px;
+
+  /* Backdrop overlay */
+  --backdrop-color: rgba(10, 9, 16, 0.55);
+  --backdrop-blur: 8px;
+
+  /* Cursor glow */
+  --glow-x: 50%;
+  --glow-y: 40%;
+  --glow-color: rgba(157, 122, 255, 0.35);
+  --glow-size: 320px;
+
+  /* Accent + buttons */
+  --accent-start: #9d7aff;
+  --accent-end: #5b8def;
+  --danger-text: #ffb4b4;
+
+  /* Motion tokens - EaseMotion CSS conventions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fade: 0.35s;
+
+  /* Fonts */
+  --font-display: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and page scaffold
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: linear-gradient(160deg, var(--page-bg-start), var(--page-bg-end));
+  min-height: 100vh;
+}
+
+.stage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stage-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-start);
+  margin-bottom: 8px;
+}
+
+.stage-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.stage-subtitle {
+  max-width: 46ch;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Trigger button
+   -------------------------------------------------------------------------- */
+.open-btn {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  padding: 13px 26px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 12px 26px rgba(157, 122, 255, 0.3);
+  transition: transform var(--duration-fade) var(--ease-standard),
+    box-shadow var(--duration-fade) var(--ease-standard);
+}
+
+.open-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(157, 122, 255, 0.4);
+}
+
+.open-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   4. Modal shell (native Popover API element)
+   -------------------------------------------------------------------------- */
+
+/* The [popover] UA stylesheet already removes the element from normal
+   flow and centers it via inset/margin defaults in supporting browsers;
+   these rules make that explicit and add the glassmorphism treatment */
+.glow-modal {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 0;
+  border: 1px solid var(--modal-border);
+  border-radius: var(--modal-radius);
+  overflow: hidden;
+
+  background: var(--modal-bg);
+  backdrop-filter: blur(var(--modal-blur));
+  -webkit-backdrop-filter: blur(var(--modal-blur));
+  box-shadow: var(--modal-shadow);
+}
+
+/* Backdrop overlay behind the popover - native ::backdrop pseudo-element,
+   no wrapper <div> required */
+.glow-modal::backdrop {
+  background: var(--backdrop-color);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+}
+
+/* --------------------------------------------------------------------------
+   5. Fade-in open animation (progressive enhancement)
+   -------------------------------------------------------------------------- */
+
+/* @starting-style defines the "before" state for a newly-shown popover so
+   the browser can transition from it - this is what actually produces
+   the fade-in the first time the modal opens */
+@starting-style {
+  .glow-modal:popover-open {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
+  }
+
+  .glow-modal:popover-open::backdrop {
+    opacity: 0;
+  }
+}
+
+.glow-modal {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition:
+    opacity var(--duration-fade) var(--ease-emphasized),
+    transform var(--duration-fade) var(--ease-emphasized),
+    overlay var(--duration-fade) var(--ease-emphasized) allow-discrete,
+    display var(--duration-fade) var(--ease-emphasized) allow-discrete;
+}
+
+.glow-modal::backdrop {
+  opacity: 1;
+  transition: opacity var(--duration-fade) var(--ease-standard);
+}
+
+/* --------------------------------------------------------------------------
+   6. Cursor glow layer
+   -------------------------------------------------------------------------- */
+.glow-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+
+  /* Positioned using --glow-x / --glow-y, updated on mousemove (see
+     demo.html). Defaults to a fixed point so the modal still looks
+     intentional if the script hasn't run yet. */
+  background: radial-gradient(
+    circle var(--glow-size) at var(--glow-x) var(--glow-y),
+    var(--glow-color),
+    transparent 70%
+  );
+}
+
+/* --------------------------------------------------------------------------
+   7. Modal content
+   -------------------------------------------------------------------------- */
+.modal-content {
+  position: relative;
+  z-index: 1;
+  padding: 28px 26px 26px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  line-height: 1;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--modal-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--duration-fade) var(--ease-standard),
+    background-color var(--duration-fade) var(--ease-standard);
+}
+
+.close-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.close-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+.modal-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+/* --------------------------------------------------------------------------
+   8. Action buttons
+   -------------------------------------------------------------------------- */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-btn {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--duration-fade) var(--ease-standard),
+    box-shadow var(--duration-fade) var(--ease-standard),
+    background-color var(--duration-fade) var(--ease-standard),
+    border-color var(--duration-fade) var(--ease-standard);
+}
+
+.modal-btn--ghost {
+  color: var(--text-primary);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.modal-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.modal-btn--primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  box-shadow: 0 10px 22px rgba(157, 122, 255, 0.32);
+}
+
+.modal-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(157, 122, 255, 0.42);
+}
+
+.modal-btn:focus-visible {
+  outline: 2px solid var(--accent-start);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   9. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .glow-modal,
+  .glow-modal::backdrop,
+  .open-btn,
+  .modal-btn,
+  .close-btn {
+    transition: none !important;
+  }
+
+  @starting-style {
+    .glow-modal:popover-open,
+    .glow-modal:popover-open::backdrop {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. Responsive breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .glow-modal {
+    width: min(380px, calc(100vw - 28px));
+  }
+}
+
+/* Mobile: near-full-width modal, stacked action buttons for larger,
+   easier-to-tap targets */
+@media (max-width: 480px) {
+  .stage-title {
+    font-size: 1.6rem;
+  }
+
+  .glow-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 48px);
+  }
+
+  .modal-content {
+    padding: 24px 20px 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

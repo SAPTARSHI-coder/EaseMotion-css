@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Status Dot Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Status Dot</h1>
+        <p class="subtitle">Pulsing green/red for online/offline</p>
+
+        <!-- STATUS DOT COMPONENT -->
+        <div class="status-container">
+            <div class="status-wrapper">
+                <div class="status-dot-container">
+                    <div class="status-dot" id="statusDot">
+                        <span class="dot-pulse" id="dotPulse"></span>
+                        <span class="dot-core" id="dotCore"></span>
+                    </div>
+                    <div class="status-info">
+                        <span class="status-label" id="statusLabel">Online</span>
+                        <span class="status-time" id="statusTime">Last checked: just now</span>
+                    </div>
+                </div>
+
+                <div class="status-controls">
+                    <button class="status-btn online" id="onlineBtn">🟢 Online</button>
+                    <button class="status-btn offline" id="offlineBtn">🔴 Offline</button>
+                    <button class="status-btn warning" id="warningBtn">🟡 Warning</button>
+                    <button class="status-btn idle" id="idleBtn">🟠 Idle</button>
+                    <button class="status-btn" id="toggleBtn">🔄 Toggle</button>
+                </div>
+
+                <div class="status-footer">
+                    <span class="footer-label">Status:</span>
+                    <span class="footer-value" id="footerStatus">Online</span>
+                    <span class="footer-label">Uptime:</span>
+                    <span class="footer-value" id="uptimeDisplay">00:00:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variantSmall">
+                    <div class="variant-dot small">
+                        <span class="dot-pulse"></span>
+                        <span class="dot-core"></span>
+                    </div>
+                    <span class="variant-label">Small</span>
+                </div>
+                <div class="variant-card" id="variantMedium">
+                    <div class="variant-dot medium">
+                        <span class="dot-pulse"></span>
+                        <span class="dot-core"></span>
+                    </div>
+                    <span class="variant-label">Medium</span>
+                </div>
+                <div class="variant-card" id="variantLarge">
+                    <div class="variant-dot large">
+                        <span class="dot-pulse"></span>
+                        <span class="dot-core"></span>
+                    </div>
+                    <span class="variant-label">Large</span>
+                </div>
+                <div class="variant-card" id="variantWithLabel">
+                    <div class="variant-dot medium">
+                        <span class="dot-pulse"></span>
+                        <span class="dot-core"></span>
+                    </div>
+                    <span class="variant-label">API Server</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status History -->
+        <div class="history-section">
+            <h3>Status History</h3>
+            <div class="history-list" id="historyList">
+                <div class="history-item">
+                    <span class="history-time">Just now</span>
+                    <span class="history-status online">● Online</span>
+                </div>
+            </div>
+            <button class="history-btn" id="clearHistoryBtn">Clear History</button>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const dot = document.getElementById('statusDot');
+            const dotPulse = document.getElementById('dotPulse');
+            const dotCore = document.getElementById('dotCore');
+            const statusLabel = document.getElementById('statusLabel');
+            const statusTime = document.getElementById('statusTime');
+            const footerStatus = document.getElementById('footerStatus');
+            const uptimeDisplay = document.getElementById('uptimeDisplay');
+            const historyList = document.getElementById('historyList');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const onlineBtn = document.getElementById('onlineBtn');
+            const offlineBtn = document.getElementById('offlineBtn');
+            const warningBtn = document.getElementById('warningBtn');
+            const idleBtn = document.getElementById('idleBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                statuses: {
+                    online: {
+                        label: 'Online',
+                        color: '#34c759',
+                        pulseColor: 'rgba(52, 199, 89, 0.4)',
+                        pulseSize: 1.8,
+                        animationDuration: 1.5
+                    },
+                    offline: {
+                        label: 'Offline',
+                        color: '#ff3b30',
+                        pulseColor: 'rgba(255, 59, 48, 0.4)',
+                        pulseSize: 1.8,
+                        animationDuration: 2.0
+                    },
+                    warning: {
+                        label: 'Warning',
+                        color: '#f59e0b',
+                        pulseColor: 'rgba(245, 158, 11, 0.4)',
+                        pulseSize: 1.8,
+                        animationDuration: 1.2
+                    },
+                    idle: {
+                        label: 'Idle',
+                        color: '#f97316',
+                        pulseColor: 'rgba(249, 115, 22, 0.4)',
+                        pulseSize: 1.8,
+                        animationDuration: 2.5
+                    }
+                },
+                defaultStatus: 'online',
+                onStatusChange: function(status, label) {
+                    console.log(`🔄 Status changed to: ${label} (${status})`);
+                },
+                onUptimeUpdate: function(uptime) {
+                    console.log(`⏱️ Uptime: ${uptime}`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let currentStatus = CONFIG.defaultStatus;
+            let isAnimating = false;
+            let uptimeSeconds = 0;
+            let uptimeInterval = null;
+            let history = [];
+
+            // ============================================
+            // STATUS FUNCTIONS
+            // ============================================
+            function setStatus(status) {
+                if (!CONFIG.statuses[status]) return;
+                if (status === currentStatus && isAnimating) return;
+
+                const config = CONFIG.statuses[status];
+                currentStatus = status;
+                isAnimating = true;
+
+                // Update dot
+                dot.className = 'status-dot ' + status;
+                dotCore.style.backgroundColor = config.color;
+                dotCore.style.boxShadow = `0 0 20px ${config.color}40, 0 0 60px ${config.color}20`;
+                dotPulse.style.backgroundColor = config.pulseColor;
+                dotPulse.style.animationDuration = config.animationDuration + 's';
+
+                // Update labels
+                statusLabel.textContent = config.label;
+                statusLabel.style.color = config.color;
+                footerStatus.textContent = config.label;
+                footerStatus.style.color = config.color;
+
+                // Update time
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString();
+                statusTime.textContent = `Last checked: ${timeStr}`;
+
+                // Add to history
+                addHistory(status, config.label);
+
+                // Trigger callback
+                CONFIG.onStatusChange(status, config.label);
+
+                // Reset animation flag after a moment
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 500);
+            }
+
+            function toggleStatus() {
+                const statuses = ['online', 'warning', 'offline', 'idle'];
+                const currentIndex = statuses.indexOf(currentStatus);
+                const nextIndex = (currentIndex + 1) % statuses.length;
+                setStatus(statuses[nextIndex]);
+            }
+
+            // ============================================
+            // UPTIME TRACKING
+            // ============================================
+            function updateUptime() {
+                uptimeSeconds++;
+                const hours = Math.floor(uptimeSeconds / 3600);
+                const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+                const seconds = uptimeSeconds % 60;
+                const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                uptimeDisplay.textContent = display;
+                CONFIG.onUptimeUpdate(display);
+            }
+
+            // ============================================
+            // HISTORY
+            // ============================================
+            function addHistory(status, label) {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString();
+                history.push({ status, label, time: timeStr, timestamp: now });
+
+                // Keep last 50 entries
+                if (history.length > 50) {
+                    history.shift();
+                }
+
+                renderHistory();
+            }
+
+            function renderHistory() {
+                historyList.innerHTML = '';
+                // Show latest 10 entries
+                const entries = history.slice(-10).reverse();
+                entries.forEach(entry => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <span class="history-time">${entry.time}</span>
+                        <span class="history-status ${entry.status}">● ${entry.label}</span>
+                    `;
+                    // Animation
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(-10px)';
+                    historyList.appendChild(item);
+                    requestAnimationFrame(() => {
+                        item.style.transition = 'all 0.3s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    });
+                });
+            }
+
+            function clearHistory() {
+                history = [];
+                // Add current status as first entry
+                const config = CONFIG.statuses[currentStatus];
+                addHistory(currentStatus, config.label);
+                // Clear and re-add with animation
+                renderHistory();
+            }
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card, status) {
+                const dot = card.querySelector('.variant-dot');
+                const pulse = dot.querySelector('.dot-pulse');
+                const core = dot.querySelector('.dot-core');
+                const config = CONFIG.statuses[status];
+
+                dot.className = 'variant-dot ' + (dot.classList.contains('small') ? 'small' : 
+                                                  dot.classList.contains('medium') ? 'medium' : 
+                                                  dot.classList.contains('large') ? 'large' : 'medium');
+                core.style.backgroundColor = config.color;
+                pulse.style.backgroundColor = config.pulseColor;
+                pulse.style.animationDuration = config.animationDuration + 's';
+
+                // Click to change variant status
+                card.addEventListener('click', function() {
+                    const statuses = ['online', 'warning', 'offline', 'idle'];
+                    const currentIndex = statuses.indexOf(status);
+                    const nextIndex = (currentIndex + 1) % statuses.length;
+                    status = statuses[nextIndex];
+                    const newConfig = CONFIG.statuses[status];
+                    core.style.backgroundColor = newConfig.color;
+                    pulse.style.backgroundColor = newConfig.pulseColor;
+                    pulse.style.animationDuration = newConfig.animationDuration + 's';
+                    
+                    const label = card.querySelector('.variant-label');
+                    if (label && label.textContent !== 'Small' && label.textContent !== 'Medium' && 
+                        label.textContent !== 'Large') {
+                        label.textContent = newConfig.label;
+                        label.style.color = newConfig.color;
+                    }
+                });
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            onlineBtn.addEventListener('click', () => setStatus('online'));
+            offlineBtn.addEventListener('click', () => setStatus('offline'));
+            warningBtn.addEventListener('click', () => setStatus('warning'));
+            idleBtn.addEventListener('click', () => setStatus('idle'));
+            toggleBtn.addEventListener('click', toggleStatus);
+
+            clearHistoryBtn.addEventListener('click', clearHistory);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '1') setStatus('online');
+                if (e.key === '2') setStatus('warning');
+                if (e.key === '3') setStatus('offline');
+                if (e.key === '4') setStatus('idle');
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleStatus();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearHistory();
+                }
+            });
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.StatusDot = {
+                setStatus: setStatus,
+                toggle: toggleStatus,
+                getStatus: () => currentStatus,
+                getUptime: () => uptimeSeconds,
+                getHistory: () => history,
+                clearHistory: clearHistory,
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    // Update current status with new config
+                    setStatus(currentStatus);
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            // Initialize status
+            setStatus(CONFIG.defaultStatus);
+
+            // Start uptime counter
+            uptimeInterval = setInterval(updateUptime, 1000);
+
+            // Initialize variants
+            const variants = document.querySelectorAll('.variant-card');
+            const statuses = ['online', 'warning', 'offline', 'idle'];
+            variants.forEach((card, index) => {
+                const dot = card.querySelector('.variant-dot');
+                if (dot) {
+                    const status = statuses[index % statuses.length];
+                    const config = CONFIG.statuses[status];
+                    const core = dot.querySelector('.dot-core');
+                    const pulse = dot.querySelector('.dot-pulse');
+                    core.style.backgroundColor = config.color;
+                    pulse.style.backgroundColor = config.pulseColor;
+                    pulse.style.animationDuration = config.animationDuration + 's';
+                    dot.className = 'variant-dot ' + (dot.classList.contains('small') ? 'small' : 
+                                                      dot.classList.contains('medium') ? 'medium' : 
+                                                      dot.classList.contains('large') ? 'large' : 'medium');
+                }
+                
+                // Click to cycle status for variant
+                card.addEventListener('click', function() {
+                    const dot = this.querySelector('.variant-dot');
+                    if (!dot) return;
+                    const currentStatus = ['online', 'warning', 'offline', 'idle'];
+                    const currentIndex = currentStatus.indexOf(dot.dataset.status || 'online');
+                    const nextIndex = (currentIndex + 1) % currentStatus.length;
+                    const newStatus = currentStatus[nextIndex];
+                    dot.dataset.status = newStatus;
+                    const config = CONFIG.statuses[newStatus];
+                    const core = dot.querySelector('.dot-core');
+                    const pulse = dot.querySelector('.dot-pulse');
+                    core.style.backgroundColor = config.color;
+                    pulse.style.backgroundColor = config.pulseColor;
+                    pulse.style.animationDuration = config.animationDuration + 's';
+                    
+                    const label = this.querySelector('.variant-label');
+                    if (label && !['Small', 'Medium', 'Large'].includes(label.textContent)) {
+                        label.textContent = config.label;
+                        label.style.color = config.color;
+                    }
+                });
+            });
+
+            console.log('✅ Status Dot initialized!');
+            console.log('📖 API: window.StatusDot');
+            console.log('📖 Usage:');
+            console.log('  - Click status buttons to change state');
+            console.log('  - Keyboard shortcuts: 1 (online), 2 (warning), 3 (offline), 4 (idle), Space (toggle), C (clear history)');
+            console.log('  - Status history tracks all changes');
+
+        })();
+    </script>
+</body>
+</html>

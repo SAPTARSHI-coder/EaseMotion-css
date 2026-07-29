@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portal Opening</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Portal Opening</h1>
+        <p class="subtitle">Rippling portal that opens with light burst</p>
+
+        <div class="portal-wrapper">
+            <canvas id="portalCanvas"></canvas>
+
+            <div class="controls">
+                <button id="openBtn">🌀 Open</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Portal ready</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('portalCanvas');
+        const ctx = canvas.getContext('2d');
+        const openBtn = document.getElementById('openBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let portalProgress = 0;
+        let isOpening = false;
+        let isOpen = false;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let particles = [];
+        let lightBurst = 0;
+        let rippleWaves = [];
+        let glowIntensity = 0;
+        let portalRadius = 0;
+        let rotation = 0;
+        let sparkles = [];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                glow: '#ffd93d',
+                inner: '#ffffff'
+            },
+            {
+                name: 'Mystic',
+                colors: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                glow: '#a78bfa',
+                inner: '#ffffff'
+            },
+            {
+                name: 'Fire',
+                colors: ['#ff6b00', '#ff4500', '#ff8c00', '#ffa500', '#ffcc00'],
+                glow: '#ff6b00',
+                inner: '#ffffff'
+            },
+            {
+                name: 'Ice',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                glow: '#48cae4',
+                inner: '#ffffff'
+            },
+            {
+                name: 'Cosmic',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa'],
+                glow: '#aa00aa',
+                inner: '#ffffff'
+            },
+            {
+                name: 'Gold',
+                colors: ['#d4a02a', '#c4901a', '#b4800a', '#a4700a', '#94600a'],
+                glow: '#ffd700',
+                inner: '#ffffff'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color, size) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = size || 2 + Math.random() * 5;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8 - 2;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 4);
+                grad.addColorStop(0, this.color + '99');
+                grad.addColorStop(0.5, this.color + '44');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.4;
+                ctx.fill();
+
+                if (this.shape === 'star') {
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                        const r = i % 2 === 0 ? this.size * this.life : this.size * this.life * 0.4;
+                        const px = Math.cos(angle + this.phase) * r;
+                        const py = Math.sin(angle + this.phase) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.life * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color + '80';
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = this.life * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color + '80';
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SPARKLE CLASS =====
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 100;
+                this.size = 1 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 20;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.twinkleSpeed = 0.05 + Math.random() * 0.1;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.twinkleSpeed;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase);
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const color = palette.glow;
+                const size = this.size * this.life * (0.5 + 0.5 * this.pulse);
+                const alpha = this.life * 0.8;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 5);
+                grad.addColorStop(0, color + '99');
+                grad.addColorStop(0.5, color + '44');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fill();
+
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                    const r = i % 2 === 0 ? size : size * 0.4;
+                    const px = Math.cos(angle + this.phase) * r;
+                    const py = Math.sin(angle + this.phase) * r;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW PORTAL =====
+        function drawPortal(ctx, cx, cy, radius) {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const glowColor = palette.glow;
+            const innerColor = palette.inner;
+
+            const progress = portalProgress;
+            const currentRadius = radius * (0.1 + 0.9 * progress);
+            const rippleCount = 5 + Math.floor(progress * 5);
+
+            // Outer glow
+            const glowSize = currentRadius * 1.5 * (0.3 + 0.7 * progress);
+            const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+            glowGrad.addColorStop(0, glowColor + '66');
+            glowGrad.addColorStop(0.3, glowColor + '44');
+            glowGrad.addColorStop(0.7, glowColor + '22');
+            glowGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Light burst
+            if (lightBurst > 0.1) {
+                const burstSize = currentRadius * (1 + lightBurst * 0.5);
+                const burstGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, burstSize);
+                burstGrad.addColorStop(0, 'rgba(255,255,255,0.8)');
+                burstGrad.addColorStop(0.3, 'rgba(255,255,255,0.4)');
+                burstGrad.addColorStop(0.7, 'rgba(255,255,255,0.1)');
+                burstGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.beginPath();
+                ctx.arc(cx, cy, burstSize, 0, Math.PI * 2);
+                ctx.fillStyle = burstGrad;
+                ctx.fill();
+            }
+
+            // Ripple rings
+            for (let i = 0; i < rippleCount; i++) {
+                const t = i / rippleCount;
+                const ringRadius = currentRadius * (0.3 + 0.7 * t);
+                const ringAlpha = (1 - t) * 0.3 * progress;
+                const ringPhase = time * 0.02 + i * 1.5;
+                const wobble = 1 + 0.05 * Math.sin(ringPhase + time * 0.01);
+
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.03) {
+                    const wave = Math.sin(a * 3 + time * 0.02 + i) * 2 * progress;
+                    const r = ringRadius * wobble + wave;
+                    const px = cx + Math.cos(a + rotation * 0.1 + t * 0.5) * r;
+                    const py = cy + Math.sin(a + rotation * 0.1 + t * 0.5) * r;
+                    if (a === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                const colorIdx = Math.floor(t * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = ringAlpha;
+                ctx.lineWidth = 1 + t * 2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '80';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Inner portal
+            const innerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, currentRadius * 0.8);
+            innerGrad.addColorStop(0, innerColor + '99');
+            innerGrad.addColorStop(0.3, innerColor + '66');
+            innerGrad.addColorStop(0.6, innerColor + '33');
+            innerGrad.addColorStop(1, innerColor + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, currentRadius * 0.8, 0, Math.PI * 2);
+            ctx.fillStyle = innerGrad;
+            ctx.globalAlpha = 0.3 + 0.7 * progress;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Portal edge glow
+            const edgeGrad = ctx.createRadialGradient(cx, cy, currentRadius * 0.8, cx, cy, currentRadius);
+            edgeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+            edgeGrad.addColorStop(0.5, glowColor + '44');
+            edgeGrad.addColorStop(1, glowColor + '88');
+            ctx.beginPath();
+            ctx.arc(cx, cy, currentRadius, 0, Math.PI * 2);
+            ctx.fillStyle = edgeGrad;
+            ctx.globalAlpha = 0.5 + 0.5 * progress;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Portal rim
+            ctx.beginPath();
+            ctx.arc(cx, cy, currentRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = glowColor;
+            ctx.globalAlpha = 0.3 + 0.7 * progress;
+            ctx.lineWidth = 2 + progress * 2;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = glowColor + '80';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+
+            // Inner swirling particles
+            if (progress > 0.3) {
+                const numSwirl = Math.floor(20 * progress);
+                for (let i = 0; i < numSwirl; i++) {
+                    const t = i / numSwirl;
+                    const angle = t * Math.PI * 2 + time * 0.02 + rotation;
+                    const dist = currentRadius * (0.3 + 0.6 * Math.sin(time * 0.01 + t * 3));
+                    const sx = cx + Math.cos(angle) * dist;
+                    const sy = cy + Math.sin(angle) * dist;
+                    const size = 1 + Math.sin(time * 0.02 + i) * 0.5;
+                    const colorIdx = Math.floor(t * (colors.length - 1));
+                    const color = colors[colorIdx % colors.length];
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = 0.3 + 0.3 * Math.sin(time * 0.02 + i);
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = color + '80';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+            }
+
+            // Rotation
+            rotation += 0.003 * progress;
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.glow;
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.2);
+            ambientGlow.addColorStop(0, glowColor + '10');
+            ambientGlow.addColorStop(1, glowColor + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 60; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== OPEN PORTAL =====
+        function openPortal() {
+            if (isOpening || isOpen) return;
+
+            isOpening = true;
+            portalProgress = 0;
+            lightBurst = 0;
+            particles = [];
+            sparkles = [];
+            openBtn.textContent = '🌀 Opening...';
+            statusText.textContent = '🌀 Portal opening...';
+
+            // Initial particles
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const palette = colorPalettes[colorMode];
+            for (let i = 0; i < 30; i++) {
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 100,
+                    cy + (Math.random() - 0.5) * 100,
+                    palette.glow
+                );
+                p.vx = (Math.random() - 0.5) * 6;
+                p.vy = (Math.random() - 0.5) * 6 - 2;
+                particles.push(p);
+            }
+
+            // Start opening animation
+            const openInterval = setInterval(() => {
+                portalProgress += 0.015;
+
+                // Light burst
+                if (portalProgress > 0.3 && portalProgress < 0.7) {
+                    lightBurst = Math.sin((portalProgress - 0.3) / 0.4 * Math.PI) * 0.8;
+                } else if (portalProgress >= 0.7) {
+                    lightBurst *= 0.98;
+                }
+
+                // Spawn particles during opening
+                if (Math.random() < portalProgress * 0.1) {
+                    const p = new Particle(
+                        cx + (Math.random() - 0.5) * currentRadius * 1.5,
+                        cy + (Math.random() - 0.5) * currentRadius * 1.5,
+                        palette.glow
+                    );
+                    p.vx = (Math.random() - 0.5) * 4;
+                    p.vy = (Math.random() - 0.5) * 4 - 1;
+                    particles.push(p);
+                }
+
+                // Spawn sparkles
+                if (Math.random() < portalProgress * 0.05) {
+                    const s = new Sparkle(
+                        cx + (Math.random() - 0.5) * currentRadius * 1.2,
+                        cy + (Math.random() - 0.5) * currentRadius * 1.2
+                    );
+                    sparkles.push(s);
+                }
+
+                if (portalProgress >= 1) {
+                    clearInterval(openInterval);
+                    isOpening = false;
+                    isOpen = true;
+                    portalProgress = 1;
+                    openBtn.textContent = '🌀 Close';
+                    statusText.textContent = '🌀 Portal open!';
+                    
+                    // Final burst
+                    lightBurst = 1;
+                    setTimeout(() => {
+                        lightBurst = 0;
+                    }, 500);
+                }
+            }, 50);
+
+            let currentRadius = 0;
+            const cx2 = canvas.width / 2;
+            const cy2 = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.3;
+
+            // Update current radius for particle spawning
+            const radiusInterval = setInterval(() => {
+                currentRadius = radius * (0.1 + 0.9 * portalProgress);
+            }, 50);
+        }
+
+        // ===== RESET =====
+        function resetPortal() {
+            isOpening = false;
+            isOpen = false;
+            portalProgress = 0;
+            lightBurst = 0;
+            particles = [];
+            sparkles = [];
+            rotation = 0;
+            openBtn.textContent = '🌀 Open';
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Portal ready';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 - 10;
+            const radius = Math.min(w, h) * 0.3;
+            time += 0.01;
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                const s = sparkles[i];
+                s.update();
+                if (s.isDead()) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles (behind portal)
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw sparkles
+            for (const s of sparkles) {
+                s.draw(ctx);
+            }
+
+            // Draw portal
+            drawPortal(ctx, cx, cy, radius);
+
+            if (frameCount % 30 === 0) {
+                const state = isOpen ? '🌀 Open' : (isOpening ? '🌀 Opening...' : '🌀 Ready');
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Open
+        openBtn.addEventListener('click', () => {
+            if (isOpen) {
+                resetPortal();
+            } else {
+                openPortal();
+            }
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Portal ready';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetPortal);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'o' || e.key === 'O') {
+                openBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                openBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', () => {
+            if (isOpen) {
+                resetPortal();
+            } else {
+                openPortal();
+            }
+        });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (isOpen) {
+                resetPortal();
+            } else {
+                openPortal();
+            }
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Portal ready';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🌀 Portal Opening loaded!');
+        console.log('💡 O - Open/Close');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Open/Close');
+        console.log('💡 Click portal - Open/Close');
+    </script>
+</body>
+</html>

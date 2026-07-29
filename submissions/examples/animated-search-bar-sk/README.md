@@ -1,0 +1,1 @@
+A pure CSS animated search bar that expands from a compact magnifying glass icon into a full-width input with a submit button using the :target pseudo-class. The icon is built entirely from border-radius and pseudo-elements. Smooth width and opacity transitions create a polished expand/collapse experience in a dark theme.

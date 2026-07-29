@@ -1,0 +1,1 @@
+A button with an animated conic gradient border created using `mask` and a `::before` pseudo-element whose rotation is driven by a registered CSS custom property. On hover the glow intensifies and the button lifts, with multiple size variants and an alternative color scheme. Fully respects `prefers-reduced-motion` and is completely self-contained.

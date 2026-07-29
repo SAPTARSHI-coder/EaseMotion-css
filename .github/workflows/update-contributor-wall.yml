@@ -1,0 +1,43 @@
+name: Update Contributor Wall
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: contributor-wall
+  cancel-in-progress: false   # queue runs, never cancel — ensures every merge counts
+
+jobs:
+  update-wall:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main           # always fetch the latest main, not the triggering commit
+
+      - name: Fetch all contributors
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api "repos/${{ github.repository }}/stats/contributors" > /tmp/contributors.json
+          echo "Contributors fetched successfully."
+
+      - name: Pull latest before building
+        run: git pull --rebase origin main
+
+      - name: Build contributor wall
+        run: python3 scripts/build-contributor-wall.py
+
+      - name: Commit if changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update contributor wall [skip ci]"
+          file_pattern: README.md
+          push_options: --force-with-lease

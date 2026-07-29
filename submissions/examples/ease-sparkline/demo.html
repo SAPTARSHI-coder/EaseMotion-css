@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkline Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Sparkline</h1>
+        <p class="subtitle">Line draws itself with data points</p>
+
+        <!-- SPARKLINE COMPONENT -->
+        <div class="sparkline-container">
+            <div class="sparkline-wrapper">
+                <div class="sparkline-header">
+                    <div class="sparkline-title">Monthly Visitors</div>
+                    <div class="sparkline-stats">
+                        <span class="stat-current" id="currentValue">0</span>
+                        <span class="stat-change" id="changeValue">+0%</span>
+                    </div>
+                </div>
+                <div class="sparkline-canvas-wrapper">
+                    <canvas id="sparklineCanvas" width="600" height="150"></canvas>
+                    <div class="sparkline-controls">
+                        <button class="sparkline-btn" id="playBtn">▶ Play</button>
+                        <button class="sparkline-btn" id="resetBtn">⟳ Reset</button>
+                        <button class="sparkline-btn" id="randomBtn">🎲 Random</button>
+                    </div>
+                </div>
+                <div class="sparkline-footer">
+                    <span class="footer-label">Data points:</span>
+                    <span class="footer-value" id="dataCount">0</span>
+                    <span class="footer-label">Range:</span>
+                    <span class="footer-value" id="dataRange">0 - 0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button class="demo-btn" id="speedSlow">🐢 Slow</button>
+            <button class="demo-btn" id="speedNormal">🐇 Normal</button>
+            <button class="demo-btn" id="speedFast">🚀 Fast</button>
+            <button class="demo-btn" id="togglePoints">● Toggle Points</button>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <canvas width="200" height="60"></canvas>
+                    <span class="variant-label">Revenue</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <canvas width="200" height="60"></canvas>
+                    <span class="variant-label">Users</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <canvas width="200" height="60"></canvas>
+                    <span class="variant-label">Conversions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('sparklineCanvas');
+            const ctx = canvas.getContext('2d');
+            const currentValue = document.getElementById('currentValue');
+            const changeValue = document.getElementById('changeValue');
+            const dataCount = document.getElementById('dataCount');
+            const dataRange = document.getElementById('dataRange');
+            const playBtn = document.getElementById('playBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomBtn = document.getElementById('randomBtn');
+            const speedSlow = document.getElementById('speedSlow');
+            const speedNormal = document.getElementById('speedNormal');
+            const speedFast = document.getElementById('speedFast');
+            const togglePointsBtn = document.getElementById('togglePoints');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                colors: {
+                    line: '#4facfe',
+                    fill: 'rgba(79, 172, 254, 0.1)',
+                    point: '#4facfe',
+                    pointStroke: '#ffffff',
+                    grid: 'rgba(0, 0, 0, 0.04)',
+                    text: '#6b7280'
+                },
+                lineWidth: 2.5,
+                pointRadius: 4,
+                drawDuration: 2000, // ms
+                showPoints: true,
+                onComplete: function(data) {
+                    console.log('📈 Sparkline complete!');
+                },
+                onUpdate: function(current, change) {
+                    console.log(`📊 Current: ${current}, Change: ${change}%`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let data = [];
+            let isPlaying = false;
+            let animationId = null;
+            let progress = 0;
+            let startTime = 0;
+            let showPoints = CONFIG.showPoints;
+            let drawSpeed = 1;
+
+            // ============================================
+            // DATA GENERATION
+            // ============================================
+            function generateData(count = 30) {
+                const newData = [];
+                let value = 50 + Math.random() * 20;
+                for (let i = 0; i < count; i++) {
+                    // Random walk with mean reversion
+                    const change = (Math.random() - 0.5) * 10;
+                    value = Math.max(10, Math.min(90, value + change));
+                    // Add some trend
+                    if (i > count * 0.7) {
+                        value += (Math.random() - 0.3) * 3;
+                    }
+                    newData.push(Math.round(value));
+                }
+                return newData;
+            }
+
+            // ============================================
+            // DRAWING FUNCTIONS
+            // ============================================
+            function getScaledData(data, width, height) {
+                const min = Math.min(...data);
+                const max = Math.max(...data);
+                const range = max - min || 1;
+                const padding = 10;
+
+                return data.map((val, i) => {
+                    const x = padding + (i / (data.length - 1)) * (width - padding * 2);
+                    const y = padding + (1 - (val - min) / range) * (height - padding * 2);
+                    return { x, y, value: val };
+                });
+            }
+
+            function drawSparkline(data, progress) {
+                const w = canvas.width;
+                const h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                if (data.length < 2) return;
+
+                const scaled = getScaledData(data, w, h);
+                const drawCount = Math.max(2, Math.floor(progress * data.length));
+
+                // Draw grid lines
+                ctx.save();
+                ctx.strokeStyle = CONFIG.colors.grid;
+                ctx.lineWidth = 0.5;
+                ctx.setLineDash([3, 3]);
+                for (let i = 0; i < 5; i++) {
+                    const y = 10 + (i / 4) * (h - 20);
+                    ctx.beginPath();
+                    ctx.moveTo(10, y);
+                    ctx.lineTo(w - 10, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Draw fill area
+                const drawData = scaled.slice(0, drawCount);
+                if (drawData.length > 1) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(drawData[0].x, h - 10);
+                    drawData.forEach(p => ctx.lineTo(p.x, p.y));
+                    ctx.lineTo(drawData[drawData.length - 1].x, h - 10);
+                    ctx.closePath();
+                    ctx.fillStyle = CONFIG.colors.fill;
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Draw line
+                if (drawData.length > 1) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(drawData[0].x, drawData[0].y);
+                    for (let i = 1; i < drawData.length; i++) {
+                        ctx.lineTo(drawData[i].x, drawData[i].y);
+                    }
+                    ctx.strokeStyle = CONFIG.colors.line;
+                    ctx.lineWidth = CONFIG.lineWidth;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // Draw points
+                if (showPoints) {
+                    drawData.forEach((p, i) => {
+                        ctx.save();
+                        // Glow effect
+                        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, CONFIG.pointRadius * 3);
+                        gradient.addColorStop(0, CONFIG.colors.line + '60');
+                        gradient.addColorStop(1, 'transparent');
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, CONFIG.pointRadius * 3, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        // Point
+                        ctx.shadowColor = CONFIG.colors.line + '40';
+                        ctx.shadowBlur = 8;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+                        ctx.fillStyle = CONFIG.colors.point;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+
+                        // Stroke
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+                        ctx.strokeStyle = CONFIG.colors.pointStroke;
+                        ctx.lineWidth = 1.5;
+                        ctx.stroke();
+
+                        // Value label on last point
+                        if (i === drawData.length - 1 && progress >= 0.5) {
+                            ctx.fillStyle = CONFIG.colors.text;
+                            ctx.font = '11px -apple-system, sans-serif';
+                            ctx.textAlign = 'left';
+                            ctx.textBaseline = 'bottom';
+                            ctx.fillText(p.value, p.x + CONFIG.pointRadius + 6, p.y - 2);
+                        }
+                        ctx.restore();
+                    });
+                }
+
+                // Draw end indicator
+                if (progress < 1 && drawData.length > 0) {
+                    const last = drawData[drawData.length - 1];
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, CONFIG.pointRadius * 1.5, 0, Math.PI * 2);
+                    ctx.strokeStyle = CONFIG.colors.line + '60';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // Update stats
+                if (drawData.length > 0) {
+                    const lastValue = data[drawData.length - 1];
+                    const firstValue = data[0];
+                    const change = ((lastValue - firstValue) / firstValue * 100);
+                    currentValue.textContent = lastValue;
+                    changeValue.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '%';
+                    changeValue.style.color = change >= 0 ? '#34c759' : '#ff3b30';
+                }
+
+                dataCount.textContent = drawData.length;
+                dataRange.textContent = Math.min(...data) + ' - ' + Math.max(...data);
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = (timestamp - startTime) * drawSpeed;
+                progress = Math.min(elapsed / CONFIG.drawDuration, 1);
+
+                drawSparkline(data, progress);
+
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    isPlaying = false;
+                    playBtn.textContent = '▶ Play';
+                    CONFIG.onComplete(data);
+                }
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function play() {
+                if (isPlaying) return;
+                if (progress >= 1) {
+                    reset();
+                    setTimeout(() => play(), 100);
+                    return;
+                }
+                isPlaying = true;
+                startTime = 0;
+                playBtn.textContent = '⏸ Pause';
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function pause() {
+                if (!isPlaying) return;
+                isPlaying = false;
+                playBtn.textContent = '▶ Play';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+
+            function togglePlay() {
+                if (isPlaying) {
+                    pause();
+                } else {
+                    play();
+                }
+            }
+
+            function reset() {
+                pause();
+                progress = 0;
+                startTime = 0;
+                drawSparkline(data, 0);
+                playBtn.textContent = '▶ Play';
+            }
+
+            function setData(newData) {
+                pause();
+                data = newData;
+                progress = 0;
+                startTime = 0;
+                drawSparkline(data, 0);
+                playBtn.textContent = '▶ Play';
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            playBtn.addEventListener('click', togglePlay);
+
+            resetBtn.addEventListener('click', function() {
+                reset();
+                // Reset to initial data
+                setData(initialData);
+            });
+
+            randomBtn.addEventListener('click', function() {
+                const newData = generateData(30 + Math.floor(Math.random() * 20));
+                setData(newData);
+            });
+
+            speedSlow.addEventListener('click', function() {
+                drawSpeed = 0.3;
+                reset();
+                setTimeout(() => play(), 200);
+            });
+
+            speedNormal.addEventListener('click', function() {
+                drawSpeed = 1;
+                reset();
+                setTimeout(() => play(), 200);
+            });
+
+            speedFast.addEventListener('click', function() {
+                drawSpeed = 2.5;
+                reset();
+                setTimeout(() => play(), 200);
+            });
+
+            togglePointsBtn.addEventListener('click', function() {
+                showPoints = !showPoints;
+                togglePointsBtn.textContent = showPoints ? '● Toggle Points' : '○ Toggle Points';
+                drawSparkline(data, progress);
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(canvas, data, color, label) {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+
+                function draw() {
+                    ctx.clearRect(0, 0, w, h);
+                    const scaled = getScaledData(data, w, h);
+                    
+                    // Line
+                    ctx.save();
+                    ctx.beginPath();
+                    scaled.forEach((p, i) => {
+                        if (i === 0) ctx.moveTo(p.x, p.y);
+                        else ctx.lineTo(p.x, p.y);
+                    });
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // Points
+                    scaled.forEach(p => {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.fill();
+                        ctx.restore();
+                    });
+                }
+
+                // Animate variant
+                let variantProgress = 0;
+                function animateVariant() {
+                    if (variantProgress >= 1) return;
+                    variantProgress += 0.02;
+                    const count = Math.floor(variantProgress * data.length);
+                    const partialData = data.slice(0, Math.max(2, count));
+                    
+                    ctx.clearRect(0, 0, w, h);
+                    const scaled = getScaledData(partialData, w, h);
+                    
+                    if (scaled.length > 1) {
+                        ctx.save();
+                        ctx.beginPath();
+                        scaled.forEach((p, i) => {
+                            if (i === 0) ctx.moveTo(p.x, p.y);
+                            else ctx.lineTo(p.x, p.y);
+                        });
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    
+                    if (variantProgress < 1) {
+                        requestAnimationFrame(animateVariant);
+                    }
+                }
+                
+                // Start variant animation after delay
+                setTimeout(animateVariant, 500 + Math.random() * 1000);
+                draw();
+            }
+
+            // ============================================
+            // INITIALIZATION
+            // ============================================
+            const initialData = generateData(30);
+            data = initialData;
+            drawSparkline(data, 0);
+
+            // Initialize variants
+            const variantData1 = generateData(20);
+            const variantData2 = generateData(25);
+            const variantData3 = generateData(22);
+            
+            initVariant(
+                document.querySelector('#variant1 canvas'),
+                variantData1,
+                '#34c759',
+                'Revenue'
+            );
+            initVariant(
+                document.querySelector('#variant2 canvas'),
+                variantData2,
+                '#4facfe',
+                'Users'
+            );
+            initVariant(
+                document.querySelector('#variant3 canvas'),
+                variantData3,
+                '#f59e0b',
+                'Conversions'
+            );
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    togglePointsBtn.click();
+                }
+            });
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.Sparkline = {
+                play: play,
+                pause: pause,
+                toggle: togglePlay,
+                reset: reset,
+                setData: setData,
+                getData: () => data,
+                getProgress: () => progress,
+                isPlaying: () => isPlaying,
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                },
+                setSpeed: (speed) => {
+                    drawSpeed = speed;
+                },
+                togglePoints: () => {
+                    togglePointsBtn.click();
+                }
+            };
+
+            // ============================================
+            // RESPONSIVE CANVAS
+            // ============================================
+            function resizeCanvas() {
+                const wrapper = canvas.parentElement;
+                const rect = wrapper.getBoundingClientRect();
+                const width = Math.min(600, rect.width - 20);
+                const ratio = 150 / 600;
+                canvas.width = width;
+                canvas.height = width * ratio;
+                drawSparkline(data, progress);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            // Initial resize after layout
+            setTimeout(resizeCanvas, 100);
+
+            console.log('✅ Sparkline initialized!');
+            console.log('📖 API: window.Sparkline');
+            console.log('📖 Usage:');
+            console.log('  - Click Play to draw the sparkline');
+            console.log('  - Click Random for new data');
+            console.log('  - Keyboard shortcuts: Space (play/pause), R (reset), P (toggle points)');
+            console.log('  - Variants show different styles');
+
+        })();
+    </script>
+</body>
+</html>

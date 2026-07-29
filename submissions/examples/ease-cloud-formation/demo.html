@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloud Formation</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>☁️ Cloud Formation</h1>
+        <p class="subtitle">Fluffy clouds forming and dissipating with changing shapes</p>
+
+        <div class="cloud-wrapper">
+            <canvas id="cloudCanvas"></canvas>
+
+            <div class="controls">
+                <button id="formBtn">☁️ Form</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="densityBtn">Density: Medium</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">☁️ Floating</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('cloudCanvas');
+        const ctx = canvas.getContext('2d');
+        const formBtn = document.getElementById('formBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const densityBtn = document.getElementById('densityBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let cloudParticles = [];
+        let cloudShape = [];
+        let speed = 0.02;
+        let speedLevel = 1;
+        let density = 1;
+        let densityLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isForming = false;
+        let formationProgress = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== DENSITY OPTIONS =====
+        const densities = [
+            { name: 'Sparse', value: 0.5 },
+            { name: 'Medium', value: 1 },
+            { name: 'Dense', value: 1.5 },
+            { name: 'Fluffy', value: 2 },
+        ];
+
+        // ===== CLOUD PARTICLE CLASS =====
+        class CloudParticle {
+            constructor(x, y, size) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height * 0.5 + canvas.height * 0.1;
+                this.size = size || 10 + Math.random() * 30;
+                this.targetSize = this.size;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.vx = (Math.random() - 0.5) * 0.05;
+                this.vy = (Math.random() - 0.5) * 0.02;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.wobbleAmount = 0.2 + Math.random() * 0.5;
+                this.alpha = 0.3 + Math.random() * 0.5;
+                this.targetAlpha = this.alpha;
+                this.life = 0.5 + Math.random() * 0.5;
+                this.targetLife = 1;
+                this.opacity = 0.6 + Math.random() * 0.4;
+                this.color = `hsl(0, 0%, ${85 + Math.random() * 15}%)`;
+                this.shape = Math.random() > 0.5 ? 'round' : 'irregular';
+                this.fluffiness = 0.5 + Math.random() * 0.5;
+                this.glowIntensity = 0.2 + Math.random() * 0.3;
+                this.age = 0;
+                this.maxAge = 500 + Math.random() * 500;
+                this.isActive = true;
+                this.driftX = (Math.random() - 0.5) * 0.02;
+                this.driftY = (Math.random() - 0.5) * 0.01;
+            }
+
+            update(time, speed, density) {
+                if (!this.isActive) return;
+
+                this.age += speed * 2;
+                this.phase += this.wobbleSpeed * speed * 5;
+
+                // Wobble
+                this.x = this.baseX + Math.sin(this.phase + time * 0.01) * this.wobbleAmount;
+                this.y = this.baseY + Math.cos(this.phase * 0.7 + time * 0.01) * this.wobbleAmount * 0.5;
+
+                // Drift
+                this.baseX += this.driftX * speed * 5;
+                this.baseY += this.driftY * speed * 5;
+
+                // Life cycle
+                if (this.life < this.targetLife) {
+                    this.life += 0.002 * speed * 10 * density;
+                    if (this.life > this.targetLife) this.life = this.targetLife;
+                }
+
+                // Size pulse
+                const pulse = 0.8 + 0.2 * Math.sin(this.phase * 0.5);
+                this.size = this.targetSize * (0.7 + 0.3 * pulse);
+
+                // Opacity
+                this.opacity = 0.4 + 0.6 * this.life;
+
+                // Death
+                if (this.age > this.maxAge && Math.random() < 0.001 * speed * 20) {
+                    this.isActive = false;
+                }
+            }
+
+            draw(ctx) {
+                if (!this.isActive || this.life <= 0) return;
+
+                const size = this.size * this.life;
+                const alpha = this.opacity * this.life;
+
+                // Glow
+                const grad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, size * 3 * this.glowIntensity
+                );
+                grad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 0.1})`);
+                grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 3 * this.glowIntensity, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Main cloud blob
+                if (this.shape === 'round') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.7})`;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.1})`;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Irregular fluffy shape
+                    ctx.beginPath();
+                    const points = 8 + Math.floor(Math.random() * 4);
+                    for (let i = 0; i < points; i++) {
+                        const angle = (i / points) * Math.PI * 2 + this.phase * 0.1;
+                        const r = size * (0.6 + 0.4 * Math.sin(angle * 2 + this.phase));
+                        const px = this.x + Math.cos(angle) * r;
+                        const py = this.y + Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.6})`;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.1})`;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Inner highlight
+                ctx.beginPath();
+                ctx.arc(
+                    this.x - size * 0.15,
+                    this.y - size * 0.2,
+                    size * 0.2,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.2})`;
+                ctx.fill();
+
+                // Fluff details
+                for (let i = 0; i < 3; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * size * 0.5;
+                    const fx = this.x + Math.cos(angle) * dist;
+                    const fy = this.y + Math.sin(angle) * dist;
+                    const fSize = size * (0.1 + Math.random() * 0.2);
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, fSize, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.2})`;
+                    ctx.fill();
+                }
+            }
+
+            isDead() {
+                return !this.isActive || this.life <= 0 || this.age > this.maxAge;
+            }
+        }
+
+        // ===== CLOUD SHAPE GENERATOR =====
+        function generateCloudShape() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 - 20;
+            const baseSize = Math.min(w, h) * 0.2;
+
+            // Create cloud shape from overlapping circles
+            const shape = [];
+            const numCircles = 8 + Math.floor(Math.random() * 8);
+
+            for (let i = 0; i < numCircles; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 0.6 * baseSize;
+                const x = cx + Math.cos(angle) * dist;
+                const y = cy + Math.sin(angle) * dist * 0.4;
+                const size = baseSize * (0.3 + Math.random() * 0.5);
+                shape.push({ x, y, size });
+            }
+
+            return shape;
+        }
+
+        // ===== FORM CLOUD =====
+        function formCloud() {
+            if (isForming) return;
+            isForming = true;
+            formationProgress = 0;
+
+            // Clear old particles
+            cloudParticles = [];
+
+            // Generate new cloud shape
+            cloudShape = generateCloudShape();
+
+            // Create particles from shape
+            const numParticles = Math.floor(30 * density);
+            const w = canvas.width;
+            const h = canvas.height;
+
+            for (let i = 0; i < numParticles; i++) {
+                // Pick a random circle from the shape
+                const circle = cloudShape[Math.floor(Math.random() * cloudShape.length)];
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * circle.size * 0.7;
+                const x = circle.x + Math.cos(angle) * dist;
+                const y = circle.y + Math.sin(angle) * dist * 0.5;
+                const size = 8 + Math.random() * 25;
+
+                const particle = new CloudParticle(x, y, size);
+                particle.life = Math.random() * 0.3;
+                particle.targetLife = 0.7 + Math.random() * 0.3;
+                particle.opacity = 0.3 + Math.random() * 0.5;
+                particle.wobbleAmount = 0.1 + Math.random() * 0.3;
+                particle.driftX = (Math.random() - 0.5) * 0.01;
+                particle.driftY = (Math.random() - 0.5) * 0.005;
+                cloudParticles.push(particle);
+            }
+
+            statusText.textContent = '☁️ Forming cloud...';
+            setTimeout(() => {
+                isForming = false;
+                statusText.textContent = '☁️ Cloud formed!';
+                setTimeout(() => {
+                    statusText.textContent = `☁️ ${cloudParticles.length} particles`;
+                }, 1000);
+            }, 500);
+        }
+
+        // ===== DISSIPATE CLOUD =====
+        function dissipateCloud() {
+            for (const particle of cloudParticles) {
+                particle.life *= 0.5;
+                particle.targetLife = 0;
+            }
+            statusText.textContent = '🌤️ Dissipating...';
+            setTimeout(() => {
+                statusText.textContent = '☀️ Cleared!';
+                setTimeout(() => {
+                    statusText.textContent = '☁️ Ready to form';
+                }, 1000);
+            }, 1000);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            // Sky gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            const timeOfDay = (Math.sin(time * 0.005) + 1) / 2;
+            const r1 = 20 + timeOfDay * 30;
+            const g1 = 30 + timeOfDay * 50;
+            const b1 = 60 + timeOfDay * 80;
+            const r2 = 10 + timeOfDay * 20;
+            const g2 = 20 + timeOfDay * 30;
+            const b2 = 40 + timeOfDay * 50;
+            grad.addColorStop(0, `rgb(${r1}, ${g1}, ${b1})`);
+            grad.addColorStop(0.5, `rgb(${r1 * 0.8}, ${g1 * 0.8}, ${b1 * 0.9})`);
+            grad.addColorStop(1, `rgb(${r2}, ${g2}, ${b2})`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Distant clouds
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.005 + i) * 50;
+                const y = 30 + Math.sin(i * 0.7 + time * 0.003) * 20;
+                const size = 30 + Math.sin(i * 0.5) * 10;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 220, 255, ${0.03 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + size * 0.8, y - size * 0.2, size * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x - size * 0.7, y + size * 0.1, size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Sun/moon
+            const sunX = w * 0.8;
+            const sunY = h * 0.15;
+            const sunSize = 30 + Math.sin(time * 0.01) * 2;
+            const sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 2);
+            sunGrad.addColorStop(0, `rgba(255, 240, 200, ${0.3 + Math.sin(time * 0.01) * 0.1})`);
+            sunGrad.addColorStop(0.5, `rgba(255, 220, 180, ${0.1 + Math.sin(time * 0.01) * 0.05})`);
+            sunGrad.addColorStop(1, `rgba(255, 200, 150, 0)`);
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = sunGrad;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 240, 200, ${0.6 + Math.sin(time * 0.01) * 0.1})`;
+            ctx.fill();
+
+            // Ground
+            const groundY = h * 0.85;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(20, 40, 30, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(25, 50, 35, 0.1)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 60, 40, 0.15)');
+            groundGrad.addColorStop(1, 'rgba(20, 40, 30, 0.2)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Grass
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.01) * 5;
+                const y = groundY + Math.sin(i * 1.3 + time * 0.02) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.01) * 4,
+                    y - 8 - Math.sin(i * 0.7 + time * 0.015) * 4,
+                    x + Math.sin(i * 1.5 + time * 0.012) * 6,
+                    y - 12 - Math.sin(i * 1.1 + time * 0.02) * 6
+                );
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.1 + Math.sin(i + time * 0.01) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update and draw cloud particles
+            for (const particle of cloudParticles) {
+                particle.update(time, speed, density);
+                particle.draw(ctx);
+            }
+
+            // Remove dead particles
+            cloudParticles = cloudParticles.filter(p => !p.isDead());
+
+            // Auto-form if no particles
+            if (cloudParticles.length === 0 && !isForming) {
+                setTimeout(() => {
+                    if (cloudParticles.length === 0 && !isForming) {
+                        formCloud();
+                    }
+                }, 2000);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const count = cloudParticles.length;
+                const alive = cloudParticles.filter(p => p.life > 0.3).length;
+                statusText.textContent = `☁️ ${count} particles • ${alive} active • ${densities[densityLevel].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Form
+        formBtn.addEventListener('click', formCloud);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `☁️ ${cloudParticles.length} particles`;
+            }, 1000);
+        });
+
+        // Density
+        densityBtn.addEventListener('click', () => {
+            densityLevel = (densityLevel + 1) % densities.length;
+            density = densities[densityLevel].value;
+            densityBtn.textContent = `Density: ${densities[densityLevel].name}`;
+            statusText.textContent = `🌫️ ${densities[densityLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `☁️ ${cloudParticles.length} particles`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            cloudParticles = [];
+            speedLevel = 1;
+            speed = speeds[1].value;
+            densityLevel = 1;
+            density = densities[1].value;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            densityBtn.textContent = `Density: ${densities[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '☁️ Ready to form';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                formBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                densityBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                formBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // Reposition particles
+            for (const p of cloudParticles) {
+                p.x = Math.min(p.x, canvas.width - 10);
+                p.y = Math.min(p.y, canvas.height - 10);
+                p.baseX = Math.min(p.baseX, canvas.width - 10);
+                p.baseY = Math.min(p.baseY, canvas.height - 10);
+            }
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        densityBtn.textContent = `Density: ${densities[1].name}`;
+        statusText.textContent = '☁️ Ready to form';
+        lastFpsUpdate = performance.now();
+
+        // Form initial cloud after delay
+        setTimeout(() => {
+            formCloud();
+        }, 500);
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('☁️ Cloud Formation loaded!');
+        console.log('💡 F - Form cloud');
+        console.log('💡 S - Change speed');
+        console.log('💡 D - Change density');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Form cloud');
+    </script>
+</body>
+</html>

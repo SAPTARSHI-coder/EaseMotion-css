@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Infinite Scroll Feed Loader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- Load React and Babel for standalone demo -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f9fafb;
+      padding: 40px 20px;
+    }
+    .demo-header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <!-- Load the Component -->
+  <script type="text/babel" src="./InfiniteScrollFeed.jsx"></script>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    // Inline fallback if component import fails in standard HTML without bundler
+    const InfiniteScrollComponent = window.InfiniteScrollFeed || (({ fetchMoreData, hasMore }) => {
+      const [items, setItems] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const observerTarget = useRef(null);
+
+      useEffect(() => {
+        loadData();
+      }, []);
+
+      const loadData = async () => {
+        setLoading(true);
+        const newItems = await fetchMoreData();
+        setItems((prev) => [...prev, ...newItems]);
+        setLoading(false);
+      };
+
+      useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting && hasMore && !loading) {
+            loadData();
+          }
+        }, { threshold: 1.0 });
+
+        if (observerTarget.current) observer.observe(observerTarget.current);
+        return () => { if (observerTarget.current) observer.unobserve(observerTarget.current); };
+      }, [observerTarget, hasMore, loading]);
+
+      const ShimmerCard = () => (
+        <div className="ease-feed-card ease-shimmer-wrapper">
+          <div className="ease-shimmer-header">
+            <div className="ease-shimmer-avatar ease-shimmer-anim"></div>
+            <div className="ease-shimmer-title-block">
+              <div className="ease-shimmer-line ease-shimmer-anim w-60"></div>
+              <div className="ease-shimmer-line ease-shimmer-anim w-40 mt-sm"></div>
+            </div>
+          </div>
+          <div className="ease-shimmer-body">
+            <div className="ease-shimmer-line ease-shimmer-anim"></div>
+            <div className="ease-shimmer-line ease-shimmer-anim"></div>
+            <div className="ease-shimmer-line ease-shimmer-anim w-80"></div>
+          </div>
+        </div>
+      );
+
+      return (
+        <div className="ease-feed-container">
+          {items.map((item, index) => (
+            <div key={item.id} className={`ease-feed-card ${index >= items.length - 3 ? 'ease-fade-in-up' : ''}`}>
+              <div className="ease-feed-header">
+                <div className="ease-feed-avatar">{item.user.charAt(0)}</div>
+                <div className="ease-feed-meta">
+                  <span className="ease-feed-name">{item.user}</span>
+                  <span className="ease-feed-time">{item.time}</span>
+                </div>
+              </div>
+              <div className="ease-feed-content"><p>{item.content}</p></div>
+            </div>
+          ))}
+          
+          {loading && <><ShimmerCard /><ShimmerCard /><ShimmerCard /></>}
+          {!loading && hasMore && <div ref={observerTarget} className="ease-observer-target"></div>}
+          {!hasMore && <div className="ease-feed-end">You've reached the end of the feed.</div>}
+        </div>
+      );
+    });
+
+    const App = () => {
+      const [page, setPage] = useState(0);
+      const [hasMore, setHasMore] = useState(true);
+
+      const generateMockData = (startIndex) => {
+        return Array.from({ length: 3 }).map((_, i) => ({
+          id: startIndex + i,
+          user: `User ${Math.floor(Math.random() * 1000)}`,
+          time: 'Just now',
+          content: 'This is a mocked post loaded via the intersection observer. Scroll down to trigger the shimmer skeleton loading state and fetch more content seamlessly.'
+        }));
+      };
+
+      const fetchMoreData = () => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            const newData = generateMockData(page * 3);
+            setPage(prev => prev + 1);
+            if (page >= 4) {
+              setHasMore(false); // Stop after 4 scrolls
+            }
+            resolve(newData);
+          }, 1500); // Simulate network delay for shimmer visibility
+        });
+      };
+
+      return (
+        <div>
+          <h2 className="demo-header">Infinite Scroll Feed</h2>
+          <InfiniteScrollComponent fetchMoreData={fetchMoreData} hasMore={hasMore} />
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

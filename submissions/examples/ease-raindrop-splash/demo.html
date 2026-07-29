@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Raindrop Splash</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>💧 Raindrop Splash</h1>
+        <p class="subtitle">Droplets hitting surface with ripple rings and splash particles</p>
+
+        <div class="raindrop-wrapper">
+            <canvas id="raindropCanvas"></canvas>
+
+            <div class="controls">
+                <button id="dropBtn">💧 Drop</button>
+                <button id="modeBtn">Mode: Rain</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">💧 Ready for rain</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('raindropCanvas');
+        const ctx = canvas.getContext('2d');
+        const dropBtn = document.getElementById('dropBtn');
+        const modeBtn = document.getElementById('modeBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let ripples = [];
+        let splashes = [];
+        let droplets = [];
+        let drops = [];
+        let mode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let rainInterval = null;
+        let isRaining = false;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== MODE OPTIONS =====
+        const modes = ['Rain', 'Drops', 'Storm', 'Calm'];
+
+        // ===== RIPPLE CLASS =====
+        class Ripple {
+            constructor(x, y, size, color, maxRadius) {
+                this.x = x;
+                this.y = y;
+                this.radius = 2;
+                this.maxRadius = maxRadius || 40 + Math.random() * 60;
+                this.size = size || 1 + Math.random() * 2;
+                this.color = color || `hsl(210, 80%, ${60 + Math.random() * 30}%)`;
+                this.alpha = 1;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 40 + Math.random() * 40;
+                this.waveCount = 3 + Math.floor(Math.random() * 4);
+                this.phase = Math.random() * Math.PI * 2;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.layers = 2 + Math.floor(Math.random() * 3);
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.radius += (0.5 + Math.random() * 0.5) * speed * 15;
+                this.life = 1 - this.age / this.maxAge;
+                this.alpha = this.life * 0.8;
+                this.phase += 0.05 * speed * 10;
+
+                if (this.radius > this.maxRadius) {
+                    this.radius = this.maxRadius;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0 || this.alpha <= 0) return;
+
+                const alpha = this.alpha * 0.6;
+
+                // Multiple wave rings
+                for (let layer = 0; layer < this.layers; layer++) {
+                    const layerOffset = layer * (this.maxRadius / this.layers) * 0.3;
+                    const r = this.radius - layerOffset;
+                    if (r < 0) continue;
+
+                    const layerAlpha = alpha * (1 - layer / this.layers);
+
+                    // Main ring
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+                    ctx.strokeStyle = this.color;
+                    ctx.globalAlpha = layerAlpha * 0.5;
+                    ctx.lineWidth = this.size * (1 - layer * 0.2) * (0.5 + 0.5 * this.life);
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Inner glow ring
+                    if (layer === 0) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, r * 0.7, 0, Math.PI * 2);
+                        ctx.strokeStyle = this.color;
+                        ctx.globalAlpha = layerAlpha * 0.2;
+                        ctx.lineWidth = this.size * 3;
+                        ctx.shadowBlur = 30;
+                        ctx.shadowColor = this.color + '60';
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                    }
+
+                    // Wave distortion on ring
+                    if (r > 10) {
+                        ctx.beginPath();
+                        for (let i = 0; i < this.waveCount * 4; i++) {
+                            const angle = (i / (this.waveCount * 4)) * Math.PI * 2;
+                            const waveOffset = Math.sin(angle * this.waveCount + this.phase + r * 0.05) * 2;
+                            const px = this.x + (r + waveOffset) * Math.cos(angle);
+                            const py = this.y + (r + waveOffset) * Math.sin(angle);
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.strokeStyle = this.color;
+                        ctx.globalAlpha = layerAlpha * 0.2;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+
+                ctx.globalAlpha = 1;
+
+                // Center glow
+                const glowGrad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.radius * 0.3
+                );
+                glowGrad.addColorStop(0, this.color + '30');
+                glowGrad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = glowGrad;
+                ctx.globalAlpha = this.alpha * 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.alpha <= 0;
+            }
+        }
+
+        // ===== SPLASH CLASS =====
+        class Splash {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || `hsl(210, 80%, ${70 + Math.random() * 20}%)`;
+                this.particles = [];
+                this.age = 0;
+                this.maxAge = 30 + Math.random() * 30;
+                this.life = 1;
+
+                const numParticles = 8 + Math.floor(Math.random() * 12);
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = (i / numParticles) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+                    const speed = 1 + Math.random() * 3;
+                    const size = 1 + Math.random() * 3;
+                    this.particles.push({
+                        x: x + (Math.random() - 0.5) * 4,
+                        y: y + (Math.random() - 0.5) * 4,
+                        vx: Math.cos(angle) * speed * (0.5 + Math.random() * 0.5),
+                        vy: -speed * (0.5 + Math.random() * 1.5) - 1,
+                        size: size,
+                        life: 1,
+                        maxLife: 20 + Math.random() * 30,
+                        gravity: 0.08 + Math.random() * 0.05,
+                        phase: Math.random() * Math.PI * 2,
+                        wobble: 0.02 + Math.random() * 0.03,
+                    });
+                }
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxAge;
+
+                for (const p of this.particles) {
+                    p.x += p.vx * speed * 10;
+                    p.y += p.vy * speed * 10;
+                    p.vy += p.gravity * speed * 10;
+                    p.vx += Math.sin(p.phase + this.age * 0.1) * 0.02 * speed * 10;
+                    p.phase += p.wobble * speed * 10;
+                    p.life = Math.max(0, 1 - this.age / p.maxLife);
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+
+                for (const p of this.particles) {
+                    if (p.life <= 0) continue;
+                    const alpha = p.life * this.life * 0.8;
+
+                    // Particle glow
+                    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                    grad.addColorStop(0, this.color + '60');
+                    grad.addColorStop(1, this.color + '00');
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.globalAlpha = alpha * 0.3;
+                    ctx.fill();
+
+                    // Particle
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Highlight
+                    if (p.size > 1) {
+                        ctx.beginPath();
+                        ctx.arc(p.x - p.size * 0.2, p.y - p.size * 0.2, p.size * 0.3 * p.life, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.globalAlpha = alpha * 0.3;
+                        ctx.fill();
+                    }
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxAge;
+            }
+        }
+
+        // ===== FALLING DROPLET CLASS =====
+        class FallingDrop {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || -10 - Math.random() * 50;
+                this.size = 1 + Math.random() * 3;
+                this.speed = 2 + Math.random() * 3;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.01 + Math.random() * 0.02;
+                this.color = `hsl(210, 80%, ${70 + Math.random() * 20}%)`;
+                this.trail = [];
+                this.maxTrail = 8 + Math.floor(Math.random() * 8);
+                this.streak = 3 + Math.random() * 5;
+            }
+
+            update(speed) {
+                this.y += this.speed * speed * 30;
+                this.x += Math.sin(this.phase) * 0.2 * speed * 10;
+                this.phase += this.wobble * speed * 10;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            draw(ctx) {
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, this.size * 0.3 * (i / this.trail.length), 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.fill();
+                }
+
+                // Main droplet
+                const grad = ctx.createRadialGradient(
+                    this.x - this.size * 0.2,
+                    this.y - this.size * 0.3,
+                    0,
+                    this.x,
+                    this.y,
+                    this.size
+                );
+                grad.addColorStop(0, 'rgba(255,255,255,0.6)');
+                grad.addColorStop(0.3, this.color + '80');
+                grad.addColorStop(1, this.color + '40');
+
+                ctx.beginPath();
+                ctx.ellipse(this.x, this.y, this.size, this.size * 1.3, 0, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(this.x - this.size * 0.25, this.y - this.size * 0.3, this.size * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+
+            isDead() {
+                return this.y > canvas.height + 20;
+            }
+
+            getPosition() {
+                return { x: this.x, y: this.y };
+            }
+        }
+
+        // ===== CREATE SPLASH =====
+        function createSplash(x, y) {
+            const hue = 200 + Math.random() * 40;
+            const color = `hsl(${hue}, 80%, ${65 + Math.random() * 20}%)`;
+            const ripple = new Ripple(x, y, 1 + Math.random() * 2, color, 30 + Math.random() * 70);
+            ripples.push(ripple);
+            const splash = new Splash(x, y, color);
+            splashes.push(splash);
+        }
+
+        // ===== CREATE RAINDROP =====
+        function createRaindrop() {
+            const x = Math.random() * canvas.width;
+            const drop = new FallingDrop(x);
+            drops.push(drop);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a2e');
+            grad.addColorStop(0.5, '#061020');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Water surface line
+            const surfaceY = h * 0.75;
+            const surfaceGrad = ctx.createLinearGradient(0, surfaceY - 10, 0, surfaceY + 20);
+            surfaceGrad.addColorStop(0, 'rgba(30, 80, 120, 0)');
+            surfaceGrad.addColorStop(0.5, 'rgba(30, 80, 120, 0.1)');
+            surfaceGrad.addColorStop(1, 'rgba(30, 80, 120, 0.2)');
+            ctx.fillStyle = surfaceGrad;
+            ctx.fillRect(0, surfaceY - 10, w, 30);
+
+            // Water surface reflection
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(time * 0.01 + i) * 5;
+                const y = surfaceY + 5 + Math.sin(time * 0.02 + i * 0.5) * 3;
+                ctx.beginPath();
+                ctx.arc(x, y, 1 + Math.sin(time * 0.01 + i * 0.7) * 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.05 + Math.sin(time * 0.02 + i) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Rain mode - create drops
+            if (mode === 0 || mode === 2) {
+                const dropRate = mode === 2 ? 3 : 1;
+                if (Math.random() < 0.1 * dropRate * speed * 20) {
+                    createRaindrop();
+                }
+            }
+
+            // Update and draw falling drops
+            for (let i = drops.length - 1; i >= 0; i--) {
+                const drop = drops[i];
+                drop.update(speed);
+                drop.draw(ctx);
+                if (drop.isDead()) {
+                    drops.splice(i, 1);
+                }
+            }
+
+            // Update and draw ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const ripple = ripples[i];
+                ripple.update(speed);
+                ripple.draw(ctx);
+                if (ripple.isDead()) {
+                    ripples.splice(i, 1);
+                }
+            }
+
+            // Update and draw splashes
+            for (let i = splashes.length - 1; i >= 0; i--) {
+                const splash = splashes[i];
+                splash.update(speed);
+                splash.draw(ctx);
+                if (splash.isDead()) {
+                    splashes.splice(i, 1);
+                }
+            }
+
+            // Water surface highlight
+            const surfaceY = h * 0.75;
+            ctx.fillStyle = 'rgba(50, 150, 200, 0.02)';
+            ctx.fillRect(0, surfaceY, w, 1);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const total = ripples.length + splashes.length + drops.length;
+                statusText.textContent = `💧 ${modes[mode]} • ${ripples.length} ripples • ${splashes.length} splashes • ${drops.length} drops`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Drop
+        dropBtn.addEventListener('click', () => {
+            const x = canvas.width / 2 + (Math.random() - 0.5) * 100;
+            const y = canvas.height * 0.75 + (Math.random() - 0.5) * 20;
+            createSplash(x, y);
+            // Also create a falling drop
+            const drop = new FallingDrop(x, y - 50);
+            drops.push(drop);
+            statusText.textContent = '💧 Splash!';
+            setTimeout(() => {
+                statusText.textContent = `💧 ${modes[mode]} mode`;
+            }, 1000);
+        });
+
+        // Mode
+        modeBtn.addEventListener('click', () => {
+            mode = (mode + 1) % modes.length;
+            modeBtn.textContent = `Mode: ${modes[mode]}`;
+            if (mode === 0 || mode === 2) {
+                statusText.textContent = `🌧️ ${modes[mode]} mode`;
+            } else {
+                statusText.textContent = `💧 ${modes[mode]} mode`;
+            }
+            setTimeout(() => {
+                statusText.textContent = `💧 ${modes[mode]} mode`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `💧 ${modes[mode]} mode`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            ripples = [];
+            splashes = [];
+            drops = [];
+            mode = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            
+            modeBtn.textContent = `Mode: ${modes[0]}`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `💧 ${modes[0]} mode`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                dropBtn.click();
+            }
+            if (e.key === 'm' || e.key === 'M') {
+                modeBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                dropBtn.click();
+            }
+        });
+
+        // ===== CLICK ON CANVAS =====
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            createSplash(x, y);
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            createSplash(x, y);
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        modeBtn.textContent = `Mode: ${modes[0]}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        statusText.textContent = `💧 ${modes[0]} mode`;
+        lastFpsUpdate = performance.now();
+
+        // Start with a few drops
+        setTimeout(() => {
+            createRaindrop();
+            setTimeout(() => createRaindrop(), 300);
+            setTimeout(() => createRaindrop(), 600);
+        }, 500);
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('💧 Raindrop Splash loaded!');
+        console.log('💡 D - Drop splash');
+        console.log('💡 M - Change mode');
+        console.log('💡 S - Change speed');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Quick drop');
+        console.log('💡 Click canvas - Create splash');
+    </script>
+</body>
+</html>

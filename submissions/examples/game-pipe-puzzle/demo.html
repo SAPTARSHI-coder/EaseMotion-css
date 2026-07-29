@@ -1,0 +1,626 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipe Puzzle · Flow Master</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-wrapper">
+    <header>
+      <h1>🔧 Pipe Puzzle</h1>
+      <div class="game-stats">
+        <div class="stat">
+          <span class="label">💧 Flow</span>
+          <span id="flowCount">0/1</span>
+        </div>
+        <div class="stat">
+          <span class="label">🔄 Moves</span>
+          <span id="moveCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="label">⏱️ Time</span>
+          <span id="timerDisplay">00:00</span>
+        </div>
+        <button id="resetBtn" class="btn-reset">🔄 New Puzzle</button>
+      </div>
+    </header>
+
+    <div class="game-container">
+      <canvas id="gameCanvas" width="600" height="600"></canvas>
+      
+      <div class="controls">
+        <div class="control-info">
+          <span>🖱️ Click pipe to rotate</span>
+          <span>💡 Connect all water sources</span>
+        </div>
+        <div class="level-select">
+          <button class="level-btn" data-size="4">4x4</button>
+          <button class="level-btn active" data-size="5">5x5</button>
+          <button class="level-btn" data-size="6">6x6</button>
+          <button class="level-btn" data-size="7">7x7</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="modal" style="display:none">
+      <div class="modal-content">
+        <h2>🎉 Puzzle Solved!</h2>
+        <div class="victory-stats">
+          <p>📊 Moves: <span id="victoryMoves">0</span></p>
+          <p>⏱️ Time: <span id="victoryTime">00:00</span></p>
+          <p>⭐ Rating: <span id="victoryRating">⭐⭐⭐</span></p>
+        </div>
+        <button id="nextPuzzleBtn" class="btn-primary">Next Puzzle →</button>
+        <button id="playAgainBtn" class="btn-secondary">🔄 Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== PIPE PUZZLE GAME ==========
+    class PipePuzzle {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.size = 5; // 5x5 grid
+        this.grid = [];
+        this.sources = [];
+        this.targets = [];
+        this.moves = 0;
+        this.flowing = false;
+        this.selectedPipe = null;
+        this.animating = false;
+        this.timer = 0;
+        this.timerInterval = null;
+        this.gameComplete = false;
+        this.pipeTypes = {
+          STRAIGHT: 'straight',
+          CORNER: 'corner',
+          TEE: 'tee',
+          CROSS: 'cross',
+          SOURCE: 'source',
+          TARGET: 'target'
+        };
+
+        this.init();
+        this.setupEventListeners();
+        this.startTimer();
+        this.render();
+      }
+
+      init() {
+        this.generatePuzzle();
+        this.moves = 0;
+        this.flowing = false;
+        this.gameComplete = false;
+        document.getElementById('moveCount').textContent = '0';
+        document.getElementById('victoryModal').style.display = 'none';
+        document.querySelector('.game-container').style.opacity = '1';
+      }
+
+      generatePuzzle() {
+        const n = this.size;
+        this.grid = [];
+        this.sources = [];
+        this.targets = [];
+
+        // Initialize empty grid
+        for (let r = 0; r < n; r++) {
+          this.grid[r] = [];
+          for (let c = 0; c < n; c++) {
+            this.grid[r][c] = { type: null, rotation: 0, connected: false };
+          }
+        }
+
+        // Place sources (top row)
+        const numSources = Math.min(2 + Math.floor(n / 2), 4);
+        const sourceCols = this.shuffleArray([...Array(n).keys()]).slice(0, numSources);
+        sourceCols.forEach(col => {
+          this.grid[0][col] = { type: 'source', rotation: 0, connected: false };
+          this.sources.push({ row: 0, col });
+        });
+
+        // Place targets (bottom row)
+        const targetCols = this.shuffleArray([...Array(n).keys()]).slice(0, numSources);
+        targetCols.forEach(col => {
+          this.grid[n-1][col] = { type: 'target', rotation: 0, connected: false };
+          this.targets.push({ row: n-1, col });
+        });
+
+        // Generate random pipe connections between sources and targets
+        // Using a simple pathfinding approach
+        const usedCells = new Set();
+        
+        // Create paths from each source
+        this.sources.forEach((source, idx) => {
+          let currentRow = source.row;
+          let currentCol = source.col;
+          let path = [{ row: currentRow, col: currentCol }];
+          
+          // Pathfinding to a target
+          let target = this.targets[idx % this.targets.length];
+          while (currentRow < target.row) {
+            // Move down
+            currentRow++;
+            if (currentRow <= target.row) {
+              path.push({ row: currentRow, col: currentCol });
+            }
+          }
+          
+          // Add horizontal movement
+          while (currentCol < target.col) {
+            currentCol++;
+            path.push({ row: currentRow, col: currentCol });
+          }
+          while (currentCol > target.col) {
+            currentCol--;
+            path.push({ row: currentRow, col: currentCol });
+          }
+          
+          // Mark path cells as used and set pipe types
+          path.forEach((cell, idx) => {
+            const key = `${cell.row},${cell.col}`;
+            if (!usedCells.has(key) && !this.isSource(cell.row, cell.col) && !this.isTarget(cell.row, cell.col)) {
+              usedCells.add(key);
+              // Determine pipe type based on connections
+              const neighbors = this.getNeighbors(cell.row, cell.col, path);
+              const type = this.determinePipeType(neighbors);
+              this.grid[cell.row][cell.col] = { 
+                type: type, 
+                rotation: this.getInitialRotation(neighbors, cell.row, cell.col),
+                connected: false 
+              };
+            }
+          });
+        });
+
+        // Fill remaining cells with random pipes
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            const key = `${r},${c}`;
+            if (!this.isSource(r, c) && !this.isTarget(r, c) && !this.grid[r][c].type) {
+              const types = ['straight', 'corner', 'tee', 'cross'];
+              const type = types[Math.floor(Math.random() * types.length)];
+              const rotation = Math.floor(Math.random() * 4);
+              this.grid[r][c] = { type, rotation, connected: false };
+            }
+          }
+        }
+
+        this.updateFlow();
+      }
+
+      getNeighbors(row, col, path) {
+        const neighbors = [];
+        const directions = [
+          [-1, 0], [1, 0], [0, -1], [0, 1]
+        ];
+        directions.forEach(([dr, dc]) => {
+          const nr = row + dr;
+          const nc = col + dc;
+          if (path.some(p => p.row === nr && p.col === nc)) {
+            neighbors.push({ row: nr, col: nc });
+          }
+        });
+        return neighbors;
+      }
+
+      determinePipeType(neighbors) {
+        const count = neighbors.length;
+        if (count === 2) {
+          const [n1, n2] = neighbors;
+          if (n1.row === n2.row || n1.col === n2.col) {
+            return 'straight';
+          } else {
+            return 'corner';
+          }
+        } else if (count === 3) {
+          return 'tee';
+        } else if (count === 4) {
+          return 'cross';
+        } else {
+          return 'straight';
+        }
+      }
+
+      getInitialRotation(neighbors, row, col) {
+        // Calculate rotation based on neighbor positions
+        const dirs = [];
+        neighbors.forEach(n => {
+          if (n.row < row) dirs.push(0); // up
+          else if (n.row > row) dirs.push(2); // down
+          else if (n.col < col) dirs.push(3); // left
+          else if (n.col > col) dirs.push(1); // right
+        });
+        dirs.sort();
+        // Map directions to rotation based on pipe type
+        return 0; // Default
+      }
+
+      isSource(row, col) {
+        return this.sources.some(s => s.row === row && s.col === col);
+      }
+
+      isTarget(row, col) {
+        return this.targets.some(t => t.row === row && t.col === col);
+      }
+
+      shuffleArray(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      updateFlow() {
+        // Reset connection status
+        for (let r = 0; r < this.size; r++) {
+          for (let c = 0; c < this.size; c++) {
+            if (this.grid[r][c]) {
+              this.grid[r][c].connected = false;
+            }
+          }
+        }
+
+        // BFS from each source
+        this.sources.forEach(source => {
+          const queue = [source];
+          const visited = new Set();
+          visited.add(`${source.row},${source.col}`);
+          
+          while (queue.length > 0) {
+            const current = queue.shift();
+            const { row, col } = current;
+            
+            // Mark current as connected
+            if (this.grid[row] && this.grid[row][col]) {
+              this.grid[row][col].connected = true;
+            }
+            
+            // Check if this is a target
+            if (this.isTarget(row, col)) {
+              continue;
+            }
+            
+            // Get connections based on pipe type and rotation
+            const connections = this.getConnections(row, col);
+            connections.forEach(([dr, dc]) => {
+              const nr = row + dr;
+              const nc = col + dc;
+              const key = `${nr},${nc}`;
+              
+              if (nr >= 0 && nr < this.size && nc >= 0 && nc < this.size && !visited.has(key)) {
+                // Check if neighbor connects back
+                const neighborConnections = this.getConnections(nr, nc);
+                const connected = neighborConnections.some(([ndr, ndc]) => 
+                  ndr === -dr && ndc === -dc
+                );
+                
+                if (connected) {
+                  visited.add(key);
+                  queue.push({ row: nr, col: nc });
+                }
+              }
+            });
+          }
+        });
+
+        // Check if all targets are connected
+        const allConnected = this.targets.every(target => 
+          this.grid[target.row][target.col].connected
+        );
+
+        if (allConnected && !this.gameComplete) {
+          this.gameComplete = true;
+          this.stopTimer();
+          this.showVictory();
+        }
+
+        this.render();
+      }
+
+      getConnections(row, col) {
+        const cell = this.grid[row][col];
+        if (!cell || !cell.type) return [];
+        
+        const connections = {
+          'straight': [[-1, 0], [1, 0]],
+          'corner': [[-1, 0], [0, 1]],
+          'tee': [[-1, 0], [1, 0], [0, 1]],
+          'cross': [[-1, 0], [1, 0], [0, -1], [0, 1]],
+          'source': [[1, 0]],
+          'target': [[-1, 0]]
+        };
+        
+        let dirs = connections[cell.type] || [];
+        // Apply rotation
+        const rotation = cell.rotation || 0;
+        const rotateMap = {
+          0: (d) => d,
+          1: ([dr, dc]) => [dc, -dr],
+          2: ([dr, dc]) => [-dr, -dc],
+          3: ([dr, dc]) => [-dc, dr]
+        };
+        
+        return dirs.map(d => rotateMap[rotation % 4](d));
+      }
+
+      rotatePipe(row, col) {
+        if (this.gameComplete) return;
+        
+        const cell = this.grid[row][col];
+        if (!cell || this.isSource(row, col) || this.isTarget(row, col)) return;
+        
+        cell.rotation = (cell.rotation + 1) % 4;
+        this.moves++;
+        document.getElementById('moveCount').textContent = this.moves;
+        this.updateFlow();
+      }
+
+      render() {
+        const ctx = this.ctx;
+        const n = this.size;
+        const cellSize = this.canvas.width / n;
+        const padding = 2;
+        
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw grid background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Draw grid lines
+        ctx.strokeStyle = '#2a2a4a';
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= n; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * cellSize, 0);
+          ctx.lineTo(i * cellSize, this.canvas.height);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * cellSize);
+          ctx.lineTo(this.canvas.width, i * cellSize);
+          ctx.stroke();
+        }
+        
+        // Draw pipes
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            const cell = this.grid[r][c];
+            if (!cell || !cell.type) continue;
+            
+            const x = c * cellSize + padding;
+            const y = r * cellSize + padding;
+            const w = cellSize - padding * 2;
+            
+            const isConnected = cell.connected;
+            const isSource = this.isSource(r, c);
+            const isTarget = this.isTarget(r, c);
+            
+            // Draw pipe
+            ctx.save();
+            ctx.translate(x + w/2, y + w/2);
+            ctx.rotate((cell.rotation || 0) * Math.PI / 2);
+            
+            // Pipe color based on connection status
+            let color = '#3a3a5a';
+            if (isSource) color = '#00ff88';
+            else if (isTarget) color = '#ff6b6b';
+            else if (isConnected) color = '#4ecdc4';
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = w * 0.15;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // Draw pipe shape
+            this.drawPipeShape(ctx, cell.type, w);
+            
+            ctx.restore();
+            
+            // Draw source/target indicators
+            if (isSource) {
+              ctx.fillStyle = '#00ff88';
+              ctx.beginPath();
+              ctx.arc(x + w/2, y + w/2, w * 0.1, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#fff';
+              ctx.font = `${w * 0.15}px Arial`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('💧', x + w/2, y + w/2 - w * 0.2);
+            }
+            
+            if (isTarget) {
+              ctx.fillStyle = '#ff6b6b';
+              ctx.beginPath();
+              ctx.arc(x + w/2, y + w/2, w * 0.1, 0, Math.PI * 2);
+              ctx.fill();
+              if (isConnected) {
+                ctx.fillStyle = '#fff';
+                ctx.font = `${w * 0.15}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✅', x + w/2, y + w/2 - w * 0.2);
+              }
+            }
+            
+            // Click indicator
+            if (!isSource && !isTarget && !this.gameComplete) {
+              ctx.fillStyle = 'rgba(255,255,255,0.05)';
+              ctx.beginPath();
+              ctx.arc(x + w/2, y + w/2, w * 0.3, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+        
+        // Draw flow animation
+        if (this.flowing) {
+          this.drawFlowAnimation(ctx, cellSize);
+        }
+      }
+
+      drawPipeShape(ctx, type, size) {
+        const s = size * 0.3;
+        const hs = s / 2;
+        
+        switch(type) {
+          case 'straight':
+            ctx.beginPath();
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, s);
+            ctx.stroke();
+            break;
+            
+          case 'corner':
+            ctx.beginPath();
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, 0);
+            ctx.lineTo(s, 0);
+            ctx.stroke();
+            break;
+            
+          case 'tee':
+            ctx.beginPath();
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, s);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(s, 0);
+            ctx.stroke();
+            break;
+            
+          case 'cross':
+            ctx.beginPath();
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, s);
+            ctx.moveTo(-s, 0);
+            ctx.lineTo(s, 0);
+            ctx.stroke();
+            break;
+            
+          case 'source':
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, s);
+            ctx.stroke();
+            break;
+            
+          case 'target':
+            ctx.beginPath();
+            ctx.moveTo(0, -s);
+            ctx.lineTo(0, 0);
+            ctx.stroke();
+            break;
+        }
+      }
+
+      drawFlowAnimation(ctx, cellSize) {
+        // Simplified flow animation
+        const time = Date.now() / 1000;
+        ctx.fillStyle = 'rgba(78, 205, 196, 0.3)';
+        
+        for (let r = 0; r < this.size; r++) {
+          for (let c = 0; c < this.size; c++) {
+            if (this.grid[r][c] && this.grid[r][c].connected) {
+              const x = c * cellSize + cellSize/2;
+              const y = r * cellSize + cellSize/2;
+              const offset = Math.sin(time * 2 + r + c) * 3;
+              ctx.beginPath();
+              ctx.arc(x + offset, y + offset, cellSize * 0.05, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      startTimer() {
+        this.timer = 0;
+        this.timerInterval = setInterval(() => {
+          this.timer++;
+          const mins = Math.floor(this.timer / 60);
+          const secs = this.timer % 60;
+          document.getElementById('timerDisplay').textContent = 
+            `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }, 1000);
+      }
+
+      stopTimer() {
+        clearInterval(this.timerInterval);
+      }
+
+      showVictory() {
+        const modal = document.getElementById('victoryModal');
+        document.getElementById('victoryMoves').textContent = this.moves;
+        document.getElementById('victoryTime').textContent = 
+          document.getElementById('timerDisplay').textContent;
+        
+        // Calculate rating
+        const moves = this.moves;
+        const gridSize = this.size;
+        let rating = '⭐⭐⭐';
+        if (moves > gridSize * 3) rating = '⭐⭐';
+        if (moves > gridSize * 5) rating = '⭐';
+        document.getElementById('victoryRating').textContent = rating;
+        
+        modal.style.display = 'flex';
+      }
+
+      setupEventListeners() {
+        // Canvas click
+        this.canvas.addEventListener('click', (e) => {
+          if (this.gameComplete) return;
+          
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.canvas.width / rect.width;
+          const scaleY = this.canvas.height / rect.height;
+          
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+          
+          const col = Math.floor(x / (this.canvas.width / this.size));
+          const row = Math.floor(y / (this.canvas.height / this.size));
+          
+          if (row >= 0 && row < this.size && col >= 0 && col < this.size) {
+            this.rotatePipe(row, col);
+          }
+        });
+
+        // Level buttons
+        document.querySelectorAll('.level-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            this.size = parseInt(btn.dataset.size);
+            this.init();
+          });
+        });
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+          this.init();
+        });
+
+        // Victory modal buttons
+        document.getElementById('nextPuzzleBtn').addEventListener('click', () => {
+          this.init();
+        });
+
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+          this.init();
+        });
+      }
+    }
+
+    // Initialize the game when page loads
+    window.addEventListener('DOMContentLoaded', () => {
+      new PipePuzzle();
+    });
+  </script>
+</body>
+</html>

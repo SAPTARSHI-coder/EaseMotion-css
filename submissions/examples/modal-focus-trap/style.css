@@ -1,0 +1,229 @@
+/*
+ * modal-focus-trap
+ * Fix for Issue #4220 — No focus trap in modal component
+ *
+ * What this does:
+ *   1. Adds `aria-modal`, `role="dialog"`, `aria-labelledby` support via CSS
+ *      (visual) + JS (semantic / keyboard behaviour).
+ *   2. Locks Tab / Shift+Tab focus inside the open modal.
+ *   3. Returns focus to the trigger element when the modal closes.
+ *   4. Adds a visible :focus-visible ring on every interactive element
+ *      inside the modal so keyboard users always know where they are.
+ *   5. Provides inert-like background suppression via pointer-events + aria-hidden
+ *      (applied by JS; CSS here provides the visual companion).
+ *   6. Fully respects prefers-reduced-motion.
+ *
+ * Files produced (submission set):
+ *   style.css   ← you are here
+ *   modal.js    ← focus-trap logic (drop-in replacement for core/modal.js)
+ *   demo.html   ← self-contained demo, no server required
+ *
+ * Class naming is intentionally kept generic so the maintainer can
+ * rename to the ease-* convention before merging into core.
+ */
+
+/* ── Overlay backdrop ──────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.60);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  /* Hidden state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+}
+
+/* Active state — toggled by modal.js adding .is-active */
+.modal-overlay.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ── Modal container ──────────────────────────────────────────────────────── */
+.modal-box {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.30);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  outline: none; /* focus managed by JS; ring shown on children */
+
+  /* Enter animation: scale + fade */
+  transform: scale(0.92) translateY(-16px);
+  opacity: 0;
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity   0.25s ease;
+}
+
+.modal-overlay.is-active .modal-box {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* ── Modal parts ──────────────────────────────────────────────────────────── */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  color: #4b5563;
+  line-height: 1.65;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 1rem 1rem;
+}
+
+/* ── Close button ─────────────────────────────────────────────────────────── */
+.modal-close {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #6b7280;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color      0.15s ease;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FOCUS TRAP — Visual companion styles
+   All interactive elements inside the modal get a clear focus ring so keyboard
+   users always have a visible indicator of their position.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.modal-box *:focus-visible {
+  outline: 2.5px solid #6c63ff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Remove the default :focus ring; keep only :focus-visible (keyboard only) */
+.modal-box *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Action buttons (demo) ─────────────────────────────────────────────────── */
+.btn-primary {
+  padding: 0.5rem 1.25rem;
+  background: #6c63ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover {
+  background: #4b44cc;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  padding: 0.5rem 1.25rem;
+  background: transparent;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* ── Background-inert companion ─────────────────────────────────────────────
+   When modal is open, JS sets aria-hidden="true" on #page-content.
+   This CSS visually confirms the background is "inactive".
+   ──────────────────────────────────────────────────────────────────────────── */
+#page-content {
+  transition: filter 0.25s ease;
+}
+
+.modal-open #page-content {
+  /* Subtle visual cue that background is inaccessible */
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ── prefers-reduced-motion ──────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-box {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .modal-box {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer > * {
+    width: 100%;
+    text-align: center;
+  }
+}

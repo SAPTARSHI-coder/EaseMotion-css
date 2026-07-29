@@ -1,0 +1,208 @@
+// =============================================================================
+// 💅 Animated Border Draw & Glow Keyframe Mixins
+// -----------------------------------------------------------------------------
+// Part of the EaseMotion CSS design system.
+//
+// This partial provides two reusable SCSS mixins:
+//   1. border-draw   → animates a border "drawing itself" around an element
+//   2. border-glow   → animates a soft pulsing glow around an element's border
+//   3. border-draw-glow → combines both effects sequentially (draw, then glow)
+//
+// Usage:
+//   @use 'animated-border-draw-glow-keyframe-mixins' as border;
+//
+//   .card {
+//     @include border.border-draw($color: #6c5ce7, $width: 2px, $duration: 1.2s);
+//   }
+//
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// Configurable defaults (can be overridden per-call via mixin arguments)
+// -----------------------------------------------------------------------------
+$default-border-color: #6c5ce7 !default;
+$default-border-width: 2px !default;
+$default-border-radius: 8px !default;
+$default-draw-duration: 1.2s !default;
+$default-glow-duration: 2s !default;
+$default-glow-spread: 12px !default;
+$default-easing: cubic-bezier(0.65, 0, 0.35, 1) !default;
+
+// -----------------------------------------------------------------------------
+// Internal: unique keyframe name generator
+// Prevents keyframe name collisions when the mixin is used multiple times
+// with different parameters in the same stylesheet.
+// -----------------------------------------------------------------------------
+@use "sass:math";
+
+$_border-draw-counter: 0;
+$_border-glow-counter: 0;
+
+// -----------------------------------------------------------------------------
+// Mixin: border-draw
+// -----------------------------------------------------------------------------
+// Animates a border being "drawn" around an element, as if traced by a pen.
+// Implemented using a conic-gradient mask technique combined with a
+// clip-path fallback approach via animated border-image / background-position
+// on a pseudo-element for broad compatibility.
+//
+// Params:
+//   $color     - border color                         (default: $default-border-color)
+//   $width     - border thickness                      (default: $default-border-width)
+//   $radius    - border-radius of element/pseudo-element (default: $default-border-radius)
+//   $duration  - animation duration                     (default: $default-draw-duration)
+//   $easing    - animation timing function              (default: $default-easing)
+//   $delay     - animation delay                         (default: 0s)
+//   $infinite  - if true, loops the draw animation forever (default: false)
+// -----------------------------------------------------------------------------
+@mixin border-draw(
+  $color: $default-border-color,
+  $width: $default-border-width,
+  $radius: $default-border-radius,
+  $duration: $default-draw-duration,
+  $easing: $default-easing,
+  $delay: 0s,
+  $infinite: false
+) {
+  $_border-draw-counter: $_border-draw-counter + 1 !global;
+  $anim-name: border-draw-#{$_border-draw-counter};
+
+  position: relative;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    padding: $width;
+    background: conic-gradient(
+      from 0deg,
+      #{$color} 0deg,
+      #{$color} 0deg,
+      transparent 0deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+    animation: #{$anim-name} $duration $easing $delay
+      #{if($infinite, infinite, forwards)};
+  }
+
+  @keyframes #{$anim-name} {
+    0% {
+      background: conic-gradient(
+        from 0deg,
+        #{$color} 0deg,
+        #{$color} 0deg,
+        transparent 0deg,
+        transparent 360deg
+      );
+    }
+    100% {
+      background: conic-gradient(
+        from 0deg,
+        #{$color} 0deg,
+        #{$color} 360deg,
+        transparent 360deg,
+        transparent 360deg
+      );
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Mixin: border-glow
+// -----------------------------------------------------------------------------
+// Animates a soft pulsing glow using box-shadow, ideal for hover states,
+// focus states, or "active/highlighted" UI elements.
+//
+// Params:
+//   $color     - glow color                     (default: $default-border-color)
+//   $spread    - max glow spread radius          (default: $default-glow-spread)
+//   $duration  - animation duration              (default: $default-glow-duration)
+//   $easing    - animation timing function       (default: ease-in-out)
+//   $infinite  - loop forever                    (default: true)
+// -----------------------------------------------------------------------------
+@mixin border-glow(
+  $color: $default-border-color,
+  $spread: $default-glow-spread,
+  $duration: $default-glow-duration,
+  $easing: ease-in-out,
+  $infinite: true
+) {
+  $_border-glow-counter: $_border-glow-counter + 1 !global;
+  $anim-name: border-glow-#{$_border-glow-counter};
+
+  animation: #{$anim-name} $duration $easing #{if($infinite, infinite, forwards)};
+
+  @keyframes #{$anim-name} {
+    0%,
+    100% {
+      box-shadow: 0 0 0px 0px rgba($color, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 #{$spread} 2px rgba($color, 0.7);
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Mixin: border-draw-glow
+// -----------------------------------------------------------------------------
+// Convenience mixin that sequences both effects: the border draws itself in,
+// then transitions into a continuous ambient glow pulse.
+//
+// Params: forwards all params from border-draw and border-glow via a
+// shared config, plus:
+//   $glow-delay - when the glow should kick in, typically = $draw-duration
+// -----------------------------------------------------------------------------
+@mixin border-draw-glow(
+  $color: $default-border-color,
+  $width: $default-border-width,
+  $radius: $default-border-radius,
+  $draw-duration: $default-draw-duration,
+  $glow-duration: $default-glow-duration,
+  $glow-spread: $default-glow-spread,
+  $easing: $default-easing
+) {
+  @include border-draw(
+    $color: $color,
+    $width: $width,
+    $radius: $radius,
+    $duration: $draw-duration,
+    $easing: $easing,
+    $infinite: false
+  );
+
+  border-radius: $radius;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    animation: border-glow-fade-in 0.3s ease-in $draw-duration forwards;
+  }
+
+  @keyframes border-glow-fade-in {
+    to {
+      opacity: 1;
+    }
+  }
+
+  &::after {
+    @include border-glow(
+      $color: $color,
+      $spread: $glow-spread,
+      $duration: $glow-duration,
+      $infinite: true
+    );
+  }
+}
