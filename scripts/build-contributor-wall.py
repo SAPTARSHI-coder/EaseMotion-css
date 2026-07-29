@@ -21,8 +21,8 @@ def build_wall(contributors):
         row = contributors[i : i + COLS]
         cells = ""
         for c in row:
-            login = c["author"]["login"]
-            count = c["total"]
+            login = c["login"]
+            count = c["contributions"]
             cells += (
                 f'<td align="center">'
                 f'<a href="https://github.com/{login}">'
@@ -58,7 +58,12 @@ def main():
         sys.exit(1)
 
     # Filter out bots and invalid authors
-    contributors = [c for c in contributors if c.get("author") and c["author"].get("login") and c["author"].get("type") != "Bot" and "bot" not in c["author"]["login"].lower()]
+    contributors = [
+    c for c in contributors
+    if c.get("login")
+    and c.get("type") != "Bot"
+    and "bot" not in c["login"].lower()
+    ]
     
     # Sort by total commits descending
     contributors.sort(key=lambda x: x["total"], reverse=True)
