@@ -1,3 +1,0 @@
-1. What does this do? It shows a reusable recipe difficulty rating component that uses five animated flame icons to represent Very Easy through Extreme.
-2. How is it used? Open demo.html directly in a browser and reuse the flame rating markup and style.css classes in any recipe card.
-3. Why is it useful? It gives recipe interfaces a clear, compact, and accessible way to communicate difficulty with a familiar rating pattern.

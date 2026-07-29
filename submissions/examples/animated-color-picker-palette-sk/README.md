@@ -1,1 +1,0 @@
-A CSS-only color palette picker with 12 swatches. Click a color to select it — it scales up with a checkmark overlay and shows the hex code below. Useful for theme selectors, design tools, or product color variants.

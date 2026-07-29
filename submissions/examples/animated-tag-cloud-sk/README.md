@@ -1,1 +1,0 @@
-An interactive tag cloud component showcasing ten technology labels with varied sizes and colors. Hovering triggers a scale-up and background color shift, with larger tags emphasizing popular topics. Fully responsive wrapping and reduced-motion support are included.

@@ -1,1 +1,0 @@
-An elegant pull quote block with a decorative large quotation mark and hover glow effect. Use it for testimonials, article highlights, or landing page social proof sections. Adds editorial polish with pure CSS.
