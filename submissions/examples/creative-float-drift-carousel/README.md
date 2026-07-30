@@ -1,19 +1,20 @@
-# CSS Float-Drift Carousel for Creative Portfolio Layouts
+# CSS Float-Drift Carousel for Accessible Web Layouts
 
-A modern **Creative Portfolio Carousel** built using **pure HTML5 and CSS3**. The showcase features elegant floating cards with subtle drift animations, glassmorphism styling, responsive layouts, and accessibility support without JavaScript.
+A modern **Float-Drift Carousel** component created using only **HTML5 and CSS3**. This showcase provides a smooth floating carousel experience with drifting card animations, hover interactions, responsive layouts, and accessibility support without JavaScript.
 
 ---
 
 ## ✨ Features
 
-- 🎨 Creative portfolio inspired layout
-- ☁️ Continuous Float-Drift animation
-- 💎 Glassmorphism cards
-- 🌈 Gradient highlights
-- ⭐ Featured center card
-- 📱 Fully responsive
-- ⚡ Pure HTML & CSS
-- 🎨 CSS Custom Properties
+- 🌊 Smooth float-drift animation
+- 🎴 Animated carousel cards
+- 💎 Glassmorphism UI design
+- 🚀 Floating icon effects
+- ✨ Hover scale interaction
+- ⚡ Lightweight CSS animations
+- 🎯 CSS Custom Properties
+- 📱 Fully responsive layout
+- 🧩 Pure HTML5 & CSS3
 - ♿ `prefers-reduced-motion` support
 - 🚫 No JavaScript required
 
@@ -23,6 +24,7 @@ A modern **Creative Portfolio Carousel** built using **pure HTML5 and CSS3**. Th
 
 ```
 creative-float-drift-carousel/
+
 ├── demo.html
 ├── style.css
 └── README.md
@@ -30,38 +32,53 @@ creative-float-drift-carousel/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Usage
 
 1. Open `demo.html` in any modern browser.
-2. Hover over the cards to experience the Float-Drift animation.
-3. Customize colors, spacing, animation duration, and shadows using CSS variables.
+2. Observe the floating carousel cards.
+3. Hover over cards for enhanced interaction.
+4. Customize styles using CSS variables.
 
 ---
 
-## 🎨 CSS Variables
+## 🎨 CSS Custom Properties
 
 ```css
-:root{
-    --bg:#f5f7fb;
-    --surface:rgba(255,255,255,.75);
-    --primary:#6366f1;
-    --secondary:#ec4899;
-    --text:#111827;
-    --muted:#6b7280;
-    --border:rgba(99,102,241,.15);
+:root {
+
+    --bg:#020617;
+
+    --surface:rgba(255,255,255,.08);
+
+    --primary:#38bdf8;
+
+    --secondary:#8b5cf6;
+
+    --accent:#ec4899;
+
+    --text:#ffffff;
+
+    --muted:#cbd5e1;
+
+    --border:rgba(255,255,255,.15);
+
     --radius:24px;
+
 }
 ```
 
 ---
 
-## 🎬 Animations
+## 🎬 Animation Overview
 
-- Float-Drift looping animation
-- Hover scale effect
-- Icon rotation & zoom
-- Soft glow border
+This component demonstrates:
+
+- Float drift movement
+- Floating icon animation
+- Hover scaling
+- Glow pulse effects
 - Smooth CSS transitions
+- Responsive card behaviour
 
 ---
 
@@ -70,34 +87,45 @@ creative-float-drift-carousel/
 Optimized for:
 
 - 💻 Desktop
-- 💼 Laptop
+- 🖥 Laptop
 - 📱 Tablet
 - 📲 Mobile
+
+Responsive improvements include:
+
+- Flexible card sizing
+- Adaptive carousel layout
+- Mobile stacking
+- Scalable typography
 
 ---
 
 ## ♿ Accessibility
 
-- Semantic HTML5
-- Responsive typography
-- High contrast
+Includes:
+
+- Semantic HTML structure
 - Keyboard-friendly layout
-- `prefers-reduced-motion` support
+- Reduced motion support
+- `prefers-reduced-motion` handling
+
+Users who prefer reduced animations receive a simplified experience automatically.
 
 ---
 
-## 🛠 Built With
+## 🛠 Technologies Used
 
 - HTML5
 - CSS3
-- CSS Grid
 - CSS Variables
+- CSS Flexbox
+- CSS Animations
 - CSS Keyframes
-- CSS Transitions
 - CSS Transforms
+- Responsive Media Queries
 
 ---
 
 ## 📄 License
 
-Created for the **EaseMotion CSS** showcase examples following repository contribution guidelines.
+Created as part of the **EaseMotion CSS** showcase examples and follows repository contribution guidelines.
