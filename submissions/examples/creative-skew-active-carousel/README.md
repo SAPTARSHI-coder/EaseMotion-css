@@ -1,20 +1,18 @@
-# CSS Skew-Active Carousel for Gaming Hub Layouts
+# CSS Skew-Active Carousel for Accessible Web Layouts
 
-A futuristic **Skew-Active Gaming Carousel** built entirely with **HTML5 and CSS3**. This showcase demonstrates dynamic gaming cards with skew transformations, active card highlighting, neon glow effects, glassmorphism styling, responsive layouts, and accessibility support without requiring JavaScript.
+A modern **Skew-Active Carousel** component created using only **HTML5 and CSS3**. This showcase demonstrates dynamic skew hover interactions, smooth transitions, responsive card layouts, and accessibility support without JavaScript.
 
 ---
 
 ## ✨ Features
 
-- 🎮 Gaming showcase carousel
-- 🔥 Skew transformation effects
-- ⭐ Active featured card highlight
-- 🌈 Neon gradient styling
-- 💎 Glassmorphism game cards
-- ✨ Floating animation effects
+- 📐 Skew transform hover animation
+- 🎴 Interactive carousel cards
+- ✨ Animated shine effect
+- 💎 Glassmorphism UI design
 - ⚡ Smooth CSS transitions
 - 🎯 CSS Custom Properties
-- 📱 Fully responsive
+- 📱 Fully responsive layout
 - 🧩 Pure HTML5 & CSS3
 - ♿ `prefers-reduced-motion` support
 - 🚫 No JavaScript required
@@ -25,6 +23,7 @@ A futuristic **Skew-Active Gaming Carousel** built entirely with **HTML5 and CSS
 
 ```
 creative-skew-active-carousel/
+
 ├── demo.html
 ├── style.css
 └── README.md
@@ -32,43 +31,51 @@ creative-skew-active-carousel/
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Usage
 
-1. Open `demo.html` in any modern browser.
-2. View the gaming carousel cards.
-3. Hover over cards to trigger skew and elevation effects.
-4. Customize colors, spacing, and animations using CSS variables.
+1. Open `demo.html` in a modern browser.
+2. Hover over cards to activate the skew animation.
+3. Customize colors and effects using CSS variables.
 
 ---
 
 ## 🎨 CSS Custom Properties
 
 ```css
-:root{
+:root {
+
     --bg:#020617;
+
     --surface:rgba(255,255,255,.08);
-    --primary:#00e5ff;
+
+    --primary:#06b6d4;
+
     --secondary:#8b5cf6;
-    --accent:#22c55e;
+
+    --accent:#ec4899;
+
     --text:#ffffff;
+
     --muted:#cbd5e1;
+
     --border:rgba(255,255,255,.15);
-    --radius:26px;
+
+    --radius:24px;
+
 }
 ```
 
 ---
 
-## 🎬 Animation Overview
+## 🎬 Animation Details
 
-This example demonstrates:
+Implemented animations:
 
-- Skew Card Transformation
-- Active Card Scaling
-- Floating Motion Effect
-- Neon Glow Animation
-- Hover Elevation
-- Smooth CSS Transitions
+- SkewX transformation
+- Card lift interaction
+- Icon rotation effect
+- Gradient shine sweep
+- Smooth hover transitions
 
 ---
 
@@ -81,13 +88,12 @@ Optimized for:
 - 📱 Tablet
 - 📲 Mobile
 
-Responsive media queries automatically adjust:
+Features:
 
-- Carousel layout
-- Card width
-- Spacing
-- Typography
-- Mobile stacking behaviour
+- Adaptive card grid
+- Flexible spacing
+- Responsive typography
+- Mobile-friendly layout
 
 ---
 
@@ -95,13 +101,12 @@ Responsive media queries automatically adjust:
 
 Includes:
 
-- Semantic HTML5 structure
+- Semantic HTML structure
 - Clear content hierarchy
-- High contrast interface
-- Responsive typography
-- `prefers-reduced-motion` support
+- Reduced motion support
+- `prefers-reduced-motion` media query
 
-Animations are automatically reduced for users who prefer less motion.
+Users who prefer reduced animation automatically receive a simplified experience.
 
 ---
 
@@ -110,14 +115,13 @@ Animations are automatically reduced for users who prefer less motion.
 - HTML5
 - CSS3
 - CSS Variables
-- CSS Flexbox
+- CSS Grid
 - CSS Transforms
-- CSS Keyframe Animations
-- CSS Transitions
+- CSS Animations
 - Responsive Media Queries
 
 ---
 
 ## 📄 License
 
-Created as part of the **EaseMotion CSS** showcase examples and follows the repository contribution guidelines.
+Created as part of the **EaseMotion CSS** showcase examples and follows repository contribution guidelines.
