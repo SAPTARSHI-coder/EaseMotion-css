@@ -76,6 +76,10 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('@media (prefers-reduced-motion: reduce)');
   });
 
+  it('should handle @media print reset rules', () => {
+    expect(css).toContain('@media print');
+  });
+
   it('should have component classes defined', () => {
     const sheet = document.styleSheets[0];
     
