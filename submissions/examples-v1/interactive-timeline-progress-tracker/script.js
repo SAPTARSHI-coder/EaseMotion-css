@@ -10,7 +10,7 @@ btn.addEventListener("click", () => {
 
   steps[current].classList.remove("current");
   steps[current].classList.add("active");
-  steps[current].innerHTML = "✓";
+  steps[current].textContent = "✓";
 
   current++;
 

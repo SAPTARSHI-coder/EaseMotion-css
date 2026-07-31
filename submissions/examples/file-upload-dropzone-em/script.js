@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sizeInKB = (file.size / 1024).toFixed(1);
     const sizeText = sizeInKB > 1024 ? `${(sizeInKB / 1024).toFixed(2)} MB` : `${sizeInKB} KB`;
 
-    li.innerHTML = `
+    li.textContent = `
       <div class="file-item__progress-bg"></div>
       <div class="file-item__icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
           item.classList.add('is-complete');
           // Swap icon to checkmark
           const iconWrapper = item.querySelector('.file-item__icon');
-          iconWrapper.innerHTML = `
+          iconWrapper.textContent = `
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>

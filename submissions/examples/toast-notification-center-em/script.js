@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     toast.setAttribute('aria-live', 'assertive');
 
     // Toast HTML Structure
-    toast.innerHTML = `
+    toast.textContent = `
       <div class="toast__icon" aria-hidden="true">
         <svg width="24" height="24">
           <use href="#${data.icon}"></use>
