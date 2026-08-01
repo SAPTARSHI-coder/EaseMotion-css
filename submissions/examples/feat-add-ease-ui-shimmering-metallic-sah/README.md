@@ -1,3 +1,3 @@
-# feat: add ease-ui-shimmering-metallic-foil-text-effect-with-css-masking-and-gradients-117 component (Minimalist Clean Edition)
+# feat: add ease-ui-shimmering-metallic-foil-text-effect-with-css-masking-and-gradients-113 component (Dark Mode Variant)
 
-Accessible component solution for #58057.
+Accessible component solution for #58053.
