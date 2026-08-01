@@ -95,7 +95,7 @@ export function pruneClasses(css, usedClasses) {
 export async function optimizeHtml(html, fullCss) {
   // Dynamically import parse + compile to resolve em="" attributes too
   const { parse } = await import('./parser.js');
-  const { compile, className } = await import('./compiler.js');
+  const { compile, className, KEYFRAME_MAP } = await import('./compiler.js');
 
   const usedClasses  = extractEaseClasses(html);
   const usedKeyframes = new Set();
@@ -114,6 +114,10 @@ export async function optimizeHtml(html, fullCss) {
   for (const val of emValues) {
     const ast = parse(val);
     if (!ast) continue;
+    if (ast.animation) {
+      const kf = KEYFRAME_MAP[ast.animation] || `ease-kf-${ast.animation}`;
+      usedKeyframes.add(kf);
+    }
     const cls = className(ast);
     usedClasses.add(cls);
     injectedRules.push(compile(ast, cls));
