@@ -42,11 +42,19 @@ const ANIMATION_NAMES = new Set([
   'float', 'heartbeat', 'rubber-band',
 ]);
 
+/** Speed aliases → ms values */
+const SPEED_MAP = {
+  'fast':   150,
+  'medium': 300,
+  'slow':   600,
+};
+
 /**
- * Parse a time token like "500ms" or "1.2s" into milliseconds.
+ * Parse a time token like "500ms", "1.2s", or speed alias "slow".
  * Returns null if the token is not a time value.
  */
 function parseTime(token) {
+  if (SPEED_MAP[token]) return SPEED_MAP[token];
   const ms = token.match(/^(\d+(?:\.\d+)?)ms$/);
   if (ms) return parseFloat(ms[1]);
   const s = token.match(/^(\d+(?:\.\d+)?)s$/);
@@ -68,6 +76,7 @@ function parseDelay(token) {
  * Parse a "repeat-<n>" or "repeat-infinite" modifier.
  */
 function parseRepeat(token) {
+  if (token === 'infinite') return 'infinite';
   const m = token.match(/^repeat-(.+)$/);
   if (!m) return null;
   if (m[1] === 'infinite') return 'infinite';
@@ -76,55 +85,39 @@ function parseRepeat(token) {
 }
 
 /**
- * Parse an `em=""` attribute string into an AST object.
- *
- * @param {string} value  - Raw attribute value string
- * @returns {{ animation: string, duration: number, easing: string,
- *             delay: number, iterations: number|string, fill: string,
- *             direction: string } | null}
+ * Helper to process a list of string tokens into an AST object.
  */
-export function parse(value) {
-  if (!value || typeof value !== 'string') return null;
+function processTokens(tokens, ast) {
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
 
-  const tokens = value.trim().toLowerCase().split(/\s+/);
-  const ast = {
-    animation:  null,
-    duration:   300,      // ms — default
-    easing:     'cubic-bezier(0.4, 0, 0.2, 1)', // --ease-ease
-    delay:      0,        // ms
-    iterations: 1,
-    fill:       'both',
-    direction:  'normal',
-  };
-
-  for (const token of tokens) {
-    // Animation name
-    if (ANIMATION_NAMES.has(token)) {
+    // Animation name (only set if not already set)
+    if (!ast.animation && ANIMATION_NAMES.has(token)) {
       ast.animation = token;
       continue;
     }
 
-    // Easing
+    // Easing (check multi-token like "ease-out" or "ease-in-out")
     if (EASING_MAP[token]) {
       ast.easing = EASING_MAP[token];
       continue;
     }
 
-    // Duration  e.g. "500ms", "1.5s"
+    // Duration e.g. "500ms", "1.5s", "slow", "fast", "medium"
     const time = parseTime(token);
     if (time !== null) {
       ast.duration = time;
       continue;
     }
 
-    // Delay  e.g. "delay-200ms"
+    // Delay e.g. "delay-200ms"
     const delay = parseDelay(token);
     if (delay !== null) {
       ast.delay = delay;
       continue;
     }
 
-    // Repeat  e.g. "repeat-2", "repeat-infinite"
+    // Repeat e.g. "repeat-2", "repeat-infinite", "infinite"
     const repeat = parseRepeat(token);
     if (repeat !== null) {
       ast.iterations = repeat;
@@ -142,11 +135,99 @@ export function parse(value) {
       ast.direction = token;
       continue;
     }
-
-    // Unknown token — ignore (future-proof: plugins may extend)
   }
+}
+
+/**
+ * Attempt hyphenated DSL token decomposition if a single hyphenated token is provided
+ * e.g. "ease-spin-slow-infinite-bounce-reverse" or "spin-slow-infinite-bounce-reverse"
+ */
+function expandHyphenatedDsl(rawStr) {
+  let str = rawStr.trim().toLowerCase();
+  if (str.startsWith('ease-')) {
+    str = str.slice(5);
+  }
+
+  // Find matching animation name (longest match first)
+  const sortedNames = Array.from(ANIMATION_NAMES).sort((a, b) => b.length - a.length);
+  let matchedAnim = null;
+  for (const name of sortedNames) {
+    if (str === name || str.startsWith(name + '-')) {
+      matchedAnim = name;
+      break;
+    }
+  }
+
+  if (!matchedAnim) return [rawStr];
+
+  const tokens = [matchedAnim];
+  const remainder = str === matchedAnim ? '' : str.slice(matchedAnim.length + 1);
+
+  if (remainder) {
+    // Split remainder by hyphens and re-combine known multi-hyphen tokens like ease-in-out, ease-out, etc.
+    const parts = remainder.split('-');
+    let idx = 0;
+    while (idx < parts.length) {
+      // Check 3-part keywords (e.g., ease-in-out, alternate-reverse)
+      if (idx + 2 < parts.length) {
+        const triple = `${parts[idx]}-${parts[idx+1]}-${parts[idx+2]}`;
+        if (EASING_MAP[triple] || ['alternate-reverse'].includes(triple)) {
+          tokens.push(triple);
+          idx += 3;
+          continue;
+        }
+      }
+      // Check 2-part keywords (e.g., ease-in, ease-out, delay-100ms, repeat-infinite)
+      if (idx + 1 < parts.length) {
+        const double = `${parts[idx]}-${parts[idx+1]}`;
+        if (EASING_MAP[double] || parseDelay(double) !== null || parseRepeat(double) !== null) {
+          tokens.push(double);
+          idx += 2;
+          continue;
+        }
+      }
+      tokens.push(parts[idx]);
+      idx++;
+    }
+  }
+
+  return tokens;
+}
+
+/**
+ * Parse an `em=""` attribute or DSL string into an AST object.
+ *
+ * @param {string} value  - Raw attribute or DSL string
+ * @returns {{ animation: string, duration: number, easing: string,
+ *             delay: number, iterations: number|string, fill: string,
+ *             direction: string } | null}
+ */
+export function parse(value) {
+  if (!value || typeof value !== 'string') return null;
+
+  const trimmed = value.trim().toLowerCase();
+  let tokens = trimmed.split(/\s+/);
+
+  // If a single token without spaces is passed and it's not a basic animation name directly,
+  // attempt hyphenated DSL expansion
+  if (tokens.length === 1 && !ANIMATION_NAMES.has(tokens[0])) {
+    tokens = expandHyphenatedDsl(tokens[0]);
+  }
+
+  const ast = {
+    animation:  null,
+    duration:   300,      // ms — default
+    easing:     'cubic-bezier(0.4, 0, 0.2, 1)', // --ease-ease
+    delay:      0,        // ms
+    iterations: 1,
+    fill:       'both',
+    direction:  'normal',
+  };
+
+  processTokens(tokens, ast);
 
   if (!ast.animation) return null;
 
   return ast;
 }
+
