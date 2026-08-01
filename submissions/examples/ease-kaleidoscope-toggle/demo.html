@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaleidoscope Toggle – Patterns Shift and Rotate</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🌀 Kaleidoscope Toggle</h1>
+    <p class="subtitle">Patterns shift and rotate with every click</p>
+
+    <div class="kaleidoscope-container">
+      <div class="kaleidoscope" id="kaleidoscope">
+        <div class="pattern" id="pattern">
+          <div class="segment" id="segment1"></div>
+          <div class="segment" id="segment2"></div>
+          <div class="segment" id="segment3"></div>
+          <div class="segment" id="segment4"></div>
+          <div class="segment" id="segment5"></div>
+          <div class="segment" id="segment6"></div>
+          <div class="segment" id="segment7"></div>
+          <div class="segment" id="segment8"></div>
+          <div class="segment" id="segment9"></div>
+          <div class="segment" id="segment10"></div>
+          <div class="segment" id="segment11"></div>
+          <div class="segment" id="segment12"></div>
+        </div>
+        <div class="center-glow"></div>
+      </div>
+
+      <!-- Toggle Button -->
+      <button class="toggle-btn" id="toggleBtn">
+        <span class="btn-icon">🌀</span>
+        <span class="btn-text">Shift Pattern</span>
+      </button>
+
+      <!-- Controls -->
+      <div class="controls">
+        <button class="ctrl-btn" id="rotateBtn">↻ Rotate</button>
+        <button class="ctrl-btn" id="randomBtn">🎲 Random</button>
+        <button class="ctrl-btn" id="resetBtn">↺ Reset</button>
+        <button class="ctrl-btn" id="speedBtn">⚡ Speed</button>
+      </div>
+
+      <!-- Slider controls -->
+      <div class="slider-group">
+        <div class="slider-item">
+          <label for="rotationSlider">Rotation</label>
+          <input type="range" id="rotationSlider" min="0" max="360" value="0">
+        </div>
+        <div class="slider-item">
+          <label for="scaleSlider">Scale</label>
+          <input type="range" id="scaleSlider" min="50" max="150" value="100">
+        </div>
+        <div class="slider-item">
+          <label for="hueSlider">Hue Shift</label>
+          <input type="range" id="hueSlider" min="0" max="360" value="0">
+        </div>
+      </div>
+
+      <!-- Status -->
+      <div class="status" id="status">🌀 Click the toggle to shift patterns</div>
+
+      <!-- Pattern info -->
+      <div class="pattern-info">
+        <span class="info-item">Pattern: <strong id="patternName">Classic</strong></span>
+        <span class="info-item">Rotation: <strong id="rotationDisplay">0°</strong></span>
+        <span class="info-item">Segments: <strong id="segmentCount">12</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const pattern = document.getElementById('pattern');
+      const segments = document.querySelectorAll('.segment');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const rotateBtn = document.getElementById('rotateBtn');
+      const randomBtn = document.getElementById('randomBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const speedBtn = document.getElementById('speedBtn');
+      const rotationSlider = document.getElementById('rotationSlider');
+      const scaleSlider = document.getElementById('scaleSlider');
+      const hueSlider = document.getElementById('hueSlider');
+      const status = document.getElementById('status');
+      const patternName = document.getElementById('patternName');
+      const rotationDisplay = document.getElementById('rotationDisplay');
+      const segmentCount = document.getElementById('segmentCount');
+
+      // State
+      let currentPattern = 0;
+      let currentRotation = 0;
+      let currentScale = 100;
+      let currentHue = 0;
+      let isAnimating = false;
+      let animationId = null;
+      let speedMultiplier = 1;
+      let segmentColors = [];
+      let patterns = [];
+
+      // ----- Pattern Definitions -----
+      const PATTERNS = [
+        { name: 'Classic', colors: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43'] },
+        { name: 'Sunset', colors: ['#ff6b35', '#f7931e', '#fbb03b', '#ffd700', '#ff6b6b', '#e74c3c'] },
+        { name: 'Ocean', colors: ['#00b4d8', '#0077b6', '#023e8a', '#48cae4', '#90e0ef', '#ade8f4'] },
+        { name: 'Forest', colors: ['#2d6a4f', '#40916c', '#52b788', '#74c69d', '#95d5b2', '#b7e4c7'] },
+        { name: 'Aurora', colors: ['#00f5d4', '#00bbf9', '#fee440', '#f15bb5', '#9b5de5', '#00f5d4'] },
+        { name: 'Fire', colors: ['#ff0000', '#ff4500', '#ff6600', '#ff8c00', '#ffb300', '#ffd700'] },
+        { name: 'Ice', colors: ['#caf0f8', '#ade8f4', '#90e0ef', '#48cae4', '#00b4d8', '#0077b6'] },
+        { name: 'Neon', colors: ['#ff00ff', '#00ffff', '#ff00aa', '#00ffaa', '#ffaa00', '#aa00ff'] },
+        { name: 'Pastel', colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e8baff'] },
+        { name: 'Retro', colors: ['#f8b500', '#ff6b35', '#e63946', '#6a4c93', '#2a9d8f', '#e76f51'] }
+      ];
+
+      // ----- Initialize segment colors -----
+      function initSegmentColors(patternIndex) {
+        const patternColors = PATTERNS[patternIndex].colors;
+        segmentColors = [];
+        for (let i = 0; i < segments.length; i++) {
+          const colorIndex = i % patternColors.length;
+          segmentColors.push(patternColors[colorIndex]);
+        }
+      }
+
+      // ----- Update pattern colors -----
+      function updatePattern() {
+        segments.forEach((segment, index) => {
+          const color = segmentColors[index % segmentColors.length];
+          // Apply hue shift
+          const hueShifted = shiftHue(color, currentHue);
+          segment.style.background = hueShifted;
+          
+          // Apply scale
+          const scale = currentScale / 100;
+          const rotation = currentRotation + (index * (360 / segments.length));
+          segment.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+          
+          // Random opacity variation for depth
+          const opacity = 0.7 + (Math.sin(index * 1.5 + currentRotation * 0.01) * 0.3);
+          segment.style.opacity = opacity;
+        });
+
+        // Update pattern name
+        patternName.textContent = PATTERNS[currentPattern].name;
+        rotationDisplay.textContent = Math.round(currentRotation % 360) + '°';
+        segmentCount.textContent = segments.length;
+      }
+
+      // ----- Helper: Shift hue of a color -----
+      function shiftHue(color, hueShift) {
+        if (hueShift === 0) return color;
+        
+        // Parse hex to HSL
+        let r, g, b;
+        if (color.startsWith('#')) {
+          const hex = color.slice(1);
+          if (hex.length === 3) {
+            r = parseInt(hex[0] + hex[0], 16);
+            g = parseInt(hex[1] + hex[1], 16);
+            b = parseInt(hex[2] + hex[2], 16);
+          } else {
+            r = parseInt(hex.slice(0, 2), 16);
+            g = parseInt(hex.slice(2, 4), 16);
+            b = parseInt(hex.slice(4, 6), 16);
+          }
+        } else {
+          return color;
+        }
+
+        // RGB to HSL
+        const hsl = rgbToHsl(r, g, b);
+        const newHue = (hsl[0] + hueShift / 360) % 1;
+        const [newR, newG, newB] = hslToRgb(newHue, hsl[1], hsl[2]);
+        return `rgb(${Math.round(newR * 255)}, ${Math.round(newG * 255)}, ${Math.round(newB * 255)})`;
+      }
+
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        if (max === min) {
+          h = s = 0;
+        } else {
+          const d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+          }
+        }
+        return [h, s, l];
+      }
+
+      function hslToRgb(h, s, l) {
+        let r, g, b;
+        if (s === 0) {
+          r = g = b = l;
+        } else {
+          const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+          };
+          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          const p = 2 * l - q;
+          r = hue2rgb(p, q, h + 1/3);
+          g = hue2rgb(p, q, h);
+          b = hue2rgb(p, q, h - 1/3);
+        }
+        return [r, g, b];
+      }
+
+      // ----- Toggle pattern (shift to next) -----
+      function togglePattern() {
+        currentPattern = (currentPattern + 1) % PATTERNS.length;
+        initSegmentColors(currentPattern);
+        updatePattern();
+        status.textContent = `🌀 Pattern shifted to: ${PATTERNS[currentPattern].name}`;
+        
+        // Animate the toggle
+        toggleBtn.style.transform = 'scale(0.9) rotate(180deg)';
+        setTimeout(() => {
+          toggleBtn.style.transform = 'scale(1) rotate(0deg)';
+        }, 200);
+      }
+
+      // ----- Rotate pattern -----
+      function rotatePattern(degrees = 30) {
+        currentRotation = (currentRotation + degrees) % 360;
+        updatePattern();
+        status.textContent = `↻ Rotated to ${Math.round(currentRotation)}°`;
+        rotationSlider.value = currentRotation;
+      }
+
+      // ----- Randomize everything -----
+      function randomize() {
+        currentPattern = Math.floor(Math.random() * PATTERNS.length);
+        currentRotation = Math.random() * 360;
+        currentScale = 50 + Math.random() * 100;
+        currentHue = Math.random() * 360;
+        
+        initSegmentColors(currentPattern);
+        updatePattern();
+        
+        rotationSlider.value = currentRotation;
+        scaleSlider.value = currentScale;
+        hueSlider.value = currentHue;
+        
+        status.textContent = `🎲 Randomized: ${PATTERNS[currentPattern].name} pattern`;
+      }
+
+      // ----- Reset to default -----
+      function resetAll() {
+        currentPattern = 0;
+        currentRotation = 0;
+        currentScale = 100;
+        currentHue = 0;
+        
+        initSegmentColors(0);
+        updatePattern();
+        
+        rotationSlider.value = 0;
+        scaleSlider.value = 100;
+        hueSlider.value = 0;
+        
+        status.textContent = '↺ Reset to default pattern';
+      }
+
+      // ----- Speed toggle -----
+      function toggleSpeed() {
+        speedMultiplier = speedMultiplier === 1 ? 2 : (speedMultiplier === 2 ? 0.5 : 1);
+        const speedText = speedMultiplier === 0.5 ? 'Slow' : (speedMultiplier === 2 ? 'Fast' : 'Normal');
+        status.textContent = `⚡ Speed: ${speedText}`;
+        speedBtn.textContent = `⚡ ${speedText}`;
+      }
+
+      // ----- Animation loop (auto-rotation) -----
+      function startAnimation() {
+        if (isAnimating) return;
+        isAnimating = true;
+        
+        function animate() {
+          if (!isAnimating) return;
+          currentRotation = (currentRotation + 0.5 * speedMultiplier) % 360;
+          rotationSlider.value = currentRotation;
+          updatePattern();
+          animationId = requestAnimationFrame(animate);
+        }
+        animationId = requestAnimationFrame(animate);
+      }
+
+      function stopAnimation() {
+        isAnimating = false;
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+      }
+
+      function toggleAnimation() {
+        if (isAnimating) {
+          stopAnimation();
+          status.textContent = '⏸️ Animation paused';
+        } else {
+          startAnimation();
+          status.textContent = '▶️ Animation playing';
+        }
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', togglePattern);
+      
+      rotateBtn.addEventListener('click', () => rotatePattern(30));
+      
+      randomBtn.addEventListener('click', randomize);
+      
+      resetBtn.addEventListener('click', resetAll);
+      
+      speedBtn.addEventListener('click', toggleSpeed);
+      
+      // Double-click on kaleidoscope to toggle animation
+      document.querySelector('.kaleidoscope').addEventListener('dblclick', toggleAnimation);
+
+      // Sliders
+      rotationSlider.addEventListener('input', (e) => {
+        currentRotation = parseFloat(e.target.value);
+        if (isAnimating) stopAnimation();
+        updatePattern();
+        status.textContent = `↻ Rotation: ${Math.round(currentRotation)}°`;
+      });
+
+      scaleSlider.addEventListener('input', (e) => {
+        currentScale = parseFloat(e.target.value);
+        updatePattern();
+        status.textContent = `🔍 Scale: ${Math.round(currentScale)}%`;
+      });
+
+      hueSlider.addEventListener('input', (e) => {
+        currentHue = parseFloat(e.target.value);
+        initSegmentColors(currentPattern);
+        updatePattern();
+        status.textContent = `🎨 Hue shifted by ${Math.round(currentHue)}°`;
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 't' || e.key === 'T') togglePattern();
+        if (e.key === 'r' || e.key === 'R') rotatePattern(30);
+        if (e.key === ' ') { e.preventDefault(); toggleAnimation(); }
+        if (e.key === 'x' || e.key === 'X') randomize();
+        if (e.key === 'z' || e.key === 'Z') resetAll();
+        if (e.key === 's' || e.key === 'S') toggleSpeed();
+      });
+
+      // ----- Init -----
+      function init() {
+        initSegmentColors(0);
+        updatePattern();
+        status.textContent = '🌀 Click the toggle, use sliders, or press keys (T, R, Space, X, Z, S)';
+        
+        // Start with subtle animation
+        setTimeout(() => {
+          startAnimation();
+        }, 500);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
