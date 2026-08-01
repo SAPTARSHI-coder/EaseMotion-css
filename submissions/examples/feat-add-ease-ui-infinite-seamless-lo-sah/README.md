@@ -1,3 +1,3 @@
-# feat: add ease-ui-infinite-seamless-logo-carousel-slider-with-pause-on-hover-165 component (Minimalist Clean Edition)
+# feat: add ease-ui-infinite-seamless-logo-carousel-slider-with-pause-on-hover-161 component (Dark Mode Variant)
 
-Accessible component solution for #58105.
+Accessible component solution for #58101.
