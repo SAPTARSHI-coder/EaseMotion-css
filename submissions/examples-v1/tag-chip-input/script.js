@@ -5,7 +5,7 @@ const addBtn = document.getElementById("chipAddBtn");
 function addTag(tag) {
   const chip = document.createElement("span");
   chip.className = "chip";
-  chip.innerHTML = `${tag} <button class="chip-remove" data-tag="${tag}">&times;</button>`;
+  chip.textContent = `${tag} <button class="chip-remove" data-tag="${tag}">&times;</button>`;
   chipList.appendChild(chip);
   chip.querySelector(".chip-remove").addEventListener("click", function () {
     chip.remove();
