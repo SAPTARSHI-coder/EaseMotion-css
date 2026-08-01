@@ -22,12 +22,12 @@
 
       function getActiveIndex() {
         var scrollLeft = track.scrollLeft;
-        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track).gap || "0");
+        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track, 10).gap || "0");
         return Math.round(scrollLeft / slideWidth);
       }
 
       function goTo(index) {
-        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track).gap || "0");
+        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track, 10).gap || "0");
         track.scrollTo({ left: index * slideWidth, behavior: "smooth" });
       }
 
@@ -49,7 +49,7 @@
       updateDots();
 
       /* Auto-play */
-      var interval = parseInt(carousel.getAttribute("data-interval") || "0");
+      var interval = parseInt(carousel.getAttribute("data-interval", 10) || "0");
       if (interval > 0) {
         var timer = setInterval(function () {
           var nextIdx = getActiveIndex() + 1;

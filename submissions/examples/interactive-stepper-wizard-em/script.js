@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update content panels
     panels.forEach((panel) => {
-      const panelNum = parseInt(panel.getAttribute('data-panel'), 10);
+      const panelNum = parseInt(panel.getAttribute('data-panel', 10), 10);
       if (panelNum === currentStep) {
         panel.removeAttribute('hidden');
       } else {
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Allow direct step clicking for completed steps
   stepperItems.forEach((item) => {
     item.addEventListener('click', () => {
-      const stepNum = parseInt(item.getAttribute('data-step'), 10);
+      const stepNum = parseInt(item.getAttribute('data-step', 10), 10);
       // Can navigate to completed steps or current active step
       if (stepNum <= currentStep) {
         updateWizard(stepNum);
