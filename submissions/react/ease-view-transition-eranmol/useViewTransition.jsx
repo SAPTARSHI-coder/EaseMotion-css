@@ -39,17 +39,4 @@ export function useViewTransition({
       });
 
       transition.ready.then(() => {
-        // Expose duration / easing via CSS custom properties so the
-        // companion style.css can drive the ::view-transition pseudo-elements.
-        document.documentElement.style.setProperty(
-          '--vt-duration',
-          `${duration}ms`
-        );
-        document.documentElement.style.setProperty('--vt-easing', easing);
-      });
-    },
-    [supported, duration, easing, onReady]
-  );
-
-  return { startTransition, supported };
-}
+      .catch(err => console.error(err))
