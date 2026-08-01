@@ -1,0 +1,364 @@
+/* =============================================================
+   EaseMotion CSS — Compositor-Only Performance Guide
+   Issue: #58550 | Suffix: skg
+   All animations here use ONLY transform + opacity (or filter).
+   This file is itself an example of the pattern it teaches.
+   ============================================================= */
+
+/* --- Tokens -------------------------------------------------- */
+:root {
+  --font:      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono:      'Fira Code', 'Cascadia Code', Consolas, monospace;
+
+  --bg:         hsl(220, 20%, 97%);
+  --surface:    hsl(0, 0%, 100%);
+  --border:     hsl(220, 15%, 90%);
+  --text:       hsl(222, 47%, 11%);
+  --muted:      hsl(220, 10%, 45%);
+  --primary:    hsl(221, 83%, 53%);
+  --primary-bg: hsl(221, 83%, 96%);
+  --green:      hsl(142, 71%, 45%);
+  --green-bg:   hsl(142, 71%, 95%);
+  --red:        hsl(0, 80%, 55%);
+  --red-bg:     hsl(0, 80%, 96%);
+  --yellow:     hsl(38, 92%, 50%);
+  --yellow-bg:  hsl(38, 92%, 95%);
+
+  --shadow: 0 4px 18px -2px rgba(0,0,0,.06), 0 2px 6px -1px rgba(0,0,0,.03);
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+}
+
+html.dark {
+  --bg:         hsl(222, 47%, 7%);
+  --surface:    hsl(222, 47%, 11%);
+  --border:     hsl(222, 40%, 18%);
+  --text:       hsl(210, 40%, 96%);
+  --muted:      hsl(215, 20%, 58%);
+  --primary:    hsl(217, 91%, 62%);
+  --primary-bg: hsl(217, 91%, 14%);
+  --green-bg:   hsl(142, 50%, 12%);
+  --red-bg:     hsl(0, 50%, 13%);
+  --yellow-bg:  hsl(38, 50%, 13%);
+  --shadow:     0 4px 20px -2px rgba(0,0,0,.4);
+}
+
+/* --- Reset --------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-color .3s, color .3s;
+}
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code {
+  font-family: var(--mono);
+  font-size: .85em;
+  background: var(--primary-bg);
+  color: var(--primary);
+  padding: .15em .4em;
+  border-radius: 5px;
+}
+
+/* --- Ambient orbs -------------------------------------------- */
+.orb {
+  position: fixed;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: .1;
+  pointer-events: none;
+  z-index: -1;
+}
+.orb-a { background: var(--primary); top: -150px; right: -150px; }
+.orb-b { background: hsl(265, 70%, 55%); bottom: -180px; left: -180px; }
+html.dark .orb { opacity: .07; }
+
+/* --- Header -------------------------------------------------- */
+.header {
+  position: sticky; top: 0; z-index: 40;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+.nav {
+  max-width: 1100px; margin: 0 auto;
+  padding: 1.1rem 1.75rem;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: .45rem;
+  font-weight: 700; font-size: 1.15rem;
+  color: var(--text); text-decoration: none;
+  margin-right: auto;
+}
+.nav-logo__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--primary); }
+.nav-links { display: flex; gap: .2rem; }
+.nav-link {
+  font-size: .875rem; font-weight: 500; color: var(--muted);
+  padding: .35rem .8rem; border-radius: 9999px;
+  transition: color .2s, background .2s;
+}
+.nav-link:hover { color: var(--text); background: var(--border); text-decoration: none; }
+
+.toggle-theme {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: none; color: var(--text);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: border-color .2s;
+}
+.toggle-theme:hover { border-color: var(--primary); }
+.toggle-theme svg { width: 17px; height: 17px; }
+.sun { display: none; }
+html.dark .sun  { display: block; }
+html.dark .moon { display: none; }
+
+/* --- Page / sections ---------------------------------------- */
+.page { max-width: 1100px; margin: 0 auto; padding: 4rem 1.75rem 6rem; }
+
+.hero { text-align: center; max-width: 720px; margin: 0 auto 5rem; }
+.hero__h1 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-weight: 800; letter-spacing: -.03em; line-height: 1.1;
+  margin-bottom: 1.1rem;
+}
+.hero__p { font-size: 1.05rem; color: var(--muted); line-height: 1.8; }
+
+.badge {
+  display: inline-block; padding: .25rem .8rem;
+  font-size: .78rem; font-weight: 600; border-radius: 9999px;
+  background: var(--primary-bg); color: var(--primary);
+  border: 1px solid hsl(221, 60%, 85%);
+  margin-bottom: 1.1rem;
+}
+html.dark .badge { border-color: hsl(217, 60%, 22%); }
+.badge--perf { background: var(--primary-bg); color: var(--primary); }
+.badge--green { background: var(--green-bg); color: var(--green); border: 1px solid hsl(142, 50%, 80%); }
+.badge--red   { background: var(--red-bg);   color: var(--red);   border: 1px solid hsl(0, 50%, 82%); }
+.badge--yellow { background: var(--yellow-bg); color: hsl(38, 90%, 35%); border: 1px solid hsl(38, 60%, 75%); }
+html.dark .badge--green  { border-color: hsl(142, 50%, 20%); }
+html.dark .badge--red    { border-color: hsl(0, 50%, 22%); }
+html.dark .badge--yellow { border-color: hsl(38, 50%, 22%); color: hsl(38, 92%, 60%); }
+
+.section { margin-bottom: 5rem; }
+.section__h2 { font-size: 1.65rem; font-weight: 700; margin-bottom: .5rem; }
+.section__p  { color: var(--muted); font-size: .95rem; line-height: 1.75; margin-bottom: 2rem; }
+
+/* --- Pipeline diagram --------------------------------------- */
+.pipeline {
+  display: flex; align-items: stretch;
+  gap: 0; flex-wrap: wrap;
+}
+.pipeline__step {
+  flex: 1; min-width: 200px;
+  padding: 1.5rem; border: 1px solid var(--border);
+  border-radius: var(--r-md); background: var(--surface);
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.pipeline__step--bad  { border-top: 3px solid var(--red); }
+.pipeline__step--warn { border-top: 3px solid var(--yellow); }
+.pipeline__step--good { border-top: 3px solid var(--green); }
+
+.pipeline__num {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 1rem; background: var(--bg);
+  border: 1px solid var(--border);
+}
+.pipeline__label { font-size: 1.05rem; font-weight: 700; }
+.pipeline__note  { font-size: .875rem; color: var(--muted); line-height: 1.6; flex: 1; }
+.pipeline__cost  { font-size: .8rem; font-weight: 600; padding: .25rem .6rem; border-radius: 6px; align-self: flex-start; }
+.pipeline__cost--bad  { background: var(--red-bg);    color: var(--red); }
+.pipeline__cost--warn { background: var(--yellow-bg); color: hsl(38, 90%, 35%); }
+.pipeline__cost--good { background: var(--green-bg);  color: var(--green); }
+html.dark .pipeline__cost--warn { color: hsl(38, 92%, 60%); }
+
+.pipeline__arrow {
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 .75rem; font-size: 1.5rem; color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* --- Live demo boxes --------------------------------------- */
+.demo-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.demo-card {
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface); box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.demo-card--bad  { border-top: 3px solid var(--red); }
+.demo-card--good { border-top: 3px solid var(--green); }
+
+.demo-card__head {
+  display: flex; align-items: center; gap: .6rem;
+  padding: 1rem 1.5rem; border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.demo-card__title { font-size: 1rem; font-weight: 700; }
+.demo-card__stage {
+  height: 130px; display: flex; align-items: center;
+  justify-content: center; position: relative;
+  overflow: hidden;
+}
+.demo-card__info { padding: .75rem 1.5rem; }
+.demo-card__props { font-size: .85rem; color: var(--muted); margin-bottom: .25rem; }
+.demo-card__cost  { font-size: .82rem; color: var(--muted); }
+
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.status-dot--red   { background: var(--red); }
+.status-dot--green { background: var(--green); }
+
+/* --- The two animated boxes -------------------------------- */
+.box {
+  width: 52px; height: 52px; border-radius: 10px;
+  position: absolute;
+}
+
+/* ❌ BAD — animates top/left/width (layout-triggering) */
+.box--bad {
+  background: hsl(0, 70%, 60%);
+  /* Using position: relative + top/left to make the
+     paint-heavy animation visible. In real code this
+     would be position:absolute inside a positioned parent. */
+  position: relative;
+  will-change: unset;    /* no GPU hint */
+  animation: demo-bad 2s ease-in-out infinite alternate;
+}
+@keyframes demo-bad {
+  from { top: 0px; left: -20px; width: 52px; }
+  to   { top: 30px; left: 20px; width: 78px; }
+}
+
+/* ✅ GOOD — animates transform + opacity only */
+.box--good {
+  background: hsl(142, 60%, 48%);
+  will-change: transform, opacity;
+  animation: demo-good 2s ease-in-out infinite alternate;
+}
+@keyframes demo-good {
+  from { transform: translate(-20px, 0) scale(1);    opacity: 1; }
+  to   { transform: translate(20px, 30px) scale(1.5); opacity: .75; }
+}
+
+/* --- Code blocks ------------------------------------------- */
+.code-block {
+  font-family: var(--mono); font-size: .82rem; line-height: 1.85;
+  background: var(--bg); border: 1px solid var(--border);
+  padding: 1.1rem 1.5rem; overflow-x: auto; white-space: pre;
+}
+.demo-card > .code-block { border-top: 1px solid var(--border); border-radius: 0; }
+
+.t-kw   { color: hsl(295, 65%, 52%); }
+.t-name { color: hsl(207, 85%, 50%); }
+.t-sel  { color: hsl(30, 80%, 50%); }
+.t-prop { color: hsl(207, 85%, 50%); }
+.t-val  { color: hsl(140, 60%, 42%); }
+.t-comment { color: var(--muted); font-style: italic; }
+html.dark .t-kw   { color: hsl(295, 75%, 70%); }
+html.dark .t-name { color: hsl(207, 90%, 68%); }
+html.dark .t-sel  { color: hsl(30, 90%, 65%); }
+html.dark .t-prop { color: hsl(207, 90%, 68%); }
+html.dark .t-val  { color: hsl(140, 65%, 58%); }
+
+/* --- Reference table --------------------------------------- */
+.table-wrap { overflow-x: auto; border-radius: var(--r-lg); box-shadow: var(--shadow); }
+.ref-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface); font-size: .88rem;
+}
+.ref-table th {
+  text-align: left; padding: .75rem 1rem;
+  background: var(--bg); font-size: .76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.ref-table td { padding: .7rem 1rem; border-bottom: 1px solid var(--border); }
+.ref-table tr:last-child td { border-bottom: none; }
+.row--good td:first-child code { color: var(--green); }
+.row--bad  td:first-child code { color: var(--red); }
+
+/* --- Pill tags --------------------------------------------- */
+.pill-tag {
+  display: inline-block; padding: .2rem .65rem;
+  font-size: .76rem; font-weight: 600; border-radius: 9999px;
+}
+.pill-tag--red   { background: var(--red-bg);   color: var(--red); }
+.pill-tag--green { background: var(--green-bg); color: var(--green); }
+
+/* --- Refactor grid ----------------------------------------- */
+.refactor-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+.refactor-card {
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface); box-shadow: var(--shadow); overflow: hidden;
+}
+.refactor-card__head {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .75rem 1.25rem;
+}
+.refactor-card__head--before { background: var(--red-bg);   border-bottom: 1px solid var(--border); }
+.refactor-card__head--after  { background: var(--green-bg); border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); }
+.refactor-card > .code-block { border-radius: 0; border: none; border-top: 1px solid var(--border); }
+
+/* --- Config grid ------------------------------------------- */
+.config-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+.config-card {
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface); box-shadow: var(--shadow); overflow: hidden;
+}
+.config-card__title {
+  padding: .85rem 1.25rem; font-size: .9rem; font-weight: 700;
+  border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.config-card > .code-block { border-radius: 0; border: none; }
+
+/* --- will-change tip --------------------------------------- */
+.tip-card {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+}
+.tip-card__col {
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface); box-shadow: var(--shadow); overflow: hidden;
+}
+.tip-card__h3 {
+  padding: .85rem 1.25rem; font-size: .9rem; font-weight: 700;
+  border-bottom: 1px solid var(--border); background: var(--bg);
+}
+.tip-card__col > .code-block { border-radius: 0; border: none; }
+
+/* --- Footer ------------------------------------------------ */
+.footer {
+  text-align: center; padding: 3rem 1.75rem;
+  border-top: 1px solid var(--border); color: var(--muted); font-size: .875rem;
+}
+
+/* --- Reduced motion ---------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .box--bad, .box--good { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* --- Responsive -------------------------------------------- */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .pipeline  { flex-direction: column; }
+  .pipeline__arrow { transform: rotate(90deg); padding: .25rem 0; }
+  .demo-row, .refactor-grid, .config-grid, .tip-card { grid-template-columns: 1fr; }
+}

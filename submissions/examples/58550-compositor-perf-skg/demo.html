@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compositor-Only Animations — EaseMotion CSS Performance Guide</title>
+  <meta name="description" content="Visual guide demonstrating why compositor-only (transform + opacity) animations outperform layout-triggering properties, and how stylelint-high-performance-animation enforces this in EaseMotion CSS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <header class="header">
+    <nav class="nav">
+      <a href="../../" class="nav-logo">
+        <span class="nav-logo__dot"></span>EaseMotion
+      </a>
+      <div class="nav-links">
+        <a href="../../" class="nav-link">Home</a>
+        <a href="../../submissions/" class="nav-link">Examples</a>
+        <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css" class="nav-link" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <button class="toggle-theme" id="themeToggle" aria-label="Toggle dark mode" type="button">
+        <svg class="moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main class="page">
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <span class="badge badge--perf">Performance · CSS Architecture</span>
+      <h1 class="hero__h1">Compositor-Only&nbsp;Animations</h1>
+      <p class="hero__p">
+        A visual guide to why EaseMotion CSS enforces <strong>transform</strong> and <strong>opacity</strong>
+        for all keyframe animations — and how <code>stylelint-high-performance-animation</code> prevents
+        layout-triggering regressions in every PR.
+      </p>
+    </section>
+
+    <!-- ── Section 1 — The rendering pipeline ── -->
+    <section class="section">
+      <h2 class="section__h2">How the Browser Renders a Frame</h2>
+      <p class="section__p">The browser runs three sequential stages per animation frame. Only the last stage runs on the GPU compositor thread — interrupting earlier stages forces the CPU back into expensive work.</p>
+
+      <div class="pipeline">
+        <div class="pipeline__step pipeline__step--bad">
+          <div class="pipeline__num">1</div>
+          <div class="pipeline__label">Layout</div>
+          <div class="pipeline__note">Recalculates geometry of <em>every affected element</em> when <code>width</code>, <code>height</code>, <code>top</code>, <code>margin</code>, or <code>padding</code> changes</div>
+          <span class="pipeline__cost pipeline__cost--bad">🔴 Expensive — CPU, blocks thread</span>
+        </div>
+        <div class="pipeline__arrow" aria-hidden="true">→</div>
+        <div class="pipeline__step pipeline__step--warn">
+          <div class="pipeline__num">2</div>
+          <div class="pipeline__label">Paint</div>
+          <div class="pipeline__note">Fills in pixels when <code>color</code>, <code>background</code>, <code>border</code>, or <code>box-shadow</code> changes</div>
+          <span class="pipeline__cost pipeline__cost--warn">🟡 Moderate — CPU rasterization</span>
+        </div>
+        <div class="pipeline__arrow" aria-hidden="true">→</div>
+        <div class="pipeline__step pipeline__step--good">
+          <div class="pipeline__num">3</div>
+          <div class="pipeline__label">Composite</div>
+          <div class="pipeline__note">Moves and blends already-painted layers using <code>transform</code> and <code>opacity</code></div>
+          <span class="pipeline__cost pipeline__cost--good">🟢 Free on GPU — no CPU stall</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 2 — Side by side demo ── -->
+    <section class="section">
+      <h2 class="section__h2">Live Demo: Jank vs Smooth</h2>
+      <p class="section__p">Both boxes animate identically on screen — but one forces layout recalculation every frame while the other runs entirely on the GPU compositor.</p>
+
+      <div class="demo-row">
+        <!-- BAD -->
+        <div class="demo-card demo-card--bad">
+          <header class="demo-card__head">
+            <span class="status-dot status-dot--red"></span>
+            <h3 class="demo-card__title">Paint-Heavy (Bad)</h3>
+          </header>
+          <div class="demo-card__stage">
+            <div class="box box--bad" aria-label="Box animating using top and left properties"></div>
+          </div>
+          <div class="demo-card__info">
+            <p class="demo-card__props">Animates: <code>top</code>, <code>left</code>, <code>width</code></p>
+            <p class="demo-card__cost">Triggers: Layout → Paint → Composite every frame</p>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">bad-move</span> {
+  <span class="t-sel">from</span> { <span class="t-prop">top</span>: <span class="t-val">0px</span>; <span class="t-prop">left</span>: <span class="t-val">0px</span>; <span class="t-prop">width</span>: <span class="t-val">60px</span>; }
+  <span class="t-sel">to</span>   { <span class="t-prop">top</span>: <span class="t-val">40px</span>; <span class="t-prop">left</span>: <span class="t-val">40px</span>; <span class="t-prop">width</span>: <span class="t-val">90px</span>; }
+}
+<span class="t-comment">/* ❌ layout-triggering on every frame */</span></pre>
+        </div>
+
+        <!-- GOOD -->
+        <div class="demo-card demo-card--good">
+          <header class="demo-card__head">
+            <span class="status-dot status-dot--green"></span>
+            <h3 class="demo-card__title">Compositor-Only (Good)</h3>
+          </header>
+          <div class="demo-card__stage">
+            <div class="box box--good" aria-label="Box animating using transform and opacity"></div>
+          </div>
+          <div class="demo-card__info">
+            <p class="demo-card__props">Animates: <code>transform</code>, <code>opacity</code></p>
+            <p class="demo-card__cost">Triggers: Composite only — GPU handles it</p>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">good-move</span> {
+  <span class="t-sel">from</span> { <span class="t-prop">transform</span>: <span class="t-val">translate(0, 0) scale(1)</span>; <span class="t-prop">opacity</span>: <span class="t-val">1</span>; }
+  <span class="t-sel">to</span>   { <span class="t-prop">transform</span>: <span class="t-val">translate(40px, 40px) scale(1.5)</span>; <span class="t-prop">opacity</span>: <span class="t-val">.7</span>; }
+}
+<span class="t-comment">/* ✅ compositor-only — zero layout recalc */</span></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 3 — Property reference table ── -->
+    <section class="section">
+      <h2 class="section__h2">Property Reference: Safe vs Unsafe</h2>
+      <p class="section__p">Use this as a quick lookup when writing or reviewing keyframe animations in EaseMotion CSS.</p>
+
+      <div class="table-wrap">
+        <table class="ref-table" aria-label="CSS animation property performance reference">
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Pipeline cost</th>
+              <th>Use in keyframes?</th>
+              <th>Compositor alternative</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="row--good">
+              <td><code>transform</code></td>
+              <td><span class="badge badge--green">Composite only</span></td>
+              <td>✅ Yes</td>
+              <td>— (this <em>is</em> the alternative)</td>
+            </tr>
+            <tr class="row--good">
+              <td><code>opacity</code></td>
+              <td><span class="badge badge--green">Composite only</span></td>
+              <td>✅ Yes</td>
+              <td>— (this <em>is</em> the alternative)</td>
+            </tr>
+            <tr class="row--ok">
+              <td><code>filter</code></td>
+              <td><span class="badge badge--yellow">Composite (GPU)</span></td>
+              <td>⚠️ With caution</td>
+              <td>Use <code>transform</code> where possible</td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>top</code> / <code>left</code> / <code>bottom</code> / <code>right</code></td>
+              <td><span class="badge badge--red">Layout + Paint</span></td>
+              <td>❌ No</td>
+              <td><code>transform: translate(x, y)</code></td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>width</code> / <code>height</code></td>
+              <td><span class="badge badge--red">Layout + Paint</span></td>
+              <td>❌ No</td>
+              <td><code>transform: scale()</code></td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>margin</code> / <code>padding</code></td>
+              <td><span class="badge badge--red">Layout + Paint</span></td>
+              <td>❌ No</td>
+              <td><code>transform: translate()</code></td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>background-color</code></td>
+              <td><span class="badge badge--yellow">Paint only</span></td>
+              <td>❌ No</td>
+              <td>Fade overlay with <code>opacity</code></td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>box-shadow</code></td>
+              <td><span class="badge badge--yellow">Paint only</span></td>
+              <td>❌ No</td>
+              <td>Animate <code>opacity</code> on a pseudo-element shadow</td>
+            </tr>
+            <tr class="row--bad">
+              <td><code>border-width</code></td>
+              <td><span class="badge badge--red">Layout + Paint</span></td>
+              <td>❌ No</td>
+              <td><code>outline</code> or <code>box-shadow</code> inset (paint-only)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Section 4 — Refactor patterns ── -->
+    <section class="section">
+      <h2 class="section__h2">Refactor Patterns</h2>
+      <p class="section__p">Common paint-heavy keyframes found in community submissions, and their compositor-only equivalents.</p>
+
+      <div class="refactor-grid">
+
+        <div class="refactor-card">
+          <div class="refactor-card__head refactor-card__head--before">
+            <span class="pill-tag pill-tag--red">Before — triggers Layout</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">bounce-old</span> {
+  0%   { <span class="t-prop">top</span>: <span class="t-val">0</span>; }
+  50%  { <span class="t-prop">top</span>: <span class="t-val">-20px</span>; }
+  100% { <span class="t-prop">top</span>: <span class="t-val">0</span>; }
+}</pre>
+          <div class="refactor-card__head refactor-card__head--after">
+            <span class="pill-tag pill-tag--green">After — compositor-only</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">ease-kf-bounce</span> {
+  0%   { <span class="t-prop">transform</span>: <span class="t-val">translateY(0)</span>; }
+  50%  { <span class="t-prop">transform</span>: <span class="t-val">translateY(-20px)</span>; }
+  100% { <span class="t-prop">transform</span>: <span class="t-val">translateY(0)</span>; }
+}</pre>
+        </div>
+
+        <div class="refactor-card">
+          <div class="refactor-card__head refactor-card__head--before">
+            <span class="pill-tag pill-tag--red">Before — triggers Layout + Paint</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">expand-old</span> {
+  from { <span class="t-prop">width</span>: <span class="t-val">100px</span>; <span class="t-prop">height</span>: <span class="t-val">100px</span>; }
+  to   { <span class="t-prop">width</span>: <span class="t-val">200px</span>; <span class="t-prop">height</span>: <span class="t-val">200px</span>; }
+}</pre>
+          <div class="refactor-card__head refactor-card__head--after">
+            <span class="pill-tag pill-tag--green">After — compositor-only</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">ease-kf-expand</span> {
+  from { <span class="t-prop">transform</span>: <span class="t-val">scale(1)</span>; }
+  to   { <span class="t-prop">transform</span>: <span class="t-val">scale(2)</span>; }
+}</pre>
+        </div>
+
+        <div class="refactor-card">
+          <div class="refactor-card__head refactor-card__head--before">
+            <span class="pill-tag pill-tag--red">Before — triggers Paint</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">shadow-pulse-old</span> {
+  0%   { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 0 rgba(59,130,246,0)</span>; }
+  50%  { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 20px rgba(59,130,246,.6)</span>; }
+  100% { <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 0 rgba(59,130,246,0)</span>; }
+}</pre>
+          <div class="refactor-card__head refactor-card__head--after">
+            <span class="pill-tag pill-tag--green">After — opacity on ::after pseudo-element</span>
+          </div>
+          <pre class="code-block"><span class="t-comment">/* Static shadow on ::after; animate opacity */</span>
+<span class="t-sel">.glow-btn::after</span> {
+  <span class="t-prop">content</span>: <span class="t-val">""</span>;
+  <span class="t-prop">box-shadow</span>: <span class="t-val">0 0 20px rgba(59,130,246,.6)</span>;
+  <span class="t-prop">opacity</span>: <span class="t-val">0</span>;
+  <span class="t-prop">animation</span>: <span class="t-val">ease-kf-glow-pulse 2s ease infinite</span>;
+}
+<span class="t-kw">@keyframes</span> <span class="t-name">ease-kf-glow-pulse</span> {
+  <span class="t-sel">0%, 100%</span> { <span class="t-prop">opacity</span>: <span class="t-val">0</span>; }
+  <span class="t-sel">50%</span>       { <span class="t-prop">opacity</span>: <span class="t-val">1</span>; }
+}</pre>
+        </div>
+
+        <div class="refactor-card">
+          <div class="refactor-card__head refactor-card__head--before">
+            <span class="pill-tag pill-tag--red">Before — margin triggers Layout</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">slide-right-old</span> {
+  from { <span class="t-prop">margin-left</span>: <span class="t-val">-100%</span>; }
+  to   { <span class="t-prop">margin-left</span>: <span class="t-val">0</span>; }
+}</pre>
+          <div class="refactor-card__head refactor-card__head--after">
+            <span class="pill-tag pill-tag--green">After — compositor-only</span>
+          </div>
+          <pre class="code-block"><span class="t-kw">@keyframes</span> <span class="t-name">ease-kf-slide-in-left</span> {
+  from { <span class="t-prop">transform</span>: <span class="t-val">translate3d(-100%, 0, 0)</span>; <span class="t-prop">opacity</span>: <span class="t-val">0</span>; }
+  to   { <span class="t-prop">transform</span>: <span class="t-val">translate3d(0, 0, 0)</span>; <span class="t-prop">opacity</span>: <span class="t-val">1</span>; }
+}</pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Section 5 — Stylelint config ── -->
+    <section class="section">
+      <h2 class="section__h2">Enforcing This with Stylelint</h2>
+      <p class="section__p">
+        The <code>stylelint-high-performance-animation</code> plugin statically analyses CSS files at build time and rejects any <code>@keyframes</code> block that includes layout or paint-triggering properties. This prevents regressions before they reach <code>main</code>.
+      </p>
+
+      <div class="config-grid">
+
+        <div class="config-card">
+          <div class="config-card__title">1. Add the plugin to devDependencies</div>
+          <pre class="code-block"><span class="t-comment"># npm</span>
+npm install --save-dev \
+  stylelint \
+  stylelint-high-performance-animation
+
+<span class="t-comment"># package.json devDependencies result:</span>
+<span class="t-prop">"stylelint"</span>: <span class="t-val">"^17.12.0"</span>,
+<span class="t-prop">"stylelint-high-performance-animation"</span>: <span class="t-val">"^1.10.0"</span></pre>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card__title">2. Update .stylelintrc.json</div>
+          <pre class="code-block">{
+  <span class="t-prop">"extends"</span>: <span class="t-val">"stylelint-config-standard"</span>,
+  <span class="t-prop">"plugins"</span>: [
+    <span class="t-val">"stylelint-high-performance-animation"</span>
+  ],
+  <span class="t-prop">"rules"</span>: {
+    <span class="t-comment">/* Reject non-compositor animation properties */</span>
+    <span class="t-prop">"plugin/no-low-performance-animation-properties"</span>: [
+      <span class="t-val">true</span>,
+      {
+        <span class="t-prop">"severity"</span>: <span class="t-val">"error"</span>,
+        <span class="t-prop">"ignore"</span>: <span class="t-val">"paint-properties"</span>
+      }
+    ]
+    <span class="t-comment">/* ... rest of existing rules ... */</span>
+  }
+}</pre>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card__title">3. Add npm script (already exists)</div>
+          <pre class="code-block"><span class="t-comment">// package.json scripts</span>
+{
+  <span class="t-prop">"lint:css"</span>: <span class="t-val">"stylelint \"**/*.css\""</span>
+}
+
+<span class="t-comment"># Run locally before committing:</span>
+npm run lint:css
+
+<span class="t-comment"># EaseMotion already has this in CI</span>
+<span class="t-comment"># (.github/workflows/ci.yml → Stylelint step)</span></pre>
+        </div>
+
+        <div class="config-card">
+          <div class="config-card__title">4. What the linter catches</div>
+          <pre class="code-block"><span class="t-comment">/* ❌ This will fail the lint step: */</span>
+<span class="t-kw">@keyframes</span> <span class="t-name">bad</span> {
+  from { <span class="t-prop">top</span>: <span class="t-val">0</span>; <span class="t-prop">width</span>: <span class="t-val">100px</span>; }
+  to   { <span class="t-prop">top</span>: <span class="t-val">20px</span>; <span class="t-prop">width</span>: <span class="t-val">200px</span>; }
+}
+<span class="t-comment">/* Error: Unexpected low performance animation property: top */</span>
+<span class="t-comment">/* Error: Unexpected low performance animation property: width */</span>
+
+<span class="t-comment">/* ✅ This passes: */</span>
+<span class="t-kw">@keyframes</span> <span class="t-name">good</span> {
+  from { <span class="t-prop">transform</span>: <span class="t-val">translateY(0)</span>; }
+  to   { <span class="t-prop">transform</span>: <span class="t-val">translateY(20px)</span>; }
+}</pre>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Section 6 — will-change tip ── -->
+    <section class="section">
+      <h2 class="section__h2">Bonus: Hinting the Compositor with <code>will-change</code></h2>
+      <p class="section__p">Even compositor-only animations can skip the GPU promotion step on the first frame. Adding <code>will-change: transform, opacity</code> to the animated element tells the browser to promote the layer <em>before</em> the animation starts, eliminating that first-frame flash.</p>
+
+      <div class="tip-card">
+        <div class="tip-card__col">
+          <h3 class="tip-card__h3">✅ Correct usage</h3>
+          <pre class="code-block"><span class="t-sel">.ease-fade-in</span> {
+  <span class="t-prop">will-change</span>: <span class="t-val">transform, opacity</span>;
+  <span class="t-prop">animation</span>: <span class="t-val">ease-kf-fade-in .4s ease forwards</span>;
+}
+<span class="t-comment">/* Browser promotes layer before playback */</span></pre>
+        </div>
+        <div class="tip-card__col">
+          <h3 class="tip-card__h3">⚠️ Overuse warning</h3>
+          <pre class="code-block"><span class="t-comment">/* DON'T apply will-change to everything! */</span>
+<span class="t-sel">* { <span class="t-prop">will-change</span>: <span class="t-val">transform</span>; </span>}
+<span class="t-comment">/* Promotes ALL elements → wastes GPU memory */</span>
+<span class="t-comment">/* Only use on elements that will animate */</span></pre>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>
+      Compositor-Only Animations Guide &mdash;
+      <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/58550" target="_blank" rel="noopener">Issue #58550</a>
+      &mdash; Part of <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css" target="_blank" rel="noopener">EaseMotion CSS</a>
+    </p>
+  </footer>
+
+  <script>
+    const btn = document.getElementById('themeToggle');
+    const html = document.documentElement;
+    if (localStorage.getItem('em-theme') === 'dark') html.classList.add('dark');
+    btn.addEventListener('click', () => {
+      html.classList.toggle('dark');
+      localStorage.setItem('em-theme', html.classList.contains('dark') ? 'dark' : 'light');
+    });
+  </script>
+</body>
+</html>
