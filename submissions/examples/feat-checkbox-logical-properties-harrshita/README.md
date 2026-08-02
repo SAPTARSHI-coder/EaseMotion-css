@@ -16,4 +16,4 @@ This architectural shift ensures the component automatically and flawlessly mirr
 - `style.css`: 100% logical properties. No physical directions used.
 - `demo.html`: A side-by-side demonstration proving the exact same CSS class automatically mirrors itself perfectly when placed inside a `<div dir="rtl">` container.
 - `README.md`: Explains the accessibility and internationalization benefits.
-\nFixes #56814\n
+\nFixes #59724\n
