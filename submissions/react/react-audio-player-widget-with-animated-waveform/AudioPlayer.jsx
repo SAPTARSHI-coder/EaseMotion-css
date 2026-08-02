@@ -98,7 +98,7 @@ const AudioPlayer = ({ src, title, artist, coverArt }) => {
 
   // Format time (e.g. 125s -> "2:05")
   const formatTime = (timeInSeconds) => {
-    if (!timeInSeconds || isNaN(timeInSeconds)) return "0:00";
+    if (!timeInSeconds || Number.isNaN(timeInSeconds)) return "0:00";
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = Math.floor(timeInSeconds % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;

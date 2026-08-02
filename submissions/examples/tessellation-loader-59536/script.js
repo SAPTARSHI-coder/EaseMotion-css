@@ -18,8 +18,8 @@ let tiles = [];
 let config = {
     pattern: patternTypeSelect.value,
     speed: parseFloat(speedInput.value),
-    size: parseInt(sizeInput.value),
-    shiftIntensity: parseInt(shiftInput.value) / 100
+    size: parseInt(sizeInput.value, 10),
+    shiftIntensity: parseInt(shiftInput.value, 10) / 100
 };
 
 // Event Listeners
@@ -34,13 +34,13 @@ speedInput.addEventListener('input', (e) => {
 });
 
 sizeInput.addEventListener('input', (e) => {
-    config.size = parseInt(e.target.value);
+    config.size = parseInt(e.target.value, 10);
     sizeVal.textContent = config.size + 'px';
     generateTiles();
 });
 
 shiftInput.addEventListener('input', (e) => {
-    config.shiftIntensity = parseInt(e.target.value) / 100;
+    config.shiftIntensity = parseInt(e.target.value, 10) / 100;
     shiftVal.textContent = e.target.value + '%';
 });
 

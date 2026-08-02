@@ -32,7 +32,7 @@ export default function CryptoLiquidRippleModal({
   // Synchronize inputs based on active trading conversions
   const handlePayChange = (val) => {
     setPayAmount(val);
-    if (!isNaN(parseFloat(val))) {
+    if (!Number.isNaN(parseFloat(val))) {
       setReceiveAmount((parseFloat(val) * 3450).toFixed(2));
     } else {
       setReceiveAmount("0.00");

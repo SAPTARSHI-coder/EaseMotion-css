@@ -59,7 +59,7 @@ const AudioPlayer = ({
 
   // Format time (e.g., 65 -> 1:05)
   const formatTime = (timeInSeconds) => {
-    if (isNaN(timeInSeconds)) return "0:00";
+    if (Number.isNaN(timeInSeconds)) return "0:00";
     const m = Math.floor(timeInSeconds / 60);
     const s = Math.floor(timeInSeconds % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
