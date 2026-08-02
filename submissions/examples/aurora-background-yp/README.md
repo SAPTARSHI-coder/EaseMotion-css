@@ -1,28 +1,30 @@
-# Aurora Background Demo (CSS-Only)
+# Premium Interactive Aurora Background
 
 ## Overview
-A premium, **CSS-only** aurora background effect combined with an interactive starry night and scroll parallax. The design features a deep night sky blending into a vibrant green aurora, a glass-morphism hero card, and works in all modern browsers.
+A high-performance, full-screen **Aurora Background** effect with an interactive starry night sky and mouse-responsive cursor spotlight. Built with vanilla CSS gradient animation, glassmorphism UI, and lightweight 60fps JavaScript interaction.
 
 ## Features
-- **Starry Night Background**: A pure CSS starry sky using `radial-gradient`.
-- **Dynamic Aurora**: Smooth, sweeping green/teal aurora effects utilizing `mix-blend-mode` and CSS keyframes.
-- **Interactive Parallax**: A lightweight JavaScript snippet adds mouse movement and scroll-based parallax, causing the aurora light to shift as you scroll down.
-- **Premium Typography**: Uses the modern Inter font from Google Fonts.
+- **Full-Screen Aurora Background**: Glowing, sweeping emerald, teal, and cyan light ribbons (`.aurora1`, `.aurora2`, `.aurora3`) animating across the entire viewport using `mix-blend-mode: screen`.
+- **Interactive Cursor Spotlight**: A dynamic aurora light spotlight (`.aurora-cursor`) that fluidly tracks mouse pointer coordinates in real-time.
+- **Natural Inner Card Aurora**: Sleek crystal glass hero card with morphing inner aurora waves (`.hero-aurora1`, `.hero-aurora2`) and cursor tracking spotlight (`.hero-aurora-cursor`).
+- **Starry Night Canvas**: Crisp, repeating CSS radial-gradient star field overlaid on a dark night sky gradient.
+- **60fps Liquid Lerp Animation**: Lightweight JavaScript loop using `requestAnimationFrame` for silky smooth motion responsiveness.
+- **Premium Typography**: Modern typography using Inter from Google Fonts.
 
 ## Files
-- `demo.html` - HTML structure including the hero section, starry background, and the interactive parallax script.
-- `style.css` - All styling including gradients, animations, glass-morphism, and responsive design.
-- `README.md` - This documentation.
+- `demo.html` – Clean HTML5 structure containing the background canvas, aurora layers, crystal glass hero card, and interactive script.
+- `style.css` – Production-ready CSS featuring keyframe animations, glassmorphism, responsive typography, and z-index layer hierarchy.
+- `README.md` – Project documentation.
 
 ## How to Use
-1. Open `demo.html` in a browser.
-2. The aurora animation and starry background will start automatically.
-3. Move your mouse to see the layers shift, and **scroll down** to see the aurora move upwards!
+1. Open `demo.html` in any modern web browser.
+2. Move your mouse across the screen to see the full-screen aurora lights and cursor spotlight react dynamically.
+3. Use your mouse scroll wheel to subtly tilt and shift the background aurora layers.
 
 ## Customization Tips
-- **Colors** - Adjust the `radial-gradient` colors in `.aurora1`, `.aurora2`, etc., to change the aurora's hue.
-- **Scroll Speed** - In `demo.html`, tweak the `speed` variable inside the `window.addEventListener("scroll")` to change how fast the aurora shifts on scroll.
-- **Overlay** - Modify `.hero` for different glass-morphism blur and transparency.
+- **Aurora Hues**: Modify the `rgba(...)` values in `.aurora1`, `.aurora2`, `.aurora3`, or `.aurora-cursor` in `style.css` to customize the glow colors.
+- **Cursor Sensitivity**: Adjust the lerp factor (`0.12` or `0.08`) in `demo.html` script to change responsiveness speed.
+- **Glass Intensity**: Edit `.hero` backdrop-filter or border opacity to adjust glassmorphism blur and transparency.
 
 ## License
-MIT - Feel free to use, modify, and share.
+MIT – Free to use, modify, and distribute.
