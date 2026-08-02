@@ -1,19 +1,19 @@
 # Ease CSS Bounce-Pulse Badge for SaaS Showcase Layouts
 
-A high-energy, pure CSS/HTML Bounce-Pulse Badge component designed for SaaS landing pages, feature announcements, system status indicators, and call-to-action hero headers.
+A modern, high-impact pure CSS/HTML Bounce-Pulse Badge component designed for SaaS landing pages, feature update announcements, health status indicators, and promotional banners.
 
-This component combines downward bounce entrance keyframe physics with ambient pulse glow rings and responsive micro-interactions without requiring JavaScript.
+This component features rhythmic vertical bounce keyframe physics, expanding dual-stage pulse aura rings, and interactive micro-bounce hover effects without JavaScript.
 
 ---
 
 ## Features
 
 - **Pure HTML & CSS**: Zero JavaScript or external runtime dependencies.
-- **Squash-and-Stretch Bounce Physics**: Performant keyframe drop animation using `cubic-bezier(0.34, 1.56, 0.64, 1)`.
-- **Ambient Pulse Glow Rings**: Concentric expanding aura surrounding the badge for organic visual depth.
-- **Theme Variants**: Pre-styled for Feature Release (Primary), System Health (Success), Pro Upgrade (Purple Glow), and Urgency Alert (Warning).
-- **Fully Responsive**: Adapts fluidly across mobile, tablet, and high-density screens.
-- **Accessible Design**: Complies with `:focus-visible` keyboard focus indicators and `prefers-reduced-motion: reduce`.
+- **Rhythmic Bounce Keyframes**: Smooth vertical spring bounce using `cubic-bezier(0.34, 1.56, 0.64, 1)`.
+- **Expanding Pulse Aura**: Ambient radial glow pulse on indicator dots and badge borders.
+- **Theme Variants**: Pre-styled for Major Announcement (Primary), Health Indicator (Success), Limited Offer (Purple), and Urgent Waitlist (Warning).
+- **Responsive Design**: Touch-friendly dimensions adaptable across mobile, tablet, and desktop viewports.
+- **Accessibility Adaptive**: Full support for `:focus-visible` keyboard focus indicators and `prefers-reduced-motion: reduce`.
 
 ---
 
@@ -30,22 +30,21 @@ submissions/examples/css-bounce-pulse-badge/
 
 ## Quick Usage Example
 
-Include the stylesheet in your project head:
+Include the stylesheet in your document head:
 
 ```html
 <link rel="stylesheet" href="style.css">
 ```
 
-Add the Bounce-Pulse Badge to your HTML page:
+Insert the Bounce-Pulse Badge into your HTML layout:
 
 ```html
 <div class="bounce-badge-wrapper">
   <a href="#new-feature" class="bounce-badge bounce-badge--primary">
-    <span class="badge-pulse-glow-ring"></span>
-    <span class="badge-status-dot"></span>
-    <span class="badge-label-tag">NEW FEATURE</span>
+    <span class="badge-bounce-indicator"></span>
+    <span class="badge-label-tag">UPDATE</span>
     <span class="badge-divider" aria-hidden="true">|</span>
-    <span class="badge-text">WebSockets v3.2 Active</span>
+    <span class="badge-text">Rhythmic Bounce Engine Active</span>
     <span class="badge-arrow-icon" aria-hidden="true">&rarr;</span>
   </a>
 </div>
@@ -57,23 +56,21 @@ Add the Bounce-Pulse Badge to your HTML page:
 
 | Custom Property | Default Value | Description |
 | :--- | :--- | :--- |
-| `--ease-bounce-physics` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Squash-and-stretch bounce curve |
-| `--badge-primary-bg` | `rgba(99, 102, 241, 0.12)` | Background color for primary badge |
+| `--ease-bounce-curve` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Micro-bounce cubic-bezier curve |
+| `--bounce-duration` | `2.2s` | Full rhythmic bounce loop cycle |
+| `--pulse-duration` | `1.8s` | Indicator pulse aura expansion duration |
+| `--badge-primary-bg` | `rgba(99, 102, 241, 0.14)` | Background color for primary badge |
 | `--badge-primary-border` | `rgba(99, 102, 241, 0.45)` | Border accent color for primary badge |
-| `--badge-primary-dot` | `#6366f1` | Rhythm pulse indicator dot color |
-| `--badge-primary-glow` | `rgba(99, 102, 241, 0.35)` | Ambient pulse ring aura color |
 
 ---
 
 ## Reduced Motion Compliance
 
-For users with motion sensitivity or vestibular disorders, bounce keyframes and pulse ring oscillations automatically disable when `prefers-reduced-motion: reduce` is enabled:
+For users with motion sensitivity, bounce and pulse keyframe loops automatically stop when `prefers-reduced-motion: reduce` is enabled:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  .bounce-badge,
-  .badge-pulse-glow-ring,
-  .badge-status-dot {
+  .bounce-badge {
     animation: none !important;
     transition: none !important;
   }
