@@ -60,5 +60,5 @@ An interactive stained glass generator that creates beautiful, colorful glass pa
 // Add or change colors in the COLORS array
 const COLORS = [
   '#ff6b6b', '#ff4757', // Add your own hex colors
-  // ... up to 30 colors
+  // ... up to 30 color
 ];
