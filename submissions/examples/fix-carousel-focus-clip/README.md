@@ -1,7 +1,7 @@
-# Fix ease-accordion Focus Clipping
+# Fix ease-carousel Focus Clipping
 
 ## Description
-Replaces external outlines with an inset box-shadow to prevent the focus indicator from being clipped when the `accordion` component is placed inside an `overflow: hidden` or `overflow: auto` container.
+Replaces external outlines with an inset box-shadow to prevent the focus indicator from being clipped when the `carousel` component is placed inside an `overflow: hidden` or `overflow: auto` container.
 
 ## Usage
 Include the component as usual. The new CSS handles accessibility automatically.
