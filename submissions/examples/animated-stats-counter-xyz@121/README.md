@@ -34,3 +34,4 @@ A zero-dependency, CSS-only animated stats counter component designed for the **
     <div class="ease-stats-xyz-label">Countries</div>
   </div>
 </div>
+
