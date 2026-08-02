@@ -1,18 +1,19 @@
 # Ease CSS Elastic-Slide Badge for SaaS Showcase Layouts
 
-A modern, pure CSS Elastic-Slide Badge designed for SaaS product release announcements, feature highlights, and interactive status chips.
+A modern, high-impact pure CSS/HTML Elastic-Slide Badge component designed for SaaS landing pages, feature announcements, cluster status dashboards, and call-to-action indicators.
 
-This component features spring physics transitions (`cubic-bezier` elastic overshoot and rebound), smooth entry keyframe animations, and customizable theme tokens without JavaScript.
+This component features fluid spring-physics keyframe entrance animations, horizontal elastic stretch hover dynamics, and glowing indicator dots without requiring JavaScript.
 
 ---
 
 ## Features
 
-- **Pure HTML & CSS**: Zero JavaScript or runtime external dependencies.
-- **Spring Overshoot Animation**: Custom `cubic-bezier(0.68, -0.6, 0.32, 1.6)` keyframes for realistic elastic spring motion.
-- **Multi-Directional Motion**: Includes Elastic Slide Up, Left, Right, Top Drop, and Interactive Hover Rebound.
-- **Theme Variants**: Pre-styled for Primary Release, Live Status (Success), Feature Promo (Purple), and Early Access Alert (Warning).
-- **Responsive & Accessible**: Fully responsive layout across all viewports with keyboard focus states and `prefers-reduced-motion: reduce` compliance.
+- **Pure HTML & CSS**: Zero JavaScript frameworks or external runtime dependencies.
+- **Spring-Physics Keyframes**: Multi-stage `cubic-bezier(0.34, 1.56, 0.64, 1)` spring curves create realistic elastic motion.
+- **Interactive Stretch Dynamics**: Elastic horizontal expansion on hover and spring compression on click.
+- **Theme Variants**: Pre-styled for Feature Announcement (Primary), Realtime Status (Success), Upgrade Banner (Purple Glow), and High Urgency (Warning).
+- **Fully Responsive**: Fluid typography and scale for mobile, tablet, and high-DPI viewports.
+- **Accessible Design**: Built-in support for `:focus-visible` keyboard focus indicators and `prefers-reduced-motion: reduce`.
 
 ---
 
@@ -29,21 +30,22 @@ submissions/examples/css-elastic-slide-badge/
 
 ## Quick Usage Example
 
-Include `style.css` in your HTML document:
+Include the stylesheet in your document head:
 
 ```html
 <link rel="stylesheet" href="style.css">
 ```
 
-Add an Elastic-Slide Badge element:
+Insert the Elastic-Slide Badge into your HTML layout:
 
 ```html
 <div class="elastic-badge-wrapper">
-  <a href="#release" class="elastic-badge elastic-badge--primary elastic-slide-in">
-    <span class="badge-icon-box">&zap;</span>
-    <span class="badge-label-tag">v3.0 RELEASE</span>
-    <span class="badge-text">Next-Gen Motion Engine Active</span>
-    <span class="badge-arrow-icon">&rarr;</span>
+  <a href="#new-feature" class="elastic-badge elastic-badge--primary">
+    <span class="badge-elastic-indicator"></span>
+    <span class="badge-label-tag">FEATURE</span>
+    <span class="badge-divider" aria-hidden="true">|</span>
+    <span class="badge-text">Elastic Spring Engine Released</span>
+    <span class="badge-arrow-icon" aria-hidden="true">&rarr;</span>
   </a>
 </div>
 ```
@@ -54,28 +56,23 @@ Add an Elastic-Slide Badge element:
 
 | Custom Property | Default Value | Description |
 | :--- | :--- | :--- |
-| `--elastic-ease-spring` | `cubic-bezier(0.68, -0.6, 0.32, 1.6)` | Easing curve for initial elastic overshoot |
-| `--elastic-ease-rebound` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Rebound curve for hover micro-interactions |
-| `--elastic-duration` | `0.85s` | Duration of the elastic entrance animation |
-| `--elastic-primary-bg` | `rgba(99, 102, 241, 0.14)` | Background color of primary badge |
-| `--elastic-primary-border` | `rgba(99, 102, 241, 0.45)` | Border color of primary badge |
+| `--ease-elastic-spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Multi-stage spring overshoot curve |
+| `--badge-primary-bg` | `rgba(79, 70, 229, 0.12)` | Background color for primary badge |
+| `--badge-primary-border` | `rgba(99, 102, 241, 0.4)` | Border accent color for primary badge |
+| `--badge-primary-text` | `#a5b4fc` | Text color for primary badge |
+| `--badge-primary-indicator`| `#6366f1` | Spring pulse indicator dot color |
 
 ---
 
-## Accessibility & Motion Preference
+## Reduced Motion Compliance
+
+For users with motion sensitivity, spring animations automatically disable when `prefers-reduced-motion` is active:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  .elastic-slide-in,
-  .elastic-slide-left,
-  .elastic-slide-right,
-  .elastic-slide-top,
-  .elastic-hover-bounce {
+  .elastic-badge {
     animation: none !important;
-    transform: none !important;
-    opacity: 1 !important;
+    transition: none !important;
   }
 }
 ```
-
-Keyboard focus is managed seamlessly using `:focus-visible` with customizable outline rings.
