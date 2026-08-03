@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update content panels
     panels.forEach((panel) => {
-      const panelNum = parseInt(panel.getAttribute('data-panel'), 10);
+      const panelNum = parseInt(panel.getAttribute('data-panel', 10), 10);
       if (panelNum === currentStep) {
         panel.removeAttribute('hidden');
       } else {

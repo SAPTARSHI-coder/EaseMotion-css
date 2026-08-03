@@ -1,6 +1,6 @@
 const glitch=document.querySelector(".glitch");
 
-setInterval(()=>{
+clearInterval(window.__interval); window.__interval = setInterval(()=>{
 
 glitch.classList.add("active");
 
