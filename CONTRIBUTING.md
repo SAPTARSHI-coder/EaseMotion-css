@@ -1,12 +1,10 @@
 # Contributing to EaseMotion CSS
 
 > [!IMPORTANT]
-> **📢 Maintainer Announcement & Updated Contribution Guidelines (August 2026)**
+> **📢 Maintainer Announcement & Contribution Guidelines (August 2026)**
 >
 > 1. **🔓 Account Access Restored:** All soft-bans have been removed. All contributors can now submit PRs normally.
-> 2. **⏱️ Contribution Rate Limits:**
->    - **Hourly Limit:** Maximum **10 PRs per hour** per contributor.
->    - **Cooldown:** Minimum **6-minute cooldown between PR submissions**.
+> 2. **⏱️ Daily Contribution Rate Limit:** Maximum **100 PRs per day** per contributor.
 > 3. **📁 Submission Placement:** All pull requests MUST be placed under `submissions/examples/your-feature-name/` containing `demo.html`, `style.css`, and `README.md`.
 > 4. **✨ Approved GSSoC Issues:** 500 new approved GSSoC issues (#59099 to #59610) are open for contribution!
 
