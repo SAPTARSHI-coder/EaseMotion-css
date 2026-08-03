@@ -2,6 +2,8 @@
   'use strict';
 
   var CSS_LIMIT = 20; // CSS supports up to 20 tabs natively
+  var initialized = false;
+  var resizeTimeout = null;
 
   function initializeTabs() {
     // Find all tab components
@@ -73,26 +75,31 @@
       document.head.appendChild(styleElement);
     }
 
-    // Add event listeners for dynamic underline width adjustment
-    var resizeTimeout;
-    window.addEventListener('resize', function () {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(function () {
-        Array.prototype.forEach.call(tabContainers, function (container) {
-          updateUnderlineWidth(container);
-        });
-      }, 150);
-    });
+    // Only add event listeners once to prevent memory leaks
+    if (!initialized) {
+      initialized = true;
 
-    // Update underline width on tab change
-    Array.prototype.forEach.call(tabContainers, function (container) {
-      var inputs = container.querySelectorAll('.ease-tab-input');
-      Array.prototype.forEach.call(inputs, function (input) {
-        input.addEventListener('change', function () {
-          updateUnderlineWidth(container);
-        });
+      // Add event listeners for dynamic underline width adjustment
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function () {
+          var containers = document.querySelectorAll('.ease-tabs');
+          Array.prototype.forEach.call(containers, function (container) {
+            updateUnderlineWidth(container);
+          });
+        }, 150);
       });
-    });
+
+      // Update underline width on tab change
+      document.addEventListener('change', function (e) {
+        if (e.target.classList && e.target.classList.contains('ease-tab-input')) {
+          var container = e.target.closest('.ease-tabs');
+          if (container) {
+            updateUnderlineWidth(container);
+          }
+        }
+      });
+    }
   }
 
   function updateUnderlineWidth(container) {
