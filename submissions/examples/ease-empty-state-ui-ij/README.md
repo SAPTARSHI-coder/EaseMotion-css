@@ -1,17 +1,16 @@
 # ease-empty-state-ui
 
-A clean, animated empty state component for dashboards and lists.
+A CSS animation component.
 
 ## Usage
-Open demo.html in a browser. Wrap the contents in the `.ease-empty-state` container.
+Open demo.html in a browser. Click the button to toggle the animation.
 
 ## Custom Properties
 | Property | Default | Description |
-|---|---|---|
-| --empty-primary | #3b82f6 | Accent color (button, pulse) |
-| --empty-primary-light | #eff6ff | Icon background color |
-| --empty-text | #64748b | Description text color |
-| --empty-heading | #1e293b | Heading text color |
+|----------|---------|-------------|
+| --primary | #4f46e5 | Primary color |
+| --bg | #f8fafc | Background |
+| --duration | 0.5s | Animation speed |
 
 ## Notes
-CSS handles a smooth `ease-float` animation on the icon and an `ease-pulse` animation for the background ring, creating a polished, engaging empty state.
+CSS handles visual transitions. JavaScript toggles state.

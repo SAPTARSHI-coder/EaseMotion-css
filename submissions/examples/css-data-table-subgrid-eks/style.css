@@ -1,0 +1,840 @@
+/*
+ * Submission: CSS Data Table with Container Queries & :has() Filtering
+ * Maintainer Note: Proposed official class name -> .ease-data-table-[YOUR_INITIALS]
+ *
+ * A production-quality responsive data table using:
+ *  - Container Queries for responsive card-view fallback
+ *  - CSS :has() for zero-JavaScript filter chips
+ *  - Sticky column headers on scroll
+ *  - prefers-color-scheme dark mode
+ *  - prefers-contrast / forced-colors support
+ *  - Print-optimized styles
+ *  - Zero JavaScript, zero dependencies
+ */
+
+/* ============================================
+   CSS Custom Properties (Design Tokens)
+   ============================================ */
+
+:root {
+  --dt-bg: #ffffff;
+  --dt-surface: #f8fafc;
+  --dt-border: #e2e8f0;
+  --dt-text: #0f172a;
+  --dt-text-secondary: #475569;
+  --dt-text-muted: #94a3b8;
+  --dt-accent: #6366f1;
+  --dt-accent-hover: #4f46e5;
+  --dt-accent-light: #eef2ff;
+  --dt-stripe: #f1f5f9;
+  --dt-radius: 0.75rem;
+  --dt-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --dt-font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  --dt-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Status colors */
+  --dt-status-shipped: #059669;
+  --dt-status-shipped-bg: #ecfdf5;
+  --dt-status-processing: #d97706;
+  --dt-status-processing-bg: #fffbeb;
+  --dt-status-pending: #6366f1;
+  --dt-status-pending-bg: #eef2ff;
+  --dt-status-cancelled: #dc2626;
+  --dt-status-cancelled-bg: #fef2f2;
+
+  --dt-transition: 150ms ease;
+}
+
+/* Dark mode — automatic via system preference */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --dt-bg: #0f172a;
+    --dt-surface: #1e293b;
+    --dt-border: #334155;
+    --dt-text: #f1f5f9;
+    --dt-text-secondary: #94a3b8;
+    --dt-text-muted: #64748b;
+    --dt-accent: #818cf8;
+    --dt-accent-hover: #6366f1;
+    --dt-accent-light: #1e1b4b;
+    --dt-stripe: #1e293b;
+    --dt-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+
+    --dt-status-shipped: #34d399;
+    --dt-status-shipped-bg: #064e3b;
+    --dt-status-processing: #fbbf24;
+    --dt-status-processing-bg: #78350f;
+    --dt-status-pending: #a5b4fc;
+    --dt-status-pending-bg: #1e1b4b;
+    --dt-status-cancelled: #fca5a5;
+    --dt-status-cancelled-bg: #7f1d1d;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --dt-border: currentColor;
+    --dt-shadow: none;
+    --dt-stripe: transparent;
+  }
+}
+
+/* Windows High Contrast / Forced Colors */
+@media (forced-colors: active) {
+  :root {
+    --dt-accent: LinkText;
+    --dt-accent-hover: LinkText;
+  }
+
+  .status-badge {
+    border: 1px solid ButtonText;
+  }
+
+  .data-table th {
+    border-bottom: 2px solid ButtonText;
+  }
+
+  .filter-chip input:checked + span {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+}
+
+/* ============================================
+   Base Reset
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1.5rem;
+  font-family: var(--dt-font-sans);
+  color: var(--dt-text);
+  background: var(--dt-surface);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ============================================
+   Page Header
+   ============================================ */
+
+.page-header {
+  max-width: 1200px;
+  margin: 0 auto 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: var(--dt-text-secondary);
+  font-size: 0.95rem;
+}
+
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Toolbar — Search + Filter Chips
+   ============================================ */
+
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.search-field {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1rem;
+  height: 1rem;
+  color: var(--dt-text-muted);
+  pointer-events: none;
+}
+
+.search-field input {
+  width: 100%;
+  padding: 0.625rem 0.875rem 0.625rem 2.25rem;
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  background: var(--dt-bg);
+  color: var(--dt-text);
+  font-size: 0.875rem;
+  font-family: inherit;
+  transition: border-color var(--dt-transition), box-shadow var(--dt-transition);
+}
+
+.search-field input::placeholder {
+  color: var(--dt-text-muted);
+}
+
+.search-field input:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+  border-color: var(--dt-accent);
+  box-shadow: 0 0 0 3px var(--dt-accent-light);
+}
+
+/* ============================================
+   Filter Chips
+   ============================================ */
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  align-items: center;
+}
+
+.filter-chip {
+  position: relative;
+  cursor: pointer;
+}
+
+.filter-chip input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.filter-chip span {
+  display: inline-block;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--dt-border);
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--dt-text-secondary);
+  background: var(--dt-bg);
+  transition: background var(--dt-transition), color var(--dt-transition), border-color var(--dt-transition);
+  user-select: none;
+}
+
+.filter-chip input:focus-visible + span {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+}
+
+.filter-chip input:checked + span {
+  background: var(--dt-accent);
+  color: #ffffff;
+  border-color: var(--dt-accent);
+}
+
+.filter-chip:hover span {
+  border-color: var(--dt-accent);
+}
+
+/* ============================================
+   CSS-Only Filtering via :has()
+   ============================================ */
+
+/* Default: all rows visible */
+body:has(.filter-chip input[value="all"]:checked) .data-table tbody tr {
+  display: table-row;
+}
+
+body:has(.filter-chip input[value="shipped"]:checked) .data-table tbody tr:not(:has(.status-shipped)) {
+  display: none;
+}
+
+body:has(.filter-chip input[value="processing"]:checked) .data-table tbody tr:not(:has(.status-processing)) {
+  display: none;
+}
+
+body:has(.filter-chip input[value="pending"]:checked) .data-table tbody tr:not(:has(.status-pending)) {
+  display: none;
+}
+
+body:has(.filter-chip input[value="cancelled"]:checked) .data-table tbody tr:not(:has(.status-cancelled)) {
+  display: none;
+}
+
+/* ============================================
+   Table Container
+   ============================================ */
+
+.table-container {
+  container-type: inline-size;
+  container-name: table-wrapper;
+  background: var(--dt-bg);
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  box-shadow: var(--dt-shadow);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-container:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Data Table
+   ============================================ */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+/* Visually hidden caption (accessible) */
+.table-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================
+   Table Header — Sticky
+   ============================================ */
+
+.data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.data-table th {
+  padding: 0.75rem 1rem;
+  background: var(--dt-surface);
+  color: var(--dt-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--dt-border);
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* ============================================
+   Sortable Column Headers
+   ============================================ */
+
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color var(--dt-transition);
+}
+
+.th-sort:hover {
+  color: var(--dt-accent);
+}
+
+.th-sort:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.th-sort[aria-sort="ascending"],
+.th-sort[aria-sort="descending"] {
+  color: var(--dt-accent);
+}
+
+.sort-indicator {
+  font-size: 0.625rem;
+  opacity: 0.5;
+}
+
+.th-sort[aria-sort="ascending"] .sort-indicator,
+.th-sort[aria-sort="descending"] .sort-indicator {
+  opacity: 1;
+}
+
+/* ============================================
+   Table Body
+   ============================================ */
+
+.data-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--dt-border);
+  color: var(--dt-text);
+  vertical-align: middle;
+  background: var(--dt-bg);
+}
+
+/* Alternating row stripes */
+.data-table tbody tr:nth-child(even) td {
+  background: var(--dt-stripe);
+}
+
+/* Row hover */
+@media (hover: hover) {
+  .data-table tbody tr:hover td {
+    background: var(--dt-accent-light);
+  }
+}
+
+/* ============================================
+   Cell Variants
+   ============================================ */
+
+.order-link {
+  color: var(--dt-accent);
+  text-decoration: none;
+  font-family: var(--dt-font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: color var(--dt-transition);
+}
+
+.order-link:hover {
+  color: var(--dt-accent-hover);
+  text-decoration: underline;
+}
+
+.order-link:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.customer-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.customer-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--dt-accent-light);
+  color: var(--dt-accent);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cell-amount {
+  font-family: var(--dt-font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* ============================================
+   Status Badges
+   ============================================ */
+
+.status-badge {
+  display: inline-block;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.status-shipped {
+  color: var(--dt-status-shipped);
+  background: var(--dt-status-shipped-bg);
+}
+
+.status-processing {
+  color: var(--dt-status-processing);
+  background: var(--dt-status-processing-bg);
+}
+
+.status-pending {
+  color: var(--dt-status-pending);
+  background: var(--dt-status-pending-bg);
+}
+
+.status-cancelled {
+  color: var(--dt-status-cancelled);
+  background: var(--dt-status-cancelled-bg);
+}
+
+/* ============================================
+   Action Buttons
+   ============================================ */
+
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--dt-text-muted);
+  cursor: pointer;
+  transition: background var(--dt-transition), color var(--dt-transition), border-color var(--dt-transition);
+}
+
+.btn-action svg {
+  width: 1rem;
+  height: 1rem;
+  pointer-events: none;
+}
+
+.btn-action:hover {
+  background: var(--dt-surface);
+  color: var(--dt-accent);
+  border-color: var(--dt-border);
+}
+
+.btn-action:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 1px;
+}
+
+/* ============================================
+   Pagination
+   ============================================ */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--dt-border);
+  border-radius: var(--dt-radius);
+  background: var(--dt-bg);
+  color: var(--dt-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dt-transition), border-color var(--dt-transition);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--dt-surface);
+  border-color: var(--dt-accent);
+  color: var(--dt-accent);
+}
+
+.page-btn:focus-visible {
+  outline: 2px solid var(--dt-accent);
+  outline-offset: 2px;
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 0.8125rem;
+  color: var(--dt-text-muted);
+  font-weight: 500;
+}
+
+/* ============================================
+   Empty State
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--dt-text-muted);
+}
+
+.empty-state svg {
+  margin-bottom: 1rem;
+  color: var(--dt-text-muted);
+  opacity: 0.5;
+}
+
+.empty-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--dt-text-secondary);
+}
+
+.empty-description {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* ============================================
+   Container Query — Card View on Small Containers
+   ============================================ */
+
+@container table-wrapper (max-width: 600px) {
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td {
+    display: block;
+  }
+
+  .data-table tr {
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--dt-border);
+    border-radius: var(--dt-radius);
+    background: var(--dt-bg);
+  }
+
+  .data-table tr:hover {
+    border-color: var(--dt-accent);
+  }
+
+  .data-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 1rem;
+    border-bottom: none;
+    gap: 0.75rem;
+    text-align: right;
+  }
+
+  .data-table td + td {
+    border-top: 1px solid var(--dt-border);
+  }
+
+  /* Show label from data-label */
+  .data-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--dt-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+    text-align: left;
+  }
+
+  .data-table td:last-child {
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--dt-border);
+  }
+
+  .data-table td:last-child::before {
+    display: none;
+  }
+
+  .cell-amount {
+    text-align: right;
+  }
+
+  .btn-action {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+
+  .btn-action svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+}
+
+/* Super small cards */
+@container table-wrapper (max-width: 360px) {
+  .data-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+
+  .pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .page-btn {
+    justify-content: center;
+  }
+
+  .page-info {
+    text-align: center;
+  }
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+    padding: 0;
+    font-size: 11pt;
+  }
+
+  .table-toolbar,
+  .pagination,
+  .empty-state {
+    display: none !important;
+  }
+
+  .table-container {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    border-radius: 0;
+    overflow-x: visible;
+  }
+
+  .data-table thead {
+    position: static;
+  }
+
+  .data-table th {
+    background: #f0f0f0 !important;
+    color: black !important;
+    border-bottom: 2px solid #666;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .data-table td {
+    color: black;
+    border-bottom: 1px solid #ddd;
+    background: transparent !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .data-table tbody tr:nth-child(even) td {
+    background: #fafafa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .status-badge {
+    border: 1px solid currentColor !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .customer-avatar {
+    background: #eee !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .btn-action {
+    display: none !important;
+  }
+
+  .order-link {
+    color: black;
+    text-decoration: underline;
+  }
+}
+
+/* ============================================
+   Responsive Page Layout
+   ============================================ */
+
+@media (max-width: 640px) {
+  body {
+    padding: 1rem 0.75rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.375rem;
+  }
+
+  .table-toolbar {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .search-field {
+    max-width: none;
+  }
+
+  .filter-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+}

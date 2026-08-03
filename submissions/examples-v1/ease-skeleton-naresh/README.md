@@ -17,17 +17,18 @@ A modern, hardware-accelerated, pure CSS skeleton loader component for indicatin
 
 Customize the loader to match your application theme using these CSS custom properties:
 
-| Variable | Description | Default Value |
-| :--- | :--- | :--- |
-| `--ease-skeleton-base` | Base background color of the loader placeholder | `#1e293b` |
-| `--ease-skeleton-shine` | Shimmer glow highlight color | `#334155` |
-| `--ease-skeleton-duration` | The duration of the slide animation | `1.5s` |
+| Variable                   | Description                                     | Default Value |
+| :------------------------- | :---------------------------------------------- | :------------ |
+| `--ease-skeleton-base`     | Base background color of the loader placeholder | `#1e293b`     |
+| `--ease-skeleton-shine`    | Shimmer glow highlight color                    | `#334155`     |
+| `--ease-skeleton-duration` | The duration of the slide animation             | `1.5s`        |
 
 ---
 
 ## How to Use
 
 ### 1. Basic HTML Structure
+
 Apply the base class `.ease-skeleton` and the desired shape modifier:
 
 ```html
@@ -43,6 +44,7 @@ Apply the base class `.ease-skeleton` and the desired shape modifier:
 ```
 
 ### 2. Accessibility Best Practices
+
 When rendering skeleton loader screens, wrap the loading layout in a container with `aria-busy="true"` to announce to screen readers that content is loading. Hide individual placeholder elements from assistive technologies using `aria-hidden="true"` to prevent redundant tab stops and voice announcements.
 
 ```html
@@ -53,12 +55,13 @@ When rendering skeleton loader screens, wrap the loading layout in a container w
 ```
 
 ### 3. Light Mode Theming Example
+
 Easily override base colors to suit light mode containers:
 
 ```html
-<div 
-  class="ease-skeleton ease-skeleton--card" 
-  style="--ease-skeleton-base: #e2e8f0; --ease-skeleton-shine: #f1f5f9; --ease-skeleton-duration: 1.2s;" 
-  aria-hidden="true">
-</div>
+<div
+  class="ease-skeleton ease-skeleton--card"
+  style="--ease-skeleton-base: #e2e8f0; --ease-skeleton-shine: #f1f5f9; --ease-skeleton-duration: 1.2s;"
+  aria-hidden="true"
+></div>
 ```

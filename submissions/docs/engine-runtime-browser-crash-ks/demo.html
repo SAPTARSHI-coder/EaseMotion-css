@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Engine Runtime Browser Crash — EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>Engine Runtime: process ReferenceError in Browser</h1>
+
+    <section class="card">
+      <h2>Location</h2>
+      <p><code>easemotion/engine/runtime.js</code>, line 55</p>
+    </section>
+
+    <section class="card">
+      <h2>Bug</h2>
+      <p>The <code>processElement()</code> function checks <code>process?.env?.NODE_ENV</code> before logging a warning. In browser ESM contexts (no bundler), <code>process</code> is not defined. Optional chaining (<code>?.</code>) protects against undefined <em>properties</em>, not undefined <em>identifiers</em>.</p>
+      <p>When a user writes <code>em="fly-away"</code> (unknown animation), the engine throws:</p>
+      <pre>ReferenceError: process is not defined</pre>
+    </section>
+
+    <section class="card">
+      <h2>Why This Matters</h2>
+      <ul>
+        <li>The engine runtime is designed for standalone browser use — the README says <em>"The runtime does NOT require easemotion.css to be loaded — it works standalone"</em></li>
+        <li>Browsers importing <code>import 'easemotion-css/engine'</code> via native ESM (no bundler) will crash on invalid <code>em=""</code> values</li>
+        <li>The <code>compiler.js</code> already logs unconditionally at line 92 — confirming the guard pattern is unnecessary</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Code (Broken)</h2>
+      <pre>function processElement(el) {
+  const value = el.getAttribute('em');
+  if (!value) return;
+
+  const ast = parse(value);
+  if (!ast) {
+    <span class="highlight">if (process?.env?.NODE_ENV !== 'production') {</span>
+      console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);
+    }
+    return;
+  }
+  // ...
+}</pre>
+    </section>
+
+    <section class="card">
+      <h2>Fix</h2>
+      <p>Remove the guard entirely (simplest approach, matches compiler.js):</p>
+      <pre>if (!ast) {
+  <span class="highlight">console.warn(`[EaseMotion Engine] Could not parse em="${value}". Unknown animation name.`);</span>
+  return;
+}</pre>
+    </section>
+
+    <section class="card">
+      <h2>Test Case</h2>
+      <pre>&lt;script type="module"&gt;
+  import 'easemotion-css/engine';
+&lt;/script&gt;
+&lt;div em="nonexistent 500ms"&gt;Triggers crash&lt;/div&gt;</pre>
+    </section>
+  </main>
+</body>
+</html>

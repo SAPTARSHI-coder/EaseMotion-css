@@ -1,27 +1,48 @@
-# Ping Animation
+\# Ping Animation Showcase
 
-## What does this do?
 
-Creates animated ping indicators with expanding ripple effects for status, notifications, and live activity.
 
----
+A modern, responsive Ping Animation showcase built with pure HTML and CSS for EaseMotion CSS.
 
-## How is it used?
 
-Open `demo.html` directly in a browser.
 
-```html
-<div class="ping blue">
+\## Features
 
-    <span class="wave"></span>
 
-    <span class="dot"></span>
 
-</div>
-```
+\- Pure HTML \& CSS
 
----
+\- Animated ripple effect
 
-## Why is it useful?
+\- Multiple color variants
 
-Ping animations are commonly used to indicate online presence, active notifications, server status, GPS locations, and monitoring dashboards. This standalone component provides a reusable CSS-only implementation with multiple color variants.
+\- Responsive card layout
+
+\- Suitable for live activity indicators
+
+\- Suitable for online status indicators
+
+\- Suitable for notifications and alerts
+
+\- No JavaScript
+
+\- No external dependencies
+
+\- Supports `prefers-reduced-motion`
+
+
+
+\## Folder Structure
+
+
+
+```text
+
+ping-animation-av/
+
+├── demo.html
+
+├── style.css
+
+└── README.md
+

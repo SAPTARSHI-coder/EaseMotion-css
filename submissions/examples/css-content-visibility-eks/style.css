@@ -1,0 +1,459 @@
+/*
+ * Submission: CSS content-visibility Performance Demo
+ * Maintainer Note: Proposed name -> ease-cv-demo or similar
+ *
+ * Demonstrates the rendering performance difference between
+ * content-visibility: auto (optimized) and normal rendering.
+ *
+ * Left column:  content-visibility: auto — browser defers off-screen rendering
+ * Right column: normal rendering — all content rendered on load
+ *
+ * Open DevTools Performance tab and reload to see the difference.
+ *
+ * Features:
+ *  - content-visibility: auto + contain-intrinsic-size
+ *  - Side-by-side comparison
+ *  - Zero JavaScript
+ *  - prefers-color-scheme dark mode
+ *  - prefers-reduced-motion
+ *  - Responsive layout
+ */
+
+/* ============================================
+   Design Tokens
+   ============================================ */
+
+:root {
+  --cv-bg: #ffffff;
+  --cv-surface: #f8fafc;
+  --cv-border: #e2e8f0;
+  --cv-text: #0f172a;
+  --cv-text-secondary: #475569;
+  --cv-text-muted: #94a3b8;
+  --cv-accent: #6366f1;
+  --cv-accent-hover: #4f46e5;
+  --cv-accent-light: #eef2ff;
+  --cv-success: #059669;
+  --cv-success-bg: #ecfdf5;
+  --cv-warning: #d97706;
+  --cv-warning-bg: #fffbeb;
+  --cv-radius: 0.75rem;
+  --cv-font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --cv-font-mono: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+  --cv-transition: 200ms ease;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cv-bg: #0f172a;
+    --cv-surface: #1e293b;
+    --cv-border: #334155;
+    --cv-text: #f1f5f9;
+    --cv-text-secondary: #94a3b8;
+    --cv-text-muted: #64748b;
+    --cv-accent: #818cf8;
+    --cv-accent-hover: #6366f1;
+    --cv-accent-light: #1e1b4b;
+    --cv-success: #34d399;
+    --cv-success-bg: #064e3b;
+    --cv-warning: #fbbf24;
+    --cv-warning-bg: #78350f;
+  }
+}
+
+@media (prefers-contrast: high) {
+  :root {
+    --cv-border: currentColor;
+  }
+}
+
+/* ============================================
+   Base
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 2rem 1.5rem;
+  font-family: var(--cv-font-sans);
+  color: var(--cv-text);
+  background: var(--cv-surface);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.page-header {
+  max-width: 1100px;
+  margin: 0 auto 2rem;
+}
+
+.page-header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.page-header code {
+  font-family: var(--cv-font-mono);
+  font-size: 0.85em;
+  background: var(--cv-bg);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  border: 1px solid var(--cv-border);
+}
+
+.page-subtitle {
+  margin: 0;
+  color: var(--cv-text-secondary);
+  font-size: 0.95rem;
+  max-width: 800px;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Cards
+   ============================================ */
+
+.card {
+  background: var(--cv-bg);
+  border: 1px solid var(--cv-border);
+  border-radius: var(--cv-radius);
+  padding: 1.5rem 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.card h2 code,
+.card p code {
+  font-family: var(--cv-font-mono);
+  font-size: 0.85em;
+  background: var(--cv-surface);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.card p {
+  margin: 0 0 0.5rem;
+  color: var(--cv-text-secondary);
+  font-size: 0.9375rem;
+}
+
+.card p:last-child {
+  margin-bottom: 0;
+}
+
+.demo-description {
+  font-size: 0.9375rem;
+}
+
+/* ============================================
+   Controls
+   ============================================ */
+
+.demo-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--cv-border);
+  position: relative;
+  transition: background var(--cv-transition);
+}
+
+.toggle-label input:checked + .toggle-track {
+  background: var(--cv-accent);
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: transform var(--cv-transition);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.toggle-label input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+}
+
+.toggle-label input:focus-visible + .toggle-track {
+  outline: 2px solid var(--cv-accent);
+  outline-offset: 2px;
+}
+
+.toggle-text {
+  font-size: 0.8125rem;
+  color: var(--cv-text-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   Two-Column Layout
+   ============================================ */
+
+.demo-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.demo-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--cv-radius);
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.col-header-auto {
+  background: var(--cv-success-bg);
+  color: var(--cv-success);
+}
+
+.col-header-normal {
+  background: var(--cv-warning-bg);
+  color: var(--cv-warning);
+}
+
+.col-header code {
+  font-family: var(--cv-font-mono);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.125em 0.5em;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: var(--cv-success);
+  color: white;
+}
+
+.badge-warning {
+  background: var(--cv-warning);
+  color: white;
+}
+
+/* ============================================
+   Heavy Sections (Content Cards)
+   ============================================ */
+
+.heavy-section {
+  background: var(--cv-bg);
+  border: 1px solid var(--cv-border);
+  border-radius: 0.625rem;
+  padding: 1.25rem;
+}
+
+.heavy-section h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.heavy-section p {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--cv-text-secondary);
+  line-height: 1.6;
+}
+
+.heavy-section code {
+  font-family: var(--cv-font-mono);
+  font-size: 0.85em;
+  background: var(--cv-surface);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* ============================================
+   content-visibility: auto
+   ============================================ */
+
+.heavy-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 200px;
+}
+
+/* ============================================
+   Image Placeholder
+   ============================================ */
+
+.image-placeholder {
+  width: 100%;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.image-placeholder svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ============================================
+   Summary Card
+   ============================================ */
+
+.summary-card {
+  text-align: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--cv-accent);
+  font-family: var(--cv-font-mono);
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--cv-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.summary-note {
+  font-size: 0.8125rem;
+  color: var(--cv-text-muted);
+  margin-top: 0.5rem;
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+  }
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .demo-columns {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .card {
+    padding: 1.25rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 1rem 0.75rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* ============================================
+   Print
+   ============================================ */
+
+@media print {
+  .heavy-auto {
+    content-visibility: visible;
+  }
+
+  .demo-columns {
+    grid-template-columns: 1fr;
+  }
+}

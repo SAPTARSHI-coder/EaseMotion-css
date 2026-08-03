@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rotating Cube Nav – 3D Menu Navigation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🧊 Rotating Cube Nav</h1>
+    <p class="subtitle">Menu on a 3D rotating cube</p>
+
+    <div class="cube-container">
+      <div class="cube-scene">
+        <div class="cube" id="cube">
+          <div class="face front">
+            <div class="face-content">
+              <span class="face-icon">🏠</span>
+              <span class="face-label">Home</span>
+            </div>
+          </div>
+          <div class="face back">
+            <div class="face-content">
+              <span class="face-icon">⚙️</span>
+              <span class="face-label">Settings</span>
+            </div>
+          </div>
+          <div class="face right">
+            <div class="face-content">
+              <span class="face-icon">📊</span>
+              <span class="face-label">Analytics</span>
+            </div>
+          </div>
+          <div class="face left">
+            <div class="face-content">
+              <span class="face-icon">💬</span>
+              <span class="face-label">Messages</span>
+            </div>
+          </div>
+          <div class="face top">
+            <div class="face-content">
+              <span class="face-icon">👤</span>
+              <span class="face-label">Profile</span>
+            </div>
+          </div>
+          <div class="face bottom">
+            <div class="face-content">
+              <span class="face-icon">📁</span>
+              <span class="face-label">Files</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Face indicator -->
+      <div class="face-indicator" id="faceIndicator">
+        <span class="indicator-label">Current:</span>
+        <span class="indicator-face" id="indicatorFace">Home</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn prev" id="prevBtn">◀ Prev</button>
+      <button class="ctrl-btn next" id="nextBtn">Next ▶</button>
+      <button class="ctrl-btn auto" id="autoBtn">▶ Auto-Rotate</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Navigation dots -->
+    <div class="nav-dots" id="navDots">
+      <span class="dot active" data-face="0">🏠</span>
+      <span class="dot" data-face="1">⚙️</span>
+      <span class="dot" data-face="2">📊</span>
+      <span class="dot" data-face="3">💬</span>
+      <span class="dot" data-face="4">👤</span>
+      <span class="dot" data-face="5">📁</span>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Rotation Speed</span>
+      <input type="range" id="speedSlider" min="0.5" max="5" step="0.1" value="2" />
+      <span class="slider-value" id="speedValue">2×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Perspective</span>
+      <input type="range" id="perspectiveSlider" min="300" max="1200" step="50" value="700" />
+      <span class="slider-value" id="perspectiveValue">700px</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🧊 Rotate the cube to navigate</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>←</kbd> <kbd>→</kbd> Navigate · <kbd>Space</kbd> Auto-Rotate · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const cube = document.getElementById('cube');
+      const faceIndicator = document.getElementById('faceIndicator');
+      const indicatorFace = document.getElementById('indicatorFace');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const autoBtn = document.getElementById('autoBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const navDots = document.getElementById('navDots');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const perspectiveSlider = document.getElementById('perspectiveSlider');
+      const perspectiveValue = document.getElementById('perspectiveValue');
+
+      // State
+      let currentFace = 0; // 0-5
+      let isAutoRotating = false;
+      let autoRotateAngle = 0;
+      let targetAngle = 0;
+      let currentAngleX = 0;
+      let currentAngleY = 0;
+      let animationId = null;
+      let time = 0;
+
+      // Face names
+      const faceNames = ['Home', 'Settings', 'Analytics', 'Messages', 'Profile', 'Files'];
+      const faceIcons = ['🏠', '⚙️', '📊', '💬', '👤', '📁'];
+
+      // Rotation angles for each face (Y rotation)
+      const faceAngles = [0, 180, 90, -90, 0, 0]; // front, back, right, left, top, bottom
+      const faceAnglesX = [0, 0, 0, 0, -90, 90]; // X rotation for top/bottom
+
+      // ----- Update cube rotation -----
+      function updateCube() {
+        const speed = parseFloat(speedSlider.value);
+        const perspective = parseInt(perspectiveSlider.value);
+        
+        // Smooth interpolation
+        const diffY = targetAngle - currentAngleY;
+        const diffX = 0 - currentAngleX;
+        
+        currentAngleY += diffY * 0.08 * speed * 0.5;
+        currentAngleX += diffX * 0.08 * speed * 0.5;
+
+        // Apply rotation with perspective
+        cube.style.transform = `
+          rotateX(${currentAngleX}deg) 
+          rotateY(${currentAngleY}deg)
+        `;
+
+        // Update scene perspective
+        document.querySelector('.cube-scene').style.perspective = perspective + 'px';
+
+        // Update face indicator
+        const faceIndex = getClosestFace();
+        if (faceIndex !== currentFace) {
+          currentFace = faceIndex;
+          updateDots();
+          indicatorFace.textContent = faceNames[currentFace];
+          status.textContent = `🧊 Showing: ${faceNames[currentFace]} ${faceIcons[currentFace]}`;
+        }
+
+        // Update auto-rotation
+        if (isAutoRotating) {
+          targetAngle += 0.3 * speed * 0.5;
+        }
+      }
+
+      // ----- Get closest face -----
+      function getClosestFace() {
+        const angles = [0, 180, 90, -90, 0, 0];
+        const anglesX = [0, 0, 0, 0, -90, 90];
+        let closest = 0;
+        let minDiff = Infinity;
+
+        for (let i = 0; i < 6; i++) {
+          let diffY = Math.abs(currentAngleY - angles[i]);
+          let diffX = Math.abs(currentAngleX - anglesX[i]);
+          // Normalize angles
+          diffY = Math.min(diffY, 360 - diffY);
+          const totalDiff = diffY + diffX;
+          if (totalDiff < minDiff) {
+            minDiff = totalDiff;
+            closest = i;
+          }
+        }
+        return closest;
+      }
+
+      // ----- Update dots -----
+      function updateDots() {
+        const dots = navDots.querySelectorAll('.dot');
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('active', i === currentFace);
+        });
+      }
+
+      // ----- Navigate to face -----
+      function navigateTo(faceIndex) {
+        const targetY = faceAngles[faceIndex];
+        const targetX = faceAnglesX[faceIndex];
+        targetAngle = targetY;
+        currentAngleX = targetX;
+        currentAngleY = targetY;
+        currentFace = faceIndex;
+        updateDots();
+        indicatorFace.textContent = faceNames[currentFace];
+        status.textContent = `🧊 Navigated to: ${faceNames[currentFace]} ${faceIcons[currentFace]}`;
+      }
+
+      // ----- Prev face -----
+      function prevFace() {
+        const next = (currentFace - 1 + 6) % 6;
+        navigateTo(next);
+      }
+
+      // ----- Next face -----
+      function nextFace() {
+        const next = (currentFace + 1) % 6;
+        navigateTo(next);
+      }
+
+      // ----- Toggle auto-rotate -----
+      function toggleAutoRotate() {
+        isAutoRotating = !isAutoRotating;
+        autoBtn.textContent = isAutoRotating ? '⏹ Stop' : '▶ Auto-Rotate';
+        autoBtn.classList.toggle('active', isAutoRotating);
+        status.textContent = isAutoRotating ? '🔄 Auto-rotate enabled' : '⏹ Auto-rotate disabled';
+      }
+
+      // ----- Reset -----
+      function resetCube() {
+        isAutoRotating = false;
+        autoBtn.textContent = '▶ Auto-Rotate';
+        autoBtn.classList.remove('active');
+        currentAngleY = 0;
+        currentAngleX = 0;
+        targetAngle = 0;
+        navigateTo(0);
+        status.textContent = '↺ Cube reset to Home';
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        updateCube();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      prevBtn.addEventListener('click', prevFace);
+      nextBtn.addEventListener('click', nextFace);
+      autoBtn.addEventListener('click', toggleAutoRotate);
+      resetBtn.addEventListener('click', resetCube);
+
+      // Nav dots
+      navDots.querySelectorAll('.dot').forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const index = parseInt(dot.dataset.face);
+          navigateTo(index);
+        });
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = parseFloat(e.target.value).toFixed(1) + '×';
+      });
+
+      perspectiveSlider.addEventListener('input', (e) => {
+        perspectiveValue.textContent = e.target.value + 'px';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          prevFace();
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nextFace();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          toggleAutoRotate();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetCube();
+        }
+        if (e.key >= '1' && e.key <= '6') {
+          e.preventDefault();
+          const index = parseInt(e.key) - 1;
+          if (index < 6) navigateTo(index);
+        }
+      });
+
+      // Click on cube face to navigate? (can't easily detect face click in 3D)
+      // We'll use the cube scene click to toggle auto-rotate
+      document.querySelector('.cube-scene').addEventListener('click', () => {
+        // Don't toggle if clicking on a dot or button
+        if (event.target.closest('.nav-dots') || event.target.closest('.controls')) return;
+        toggleAutoRotate();
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          // Just update layout
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        // Set initial face
+        navigateTo(0);
+        startAnimation();
+        status.textContent = '🧊 Rotate the cube using arrows or click dots to navigate!';
+        
+        // Set initial slider values
+        speedValue.textContent = speedSlider.value + '×';
+        perspectiveValue.textContent = perspectiveSlider.value + 'px';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

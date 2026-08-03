@@ -1,23 +1,36 @@
-# Animated Progress Bar Component
+\# Animated Progress Bar with Percentage Counter
 
-A clean, modern, and fully responsive **Progress Bar Component** with multiple variations and smooth growth animations. This example demonstrates how to combine **EaseMotion CSS** for staggered entrances with custom CSS animations for smooth bar growth effects, creating an engaging progress visualization.
 
-## 🚀 Features
 
-- **Smooth Bar Growth**: All progress bars animate from 0% to their target width using CSS custom properties and keyframe animations.
-- **Six Variations**: Basic, Striped (with moving animation), Gradient, Segmented Steps, Circular, and Multi-Color progress bars.
-- **Staggered Entrances**: Each progress card fades in sequentially using `ease-fade-in-up` and `ease-delay-*`.
-- **Animated Stripes**: The striped variation includes a continuous diagonal stripe movement animation.
-- **Segmented Steps**: Perfect for multi-step processes like checkouts with filled/unfilled segments.
-- **Circular Progress**: SVG-based circular progress indicator with smooth arc drawing animation.
-- **Multi-Color Status**: Shows different project phases with distinct colors and a legend.
-- **Customizable**: Use CSS custom properties (`--width`, `--percent`, `--delay`) to easily customize each bar.
-- **Fully Responsive**: Adapts gracefully to mobile screens with adjusted sizing.
+\## What does this add?
 
-## 📂 File Structure
+A pure CSS animated progress bar that fills smoothly and displays a live-counting percentage number, without any JavaScript.
 
-```text
-submissions/examples/animated-progress-bar/
-├── demo.html    # HTML structure and EaseMotion utility classes
-├── style.css    # Custom CSS for progress bar layouts, animations, and responsive behavior
-└── README.md    # Documentation
+
+
+\## How does a developer use it?
+
+```html
+
+<div class="ease-progress ease-progress-counter">
+
+&#x20; <div class="ease-progress-bar" style="--ease-progress-value:75; width:75%;">
+
+&#x20;   <span class="ease-progress-label ease-progress-value"></span>
+
+&#x20; </div>
+
+</div>
+
+```
+
+
+
+Add `ease-progress-lg` for a larger bar, or `ease-progress-success` / `ease-progress-danger` for color variants.
+
+
+
+\## Why does it fit EaseMotion CSS?
+
+It follows the animation-first, zero-dependency philosophy of EaseMotion CSS — using only CSS `@keyframes` and the CSS `@property` + `counter()` trick to animate both the fill width and the percentage number, with no JavaScript required.
+

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Thesaurus Lookup Tool — Card Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Caslon+Text:ital@0;1&display=swap"
+  rel="stylesheet"
+/>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="drawer">
+    <header class="drawer-label">
+      <div>
+        <span class="tag">Reference Desk · Drawer 12</span>
+        <h1>Thesaurus Lookup Tool</h1>
+        <div class="sub">Type a word. Pull its synonym card.</div>
+      </div>
+    </header>
+
+    <section class="search-rail">
+      <form id="search-form" autocomplete="off">
+        <div class="search-row">
+          <label for="word-input">Word to look up</label>
+          <input
+            id="word-input"
+            name="word"
+            type="text"
+            placeholder="e.g. happy, difficult, quick…"
+            aria-label="Word to look up"
+            required
+          />
+          <button id="lookup-btn" type="submit">Look Up</button>
+        </div>
+      </form>
+      <div class="quick-picks" id="quick-picks">
+        <button class="chip" type="button" data-word="happy">happy</button>
+        <button class="chip" type="button" data-word="difficult">difficult</button>
+        <button class="chip" type="button" data-word="beautiful">beautiful</button>
+        <button class="chip" type="button" data-word="quick">quick</button>
+        <button class="chip" type="button" data-word="honest">honest</button>
+      </div>
+    </section>
+
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <section id="results" aria-label="Synonym results"></section>
+
+    <section id="antonyms-section" hidden>
+      <h2>See also — opposite meaning</h2>
+      <div id="antonyms"></div>
+    </section>
+
+    <footer>
+      Word data from the free
+      <a href="https://www.datamuse.com/api/" target="_blank" rel="noopener noreferrer">Datamuse API</a>.
+      No key or account required. Unofficial results — always sanity-check a word before publishing it.
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById('search-form');
+    const input = document.getElementById('word-input');
+    const status = document.getElementById('status');
+    const results = document.getElementById('results');
+    const antonymsSection = document.getElementById('antonyms-section');
+    const antonymsEl = document.getElementById('antonyms');
+    const quickPicks = document.getElementById('quick-picks');
+
+    function setStatus(text, state) {
+      status.textContent = text;
+      if (state) {
+        status.setAttribute('data-state', state);
+      } else {
+        status.removeAttribute('data-state');
+      }
+    }
+
+    function catalogNumber(index) {
+      // Purely decorative "call number" in the style of a library card,
+      // derived from the result's position so it stays stable per lookup.
+      return 'S.' + String(index + 1).padStart(3, '0');
+    }
+
+    function renderResults(word, synonyms) {
+      results.innerHTML = '';
+
+      if (synonyms.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = `No cards on file for "${word}". Try a simpler or more common form of the word.`;
+        results.appendChild(empty);
+        return;
+      }
+
+      synonyms.forEach((entry, i) => {
+        const card = document.createElement('article');
+        card.className = 'index-card';
+
+        const pos = document.createElement('span');
+        pos.className = 'pos';
+        pos.textContent = entry.tags && entry.tags.length ? entry.tags[0] : '—';
+        card.appendChild(pos);
+
+        const catalogNo = document.createElement('span');
+        catalogNo.className = 'catalog-no';
+        catalogNo.textContent = catalogNumber(i);
+        card.appendChild(catalogNo);
+
+        const head = document.createElement('span');
+        head.className = 'headword';
+        head.textContent = entry.word;
+        card.appendChild(head);
+
+        results.appendChild(card);
+      });
+    }
+
+    function renderAntonyms(antonyms) {
+      antonymsEl.innerHTML = '';
+      if (antonyms.length === 0) {
+        antonymsSection.hidden = true;
+        return;
+      }
+      antonymsSection.hidden = false;
+      antonyms.forEach((entry) => {
+        const tab = document.createElement('span');
+        tab.className = 'antonym-tab';
+        tab.textContent = entry.word;
+        antonymsEl.appendChild(tab);
+      });
+    }
+
+    async function lookup(word) {
+      const trimmed = word.trim().toLowerCase();
+      if (!trimmed) return;
+
+      input.value = trimmed;
+      setStatus('Pulling the card…');
+      results.innerHTML = '';
+      antonymsSection.hidden = true;
+
+      try {
+        const [synRes, antRes] = await Promise.all([
+          fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(trimmed)}&max=24`),
+          fetch(`https://api.datamuse.com/words?rel_ant=${encodeURIComponent(trimmed)}&max=8`),
+        ]);
+
+        if (!synRes.ok || !antRes.ok) {
+          throw new Error('network');
+        }
+
+        const synonyms = await synRes.json();
+        const antonyms = await antRes.json();
+
+        renderResults(trimmed, synonyms);
+        renderAntonyms(antonyms);
+
+        setStatus(
+          synonyms.length
+            ? `${synonyms.length} card${synonyms.length === 1 ? '' : 's'} filed under "${trimmed}".`
+            : `Drawer searched — nothing filed under "${trimmed}".`,
+          synonyms.length ? 'ok' : 'error'
+        );
+      } catch (err) {
+        setStatus('Could not reach the catalog. Check your connection and try again.', 'error');
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      lookup(input.value);
+    });
+
+    quickPicks.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      lookup(btn.dataset.word);
+    });
+
+    // Prime the drawer with an example on load.
+    lookup('curious');
+  </script>
+</body>
+</html>
