@@ -97,7 +97,7 @@ export function compile(ast, cls) {
   const delayStr      = ast.delay > 0 ? ` ${ast.delay}ms` : '';
   const iterationsStr = ast.iterations !== 1 ? ` ${ast.iterations}` : '';
   const directionStr  = ast.direction !== 'normal' ? ` ${ast.direction}` : '';
-  const fillStr       = ` ${ast.fill}`;
+  const fillStr       = ast.fill ? ` ${ast.fill}` : '';
 
   // Shorthand: name duration easing delay iteration-count direction fill-mode
   const shorthand = `${keyframe} ${durationStr} ${ast.easing}${delayStr}${iterationsStr}${directionStr}${fillStr}`;
