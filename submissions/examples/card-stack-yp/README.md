@@ -2,9 +2,6 @@
 
 A modern interactive card stack component featuring smooth card cycling animations, layered card transitions, custom illustrations, and a clean responsive design. Built with HTML, CSS, and lightweight JavaScript, it provides an engaging way to showcase content while maintaining a simple and reusable structure.
 
-## Preview
-
-![Card Stack Preview](preview.gif)
 
 ## Features
 
