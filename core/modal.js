@@ -25,6 +25,10 @@
 
           const modal = overlay.querySelector('.ease-modal');
           if (modal) {
+            if (!overlay.classList.contains('is-active')) {
+              previousFocusedElement = document.activeElement;
+            }
+
             modal.setAttribute('tabindex', '-1');
             modal.focus();
           }
