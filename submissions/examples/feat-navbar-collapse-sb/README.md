@@ -1,10 +1,15 @@
-## Navbar Collapse Animation 
+# Navbar Collapse Animation
 
-A1. What does this do?
-Provides sweer collapse/expand animations for mobile navbar menus.
+## 1. What does this do?
+Adds smooth collapse/expand animations for mobile navbar menus.
 
-A2. How is it used?
-\n```\n<nav class="ease-navbar>
-  <div class="ease-navbar-collapse">Menu Content</div>\n</nav>```
+## 2. How is it used?
+```html
+<nav class="ease-navbar">
+  <div class="ease-navbar-collapse">Menu Content</div>
+  <div class="ease-navbar-slide">Slide Menu</div>
+</nav>
+```
 
-\@minimized for touch interactions.
+## 3. Why is it useful?
+Smooth animations improve mobile menu user experience.
