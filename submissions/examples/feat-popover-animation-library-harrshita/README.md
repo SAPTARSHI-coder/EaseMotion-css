@@ -16,4 +16,4 @@ All animations are fully accessible and automatically disable when users have `p
 - `style.css`: 90+ lines with keyframes, utility classes, stagger delays, and reduced-motion override.
 - `demo.html`: Six-panel demo showcasing all five animations.
 - `README.md`: Describes the animation library and accessibility considerations.
-\nFixes #55621\n
+\nFixes #60262\n
