@@ -14,7 +14,8 @@ A modern, accessible Floating Action Button (FAB) component featuring trigonomet
 
 ```text
 submissions/examples/floating-action-radial-jc/
-├── index.html   # Interactive showcase & demo playground
+├── demo.html    # Interactive demo showcasing the component
+├── index.html   # Main entry demo page
 ├── style.css    # Responsive CSS design system & radial animation styles
 ├── script.js    # Radial angle calculation, audio synthesis & accessibility
 └── README.md    # Component documentation & customization guide
