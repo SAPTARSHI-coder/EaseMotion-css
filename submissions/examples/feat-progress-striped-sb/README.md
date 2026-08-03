@@ -1,13 +1,14 @@
-## Progress Bar Striped Animation
+# Progress Bar Striped Animation
 
-A1. What does this do?
-\nAdds striped animation variant for progress bars with indeterminated loading states.
+## 1. What does this do?
+Adds striped animation variant for progress bars with indeterminate loading states.
 
-A2. How is it used?
-```'\ossiz:none; }
-.ease-progress-animated { background-position: -1rem 0; }
-  to { background-position: 0 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .ease-progress-animated { animation: none; }
-}
+## 2. How is it used?
+```html
+<div class="ease-progress-bar ease-progress-striped">
+  <div class="ease-progress-fill ease-progress-animated"></div>
+</div>
+```
+
+## 3. Why is it useful?
+Striped progress bars provide visual feedback for ongoing operations.
