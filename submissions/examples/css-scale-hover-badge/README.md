@@ -4,6 +4,7 @@ A modern, high-impact pure CSS/HTML Scale-Hover Badge component designed for Saa
 
 This component features micro-spring scaling entrance keyframes, fluid 1.08x scale hover expansion, and responsive theme support without JavaScript.
 
+
 ---
 
 ## Features
