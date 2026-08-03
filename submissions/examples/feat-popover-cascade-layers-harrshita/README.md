@@ -18,4 +18,4 @@ This solves the #1 pain point in large CSS codebases: unpredictable specificity 
 - `style.css`: 80+ lines structured across 5 declared `@layer` blocks.
 - `demo.html`: 3-card demo showing base, theme, and utility layer overrides.
 - `README.md`: Describes the layer architecture and cascade priority.
-\nFixes #56561\n
+\nFixes #60266\n
