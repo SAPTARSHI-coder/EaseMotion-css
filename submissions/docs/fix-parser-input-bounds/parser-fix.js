@@ -39,7 +39,7 @@ function parseRepeat(token) {
   if (!m) return null;
   if (m[1] === 'infinite') return 'infinite';
   const n = parseInt(m[1], 10);
-  if (isNaN(n) || n < 1) return null;
+  if (Number.isNaN(n) || n < 1) return null;
   return Math.min(n, MAX_ITERATIONS);
 }
 

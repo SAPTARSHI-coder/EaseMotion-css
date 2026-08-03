@@ -50,7 +50,7 @@ export function useMotionOrchestrator({
       animMap.current.set(id, anim);
       anim.finished
         .then(() => animMap.current.delete(id))
-        .catch(() => {}); // swallow cancellation rejections
+        .catch( => console.error()); // swallow cancellation rejections
     });
   }, [duration, stagger, easing]);
 
