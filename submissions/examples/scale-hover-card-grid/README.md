@@ -1,69 +1,12 @@
-# Scale-Hover Card Grid
+# CSS Scale-Hover Card Grid
 
-A responsive card grid component featuring a smooth scale hover animation using pure HTML and CSS.
+A responsive, high-performance pure CSS/HTML card grid layout with scale-hover depth transitions designed for modern SaaS showcases.
 
 ## Features
-
-- Pure HTML & CSS
-- Smooth scale hover interaction
-- Responsive grid layout
-- Lightweight animation
-- No JavaScript required
-- Accessible with prefers-reduced-motion support
-
-## Folder Structure
-
-```
-scale-hover-card-grid/
-├── demo.html
-├── style.css
-└── README.md
-```
+- **Pure CSS & HTML**: Zero JavaScript dependency.
+- **Scale-Hover Effect**: Smooth 3D scale and lift effect on card interaction.
+- **Responsive Layout**: CSS Grid responsive design across mobile, tablet, and desktop views.
+- **Accessibility**: Includes `prefers-reduced-motion` fallback.
 
 ## Usage
-
-Add the stylesheet:
-
-```html
-<link rel="stylesheet" href="style.css">
-```
-
-Create cards using:
-
-```html
-<div class="card">
-    <h2>Title</h2>
-    <p>Description</p>
-</div>
-```
-
-## Customization
-
-You can customize:
-
-- Scale amount
-- Animation duration
-- Card shadow
-- Colors
-- Border radius
-
-## Browser Support
-
-- Chrome
-- Firefox
-- Edge
-- Safari
-
-## Accessibility
-
-The component supports:
-
-```css
-prefers-reduced-motion
-```
-
-to disable animations for users who prefer reduced motion.
-
-## License
-
-MIT
+Simply include `style.css` in your project and structure your cards with `.card-grid` and `.scale-card`.
