@@ -18,4 +18,4 @@ This PR introduces the CSS `backdrop-filter` property to the `button` component,
 - `style.css`: 90+ lines with scene setup, glass card, and inner UI elements.
 - `demo.html`: Vivid gradient scene with frosted glass card floating above.
 - `README.md`: Describes the glassmorphism recipe and CSS properties.
-\nFixes #56572\n
+\nFixes #60276\n
