@@ -17,4 +17,4 @@ This enables one-line theming: override two token values on a parent element to 
 - `style.css`: 80+ lines defining the full token system and component usage.
 - `demo.html`: Three-card theme demo showing token overrides in action.
 - `README.md`: Describes the token system and all categories.
-\nFixes #55611\n
+\nFixes #60272\n
