@@ -66,7 +66,7 @@ const CountdownTimer = ({ targetDate, onComplete }) => {
     const target = new Date(targetDate).getTime();
 
     const calculateTimeLeft = () => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const difference = target - now;
 
       if (difference <= 0) {
