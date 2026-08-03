@@ -18,7 +18,7 @@ let tiles = [];
 let config = {
     pattern: patternTypeSelect.value,
     speed: parseFloat(speedInput.value),
-    size: parseInt(sizeInput.value),
+    size: parseInt(sizeInput.value, 10),
     shiftIntensity: parseInt(shiftInput.value) / 100
 };
 
