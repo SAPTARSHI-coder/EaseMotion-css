@@ -13,4 +13,4 @@ This PR optimizes the `checkbox` component layout using modern CSS Grid features
 - `style.css`: 90+ lines with full CSS Grid implementation including featured spanning card.
 - `demo.html`: Interactive grid demo with featured and standard cards.
 - `README.md`: Describes the feature and all key CSS Grid properties.
-\nFixes #55616\n
+\nFixes #60278\n
