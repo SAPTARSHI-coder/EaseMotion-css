@@ -131,7 +131,7 @@ function App() {
           <Animate type="zoom-in" duration={350} className="demo-card" style={{ maxWidth: '450px', width: '90%' }}>
             <h3>Modal Dialog</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: '2rem' }}>
-              This modal dialog enters the screen smoothly using the <code>ease-animate-zoom-in</code> animation.
+              This modal dialog enters the screen smoothly using the <code>ease-zoom-in</code> animation.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button className="btn-outline" onClick={() => setIsModalOpen(false)} style={{ margin: 0 }}>

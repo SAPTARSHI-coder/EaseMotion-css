@@ -26,9 +26,9 @@ export default function Animate({
   const classes = [];
 
   // Core animation class
-  if (type) {
-    classes.push(`ease-animate-${type}`);
-  }
+ if (type) {
+  classes.push(`ease-${type}`);
+}
 
   // Duration override class if standard token
   if (duration === 'fast' || duration === 'medium' || duration === 'slow') {
