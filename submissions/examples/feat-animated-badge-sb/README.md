@@ -1,11 +1,13 @@
-## Animated Badge Component
+# Animated Badge Component
 
 ## 1. What does this do?
 Adds animation variants to badges for drawing attention to important notifications.
 
 ## 2. How is it used?
-```
-<span class="ease-badge ease-badge-pulse">New</span>\n<span class="ease-badge ease-badge-glow">Hot</span>\n<span class="ease-badge ease-badge-shake">Alert</span>
+```html
+<span class="ease-badge ease-badge-pulse">New</span>
+<span class="ease-badge ease-badge-glow">Hot</span>
+<span class="ease-badge ease-badge-shake">Alert</span>
 ```
 
 ## 3. Why is it useful?
