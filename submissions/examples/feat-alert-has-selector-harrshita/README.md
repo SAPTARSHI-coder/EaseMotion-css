@@ -13,4 +13,4 @@ This PR implements the modern CSS `:has()` pseudo-class for the `alert` componen
 - `style.css`: 90+ lines of CSS utilizing `:has()` for interactive parent styling.
 - `demo.html`: Interactive checkbox cards demonstrating zero-JS parent state changes.
 - `README.md`: Describes the feature and selector logic.
-\nFixes #55932\n
+\nFixes #60917\n
