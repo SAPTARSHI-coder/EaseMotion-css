@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="neon">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Visualizer Bar Equalizer (ease-audio-equalizer) - EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header Title Section -->
+    <header class="header">
+      <span class="badge">EaseMotion Component</span>
+      <h1>Audio Visualizer Equalizer</h1>
+      <p>A dynamic multi-bar audio equalizer with dynamic peak decay caps, responsive frequency scaling, theme presets, and low-latency GPU acceleration.</p>
+    </header>
+
+    <!-- Main Visualizer Card Container -->
+    <main class="visualizer-card" id="visualizerCard">
+      <!-- Visualizer Stage Area -->
+      <div class="visualizer-stage-wrapper">
+        <!-- Background Grid Lines -->
+        <div class="grid-lines">
+          <div class="grid-line" data-db="0 dB"></div>
+          <div class="grid-line" data-db="-6 dB"></div>
+          <div class="grid-line" data-db="-12 dB"></div>
+          <div class="grid-line" data-db="-18 dB"></div>
+          <div class="grid-line" data-db="-24 dB"></div>
+        </div>
+
+        <!-- Dynamic Equalizer Bar Container -->
+        <div class="eq-container" id="eqContainer">
+          <!-- 24 Equalizer Bars dynamically populated by JS or static initial DOM -->
+        </div>
+      </div>
+
+      <!-- Frequency Axis Labels -->
+      <div class="freq-labels" id="freqLabels">
+        <span>32Hz</span>
+        <span>64Hz</span>
+        <span>125Hz</span>
+        <span>250Hz</span>
+        <span>500Hz</span>
+        <span>1kHz</span>
+        <span>2kHz</span>
+        <span>4kHz</span>
+        <span>8kHz</span>
+        <span>16kHz</span>
+      </div>
+
+      <!-- Controls Dashboard -->
+      <div class="controls-panel">
+        <!-- Play / Pause & Mode Group -->
+        <div class="control-group">
+          <label>
+            Playback & Engine
+            <span id="engineBadge" style="color: var(--accent-color); font-weight: bold;">FFT Spectrum</span>
+          </label>
+          
+          <button class="btn-play-toggle" id="playToggleBtn">
+            <svg class="icon" viewBox="0 0 24 24" id="playIcon">
+              <path d="M6 4l15 8-15 8z" />
+            </svg>
+            <span id="playBtnText">Pause Audio</span>
+          </button>
+
+          <div class="mode-tabs">
+            <button class="mode-tab active" data-mode="spectrum" id="modeSpectrumBtn">Audio Spectrum</button>
+            <button class="mode-tab" data-mode="keyframes" id="modeKeyframesBtn">CSS Keyframes</button>
+          </div>
+        </div>
+
+        <!-- Color Theme Presets Group -->
+        <div class="control-group">
+          <label>Color Theme Presets</label>
+          <div class="theme-selector">
+            <button class="theme-pill active" data-theme="neon">Neon</button>
+            <button class="theme-pill" data-theme="cyberpunk">Cyberpunk</button>
+            <button class="theme-pill" data-theme="sunset">Sunset</button>
+            <button class="theme-pill" data-theme="emerald">Emerald</button>
+          </div>
+
+          <!-- Sensitivity & Decay Controls -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.25rem;">
+            <label style="font-size: 0.7rem;">
+              <span>Sensitivity</span>
+              <span id="sensitivityVal">1.2x</span>
+            </label>
+            <input type="range" class="range-slider" id="sensitivitySlider" min="0.5" max="2.5" step="0.1" value="1.2">
+
+            <label style="font-size: 0.7rem; margin-top: 0.2rem;">
+              <span>Peak Decay Speed</span>
+              <span id="decayVal">Normal</span>
+            </label>
+            <input type="range" class="range-slider" id="decaySlider" min="0.5" max="3" step="0.1" value="1.5">
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry Bar -->
+      <footer class="telemetry-bar">
+        <div class="stat-item">
+          <span class="status-indicator" id="statusDot"></span>
+          <span id="statusText">Playing</span>
+        </div>
+        <div class="stat-item">
+          <span>FPS:</span>
+          <span class="stat-val" id="fpsVal">60</span>
+        </div>
+        <div class="stat-item">
+          <span>Peak:</span>
+          <span class="stat-val" id="peakDbVal">-2.4 dB</span>
+        </div>
+        <div class="stat-item">
+          <span>Bars:</span>
+          <span class="stat-val" id="barsCountVal">24</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- JavaScript Audio Visualizer Logic -->
+  <script>
+    (function () {
+      const NUM_BARS = 24;
+      const eqContainer = document.getElementById('eqContainer');
+      const playToggleBtn = document.getElementById('playToggleBtn');
+      const playIcon = document.getElementById('playIcon');
+      const playBtnText = document.getElementById('playBtnText');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const fpsVal = document.getElementById('fpsVal');
+      const peakDbVal = document.getElementById('peakDbVal');
+      const sensitivitySlider = document.getElementById('sensitivitySlider');
+      const sensitivityVal = document.getElementById('sensitivityVal');
+      const decaySlider = document.getElementById('decaySlider');
+      const decayVal = document.getElementById('decayVal');
+      const visualizerCard = document.getElementById('visualizerCard');
+      const engineBadge = document.getElementById('engineBadge');
+
+      let isPlaying = true;
+      let animationMode = 'spectrum'; // 'spectrum' or 'keyframes'
+      let sensitivity = 1.2;
+      let decaySpeedMultiplier = 1.5;
+
+      // State arrays for 24 bars
+      const barElements = [];
+      const peakElements = [];
+      const currentHeights = new Array(NUM_BARS).fill(0.05);
+      const peakPositions = new Array(NUM_BARS).fill(0.05);
+      const peakVelocities = new Array(NUM_BARS).fill(0);
+
+      // Phase accumulator for procedural audio simulation
+      let phase = 0;
+
+      // FPS tracking variables
+      let lastTime = performance.now();
+      let frameCount = 0;
+
+      // 1. Build DOM Bars
+      function initBars() {
+        eqContainer.innerHTML = '';
+        for (let i = 0; i < NUM_BARS; i++) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'eq-bar-wrapper';
+
+          const bar = document.createElement('div');
+          bar.className = 'eq-bar';
+
+          const peak = document.createElement('div');
+          peak.className = 'eq-peak';
+
+          wrapper.appendChild(bar);
+          wrapper.appendChild(peak);
+          eqContainer.appendChild(wrapper);
+
+          barElements.push(bar);
+          peakElements.push(peak);
+        }
+      }
+
+      // 2. Frequency Spectrum Audio Generator Simulation
+      function generateFrequencyHeight(index, totalBars, timePhase) {
+        // Normalize frequency index 0..1
+        const normIndex = index / totalBars;
+
+        // Sub-bass & Bass kick beat pulse (low index 0..0.25)
+        const bassPulse = Math.pow(Math.sin(timePhase * 3.5), 6) * 0.75 * Math.exp(-normIndex * 4);
+        
+        // Mid rhythm wave (0.25..0.65)
+        const midWave = Math.sin(timePhase * 5 + normIndex * Math.PI * 3) * 0.4 + 0.4;
+        
+        // High treble shimmer (0.65..1.0)
+        const trebleShimmer = Math.cos(timePhase * 9 + normIndex * Math.PI * 6) * 0.3 * Math.pow(normIndex, 1.2);
+        
+        // Dynamic harmonic spikes
+        const harmonicSpike = Math.sin(timePhase * 2.2 + index * 1.7) > 0.6 ? 0.35 : 0.05;
+
+        // Combine spectrum components
+        let rawHeight = (bassPulse + midWave * 0.45 + trebleShimmer * 0.5 + harmonicSpike) * sensitivity;
+        
+        // Add subtle pseudo-random noise for realism
+        const noise = (Math.sin(index * 99 + timePhase * 10) * 0.08);
+        rawHeight += noise;
+
+        // Clamp between minimum baseline (0.05) and peak max (1.0)
+        return Math.max(0.05, Math.min(1.0, rawHeight));
+      }
+
+      // 3. Animation Loop using requestAnimationFrame
+      function renderLoop(currentTime) {
+        // Calculate FPS
+        frameCount++;
+        if (currentTime - lastTime >= 1000) {
+          fpsVal.textContent = Math.round((frameCount * 1000) / (currentTime - lastTime));
+          frameCount = 0;
+          lastTime = currentTime;
+        }
+
+        if (animationMode === 'spectrum') {
+          if (isPlaying) {
+            phase += 0.04;
+          }
+
+          let maxPeakInFrame = 0.05;
+
+          const stageHeight = 220; // Matches .eq-container height in CSS
+
+          for (let i = 0; i < NUM_BARS; i++) {
+            let targetHeight = 0.05;
+            if (isPlaying) {
+              targetHeight = generateFrequencyHeight(i, NUM_BARS, phase);
+            }
+
+            // Smooth height lerp (low pass filter)
+            currentHeights[i] += (targetHeight - currentHeights[i]) * 0.35;
+            const h = currentHeights[i];
+
+            if (h > maxPeakInFrame) maxPeakInFrame = h;
+
+            // Apply GPU-accelerated bar scaling
+            barElements[i].style.transform = `scaleY(${h})`;
+
+            // Peak Decay Cap Physics Logic
+            const capTargetY = h * stageHeight; // Peak height in pixels from bottom
+
+            if (capTargetY >= peakPositions[i]) {
+              // Volume spike pushes peak cap up instantly
+              peakPositions[i] = capTargetY;
+              peakVelocities[i] = 0;
+            } else {
+              // Peak decays gradually under gravity physics
+              const gravity = 0.45 * decaySpeedMultiplier;
+              peakVelocities[i] += gravity;
+              peakPositions[i] -= peakVelocities[i];
+
+              // Clamp to current bar height and baseline
+              if (peakPositions[i] < capTargetY) {
+                peakPositions[i] = capTargetY;
+                peakVelocities[i] = 0;
+              }
+              if (peakPositions[i] < 4) {
+                peakPositions[i] = 4;
+              }
+            }
+
+            // Apply translateY to Peak Cap
+            peakElements[i].style.transform = `translateY(-${peakPositions[i]}px)`;
+          }
+
+          // Calculate Peak dB telemetry output
+          const db = Math.max(-36, Math.round((maxPeakInFrame - 1) * 24 * 10) / 10);
+          peakDbVal.textContent = `${db > 0 ? '+' : ''}${db} dB`;
+        }
+
+        requestAnimationFrame(renderLoop);
+      }
+
+      // 4. Play / Pause Control
+      function togglePlay() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          playBtnText.textContent = 'Pause Audio';
+          playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause SVG Icon
+          statusDot.classList.remove('paused');
+          statusText.textContent = 'Playing';
+        } else {
+          playBtnText.textContent = 'Play Audio';
+          playIcon.innerHTML = '<path d="M6 4l15 8-15 8z"/>'; // Play SVG Icon
+          statusDot.classList.add('paused');
+          statusText.textContent = 'Paused';
+        }
+      }
+
+      playToggleBtn.addEventListener('click', togglePlay);
+
+      // 5. Mode Switcher (Audio Spectrum Engine vs CSS Keyframes)
+      const modeSpectrumBtn = document.getElementById('modeSpectrumBtn');
+      const modeKeyframesBtn = document.getElementById('modeKeyframesBtn');
+
+      function setMode(mode) {
+        animationMode = mode;
+        if (mode === 'keyframes') {
+          visualizerCard.classList.add('mode-keyframes');
+          modeKeyframesBtn.classList.add('active');
+          modeSpectrumBtn.classList.remove('active');
+          engineBadge.textContent = 'CSS Keyframes';
+          // Clear JS inline transforms so CSS keyframes take over cleanly
+          barElements.forEach(bar => bar.style.transform = '');
+          peakElements.forEach(peak => peak.style.transform = '');
+        } else {
+          visualizerCard.classList.remove('mode-keyframes');
+          modeSpectrumBtn.classList.add('active');
+          modeKeyframesBtn.classList.remove('active');
+          engineBadge.textContent = 'FFT Spectrum';
+        }
+      }
+
+      modeSpectrumBtn.addEventListener('click', () => setMode('spectrum'));
+      modeKeyframesBtn.addEventListener('click', () => setMode('keyframes'));
+
+      // 6. Theme Switching Controls
+      const themePills = document.querySelectorAll('.theme-pill');
+      themePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          themePills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          const selectedTheme = pill.getAttribute('data-theme');
+          document.documentElement.setAttribute('data-theme', selectedTheme);
+        });
+      });
+
+      // 7. Sensitivity & Peak Decay Sliders
+      sensitivitySlider.addEventListener('input', (e) => {
+        sensitivity = parseFloat(e.target.value);
+        sensitivityVal.textContent = `${sensitivity.toFixed(1)}x`;
+      });
+
+      decaySlider.addEventListener('input', (e) => {
+        decaySpeedMultiplier = parseFloat(e.target.value);
+        let speedText = 'Normal';
+        if (decaySpeedMultiplier < 1.0) speedText = 'Slow (Float)';
+        if (decaySpeedMultiplier > 2.0) speedText = 'Fast (Snap)';
+        decayVal.textContent = speedText;
+      });
+
+      // Initialize component
+      initBars();
+      requestAnimationFrame(renderLoop);
+    })();
+  </script>
+</body>
+</html>
