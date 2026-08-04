@@ -259,3 +259,9 @@ This library provides simple CSS-based animations that can be applied using util
 ```bash
 npm install ease-motion-css
 ```
+
+---
+
+## 🌟 Featured Community Showcases
+
+- `gssoc-2026-glassmorphic-command-palette-bb`: Glassmorphic Command Palette with spotlight search and keyboard accessibility.
