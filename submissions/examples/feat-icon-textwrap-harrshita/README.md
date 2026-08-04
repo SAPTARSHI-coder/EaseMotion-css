@@ -14,4 +14,4 @@ This PR applies modern CSS typographic optimizations to the `icon` component. It
 - `style.css`: 80+ lines of typographic CSS using modern text-wrap algorithms.
 - `demo.html`: Two-card demo showcasing balanced headings and pretty body text.
 - `README.md`: Describes the feature and all key CSS typography properties.
-\nFixes #56567\n
+\nFixes #60937\n
