@@ -24,10 +24,9 @@
 ## Folder Structure
 
 ```
-spiral-nav/
+spiral-nav/example
 ├── demo.html
 ├── style.css
-├── script.js
 └── README.md
 ```
 
