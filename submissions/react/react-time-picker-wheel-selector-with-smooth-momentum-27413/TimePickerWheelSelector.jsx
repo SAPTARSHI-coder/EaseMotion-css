@@ -115,7 +115,7 @@ const Wheel = memo(
     const [isReducedMotion, setIsReducedMotion] = useState(false);
 
     useEffect(() => {
-      if (typeof window === "undefined") return undefined;
+      if (typeof window === "undefined") return;
       const media = window.matchMedia("(prefers-reduced-motion: reduce)");
       setIsReducedMotion(media.matches);
       const listener = (event) => setIsReducedMotion(event.matches);
