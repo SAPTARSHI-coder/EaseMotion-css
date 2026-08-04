@@ -702,15 +702,21 @@ Every class in the framework has passed through this process. The curation is wh
 
 ## Usage and Examples
 
+````
 ### Development
 Use the non-minified version for debugging and development:
 
-```html
+````html
 <link rel="stylesheet" href="easemotion.css" />
+````
 
 ### Animations
 
-```html
+````html
+````
+
+Fix: add a closing `` ``` `` right after the `<link rel="stylesheet" href="easemotion.css" />` line, before the `### Animations` heading.
+
 <!-- Entrance animations (run on page load) -->
 <h1 class="ease-fade-in">Fade in</h1>
 <h2 class="ease-slide-up">Slide up</h2>
