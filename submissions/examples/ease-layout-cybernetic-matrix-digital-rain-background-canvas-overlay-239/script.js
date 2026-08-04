@@ -34,7 +34,7 @@ drops[index]++;
 
 }
 
-setInterval(draw,40);
+clearInterval(window.__interval); window.__interval = setInterval(draw,40);
 
 window.addEventListener("resize",()=>{
 
