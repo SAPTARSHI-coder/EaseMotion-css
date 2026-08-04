@@ -24,10 +24,6 @@
           overlay.classList.add('is-active');
 
           const modal = overlay.querySelector('.ease-modal');
-          if (modal) {
-            modal.setAttribute('tabindex', '-1');
-            modal.focus();
-          }
           return;
         }
       } catch (e) {
