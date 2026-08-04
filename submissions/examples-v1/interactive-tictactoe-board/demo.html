@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Tic-Tac-Toe - EaseMotion CSS</title>
+  <!-- Link EaseMotion core animations -->
+  <link rel="stylesheet" href="../../../core/animations.css">
+  <!-- Link local style sheet -->
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts Outfit & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="game-container">
+    <!-- Header -->
+    <header class="game-header">
+      <span class="glow-tag">VS ENGINE</span>
+      <h1>TIC-TAC-TOE</h1>
+    </header>
+
+    <!-- Game Settings / Mode Toggle -->
+    <section class="mode-selector">
+      <button id="btn-pvp" class="mode-btn active" data-mode="pvp">Player vs Player</button>
+      <button id="btn-pve" class="mode-btn" data-mode="pve">Player vs AI</button>
+    </section>
+
+    <!-- Scoreboard -->
+    <section class="scoreboard">
+      <div class="score-card x-score">
+        <span class="score-label">Player X</span>
+        <span id="score-val-x" class="score-value">0</span>
+      </div>
+      <div class="score-card tie-score">
+        <span class="score-label">Ties</span>
+        <span id="score-val-ties" class="score-value">0</span>
+      </div>
+      <div class="score-card o-score">
+        <span id="score-label-o" class="score-label">Player O</span>
+        <span id="score-val-o" class="score-value">0</span>
+      </div>
+    </section>
+
+    <!-- Turn Indicator -->
+    <div class="turn-indicator" id="turn-display">
+      Turn: <span id="current-player" class="player-x-text">Player X (X)</span>
+    </div>
+
+    <!-- Board Area -->
+    <main class="board-wrapper">
+      <div class="board" id="game-board">
+        <!-- 3x3 Grid Cells -->
+        <div class="cell" data-index="0" style="--cell-index: 1;"></div>
+        <div class="cell" data-index="1" style="--cell-index: 2;"></div>
+        <div class="cell" data-index="2" style="--cell-index: 3;"></div>
+        <div class="cell" data-index="3" style="--cell-index: 4;"></div>
+        <div class="cell" data-index="4" style="--cell-index: 5;"></div>
+        <div class="cell" data-index="5" style="--cell-index: 6;"></div>
+        <div class="cell" data-index="6" style="--cell-index: 7;"></div>
+        <div class="cell" data-index="7" style="--cell-index: 8;"></div>
+        <div class="cell" data-index="8" style="--cell-index: 9;"></div>
+
+        <!-- Winning Strike Line Overlay -->
+        <div class="strike-line" id="strike-line"></div>
+      </div>
+    </main>
+
+    <!-- Reset Controls -->
+    <footer class="game-footer">
+      <button id="btn-restart" class="restart-btn">Restart Match</button>
+    </footer>
+  </div>
+
+  <!-- Winner Modal Overlay -->
+  <div class="modal-overlay" id="winner-modal">
+    <div class="modal-card">
+      <div class="modal-glow-bg"></div>
+      <h2 id="winner-title">PLAYER X WINS!</h2>
+      <p id="winner-msg">Congratulations, you have conquered the match.</p>
+      <div class="modal-actions">
+        <button id="btn-modal-restart" class="modal-btn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Logic Script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // SVGs representing X and O with stroke animations
+      const svgX = `
+        <svg class="symbol symbol-x" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <line x1="20" y1="20" x2="80" y2="80" stroke="currentColor" stroke-width="12" stroke-linecap="round" />
+          <line x1="80" y1="20" x2="20" y2="80" stroke="currentColor" stroke-width="12" stroke-linecap="round" />
+        </svg>
+      `;
+
+      const svgO = `
+        <svg class="symbol symbol-o" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="30" stroke="currentColor" stroke-width="12" stroke-linecap="round" fill="none" />
+        </svg>
+      `;
+
+      // Selectors
+      const board = document.getElementById('game-board');
+      const cells = document.querySelectorAll('.cell');
+      const turnDisplay = document.getElementById('current-player');
+      const strikeLine = document.getElementById('strike-line');
+      const winnerModal = document.getElementById('winner-modal');
+      const winnerTitle = document.getElementById('winner-title');
+      const winnerMsg = document.getElementById('winner-msg');
+      const btnRestart = document.getElementById('btn-restart');
+      const btnModalRestart = document.getElementById('btn-modal-restart');
+      
+      const btnPvP = document.getElementById('btn-pvp');
+      const btnPvE = document.getElementById('btn-pve');
+      const labelO = document.getElementById('score-label-o');
+
+      const valX = document.getElementById('score-val-x');
+      const valTies = document.getElementById('score-val-ties');
+      const valO = document.getElementById('score-val-o');
+
+      // State variables
+      let gameMode = 'pvp'; // 'pvp' or 'pve'
+      let currentPlayer = 'X'; // 'X' or 'O'
+      let boardState = Array(9).fill(null);
+      let isGameActive = true;
+      let scores = { X: 0, ties: 0, O: 0 };
+      let isAiThinking = false;
+
+      // Win combinations
+      const winCombinations = [
+        { combo: [0, 1, 2], class: 'horizontal-row-1' },
+        { combo: [3, 4, 5], class: 'horizontal-row-2' },
+        { combo: [6, 7, 8], class: 'horizontal-row-3' },
+        { combo: [0, 3, 6], class: 'vertical-col-1' },
+        { combo: [1, 4, 7], class: 'vertical-col-2' },
+        { combo: [2, 5, 8], class: 'vertical-col-3' },
+        { combo: [0, 4, 8], class: 'diagonal-main' },
+        { combo: [2, 4, 6], class: 'diagonal-anti' }
+      ];
+
+      // Handle mode switching
+      btnPvP.addEventListener('click', () => switchMode('pvp'));
+      btnPvE.addEventListener('click', () => switchMode('pve'));
+
+      function switchMode(mode) {
+        if (gameMode === mode) return;
+        gameMode = mode;
+        if (mode === 'pvp') {
+          btnPvP.classList.add('active');
+          btnPvE.classList.remove('active');
+          labelO.textContent = 'Player O';
+        } else {
+          btnPvE.classList.add('active');
+          btnPvP.classList.remove('active');
+          labelO.textContent = 'AI Bot';
+        }
+        resetScores();
+        restartGame();
+      }
+
+      function resetScores() {
+        scores = { X: 0, ties: 0, O: 0 };
+        valX.textContent = '0';
+        valTies.textContent = '0';
+        valO.textContent = '0';
+      }
+
+      // Handle Cell Click
+      cells.forEach(cell => {
+        cell.addEventListener('click', () => {
+          const index = parseInt(cell.getAttribute('data-index'));
+          
+          // Disable clicking if cell occupied, game inactive, or AI is currently executing a move
+          if (boardState[index] || !isGameActive || isAiThinking) return;
+
+          makeMove(index, currentPlayer);
+
+          if (isGameActive && gameMode === 'pve' && currentPlayer === 'O') {
+            triggerAiMove();
+          }
+        });
+      });
+
+      function makeMove(index, player) {
+        boardState[index] = player;
+        const cell = cells[index];
+        cell.innerHTML = player === 'X' ? svgX : svgO;
+        cell.classList.add('filled', player === 'X' ? 'x-filled' : 'o-filled');
+
+        if (checkWin()) {
+          handleWin(player);
+        } else if (checkTie()) {
+          handleTie();
+        } else {
+          // Switch Turn
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          updateTurnDisplay();
+        }
+      }
+
+      function updateTurnDisplay() {
+        if (currentPlayer === 'X') {
+          turnDisplay.textContent = 'Player X (X)';
+          turnDisplay.className = 'player-x-text';
+        } else {
+          turnDisplay.textContent = gameMode === 'pvp' ? 'Player O (O)' : 'AI Bot (O)';
+          turnDisplay.className = 'player-o-text';
+        }
+      }
+
+      // Basic Smart AI (Blocks win, seeks win, or plays center/corners/random)
+      function triggerAiMove() {
+        isAiThinking = true;
+        updateTurnDisplay();
+
+        setTimeout(() => {
+          if (!isGameActive) {
+            isAiThinking = false;
+            return;
+          }
+
+          const bestMove = getBestMove();
+          makeMove(bestMove, 'O');
+          isAiThinking = false;
+        }, 600);
+      }
+
+      function getBestMove() {
+        // 1. Can AI Win in one move?
+        for (let comboObj of winCombinations) {
+          const [a, b, c] = comboObj.combo;
+          if (boardState[a] === 'O' && boardState[b] === 'O' && boardState[c] === null) return c;
+          if (boardState[a] === 'O' && boardState[c] === 'O' && boardState[b] === null) return b;
+          if (boardState[b] === 'O' && boardState[c] === 'O' && boardState[a] === null) return a;
+        }
+
+        // 2. Can Player Win in one move? (Block player)
+        for (let comboObj of winCombinations) {
+          const [a, b, c] = comboObj.combo;
+          if (boardState[a] === 'X' && boardState[b] === 'X' && boardState[c] === null) return c;
+          if (boardState[a] === 'X' && boardState[c] === 'X' && boardState[b] === null) return b;
+          if (boardState[b] === 'X' && boardState[c] === 'X' && boardState[a] === null) return a;
+        }
+
+        // 3. Take Center if free
+        if (boardState[4] === null) return 4;
+
+        // 4. Take Corners if free
+        const corners = [0, 2, 6, 8];
+        const freeCorners = corners.filter(i => boardState[i] === null);
+        if (freeCorners.length > 0) {
+          return freeCorners[Math.floor(Math.random() * freeCorners.length)];
+        }
+
+        // 5. Take any free cell
+        const freeCells = [];
+        boardState.forEach((val, idx) => {
+          if (val === null) freeCells.push(idx);
+        });
+        return freeCells[Math.floor(Math.random() * freeCells.length)];
+      }
+
+      function checkWin() {
+        return winCombinations.some(comboObj => {
+          const [a, b, c] = comboObj.combo;
+          if (boardState[a] && boardState[a] === boardState[b] && boardState[a] === boardState[c]) {
+            // Apply line animation coordinate class
+            strikeLine.className = 'strike-line ' + comboObj.class;
+            return true;
+          }
+          return false;
+        });
+      }
+
+      function checkTie() {
+        return boardState.every(cell => cell !== null);
+      }
+
+      function handleWin(player) {
+        isGameActive = false;
+        scores[player]++;
+        
+        if (player === 'X') {
+          valX.textContent = scores.X;
+        } else {
+          valO.textContent = scores.O;
+        }
+
+        // Delay modal popup to let the strike line drawing animation finish
+        setTimeout(() => {
+          winnerTitle.textContent = player === 'X' ? 'PLAYER X WINS!' : (gameMode === 'pvp' ? 'PLAYER O WINS!' : 'AI BOT WINS!');
+          winnerTitle.className = player === 'X' ? 'player-x-text' : 'player-o-text';
+          winnerMsg.textContent = player === 'X' ? 'Excellent strategy!' : (gameMode === 'pvp' ? 'Smooth moves!' : 'Better luck next time against the bot!');
+          winnerModal.classList.add('active');
+        }, 800);
+      }
+
+      function handleTie() {
+        isGameActive = false;
+        scores.ties++;
+        valTies.textContent = scores.ties;
+
+        setTimeout(() => {
+          winnerTitle.textContent = "IT'S A TIE!";
+          winnerTitle.className = 'tie-text';
+          winnerMsg.textContent = 'Great match! You both matched strengths.';
+          winnerModal.classList.add('active');
+        }, 400);
+      }
+
+      // Restarts
+      btnRestart.addEventListener('click', restartGame);
+      btnModalRestart.addEventListener('click', () => {
+        winnerModal.classList.remove('active');
+        restartGame();
+      });
+
+      function restartGame() {
+        boardState = Array(9).fill(null);
+        isGameActive = true;
+        isAiThinking = false;
+        currentPlayer = 'X';
+        updateTurnDisplay();
+        
+        // Remove SVG contents and state classes
+        cells.forEach(cell => {
+          cell.innerHTML = '';
+          cell.className = 'cell';
+        });
+
+        // Reset strike line
+        strikeLine.className = 'strike-line';
+      }
+    });
+  </script>
+</body>
+</html>

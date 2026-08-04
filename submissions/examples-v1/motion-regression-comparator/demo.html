@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Regression Comparator — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Regression Comparator</h1>
+    <p>
+      Compare two versions of the same EaseMotion animation side-by-side. Highlights
+      differences in duration, delay, easing functions, and transforms to catch
+      unintended regressions before merging pull requests.
+    </p>
+    <div class="badges">
+      <span class="badge">⚖️ Side-by-Side</span>
+      <span class="badge">🔬 Diff Report</span>
+      <span class="badge">🛡️ Regression Guard</span>
+    </div>
+  </header>
+
+  <main class="comparator-container">
+
+    <!-- ── CONFIG ────────────────────────────────────────────── -->
+    <section class="config-bar">
+      <!-- Version A -->
+      <div class="version-config">
+        <span class="version-pill a">A</span>
+        <div class="inputs">
+          <input type="text" id="classA" class="ease-input" value="ease-fade-up" placeholder="Classes for Version A" />
+          <div class="timing-inputs">
+            <input type="number" id="durationA" class="ease-input small" value="300" placeholder="Duration ms" />
+            <input type="number" id="delayA" class="ease-input small" value="0" placeholder="Delay ms" />
+            <select id="easingA" class="ease-input small">
+              <option value="ease-out" selected>ease-out</option>
+              <option value="ease-in">ease-in</option>
+              <option value="ease-in-out">ease-in-out</option>
+              <option value="linear">linear</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button id="compareBtn" class="ease-btn">Compare ⚖️</button>
+
+      <!-- Version B -->
+      <div class="version-config">
+        <span class="version-pill b">B</span>
+        <div class="inputs">
+          <input type="text" id="classB" class="ease-input" value="ease-fade-up ease-delay-200" placeholder="Classes for Version B" />
+          <div class="timing-inputs">
+            <input type="number" id="durationB" class="ease-input small" value="400" placeholder="Duration ms" />
+            <input type="number" id="delayB" class="ease-input small" value="200" placeholder="Delay ms" />
+            <select id="easingB" class="ease-input small">
+              <option value="ease-out">ease-out</option>
+              <option value="ease-in">ease-in</option>
+              <option value="ease-in-out" selected>ease-in-out</option>
+              <option value="linear">linear</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── STAGE (matches the issue's HTML snippet exactly) ───── -->
+    <!-- From the issue's HTML snippet exactly -->
+    <div class="ease-compare" id="easeCompare">
+      <div class="ease-version-a" id="versionAStage">
+        <div class="stage-label">Version A</div>
+        <div id="targetA" class="ease-fade-up target-box">
+          Version A
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="ease-version-b" id="versionBStage">
+        <div class="stage-label">Version B</div>
+        <div id="targetB" class="ease-fade-up ease-delay-200 target-box">
+          Version B
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DIFF REPORT ────────────────────────────────────────── -->
+    <section class="diff-panel">
+      <div class="diff-header">
+        <span class="section-label">Comparison Report</span>
+        <div id="diffStatus" class="diff-status">–</div>
+      </div>
+      <div id="diffReport" class="diff-report">
+        <!-- Injected via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Regression Comparator
+     * Compares two sets of animation parameters and generates a structured diff report.
+     */
+
+    const compareBtn = document.getElementById('compareBtn');
+    const targetA = document.getElementById('targetA');
+    const targetB = document.getElementById('targetB');
+    const diffReport = document.getElementById('diffReport');
+    const diffStatus = document.getElementById('diffStatus');
+
+    compareBtn.addEventListener('click', compare);
+
+    function compare() {
+      const configA = {
+        classes:  document.getElementById('classA').value.trim(),
+        duration: parseInt(document.getElementById('durationA').value),
+        delay:    parseInt(document.getElementById('delayA').value),
+        easing:   document.getElementById('easingA').value,
+      };
+      const configB = {
+        classes:  document.getElementById('classB').value.trim(),
+        duration: parseInt(document.getElementById('durationB').value),
+        delay:    parseInt(document.getElementById('delayB').value),
+        easing:   document.getElementById('easingB').value,
+      };
+
+      // Replay animations on stage
+      replayTarget(targetA, configA);
+      replayTarget(targetB, configB);
+
+      // Build diff report
+      const diffs = [];
+
+      const durationChanged = configA.duration !== configB.duration;
+      diffs.push({
+        label: 'Duration',
+        from: `${configA.duration}ms`,
+        to: `${configB.duration}ms`,
+        changed: durationChanged,
+      });
+
+      const delayChanged = configA.delay !== configB.delay;
+      diffs.push({
+        label: 'Delay',
+        from: `${configA.delay}ms`,
+        to: `${configB.delay}ms`,
+        changed: delayChanged,
+      });
+
+      const easingChanged = configA.easing !== configB.easing;
+      diffs.push({
+        label: 'Timing Function',
+        from: configA.easing,
+        to: configB.easing,
+        changed: easingChanged,
+      });
+
+      const classesChanged = configA.classes !== configB.classes;
+      diffs.push({
+        label: 'Classes',
+        from: configA.classes,
+        to: configB.classes,
+        changed: classesChanged,
+      });
+
+      // Detect transform changes via primary class name (simplified)
+      const transformChanged = classesChanged;
+      diffs.push({
+        label: 'Transforms',
+        from: 'base',
+        to: transformChanged ? 'modified' : 'base',
+        changed: transformChanged,
+      });
+
+      renderReport(diffs, configA);
+    }
+
+    function replayTarget(el, config) {
+      el.className = 'target-box'; // reset
+      void el.offsetWidth;
+      el.style.animationDuration = `${config.duration}ms`;
+      el.style.animationDelay = `${config.delay}ms`;
+      el.style.animationTimingFunction = config.easing;
+      el.className = `target-box ${config.classes}`;
+    }
+
+    function renderReport(diffs, configA) {
+      const changedCount = diffs.filter(d => d.changed).length;
+
+      // Update status badge
+      if (changedCount === 0) {
+        diffStatus.textContent = '✅ No regressions';
+        diffStatus.className = 'diff-status success';
+      } else {
+        diffStatus.textContent = `⚠️ ${changedCount} difference${changedCount > 1 ? 's' : ''}`;
+        diffStatus.className = 'diff-status warning';
+      }
+
+      // Build report rows matching the issue's CSS snippet format exactly
+      const rows = diffs.map(d => `
+        <div class="diff-row ${d.changed ? 'changed' : 'same'}">
+          <div class="diff-label">${d.label}</div>
+          <div class="diff-values">
+            ${d.changed
+              ? `<code class="val-a">${d.from}</code>
+                 <span class="arrow">→</span>
+                 <code class="val-b">${d.to}</code>`
+              : `<code class="val-same">${d.from}</code>
+                 <span class="no-change">No Change</span>`
+            }
+          </div>
+        </div>
+      `).join('');
+
+      diffReport.innerHTML = `
+        <div class="report-header">
+          <code>Animation: ${configA.classes.split(' ')[0]}</code>
+          <span>Difference Summary</span>
+        </div>
+        ${rows}
+      `;
+    }
+
+    // Run initial comparison on load
+    compare();
+  </script>
+
+</body>
+</html>

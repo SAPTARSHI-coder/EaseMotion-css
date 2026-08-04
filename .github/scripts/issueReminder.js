@@ -72,7 +72,7 @@ module.exports = async ({ github, context }) => {
     `💬 Reply to this issue with exactly: \`/claim\``,
     ``,
     `## 📋 Things to Remember`,
-    `- You can hold a **maximum of 1 open issues** at a time.`,
+    `- You can hold a **maximum of 25 active assigned issues** at a time.`,
     `- Make sure to read our **[CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md)**.`
   ];
 

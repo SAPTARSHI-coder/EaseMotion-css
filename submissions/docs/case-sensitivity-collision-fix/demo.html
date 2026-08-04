@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case-Sensitivity Collision Fix - Issue #38298</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 3rem 2rem;
+    }
+    
+    .issue-section {
+      margin-bottom: 3rem;
+    }
+    
+    .issue-section h2 {
+      color: #667eea;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 0.75rem;
+    }
+    
+    .problem-box {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .solution-box {
+      background: #d4edda;
+      border-left: 5px solid #28a745;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .info-box {
+      background: #d1ecf1;
+      border-left: 5px solid #17a2b8;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+    }
+    
+    .error-box {
+      background: #f8d7da;
+      border-left: 5px solid #dc3545;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .code-block {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    
+    .file-tree {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1.5rem;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+    
+    .before-after {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    
+    .before, .after {
+      padding: 1.5rem;
+      border-radius: 6px;
+    }
+    
+    .before {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+    }
+    
+    .after {
+      background: #d4edda;
+      border: 2px solid #28a745;
+    }
+    
+    .before h3, .after h3 {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+    
+    .before h3 {
+      color: #f0810f;
+    }
+    
+    .after h3 {
+      color: #155724;
+    }
+    
+    .path-item {
+      font-family: 'Courier New', monospace;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: white;
+      border-radius: 4px;
+    }
+    
+    .strikethrough {
+      text-decoration: line-through;
+      opacity: 0.6;
+      color: #dc3545;
+    }
+    
+    .highlight {
+      background: #ffff00;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+    
+    .steps-list {
+      list-style: none;
+      counter-reset: step-counter;
+      margin: 1.5rem 0;
+    }
+    
+    .steps-list li {
+      counter-increment: step-counter;
+      margin-bottom: 1.5rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    
+    .steps-list li:before {
+      content: counter(step-counter);
+      position: absolute;
+      left: 0;
+      top: 0;
+      background: #667eea;
+      color: white;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .comparison-table th {
+      background: #667eea;
+      color: white;
+      font-weight: 600;
+    }
+    
+    .comparison-table tr:hover {
+      background: #f9f9f9;
+    }
+    
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .status-broken {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    
+    .status-fixed {
+      color: #28a745;
+      font-weight: bold;
+    }
+    
+    .footer {
+      background: #f8f9fa;
+      padding: 2rem;
+      border-top: 1px solid #ddd;
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.8rem;
+      }
+      
+      .before-after {
+        grid-template-columns: 1fr;
+      }
+      
+      .content {
+        padding: 1.5rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🐛 Case-Sensitivity Collision Fix</h1>
+      <p>EaseMotion CSS Issue #38298</p>
+    </div>
+    
+    <!-- Content -->
+    <div class="content">
+      
+      <!-- Problem Section -->
+      <div class="issue-section">
+        <h2>❌ The Problem</h2>
+        
+        <div class="problem-box">
+          <strong>Issue:</strong> Git clone fails on Windows and macOS due to case-sensitivity collision
+        </div>
+        
+        <p>When cloning the EaseMotion CSS repository on a case-insensitive file system (Windows or macOS), Git detects a collision between two folder names that differ only in capitalization:</p>
+        
+        <div class="file-tree">
+submissions/examples/
+├── Tada-Click-animation/      ← uppercase "C"
+└── Tada-click-animation/      ← lowercase "c"
+        </div>
+        
+        <p style="margin-top: 1.5rem;">This causes Git to throw a warning and fail to properly checkout all files:</p>
+        
+        <div class="error-box">
+warning: the following paths have collided (e.g. case-sensitive paths
+on a case-insensitive filesystem) and only one from the same
+colliding group is in the working tree:
+
+  'submissions/examples/Tada-Click-animation/demo.html'
+  'submissions/examples/Tada-click-animation/demo.html'
+        </div>
+        
+        <div class="info-box">
+          <strong>💡 Why it happens:</strong> Linux/Unix filesystems are case-sensitive (Tada-Click-animation ≠ Tada-click-animation), but Windows and macOS are case-insensitive (they treat them as the same). Git tracks both as separate paths, creating a collision that breaks on case-insensitive systems.
+        </div>
+      </div>
+      
+      <!-- Impact Section -->
+      <div class="issue-section">
+        <h2>⚠️ Impact</h2>
+        
+        <p><strong>Who is affected:</strong></p>
+        <ul style="margin-left: 2rem; margin-top: 1rem; line-height: 1.8;">
+          <li>All Windows users cloning the repository</li>
+          <li>All macOS users cloning the repository</li>
+          <li>CI/CD pipelines on Windows runners</li>
+          <li>New contributors trying to set up locally</li>
+        </ul>
+        
+        <p style="margin-top: 1.5rem;"><strong>Consequences:</strong></p>
+        <ul style="margin-left: 2rem; margin-top: 1rem; line-height: 1.8;">
+          <li>Incomplete repository clone</li>
+          <li>Missing or corrupted files from one folder</li>
+          <li>Git shows "untracked" or "conflicting" status</li>
+          <li>Difficulty resolving the issue without understanding Git's case handling</li>
+        </ul>
+      </div>
+      
+      <!-- Solution Section -->
+      <div class="issue-section">
+        <h2>✅ The Solution</h2>
+        
+        <div class="solution-box">
+          <strong>Fix:</strong> Keep the lowercase folder and remove the uppercase folder from Git tracking
+        </div>
+        
+        <div class="before-after">
+          <div class="before">
+            <h3>Before (Broken)</h3>
+            <div class="path-item">submissions/examples/</div>
+            <div class="path-item" style="margin-left: 1rem;">
+              <span class="strikethrough">Tada-Click-animation/</span>
+            </div>
+            <div class="path-item" style="margin-left: 1rem;">
+              Tada-click-animation/
+            </div>
+          </div>
+          
+          <div class="after">
+            <h3>After (Fixed)</h3>
+            <div class="path-item">submissions/examples/</div>
+            <div class="path-item" style="margin-left: 1rem;">
+              ✓ Tada-click-animation/
+            </div>
+          </div>
+        </div>
+        
+        <div class="info-box">
+          <strong>Why lowercase?</strong> Lowercase naming is a Git best practice and matches EaseMotion's existing naming convention (e.g., <code>ripple-toggle-switch</code>, <code>cascading-barcode</code>). It's also more compatible with URLs and command-line tools.
+        </div>
+      </div>
+      
+      <!-- Why This Is A Bug Fix -->
+      <div class="issue-section">
+        <h2>🔧 Why This Is A Bug Fix (Not A Feature Deletion)</h2>
+        
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Aspect</th>
+              <th>Normal Feature Deletion (Not Allowed)</th>
+              <th>This Fix (Structural Bug Fix)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Scope</strong></td>
+              <td>Removing user-facing feature or demo</td>
+              <td>Fixing a Git structural issue</td>
+            </tr>
+            <tr>
+              <td><strong>Content</strong></td>
+              <td>Deleting animation or component code</td>
+              <td>Two identical folders (content is duplicate)</td>
+            </tr>
+            <tr>
+              <td><strong>Impact</strong></td>
+              <td>User loses access to a feature</td>
+              <td>All users gain proper access</td>
+            </tr>
+            <tr>
+              <td><strong>Status</strong></td>
+              <td style="color: #dc3545; font-weight: bold;">Breaks functionality</td>
+              <td style="color: #28a745; font-weight: bold;">Fixes functionality</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="info-box">
+          <strong>Key Point:</strong> The duplicate uppercase folder doesn't contain unique content—it's a duplicate entry in Git's tracking. Removing it from Git (while keeping the lowercase version) is a structural fix that benefits all users, not a destructive deletion.
+        </div>
+      </div>
+      
+      <!-- How To Fix -->
+      <div class="issue-section">
+        <h2>🛠️ How To Implement The Fix</h2>
+        
+        <ol class="steps-list">
+          <li>
+            <strong>In Git, remove the uppercase folder from tracking:</strong>
+            <div class="code-block">
+git rm -r --cached "submissions/examples/Tada-Click-animation"
+            </div>
+          </li>
+          <li>
+            <strong>Verify only the lowercase folder remains:</strong>
+            <div class="code-block">
+git ls-files submissions/examples/ | grep -i tada
+# Expected output:
+# submissions/examples/Tada-click-animation/demo.html
+# submissions/examples/Tada-click-animation/style.css
+# submissions/examples/Tada-click-animation/README.md
+            </div>
+          </li>
+          <li>
+            <strong>Commit the fix:</strong>
+            <div class="code-block">
+git add -A
+git commit -m "fix: resolve case-sensitivity collision in submissions/examples (#38298)
+
+- Remove duplicate uppercase folder 'Tada-Click-animation' from Git tracking
+- Keep lowercase folder 'Tada-click-animation' (follows naming convention)
+- Fixes git clone failures on Windows and macOS
+- Resolves Issue #38298"
+            </div>
+          </li>
+          <li>
+            <strong>Push to remote:</strong>
+            <div class="code-block">
+git push origin main
+            </div>
+          </li>
+        </ol>
+        
+        <div class="info-box">
+          <strong>Note:</strong> The <code>git rm --cached</code> command removes the folder from Git tracking only; it doesn't delete files from the working directory (though they don't exist locally anyway on case-insensitive systems).
+        </div>
+      </div>
+      
+      <!-- Testing -->
+      <div class="issue-section">
+        <h2>✔️ Testing The Fix</h2>
+        
+        <p><strong>After the fix is merged, verify on Windows and macOS:</strong></p>
+        
+        <ol class="steps-list">
+          <li>
+            <strong>Clone the repository fresh:</strong>
+            <div class="code-block">
+git clone https://github.com/SAPTARSHI-coder/EaseMotion-css.git
+            </div>
+          </li>
+          <li>
+            <strong>Check for Git warnings:</strong>
+            <div class="code-block">
+# No warning should appear about case-sensitive path collision
+            </div>
+          </li>
+          <li>
+            <strong>Verify the folder exists:</strong>
+            <div class="code-block">
+ls submissions/examples/ | grep -i tada
+# Should output: Tada-click-animation
+# NOT both Tada-Click-animation and Tada-click-animation
+            </div>
+          </li>
+          <li>
+            <strong>Confirm Git status is clean:</strong>
+            <div class="code-block">
+git status
+# Expected: "nothing to commit, working tree clean"
+            </div>
+          </li>
+        </ol>
+      </div>
+      
+      <!-- References -->
+      <div class="issue-section">
+        <h2>📚 References</h2>
+        
+        <ul style="margin-left: 2rem; line-height: 1.8; margin-top: 1rem;">
+          <li><strong>GitHub Issue:</strong> <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/38298" style="color: #667eea;">#38298</a></li>
+          <li><strong>Git Documentation:</strong> <a href="https://git-scm.com/docs/git-rm" style="color: #667eea;">git rm</a></li>
+          <li><strong>Naming Convention:</strong> EaseMotion CSS uses lowercase with hyphens (kebab-case)</li>
+          <li><strong>Best Practice:</strong> Always use lowercase folder names in repositories for cross-platform compatibility</li>
+        </ul>
+      </div>
+      
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>💡 This submission demonstrates a structural bug fix for EaseMotion CSS.</p>
+      <p>For more information, see the accompanying README.md file.</p>
+    </div>
+  </div>
+</body>
+</html>

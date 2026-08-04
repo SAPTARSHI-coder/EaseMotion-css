@@ -1,39 +1,14 @@
-# Skeleton Loading Animation
+# Skeleton Loading Component
 
-This submission implements a skeleton loading placeholder component with shimmer animation for content loading states (Issue **#14157**).
+**What does this do?**
+Provides a pure-CSS implementation of a Skeleton Loading UI pattern, featuring a continuous, smooth shimmering linear-gradient animation.
 
-## What It Does
-
-Provides skeleton loading placeholders using a CSS shimmer animation. When content is loading, skeleton shapes smoothly animate with a moving gradient to indicate progress. Once loaded, the skeletons transition to real content.
-
-## Variants
-
-| Variant | Description |
-|---------|-------------|
-| `skeleton` | Base class — text line placeholder |
-| `skeleton-circle` | Circular placeholder (avatars, icons) |
-| `skeleton-card` | Card-shaped placeholder |
-| `.line` | Text line with variants `.line-sm` (50%), `.line-xs` (35%), `.line-lg` (18px height) |
-| `.image-block` | Rectangular image placeholder |
-
-## Usage
-
+**How is it used?**
+Apply the base `.skeleton-ag` class to placeholder elements. You can combine it with shape modifiers like `.skeleton-circle-ag` or `.skeleton-rounded-ag`, and control the dimensions via inline styles or dedicated layout classes.
 ```html
-<div class="skeleton" style="width: 100%; height: 14px;"></div>
-<div class="skeleton skeleton-circle" style="width: 56px; height: 56px;"></div>
+<div class="skeleton-ag skeleton-circle-ag" style="width: 50px; height: 50px;"></div>
+<div class="skeleton-ag" style="width: 100%; height: 20px;"></div>
 ```
 
-## Files
-
-- `demo.html` — Interactive showcase with profile, article, stats & list skeleton cards
-- `style.css` — Shimmer keyframes, skeleton classes, layout, real content styles
-- `README.md` — This documentation
-
-## Features
-
-- Smooth shimmer animation using `background-position`
-- Four skeleton contexts: profile, article, stats dashboard, file list
-- Interactive "Simulate Loading" / "Reset" toggle
-- `prefers-reduced-motion` support disables animation
-- Responsive grid layout
-- Dark theme design
+**Why is it useful?**
+Skeleton screens significantly improve perceived performance compared to blank screens or traditional loading spinners by giving the user an immediate preview of the layout structure before the data finishes fetching.
