@@ -14,4 +14,4 @@ This eliminates the need for JavaScript height-matching scripts or brittle `min-
 - `style.css`: 80+ lines implementing the subgrid parent/child relationship.
 - `demo.html`: A 3-card demo proving perfect footer alignment despite radically different body text lengths.
 - `README.md`: Describes the feature and subgrid syntax.
-\nFixes #55935\n
+\nFixes #60934\n
