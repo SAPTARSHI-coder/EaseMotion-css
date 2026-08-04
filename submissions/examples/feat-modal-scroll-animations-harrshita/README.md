@@ -11,4 +11,4 @@ This PR introduces cutting-edge CSS Scroll-Driven Animations to the `modal` comp
 - `style.css`: Modern CSS utilizing `@keyframes` linked to `scroll()` and `view()` timelines.
 - `demo.html`: Interactive scrollable container demonstrating the progress bar and scroll-reveal cards.
 - `README.md`: Describes the scroll-driven animation architecture.
-\nFixes #56580\n
+\nFixes #60928\n
