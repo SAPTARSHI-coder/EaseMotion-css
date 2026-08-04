@@ -12,4 +12,4 @@ This PR introduces the CSS Motion Path module to the `loader` component. This po
 - `style.css`: Implements a bezier curve `offset-path` animation with automatic rotation and scaling.
 - `demo.html`: Features a visual demo showing a glowing element following a curved path behind the component text.
 - `README.md`: Explains the Motion Path API properties.
-\nFixes #56811\n
+\nFixes #60922\n
