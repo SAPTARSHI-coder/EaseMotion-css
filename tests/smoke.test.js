@@ -22,6 +22,7 @@ describe('EaseMotion-css Smoke Tests', () => {
     const masonry = readFileSync(resolve(componentsDir, 'masonry.css'), 'utf8');
     const navbar = readFileSync(resolve(componentsDir, 'navbar.css'), 'utf8');
     const scrollProgress = readFileSync(resolve(componentsDir, 'scroll-progress.css'), 'utf8');
+    const scrollToTop = readFileSync(resolve(componentsDir, 'scroll-to-top.css'), 'utf8');
     const sidebar = readFileSync(resolve(componentsDir, 'sidebar.css'), 'utf8');
 const tabs = readFileSync(resolve(componentsDir, 'tabs.css'), 'utf8');
 const badges = readFileSync(resolve(componentsDir, 'badges.css'), 'utf8');
@@ -47,7 +48,7 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     const avatar = readFileSync(resolve(componentsDir, 'avatar.css'), 'utf8');
     const announceBar = readFileSync(resolve(componentsDir, 'announce-bar.css'), 'utf8');
     
-    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar;
+    css = variables + base + animations + utilities + buttons + cards + chip + footer + masonry + navbar + scrollProgress + scrollToTop + sidebar + tabs + badges + loaders + tooltips + modals + commandPalette + viewTransitions + toast + tag + skeleton + scrollGallery + readMore + progress + passwordStrength + pagination + kbd + fab + connectionStatus + compareTable + btnMagnetic + breadcrumb + avatar + announceBar;
     dom = new JSDOM('<!DOCTYPE html><html><head></head><body></body></html>');
     document = dom.window.document;
     
@@ -101,6 +102,7 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(selectors).toContain('.ease-masonry');
     expect(selectors).toContain('.ease-navbar-glass');
     expect(selectors).toContain('.ease-scroll-progress');
+    expect(selectors).toContain('.ease-scroll-top');
     expect(selectors).toContain('.ease-sidebar');
   });
 

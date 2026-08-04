@@ -757,6 +757,20 @@ By default, the value is `infinite`, preserving existing behavior.
 <!-- Exit animation -->
 <div class="ease-expand-border-exit"></div>
 
+### Scroll-To-Top Button
+
+Add the floating button and its script to give users a smooth return-to-top action on long pages:
+
+```html
+<button class="ease-scroll-top" aria-label="Scroll to top">
+  <span class="ease-scroll-top-icon" aria-hidden="true">↑</span>
+</button>
+
+<script src="https://cdn.jsdelivr.net/npm/easemotion-css/core/scroll-top.js"></script>
+```
+
+The button appears after the page has been scrolled a little and animates back to the top with a smooth motion effect.
+
 ### Scroll-Triggered Animations (Ease Reveal)
 
 To use `.ease-reveal` and have elements animate when scrolled into view, you must also include the `reveal.js` script in your HTML:
