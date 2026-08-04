@@ -22,7 +22,7 @@
 
       function getActiveIndex() {
         var scrollLeft = track.scrollLeft;
-        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track).gap || "0");
+        var slideWidth = slides[0].offsetWidth + parseInt(getComputedStyle(track, 10).gap || "0");
         return Math.round(scrollLeft / slideWidth);
       }
 

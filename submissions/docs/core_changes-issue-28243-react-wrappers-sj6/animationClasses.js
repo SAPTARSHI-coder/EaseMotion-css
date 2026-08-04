@@ -82,7 +82,7 @@ export function isDurationKeyword(value) {
  * Returns `null` when nothing should be applied.
  */
 export function normalizeIteration(iteration) {
-  if (iteration == null) return null;
+  if (iteration === null) return null;
   if (iteration === 'infinite' || iteration === Infinity) return 'infinite';
   const n = Number(iteration);
   if (Number.isFinite(n) && n > 0) return String(n);

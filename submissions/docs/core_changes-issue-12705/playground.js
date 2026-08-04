@@ -201,7 +201,7 @@ ${code}
             }
           } catch (_) { /* CORS */ }
         }
-        classesCache = [...new Set(classesCache)].sort();
+        classesCache = [...new Set(classesCache)].sort((a, b) => a - b);
       } catch (_) { /* fallback */ }
 
       if (!classesCache.length) {
