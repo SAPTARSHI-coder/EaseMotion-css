@@ -13,4 +13,4 @@ Historically, drop caps required fragile CSS hacks (`float: left`, magic `font-s
 - `style.css`: Implements two styles of drop caps (standard classic, and a bordered modern variant) using `::first-letter` and `initial-letter`.
 - `demo.html`: Magazine-style layout demonstrating the flawless alignment of the drop caps.
 - `README.md`: Describes the feature and usage.
-\nFixes #56584\n
+\nFixes #60920\n
