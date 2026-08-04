@@ -1,0 +1,462 @@
+/* ==========================================================================
+   Spotlight Tooltip — EaseMotion example
+   ==========================================================================
+   Design notes:
+   - Light, neutral page surface; the tooltip itself is the one dark,
+     saturated element on the page, so it reads as a distinct "layer"
+     floating above the content rather than another card.
+   - The spotlight is a two-tone (violet → teal) radial glow that tracks
+     the cursor via CSS custom properties (--spx / --spy), updated in
+     script.js. It only runs on pointer hover — keyboard focus gets a
+     steady ring instead, so the accessible path is visually distinct
+     from the decorative one, not a stripped-down copy of it.
+   ========================================================================== */
+
+:root {
+  /* ---- Color ---- */
+  --color-bg: #f5f6fb;
+  --color-surface: #ffffff;
+  --color-border: #e3e5f0;
+  --color-text: #14162b;
+  --color-text-muted: #6b7089;
+
+  --color-accent: #5b5fef;       /* indigo-violet — brand / primary interactive */
+  --color-accent-2: #14b8a6;     /* teal — spotlight's second tone, sparing use */
+  --color-accent-soft: #eceeff;
+
+  --tooltip-bg: #14162b;         /* deliberate inversion: dark surface for the tooltip */
+  --tooltip-border: #2a2d4c;
+  --tooltip-text: #f2f3fb;
+  --tooltip-text-muted: #a6abc9;
+
+  --focus-ring: #14b8a6;
+
+  /* ---- Type ---- */
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  /* ---- Spacing / shape ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2.5rem;
+
+  /* ---- Tooltip geometry (read by script.js) ---- */
+  --tooltip-gap: 10px;       /* distance between trigger and tooltip */
+  --tooltip-arrow-size: 8px;
+  --tooltip-max-width: 260px;
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-standard: 180ms;
+}
+
+/* ==========================================================================
+   Reset & base
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* A single, consistent focus treatment for every interactive element on
+   the page — mouse users never see it, keyboard users always do. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+kbd {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0.1em 0.45em;
+}
+
+/* ==========================================================================
+   Page layout
+   ========================================================================== */
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-2) var(--space-4);
+}
+
+.page__header {
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+  margin: 0 0 var(--space-1);
+}
+
+.page__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.01em;
+}
+
+.page__lede {
+  color: var(--color-text-muted);
+  max-width: 46ch;
+  margin: 0 auto;
+  font-size: 1.05rem;
+}
+
+.page__footer {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-1);
+}
+
+.section__body {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.showcase > section + section {
+  margin-top: var(--space-4);
+}
+
+/* ==========================================================================
+   Position demo — a cross layout so top/bottom/left/right each get
+   uncontested room to open in their intended direction.
+   ========================================================================== */
+
+.showcase__stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.trigger--top    { grid-column: 2; grid-row: 1; }
+.trigger--left   { grid-column: 1; grid-row: 2; }
+.stage__center   { grid-column: 2; grid-row: 2; }
+.trigger--right  { grid-column: 3; grid-row: 2; }
+.trigger--bottom { grid-column: 2; grid-row: 3; }
+
+.stage__dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+/* ==========================================================================
+   Trigger buttons
+   ========================================================================== */
+
+.trigger {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 500;
+  padding: 0.65em 1.3em;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-standard) var(--ease-standard),
+              transform var(--duration-standard) var(--ease-standard),
+              box-shadow var(--duration-standard) var(--ease-standard);
+}
+
+.trigger:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -8px rgba(91, 95, 239, 0.35);
+}
+
+.trigger--inline {
+  display: inline-flex;
+}
+
+/* Inline "term" triggers — look like defined terms, not buttons */
+.term {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.term:hover {
+  text-decoration-style: solid;
+}
+
+.showcase__inline,
+.showcase__edge,
+.showcase__note {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.edge__row {
+  margin-top: var(--space-2);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   Tooltip
+   ========================================================================== */
+
+.ease-tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  max-width: var(--tooltip-max-width);
+  padding: 0.65em 0.9em;
+  border-radius: var(--radius-sm);
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
+  color: var(--tooltip-text);
+  font-size: 0.875rem;
+  line-height: 1.45;
+  box-shadow: 0 12px 28px -12px rgba(20, 22, 43, 0.45);
+
+  /* left/top are set in JS (viewport-relative, matches position: fixed).
+     Only scale is animated here, from an origin near the trigger so the
+     tooltip reads as growing out of it rather than fading in place. */
+  transform: scale(0.92);
+  transform-origin: var(--tt-origin, center);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  /* Isolate so the spotlight ::before can't bleed outside the rounded edge */
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.ease-tooltip.is-visible {
+  opacity: 1;
+  visibility: visible;
+  animation: ease-kf-zoom-in var(--duration-standard) var(--ease-standard) forwards;
+}
+
+/* Cursor spotlight: a soft two-tone glow that tracks --spx/--spy, set by
+   script.js on pointermove within the tooltip. Sits above the background
+   but below the text, and is skipped entirely for keyboard-opened tooltips
+   (see .ease-tooltip[data-input="keyboard"] below). */
+.ease-tooltip::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--duration-standard) var(--ease-standard);
+  background: radial-gradient(
+    180px circle at var(--spx, 50%) var(--spy, 50%),
+    color-mix(in srgb, var(--color-accent) 55%, transparent),
+    color-mix(in srgb, var(--color-accent-2) 30%, transparent) 45%,
+    transparent 70%
+  );
+}
+
+.ease-tooltip[data-input="pointer"]::before {
+  opacity: 1;
+}
+
+/* Keyboard-opened tooltips trade the moving spotlight for a steady ring —
+   the same accent colors, but still and predictable, which matters more
+   than novelty when the position isn't being driven by a mouse. */
+.ease-tooltip[data-input="keyboard"] {
+  box-shadow:
+    0 0 0 2px var(--focus-ring),
+    0 12px 28px -12px rgba(20, 22, 43, 0.45);
+}
+
+.ease-tooltip__text {
+  position: relative;
+  display: block;
+}
+
+/* Arrow: a rotated square sharing the tooltip's fill and border, clipped
+   so only one edge shows. Positioned per-side by data-side on the root. */
+.ease-tooltip__arrow {
+  position: absolute;
+  width: var(--tooltip-arrow-size);
+  height: var(--tooltip-arrow-size);
+  background: var(--tooltip-bg);
+  border: 1px solid var(--tooltip-border);
+  transform: rotate(45deg);
+  z-index: -1;
+}
+
+.ease-tooltip[data-side="top"] .ease-tooltip__arrow {
+  bottom: calc(var(--tooltip-arrow-size) / -2 - 1px);
+  left: var(--tt-arrow-offset, 50%);
+  margin-left: calc(var(--tooltip-arrow-size) / -2);
+  border-top: none;
+  border-left: none;
+}
+
+.ease-tooltip[data-side="bottom"] .ease-tooltip__arrow {
+  top: calc(var(--tooltip-arrow-size) / -2 - 1px);
+  left: var(--tt-arrow-offset, 50%);
+  margin-left: calc(var(--tooltip-arrow-size) / -2);
+  border-bottom: none;
+  border-right: none;
+}
+
+.ease-tooltip[data-side="left"] .ease-tooltip__arrow {
+  right: calc(var(--tooltip-arrow-size) / -2 - 1px);
+  top: var(--tt-arrow-offset, 50%);
+  margin-top: calc(var(--tooltip-arrow-size) / -2);
+  border-bottom: none;
+  border-left: none;
+}
+
+.ease-tooltip[data-side="right"] .ease-tooltip__arrow {
+  left: calc(var(--tooltip-arrow-size) / -2 - 1px);
+  top: var(--tt-arrow-offset, 50%);
+  margin-top: calc(var(--tooltip-arrow-size) / -2);
+  border-top: none;
+  border-right: none;
+}
+
+/* ==========================================================================
+   Motion
+   ========================================================================== */
+
+@keyframes ease-kf-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .term {
+    transition: none;
+  }
+
+  .trigger:hover {
+    transform: none;
+  }
+
+  .ease-tooltip {
+    transform: scale(1);
+  }
+
+  .ease-tooltip.is-visible {
+    animation: none;
+  }
+
+  .ease-tooltip::before {
+    transition: none;
+  }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  .showcase__stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(5, auto);
+    justify-items: stretch;
+  }
+
+  .trigger--top, .trigger--left, .trigger--right, .trigger--bottom, .stage__center {
+    grid-column: 1;
+  }
+
+  .trigger--top    { grid-row: 1; }
+  .trigger--left   { grid-row: 2; }
+  .stage__center   { grid-row: 3; display: none; }
+  .trigger--right  { grid-row: 4; }
+  .trigger--bottom { grid-row: 5; }
+
+  .trigger {
+    width: 100%;
+    text-align: center;
+  }
+
+  .edge__row {
+    justify-content: stretch;
+  }
+
+  .edge__row .trigger {
+    width: 100%;
+  }
+
+  :root {
+    --tooltip-max-width: 200px;
+  }
+}
