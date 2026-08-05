@@ -10,4 +10,4 @@ Include the component as usual. It automatically reacts to OS-level Battery Save
 - `style.css`: 60+ lines adding media query performance fallbacks.
 - `demo.html`: Demo testing layout.
 - `README.md`: Describes the feature.
-\nFixes #60926\n
+\nFixes #61472\n
