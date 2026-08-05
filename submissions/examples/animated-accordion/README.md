@@ -35,6 +35,6 @@ This ensures that the content gracefully expands and fades in, providing a butte
 
 ## 📁 File Structure
 
-- `index.html`: The HTML structure containing the FAQ accordion.
+- `demo.html`: The HTML structure containing the FAQ accordion.
 - `style.css`: The CSS stylesheet with the `0fr` to `1fr` grid transitions and styling.
 - `README.md`: Documentation for the component.
