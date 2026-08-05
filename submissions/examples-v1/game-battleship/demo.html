@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚓ Battleship</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>⚓ Battleship</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Your Hits</span>
+        <span class="stat-value" id="playerHitsDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">💥 AI Hits</span>
+        <span class="stat-value" id="aiHitsDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📊 Turn</span>
+        <span class="stat-value" id="turnDisplay">Player</span>
+      </div>
+    </div>
+
+    <div class="game-layout">
+      <div class="board-section">
+        <div class="board-label">Your Board</div>
+        <div class="board-wrapper">
+          <canvas id="playerBoard" width="300" height="300"></canvas>
+        </div>
+      </div>
+      <div class="board-section">
+        <div class="board-label">AI Board</div>
+        <div class="board-wrapper">
+          <canvas id="aiBoard" width="300" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="placeBtn">📦 Place Ships</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>Click AI board to attack</span>
+      <span>·</span>
+      <span>Drag on your board to place ships</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">⚓ Place your ships and start the battle!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const playerCanvas = document.getElementById('playerBoard');
+      const playerCtx = playerCanvas.getContext('2d');
+      const aiCanvas = document.getElementById('aiBoard');
+      const aiCtx = aiCanvas.getContext('2d');
+      const playerHitsDisplay = document.getElementById('playerHitsDisplay');
+      const aiHitsDisplay = document.getElementById('aiHitsDisplay');
+      const turnDisplay = document.getElementById('turnDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const placeBtn = document.getElementById('placeBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const SIZE = 10;
+      const CELL_SIZE = 30;
+      const SHIPS = [
+        { name: 'Carrier', size: 5 },
+        { name: 'Battleship', size: 4 },
+        { name: 'Cruiser', size: 3 },
+        { name: 'Submarine', size: 3 },
+        { name: 'Destroyer', size: 2 }
+      ];
+
+      // ---------- Game State ----------
+      let playerGrid = [];
+      let aiGrid = [];
+      let playerShips = [];
+      let aiShips = [];
+      let playerShots = [];
+      let aiShots = [];
+      let gameRunning = false;
+      let gameOver = false;
+      let playerTurn = true;
+      let playerHits = 0;
+      let aiHits = 0;
+      let placingShips = false;
+      let currentShipIndex = 0;
+      let shipDirection = 'horizontal';
+      let hoverX = -1;
+      let hoverY = -1;
+
+      // ---------- Ship Placement ----------
+      function initGrids() {
+        playerGrid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        aiGrid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        playerShots = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        aiShots = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        playerShips = [];
+        aiShips = [];
+        playerHits = 0;
+        aiHits = 0;
+        playerTurn = true;
+        gameOver = false;
+        updateStats();
+        turnDisplay.textContent = 'Player';
+      }
+
+      function placeShip(grid, ships, row, col, size, direction) {
+        if (direction === 'horizontal') {
+          if (col + size > SIZE) return false;
+          for (let i = 0; i < size; i++) {
+            if (grid[row][col + i] !== 0) return false;
+          }
+          for (let i = 0; i < size; i++) {
+            grid[row][col + i] = 1;
+          }
+          ships.push({ row, col, size, direction, hits: 0 });
+          return true;
+        } else {
+          if (row + size > SIZE) return false;
+          for (let i = 0; i < size; i++) {
+            if (grid[row + i][col] !== 0) return false;
+          }
+          for (let i = 0; i < size; i++) {
+            grid[row + i][col] = 1;
+          }
+          ships.push({ row, col, size, direction, hits: 0 });
+          return true;
+        }
+      }
+
+      function placeAllShips(grid, ships) {
+        // Random placement for AI
+        for (const ship of SHIPS) {
+          let placed = false;
+          let attempts = 0;
+          while (!placed && attempts < 1000) {
+            const row = Math.floor(Math.random() * SIZE);
+            const col = Math.floor(Math.random() * SIZE);
+            const dir = Math.random() > 0.5 ? 'horizontal' : 'vertical';
+            if (placeShip(grid, ships, row, col, ship.size, dir)) {
+              placed = true;
+            }
+            attempts++;
+          }
+          if (!placed) {
+            // Fallback: try to place anywhere
+            for (let r = 0; r < SIZE && !placed; r++) {
+              for (let c = 0; c < SIZE && !placed; c++) {
+                if (placeShip(grid, ships, r, c, ship.size, 'horizontal')) placed = true;
+                if (!placed && placeShip(grid, ships, r, c, ship.size, 'vertical')) placed = true;
+              }
+            }
+          }
+        }
+      }
+
+      function resetPlayerShips() {
+        playerGrid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        playerShips = [];
+        currentShipIndex = 0;
+        shipDirection = 'horizontal';
+        drawBoards();
+      }
+
+      // ---------- AI Logic ----------
+      function aiTurn() {
+        if (gameOver || !gameRunning) return;
+        if (playerTurn) return;
+
+        // Simple AI: target random cells, prioritize adjacent to hits
+        let targets = [];
+        
+        // If we have hits, target adjacent cells
+        const hitCells = [];
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (playerShots[r][c] === 2) {
+              hitCells.push({ r, c });
+            }
+          }
+        }
+
+        if (hitCells.length > 0) {
+          const adjacent = [];
+          for (const hit of hitCells) {
+            const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+            for (const d of dirs) {
+              const nr = hit.r + d[0];
+              const nc = hit.c + d[1];
+              if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && playerShots[nr][nc] === 0) {
+                adjacent.push({ r: nr, c: nc });
+              }
+            }
+          }
+          if (adjacent.length > 0) {
+            const random = adjacent[Math.floor(Math.random() * adjacent.length)];
+            targets.push(random);
+          }
+        }
+
+        if (targets.length === 0) {
+          // Random targeting with preference for unshot cells
+          const available = [];
+          for (let r = 0; r < SIZE; r++) {
+            for (let c = 0; c < SIZE; c++) {
+              if (playerShots[r][c] === 0) {
+                available.push({ r, c });
+              }
+            }
+          }
+          if (available.length === 0) return;
+          const random = available[Math.floor(Math.random() * available.length)];
+          targets.push(random);
+        }
+
+        // AI takes a shot
+        const target = targets[0];
+        const row = target.r;
+        const col = target.c;
+
+        if (playerGrid[row][col] === 1) {
+          // Hit!
+          playerShots[row][col] = 2;
+          playerGrid[row][col] = 2;
+          aiHits++;
+          // Check if ship sunk
+          for (const ship of playerShips) {
+            if (isShipHit(playerGrid, ship)) {
+              ship.hits++;
+              if (ship.hits === ship.size) {
+                // Ship sunk!
+                markShipSunk(playerGrid, ship);
+              }
+            }
+          }
+          updateStats();
+          drawBoards();
+          if (aiHits >= 17) {
+            gameOver = true;
+            gameRunning = false;
+            setGameStatus('💀 AI Wins! Better luck next time!', false);
+            drawBoards();
+            return;
+          }
+          // AI gets another turn
+          setTimeout(aiTurn, 500);
+        } else {
+          // Miss
+          playerShots[row][col] = 1;
+          drawBoards();
+          playerTurn = true;
+          turnDisplay.textContent = 'Player';
+          setGameStatus('🎯 Your turn! Click on AI board.', true);
+          if (playerHits >= 17) {
+            gameOver = true;
+            gameRunning = false;
+            setGameStatus('🎉 You win! All ships sunk!', true);
+            drawBoards();
+          }
+        }
+      }
+
+      // ---------- Ship Helper Functions ----------
+      function isShipHit(grid, ship) {
+        const { row, col, size, direction } = ship;
+        for (let i = 0; i < size; i++) {
+          const r = direction === 'vertical' ? row + i : row;
+          const c = direction === 'horizontal' ? col + i : col;
+          if (grid[r][c] !== 2) return false;
+        }
+        return true;
+      }
+
+      function markShipSunk(grid, ship) {
+        const { row, col, size, direction } = ship;
+        for (let i = 0; i < size; i++) {
+          const r = direction === 'vertical' ? row + i : row;
+          const c = direction === 'horizontal' ? col + i : col;
+          grid[r][c] = 3;
+        }
+        // Mark surrounding cells
+        for (let i = -1; i <= size; i++) {
+          for (let d = -1; d <= 1; d++) {
+            let r, c;
+            if (direction === 'vertical') {
+              r = row + i;
+              c = col + d;
+            } else {
+              r = row + d;
+              c = col + i;
+            }
+            if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && grid[r][c] === 0) {
+              grid[r][c] = -1;
+            }
+          }
+        }
+      }
+
+      function getShipAt(grid, ships, row, col) {
+        for (const ship of ships) {
+          const { row: sr, col: sc, size, direction } = ship;
+          for (let i = 0; i < size; i++) {
+            const r = direction === 'vertical' ? sr + i : sr;
+            const c = direction === 'horizontal' ? sc + i : sc;
+            if (r === row && c === col) return ship;
+          }
+        }
+        return null;
+      }
+
+      // ---------- Drawing ----------
+      function drawBoard(ctx, grid, shots, ships, isPlayer, hoverR, hoverC, placing) {
+        ctx.clearRect(0, 0, 300, 300);
+        
+        // Background
+        ctx.fillStyle = '#0a151c';
+        ctx.fillRect(0, 0, 300, 300);
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= SIZE; i++) {
+          ctx.beginPath();
+          ctx.moveTo(i * CELL_SIZE, 0);
+          ctx.lineTo(i * CELL_SIZE, 300);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i * CELL_SIZE);
+          ctx.lineTo(300, i * CELL_SIZE);
+          ctx.stroke();
+        }
+
+        // Draw ships (player only)
+        if (isPlayer) {
+          for (const ship of ships) {
+            const { row, col, size, direction } = ship;
+            for (let i = 0; i < size; i++) {
+              const r = direction === 'vertical' ? row + i : row;
+              const c = direction === 'horizontal' ? col + i : col;
+              const x = c * CELL_SIZE;
+              const y = r * CELL_SIZE;
+              if (grid[r][c] === 1 || grid[r][c] === 2) {
+                const grad = ctx.createLinearGradient(x, y, x + CELL_SIZE, y + CELL_SIZE);
+                grad.addColorStop(0, 'rgba(100, 200, 100, 0.8)');
+                grad.addColorStop(1, 'rgba(50, 150, 50, 0.8)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+              }
+            }
+          }
+        }
+
+        // Draw cells
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            const x = c * CELL_SIZE;
+            const y = r * CELL_SIZE;
+            const val = grid[r][c];
+            const shot = shots[r][c];
+
+            // Ship placement preview
+            if (placing && isPlayer && hoverR === r && hoverC === c) {
+              ctx.fillStyle = 'rgba(255,255,255,0.1)';
+              ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            }
+
+            if (shot === 1) {
+              // Miss
+              ctx.fillStyle = 'rgba(255,255,255,0.1)';
+              ctx.beginPath();
+              ctx.arc(x + CELL_SIZE/2, y + CELL_SIZE/2, 4, 0, Math.PI * 2);
+              ctx.fill();
+            } else if (shot === 2) {
+              // Hit
+              ctx.fillStyle = '#f44336';
+              ctx.shadowColor = '#f44336';
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(x + CELL_SIZE/2, y + CELL_SIZE/2, 8, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.shadowBlur = 0;
+            }
+
+            if (val === 3) {
+              // Sunk ship
+              ctx.fillStyle = 'rgba(255, 100, 100, 0.3)';
+              ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            }
+          }
+        }
+
+        // Ship placement preview (hover)
+        if (placing && isPlayer && hoverR >= 0 && hoverR < SIZE && hoverC >= 0 && hoverC < SIZE) {
+          const ship = SHIPS[currentShipIndex];
+          const size = ship.size;
+          const dir = shipDirection;
+          const row = hoverR;
+          const col = hoverC;
+          
+          let valid = true;
+          for (let i = 0; i < size; i++) {
+            const r = dir === 'vertical' ? row + i : row;
+            const c = dir === 'horizontal' ? col + i : col;
+            if (r >= SIZE || c >= SIZE || playerGrid[r][c] !== 0) valid = false;
+          }
+
+          for (let i = 0; i < size; i++) {
+            const r = dir === 'vertical' ? row + i : row;
+            const c = dir === 'horizontal' ? col + i : col;
+            if (r < SIZE && c < SIZE) {
+              const x = c * CELL_SIZE;
+              const y = r * CELL_SIZE;
+              ctx.fillStyle = valid ? 'rgba(100, 200, 100, 0.4)' : 'rgba(255, 100, 100, 0.4)';
+              ctx.fillRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+              ctx.strokeStyle = valid ? 'rgba(100, 200, 100, 0.6)' : 'rgba(255, 100, 100, 0.6)';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(x + 1, y + 1, CELL_SIZE - 2, CELL_SIZE - 2);
+            }
+          }
+        }
+      }
+
+      function drawBoards() {
+        drawBoard(playerCtx, playerGrid, playerShots, playerShips, true, hoverX, hoverY, placingShips);
+        drawBoard(aiCtx, aiGrid, aiShots, aiShips, false, -1, -1, false);
+      }
+
+      // ---------- Game Actions ----------
+      function playerAttack(row, col) {
+        if (!gameRunning || gameOver || !playerTurn) return;
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return;
+        if (aiShots[row][col] !== 0) return;
+
+        if (aiGrid[row][col] === 1) {
+          // Hit!
+          aiShots[row][col] = 2;
+          aiGrid[row][col] = 2;
+          playerHits++;
+          // Check if ship sunk
+          for (const ship of aiShips) {
+            if (isShipHit(aiGrid, ship)) {
+              ship.hits++;
+              if (ship.hits === ship.size) {
+                markShipSunk(aiGrid, ship);
+              }
+            }
+          }
+          updateStats();
+          drawBoards();
+          if (playerHits >= 17) {
+            gameOver = true;
+            gameRunning = false;
+            setGameStatus('🎉 You win! All ships sunk!', true);
+            drawBoards();
+            return;
+          }
+          // Player gets another turn
+          setGameStatus('🎯 Hit! Fire again!', true);
+          playerTurn = true;
+          turnDisplay.textContent = 'Player';
+        } else {
+          // Miss
+          aiShots[row][col] = 1;
+          drawBoards();
+          playerTurn = false;
+          turnDisplay.textContent = 'AI';
+          setGameStatus('💥 Miss! AI\'s turn...', false);
+          setTimeout(() => {
+            if (!gameOver && gameRunning) {
+              aiTurn();
+            }
+          }, 500);
+        }
+        drawBoards();
+      }
+
+      // ---------- Display Updates ----------
+      function updateStats() {
+        playerHitsDisplay.textContent = playerHits;
+        aiHitsDisplay.textContent = aiHits;
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        
+        // Check if player has placed all ships
+        const totalPlaced = playerShips.reduce((sum, s) => sum + s.size, 0);
+        const totalRequired = SHIPS.reduce((sum, s) => sum + s.size, 0);
+        if (totalPlaced < totalRequired) {
+          setGameStatus('⚠️ Place all ships first! Click "Place Ships".', false);
+          return;
+        }
+
+        initGrids();
+        // Place AI ships
+        placeAllShips(aiGrid, aiShips);
+        // Copy player ships to new grid
+        const tempGrid = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        for (const ship of playerShips) {
+          const { row, col, size, direction } = ship;
+          for (let i = 0; i < size; i++) {
+            const r = direction === 'vertical' ? row + i : row;
+            const c = direction === 'horizontal' ? col + i : col;
+            tempGrid[r][c] = 1;
+          }
+        }
+        playerGrid = tempGrid;
+        playerShots = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        aiShots = Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
+        playerHits = 0;
+        aiHits = 0;
+        playerTurn = true;
+        gameOver = false;
+        gameRunning = true;
+        placingShips = false;
+        currentShipIndex = 0;
+        updateStats();
+        turnDisplay.textContent = 'Player';
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        placeBtn.disabled = true;
+        setGameStatus('🎯 Your turn! Click on AI board to attack.', true);
+        drawBoards();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        gameOver = false;
+        placingShips = false;
+        currentShipIndex = 0;
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        placeBtn.disabled = false;
+        initGrids();
+        playerShips = [];
+        aiShips = [];
+        drawBoards();
+        setGameStatus('🔄 Game reset. Place your ships and start!', true);
+      }
+
+      // ---------- Ship Placement ----------
+      function startPlacing() {
+        if (gameRunning) return;
+        resetPlayerShips();
+        placingShips = true;
+        currentShipIndex = 0;
+        setGameStatus(`📦 Place your ${SHIPS[0].name} (size ${SHIPS[0].size}) - Click on your board`, true);
+        drawBoards();
+        placeBtn.textContent = '🔄 Rotate';
+      }
+
+      function rotateShip() {
+        if (!placingShips || gameRunning) return;
+        shipDirection = shipDirection === 'horizontal' ? 'vertical' : 'horizontal';
+        drawBoards();
+      }
+
+      // ---------- Event Handlers ----------
+      // Player board click for ship placement
+      playerCanvas.addEventListener('click', (e) => {
+        if (!placingShips || gameRunning) return;
+        const rect = playerCanvas.getBoundingClientRect();
+        const scale = playerCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * scale;
+        const y = (e.clientY - rect.top) * scale;
+        const col = Math.floor(x / CELL_SIZE);
+        const row = Math.floor(y / CELL_SIZE);
+        
+        if (row < 0 || row >= SIZE || col < 0 || col >= SIZE) return;
+        
+        const ship = SHIPS[currentShipIndex];
+        if (placeShip(playerGrid, playerShips, row, col, ship.size, shipDirection)) {
+          currentShipIndex++;
+          drawBoards();
+          if (currentShipIndex >= SHIPS.length) {
+            placingShips = false;
+            placeBtn.textContent = '📦 Place Ships';
+            setGameStatus('✅ All ships placed! Click "Start Game" to begin!', true);
+            drawBoards();
+          } else {
+            setGameStatus(`📦 Place your ${SHIPS[currentShipIndex].name} (size ${SHIPS[currentShipIndex].size})`, true);
+            drawBoards();
+          }
+        } else {
+          setGameStatus('⚠️ Invalid placement! Try again.', false);
+        }
+      });
+
+      // Player board hover for placement preview
+      playerCanvas.addEventListener('mousemove', (e) => {
+        if (!placingShips || gameRunning) return;
+        const rect = playerCanvas.getBoundingClientRect();
+        const scale = playerCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * scale;
+        const y = (e.clientY - rect.top) * scale;
+        hoverX = Math.floor(y / CELL_SIZE);
+        hoverY = Math.floor(x / CELL_SIZE);
+        drawBoards();
+      });
+
+      playerCanvas.addEventListener('mouseleave', () => {
+        hoverX = -1;
+        hoverY = -1;
+        if (placingShips) drawBoards();
+      });
+
+      // AI board click for attacks
+      aiCanvas.addEventListener('click', (e) => {
+        if (!gameRunning || gameOver || !playerTurn) return;
+        const rect = aiCanvas.getBoundingClientRect();
+        const scale = aiCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * scale;
+        const y = (e.clientY - rect.top) * scale;
+        const col = Math.floor(x / CELL_SIZE);
+        const row = Math.floor(y / CELL_SIZE);
+        playerAttack(row, col);
+      });
+
+      // AI board hover
+      aiCanvas.addEventListener('mousemove', (e) => {
+        if (!gameRunning || gameOver || !playerTurn) return;
+        const rect = aiCanvas.getBoundingClientRect();
+        const scale = aiCanvas.width / rect.width;
+        const x = (e.clientX - rect.left) * scale;
+        const y = (e.clientY - rect.top) * scale;
+        const col = Math.floor(x / CELL_SIZE);
+        const row = Math.floor(y / CELL_SIZE);
+        aiCanvas.style.cursor = (row >= 0 && row < SIZE && col >= 0 && col < SIZE && aiShots[row][col] === 0) ? 'pointer' : 'default';
+      });
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' || e.key === 'R') resetGame();
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!gameRunning && !gameOver) startGame();
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          if (!gameRunning) {
+            if (placingShips) {
+              rotateShip();
+            } else {
+              startPlacing();
+            }
+          }
+        }
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      placeBtn.addEventListener('click', () => {
+        if (placingShips) {
+          rotateShip();
+        } else {
+          startPlacing();
+        }
+      });
+
+      // ---------- Touch Support ----------
+      aiCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameRunning || gameOver || !playerTurn) return;
+        const touch = e.touches[0];
+        const rect = aiCanvas.getBoundingClientRect();
+        const scale = aiCanvas.width / rect.width;
+        const x = (touch.clientX - rect.left) * scale;
+        const y = (touch.clientY - rect.top) * scale;
+        const col = Math.floor(x / CELL_SIZE);
+        const row = Math.floor(y / CELL_SIZE);
+        playerAttack(row, col);
+      }, { passive: false });
+
+      // ---------- Init ----------
+      function init() {
+        initGrids();
+        drawBoards();
+        setGameStatus('⚓ Place your ships and start the battle!', true);
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

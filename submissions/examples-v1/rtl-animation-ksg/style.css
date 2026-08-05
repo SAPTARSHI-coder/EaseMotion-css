@@ -1,0 +1,498 @@
+/* ============================================================
+   RTL-Friendly Animation Demo — style.css
+   No external dependencies. Open demo.html directly.
+
+   Three techniques for direction-aware animations:
+
+     A. Separate LTR/RTL @keyframes selected via :dir()
+     B. CSS logical properties (inset-inline-start, padding-inline)
+     C. direction-aware transform-origin: inline-start
+
+   All use only transform + opacity (compositor-only) for smooth
+   60 fps performance — no layout-triggering properties.
+   ============================================================ */
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Design tokens (mirrors EaseMotion CSS variables) ──────── */
+:root {
+  --speed-fast:   150ms;
+  --speed-medium: 300ms;
+  --speed-slow:   600ms;
+  --ease:         cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce:  cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --color-primary:   #6c63ff;
+  --color-secondary: #8b5cf6;
+  --color-success:   #22c55e;
+  --color-warning:   #f59e0b;
+  --color-surface:   #ffffff;
+  --color-bg:        #f8fafc;
+  --color-text:      #1e293b;
+  --color-muted:     #64748b;
+  --color-border:    #e2e8f0;
+
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Page base ─────────────────────────────────────────────── */
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.rtl-header {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 3rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.rtl-header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: #a5b4fc;
+  margin-bottom: 0.5rem;
+}
+
+.rtl-header p {
+  font-size: 1rem;
+  color: #94a3b8;
+  max-width: 60ch;
+  margin: 0 auto;
+}
+
+/* ── Main layout ───────────────────────────────────────────── */
+.rtl-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* ── Section ───────────────────────────────────────────────── */
+.rtl-section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  border-left: 4px solid var(--color-primary);
+  padding-left: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Flip the border to the inline-start so it looks correct in RTL too */
+.rtl-section-title {
+  border-left: none;
+  border-inline-start: 4px solid var(--color-primary);
+  padding-left: 0;
+  padding-inline-start: 0.75rem;
+}
+
+.rtl-section-desc {
+  font-size: 0.93rem;
+  color: var(--color-muted);
+  margin-bottom: 1.25rem;
+  max-width: 72ch;
+}
+
+/* ── Comparison grid ───────────────────────────────────────── */
+.rtl-compare {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1.25rem;
+}
+
+/* ── Panel (LTR / RTL demo box) ────────────────────────────── */
+.rtl-panel {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+.rtl-panel-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.label-ltr { color: #2563eb; }
+.label-rtl { color: #9333ea; }
+
+/* ── Stage ─────────────────────────────────────────────────── */
+.rtl-stage {
+  background: #f1f5f9;
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+/* RTL stage: reverse the flex direction too */
+[dir="rtl"] .rtl-stage {
+  flex-direction: row-reverse;
+}
+
+/* ── Replay button ─────────────────────────────────────────── */
+.rtl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--color-primary);
+  color: #fff;
+  transition: background var(--speed-fast) var(--ease),
+              transform var(--speed-fast) var(--ease);
+}
+
+.rtl-btn:hover  { background: #4f46e5; }
+.rtl-btn:active { transform: scale(0.96); }
+.rtl-btn:focus-visible {
+  outline: 3px solid #818cf8;
+  outline-offset: 3px;
+}
+
+/* ── Code block ─────────────────────────────────────────────── */
+.rtl-code {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  font-family: "Fira Code", "Cascadia Code", Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.75;
+  overflow-x: auto;
+  margin-top: 0.75rem;
+  tab-size: 2;
+}
+
+.rtl-code .cm  { color: #475569; }   /* comment */
+.rtl-code .kw  { color: #c4b5fd; }   /* keyword */
+.rtl-code .val { color: #fde68a; }   /* value */
+.rtl-code .sel { color: #93c5fd; }   /* selector */
+.rtl-code .hi  { color: #86efac; }   /* highlight */
+
+/* ── Technique badge ─────────────────────────────────────────── */
+.rtl-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #6d28d9;
+  margin-bottom: 0.75rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TECHNIQUE A — Separate LTR / RTL keyframes selected via :dir()
+   ══════════════════════════════════════════════════════════════ */
+
+/* LTR: element enters from the left (inline-start) */
+@keyframes slide-in-from-start-ltr {
+  from {
+    opacity: 0;
+    transform: translateX(-36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* RTL: element enters from the right (inline-start in RTL = right side) */
+@keyframes slide-in-from-start-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(36px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/*
+  :is([dir="ltr"]) is the attribute-selector fallback for browsers
+  that don't support :dir() yet. Both are equivalent in this demo
+  because we set dir explicitly on the container.
+*/
+:is([dir="ltr"]) .slide-in-directional,
+:dir(ltr) .slide-in-directional {
+  animation: slide-in-from-start-ltr var(--speed-slow) var(--ease) both;
+}
+
+:is([dir="rtl"]) .slide-in-directional,
+:dir(rtl) .slide-in-directional {
+  animation: slide-in-from-start-rtl var(--speed-slow) var(--ease) both;
+}
+
+/* The animated chip itself */
+.slide-in-directional {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  background: #ede9fe;
+  border-radius: 999px;
+  font-weight: 600;
+  color: #4c1d95;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TECHNIQUE B — CSS logical properties
+   inset-inline-start = left in LTR, right in RTL
+   No direction overrides needed — the browser handles it.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Underline reveal that grows from inline-start */
+.underline-directional {
+  position: relative;
+  display: inline-block;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--color-primary);
+  padding-block-end: 2px;          /* logical: padding-bottom */
+  cursor: pointer;
+}
+
+.underline-directional::after {
+  content: '';
+  position: absolute;
+  inset-block-end: 0;              /* logical: bottom */
+  inset-inline-start: 0;           /* logical: left in LTR, right in RTL */
+  width: 0;
+  height: 2px;
+  background: var(--color-primary);
+  transition: width var(--speed-medium) var(--ease);
+}
+
+.underline-directional:hover::after,
+.underline-directional:focus-visible::after {
+  width: 100%;
+}
+
+/* Toast notification anchored to inline-start corner */
+@keyframes toast-slide-ltr {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toast-slide-rtl {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-container {
+  position: relative;
+  min-height: 60px;
+}
+
+.toast-directional {
+  position: absolute;
+  inset-block-start: 0;             /* logical: top */
+  inset-inline-start: 0;            /* logical: left in LTR, right in RTL */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: #dcfce7;
+  color: #14532d;
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+
+:is([dir="ltr"]) .toast-directional,
+:dir(ltr) .toast-directional {
+  animation: toast-slide-ltr 400ms var(--ease-bounce) both;
+}
+
+:is([dir="rtl"]) .toast-directional,
+:dir(rtl) .toast-directional {
+  animation: toast-slide-rtl 400ms var(--ease-bounce) both;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TECHNIQUE C — direction-aware transform-origin: inline-start
+   Progress bar that expands from the correct starting edge.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes progress-expand {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.progress-track {
+  width: 100%;
+  max-width: 260px;
+  height: 10px;
+  background: #e0e7ff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-directional {
+  height: 100%;
+  background: linear-gradient(to right, var(--color-primary), var(--color-secondary));
+  border-radius: 999px;
+  /*
+    transform-origin: inline-start center
+    = left center in LTR
+    = right center in RTL
+    The bar always expands FROM the start of the reading direction.
+  */
+  transform-origin: inline-start center;
+  animation: progress-expand 1.2s var(--ease) both;
+}
+
+/* RTL: flip the gradient direction so it still reads dark→light from start */
+:is([dir="rtl"]) .progress-directional,
+:dir(rtl) .progress-directional {
+  background: linear-gradient(to left, var(--color-primary), var(--color-secondary));
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TECHNIQUE D — Staggered list entrance
+   Items slide in from the reading-direction start edge.
+   ══════════════════════════════════════════════════════════════ */
+
+@keyframes list-item-ltr {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes list-item-rtl {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.stagger-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.stagger-list li {
+  padding: 0.6rem 1rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+:is([dir="ltr"]) .stagger-list li,
+:dir(ltr) .stagger-list li {
+  animation: list-item-ltr 400ms var(--ease) both;
+}
+
+:is([dir="rtl"]) .stagger-list li,
+:dir(rtl) .stagger-list li {
+  animation: list-item-rtl 400ms var(--ease) both;
+}
+
+/* Stagger delays — 5 items */
+.stagger-list li:nth-child(1) { animation-delay: 0ms; }
+.stagger-list li:nth-child(2) { animation-delay: 80ms; }
+.stagger-list li:nth-child(3) { animation-delay: 160ms; }
+.stagger-list li:nth-child(4) { animation-delay: 240ms; }
+.stagger-list li:nth-child(5) { animation-delay: 320ms; }
+
+/* ── How-it-works summary card ──────────────────────────────── */
+.rtl-summary {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+}
+
+.rtl-summary h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  margin-bottom: 1rem;
+}
+
+.rtl-summary table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.rtl-summary th,
+.rtl-summary td {
+  padding: 0.5rem 0.9rem;
+  text-align: start;         /* logical: left in LTR, right in RTL */
+  border: 1px solid #313244;
+}
+
+.rtl-summary thead th {
+  background: #181825;
+  color: #cba6f7;
+  font-weight: 700;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.rtl-footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.rtl-footer a { color: var(--color-primary); text-decoration: none; }
+.rtl-footer a:hover { text-decoration: underline; }
+
+/* ── Global reduced-motion guard ────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

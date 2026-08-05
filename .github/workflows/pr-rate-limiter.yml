@@ -21,77 +21,57 @@ jobs:
             const prAuthor = context.payload.pull_request.user.login;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const DAILY_LIMIT = 40;
+            const DAILY_LIMIT = 100;
             
-            console.log(`Checking PR count for author "${prAuthor}"...`);
+            console.log(`Checking daily PR rate limit for author "${prAuthor}"...`);
             
-            // Exclude the repository owner from rate limiting
+            // Exclude repository owner from rate limiting
             if (prAuthor === owner) {
               console.log("Author is the repository owner. Skipping rate limit check.");
               return;
             }
-            
+
             // Calculate date 24 hours ago in ISO format
             const limitDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z';
-            
-            // Search query: is:pr repo:owner/repo author:username created:>=limitDate
             const q = `repo:${owner}/${repo} is:pr author:${prAuthor} created:>=${limitDate}`;
-            console.log(`Searching PRs with query: ${q}`);
             
             let totalCount = 0;
             try {
               const searchResult = await github.rest.search.issuesAndPullRequests({ q });
               totalCount = searchResult.data.total_count;
-              console.log(`Found ${totalCount} PRs submitted by @${prAuthor} in the last 24 hours.`);
             } catch (err) {
               console.log(`Error calling search API: ${err.message}`);
-              // Fallback: list pulls and filter
-              const pulls = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 100 });
               const limitMs = Date.now() - 24 * 60 * 60 * 1000;
-              const matchingPulls = pulls.data.filter(p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs);
-              totalCount = matchingPulls.length;
-              console.log(`Fallback: Found ${totalCount} PRs in last 100 items.`);
+              const pulls = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 100 });
+              totalCount = pulls.data.filter(p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs).length;
             }
-            
+
+            console.log(`User @${prAuthor} has opened ${totalCount} PRs in the last 24 hours.`);
+
             if (totalCount > DAILY_LIMIT) {
-              console.log(`User @${prAuthor} has opened ${totalCount} PRs in the last 24 hours. Exceeds limit of ${DAILY_LIMIT}.`);
-              
-              const commentBody = `### 🛑 Contribution Rate Limit Exceeded\n\n` +
+              console.log(`User @${prAuthor} exceeded daily limit of ${DAILY_LIMIT} PRs (${totalCount} opened).`);
+
+              const limitComment = `### 🛑 Daily Contribution Rate Limit Exceeded\n\n` +
                 `Hi @${prAuthor}! 👋\n\n` +
-                `To maintain repository stability, review quality, and a fair contribution distribution, EaseMotion CSS enforces a soft contribution limit of up to **40 PRs per day** per contributor.\n\n` +
-                `It looks like you have submitted **${totalCount} pull requests** in the last 24 hours (including this one), which exceeds this limit.\n\n` +
-                `To ensure focus on quality, originality, and proper testing, we have automatically closed this pull request for now. Please wait until tomorrow or close some of your other active PRs before submitting new ones.\n\n` +
+                `To maintain repository stability and fair contribution distribution, EaseMotion CSS enforces a rate limit of up to **100 PRs per day** per contributor.\n\n` +
+                `You have submitted **${totalCount} pull requests** in the last 24 hours, exceeding the daily limit of 100 PRs/day.\n\n` +
+                `This pull request has been automatically closed for now. Please wait until tomorrow or focus on reviewing your active PRs.\n\n` +
                 `Thank you for your understanding and cooperation! 🚀`;
-                
-              // Post comment
+
               await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: prNumber,
-                body: commentBody
+                owner, repo, issue_number: prNumber, body: limitComment
               });
-              
-              // Add rate-limited label
+
               try {
                 await github.rest.issues.addLabels({
-                  owner,
-                  repo,
-                  issue_number: prNumber,
-                  labels: ['rate-limited']
+                  owner, repo, issue_number: prNumber, labels: ['rate-limited']
                 });
-              } catch (labelErr) {
-                console.log(`Could not add rate-limited label: ${labelErr.message}`);
-              }
-              
-              // Close PR
+              } catch (e) {}
+
               await github.rest.pulls.update({
-                owner,
-                repo,
-                pull_number: prNumber,
-                state: 'closed'
+                owner, repo, pull_number: prNumber, state: 'closed'
               });
-              
-              console.log(`PR #${prNumber} closed successfully.`);
-            } else {
-              console.log(`User @${prAuthor} is within limit (${totalCount}/${DAILY_LIMIT}).`);
+              return;
             }
+
+            console.log(`User @${prAuthor} is within the daily limit (${totalCount}/${DAILY_LIMIT}).`);

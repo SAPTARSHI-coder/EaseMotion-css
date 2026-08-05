@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campfire Embers</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Campfire Embers</h1>
+        <p class="subtitle">Fire with rising ember particles</p>
+
+        <div class="campfire-wrapper">
+            <canvas id="campfireCanvas"></canvas>
+
+            <div class="controls">
+                <button id="stokeBtn">🔥 Stoke</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Warm</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🔥 Crackling</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('campfireCanvas');
+        const ctx = canvas.getContext('2d');
+        const stokeBtn = document.getElementById('stokeBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let embers = [];
+        let flames = [];
+        let sparks = [];
+        let smoke = [];
+        let logs = [];
+        let colorMode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let fireIntensity = 1;
+        let isStoked = false;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Warm',
+                fire: ['#ff6b00', '#ff4500', '#ff8c00', '#ffa500', '#ffcc00'],
+                ember: ['#ff6b00', '#ff4500', '#ff8c00'],
+                glow: '#ff4500',
+                smoke: 'rgba(200,180,160,'
+            },
+            {
+                name: 'Blue',
+                fire: ['#0066ff', '#0044cc', '#0088ff', '#00aaff', '#44ddff'],
+                ember: ['#0066ff', '#0044cc', '#0088ff'],
+                glow: '#0066ff',
+                smoke: 'rgba(200,210,220,'
+            },
+            {
+                name: 'Purple',
+                fire: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                ember: ['#7c3aed', '#8b5cf6', '#a78bfa'],
+                glow: '#7c3aed',
+                smoke: 'rgba(210,200,220,'
+            },
+            {
+                name: 'Green',
+                fire: ['#00ff44', '#00cc33', '#44ff66', '#88ff88', '#ccffaa'],
+                ember: ['#00ff44', '#00cc33', '#44ff66'],
+                glow: '#00ff44',
+                smoke: 'rgba(200,220,210,'
+            },
+            {
+                name: 'Pink',
+                fire: ['#ff1493', '#ff0080', '#ff69b4', '#ff85c1', '#ffb6c1'],
+                ember: ['#ff1493', '#ff0080', '#ff69b4'],
+                glow: '#ff1493',
+                smoke: 'rgba(220,200,210,'
+            },
+            {
+                name: 'Gold',
+                fire: ['#ffd700', '#ffb300', '#ffcc44', '#ffdd66', '#ffee88'],
+                ember: ['#ffd700', '#ffb300', '#ffcc44'],
+                glow: '#ffd700',
+                smoke: 'rgba(220,215,200,'
+            },
+        ];
+
+        // ===== LOG CLASS =====
+        class Log {
+            constructor(x, y, angle, length) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle || (Math.random() - 0.5) * 0.5;
+                this.length = length || 30 + Math.random() * 40;
+                this.width = 6 + Math.random() * 6;
+                this.color = `hsl(${20 + Math.random() * 20}, ${30 + Math.random() * 20}%, ${20 + Math.random() * 20}%)`;
+                this.burnProgress = 0;
+                this.burnSpeed = 0.0005 + Math.random() * 0.001;
+                this.glow = 0;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.burnProgress += this.burnSpeed * speed * 20;
+                this.glow = 0.2 + 0.3 * (1 - this.burnProgress);
+                this.phase += 0.005 * speed * 10;
+            }
+
+            draw(ctx) {
+                const alpha = 1 - this.burnProgress * 0.5;
+                const x1 = this.x - Math.cos(this.angle) * this.length / 2;
+                const y1 = this.y - Math.sin(this.angle) * this.length / 2;
+                const x2 = this.x + Math.cos(this.angle) * this.length / 2;
+                const y2 = this.y + Math.sin(this.angle) * this.length / 2;
+
+                // Glow on log
+                if (this.glow > 0.1) {
+                    const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.length * 0.5);
+                    const palette = colorPalettes[colorMode];
+                    grad.addColorStop(0, palette.glow + `${Math.floor(20 * this.glow)}`);
+                    grad.addColorStop(1, palette.glow + '00');
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.length * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+
+                // Log body
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+                ctx.globalAlpha = alpha;
+
+                // Shadow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+                // Main log
+                const grad2 = ctx.createLinearGradient(0, -this.width/2, 0, this.width/2);
+                grad2.addColorStop(0, this.color);
+                grad2.addColorStop(0.5, this.color);
+                grad2.addColorStop(1, this.color + '80');
+                ctx.fillStyle = grad2;
+                ctx.beginPath();
+                ctx.roundRect(-this.length/2, -this.width/2, this.length, this.width, 3);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Bark texture
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 0.5;
+                for (let i = -this.length/2 + 5; i < this.length/2 - 5; i += 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, -this.width/2 + 2);
+                    ctx.lineTo(i + 3, this.width/2 - 2);
+                    ctx.stroke();
+                }
+
+                // Burn marks
+                if (this.burnProgress > 0.2) {
+                    ctx.fillStyle = 'rgba(20,10,5,0.2)';
+                    const burnX = (Math.random() - 0.5) * this.length * 0.6;
+                    const burnY = (Math.random() - 0.5) * this.width * 0.4;
+                    ctx.beginPath();
+                    ctx.arc(burnX, burnY, 2 + this.burnProgress * 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            getCenter() {
+                return { x: this.x, y: this.y };
+            }
+        }
+
+        // ===== FLAME PARTICLE CLASS =====
+        class FlameParticle {
+            constructor(x, y) {
+                this.x = x || (Math.random() - 0.5) * 40;
+                this.y = y || -10 - Math.random() * 20;
+                this.size = 3 + Math.random() * 8;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 2 - 1;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.colorOffset = Math.random() * 0.5;
+                this.alpha = 0.5 + Math.random() * 0.5;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.3;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.02;
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.vx *= 0.99;
+                this.size *= 0.998;
+                this.phase += 0.05;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.fire;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * this.alpha;
+                const size = this.size * this.life;
+
+                // Glow
+                const glowSize = size * 4 * this.glow;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(0.5, color + '40');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== EMBER CLASS =====
+        class Ember {
+            constructor(x, y) {
+                this.x = x || (Math.random() - 0.5) * 30;
+                this.y = y || -5 - Math.random() * 10;
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 1 - 0.3;
+                this.life = 1;
+                this.maxLife = 40 + Math.random() * 60;
+                this.age = 0;
+                this.colorOffset = Math.random() * 0.5;
+                this.alpha = 0.5 + Math.random() * 0.5;
+                this.glow = 0.5 + Math.random() * 0.5;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.3;
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.flicker = 0.5 + Math.random() * 0.5;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.02;
+                this.y += this.vy;
+                this.vy -= 0.002;
+                this.vx *= 0.999;
+                this.size *= 0.999;
+                this.phase += 0.03;
+                this.flicker = 0.5 + 0.5 * Math.sin(this.phase * 2);
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.ember;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * this.alpha;
+                const size = this.size * this.life * (0.5 + 0.5 * this.flicker);
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.2;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 6 * this.glow;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(0.5, color + '40');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Inner bright spot
+                ctx.beginPath();
+                ctx.arc(this.x - size * 0.1, this.y - size * 0.1, size * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SPARK CLASS =====
+        class Spark {
+            constructor(x, y) {
+                this.x = x || (Math.random() - 0.5) * 20;
+                this.y = y || -5 - Math.random() * 5;
+                this.size = 0.5 + Math.random() * 1.5;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -Math.random() * 2 - 0.5;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.color = '#ffd700';
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.gravity = 0.01 + Math.random() * 0.02;
+                this.phase = Math.random() * Math.PI * 2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.rotation += this.rotSpeed;
+                this.phase += 0.05;
+                this.size *= 0.998;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.8;
+                const size = this.size * this.life;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 4);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SMOKE CLASS =====
+        class SmokeParticle {
+            constructor(x, y) {
+                this.x = x || (Math.random() - 0.5) * 20;
+                this.y = y || -5 - Math.random() * 5;
+                this.size = 5 + Math.random() * 15;
+                this.vx = (Math.random() - 0.5) * 0.2;
+                this.vy = -Math.random() * 0.3 - 0.1;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 80;
+                this.age = 0;
+                this.alpha = 0.1 + Math.random() * 0.2;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.05;
+                this.y += this.vy;
+                this.vy -= 0.001;
+                this.size += 0.05;
+                this.alpha *= 0.999;
+                this.phase += this.wobbleSpeed;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const alpha = this.life * this.alpha * 0.5;
+                const color = palette.smoke;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                grad.addColorStop(0, color + `${Math.floor(alpha * 80)}`);
+                grad.addColorStop(0.5, color + `${Math.floor(alpha * 40)}`);
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW GROUND =====
+        function drawGround(ctx, w, h) {
+            const groundY = h * 0.75;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 25, 20, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 25, 20, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 25, 20, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 25, 20, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            for (let i = 0; i <= w; i += 2) {
+                const yOffset = Math.sin(i * 0.02 + time * 0.005) * 2;
+                ctx.lineTo(i, groundY + yOffset);
+            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Stones around fire
+            const cx = w / 2;
+            const cy = groundY + 10;
+            const stonePositions = [
+                [-40, 5], [-30, -8], [-15, -12], [0, -15], [15, -12], [30, -8], [40, 5],
+                [-35, 15], [-20, 18], [0, 20], [20, 18], [35, 15]
+            ];
+            for (const pos of stonePositions) {
+                const x = cx + pos[0];
+                const y = cy + pos[1];
+                const size = 6 + Math.sin(pos[0] * 0.5) * 3;
+                ctx.beginPath();
+                ctx.ellipse(x, y, size, size * 0.6, pos[0] * 0.02, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(60, 55, 50, ${0.3 + Math.sin(pos[0] * 0.3) * 0.1})`;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                // Highlight
+                ctx.beginPath();
+                ctx.ellipse(x - size * 0.1, y - size * 0.1, size * 0.2, size * 0.15, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(80, 75, 70, 0.2)';
+                ctx.fill();
+            }
+
+            return { groundY, cx, cy };
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % (h * 0.5);
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Ambient glow from fire
+            const palette = colorPalettes[colorMode];
+            const ambientGlow = ctx.createRadialGradient(w/2, h * 0.7, 0, w/2, h * 0.7, 150);
+            ambientGlow.addColorStop(0, palette.glow + '15');
+            ambientGlow.addColorStop(0.5, palette.glow + '08');
+            ambientGlow.addColorStop(1, palette.glow + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Trees silhouette
+            for (let i = 0; i < 4; i++) {
+                const x = (i / 4) * w + Math.sin(i * 0.5) * 30;
+                const y = h * 0.5 + i * 10;
+                ctx.beginPath();
+                ctx.moveTo(x - 20, y + 30);
+                ctx.quadraticCurveTo(x - 10, y - 20 - i * 5, x, y - 5 - i * 3);
+                ctx.quadraticCurveTo(x + 10, y - 20 - i * 5, x + 20, y + 30);
+                ctx.fillStyle = `rgba(10, 15, 20, ${0.1 + i * 0.03})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== ROUND RECT POLYFILL =====
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (r > w/2) r = w/2;
+                if (r > h/2) r = h/2;
+                this.moveTo(x + r, y);
+                this.arcTo(x + w, y, x + w, y + h, r);
+                this.arcTo(x + w, y + h, x, y + h, r);
+                this.arcTo(x, y + h, x, y, r);
+                this.arcTo(x, y, x + w, y, r);
+                return this;
+            };
+        }
+
+        // ===== STOKE =====
+        function stoke() {
+            isStoked = true;
+            fireIntensity = 1.5;
+            statusText.textContent = '🔥 Stoking!';
+            stokeBtn.textContent = '🔥 Stoking...';
+
+            // Create burst of embers and sparks
+            const cx = canvas.width / 2;
+            const cy = canvas.height * 0.7 + 10;
+            for (let i = 0; i < 30; i++) {
+                const e = new Ember(
+                    cx + (Math.random() - 0.5) * 30,
+                    cy - 10 - Math.random() * 10
+                );
+                e.vx = (Math.random() - 0.5) * 2;
+                e.vy = -Math.random() * 3 - 1;
+                e.size = 1 + Math.random() * 4;
+                embers.push(e);
+            }
+            for (let i = 0; i < 20; i++) {
+                const s = new Spark(
+                    cx + (Math.random() - 0.5) * 20,
+                    cy - 10 - Math.random() * 10
+                );
+                s.vx = (Math.random() - 0.5) * 3;
+                s.vy = -Math.random() * 3 - 1;
+                sparks.push(s);
+            }
+
+            setTimeout(() => {
+                isStoked = false;
+                fireIntensity = 1;
+                stokeBtn.textContent = '🔥 Stoke';
+                statusText.textContent = '🔥 Crackling';
+            }, 1500);
+        }
+
+        // ===== RESET =====
+        function resetCampfire() {
+            embers = [];
+            flames = [];
+            sparks = [];
+            smoke = [];
+            logs = [];
+            fireIntensity = 1;
+            isStoked = false;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            stokeBtn.textContent = '🔥 Stoke';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🔥 Crackling';
+            }, 1000);
+
+            // Create logs
+            const cx = canvas.width / 2;
+            const cy = canvas.height * 0.75 + 10;
+            logs.push(new Log(cx - 15, cy + 2, -0.3, 35));
+            logs.push(new Log(cx + 15, cy + 2, 0.3, 35));
+            logs.push(new Log(cx, cy - 5, 0, 40));
+            logs.push(new Log(cx - 25, cy + 5, 0.5, 25));
+            logs.push(new Log(cx + 25, cy + 5, -0.5, 25));
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const groundInfo = drawGround(ctx, w, h);
+            const cy = groundInfo.cy;
+            time += 0.01;
+
+            // Update logs
+            for (const log of logs) {
+                log.update();
+            }
+
+            // Spawn flames
+            if (Math.random() < 0.1 * fireIntensity * speed * 20) {
+                const f = new FlameParticle(
+                    cx + (Math.random() - 0.5) * 20,
+                    cy - 10 - Math.random() * 10
+                );
+                f.vy = -Math.random() * 3 - 1.5;
+                f.size = 3 + Math.random() * 10;
+                flames.push(f);
+            }
+
+            // Spawn embers
+            if (Math.random() < 0.05 * fireIntensity * speed * 20) {
+                const e = new Ember(
+                    cx + (Math.random() - 0.5) * 25,
+                    cy - 5 - Math.random() * 10
+                );
+                e.vy = -Math.random() * 1.5 - 0.5;
+                e.size = 1 + Math.random() * 3;
+                embers.push(e);
+            }
+
+            // Spawn sparks
+            if (Math.random() < 0.02 * fireIntensity * speed * 20) {
+                const s = new Spark(
+                    cx + (Math.random() - 0.5) * 15,
+                    cy - 5 - Math.random() * 10
+                );
+                s.vx = (Math.random() - 0.5) * 2;
+                s.vy = -Math.random() * 2 - 0.5;
+                sparks.push(s);
+            }
+
+            // Spawn smoke
+            if (Math.random() < 0.03 * speed * 20) {
+                const s = new SmokeParticle(
+                    cx + (Math.random() - 0.5) * 15,
+                    cy - 20 - Math.random() * 10
+                );
+                s.vy = -Math.random() * 0.3 - 0.1;
+                s.size = 5 + Math.random() * 15;
+                smoke.push(s);
+            }
+
+            // Update flames
+            for (let i = flames.length - 1; i >= 0; i--) {
+                const f = flames[i];
+                f.update();
+                if (f.isDead()) {
+                    flames.splice(i, 1);
+                }
+            }
+
+            // Update embers
+            for (let i = embers.length - 1; i >= 0; i--) {
+                const e = embers[i];
+                e.update();
+                if (e.isDead()) {
+                    embers.splice(i, 1);
+                }
+            }
+
+            // Update sparks
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                const s = sparks[i];
+                s.update();
+                if (s.isDead()) {
+                    sparks.splice(i, 1);
+                }
+            }
+
+            // Update smoke
+            for (let i = smoke.length - 1; i >= 0; i--) {
+                const s = smoke[i];
+                s.update();
+                if (s.isDead()) {
+                    smoke.splice(i, 1);
+                }
+            }
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Draw logs
+            for (const log of logs) {
+                log.draw(ctx);
+            }
+
+            // Draw flames
+            for (const f of flames) {
+                f.draw(ctx);
+            }
+
+            // Draw embers
+            for (const e of embers) {
+                e.draw(ctx);
+            }
+
+            // Draw sparks
+            for (const s of sparks) {
+                s.draw(ctx);
+            }
+
+            // Draw smoke
+            for (const s of smoke) {
+                s.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const total = flames.length + embers.length + sparks.length + smoke.length;
+                const state = isStoked ? '🔥 Stoked' : '🔥 Crackling';
+                statusText.textContent = `${state} • ${total} particles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        stokeBtn.addEventListener('click', stoke);
+
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔥 Crackling';
+            }, 1000);
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔥 Crackling';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetCampfire);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') stokeBtn.click();
+            if (e.key === 'p' || e.key === 'P') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                stokeBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', stoke);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            stoke();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🔥 Crackling';
+
+        // Create initial logs
+        const cx = canvas.width / 2;
+        const cy = canvas.height * 0.75 + 10;
+        logs.push(new Log(cx - 15, cy + 2, -0.3, 35));
+        logs.push(new Log(cx + 15, cy + 2, 0.3, 35));
+        logs.push(new Log(cx, cy - 5, 0, 40));
+        logs.push(new Log(cx - 25, cy + 5, 0.5, 25));
+        logs.push(new Log(cx + 25, cy + 5, -0.5, 25));
+
+        // Initial embers
+        for (let i = 0; i < 20; i++) {
+            const e = new Ember(
+                cx + (Math.random() - 0.5) * 20,
+                cy - 5 - Math.random() * 10
+            );
+            e.vy = -Math.random() * 1 - 0.3;
+            embers.push(e);
+        }
+
+        lastFpsUpdate = performance.now();
+        render(lastFpsUpdate);
+
+        console.log('🔥 Campfire Embers loaded!');
+        console.log('💡 S - Stoke');
+        console.log('💡 P - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Stoke');
+        console.log('💡 Click fire - Stoke');
+    </script>
+</body>
+</html>

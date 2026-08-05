@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Context Menu Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+    }
+    
+    .demo-area {
+      width: 80%;
+      max-width: 600px;
+      height: 400px;
+      background: white;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      cursor: context-menu;
+    }
+
+    .demo-area h2 {
+      margin-top: 0;
+      color: #0f172a;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const ContextMenu = ({ items = [], position = { x: 0, y: 0 }, isVisible, onClose }) => {
+      const [isRendered, setIsRendered] = useState(isVisible);
+      const menuRef = useRef(null);
+
+      useEffect(() => {
+        if (isVisible) setIsRendered(true);
+        else {
+          const timeout = setTimeout(() => setIsRendered(false), 200);
+          return () => clearTimeout(timeout);
+        }
+      }, [isVisible]);
+
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (isVisible && menuRef.current && !menuRef.current.contains(e.target)) {
+            onClose();
+          }
+        };
+        const timeoutId = setTimeout(() => {
+          document.addEventListener('click', handleClickOutside);
+          document.addEventListener('contextmenu', handleClickOutside);
+        }, 10);
+        return () => {
+          clearTimeout(timeoutId);
+          document.removeEventListener('click', handleClickOutside);
+          document.removeEventListener('contextmenu', handleClickOutside);
+        };
+      }, [isVisible, onClose]);
+
+      const getAdjustedPosition = () => {
+        if (!menuRef.current) return { top: position.y, left: position.x };
+        let top = position.y;
+        let left = position.x;
+        const { offsetWidth, offsetHeight } = menuRef.current;
+        if (left + offsetWidth > window.innerWidth - 16) left = window.innerWidth - offsetWidth - 16;
+        if (top + offsetHeight > window.innerHeight - 16) top = window.innerHeight - offsetHeight - 16;
+        return { top, left };
+      };
+
+      if (!isRendered) return null;
+
+      return (
+        <div 
+          ref={menuRef}
+          className={`ease-context-menu ${isVisible ? 'is-entering' : 'is-exiting'}`}
+          style={{ ...getAdjustedPosition(), transformOrigin: 'top left' }}
+        >
+          <ul className="ease-context-menu-list">
+            {items.map((item, index) => {
+              if (item.type === 'separator') return <li key={index} className="ease-context-menu-separator"></li>;
+              return (
+                <li key={item.id || index}>
+                  <button 
+                    className={`ease-context-menu-btn ${item.isDanger ? 'danger' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      item.onClick && item.onClick();
+                      onClose();
+                    }}
+                  >
+                    {item.icon && <span className="ease-menu-icon">{item.icon}</span>}
+                    <span className="ease-menu-label">{item.label}</span>
+                    {item.shortcut && <span className="ease-menu-shortcut">{item.shortcut}</span>}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      );
+    };
+
+    const useContextMenu = () => {
+      const [isVisible, setIsVisible] = useState(false);
+      const [position, setPosition] = useState({ x: 0, y: 0 });
+
+      const handleContextMenu = (e) => {
+        e.preventDefault();
+        setPosition({ x: e.clientX, y: e.clientY });
+        setIsVisible(true);
+      };
+
+      const closeMenu = () => setIsVisible(false);
+      return { isVisible, position, handleContextMenu, closeMenu };
+    };
+
+    const App = () => {
+      const { isVisible, position, handleContextMenu, closeMenu } = useContextMenu();
+
+      const menuItems = [
+        { id: '1', label: 'Open in new tab', shortcut: '⌘T', onClick: () => console.log('Opened tab') },
+        { id: '2', label: 'Copy link address', shortcut: '⌘C', onClick: () => console.log('Copied') },
+        { type: 'separator' },
+        { id: '3', label: 'Refresh frame', shortcut: '⌘R', onClick: () => console.log('Refreshed') },
+        { id: '4', label: 'Delete item', shortcut: 'Del', isDanger: true, onClick: () => console.log('Deleted') }
+      ];
+
+      return (
+        <div className="demo-area" onContextMenu={handleContextMenu}>
+          <h2>Right Click Anywhere Here</h2>
+          <p>Observe the scale-in entrance and bounds checking.</p>
+          
+          <ContextMenu 
+            items={menuItems}
+            position={position}
+            isVisible={isVisible}
+            onClose={closeMenu}
+          />
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

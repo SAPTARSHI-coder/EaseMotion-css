@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTP Input Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>OTP Input</h1>
+        <p class="subtitle">Auto-advancing OTP fields</p>
+
+        <!-- OTP INPUT COMPONENT -->
+        <div class="otp-container">
+            <div class="otp-wrapper">
+                <div class="otp-header">
+                    <span class="otp-icon">🔐</span>
+                    <h2 class="otp-title">Enter Verification Code</h2>
+                    <p class="otp-subtitle">We've sent a 6-digit code to your email</p>
+                </div>
+
+                <div class="otp-input-group" id="otpInputGroup">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" />
+                </div>
+
+                <div class="otp-actions">
+                    <button class="otp-btn primary" id="verifyBtn">Verify Code</button>
+                    <button class="otp-btn secondary" id="resetBtn">Clear All</button>
+                </div>
+
+                <div class="otp-footer">
+                    <span class="otp-resend" id="resendBtn">Resend Code</span>
+                    <span class="otp-timer" id="timerDisplay">30s</span>
+                </div>
+
+                <div class="otp-status" id="otpStatus">
+                    <span class="status-text">Enter the 6-digit code</span>
+                </div>
+
+                <div class="otp-hidden-input">
+                    <input type="hidden" id="otpHidden" value="" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button class="demo-btn" id="fillOTPBtn">📝 Fill OTP</button>
+            <button class="demo-btn" id="toggleMaskBtn">👁️ Toggle Mask</button>
+            <button class="demo-btn" id="setLengthBtn">🔢 Set Length</button>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status-display">
+            <span class="status-label">OTP:</span>
+            <span class="status-value" id="otpDisplay">—</span>
+            <span class="status-label">Length:</span>
+            <span class="status-value" id="lengthDisplay">6</span>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const inputs = document.querySelectorAll('.otp-input');
+            const otpGroup = document.getElementById('otpInputGroup');
+            const otpStatus = document.getElementById('otpStatus');
+            const otpHidden = document.getElementById('otpHidden');
+            const otpDisplay = document.getElementById('otpDisplay');
+            const lengthDisplay = document.getElementById('lengthDisplay');
+            const verifyBtn = document.getElementById('verifyBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const resendBtn = document.getElementById('resendBtn');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const fillOTPBtn = document.getElementById('fillOTPBtn');
+            const toggleMaskBtn = document.getElementById('toggleMaskBtn');
+            const setLengthBtn = document.getElementById('setLengthBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                length: 6,
+                mask: false,
+                autoSubmit: true,
+                resendTimeout: 30, // seconds
+                onComplete: function(otp) {
+                    console.log(`✅ OTP Complete: ${otp}`);
+                    otpStatus.innerHTML = `<span class="status-text success">✅ Verified! Code: ${otp}</span>`;
+                },
+                onReset: function() {
+                    console.log('🔄 OTP Reset');
+                    otpStatus.innerHTML = `<span class="status-text">Enter the 6-digit code</span>`;
+                },
+                onResend: function() {
+                    console.log('📧 Code resent');
+                    otpStatus.innerHTML = `<span class="status-text info">📧 New code sent!</span>`;
+                    setTimeout(() => {
+                        if (getCurrentOTP() === '') {
+                            otpStatus.innerHTML = `<span class="status-text">Enter the 6-digit code</span>`;
+                        }
+                    }, 3000);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let otpLength = CONFIG.length;
+            let isMasked = CONFIG.mask;
+            let isResending = false;
+            let timerInterval = null;
+            let timeLeft = CONFIG.resendTimeout;
+
+            // ============================================
+            // OTP FUNCTIONS
+            // ============================================
+            function getCurrentOTP() {
+                let otp = '';
+                document.querySelectorAll('.otp-input').forEach(input => {
+                    otp += input.value || '';
+                });
+                return otp;
+            }
+
+            function setOTP(value) {
+                const digits = value.toString().split('');
+                const inputs = document.querySelectorAll('.otp-input');
+                inputs.forEach((input, index) => {
+                    input.value = digits[index] || '';
+                    updateInputStyle(input);
+                });
+                updateHiddenInput();
+                updateDisplay();
+                if (getCurrentOTP().length === otpLength) {
+                    CONFIG.onComplete(getCurrentOTP());
+                }
+            }
+
+            function updateDisplay() {
+                const otp = getCurrentOTP();
+                const display = otp || '—';
+                otpDisplay.textContent = display;
+                otpHidden.value = otp;
+            }
+
+            function updateHiddenInput() {
+                otpHidden.value = getCurrentOTP();
+            }
+
+            function updateInputStyle(input) {
+                if (input.value) {
+                    input.classList.add('filled');
+                } else {
+                    input.classList.remove('filled');
+                }
+            }
+
+            function clearOTP() {
+                document.querySelectorAll('.otp-input').forEach(input => {
+                    input.value = '';
+                    input.classList.remove('filled');
+                });
+                inputs[0].focus();
+                updateHiddenInput();
+                updateDisplay();
+                otpStatus.innerHTML = `<span class="status-text">Enter the ${otpLength}-digit code</span>`;
+                CONFIG.onReset();
+            }
+
+            function focusInput(index) {
+                if (index >= 0 && index < otpLength) {
+                    inputs[index].focus();
+                }
+            }
+
+            function validateInput(input) {
+                const val = input.value;
+                if (val && !/^[0-9]$/.test(val)) {
+                    input.value = '';
+                }
+                updateInputStyle(input);
+            }
+
+            // ============================================
+            // MASK TOGGLE
+            // ============================================
+            function toggleMask() {
+                isMasked = !isMasked;
+                inputs.forEach(input => {
+                    input.type = isMasked ? 'password' : 'text';
+                });
+                toggleMaskBtn.textContent = isMasked ? '👁️ Show OTP' : '👁️ Hide OTP';
+            }
+
+            // ============================================
+            // TIMER
+            // ============================================
+            function startTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                timeLeft = CONFIG.resendTimeout;
+                timerDisplay.textContent = timeLeft + 's';
+                resendBtn.style.pointerEvents = 'none';
+                resendBtn.style.opacity = '0.5';
+                isResending = true;
+
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerDisplay.textContent = timeLeft + 's';
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        resendBtn.style.pointerEvents = 'auto';
+                        resendBtn.style.opacity = '1';
+                        timerDisplay.textContent = 'Ready';
+                        isResending = false;
+                    }
+                }, 1000);
+            }
+
+            // ============================================
+            // RESEND
+            // ============================================
+            function resendCode() {
+                if (isResending) return;
+                CONFIG.onResend();
+                startTimer();
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            inputs.forEach((input, index) => {
+                // Input event
+                input.addEventListener('input', function(e) {
+                    validateInput(this);
+                    updateHiddenInput();
+                    updateDisplay();
+
+                    // Auto-advance to next input
+                    if (this.value && index < otpLength - 1) {
+                        focusInput(index + 1);
+                    }
+
+                    // Check if complete
+                    if (getCurrentOTP().length === otpLength) {
+                        if (CONFIG.autoSubmit) {
+                            CONFIG.onComplete(getCurrentOTP());
+                        }
+                    }
+                });
+
+                // Keydown event for backspace
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && !this.value && index > 0) {
+                        focusInput(index - 1);
+                    }
+                    if (e.key === 'ArrowLeft' && index > 0) {
+                        focusInput(index - 1);
+                        e.preventDefault();
+                    }
+                    if (e.key === 'ArrowRight' && index < otpLength - 1) {
+                        focusInput(index + 1);
+                        e.preventDefault();
+                    }
+                    if (e.key === 'Home') {
+                        focusInput(0);
+                        e.preventDefault();
+                    }
+                    if (e.key === 'End') {
+                        focusInput(otpLength - 1);
+                        e.preventDefault();
+                    }
+                });
+
+                // Focus event
+                input.addEventListener('focus', function() {
+                    this.select();
+                });
+
+                // Paste event
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    const digits = paste.replace(/\D/g, '').slice(0, otpLength);
+                    if (digits) {
+                        setOTP(digits);
+                        const remaining = otpLength - digits.length;
+                        if (remaining > 0) {
+                            focusInput(digits.length);
+                        }
+                    }
+                });
+            });
+
+            // Verify button
+            verifyBtn.addEventListener('click', function() {
+                const otp = getCurrentOTP();
+                if (otp.length === otpLength) {
+                    CONFIG.onComplete(otp);
+                } else {
+                    otpStatus.innerHTML = `<span class="status-text error">❌ Please enter all ${otpLength} digits</span>`;
+                    setTimeout(() => {
+                        if (getCurrentOTP() === '') {
+                            otpStatus.innerHTML = `<span class="status-text">Enter the ${otpLength}-digit code</span>`;
+                        }
+                    }, 3000);
+                }
+            });
+
+            // Reset button
+            resetBtn.addEventListener('click', clearOTP);
+
+            // Resend button
+            resendBtn.addEventListener('click', resendCode);
+
+            // ============================================
+            // DEMO CONTROLS
+            // ============================================
+            fillOTPBtn.addEventListener('click', function() {
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                setOTP(otp);
+                otpStatus.innerHTML = `<span class="status-text info">📝 Filled with: ${otp}</span>`;
+                setTimeout(() => {
+                    if (getCurrentOTP() === otp) {
+                        otpStatus.innerHTML = `<span class="status-text">Enter the ${otpLength}-digit code</span>`;
+                    }
+                }, 3000);
+            });
+
+            toggleMaskBtn.addEventListener('click', toggleMask);
+
+            setLengthBtn.addEventListener('click', function() {
+                const newLength = prompt('Enter OTP length (4-8):', otpLength);
+                if (newLength) {
+                    const len = parseInt(newLength);
+                    if (len >= 4 && len <= 8) {
+                        otpLength = len;
+                        CONFIG.length = len;
+                        lengthDisplay.textContent = len;
+                        // Rebuild inputs
+                        const currentOTP = getCurrentOTP();
+                        const group = document.getElementById('otpInputGroup');
+                        group.innerHTML = '';
+                        for (let i = 0; i < len; i++) {
+                            const input = document.createElement('input');
+                            input.type = isMasked ? 'password' : 'text';
+                            input.className = 'otp-input';
+                            input.maxLength = 1;
+                            input.inputMode = 'numeric';
+                            input.pattern = '[0-9]';
+                            input.autocomplete = 'one-time-code';
+                            group.appendChild(input);
+                            
+                            // Re-attach listeners
+                            const index = i;
+                            input.addEventListener('input', function(e) {
+                                validateInput(this);
+                                updateHiddenInput();
+                                updateDisplay();
+                                if (this.value && index < otpLength - 1) {
+                                    focusInput(index + 1);
+                                }
+                                if (getCurrentOTP().length === otpLength) {
+                                    if (CONFIG.autoSubmit) {
+                                        CONFIG.onComplete(getCurrentOTP());
+                                    }
+                                }
+                            });
+                            input.addEventListener('keydown', function(e) {
+                                if (e.key === 'Backspace' && !this.value && index > 0) {
+                                    focusInput(index - 1);
+                                }
+                                if (e.key === 'ArrowLeft' && index > 0) {
+                                    focusInput(index - 1);
+                                    e.preventDefault();
+                                }
+                                if (e.key === 'ArrowRight' && index < otpLength - 1) {
+                                    focusInput(index + 1);
+                                    e.preventDefault();
+                                }
+                            });
+                            input.addEventListener('focus', function() {
+                                this.select();
+                            });
+                            input.addEventListener('paste', function(e) {
+                                e.preventDefault();
+                                const paste = (e.clipboardData || window.clipboardData).getData('text');
+                                const digits = paste.replace(/\D/g, '').slice(0, otpLength);
+                                if (digits) {
+                                    setOTP(digits);
+                                    const remaining = otpLength - digits.length;
+                                    if (remaining > 0) {
+                                        focusInput(digits.length);
+                                    }
+                                }
+                            });
+                            
+                            // Restore value if exists
+                            if (currentOTP[i]) {
+                                input.value = currentOTP[i];
+                                updateInputStyle(input);
+                            }
+                            
+                            // Update reference
+                            const inputList = document.querySelectorAll('.otp-input');
+                            if (i === 0 && currentOTP) {
+                                // Rebuild reference
+                            }
+                        }
+                        // Update references
+                        const newInputs = document.querySelectorAll('.otp-input');
+                        updateHiddenInput();
+                        updateDisplay();
+                        if (currentOTP) {
+                            otpDisplay.textContent = currentOTP || '—';
+                        }
+                        otpStatus.innerHTML = `<span class="status-text info">✅ Length set to ${len}</span>`;
+                        setTimeout(() => {
+                            if (getCurrentOTP() === '') {
+                                otpStatus.innerHTML = `<span class="status-text">Enter the ${otpLength}-digit code</span>`;
+                            }
+                        }, 3000);
+                    } else {
+                        alert('Please enter a number between 4 and 8');
+                    }
+                }
+            });
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const otp = getCurrentOTP();
+                    if (otp.length === otpLength) {
+                        CONFIG.onComplete(otp);
+                    }
+                }
+                if (e.key === 'Escape') {
+                    clearOTP();
+                }
+            });
+
+            // ============================================
+            // CUSTOM API
+            // ============================================
+            window.OTPInput = {
+                getOTP: getCurrentOTP,
+                setOTP: setOTP,
+                clear: clearOTP,
+                focus: (index) => focusInput(index),
+                toggleMask: toggleMask,
+                resend: resendCode,
+                setLength: (len) => {
+                    if (len >= 4 && len <= 8) {
+                        otpLength = len;
+                        CONFIG.length = len;
+                        lengthDisplay.textContent = len;
+                        // Rebuild logic...
+                        setLengthBtn.click();
+                    }
+                },
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.length) {
+                        otpLength = config.length;
+                        lengthDisplay.textContent = config.length;
+                    }
+                    if (config.mask !== undefined) {
+                        isMasked = config.mask;
+                        inputs.forEach(input => {
+                            input.type = isMasked ? 'password' : 'text';
+                        });
+                    }
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            otpDisplay.textContent = '—';
+            lengthDisplay.textContent = otpLength;
+            timerDisplay.textContent = '30s';
+            
+            // Set initial input type
+            inputs.forEach(input => {
+                input.type = 'text';
+            });
+
+            console.log('🔐 OTP Input initialized!');
+            console.log('📖 API: window.OTPInput');
+            console.log('📖 Usage:');
+            console.log('  - Type digits to auto-advance');
+            console.log('  - Use backspace to go back');
+            console.log('  - Paste entire OTP to fill all fields');
+            console.log('  - Keyboard shortcuts: Enter (verify), Escape (clear)');
+
+        })();
+    </script>
+</body>
+</html>

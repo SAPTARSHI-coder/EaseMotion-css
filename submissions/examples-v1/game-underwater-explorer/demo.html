@@ -1,0 +1,885 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Underwater Explorer · 🌊</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>🌊 Underwater Explorer</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">💎 Pearls</span>
+                    <span id="pearlCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🫧 Oxygen</span>
+                    <span id="oxygenDisplay">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🏆 Score</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🌊 Depth</span>
+                    <span id="depthDisplay">0m</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+            
+            <!-- Oxygen Bar -->
+            <div id="oxygenBar" class="oxygen-bar">
+                <div id="oxygenFill" class="oxygen-fill" style="width:100%"></div>
+            </div>
+
+            <!-- Controls Hint -->
+            <div class="controls-hint">
+                <span>🖱️ Move mouse / Touch to move • Collect 🫧 air bubbles • Avoid 🦈 sharks & 🌊 jellyfish</span>
+            </div>
+
+            <!-- Start Overlay -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>🌊 Underwater Explorer</h2>
+                    <p>Dive deep and collect treasures!</p>
+                    <p class="sub-text">Avoid sea creatures • Collect pearls • Watch your oxygen</p>
+                    <button id="startBtn" class="btn-primary">🐠 Start Dive</button>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameOverOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>💀 Run Out of Air!</h2>
+                    <div class="final-stats">
+                        <p>💎 Pearls Collected: <span id="finalPearls">0</span></p>
+                        <p>🏆 Score: <span id="finalScore">0</span></p>
+                        <p>🌊 Max Depth: <span id="finalDepth">0m</span></p>
+                        <p>⏱️ Time Survived: <span id="finalTime">0s</span></p>
+                    </div>
+                    <button id="restartBtn" class="btn-primary">🔄 Dive Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== UNDERWATER EXPLORER GAME ==========
+        class UnderwaterExplorer {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game state
+                this.state = 'start';
+                this.score = 0;
+                this.pearls = 0;
+                this.depth = 0;
+                this.maxDepth = 0;
+                this.time = 0;
+                this.oxygen = 100;
+                this.maxOxygen = 100;
+                this.oxygenDepletionRate = 0.15;
+                this.frame = 0;
+                
+                // Player (diver)
+                this.player = {
+                    x: 400,
+                    y: 300,
+                    width: 32,
+                    height: 44,
+                    speed: 4,
+                    targetX: 400,
+                    targetY: 300,
+                    angle: 0
+                };
+                
+                // Game objects
+                this.pearls = [];
+                this.bubbles = [];
+                this.jellyfish = [];
+                this.sharks = [];
+                this.particles = [];
+                this.ambientBubbles = [];
+                
+                // Controls
+                this.mouseX = 400;
+                this.mouseY = 300;
+                this.isTouching = false;
+                
+                // Spawn timers
+                this.pearlSpawnTimer = 0;
+                this.bubbleSpawnTimer = 0;
+                this.jellyfishSpawnTimer = 0;
+                this.sharkSpawnTimer = 0;
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.state = 'start';
+                this.score = 0;
+                this.pearls = 0;
+                this.depth = 0;
+                this.maxDepth = 0;
+                this.time = 0;
+                this.oxygen = 100;
+                this.frame = 0;
+                this.pearls = [];
+                this.bubbles = [];
+                this.jellyfish = [];
+                this.sharks = [];
+                this.particles = [];
+                this.ambientBubbles = [];
+                
+                this.player.x = 400;
+                this.player.y = 300;
+                this.player.targetX = 400;
+                this.player.targetY = 300;
+                
+                // Create ambient bubbles
+                for (let i = 0; i < 30; i++) {
+                    this.ambientBubbles.push({
+                        x: Math.random() * 800,
+                        y: Math.random() * 600,
+                        size: 2 + Math.random() * 6,
+                        speed: 0.2 + Math.random() * 0.5,
+                        wobble: Math.random() * Math.PI * 2,
+                        wobbleSpeed: 0.02 + Math.random() * 0.03
+                    });
+                }
+                
+                this.updateUI();
+                document.getElementById('startOverlay').style.display = 'flex';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+            }
+            
+            startGame() {
+                this.state = 'playing';
+                this.oxygen = 100;
+                document.getElementById('startOverlay').style.display = 'none';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                this.updateUI();
+            }
+            
+            gameOver() {
+                this.state = 'gameover';
+                document.getElementById('finalPearls').textContent = this.pearls;
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalDepth').textContent = Math.floor(this.maxDepth) + 'm';
+                document.getElementById('finalTime').textContent = Math.floor(this.time) + 's';
+                document.getElementById('gameOverOverlay').style.display = 'flex';
+                this.spawnParticles(this.player.x, this.player.y, 30, '#4ecdc4');
+            }
+            
+            spawnPearl() {
+                const x = 50 + Math.random() * 700;
+                const y = 50 + Math.random() * 500;
+                this.pearls.push({
+                    x: x,
+                    y: y,
+                    size: 8 + Math.random() * 4,
+                    glow: Math.random() * Math.PI * 2,
+                    collected: false
+                });
+            }
+            
+            spawnBubble() {
+                const x = 50 + Math.random() * 700;
+                const y = 550 + Math.random() * 100;
+                this.bubbles.push({
+                    x: x,
+                    y: y,
+                    size: 10 + Math.random() * 12,
+                    speed: 0.5 + Math.random() * 0.8,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.02 + Math.random() * 0.03,
+                    oxygenAmount: 15 + Math.random() * 20
+                });
+            }
+            
+            spawnJellyfish() {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const x = side === 'left' ? -40 : 840;
+                const y = 100 + Math.random() * 400;
+                this.jellyfish.push({
+                    x: x,
+                    y: y,
+                    size: 20 + Math.random() * 20,
+                    speed: 0.5 + Math.random() * 0.8,
+                    direction: side === 'left' ? 1 : -1,
+                    pulse: Math.random() * Math.PI * 2,
+                    pulseSpeed: 0.03 + Math.random() * 0.02,
+                    wobble: Math.random() * Math.PI * 2,
+                    wobbleSpeed: 0.02 + Math.random() * 0.02,
+                    color: this.getJellyfishColor()
+                });
+            }
+            
+            spawnShark() {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const x = side === 'left' ? -60 : 860;
+                const y = 100 + Math.random() * 400;
+                this.sharks.push({
+                    x: x,
+                    y: y,
+                    size: 40 + Math.random() * 20,
+                    speed: 1 + Math.random() * 0.5,
+                    direction: side === 'left' ? 1 : -1,
+                    tailWag: 0,
+                    tailSpeed: 0.05 + Math.random() * 0.02,
+                    angle: 0
+                });
+            }
+            
+            getJellyfishColor() {
+                const colors = [
+                    '#ff6b6b', '#ff9f43', '#ffd93d', 
+                    '#4ecdc4', '#6c5ce7', '#fd79a8',
+                    '#a29bfe', '#55efc4'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            spawnParticles(x, y, count, color) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * 4;
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1,
+                        life: 1,
+                        decay: 0.015 + Math.random() * 0.02,
+                        size: 2 + Math.random() * 5,
+                        color: color || '#4ecdc4'
+                    });
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('pearlCount').textContent = this.pearls;
+                document.getElementById('oxygenDisplay').textContent = Math.floor(this.oxygen) + '%';
+                document.getElementById('scoreDisplay').textContent = this.score;
+                document.getElementById('depthDisplay').textContent = Math.floor(this.depth) + 'm';
+                
+                // Update oxygen bar
+                const fill = document.getElementById('oxygenFill');
+                fill.style.width = Math.max(0, this.oxygen) + '%';
+                
+                // Change color based on oxygen level
+                if (this.oxygen > 50) {
+                    fill.style.background = 'linear-gradient(90deg, #4ecdc4, #44b39d)';
+                } else if (this.oxygen > 25) {
+                    fill.style.background = 'linear-gradient(90deg, #ffd93d, #f9a825)';
+                } else {
+                    fill.style.background = 'linear-gradient(90deg, #ff6b6b, #ee5a24)';
+                }
+            }
+            
+            update() {
+                if (this.state !== 'playing') return;
+                this.frame++;
+                
+                // Update player position (smooth follow)
+                this.player.x += (this.player.targetX - this.player.x) * 0.1;
+                this.player.y += (this.player.targetY - this.player.y) * 0.1;
+                
+                // Player angle based on movement
+                const dx = this.player.targetX - this.player.x;
+                const dy = this.player.targetY - this.player.y;
+                this.player.angle = Math.atan2(dy, dx);
+                
+                // Clamp player position
+                this.player.x = Math.max(20, Math.min(780, this.player.x));
+                this.player.y = Math.max(20, Math.min(580, this.player.y));
+                
+                // Depth increases as player goes deeper
+                this.depth += (this.player.y / 600) * 0.5;
+                if (this.depth > this.maxDepth) {
+                    this.maxDepth = this.depth;
+                }
+                
+                // Oxygen depletion (faster at depth)
+                const depthFactor = 1 + (this.player.y / 600) * 0.5;
+                this.oxygen -= this.oxygenDepletionRate * depthFactor * 0.5;
+                
+                if (this.oxygen <= 0) {
+                    this.oxygen = 0;
+                    this.gameOver();
+                    return;
+                }
+                
+                // Time
+                this.time += 0.016;
+                
+                // Score from depth
+                this.score += Math.floor(this.depth * 0.05);
+                
+                // ---- Spawn objects ----
+                this.pearlSpawnTimer++;
+                if (this.pearlSpawnTimer > 120 + Math.random() * 60) {
+                    this.spawnPearl();
+                    this.pearlSpawnTimer = 0;
+                }
+                
+                this.bubbleSpawnTimer++;
+                if (this.bubbleSpawnTimer > 200 + Math.random() * 100) {
+                    this.spawnBubble();
+                    this.bubbleSpawnTimer = 0;
+                }
+                
+                this.jellyfishSpawnTimer++;
+                if (this.jellyfishSpawnTimer > 300 + Math.random() * 100) {
+                    this.spawnJellyfish();
+                    this.jellyfishSpawnTimer = 0;
+                }
+                
+                this.sharkSpawnTimer++;
+                if (this.sharkSpawnTimer > 500 + Math.random() * 200) {
+                    this.spawnShark();
+                    this.sharkSpawnTimer = 0;
+                }
+                
+                // ---- Update pearls ----
+                for (let i = this.pearls.length - 1; i >= 0; i--) {
+                    const pearl = this.pearls[i];
+                    pearl.glow += 0.05;
+                    
+                    // Check collection
+                    const dx = this.player.x - pearl.x;
+                    const dy = this.player.y - pearl.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 30 && !pearl.collected) {
+                        pearl.collected = true;
+                        this.pearls++;
+                        this.score += 50;
+                        this.spawnParticles(pearl.x, pearl.y, 15, '#ffd93d');
+                        this.pearls.splice(i, 1);
+                        this.updateUI();
+                    }
+                }
+                
+                // ---- Update bubbles ----
+                for (let i = this.bubbles.length - 1; i >= 0; i--) {
+                    const bubble = this.bubbles[i];
+                    bubble.y -= bubble.speed;
+                    bubble.x += Math.sin(bubble.wobble) * 0.5;
+                    bubble.wobble += bubble.wobbleSpeed;
+                    
+                    // Check collection
+                    const dx = this.player.x - bubble.x;
+                    const dy = this.player.y - bubble.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 30) {
+                        this.oxygen = Math.min(100, this.oxygen + bubble.oxygenAmount);
+                        this.spawnParticles(bubble.x, bubble.y, 10, '#4ecdc4');
+                        this.bubbles.splice(i, 1);
+                        this.updateUI();
+                        continue;
+                    }
+                    
+                    if (bubble.y < -20) {
+                        this.bubbles.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update jellyfish ----
+                for (let i = this.jellyfish.length - 1; i >= 0; i--) {
+                    const jelly = this.jellyfish[i];
+                    jelly.x += jelly.speed * jelly.direction;
+                    jelly.y += Math.sin(jelly.wobble) * 0.5;
+                    jelly.pulse += jelly.pulseSpeed;
+                    jelly.wobble += jelly.wobbleSpeed;
+                    
+                    // Check collision with player
+                    const dx = this.player.x - jelly.x;
+                    const dy = this.player.y - jelly.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < jelly.size + 15) {
+                        this.oxygen -= 20;
+                        this.spawnParticles(jelly.x, jelly.y, 20, jelly.color);
+                        this.jellyfish.splice(i, 1);
+                        this.updateUI();
+                        if (this.oxygen <= 0) {
+                            this.oxygen = 0;
+                            this.gameOver();
+                            return;
+                        }
+                        continue;
+                    }
+                    
+                    if (jelly.x < -60 || jelly.x > 860) {
+                        this.jellyfish.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update sharks ----
+                for (let i = this.sharks.length - 1; i >= 0; i--) {
+                    const shark = this.sharks[i];
+                    shark.x += shark.speed * shark.direction;
+                    shark.y += Math.sin(shark.tailWag) * 0.3;
+                    shark.tailWag += shark.tailSpeed;
+                    shark.angle = Math.atan2(
+                        Math.sin(shark.tailWag) * 0.3,
+                        shark.direction
+                    );
+                    
+                    // Check collision with player
+                    const dx = this.player.x - shark.x;
+                    const dy = this.player.y - shark.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < shark.size + 15) {
+                        this.oxygen -= 35;
+                        this.spawnParticles(shark.x, shark.y, 25, '#ff6b6b');
+                        this.sharks.splice(i, 1);
+                        this.updateUI();
+                        if (this.oxygen <= 0) {
+                            this.oxygen = 0;
+                            this.gameOver();
+                            return;
+                        }
+                        continue;
+                    }
+                    
+                    if (shark.x < -70 || shark.x > 870) {
+                        this.sharks.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update particles ----
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.03;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update ambient bubbles ----
+                for (const bubble of this.ambientBubbles) {
+                    bubble.y -= bubble.speed;
+                    bubble.x += Math.sin(bubble.wobble) * 0.3;
+                    bubble.wobble += bubble.wobbleSpeed;
+                    if (bubble.y < -10) {
+                        bubble.y = 610;
+                        bubble.x = Math.random() * 800;
+                        bubble.size = 2 + Math.random() * 6;
+                    }
+                }
+                
+                this.updateUI();
+            }
+            
+            render() {
+                const ctx = this.ctx;
+                const W = 800, H = 600;
+                
+                // Ocean background gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                const depthFactor = Math.min(1, this.depth / 200);
+                const r = 10 - depthFactor * 8;
+                const g = 30 + depthFactor * 20;
+                const b = 60 + depthFactor * 40;
+                gradient.addColorStop(0, `rgb(${r + 20}, ${g + 30}, ${b + 60})`);
+                gradient.addColorStop(0.5, `rgb(${r}, ${g}, ${b})`);
+                gradient.addColorStop(1, `rgb(${Math.max(0, r - 10)}, ${Math.max(0, g - 10)}, ${Math.max(0, b - 10)})`);
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Light rays from surface
+                ctx.globalAlpha = 0.05;
+                for (let i = 0; i < 5; i++) {
+                    const x = 100 + i * 150 + Math.sin(this.frame * 0.005 + i) * 20;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x - 30 + Math.sin(this.frame * 0.01 + i) * 10, H);
+                    ctx.lineTo(x + 30 + Math.sin(this.frame * 0.01 + i + 1) * 10, H);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                
+                // Draw ambient bubbles
+                for (const bubble of this.ambientBubbles) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                    ctx.beginPath();
+                    ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.beginPath();
+                    ctx.arc(bubble.x - bubble.size * 0.3, bubble.y - bubble.size * 0.3, bubble.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw pearls
+                for (const pearl of this.pearls) {
+                    const glow = 0.7 + 0.3 * Math.sin(pearl.glow);
+                    ctx.shadowColor = '#ffd93d';
+                    ctx.shadowBlur = 20 * glow;
+                    ctx.fillStyle = '#ffd93d';
+                    ctx.beginPath();
+                    ctx.arc(pearl.x, pearl.y, pearl.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    // Highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                    ctx.beginPath();
+                    ctx.arc(pearl.x - pearl.size * 0.3, pearl.y - pearl.size * 0.3, pearl.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw bubbles (collectible)
+                for (const bubble of this.bubbles) {
+                    const gradient2 = ctx.createRadialGradient(
+                        bubble.x - bubble.size * 0.3, bubble.y - bubble.size * 0.3, 0,
+                        bubble.x, bubble.y, bubble.size
+                    );
+                    gradient2.addColorStop(0, 'rgba(78, 205, 196, 0.6)');
+                    gradient2.addColorStop(0.5, 'rgba(78, 205, 196, 0.3)');
+                    gradient2.addColorStop(1, 'rgba(78, 205, 196, 0.1)');
+                    ctx.fillStyle = gradient2;
+                    ctx.beginPath();
+                    ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(78, 205, 196, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    // Highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(bubble.x - bubble.size * 0.3, bubble.y - bubble.size * 0.3, bubble.size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw jellyfish
+                for (const jelly of this.jellyfish) {
+                    const pulse = 0.8 + 0.2 * Math.sin(jelly.pulse);
+                    ctx.save();
+                    ctx.translate(jelly.x, jelly.y);
+                    ctx.scale(pulse, pulse);
+                    
+                    // Glow
+                    ctx.shadowColor = jelly.color;
+                    ctx.shadowBlur = 30;
+                    
+                    // Body (bell)
+                    ctx.fillStyle = jelly.color + '60';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, jelly.size, jelly.size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = jelly.color + '80';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, jelly.size * 0.7, jelly.size * 0.5, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tentacles
+                    ctx.shadowBlur = 10;
+                    ctx.strokeStyle = jelly.color + '60';
+                    ctx.lineWidth = 2;
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i / 6) * Math.PI * 2;
+                        const len = jelly.size * (0.8 + 0.4 * Math.sin(jelly.pulse + i));
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(angle) * jelly.size * 0.5, Math.sin(angle) * jelly.size * 0.5);
+                        ctx.quadraticCurveTo(
+                            Math.cos(angle) * jelly.size * 0.8,
+                            Math.sin(angle) * jelly.size * 0.8 + len * 0.5,
+                            Math.cos(angle) * jelly.size * 0.6,
+                            Math.sin(angle) * jelly.size * 0.6 + len
+                        );
+                        ctx.stroke();
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+                
+                // Draw sharks
+                for (const shark of this.sharks) {
+                    ctx.save();
+                    ctx.translate(shark.x, shark.y);
+                    ctx.scale(shark.direction, 1);
+                    ctx.rotate(shark.angle * 0.1);
+                    
+                    // Shadow
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 20;
+                    
+                    // Body
+                    ctx.fillStyle = '#2d4059';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, shark.size * 0.6, shark.size * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Snout
+                    ctx.fillStyle = '#1a2a3a';
+                    ctx.beginPath();
+                    ctx.moveTo(shark.size * 0.8, 0);
+                    ctx.lineTo(shark.size * 0.4, -shark.size * 0.2);
+                    ctx.lineTo(shark.size * 0.4, shark.size * 0.2);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Dorsal fin
+                    ctx.fillStyle = '#1a2a3a';
+                    ctx.beginPath();
+                    ctx.moveTo(0, -shark.size * 0.3);
+                    ctx.lineTo(-shark.size * 0.2, -shark.size * 0.6);
+                    ctx.lineTo(-shark.size * 0.4, -shark.size * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Tail
+                    ctx.fillStyle = '#2d4059';
+                    const tailWag = Math.sin(shark.tailWag) * 0.3;
+                    ctx.beginPath();
+                    ctx.moveTo(-shark.size * 0.6, 0);
+                    ctx.quadraticCurveTo(
+                        -shark.size * 0.8, -shark.size * 0.4 + tailWag * shark.size * 0.3,
+                        -shark.size * 0.5, -shark.size * 0.3 + tailWag * shark.size * 0.5
+                    );
+                    ctx.quadraticCurveTo(
+                        -shark.size * 0.5, -shark.size * 0.1 + tailWag * shark.size * 0.5,
+                        -shark.size * 0.6, 0
+                    );
+                    ctx.fill();
+                    
+                    // Eye
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(shark.size * 0.3, -shark.size * 0.1, shark.size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.beginPath();
+                    ctx.arc(shark.size * 0.35, -shark.size * 0.15, shark.size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+                
+                // Draw player (diver)
+                this.drawPlayer(ctx);
+                
+                // Draw particles
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                
+                // Depth indicator
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Depth: ${Math.floor(this.depth)}m`, 10, 20);
+            }
+            
+            drawPlayer(ctx) {
+                const p = this.player;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle);
+                
+                // Bubble trail
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillStyle = `rgba(255,255,255,${0.1 - i * 0.03})`;
+                    ctx.beginPath();
+                    ctx.arc(-10 - i * 8, -5 + i * 3, 3 - i * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Body (wetsuit)
+                ctx.fillStyle = '#1a2a3a';
+                ctx.shadowColor = 'rgba(78, 205, 196, 0.2)';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(-12, -10, 24, 28);
+                
+                // Head (helmet)
+                ctx.fillStyle = '#3a5a7a';
+                ctx.beginPath();
+                ctx.arc(0, -14, 14, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Helmet visor
+                ctx.fillStyle = '#4ecdc4';
+                ctx.shadowColor = '#4ecdc4';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(0, -14, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                
+                // Visor shine
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.beginPath();
+                ctx.arc(-3, -17, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Scuba tank
+                ctx.fillStyle = '#2d4059';
+                ctx.fillRect(-18, -4, 6, 22);
+                ctx.fillRect(12, -4, 6, 22);
+                
+                // Tank details
+                ctx.fillStyle = '#3a5a7a';
+                ctx.fillRect(-17, 0, 4, 4);
+                ctx.fillRect(13, 0, 4, 4);
+                
+                // Flippers
+                ctx.fillStyle = '#2d4059';
+                ctx.shadowBlur = 0;
+                const legAngle = Math.sin(this.frame * 0.05) * 0.1;
+                ctx.beginPath();
+                ctx.moveTo(-6, 18);
+                ctx.quadraticCurveTo(-14, 22 + legAngle * 10, -10, 28 + legAngle * 5);
+                ctx.quadraticCurveTo(-4, 24 + legAngle * 5, -6, 18);
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.moveTo(6, 18);
+                ctx.quadraticCurveTo(14, 22 - legAngle * 10, 10, 28 - legAngle * 5);
+                ctx.quadraticCurveTo(4, 24 - legAngle * 5, 6, 18);
+                ctx.fill();
+                
+                // Arms
+                ctx.fillStyle = '#1a2a3a';
+                const armAngle = Math.sin(this.frame * 0.05) * 0.2;
+                ctx.fillRect(-18, -2 + armAngle * 5, 6, 12);
+                ctx.fillRect(12, -2 - armAngle * 5, 6, 12);
+                
+                // Hands
+                ctx.fillStyle = '#3a5a7a';
+                ctx.beginPath();
+                ctx.arc(-15, 12 + armAngle * 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(15, 12 - armAngle * 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Oxygen tank indicator
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.fillRect(-4, -22, 8, 4);
+                const oxygenLevel = Math.max(0, this.oxygen / 100);
+                ctx.fillStyle = this.oxygen > 50 ? '#4ecdc4' : this.oxygen > 25 ? '#ffd93d' : '#ff6b6b';
+                ctx.fillRect(-4, -22, 8 * oxygenLevel, 4);
+                
+                ctx.restore();
+            }
+            
+            setupEventListeners() {
+                // Start button
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Restart button
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.init();
+                    this.startGame();
+                });
+                
+                // Mouse move
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (this.state !== 'playing') return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.player.targetX = (e.clientX - rect.left) * scaleX;
+                    this.player.targetY = (e.clientY - rect.top) * scaleY;
+                });
+                
+                // Touch support
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (this.state === 'start') {
+                        this.startGame();
+                        return;
+                    }
+                    if (this.state === 'gameover') return;
+                    this.isTouching = true;
+                    const touch = e.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.player.targetX = (touch.clientX - rect.left) * scaleX;
+                    this.player.targetY = (touch.clientY - rect.top) * scaleY;
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (this.state !== 'playing') return;
+                    const touch = e.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.player.targetX = (touch.clientX - rect.left) * scaleX;
+                    this.player.targetY = (touch.clientY - rect.top) * scaleY;
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    this.isTouching = false;
+                }, { passive: false });
+                
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.state === 'start') {
+                            this.startGame();
+                        } else if (this.state === 'gameover') {
+                            this.init();
+                            this.startGame();
+                        }
+                    }
+                    // Arrow keys for movement
+                    if (this.state === 'playing') {
+                        const speed = 8;
+                        switch(e.key) {
+                            case 'ArrowUp': this.player.targetY = Math.max(20, this.player.targetY - speed); break;
+                            case 'ArrowDown': this.player.targetY = Math.min(580, this.player.targetY + speed); break;
+                            case 'ArrowLeft': this.player.targetX = Math.max(20, this.player.targetX - speed); break;
+                            case 'ArrowRight': this.player.targetX = Math.min(780, this.player.targetX + speed); break;
+                        }
+                    }
+                });
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new UnderwaterExplorer();
+        });
+    </script>
+</body>
+</html>

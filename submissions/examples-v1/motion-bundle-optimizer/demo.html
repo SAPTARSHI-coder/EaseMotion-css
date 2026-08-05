@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Bundle Optimizer — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Bundle Optimizer</h1>
+    <p>
+      Simulate a build-time utility that analyzes your HTML to detect which EaseMotion
+      classes are actually used, and generates a minimized CSS stylesheet containing
+      <em>only</em> the required animations, utilities, and keyframes.
+    </p>
+    <div class="badges">
+      <span class="badge">📦 Bundle Size</span>
+      <span class="badge">✂️ Tree Shaking</span>
+      <span class="badge">🚀 Performance</span>
+    </div>
+  </header>
+
+  <main class="optimizer-container">
+
+    <!-- ── INPUT SECTION ──────────────────────────────────────── -->
+    <section class="panel input-panel">
+      <div class="panel-header">
+        <span class="section-label">1. Your HTML Input</span>
+        <button class="test-btn" id="loadSampleBtn">Load Complex Example</button>
+      </div>
+      <p class="panel-desc">Paste your HTML here. The optimizer will scan for <code>ease-*</code> classes.</p>
+      
+      <textarea id="htmlInput" class="code-editor" spellcheck="false" placeholder="Paste HTML here...">
+<div class="ease-fade-up ease-scale ease-shadow">
+  Optimized Motion
+</div>
+
+<button class="ease-pulse">
+  Click Me
+</button>
+      </textarea>
+      
+      <button id="optimizeBtn" class="ease-btn">Run Optimizer ⚡</button>
+    </section>
+
+    <!-- ── RESULTS SECTION ────────────────────────────────────── -->
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <span class="section-label">2. Optimized Output</span>
+        <div class="stats-badge" id="savingsBadge">--% Smaller</div>
+      </div>
+      <p class="panel-desc">Only the keyframes and utility classes you actually use.</p>
+      
+      <div class="output-wrapper">
+        <pre><code id="cssOutput" class="css-output">/* Optimized CSS will appear here */</code></pre>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Bundle Optimizer Logic
+     * Simulates a PostCSS / Build step that extracts used classes and builds a tailored stylesheet.
+     */
+
+    // Mock Dictionary of the entire EaseMotion library
+    const LIBRARY = {
+      'ease-fade-up': {
+        deps: ['ease-fade-up-keyframes'],
+        css: `.ease-fade-up { animation: ease-fade-up-keyframes 0.5s ease-out forwards; }`
+      },
+      'ease-fade-down': {
+        deps: ['ease-fade-down-keyframes'],
+        css: `.ease-fade-down { animation: ease-fade-down-keyframes 0.5s ease-out forwards; }`
+      },
+      'ease-scale': {
+        deps: ['ease-scale-keyframes'],
+        css: `.ease-scale { animation: ease-scale-keyframes 0.3s ease-out forwards; }`
+      },
+      'ease-shadow': {
+        deps: ['ease-shadow-keyframes'],
+        css: `.ease-shadow { animation: ease-shadow-keyframes 0.4s ease forwards; }`
+      },
+      'ease-pulse': {
+        deps: ['ease-pulse-keyframes'],
+        css: `.ease-pulse { animation: ease-pulse-keyframes 2s infinite; }`
+      },
+      'ease-spin': {
+        deps: ['ease-spin-keyframes'],
+        css: `.ease-spin { animation: ease-spin-keyframes 1s linear infinite; }`
+      }
+    };
+
+    const KEYFRAMES = {
+      'ease-fade-up-keyframes': `@keyframes ease-fade-up-keyframes {\n  from { opacity: 0; transform: translateY(20px); }\n  to { opacity: 1; transform: translateY(0); }\n}`,
+      'ease-fade-down-keyframes': `@keyframes ease-fade-down-keyframes {\n  from { opacity: 0; transform: translateY(-20px); }\n  to { opacity: 1; transform: translateY(0); }\n}`,
+      'ease-scale-keyframes': `@keyframes ease-scale-keyframes {\n  from { transform: scale(1); }\n  to { transform: scale(1.05); }\n}`,
+      'ease-shadow-keyframes': `@keyframes ease-shadow-keyframes {\n  from { box-shadow: 0 0 0 transparent; }\n  to { box-shadow: 0 10px 20px rgba(0,0,0,0.15); }\n}`,
+      'ease-pulse-keyframes': `@keyframes ease-pulse-keyframes {\n  0% { transform: scale(1); }\n  50% { transform: scale(1.05); }\n  100% { transform: scale(1); }\n}`,
+      'ease-spin-keyframes': `@keyframes ease-spin-keyframes {\n  to { transform: rotate(360deg); }\n}`
+    };
+
+    const htmlInput = document.getElementById('htmlInput');
+    const optimizeBtn = document.getElementById('optimizeBtn');
+    const cssOutput = document.getElementById('cssOutput');
+    const savingsBadge = document.getElementById('savingsBadge');
+    const loadSampleBtn = document.getElementById('loadSampleBtn');
+
+    loadSampleBtn.addEventListener('click', () => {
+      htmlInput.value = `<nav class="ease-fade-down ease-shadow">\n  <button class="ease-pulse ease-scale">Save</button>\n</nav>`;
+      optimize();
+    });
+
+    optimizeBtn.addEventListener('click', optimize);
+
+    function optimize() {
+      const html = htmlInput.value;
+      
+      // 1. Extract class attributes using a simple regex (In a real tool, an AST parser is better)
+      const classMatches = html.match(/class=["']([^"']+)["']/g) || [];
+      
+      // 2. Flatten into an array of individual classes
+      let usedClasses = new Set();
+      classMatches.forEach(match => {
+        const classStr = match.replace(/class=["']/g, '').replace(/["']/g, '');
+        classStr.split(/\s+/).forEach(cls => {
+          if (cls.startsWith('ease-')) {
+            usedClasses.add(cls);
+          }
+        });
+      });
+
+      // 3. Resolve dependencies (Which keyframes are needed?)
+      let requiredKeyframes = new Set();
+      let requiredCssBlocks = [];
+
+      usedClasses.forEach(cls => {
+        if (LIBRARY[cls]) {
+          requiredCssBlocks.push(LIBRARY[cls].css);
+          LIBRARY[cls].deps.forEach(dep => requiredKeyframes.add(dep));
+        } else {
+          requiredCssBlocks.push(`/* Warning: ${cls} not found in EaseMotion library */`);
+        }
+      });
+
+      // 4. Build output string
+      let outputLines = [];
+      outputLines.push('/* === Optimized Motion Bundle === */\n');
+
+      if (requiredKeyframes.size > 0) {
+        outputLines.push('/* === Keyframes === */');
+        requiredKeyframes.forEach(kf => {
+          outputLines.push(KEYFRAMES[kf]);
+        });
+        outputLines.push(''); // spacing
+      }
+
+      if (requiredCssBlocks.length > 0) {
+        outputLines.push('/* === Utility Classes === */');
+        requiredCssBlocks.forEach(css => {
+          outputLines.push(css);
+        });
+      }
+
+      if (outputLines.length === 1) {
+        cssOutput.textContent = '/* No EaseMotion classes detected in HTML */';
+        savingsBadge.textContent = '100% Smaller';
+        savingsBadge.className = 'stats-badge success';
+        return;
+      }
+
+      cssOutput.textContent = outputLines.join('\n\n');
+
+      // Calculate fake savings percentage based on how much of the mock library was used
+      const totalItems = Object.keys(LIBRARY).length;
+      const usedItems = usedClasses.size;
+      const savings = Math.max(0, Math.round(((totalItems - usedItems) / totalItems) * 100));
+      
+      savingsBadge.textContent = `${savings}% Smaller`;
+      savingsBadge.className = `stats-badge ${savings > 50 ? 'success' : 'warning'}`;
+    }
+
+    // Run on load
+    optimize();
+  </script>
+
+</body>
+</html>
