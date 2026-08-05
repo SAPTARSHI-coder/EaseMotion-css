@@ -28,4 +28,4 @@ submissions/
 ## Files
 - `demo.html` - demo page demonstrating component usage (including nested example)
 - `style.css` - component styles implementing grid auto-height and crossfade
-- `README.md` - this file
+- `README.md` - Documentation explaining the component and its structure (this file).
