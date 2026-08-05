@@ -15,4 +15,4 @@ wrapper border and applies a focus ring when any child input receives focus.
 ## Why is it useful?
 Without `:focus-within`, only the `<input>` itself gets a focus ring.
 The outer wrapper stays visually disconnected, making it unclear where
-the focus boundary is. Fixes: #35837
+the focus boundary is. Fixes: #59815

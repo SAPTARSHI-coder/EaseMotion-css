@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phoenix Rising</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Phoenix Rising</h1>
+        <p class="subtitle">Bird made of fire rising from ashes</p>
+
+        <div class="phoenix-wrapper">
+            <canvas id="phoenixCanvas"></canvas>
+
+            <div class="controls">
+                <button id="riseBtn">🔥 Rise</button>
+                <button id="colorBtn">Color: Fire</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🔥 Ashes waiting</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('phoenixCanvas');
+        const ctx = canvas.getContext('2d');
+        const riseBtn = document.getElementById('riseBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let phoenix = {
+            progress: 0,
+            particles: [],
+            flames: [],
+            ashes: [],
+            wings: [],
+            tail: [],
+            body: [],
+            head: [],
+            eyeGlow: 0,
+            wingAngle: 0,
+            rising: false,
+            height: 0,
+            maxHeight: 200,
+            phase: 0,
+        };
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isRising = false;
+        let ashesParticles = [];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Fire',
+                colors: ['#ff0000', '#ff4500', '#ff6b00', '#ff8c00', '#ffa500', '#ffcc00', '#ffd700'],
+                glow: '#ff4500',
+                ash: '#4a3520'
+            },
+            {
+                name: 'Ice',
+                colors: ['#0066ff', '#0088ff', '#00aaff', '#00ccff', '#44ddff', '#88eeff', '#ccffff'],
+                glow: '#0088ff',
+                ash: '#20404a'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#4a0080', '#6a00a0', '#8a00c0', '#aa00e0', '#cc00ff', '#e080ff', '#f0c0ff'],
+                glow: '#8a00c0',
+                ash: '#2a1040'
+            },
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff', '#ff0088'],
+                glow: '#ff8800',
+                ash: '#2a2a2a'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#ffe4b5', '#ffccaa'],
+                glow: '#f7931e',
+                ash: '#3a2a1a'
+            },
+            {
+                name: 'Emerald',
+                colors: ['#004d40', '#00695c', '#00897b', '#26a69a', '#4db6ac', '#80cbc4', '#b2dfdb'],
+                glow: '#00897b',
+                ash: '#1a2a1a'
+            },
+        ];
+
+        // ===== ASH PARTICLE CLASS =====
+        class AshParticle {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 80;
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 0.3 - 0.1;
+                this.life = 1;
+                this.maxLife = 100 + Math.random() * 150;
+                this.age = 0;
+                this.alpha = 0.3 + Math.random() * 0.4;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.color = colorPalettes[colorMode].ash;
+                this.glow = 0.1 + Math.random() * 0.2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            update(speed) {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.02;
+                this.y += this.vy;
+                this.vy -= 0.001;
+                this.phase += 0.02;
+                this.rotation += this.rotSpeed;
+                this.alpha = this.life * 0.3;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.alpha * this.life;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = this.color + '20';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== FLAME PARTICLE CLASS =====
+        class FlameParticle {
+            constructor(x, y, color) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 30;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 20;
+                this.color = color || colorPalettes[colorMode].colors[Math.floor(Math.random() * 7)];
+                this.size = 2 + Math.random() * 6;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 2 - 0.5;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.alpha = 0.5 + Math.random() * 0.5;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.3;
+                this.shape = Math.random() > 0.5 ? 'circle' : 'drop';
+                this.trail = [];
+                this.maxTrail = 3 + Math.floor(Math.random() * 3);
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.02;
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.vx *= 0.99;
+                this.size *= 0.998;
+                this.phase += 0.05;
+                this.alpha = this.life * 0.8;
+
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * this.alpha;
+                const size = this.size * this.life;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.15;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 4);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Core
+                if (this.shape === 'drop') {
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - size);
+                    ctx.quadraticCurveTo(this.x + size, this.y, this.x, this.y + size);
+                    ctx.quadraticCurveTo(this.x - size, this.y, this.x, this.y - size);
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== PHOENIX BODY =====
+        function drawPhoenix(ctx, cx, cy, progress) {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const glowColor = palette.glow;
+
+            const scale = progress;
+            const wingSpread = 0.5 + 0.5 * Math.sin(time * 0.5 + phoenix.phase);
+            const height = phoenix.height * scale;
+
+            ctx.save();
+            ctx.translate(cx, cy - height * 0.3);
+
+            // Glow aura
+            const auraSize = 120 * scale;
+            const aura = ctx.createRadialGradient(0, -20 * scale, 0, 0, -20 * scale, auraSize);
+            aura.addColorStop(0, glowColor + '40');
+            aura.addColorStop(0.3, glowColor + '20');
+            aura.addColorStop(0.7, glowColor + '10');
+            aura.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, -20 * scale, auraSize, 0, Math.PI * 2);
+            ctx.fillStyle = aura;
+            ctx.fill();
+
+            // Tail feathers
+            const numTail = 7;
+            for (let i = 0; i < numTail; i++) {
+                const t = i / numTail;
+                const angle = -Math.PI / 2 + (t - 0.5) * 1.2 + Math.sin(time * 0.3 + i) * 0.05;
+                const length = (60 + 40 * t) * scale * (0.5 + 0.5 * Math.sin(time * 0.2 + i * 0.5));
+                const width = (3 + 3 * (1 - t)) * scale;
+                const colorIdx = Math.floor(t * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+
+                const ex = 0 + Math.cos(angle) * length;
+                const ey = 30 * scale + Math.sin(angle) * length;
+
+                // Tail glow
+                const tGrad = ctx.createLinearGradient(0, 30 * scale, ex, ey);
+                tGrad.addColorStop(0, color + '80');
+                tGrad.addColorStop(0.5, color);
+                tGrad.addColorStop(1, color + '40');
+
+                ctx.beginPath();
+                ctx.moveTo(0, 30 * scale);
+                ctx.quadraticCurveTo(
+                    (ex) * 0.5 + Math.sin(time * 0.4 + i) * 3,
+                    (30 * scale + ey) * 0.5,
+                    ex, ey
+                );
+                ctx.strokeStyle = tGrad;
+                ctx.lineWidth = width;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '60';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Tail tip glow
+                const tipGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, 10 * scale);
+                tipGrad.addColorStop(0, color + '80');
+                tipGrad.addColorStop(0.5, color + '40');
+                tipGrad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(ex, ey, 10 * scale, 0, Math.PI * 2);
+                ctx.fillStyle = tipGrad;
+                ctx.fill();
+            }
+
+            // Wings
+            for (let side = -1; side <= 1; side += 2) {
+                const wingAngle = (Math.PI / 3) * wingSpread * side + Math.sin(time * 0.2 + side) * 0.05;
+                const wingLength = 80 * scale * (0.7 + 0.3 * wingSpread);
+                const wingWidth = 30 * scale;
+
+                const colorIdx = side === -1 ? 0 : colors.length - 1;
+                const color = colors[colorIdx % colors.length];
+
+                // Wing shape
+                ctx.save();
+                ctx.translate(0, -10 * scale);
+                ctx.rotate(wingAngle);
+
+                // Wing glow
+                const wGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, wingLength);
+                wGrad.addColorStop(0, color + '40');
+                wGrad.addColorStop(0.5, color + '20');
+                wGrad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.ellipse(wingLength * 0.3, 0, wingLength * 0.8, wingWidth, 0, 0, Math.PI * 2);
+                ctx.fillStyle = wGrad;
+                ctx.fill();
+
+                // Wing feathers
+                const numFeathers = 8;
+                for (let i = 0; i < numFeathers; i++) {
+                    const t = i / numFeathers;
+                    const featherAngle = -Math.PI / 4 + t * Math.PI / 2 + Math.sin(time * 0.3 + i + side) * 0.05;
+                    const featherLen = (wingLength * 0.3 + t * wingLength * 0.7) * (0.7 + 0.3 * wingSpread);
+                    const featherWidth = (3 + 4 * (1 - t)) * scale;
+                    const colorIdx2 = Math.floor(t * (colors.length - 1));
+                    const featherColor = colors[colorIdx2 % colors.length];
+
+                    const fx = Math.cos(featherAngle) * featherLen;
+                    const fy = Math.sin(featherAngle) * featherLen;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(fx * 0.5, fy * 0.5 + Math.sin(time * 0.2 + i + side) * 2, fx, fy);
+                    ctx.strokeStyle = featherColor;
+                    ctx.lineWidth = featherWidth;
+                    ctx.lineCap = 'round';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = featherColor + '60';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Feather tip
+                    const tipGrad2 = ctx.createRadialGradient(fx, fy, 0, fx, fy, 6 * scale);
+                    tipGrad2.addColorStop(0, featherColor + '80');
+                    tipGrad2.addColorStop(1, featherColor + '00');
+                    ctx.beginPath();
+                    ctx.arc(fx, fy, 6 * scale, 0, Math.PI * 2);
+                    ctx.fillStyle = tipGrad2;
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+            // Body
+            const bodyGrad = ctx.createRadialGradient(-10 * scale, -10 * scale, 0, 0, 0, 30 * scale);
+            bodyGrad.addColorStop(0, colors[0]);
+            bodyGrad.addColorStop(0.5, colors[1]);
+            bodyGrad.addColorStop(1, colors[2] + '80');
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 25 * scale, 35 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = bodyGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = glowColor + '60';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Head
+            const headGrad = ctx.createRadialGradient(-3 * scale, -25 * scale, 0, 0, -30 * scale, 15 * scale);
+            headGrad.addColorStop(0, colors[1]);
+            headGrad.addColorStop(0.5, colors[0]);
+            headGrad.addColorStop(1, colors[0] + '80');
+            ctx.beginPath();
+            ctx.ellipse(0, -30 * scale, 12 * scale, 14 * scale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = headGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = glowColor + '40';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Beak
+            ctx.beginPath();
+            ctx.moveTo(0, -28 * scale);
+            ctx.lineTo(10 * scale, -32 * scale);
+            ctx.lineTo(0, -35 * scale);
+            ctx.closePath();
+            ctx.fillStyle = colors[3];
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = colors[3] + '60';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eye
+            const eyeSize = 3 * scale * (0.5 + 0.5 * Math.sin(time * 0.5));
+            ctx.beginPath();
+            ctx.arc(5 * scale, -32 * scale, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#ffffff' + '80';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.arc(6 * scale, -32 * scale, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(7 * scale, -33 * scale, eyeSize * 0.15, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Crest feathers
+            for (let i = 0; i < 3; i++) {
+                const angle = -Math.PI / 2 + (i - 1) * 0.3 + Math.sin(time * 0.5 + i) * 0.05;
+                const len = (10 + i * 5) * scale;
+                const cx2 = 0 + Math.cos(angle) * len;
+                const cy2 = -30 * scale + Math.sin(angle) * len;
+                ctx.beginPath();
+                ctx.moveTo(0, -30 * scale);
+                ctx.quadraticCurveTo(cx2 * 0.5, cy2 * 0.5 + Math.sin(time * 0.3 + i) * 2, cx2, cy2);
+                ctx.strokeStyle = colors[i % colors.length];
+                ctx.lineWidth = (2 - i * 0.3) * scale;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = colors[i % colors.length] + '60';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Crest tip
+                const tipGrad3 = ctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, 4 * scale);
+                tipGrad3.addColorStop(0, colors[i % colors.length] + '80');
+                tipGrad3.addColorStop(1, colors[i % colors.length] + '00');
+                ctx.beginPath();
+                ctx.arc(cx2, cy2, 4 * scale, 0, Math.PI * 2);
+                ctx.fillStyle = tipGrad3;
+                ctx.fill();
+            }
+
+            // Body flames
+            for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI * 2 + time * 0.1;
+                const dist = 20 + 10 * Math.sin(time * 0.2 + i);
+                const fx = Math.cos(angle) * dist;
+                const fy = Math.sin(angle) * dist * 0.5;
+                const fSize = 3 + Math.sin(time * 0.3 + i) * 2;
+                const fColor = colors[(i + 2) % colors.length];
+                const gradF = ctx.createRadialGradient(fx, fy, 0, fx, fy, fSize * 3);
+                gradF.addColorStop(0, fColor + '60');
+                gradF.addColorStop(0.5, fColor + '30');
+                gradF.addColorStop(1, fColor + '00');
+                ctx.beginPath();
+                ctx.arc(fx, fy, fSize * 3, 0, Math.PI * 2);
+                ctx.fillStyle = gradF;
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Spawn flame particles
+            if (progress > 0.3 && Math.random() < 0.05 * progress) {
+                const px = cx + (Math.random() - 0.5) * 60 * scale;
+                const py = cy - height * 0.3 + (Math.random() - 0.5) * 40 * scale;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const p = new FlameParticle(px, py, color);
+                p.vy = -Math.random() * 2 - 0.5;
+                phoenix.particles.push(p);
+            }
+
+            // Spawn ash particles
+            if (progress < 0.5 && Math.random() < 0.02) {
+                const a = new AshParticle(
+                    cx + (Math.random() - 0.5) * 80,
+                    cy + (Math.random() - 0.5) * 60
+                );
+                a.vy = Math.random() * 0.5 + 0.1;
+                ashesParticles.push(a);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.glow;
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.2);
+            ambientGlow.addColorStop(0, glowColor + '08');
+            ambientGlow.addColorStop(1, glowColor + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Embers at bottom
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(i * 0.5 + time * 0.005) * 15;
+                const y = h * 0.8 + Math.sin(i * 1.3 + time * 0.008) * 5;
+                const size = 1 + Math.sin(i * 0.7) * 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 100, 50, ${0.03 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RISE =====
+        function rise() {
+            if (isRising) return;
+
+            isRising = true;
+            phoenix.progress = 0;
+            phoenix.height = 0;
+            phoenix.particles = [];
+            phoenix.phase = 0;
+            statusText.textContent = '🔥 Rising...';
+            riseBtn.textContent = '🔥 Rising...';
+
+            const interval = setInterval(() => {
+                phoenix.progress += 0.02;
+                phoenix.height = phoenix.maxHeight * phoenix.progress;
+                phoenix.phase += 0.02;
+
+                // Spawn particles during rise
+                if (Math.random() < 0.1) {
+                    const palette = colorPalettes[colorMode];
+                    const colors = palette.colors;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const p = new FlameParticle(
+                        canvas.width / 2 + (Math.random() - 0.5) * 60,
+                        canvas.height / 2 + (Math.random() - 0.5) * 40,
+                        color
+                    );
+                    p.vy = -Math.random() * 3 - 1;
+                    phoenix.particles.push(p);
+                }
+
+                if (phoenix.progress >= 1) {
+                    clearInterval(interval);
+                    isRising = false;
+                    riseBtn.textContent = '🔥 Phoenix';
+                    statusText.textContent = '🔥 Phoenix risen!';
+                    setTimeout(() => {
+                        statusText.textContent = '🔥 Soaring';
+                    }, 1500);
+                }
+            }, 50);
+        }
+
+        // ===== RESET =====
+        function resetPhoenix() {
+            phoenix.progress = 0;
+            phoenix.height = 0;
+            phoenix.particles = [];
+            phoenix.phase = 0;
+            phoenix.particles = [];
+            ashesParticles = [];
+            isRising = false;
+            riseBtn.textContent = '🔥 Rise';
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🔥 Ashes waiting';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 20;
+            time += 0.01;
+
+            // Update phoenix particles
+            for (let i = phoenix.particles.length - 1; i >= 0; i--) {
+                const p = phoenix.particles[i];
+                p.update();
+                if (p.isDead()) {
+                    phoenix.particles.splice(i, 1);
+                }
+            }
+
+            // Update ashes
+            for (let i = ashesParticles.length - 1; i >= 0; i--) {
+                const a = ashesParticles[i];
+                a.update(0.02);
+                if (a.isDead()) {
+                    ashesParticles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw ashes
+            for (const a of ashesParticles) {
+                a.draw(ctx);
+            }
+
+            // Draw phoenix
+            if (phoenix.progress > 0) {
+                drawPhoenix(ctx, cx, cy, phoenix.progress);
+            } else {
+                // Draw ash pile
+                const palette = colorPalettes[colorMode];
+                const ashColor = palette.ash;
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * 30;
+                    const x = cx + Math.cos(angle) * dist;
+                    const y = cy + 30 + Math.sin(angle) * dist * 0.5;
+                    const size = 2 + Math.random() * 4;
+                    const grad = ctx.createRadialGradient(x, y, 0, x, y, size);
+                    grad.addColorStop(0, ashColor + '60');
+                    grad.addColorStop(0.5, ashColor + '30');
+                    grad.addColorStop(1, ashColor + '00');
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+                // Glowing ember in ashes
+                const emberGrad = ctx.createRadialGradient(cx, cy + 30, 0, cx, cy + 30, 15);
+                emberGrad.addColorStop(0, palette.glow + '40');
+                emberGrad.addColorStop(0.5, palette.glow + '20');
+                emberGrad.addColorStop(1, palette.glow + '00');
+                ctx.beginPath();
+                ctx.arc(cx, cy + 30, 15, 0, Math.PI * 2);
+                ctx.fillStyle = emberGrad;
+                ctx.fill();
+            }
+
+            // Draw particles
+            for (const p of phoenix.particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isRising ? '🔥 Rising' : (phoenix.progress > 0 ? '🔥 Soaring' : '🔥 Ashes');
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        riseBtn.addEventListener('click', rise);
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔥 Ashes waiting';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetPhoenix);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') riseBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'x' || e.key === 'X') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                riseBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', rise);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            rise();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🔥 Ashes waiting';
+        lastFpsUpdate = performance.now();
+
+        // Create initial ashes
+        for (let i = 0; i < 20; i++) {
+            const a = new AshParticle();
+            a.vy = Math.random() * 0.3 + 0.1;
+            ashesParticles.push(a);
+        }
+
+        render(lastFpsUpdate);
+
+        console.log('🔥 Phoenix Rising loaded!');
+        console.log('💡 R - Rise');
+        console.log('💡 C - Change color');
+        console.log('💡 X - Reset');
+        console.log('💡 SPACE - Rise');
+        console.log('💡 Click canvas - Rise');
+    </script>
+</body>
+</html>

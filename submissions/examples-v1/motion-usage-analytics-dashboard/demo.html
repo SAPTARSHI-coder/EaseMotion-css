@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Usage Analytics Dashboard — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Usage Analytics Dashboard</h1>
+    <p>
+      Paste your project's HTML to analyze how EaseMotion utilities are being used.
+      Identify frequently used classes, rarely used utilities, duplicated patterns,
+      and get suggestions for creating reusable presets.
+    </p>
+    <div class="badges">
+      <span class="badge">📊 Usage Stats</span>
+      <span class="badge">🔁 Duplicate Finder</span>
+      <span class="badge">💡 Preset Suggestions</span>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+
+    <!-- ── INPUT ──────────────────────────────────────────── -->
+    <section class="panel input-panel">
+      <div class="panel-header">
+        <span class="section-label">HTML Input</span>
+        <button class="test-btn" id="loadSampleBtn">Load Sample Project</button>
+      </div>
+
+      <!-- From the issue's HTML snippet exactly -->
+      <textarea id="htmlInput" class="code-editor" spellcheck="false">
+<div class="ease-card ease-fade ease-scale">
+  Dashboard Example
+</div>
+
+<div class="ease-card ease-slide-up">
+  Another Animated Card
+</div>
+      </textarea>
+
+      <button id="analyzeBtn" class="ease-btn">Analyze Usage 📊</button>
+    </section>
+
+    <!-- ── KPI CARDS ──────────────────────────────────────── -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiTotal">–</div>
+        <div class="kpi-label">Total Usages</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiUnique">–</div>
+        <div class="kpi-label">Unique Classes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiDupes">–</div>
+        <div class="kpi-label">Duplicate Patterns</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiSuggest">–</div>
+        <div class="kpi-label">Preset Suggestions</div>
+      </div>
+    </div>
+
+    <!-- ── ANALYTICS GRID ─────────────────────────────────── -->
+    <div class="analytics-grid">
+
+      <!-- Animation Usage Frequency -->
+      <section class="panel chart-panel">
+        <div class="panel-header">
+          <span class="section-label">Animation Usage</span>
+        </div>
+        <div id="usageChart" class="usage-chart">
+          <div class="empty-state">Run the analyzer to see results.</div>
+        </div>
+      </section>
+
+      <!-- Duplicate Patterns -->
+      <section class="panel dupes-panel">
+        <div class="panel-header">
+          <span class="section-label">Duplicate Patterns</span>
+        </div>
+        <div id="dupesContainer" class="dupes-container">
+          <div class="empty-state">No duplicates detected yet.</div>
+        </div>
+      </section>
+
+      <!-- Suggestions -->
+      <section class="panel suggestions-panel">
+        <div class="panel-header">
+          <span class="section-label">💡 Preset Suggestions</span>
+        </div>
+        <div id="suggestionsContainer" class="suggestions-container">
+          <div class="empty-state">Suggestions will appear here.</div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Usage Analytics Dashboard
+     * Parses HTML input to count and analyze all ease-* class combinations.
+     */
+
+    const htmlInput = document.getElementById('htmlInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    // ── Sample Project Data ────────────────────────────────
+    document.getElementById('loadSampleBtn').addEventListener('click', () => {
+      htmlInput.value = `<nav class="ease-slide-down ease-shadow">Nav</nav>
+<div class="ease-card ease-fade ease-scale">Hero Card</div>
+<div class="ease-card ease-fade ease-scale">Feature Card 1</div>
+<div class="ease-card ease-fade ease-scale">Feature Card 2</div>
+<button class="ease-pulse ease-scale">CTA Button</button>
+<button class="ease-pulse ease-scale">Secondary CTA</button>
+<div class="ease-slide-up">Section 1</div>
+<div class="ease-slide-up">Section 2</div>
+<div class="ease-slide-up">Section 3</div>
+<footer class="ease-fade">Footer</footer>`;
+      analyze();
+    });
+
+    analyzeBtn.addEventListener('click', analyze);
+
+    function analyze() {
+      const html = htmlInput.value;
+
+      // 1. Extract all class attributes
+      const classAttrMatches = html.match(/class="([^"]+)"/g) || [];
+
+      // 2. Collect per-element combos and individual class counts
+      const frequencyMap = {};
+      const comboMap = {};
+
+      classAttrMatches.forEach(attr => {
+        const rawClasses = attr.replace(/class=["']/g, '').replace(/["']/g, '').split(/\s+/);
+        const easeClasses = rawClasses.filter(c => c.startsWith('ease-'));
+
+        easeClasses.forEach(cls => {
+          frequencyMap[cls] = (frequencyMap[cls] || 0) + 1;
+        });
+
+        if (easeClasses.length > 1) {
+          const key = easeClasses.sort().join(' ');
+          comboMap[key] = (comboMap[key] || 0) + 1;
+        }
+      });
+
+      const sorted = Object.entries(frequencyMap).sort((a, b) => b[1] - a[1]);
+      const duplicateCombos = Object.entries(comboMap).filter(([, count]) => count > 1);
+      const suggestions = generateSuggestions(duplicateCombos);
+
+      // 3. Update KPIs
+      document.getElementById('kpiTotal').textContent = Object.values(frequencyMap).reduce((a, b) => a + b, 0);
+      document.getElementById('kpiUnique').textContent = sorted.length;
+      document.getElementById('kpiDupes').textContent = duplicateCombos.length;
+      document.getElementById('kpiSuggest').textContent = suggestions.length;
+
+      renderChart(sorted);
+      renderDupes(duplicateCombos);
+      renderSuggestions(suggestions);
+    }
+
+    function renderChart(sorted) {
+      const container = document.getElementById('usageChart');
+      if (sorted.length === 0) {
+        container.innerHTML = '<div class="empty-state">No ease-* classes found in HTML.</div>';
+        return;
+      }
+
+      const max = sorted[0][1];
+      container.innerHTML = sorted.map(([cls, count]) => {
+        const pct = Math.round((count / max) * 100);
+        const isTop = pct === 100;
+        return `
+          <div class="bar-row">
+            <code class="bar-label">${cls}</code>
+            <div class="bar-track">
+              <div class="bar-fill ${isTop ? 'top' : ''}" style="width: ${pct}%"></div>
+            </div>
+            <span class="bar-count">${count}×</span>
+          </div>`;
+      }).join('');
+    }
+
+    function renderDupes(dupes) {
+      const container = document.getElementById('dupesContainer');
+      if (dupes.length === 0) {
+        container.innerHTML = '<div class="empty-state success">✅ No duplicate patterns found! Well organized project.</div>';
+        return;
+      }
+
+      container.innerHTML = dupes.map(([combo, count]) => `
+        <div class="dupe-card">
+          <div class="dupe-combo"><code>${combo}</code></div>
+          <div class="dupe-count">Used <strong>${count}×</strong> — could be a preset!</div>
+        </div>`
+      ).join('');
+    }
+
+    function generateSuggestions(dupes) {
+      return dupes.map(([combo, count]) => {
+        // Generate a preset class name from the combo
+        const parts = combo.split(' ').map(c => c.replace('ease-', ''));
+        const presetName = `ease-preset-${parts.join('-')}`;
+        return { combo, count, presetName };
+      });
+    }
+
+    function renderSuggestions(suggestions) {
+      const container = document.getElementById('suggestionsContainer');
+      if (suggestions.length === 0) {
+        container.innerHTML = '<div class="empty-state">No preset suggestions yet. Try loading a larger project.</div>';
+        return;
+      }
+
+      container.innerHTML = suggestions.map(s => `
+        <div class="suggestion-card">
+          <div class="suggestion-header">
+            <code class="preset-name">.${s.presetName}</code>
+            <span class="saves-badge">Saves ${s.count} repetitions</span>
+          </div>
+          <div class="suggestion-body">
+            <pre>${s.combo.split(' ').map(c => `${c} { ... }`).join('\n')}</pre>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    // Run on load
+    analyze();
+  </script>
+
+</body>
+</html>

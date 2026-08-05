@@ -1,27 +1,33 @@
 # Image Comparison Slider
 
-A component showing two overlapping layers with a draggable divider — sliding it left/right reveals more or less of the "before" layer over the "after" layer. Uses colored placeholder blocks in the demo; swap `.compare-after` and `.compare-before` backgrounds for real images in production.
+A pure CSS image comparison component for EaseMotion CSS.
+
+## Features
+
+- Before and after image comparison
+- Smooth reveal transition
+- Hover-based comparison
+- Adjustable reveal position
+- Responsive design
+- No JavaScript required
+- Reduced-motion support
+- CSS custom properties
 
 ## Usage
+
 ```html
-<div class="compare-slider">
-  <div class="compare-layer compare-after">After content</div>
-  <div class="compare-before-wrap">
-    <div class="compare-layer compare-before">Before content</div>
-  </div>
-  <div class="compare-handle"></div>
-</div>
-```
+<section class="comparison">
 
-Attach the pointer event listeners shown in `demo.html` to the handle to drive the drag interaction.
+    <div class="image image-before">
+        <img src="before.jpg" alt="Before image">
+    </div>
 
-## How it works
-- The `.compare-before-wrap` clips the "before" layer to a percentage width
-- Dragging the handle updates that width based on cursor position relative to the slider's bounding box
-- Uses Pointer Events (`pointerdown`/`pointermove`/`pointerup`) so it works on both mouse and touch
+    <div class="image image-after">
+        <img src="after.jpg" alt="After image">
+    </div>
 
-## Browser support
-Pointer Events are supported in all modern browsers, including touch devices.
+    <div class="divider">
+        <span>↔</span>
+    </div>
 
-## Notes
-No external libraries required. To use with real images instead of color blocks, replace the `.compare-after`/`.compare-before` background gradients with `background-image` or nested `<img>` tags sized to the container.
+</section>
