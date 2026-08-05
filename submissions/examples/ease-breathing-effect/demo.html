@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breathing Effect – Expands and Contracts Like Breathing</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🌬️ Breathing Effect</h1>
+    <p class="subtitle">Expands and contracts like a living breath</p>
+
+    <div class="breathing-container">
+      <div class="breathing-stage" id="breathingStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Breathing indicator -->
+        <div class="breathing-indicator" id="breathingIndicator">
+          <div class="breathing-circle" id="breathingCircle">
+            <span class="breathing-icon">🌬️</span>
+            <span class="breathing-label" id="breathingLabel">Breathe</span>
+          </div>
+        </div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="breathing-status" id="breathingStatus">🌬️ Inhale</span>
+          <span class="breath-count" id="breathCount">✦ 0 breaths</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn speed" id="speedBtn">⚡ Speed</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Breath Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Breath Depth</span>
+      <input type="range" id="depthSlider" min="20" max="100" value="70" />
+      <span class="slider-value" id="depthValue">70%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Hold Duration</span>
+      <input type="range" id="holdSlider" min="0" max="100" value="30" />
+      <span class="slider-value" id="holdValue">30%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🌬️ Breathing in... breathe out...</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset · <kbd>S</kbd> Speed
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const breathingCircle = document.getElementById('breathingCircle');
+      const breathingLabel = document.getElementById('breathingLabel');
+      const breathingStatus = document.getElementById('breathingStatus');
+      const breathCount = document.getElementById('breathCount');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const speedBtn = document.getElementById('speedBtn');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const depthSlider = document.getElementById('depthSlider');
+      const depthValue = document.getElementById('depthValue');
+      const holdSlider = document.getElementById('holdSlider');
+      const holdValue = document.getElementById('holdValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let breathPhase = 0; // 0-1: inhale, 1-2: hold, 2-3: exhale, 3-4: hold
+      let breathCountVal = 0;
+      let currentScale = 1;
+      let particles = [];
+      let speedMultiplier = 1;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Breath particle class -----
+      class BreathParticle {
+        constructor(x, y) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.2 + Math.random() * 0.5;
+          this.x = x;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - 0.2;
+          this.size = 1 + Math.random() * 3;
+          this.life = 1;
+          this.decay = 0.005 + Math.random() * 0.01;
+          this.hue = parseInt(colorSlider.value) + (Math.random() - 0.5) * 20;
+          this.saturation = 80 + Math.random() * 20;
+          this.lightness = 60 + Math.random() * 30;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.gravity = 0.01;
+          this.friction = 0.99;
+          this.phase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          this.vy += this.gravity;
+          this.x += this.vx + Math.sin(this.phase + time * 0.5) * 0.02;
+          this.y += this.vy + Math.cos(this.phase + time * 0.3) * 0.02;
+          this.life -= this.decay;
+          this.size *= 0.999;
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity;
+          const size = this.size * this.life;
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, size * 4
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.2})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 95%, ${alpha * 0.8})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Create breath particles -----
+      function createBreathParticles(cx, cy, count = 15) {
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.random() - 0.5) * 1.5;
+          const radius = 10 + Math.random() * 20;
+          const x = cx + Math.sin(angle) * radius;
+          const y = cy - Math.random() * 30;
+          particles.push(new BreathParticle(x, y));
+        }
+      }
+
+      // ----- Update breathing effect -----
+      function updateBreathing() {
+        const speed = parseInt(speedSlider.value) / 5 * speedMultiplier;
+        const depth = parseInt(depthSlider.value) / 100;
+        const hold = parseInt(holdSlider.value) / 100;
+        const hue = parseInt(colorSlider.value);
+
+        // Breath cycle timing
+        const inhaleTime = 1;
+        const holdTime = hold * 0.5;
+        const exhaleTime = 1;
+        const holdBottomTime = hold * 0.3;
+        const totalCycle = inhaleTime + holdTime + exhaleTime + holdBottomTime;
+
+        // Update phase
+        breathPhase += 0.005 * speed;
+        if (breathPhase >= totalCycle) {
+          breathPhase = 0;
+          breathCountVal++;
+          breathCount.textContent = `✦ ${breathCountVal} breaths`;
+        }
+
+        // Calculate breath value (0-1)
+        let breathValue = 0;
+        let phaseLabel = '';
+
+        if (breathPhase < inhaleTime) {
+          // Inhale - expanding
+          const t = breathPhase / inhaleTime;
+          breathValue = 0.2 + 0.8 * (1 - Math.pow(1 - t, 2));
+          phaseLabel = '🌬️ Inhale';
+          breathingStatus.textContent = '🌬️ Inhale';
+          status.textContent = '🌬️ Breathing in...';
+        } else if (breathPhase < inhaleTime + holdTime) {
+          // Hold at top
+          breathValue = 1;
+          phaseLabel = '⏸️ Hold';
+          breathingStatus.textContent = '⏸️ Hold';
+          status.textContent = '⏸️ Holding breath...';
+        } else if (breathPhase < inhaleTime + holdTime + exhaleTime) {
+          // Exhale - contracting
+          const t = (breathPhase - inhaleTime - holdTime) / exhaleTime;
+          breathValue = 1 - 0.8 * (1 - Math.pow(1 - t, 2));
+          phaseLabel = '🌬️ Exhale';
+          breathingStatus.textContent = '🌬️ Exhale';
+          status.textContent = '🌬️ Breathing out...';
+        } else {
+          // Hold at bottom
+          breathValue = 0.2;
+          phaseLabel = '⏸️ Hold';
+          breathingStatus.textContent = '⏸️ Hold';
+          status.textContent = '⏸️ Resting...';
+        }
+
+        // Apply depth
+        const scaledBreath = 0.2 + (breathValue - 0.2) * depth;
+        currentScale = 0.5 + scaledBreath * 0.5;
+
+        // Create particles on exhale
+        if (phaseLabel === '🌬️ Exhale' && breathPhase % 0.05 < 0.01) {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          createBreathParticles(cx, cy - 20, 3 + Math.floor(depth * 5));
+        }
+
+        // Update breathing circle
+        const size = 60 + 140 * currentScale;
+        breathingCircle.style.width = size + 'px';
+        breathingCircle.style.height = size + 'px';
+        breathingCircle.style.borderColor = `hsla(${hue + 20}, 100%, 70%, ${0.3 + 0.4 * breathValue})`;
+        breathingCircle.style.background = `radial-gradient(circle at 30% 30%, 
+          hsla(${hue + 30}, 100%, 80%, ${0.1 + 0.2 * breathValue}), 
+          hsla(${hue}, 100%, 50%, ${0.05 + 0.1 * breathValue})
+        )`;
+        breathingCircle.style.boxShadow = `0 0 ${30 + 60 * breathValue}px hsla(${hue}, 100%, 60%, ${0.1 + 0.15 * breathValue})`;
+
+        // Update label
+        const labelText = phaseLabel === '🌬️ Inhale' ? 'Inhale' :
+                         phaseLabel === '⏸️ Hold' ? 'Hold' :
+                         phaseLabel === '🌬️ Exhale' ? 'Exhale' : 'Rest';
+        breathingLabel.textContent = labelText;
+        breathingLabel.style.color = `hsla(${hue + 20}, 100%, 80%, ${0.5 + 0.5 * breathValue})`;
+
+        // Update breathing indicator position
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const indicator = document.getElementById('breathingIndicator');
+        indicator.style.left = (cx - size/2) + 'px';
+        indicator.style.top = (cy - size/2) + 'px';
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const hue = parseInt(colorSlider.value);
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, `hsl(${hue + 20}, 40%, 8%)`);
+        bgGradient.addColorStop(0.5, `hsl(${hue + 10}, 30%, 5%)`);
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw ambient glow
+        const ambientGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.3);
+        ambientGlow.addColorStop(0, `hsla(${hue + 20}, 100%, 60%, ${0.02 + 0.04 * currentScale})`);
+        ambientGlow.addColorStop(1, `hsla(${hue + 20}, 100%, 40%, 0)`);
+        ctx.fillStyle = ambientGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, w * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw particles
+        if (!isPaused) {
+          particles = particles.filter(p => p.update());
+        }
+        particles.forEach(p => p.draw(ctx));
+
+        // Draw outer ring glow
+        const ringRadius = 60 + 140 * currentScale;
+        const ringGlow = ctx.createRadialGradient(cx, cy, ringRadius * 0.7, cx, cy, ringRadius * 1.3);
+        ringGlow.addColorStop(0, `hsla(${hue + 20}, 100%, 70%, ${0.02 * currentScale})`);
+        ringGlow.addColorStop(0.5, `hsla(${hue + 10}, 100%, 50%, ${0.04 * currentScale})`);
+        ringGlow.addColorStop(1, `hsla(${hue}, 100%, 30%, 0)`);
+        ctx.fillStyle = ringGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, ringRadius * 1.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw subtle rings
+        for (let i = 0; i < 3; i++) {
+          const r = ringRadius * (0.3 + i * 0.35);
+          const alpha = 0.02 + 0.03 * (1 - i / 3) * currentScale;
+          ctx.strokeStyle = `hsla(${hue + 20}, 100%, 70%, ${alpha})`;
+          ctx.lineWidth = 0.5 + i * 0.5;
+          ctx.setLineDash([3 + i * 2, 5 + i * 3]);
+          ctx.lineDashOffset = -time * (10 + i * 5);
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        // Update breath count
+        breathCount.textContent = `✦ ${breathCountVal} breaths`;
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+
+        if (!isPaused) {
+          updateBreathing();
+        }
+
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        breathingStatus.textContent = isPaused ? '⏸ Paused' : '🌬️ Inhale';
+      }
+
+      // ----- Reset -----
+      function resetBreathing() {
+        isPaused = false;
+        toggleBtn.textContent = '⏸ Pause';
+        breathPhase = 0;
+        breathCountVal = 0;
+        particles = [];
+        currentScale = 0.6;
+        speedMultiplier = 1;
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        depthSlider.value = 70;
+        depthValue.textContent = '70%';
+        holdSlider.value = 30;
+        holdValue.textContent = '30%';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        status.textContent = '↺ Reset';
+        breathingStatus.textContent = '🌬️ Inhale';
+        breathCount.textContent = '✦ 0 breaths';
+        setTimeout(() => {
+          status.textContent = '🌬️ Breathing in... breathe out...';
+        }, 500);
+      }
+
+      // ----- Toggle speed -----
+      function toggleSpeed() {
+        const speeds = [0.5, 1, 2, 3, 5];
+        const current = speedMultiplier;
+        let nextIndex = speeds.indexOf(current) + 1;
+        if (nextIndex >= speeds.length) nextIndex = 0;
+        speedMultiplier = speeds[nextIndex];
+        speedBtn.textContent = `⚡ ${speedMultiplier}×`;
+        status.textContent = `⚡ Speed: ${speedMultiplier}×`;
+        setTimeout(() => {
+          if (!isPaused) {
+            status.textContent = '🌬️ Breathing in... breathe out...';
+          }
+        }, 1500);
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetBreathing);
+      speedBtn.addEventListener('click', toggleSpeed);
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      depthSlider.addEventListener('input', (e) => {
+        depthValue.textContent = e.target.value + '%';
+      });
+
+      holdSlider.addEventListener('input', (e) => {
+        holdValue.textContent = e.target.value + '%';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+        // Update particle colors
+        particles.forEach(p => {
+          p.hue = parseInt(e.target.value) + (Math.random() - 0.5) * 20;
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetBreathing();
+        }
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          toggleSpeed();
+        }
+      });
+
+      // Click canvas to toggle
+      canvas.addEventListener('click', togglePause);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '🌬️ Breathing in... breathe out...';
+        // Center the breathing indicator
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const indicator = document.getElementById('breathingIndicator');
+        indicator.style.left = (cx - 110) + 'px';
+        indicator.style.top = (cy - 110) + 'px';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
