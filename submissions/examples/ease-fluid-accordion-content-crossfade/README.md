@@ -16,7 +16,14 @@ Fluid CSS Grid Accordion Container (`ease-fluid-accordion-content-crossfade`) - 
 - Vanilla JavaScript (Accordion state manager)
 
 ## Folder Structure
-`submissions/examples/ease-fluid-accordion-content-crossfade/` → `demo.html` | `style.css` | `README.md`
+```text
+submissions/
+└── examples/
+    └── ease-fluid-accordion-content-crossfade/
+        ├── demo.html
+        ├── style.css
+        └── README.md
+```
 
 ## Files
 - `demo.html` - demo page demonstrating component usage (including nested example)
