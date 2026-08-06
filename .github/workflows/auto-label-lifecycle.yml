@@ -52,8 +52,6 @@ jobs:
             const itemAuthor = item.user.login;
             const authorType = item.user.type;
 
-
-
             // Helper to add labels
             const addLabels = async (labelsToAdd) => {
               const missing = labelsToAdd.filter(l => !currentLabels.includes(l));
@@ -105,28 +103,13 @@ jobs:
             // ==========================================
             if (action === 'closed') {
               if (isPR) {
-                // FIX: item.merged is always null in PR event payloads — use merged_at instead
-                const isMerged = item.merged_at !== null && item.merged_at !== undefined;
-                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
+                const isMerged = item.merged || false;
+                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted');
                 if (isMerged || wasIntegrated) {
                   await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'good-pr']);
+                  await addLabels(['accepted', 'integrated', 'GSSoC-26', 'gssoc:approved']);
                   if (!wasIntegrated) {
-                    let userMergedCount = 1;
-                    let hoursUntilReset = 24 - new Date().getUTCHours();
-                    try {
-                      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-                      const searchRes = await github.rest.search.issuesAndPullRequests({
-                        q: `repo:${owner}/${repo} is:pr is:merged author:${itemAuthor} merged:>=${sinceDate}`
-                      });
-                      userMergedCount = searchRes.data.total_count || 1;
-                    } catch(e) {
-                      console.log('Error searching user merged count:', e.message);
-                    }
-
-                    const quotaMsg = `📊 **Daily Merge Progress:** You have merged **${userMergedCount}/150** PRs today. Daily quota resets in **${hoursUntilReset} hrs**.\n\n`;
-
-                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n${quotaMsg}📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
+                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
                   }
                 } else {
                   await removeLabels(['accepted', 'integrated']);
@@ -145,15 +128,17 @@ jobs:
             // 2. REOPENED lifecycle state
             // ==========================================
             if (action === 'reopened') {
-              // FIX: Only remove invalid tag on reopen — do NOT strip accepted/integrated
-              // as merged PRs being reopened for conflict resolution should keep their credit
-              await removeLabels(['gssoc:invalid']);
+              await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
             }
 
             // ==========================================
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
-
+            if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
+              // Only remove accepted/integrated if it is opened, reopened, or ready_for_review
+              if (action === 'opened' || action === 'reopened' || action === 'ready_for_review') {
+                await removeLabels(['accepted', 'integrated', 'gssoc:invalid']);
+              }
 
               // Dynamic label matrix calculations
               const title = item.title || '';
@@ -161,18 +146,14 @@ jobs:
               const textContent = `${title} ${body}`.toLowerCase();
 
               const additions = isPR ? (item.additions || 0) : 0;
-              
-              // For issues, preserve any existing level label
-              let level;
-              if (isPR) {
-                const isAdvanced = additions > 500;
-                level = isAdvanced ? 'level:advanced' : 'level:intermediate';
-              } else {
-                const existingLevel = currentLabels.find(l => l.startsWith('level:'));
-                level = existingLevel || 'level:intermediate';
-              }
+              // level:advanced for PRs with >500 lines added; level:intermediate for everything else
+              const isAdvanced = isPR && (additions > 500);
+              const level = isAdvanced ? 'level:advanced' : 'level:intermediate';
 
               const computedLabels = [
+                'GSSoC-26',
+                'gssoc:approved',
+                level,
                 'good first issue',
                 'help wanted'
               ];
@@ -193,7 +174,6 @@ jobs:
                 
                 // Parse associated issues from PR body to read their labels
                 const issueLabels = [];
-                let isGSSoC = false;
                 const closingPattern = /(?:close|closes|closed|fix|fixes|fixed|resolve|resolves|resolved)\s+#([0-9]+)/gi;
                 let match;
                 while ((match = closingPattern.exec(body)) !== null) {
@@ -203,21 +183,7 @@ jobs:
                       owner, repo, issue_number: num
                     });
                     if (issue && issue.labels) {
-                      const labels = issue.labels.map(l => l.name.toLowerCase());
-                      issueLabels.push(...labels);
-                      if (labels.includes('gssoc-26')) isGSSoC = true;
-
-                      // Inherit level difficulty from the linked issue — never downgrade
-                      const issueLevel = issue.labels.find(l => l.name.startsWith('level:'));
-                      if (issueLevel) {
-                        const levelWeight = { 'level:beginner': 1, 'level:intermediate': 2, 'level:advanced': 3 };
-                        const issueWeight = levelWeight[issueLevel.name] || 1;
-                        const prWeight = levelWeight[level] || 1;
-                        if (issueWeight > prWeight) {
-                          level = issueLevel.name;
-                        }
-                      }
-
+                      issueLabels.push(...issue.labels.map(l => l.name.toLowerCase()));
                       // If the PR has > 500 additions, make sure the linked issue is also level:advanced
                       if (additions > 500) {
                         const hasIntermediate = issue.labels.some(l => l.name === 'level:intermediate');
@@ -236,8 +202,6 @@ jobs:
                     console.log(`Failed to fetch labels for issue #${num}: ${err.message}`);
                   }
                 }
-
-                computedLabels.push('GSSoC-26', 'gssoc:approved');
 
                 // Smart GSSoC type labeling logic
                 const isFix = titleLower.startsWith('fix:') || titleLower.startsWith('fix ') || titleLower.includes('bug') || issueLabels.includes('bug') || issueLabels.includes('type:bug') || currentLabels.includes('bug');
@@ -320,21 +284,14 @@ jobs:
                 } catch (e) {
                   console.log(`Warning: Failed to fetch PR files: ${e.message}`);
                 }
-              } else {
-                if (currentLabels.includes('GSSoC-26')) {
-                  computedLabels.push('GSSoC-26', 'gssoc:approved');
-                }
-
               }
 
-              computedLabels.push(level);
-
-              if (level === 'level:advanced') {
+              if (isAdvanced) {
+                // Advanced (>500 additions): remove intermediate
                 await removeLabels(['level:intermediate', 'level:beginner']);
-              } else if (level === 'level:intermediate') {
+              } else {
+                // Intermediate (default): remove advanced
                 await removeLabels(['level:advanced', 'level:beginner']);
-              } else if (level === 'level:beginner') {
-                await removeLabels(['level:advanced', 'level:intermediate']);
               }
 
               await addLabels(computedLabels);

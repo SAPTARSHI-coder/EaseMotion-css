@@ -1,2 +1,0 @@
-# Unicode Bidi Utilities
-Manual implementation for #16549. Provides utility classes for `unicode-bidi` to manage bidirectional text and override document language directionality for complex UI requirements.

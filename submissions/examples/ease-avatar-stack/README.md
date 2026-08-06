@@ -1,55 +1,29 @@
-# Avatar Stack
+# Avatar Group (`ease-avatar-group`)
 
-A reusable CSS-only overlapping avatar stack component with smooth hover interactions. Inspired by collaboration tools like Slack, Figma, and Notion.
+An overlapping avatar stack component featuring a smooth hover-spread animation. Built for the EaseMotion-css framework.
 
-## Features
+## 🚀 Features
 
-- Pure HTML & CSS
-- No JavaScript
-- Overlapping circular avatars
-- Smooth hover spread animation
-- Responsive layout
-- Accessible markup
-- Easy to customize
+- **Negative Margin Overlap**: Seamlessly stacks avatars using configurable negative margins.
+- **Group Hover Spread**: Hovering anywhere on the group gently pulls the avatars apart, improving visibility of individual faces.
+- **Individual Hover Pop**: Hovering a specific avatar scales it up and brings it to the front using z-index manipulation.
+- **Responsive Sizes**: Includes base size, Small (`.ease-avatar-sm`), and Large (`.ease-avatar-lg`).
+- **Overflow Support**: Includes a `.ease-avatar-overflow` utility for the classic "+N" remaining indicator.
+- **Zero JavaScript**: Operates purely on CSS `:hover` states and transitions.
 
-## Files
+## 🛠️ Usage
 
-```
-ease-avatar-stack/
-├── demo.html
-├── style.css
-└── README.md
-```
-
-## Usage
-
-Include the stylesheet:
+Wrap individual `.ease-avatar` elements inside an `.ease-avatar-group` container.
 
 ```html
-<link rel="stylesheet" href="style.css">
-```
-
-Create an avatar stack:
-
-```html
-<div class="avatar-stack">
-    <img class="avatar-stack-item" src="avatar1.svg" alt="User 1">
-    <img class="avatar-stack-item" src="avatar2.svg" alt="User 2">
-    <span class="avatar-stack-item avatar-stack-more">+5</span>
+<div class="ease-avatar-group">
+  <div class="ease-avatar">
+    <img src="user1.jpg" alt="User 1" />
+  </div>
+  <div class="ease-avatar">
+    <img src="user2.jpg" alt="User 2" />
+  </div>
+  <div class="ease-avatar ease-avatar-overflow">
+    <span>+3</span>
+  </div>
 </div>
-```
-
-Customize avatar size, overlap spacing, colors, and animation timing directly through CSS.
-
-## Browser Support
-
-Works in all modern browsers including:
-
-- Chrome
-- Firefox
-- Edge
-- Safari
-
-## License
-
-Part of the EaseMotion CSS project.

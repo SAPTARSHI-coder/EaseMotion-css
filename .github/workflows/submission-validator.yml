@@ -9,46 +9,12 @@ permissions:
   issues: write
 
 jobs:
-  detect-track:
-    name: Detect Submission Track
-    runs-on: ubuntu-latest
-    outputs:
-      is_react_scss_only: ${{ steps.detect.outputs.is_react_scss_only }}
-    steps:
-      - name: Check if PR is React/SCSS only (handled by dedicated validator)
-        id: detect
-        env:
-          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUM=${{ github.event.pull_request.number }}
-          all_react_scss=true
-          any_file=false
-
-          while IFS= read -r file; do
-            [ -z "$file" ] && continue
-            any_file=true
-            if [[ "$file" != submissions/react/* && "$file" != submissions/scss/* ]]; then
-              all_react_scss=false
-              break
-            fi
-          done < <(gh api repos/${{ github.repository }}/pulls/$PR_NUM/files --paginate --jq '.[].filename')
-
-          if [ "$any_file" = "true" ] && [ "$all_react_scss" = "true" ]; then
-            echo "is_react_scss_only=true" >> $GITHUB_OUTPUT
-            echo "ℹ️ Pure React/SCSS PR — deferring to react-scss-validator.yml"
-          else
-            echo "is_react_scss_only=false" >> $GITHUB_OUTPUT
-            echo "✅ Standard HTML/CSS PR — proceeding with submission-validator"
-          fi
-
   validate:
     name: Validate Examples
-    needs: detect-track
-    if: needs.detect-track.outputs.is_react_scss_only != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR Branch
-        uses: actions/checkout@v4
+      - name: Checkout Repository (Target Branch)
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -125,12 +91,14 @@ jobs:
                 if (parts.length >= 2) {
                   let folderPath, folderName, baseName;
 
-                  if (['examples', 'docs', 'react', 'scss'].includes(parts[1]) && parts.length >= 3) {
+                  if ((parts[1] === 'examples' || parts[1] === 'docs') && parts.length >= 3) {
                     folderPath  = `${parts[0]}/${parts[1]}/${parts[2]}`;
                     folderName  = parts[2];
                     if (parts.length === 4) baseName = parts[3];
-                  } else if (!['examples', 'docs', 'react', 'scss'].includes(parts[1])) {
-                    casingErrors.push(`Misplaced directory violation: File \`${filename}\` is directly under \`submissions/\`. All contributions MUST be inside one of the 4 valid subdirectories: \`submissions/examples/\`, \`submissions/react/\`, \`submissions/scss/\`, or \`submissions/docs/\`.`);
+                  } else if (parts[1] !== 'examples' && parts[1] !== 'docs') {
+                    folderPath  = `${parts[0]}/${parts[1]}`;
+                    folderName  = parts[1];
+                    if (parts.length === 3) baseName = parts[2];
                   }
 
                   if (folderPath) {
@@ -195,7 +163,7 @@ jobs:
             }
 
             // ─── per-folder quality checks ────────────────────────────────────
-            let isSpamExploit = false;
+            let isSpamExploit = hasExistingCodeChanges || hasDeletions;
 
             for (const folder of exampleFolders) {
               const missing  = [];
@@ -515,14 +483,13 @@ jobs:
                 body =
                   `⚠️ **EXPLOIT / SPAM NOTICE** ⚠️\n\n` +
                   `Hi @${prAuthor}! 👋\n\n` +
-                  `This PR has been **automatically detected and closed** as a low-quality, template-cloned, or point-farming exploit submission.\n\n` +
+                  `This PR has been **automatically detected and closed** as a low-quality or template-cloned exploit submission.\n\n` +
                   `**What was detected:**\n` +
                   `- Empty files (0 bytes) OR\n` +
                   `- Missing HTML structure (\`<!DOCTYPE html>\`, \`<html>\`, \`<head>\`, \`<body>\`) OR\n` +
-                  `- Extremely low-change placeholder files (e.g. \`style.css\` with < 5 lines or \`demo.html\` with < 3 lines) OR\n` +
                   `- CSS copied verbatim from a mass-generated template (identical boilerplate detected)\n\n` +
                   `**EaseMotion's zero-tolerance policy:**\n` +
-                  `Submitting empty, placeholder, template-cloned, or AI mass-generated PRs solely to accumulate GSSoC points is a serious violation.\n` +
+                  `Submitting empty, template-cloned, or AI mass-generated PRs solely to accumulate GSSoC points is a serious violation.\n` +
                   `Your account has been flagged. Repeat offences may result in a **permanent ban** from this repository and reported to GSSoC organizers.\n\n` +
                   `If you believe this is an error, reply below and a maintainer will review manually.`;
               } else {
