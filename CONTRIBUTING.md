@@ -345,6 +345,12 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 ---
 
+## CDN Asset Validation
+
+To ensure reliable CDN distribution, a dedicated GitHub Actions workflow verifies the integrity of distributable CSS assets before each release and on all Pull Requests. It builds the production assets, verifies that all expected CSS files (`easemotion.css` and `easemotion.min.css`) exist, and computes SHA-256 and SHA-384 Subresource Integrity (SRI) hashes. This ensures every release contains valid, complete build artifacts and supports integrity verification for downstream users.
+
+---
+
 ## 🌐 Official Maintainer
 
 **Saptarshi Sadhu**  

@@ -1,0 +1,67 @@
+name: CDN Asset Validation
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-assets:
+    name: Verify CDN Assets & Integrity
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build CSS
+        run: npm run build
+
+      - name: Verify build artifacts exist
+        run: |
+          if [ ! -f "easemotion.css" ]; then
+            echo "Error: easemotion.css not found!"
+            exit 1
+          fi
+          if [ ! -f "easemotion.min.css" ]; then
+            echo "Error: easemotion.min.css not found!"
+            exit 1
+          fi
+
+      - name: Generate Integrity Hashes
+        id: integrity
+        run: |
+          echo "### CDN Asset Integrity Report" > integrity-report.md
+          echo "| File | SHA-256 | SHA-384 (SRI) |" >> integrity-report.md
+          echo "|---|---|---|" >> integrity-report.md
+          
+          for file in easemotion.css easemotion.min.css; do
+            sha256=$(sha256sum $file | awk '{print $1}')
+            sha384_sri="sha384-$(openssl dgst -sha384 -binary $file | openssl base64 -A)"
+            
+            echo "| \`$file\` | \`$sha256\` | \`$sha384_sri\` |" >> integrity-report.md
+          done
+          
+          cat integrity-report.md >> $GITHUB_STEP_SUMMARY
+          cp integrity-report.md integrity-report.txt
+
+      - name: Upload CDN Assets Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-dist-assets
+          path: |
+            easemotion.css
+            easemotion.min.css
+            integrity-report.txt
