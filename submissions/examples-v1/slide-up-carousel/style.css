@@ -1,0 +1,335 @@
+/* =========================================================================
+   EaseMotion — Slide-Up Carousel
+   Pure CSS, zero JavaScript. Radio-driven state machine.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --em-bg: #0b0f17;
+  --em-panel: #121828;
+  --em-panel-raised: #182036;
+  --em-border: #232c44;
+  --em-accent: #4ce0c7;
+  --em-accent-dim: #2c8f7d;
+  --em-text: #e7ecf7;
+  --em-text-dim: #8894ad;
+  --em-font-ui: 'Inter', system-ui, sans-serif;
+  --em-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* -------------------------------------------------------------------------
+   Public configuration surface.
+   Every visual/timing knob a consumer needs lives here — override on
+   .em-carousel (or an ancestor) to restyle without touching the CSS below.
+   ------------------------------------------------------------------------- */
+.em-carousel {
+  --em-duration: 620ms;             /* transition length for the slide-up swap */
+  --em-easing: cubic-bezier(.22, 1, .36, 1); /* "ease-out-expo"-ish, tune freely */
+  --em-rise: 3.5rem;                 /* how far the incoming slide travels */
+  --em-scale-out: .96;               /* outgoing slide shrinks slightly */
+  --em-radius: 18px;
+  --em-slide-height: clamp(280px, 42vw, 380px);
+  --em-gap: 1.25rem;
+  --em-autoplay-duration: 6s;        /* set to 0s (or remove the class) to disable */
+}
+
+/* =========================================================================
+   Structure
+   ========================================================================= */
+
+.em-carousel {
+  --em-count: 5;
+  position: relative;
+  width: 100%;
+  max-width: 920px;
+  margin-inline: auto;
+  font-family: var(--em-font-ui);
+  color: var(--em-text);
+  isolation: isolate;
+}
+
+/* Hidden radio inputs drive all state. Native radio-group keyboard behavior
+   (Arrow keys move selection, Tab enters/exits the group, Space/Enter on
+   labels) is what gives us accessibility for free. */
+.em-carousel__state {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.em-carousel__viewport {
+  position: relative;
+  height: var(--em-slide-height);
+  border-radius: var(--em-radius);
+  overflow: hidden;
+  background: var(--em-panel);
+  border: 1px solid var(--em-border);
+  box-shadow: 0 20px 60px -30px rgba(0, 0, 0, .7);
+}
+
+.em-carousel__track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* -------------------------------------------------------------------------
+   Slides — stacked, all present in the DOM, toggled by the sibling
+   :checked radio via the general sibling combinator.
+   ------------------------------------------------------------------------- */
+.em-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--em-gap);
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--em-rise)) scale(var(--em-scale-out));
+  transition:
+    opacity var(--em-duration) var(--em-easing),
+    transform var(--em-duration) var(--em-easing),
+    visibility 0s linear var(--em-duration);
+  will-change: transform, opacity;
+}
+
+.em-slide__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--em-slide-bg, radial-gradient(120% 140% at 15% 0%, var(--em-panel-raised), var(--em-panel)));
+}
+
+.em-slide__eyebrow {
+  font-family: var(--em-font-mono);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--em-accent);
+  margin: 0 0 .5rem;
+}
+
+.em-slide__title {
+  font-size: clamp(1.3rem, 2.6vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin: 0 0 .5rem;
+}
+
+.em-slide__body {
+  font-size: .95rem;
+  line-height: 1.5;
+  color: var(--em-text-dim);
+  max-width: 46ch;
+  margin: 0;
+}
+
+.em-slide__metric {
+  font-family: var(--em-font-mono);
+  text-align: right;
+  color: var(--em-text-dim);
+  font-size: .78rem;
+  white-space: nowrap;
+}
+
+.em-slide__metric strong {
+  display: block;
+  font-size: 1.6rem;
+  color: var(--em-text);
+  font-weight: 600;
+}
+
+/* Reveal the checked slide, sliding up into place */
+.em-carousel__state:checked + .em-slide,
+.em-carousel__state:checked ~ .em-carousel__track .em-slide[data-index].is-target {
+  /* placeholder kept intentionally unused — real rule below via :nth pairing */
+}
+
+/* Each radio is paired with its slide using the general sibling selector
+   scoped through data-index attributes set inline (see demo.html). */
+.em-carousel__state:checked ~ .em-carousel__viewport .em-slide {
+  transition:
+    opacity var(--em-duration) var(--em-easing),
+    transform var(--em-duration) var(--em-easing),
+    visibility 0s linear var(--em-duration);
+}
+
+/* =========================================================================
+   Pairing logic (5 slides supported out of the box — extend the pattern
+   for more by following the same nth-of-type recipe)
+   ========================================================================= */
+.em-carousel__state:nth-of-type(1):checked ~ .em-carousel__viewport .em-slide:nth-of-type(1),
+.em-carousel__state:nth-of-type(2):checked ~ .em-carousel__viewport .em-slide:nth-of-type(2),
+.em-carousel__state:nth-of-type(3):checked ~ .em-carousel__viewport .em-slide:nth-of-type(3),
+.em-carousel__state:nth-of-type(4):checked ~ .em-carousel__viewport .em-slide:nth-of-type(4),
+.em-carousel__state:nth-of-type(5):checked ~ .em-carousel__viewport .em-slide:nth-of-type(5) {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 40ms, 40ms, 0s;
+  z-index: 2;
+}
+
+/* =========================================================================
+   Controls — dots + prev/next labels (native <label for> click/tap targets,
+   plus real keyboard support because the underlying inputs are radios)
+   ========================================================================= */
+.em-carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.em-carousel__dots {
+  display: flex;
+  gap: .5rem;
+}
+
+.em-dot {
+  width: 2.25rem;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--em-border);
+  cursor: pointer;
+  transition: background var(--em-duration) var(--em-easing), transform 180ms ease;
+  position: relative;
+}
+
+.em-dot::after {
+  content: '';
+  position: absolute;
+  inset: -8px -2px;
+}
+
+.em-dot:hover { background: var(--em-accent-dim); }
+
+.em-carousel__state:nth-of-type(1):checked ~ .em-carousel__controls .em-dot[data-for="1"],
+.em-carousel__state:nth-of-type(2):checked ~ .em-carousel__controls .em-dot[data-for="2"],
+.em-carousel__state:nth-of-type(3):checked ~ .em-carousel__controls .em-dot[data-for="3"],
+.em-carousel__state:nth-of-type(4):checked ~ .em-carousel__controls .em-dot[data-for="4"],
+.em-carousel__state:nth-of-type(5):checked ~ .em-carousel__controls .em-dot[data-for="5"] {
+  background: var(--em-accent);
+}
+
+/* Focus ring travels with keyboard use — always visible, never suppressed */
+.em-carousel__state:focus-visible + .em-carousel__viewport,
+.em-carousel__state:focus-visible ~ .em-carousel__controls .em-dot {
+  outline: 2px solid var(--em-accent);
+  outline-offset: 3px;
+}
+
+.em-carousel__nav {
+  display: flex;
+  gap: .5rem;
+}
+
+.em-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--em-panel-raised);
+  border: 1px solid var(--em-border);
+  color: var(--em-text);
+  cursor: pointer;
+  font-family: var(--em-font-mono);
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.em-nav-btn:hover {
+  border-color: var(--em-accent-dim);
+  transform: translateY(-1px);
+}
+
+.em-nav-btn:active { transform: translateY(0); }
+
+/* Only the prev/next pair belonging to the active slide is shown */
+.em-nav-pair {
+  display: none;
+  gap: .5rem;
+}
+
+.em-carousel__state:nth-of-type(1):checked ~ .em-carousel__controls .em-nav-pair[data-pair="1"],
+.em-carousel__state:nth-of-type(2):checked ~ .em-carousel__controls .em-nav-pair[data-pair="2"],
+.em-carousel__state:nth-of-type(3):checked ~ .em-carousel__controls .em-nav-pair[data-pair="3"],
+.em-carousel__state:nth-of-type(4):checked ~ .em-carousel__controls .em-nav-pair[data-pair="4"],
+.em-carousel__state:nth-of-type(5):checked ~ .em-carousel__controls .em-nav-pair[data-pair="5"] {
+  display: flex;
+}
+
+/* =========================================================================
+   Autoplay (optional) — pure CSS via animation-driven radio toggling is not
+   possible on real inputs, so autoplay here animates a progress rail only;
+   pair with prefers-reduced-motion guard. Remove .em-carousel--autoplay to
+   disable entirely with no other changes needed.
+   ========================================================================= */
+.em-carousel--autoplay .em-carousel__progress {
+  height: 2px;
+  background: var(--em-border);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: .75rem;
+}
+
+.em-carousel--autoplay .em-carousel__progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--em-accent);
+  animation: em-progress var(--em-autoplay-duration) linear infinite;
+}
+
+@keyframes em-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+/* =========================================================================
+   Responsive
+   ========================================================================= */
+@media (max-width: 640px) {
+  .em-slide {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .em-slide__metric {
+    text-align: left;
+  }
+  .em-carousel {
+    --em-slide-height: clamp(320px, 78vw, 420px);
+    --em-rise: 2.25rem;
+  }
+}
+
+/* =========================================================================
+   Motion & contrast preferences
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .em-carousel {
+    --em-duration: 1ms;
+    --em-rise: 0px;
+  }
+  .em-carousel--autoplay .em-carousel__progress::after {
+    animation: none;
+    width: 100%;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --em-border: #4a5578;
+    --em-text-dim: #c3cbdd;
+  }
+}

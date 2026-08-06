@@ -1,59 +1,100 @@
-# React Component: Collapsible Sidebar Menu with Smooth Accordion (#28005)
+# React Component: Collapsible Sidebar Menu with Smooth Accordion (GSSoC-26 Edition)
 
-A modular, copy-paste ready React component for the EaseMotion CSS framework. This sidebar provides an app-shell navigation structure featuring a physics-based collapsible width toggle and perfectly smooth CSS Grid-driven accordion menus.
+I am fixing this issue under GSSoC-26.
 
-## 📦 What's included?
+1. **What does this do?**  
+   It renders a modular, copy-paste ready React component for a **Collapsible Sidebar Menu with Smooth Accordion** containing collapsible sidebar width transitions, nested submenus navigation links, and grid fractional rows accordion animation effects.
 
-- `Sidebar.jsx`: The React component that manages the open/collapsed state of the entire sidebar as well as the dictionary of open accordion sub-menus. It includes "smart-open" logic: if a user clicks an accordion trigger while the sidebar is collapsed, it orchestrates expanding the sidebar *first*, then opening the accordion, preventing visual jank.
-- `style.css`: The CSS stylesheet utilizing `grid-template-rows: 0fr -> 1fr` for hardware-accelerated accordion height animations without needing Javascript measurements. It also uses CSS variables (`--sidebar-width-open`) for the width transitions.
-- `demo.html`: A self-contained browser demo running the React component via Babel standalone, including sample navigation data arrays and SVG icons.
+2. **How is it used?**  
+   Import [SidebarMenu.jsx](./SidebarMenu.jsx) into your React application and pass props specifying navigation link data. Toggle sidebar width using the expand/collapse button or cycle paths selections.
+   
+3. **Why is it useful?**  
+   It delivers zero-dependency keyboard accessible nav sidebar columns, smooth grid row templates accordion heights, and custom mouse spotlight gradients.
 
-## 🛠 Features
+---
 
-- **CSS Grid Accordions**: Historically, animating `height: auto` in CSS is impossible. This component uses the modern CSS Grid technique (`grid-template-rows: 0fr` to `1fr`) on the `.ease-accordion-content` wrapper to achieve buttery smooth height transitions.
-- **Physics-Based Width Toggle**: The entire sidebar collapses from `280px` to `80px` using a `cubic-bezier(0.34, 1.56, 0.64, 1)` spring curve. The internal text elements (labels, logos) fade out cleanly using `white-space: nowrap` to prevent layout breakage during the transition.
-- **Smart State Management**: When the sidebar collapses, the `useEffect` hook automatically closes all open accordions to reset the internal state.
+## 📦 Installation
 
-## 🚀 How to use
+Copy [SidebarMenu.jsx](./SidebarMenu.jsx) and [SidebarMenu.css](./SidebarMenu.css) into your component directory. Import the component inside your React entry point:
 
-1. Copy `Sidebar.jsx` into your React project's `components` directory.
-2. Copy `style.css` and import it.
-3. Pass a configuration array to the `navItems` prop. Items with `children` will automatically render as an accordion.
+```javascript
+import SidebarMenu from './SidebarMenu';
+```
+
+---
+
+## 🚀 Usage Example
 
 ```jsx
 import React from 'react';
-import Sidebar from './Sidebar';
-import './style.css'; 
+import SidebarMenu from './SidebarMenu';
 
-const AppLayout = ({ children }) => {
-  const navData = [
-    { id: 'dash', label: 'Dashboard', icon: <svg>...</svg>, href: '/dash' },
-    { 
-      id: 'settings', 
-      label: 'Settings', 
-      icon: <svg>...</svg>,
-      children: [
-        { id: 's1', label: 'Profile', href: '/profile' },
-        { id: 's2', label: 'Billing', href: '/billing' }
+export default function App() {
+  const customItems = [
+    { label: 'Overview', path: '/overview', icon: '🏠' },
+    {
+      label: 'Security Panel',
+      icon: '🔒',
+      subItems: [
+        { label: 'Access Control Logs', path: '/security/access' },
+        { label: 'Encryption Key Configs', path: '/security/encryption' }
       ]
     }
   ];
 
   return (
-    <div style={{ display: 'flex' }}>
-      <Sidebar navItems={navData} />
-      <main style={{ flex: 1 }}>
-        {children}
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#020617' }}>
+      <SidebarMenu
+        menuItems={customItems}
+        accentColor="#3b82f6"
+        theme="dark"
+        onNavigate={(path) => console.log('Navigated to:', path)}
+      />
+      <main style={{ flex: 1, padding: '2rem', color: '#fff' }}>
+        <h1>Main Content Showcase</h1>
       </main>
     </div>
   );
-};
-
-export default AppLayout;
+}
 ```
 
-## 🎨 Why this fits EaseMotion
+---
 
-**EaseMotion** believes micro-interactions define the perceived quality of software.
+## ⌨️ Accessibility Guidelines
 
-A sidebar is often the most interacted-with component in a dashboard. Snapping between states or relying on expensive javascript height calculations (`Element.scrollHeight`) makes the app feel sluggish. By pairing React's rapid state updates with modern CSS Grid transitions and standard EaseMotion `cubic-bezier` curves, the navigation feels instantly responsive, lightweight, and physically connected to the user's cursor.
+This sidebar fully implements standard accessibility guidelines:
+- All navigation links and accordion toggle headers are keyboard focusable using Tab.
+- Pressing `Space` or `Enter` activates the link, or collapses/expands the corresponding submenu accordion.
+- Proper rotation transitions on chevron icons visually support screen-reader layouts.
+
+---
+
+## 🎨 Custom CSS Class Definitions
+
+Here are the primary custom class rules defined in [SidebarMenu.css](./SidebarMenu.css):
+- `.sidebar-menu-container`: Anchors width and manages radial cursor spotlights.
+- `.sidebar-nav-item`: Controls padding, hover translate effects, and focus outlines.
+- `.submenu-accordion-grid`: Handles smooth fractional grid rows transition (height 0 to auto).
+- `.sidebar-submenu-item`: Manages padding indent and color offsets on hover.
+
+---
+
+## 🌐 Browser Compatibility
+
+The accordion height transition is fully compatible with modern browsers supporting CSS grid row templates transitions:
+- Google Chrome (v107+)
+- Mozilla Firefox (v115+)
+- Apple Safari (v16+)
+- Microsoft Edge
+
+---
+
+## ⚙ Props Specifications
+
+| Prop | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `menuItems` | `array` | `[]` | Nested array structure containing menu items (label, icon, path, subItems). |
+| `accentColor` | `string` | `'#3b82f6'` | Highlight theme color. |
+| `theme` | `string` | `'dark'` | Visual styling theme options: `'dark' \| 'light' \| 'glass'`. |
+| `defaultCollapsed` | `boolean` | `false` | Initial collapsed width state. |
+| `onNavigate` | `function` | `undefined` | Callback triggered when a path is selected. |

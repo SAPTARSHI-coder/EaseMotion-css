@@ -1,0 +1,107 @@
+$ease-default-stages: (
+  "fade-in": (
+    opacity: 0,
+    transform: translateY(20px)
+  ),
+  "fade-out": (
+    opacity: 1,
+    transform: translateY(0)
+  ),
+  "scale-up": (
+    transform: scale(0.9)
+  ),
+  "slide-right": (
+    transform: translateX(-30px)
+  ),
+  "slide-left": (
+    transform: translateX(30px)
+  ),
+  "slide-up": (
+    transform: translateY(30px)
+  ),
+  "slide-down": (
+    transform: translateY(-30px)
+  ),
+  "rotate": (
+    transform: rotate(-45deg)
+  ),
+  "pulse": (
+    transform: scale(1.05)
+  ),
+  "blur": (
+    filter: blur(5px)
+  ),
+  "zoom": (
+    transform: scale(0.5)
+  ),
+  "stabilize": (
+    opacity: 1,
+    transform: none,
+    filter: none
+  )
+) !default;
+
+@function -ease-merge-stage-properties($base-props, $new-props) {
+  $result: $base-props;
+  @each $prop, $value in $new-props {
+    @if $prop == "transform" and map-has-key($result, "transform") {
+      $base-transform: map-get($result, "transform");
+      $combined: if($base-transform == "none", #{$value}, #{$base-transform} #{$value});
+      $result: map-merge($result, ("transform": $combined));
+    } @else {
+      $result: map-merge($result, ($prop: $value));
+    }
+  }
+  @return $result;
+}
+
+@mixin ease-compose-pipeline($pipeline-name, $stages, $overrides: (), $duration: null, $timing: null) {
+  @if type-of($stages) != list {
+    @error "[EaseMotion]: The $stages parameter must be a valid list of animation tokens.";
+  }
+
+  $total-stages: length($stages);
+  @if $total-stages < 2 {
+    @error "[EaseMotion]: A minimum of 2 compilation stages are required to compose a valid pipeline matrix.";
+  }
+
+  @keyframes #{$pipeline-name} {
+    @for $i from 1 through $total-stages {
+      $stage-name: nth($stages, $i);
+      $percentage: (($i - 1) * 100%) / ($total-stages - 1);
+      
+      $stage-props: map-get($ease-default-stages, $stage-name);
+      @if not $stage-props {
+        @error "[EaseMotion]: The stage token '#{$stage-name}' does not exist inside the pipeline registry.";
+      }
+
+      @if map-has-key($overrides, $stage-name) {
+        $stage-props: -ease-merge-stage-properties($stage-props, map-get($overrides, $stage-name));
+      }
+
+      #{$percentage} {
+        @each $property, $value in $stage-props {
+          #{$property}: #{$value};
+        }
+      }
+    }
+  }
+
+  @if $duration or $timing {
+    [data-ease-pipeline="#{$pipeline-name}"],
+    .#{$pipeline-name}-runtime {
+      animation-name: #{$pipeline-name};
+      @if $duration { animation-duration: $duration; }
+      @if $timing { animation-timing-function: $timing; }
+      animation-fill-mode: forwards;
+    }
+  }
+}
+
+@mixin ease-motion($pipeline, $duration: 1s, $timing: ease, $delay: 0s, $fill: forwards) {
+  animation-name: #{$pipeline};
+  animation-duration: $duration;
+  animation-timing-function: $timing;
+  animation-delay: $delay;
+  animation-fill-mode: $fill;
+}

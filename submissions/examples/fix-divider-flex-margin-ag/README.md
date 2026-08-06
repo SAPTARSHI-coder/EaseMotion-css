@@ -16,4 +16,4 @@ divider from collapsing to zero height inside flex-column containers.
 ## Why is it useful?
 Without `flex-shrink: 0`, a flex child with no intrinsic height (like a
 divider that is purely presentational) can shrink to 0 and disappear.
-Fixes: #35814
+Fixes: #59815

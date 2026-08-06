@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Curiosity Rise – Peeks Up Like a Curious Creature</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>👀 Curiosity Rise</h1>
+    <p class="subtitle">Peeks up like a curious creature</p>
+
+    <div class="curiosity-container">
+      <div class="curiosity-stage" id="curiosityStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Curious creature -->
+        <div class="curious-creature" id="curiousCreature">
+          <div class="creature-body" id="creatureBody">
+            <div class="creature-face">
+              <div class="creature-eyes" id="creatureEyes">👀</div>
+              <div class="creature-mouth" id="creatureMouth">👄</div>
+            </div>
+            <div class="creature-ears" id="creatureEars">
+              <span class="ear left">👂</span>
+              <span class="ear right">👂</span>
+            </div>
+          </div>
+          <div class="creature-shadow" id="creatureShadow"></div>
+          <div class="curiosity-sparkles" id="curiositySparkles"></div>
+          <div class="creature-label">👀 Peek!</div>
+        </div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="curiosity-status" id="curiosityStatus">👀 Hidden</span>
+          <span class="peek-count" id="peekCount">✦ 0 peeks</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn peek" id="peekBtn">👀 Peek</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Curiosity Level</span>
+      <input type="range" id="intensitySlider" min="0" max="100" value="70" />
+      <span class="slider-value" id="intensityValue">70%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Peek Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">👀 Hover over the creature to make it peek!</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Hover</kbd> Peek · <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset · <kbd>P</kbd> Peek
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const curiousCreature = document.getElementById('curiousCreature');
+      const creatureBody = document.getElementById('creatureBody');
+      const creatureEyes = document.getElementById('creatureEyes');
+      const creatureMouth = document.getElementById('creatureMouth');
+      const creatureEars = document.getElementById('creatureEars');
+      const creatureShadow = document.getElementById('creatureShadow');
+      const curiositySparkles = document.getElementById('curiositySparkles');
+      const curiosityStatus = document.getElementById('curiosityStatus');
+      const peekCount = document.getElementById('peekCount');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const peekBtn = document.getElementById('peekBtn');
+      const status = document.getElementById('status');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let peekProgress = 0; // 0 = hidden, 1 = fully peeked
+      let targetPeek = 0;
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let peekCountVal = 0;
+      let isPeeking = false;
+      let particles = [];
+      let isHovering = false;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Particle class -----
+      class Particle {
+        constructor(x, y, hue) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.3 + Math.random() * 1.2;
+          this.x = x;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed - 0.3;
+          this.size = 1 + Math.random() * 3;
+          this.life = 1;
+          this.decay = 0.005 + Math.random() * 0.015;
+          this.hue = hue + (Math.random() - 0.5) * 20;
+          this.saturation = 80 + Math.random() * 20;
+          this.lightness = 60 + Math.random() * 30;
+          this.opacity = 0.3 + Math.random() * 0.5;
+          this.gravity = 0.01;
+          this.friction = 0.99;
+          this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+        }
+
+        update() {
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          this.vy += this.gravity;
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life -= this.decay;
+          this.size *= 0.999;
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity;
+          const size = this.size * this.life;
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, size * 3
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.2})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          
+          if (this.shape === 'star') {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.scale(size / 5, size / 5);
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+              const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+              const r = i % 2 === 0 ? 5 : 2.5;
+              const x = Math.cos(angle) * r;
+              const y = Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          } else {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // ----- Create peek particles -----
+      function createPeekParticles(x, y, count = 15) {
+        const hue = parseInt(colorSlider.value);
+        for (let i = 0; i < count; i++) {
+          particles.push(new Particle(x, y, hue));
+        }
+      }
+
+      // ----- Update creature peek -----
+      function updatePeek() {
+        const intensity = parseInt(intensitySlider.value) / 100;
+        const speed = parseInt(speedSlider.value) / 5;
+        const hue = parseInt(colorSlider.value);
+
+        // Smooth transition
+        const diff = targetPeek - peekProgress;
+        if (Math.abs(diff) > 0.001) {
+          peekProgress += diff * 0.06 * speed;
+        } else {
+          peekProgress = targetPeek;
+        }
+
+        // Clamp
+        peekProgress = Math.max(0, Math.min(1, peekProgress));
+
+        // Calculate peek height (0 = hidden, 1 = fully visible)
+        const peekHeight = peekProgress;
+        const scale = 0.1 + 0.9 * peekHeight;
+
+        // Apply to creature
+        creatureBody.style.transform = `scaleY(${scale})`;
+        creatureBody.style.opacity = 0.3 + 0.7 * peekHeight;
+
+        // Shadow grows as creature rises
+        creatureShadow.style.opacity = 0.1 + 0.3 * peekHeight;
+        creatureShadow.style.transform = `scale(${0.8 + 0.4 * peekHeight})`;
+
+        // Ears perk up
+        const earAngle = peekHeight * 15;
+        creatureEars.style.transform = `rotate(${earAngle}deg)`;
+
+        // Eye expression changes with curiosity
+        if (peekHeight > 0.7) {
+          creatureEyes.textContent = '👀';
+          creatureMouth.textContent = '😮';
+          curiosityStatus.textContent = '👀 Curious!';
+        } else if (peekHeight > 0.3) {
+          creatureEyes.textContent = '👁️';
+          creatureMouth.textContent = '👄';
+          curiosityStatus.textContent = '👀 Peeking...';
+        } else {
+          creatureEyes.textContent = '👀';
+          creatureMouth.textContent = '👄';
+          curiosityStatus.textContent = '👀 Hidden';
+        }
+
+        // Update sparkles
+        curiositySparkles.style.opacity = peekHeight * 0.6;
+
+        // Update status
+        if (peekHeight > 0.5) {
+          status.textContent = '👀 So curious!';
+        } else if (peekHeight > 0.1) {
+          status.textContent = '👀 Peeking out...';
+        } else {
+          status.textContent = '👀 Hover over the creature to make it peek!';
+        }
+
+        // Create particles when peeking
+        if (peekHeight > 0.3 && peekProgress > 0.5 && Math.random() < 0.02) {
+          const rect = canvas.getBoundingClientRect();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2 - 20;
+          createPeekParticles(cx, cy, 3);
+        }
+      }
+
+      // ----- Draw background -----
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const hue = parseInt(colorSlider.value);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Ambient glow
+        const glowAlpha = 0.02 + peekProgress * 0.04;
+        const glowGrad = ctx.createRadialGradient(cx, cy + 20, 0, cx, cy + 20, w * 0.3);
+        glowGrad.addColorStop(0, `hsla(${hue + 20}, 100%, 80%, ${glowAlpha})`);
+        glowGrad.addColorStop(1, `hsla(${hue + 20}, 100%, 60%, 0)`);
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy + 20, w * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw particles
+        if (!isPaused) {
+          particles = particles.filter(p => p.update());
+        }
+        particles.forEach(p => p.draw(ctx));
+
+        // Draw question marks when curious
+        if (peekProgress > 0.5) {
+          const count = Math.floor(2 + peekProgress * 4);
+          for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2 + time * 0.02 * (i % 2 === 0 ? 1 : -1);
+            const radius = 60 + peekProgress * 40 + Math.sin(time * 0.3 + i) * 10;
+            const x = cx + Math.cos(angle) * radius;
+            const y = cy + Math.sin(angle) * radius - 10;
+            const size = 12 + peekProgress * 8;
+            const alpha = 0.1 + peekProgress * 0.2 * (0.5 + 0.5 * Math.sin(time * 0.2 + i * 0.5));
+
+            ctx.fillStyle = `hsla(${hue + 20}, 100%, 80%, ${alpha})`;
+            ctx.font = `${size}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('❓', x, y);
+          }
+        }
+
+        // Update peek
+        if (!isPaused) {
+          updatePeek();
+        }
+
+        // Update count
+        peekCount.textContent = `✦ ${peekCountVal} peeks`;
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        drawBackground();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Trigger peek -----
+      function triggerPeek() {
+        if (isPaused) return;
+        
+        targetPeek = Math.min(1, targetPeek + 0.2);
+        peekCountVal++;
+        peekCount.textContent = `✦ ${peekCountVal} peeks`;
+        
+        // Create particles
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 - 20;
+        const count = 10 + Math.floor(parseInt(intensitySlider.value) / 100 * 15);
+        createPeekParticles(cx, cy, count);
+        
+        status.textContent = '👀 Peek!';
+        
+        setTimeout(() => {
+          if (targetPeek > 0.1) {
+            status.textContent = '👀 So curious!';
+          }
+        }, 800);
+      }
+
+      // ----- Reset -----
+      function resetCuriosity() {
+        targetPeek = 0;
+        peekProgress = 0;
+        isHovering = false;
+        particles = [];
+        peekCountVal = 0;
+        peekCount.textContent = '✦ 0 peeks';
+        curiosityStatus.textContent = '👀 Hidden';
+        status.textContent = '↺ Reset';
+        creatureBody.style.transform = 'scaleY(0.1)';
+        creatureBody.style.opacity = '0.3';
+        creatureShadow.style.opacity = '0.1';
+        creatureShadow.style.transform = 'scale(0.8)';
+        creatureEars.style.transform = 'rotate(0deg)';
+        creatureEyes.textContent = '👀';
+        creatureMouth.textContent = '👄';
+        curiositySparkles.style.opacity = '0';
+        intensitySlider.value = 70;
+        intensityValue.textContent = '70%';
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        setTimeout(() => {
+          status.textContent = '👀 Hover over the creature to make it peek!';
+        }, 500);
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        curiosityStatus.textContent = isPaused ? '⏸ Paused' : (peekProgress > 0.3 ? '👀 Curious!' : '👀 Hidden');
+      }
+
+      // ----- Event Listeners -----
+      // Hover effects
+      curiousCreature.addEventListener('mouseenter', () => {
+        isHovering = true;
+        triggerPeek();
+        if (!isPaused) {
+          clearInterval(window.peekInterval);
+          window.peekInterval = setInterval(() => {
+            if (isHovering && !isPaused) {
+              triggerPeek();
+            }
+          }, 600);
+        }
+      });
+
+      curiousCreature.addEventListener('mouseleave', () => {
+        isHovering = false;
+        clearInterval(window.peekInterval);
+        setTimeout(() => {
+          if (!isHovering && !isPaused) {
+            targetPeek = 0;
+            status.textContent = '👀 Hover over the creature to make it peek!';
+            setTimeout(() => {
+              if (!isHovering && peekProgress < 0.05) {
+                curiosityStatus.textContent = '👀 Hidden';
+              }
+            }, 500);
+          }
+        }, 500);
+      });
+
+      // Touch support
+      curiousCreature.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isHovering = true;
+        triggerPeek();
+        if (!isPaused) {
+          clearInterval(window.peekInterval);
+          window.peekInterval = setInterval(() => {
+            if (isHovering && !isPaused) {
+              triggerPeek();
+            }
+          }, 600);
+        }
+      });
+
+      curiousCreature.addEventListener('touchend', () => {
+        isHovering = false;
+        clearInterval(window.peekInterval);
+        setTimeout(() => {
+          if (!isHovering && !isPaused) {
+            targetPeek = 0;
+            status.textContent = '👀 Hover over the creature to make it peek!';
+          }
+        }, 500);
+      });
+
+      // Buttons
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetCuriosity);
+      peekBtn.addEventListener('click', triggerPeek);
+
+      // Sliders
+      intensitySlider.addEventListener('input', (e) => {
+        intensityValue.textContent = e.target.value + '%';
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+        particles.forEach(p => {
+          p.hue = parseInt(e.target.value) + (Math.random() - 0.5) * 20;
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetCuriosity();
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          triggerPeek();
+        }
+      });
+
+      // Click canvas to peek
+      canvas.addEventListener('click', triggerPeek);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '👀 Hover over the creature to make it peek!';
+        // Start hidden
+        creatureBody.style.transform = 'scaleY(0.1)';
+        creatureBody.style.opacity = '0.3';
+        creatureShadow.style.opacity = '0.1';
+        creatureShadow.style.transform = 'scale(0.8)';
+        curiositySparkles.style.opacity = '0';
+        // Center creature
+        const rect = canvas.getBoundingClientRect();
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        curiousCreature.style.left = (cx - 60) + 'px';
+        curiousCreature.style.top = (cy - 30) + 'px';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
