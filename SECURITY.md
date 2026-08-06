@@ -62,6 +62,13 @@ Please report it privately by **emailing the maintainer directly:**
 
 ---
 
+## Automated Security Scanning
+
+To ensure ongoing security and code quality, this repository integrates **CodeQL Analysis** into the CI/CD pipeline. 
+CodeQL automatically scans every pull request, every push to `main`, and runs a weekly scheduled scan to detect potential vulnerabilities. Results are uploaded to GitHub's Security Code Scanning dashboard to provide actionable insights.
+
+---
+
 ## CSS-Specific Security Notes
 
 ### CSS Injection
