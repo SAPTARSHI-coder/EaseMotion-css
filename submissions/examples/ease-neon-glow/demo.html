@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neon Glow – Bright Neon Glow Pulses and Spreads</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>💡 Neon Glow</h1>
+    <p class="subtitle">Bright neon glow pulses and spreads</p>
+
+    <div class="neon-container">
+      <div class="neon-stage" id="neonStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="neon-status" id="neonStatus">💡 Pulsing</span>
+          <span class="glow-intensity" id="glowIntensity">Intensity: 80%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn play" id="playBtn">▶ Play</button>
+      <button class="ctrl-btn pause" id="pauseBtn">⏸ Pause</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">🔄 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Pulse Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Glow Size</span>
+      <input type="range" id="sizeSlider" min="20" max="200" value="100" />
+      <span class="slider-value" id="sizeValue">100%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Intensity</span>
+      <input type="range" id="intensitySlider" min="0" max="100" value="80" />
+      <span class="slider-value" id="intensityValue">80%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">💡 Neon glow pulsing and spreading</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Space</kbd> Toggle · <kbd>P</kbd> Play/Pause · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const neonStatus = document.getElementById('neonStatus');
+      const glowIntensity = document.getElementById('glowIntensity');
+      const playBtn = document.getElementById('playBtn');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let isPlaying = true;
+      let animationId = null;
+      let time = 0;
+      let particles = [];
+      let glowParticles = [];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Glow particle class -----
+      class GlowParticle {
+        constructor() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          const maxR = Math.min(w, h) * 0.4;
+          
+          this.angle = Math.random() * Math.PI * 2;
+          this.radius = 10 + Math.random() * maxR * 0.8;
+          this.size = 3 + Math.random() * 8;
+          this.speed = 0.005 + Math.random() * 0.02;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.02 + Math.random() * 0.04;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+          this.x = cx + Math.cos(this.angle) * this.radius;
+          this.y = cy + Math.sin(this.angle) * this.radius;
+          this.baseSize = this.size;
+          this.trail = [];
+          this.trailLength = 5 + Math.floor(Math.random() * 10);
+        }
+
+        update(cx, cy, pulse, speedMult) {
+          this.angle += this.speed * speedMult * 0.5;
+          this.radius *= (1 + Math.sin(time * 0.01 + this.phase) * 0.002);
+          
+          const r = this.radius * (0.5 + 0.5 * pulse);
+          this.x = cx + Math.cos(this.angle) * r;
+          this.y = cy + Math.sin(this.angle) * r * 0.6;
+          
+          this.size = this.baseSize * (0.5 + 0.5 * pulse);
+          
+          this.trail.push({ x: this.x, y: this.y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+        }
+
+        draw(ctx, hue, intensity, sizeMult) {
+          const alpha = intensity * (0.3 + 0.7 * (this.size / this.baseSize));
+          const s = this.size * sizeMult * 0.5;
+          const glowSize = s * 8;
+
+          // Trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.3;
+              const trailSize = s * t * 0.4;
+              ctx.fillStyle = `hsla(${hue + t * 30}, 100%, 70%, ${trailAlpha})`;
+              ctx.beginPath();
+              ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          const glowAlpha = alpha * 0.3;
+          gradient.addColorStop(0, `hsla(${hue + 20}, 100%, 90%, ${glowAlpha})`);
+          gradient.addColorStop(0.3, `hsla(${hue}, 100%, 70%, ${glowAlpha * 0.6})`);
+          gradient.addColorStop(0.7, `hsla(${hue - 20}, 100%, 50%, ${glowAlpha * 0.3})`);
+          gradient.addColorStop(1, `hsla(${hue - 40}, 100%, 30%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          const coreGradient = ctx.createRadialGradient(
+            this.x - s * 0.2, this.y - s * 0.2, 0,
+            this.x, this.y, s
+          );
+          coreGradient.addColorStop(0, `hsla(0, 0%, 100%, ${alpha * 0.9})`);
+          coreGradient.addColorStop(0.5, `hsla(${hue + 10}, 100%, 85%, ${alpha * 0.6})`);
+          coreGradient.addColorStop(1, `hsla(${hue}, 100%, 60%, ${alpha * 0.2})`);
+          ctx.fillStyle = coreGradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, s, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Generate glow particles -----
+      function generateGlowParticles(count) {
+        glowParticles = [];
+        for (let i = 0; i < count; i++) {
+          glowParticles.push(new GlowParticle());
+        }
+      }
+
+      // ----- Draw neon glow -----
+      function drawNeon() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const speedMult = parseInt(speedSlider.value) / 5;
+        const intensity = parseInt(intensitySlider.value) / 100;
+        const sizeMult = parseInt(sizeSlider.value) / 100;
+        const hue = parseInt(colorSlider.value);
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Calculate pulse
+        const pulse = 0.5 + 0.5 * Math.sin(time * 0.5 * speedMult);
+
+        // Update glow particles
+        if (isPlaying) {
+          glowParticles.forEach(p => p.update(cx, cy, pulse, speedMult));
+        }
+
+        // Sort by size for depth
+        const sorted = [...glowParticles].sort((a, b) => a.size - b.size);
+        sorted.forEach(p => p.draw(ctx, hue, intensity, sizeMult));
+
+        // Center neon core
+        const coreSize = Math.min(w, h) * 0.12 * sizeMult * (0.6 + 0.4 * pulse);
+        const coreGlow = ctx.createRadialGradient(
+          cx, cy, 0,
+          cx, cy, coreSize * 4
+        );
+        const coreAlpha = 0.1 + intensity * 0.3;
+        coreGlow.addColorStop(0, `hsla(${hue + 20}, 100%, 95%, ${coreAlpha * pulse})`);
+        coreGlow.addColorStop(0.3, `hsla(${hue}, 100%, 80%, ${coreAlpha * 0.6 * pulse})`);
+        coreGlow.addColorStop(0.7, `hsla(${hue - 20}, 100%, 60%, ${coreAlpha * 0.3 * pulse})`);
+        coreGlow.addColorStop(1, `hsla(${hue - 40}, 100%, 40%, 0)`);
+        ctx.fillStyle = coreGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, coreSize * 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Center bright core
+        const brightCore = ctx.createRadialGradient(
+          cx - coreSize * 0.2, cy - coreSize * 0.2, 0,
+          cx, cy, coreSize
+        );
+        brightCore.addColorStop(0, `rgba(255, 255, 255, ${0.3 * intensity * pulse})`);
+        brightCore.addColorStop(0.5, `hsla(${hue + 10}, 100%, 90%, ${0.2 * intensity * pulse})`);
+        brightCore.addColorStop(1, `hsla(${hue}, 100%, 70%, ${0.1 * intensity * pulse})`);
+        ctx.fillStyle = brightCore;
+        ctx.beginPath();
+        ctx.arc(cx, cy, coreSize, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ambient glow rings
+        for (let i = 0; i < 3; i++) {
+          const ringRadius = coreSize * (2 + i * 1.5) * (0.8 + 0.2 * pulse);
+          const ringAlpha = 0.02 * intensity * (1 - i * 0.3) * (0.5 + 0.5 * pulse);
+          ctx.strokeStyle = `hsla(${hue + i * 20}, 100%, 70%, ${ringAlpha})`;
+          ctx.lineWidth = 1 + i * 0.5;
+          ctx.shadowColor = `hsla(${hue}, 100%, 60%, ${ringAlpha * 0.5})`;
+          ctx.shadowBlur = 20;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        // Update status
+        glowIntensity.textContent = `Intensity: ${Math.round(intensity * 100)}%`;
+        if (isPlaying) {
+          neonStatus.textContent = '💡 Pulsing';
+          status.textContent = '💡 Neon glow pulsing and spreading';
+        } else {
+          neonStatus.textContent = '⏸ Paused';
+          status.textContent = '⏸ Paused';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        drawNeon();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle play -----
+      function togglePlay() {
+        isPlaying = !isPlaying;
+        playBtn.textContent = isPlaying ? '▶ Play' : '⏸ Paused';
+        neonStatus.textContent = isPlaying ? '💡 Pulsing' : '⏸ Paused';
+        status.textContent = isPlaying ? '💡 Neon glow pulsing and spreading' : '⏸ Paused';
+      }
+
+      // ----- Play -----
+      function play() {
+        isPlaying = true;
+        playBtn.textContent = '▶ Play';
+        neonStatus.textContent = '💡 Pulsing';
+        status.textContent = '💡 Neon glow pulsing and spreading';
+      }
+
+      // ----- Pause -----
+      function pause() {
+        isPlaying = false;
+        playBtn.textContent = '⏸ Paused';
+        neonStatus.textContent = '⏸ Paused';
+        status.textContent = '⏸ Paused';
+      }
+
+      // ----- Reset -----
+      function resetNeon() {
+        time = 0;
+        isPlaying = true;
+        playBtn.textContent = '▶ Play';
+        neonStatus.textContent = '💡 Pulsing';
+        status.textContent = '↺ Reset';
+        // Reset sliders
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        sizeSlider.value = 100;
+        sizeValue.textContent = '100%';
+        intensitySlider.value = 80;
+        intensityValue.textContent = '80%';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        generateGlowParticles(60);
+        setTimeout(() => {
+          status.textContent = '💡 Neon glow pulsing and spreading';
+        }, 500);
+      }
+
+      // ----- Event Listeners -----
+      playBtn.addEventListener('click', play);
+      pauseBtn.addEventListener('click', pause);
+      toggleBtn.addEventListener('click', togglePlay);
+      resetBtn.addEventListener('click', resetNeon);
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + '%';
+      });
+
+      intensitySlider.addEventListener('input', (e) => {
+        intensityValue.textContent = e.target.value + '%';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePlay();
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          isPlaying ? pause() : play();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetNeon();
+        }
+      });
+
+      // Click on canvas to toggle
+      canvas.addEventListener('click', togglePlay);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          generateGlowParticles(60);
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateGlowParticles(60);
+        startAnimation();
+        status.textContent = '💡 Neon glow pulsing and spreading!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
