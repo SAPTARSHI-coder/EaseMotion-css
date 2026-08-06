@@ -77,7 +77,6 @@ export default function DiffView({
 
   const classes = [
     'ease-diff-ad',
-    showLineNumbers ? 'ease-diff-ad--numbered' : '',
     wrap ? 'ease-diff-ad--wrap' : '',
     className,
   ]
