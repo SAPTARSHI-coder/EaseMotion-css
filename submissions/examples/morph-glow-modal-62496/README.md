@@ -107,7 +107,7 @@ You can change the morphing blob speed or shape keyframes inside `style.css` by 
 
 - **Semantics**: Structured with standard layout tags like `<main>`, `<section>`, and interactive `<label>` buttons.
 - **Focus Indicators**: Staged outline states visible on tab navigation.
-- **Keyboard Handling**: Script listener triggers state transition on space/enter key presses when elements are focused.
+- **Keyboard Support**: Interactive controls use native HTML form controls and labels, requiring no JavaScript.
 - **Reduced Motion Support**: Shifting glow is disabled, the morph bubble is rounded and static, and transitions scale to `0.01ms` when prefers-reduced-motion is active.
 
 ---
