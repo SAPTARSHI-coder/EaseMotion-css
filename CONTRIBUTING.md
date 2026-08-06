@@ -345,6 +345,12 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 ---
 
+## Package Validation
+
+A dedicated GitHub Actions workflow automatically performs a dry-run publish (`npm pack --dry-run`) before every release and on all Pull Requests. This step verifies that the npm package is correctly generated and catches any packaging errors—like missing essential assets or unintentionally including test files—ensuring that only the intended files are shipped in the final release.
+
+---
+
 ## 🌐 Official Maintainer
 
 **Saptarshi Sadhu**  
