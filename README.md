@@ -710,6 +710,19 @@ Use the non-minified version for debugging and development:
 
 ```html
 <link rel="stylesheet" href="easemotion.css" />
+```
+
+### Linting
+This project uses [Stylelint](https://stylelint.io/) to maintain CSS code quality.
+To run Stylelint locally and check for formatting issues or invalid properties:
+
+```bash
+# Check for linting errors
+npm run lint
+
+# Automatically fix fixable errors
+npm run lint:fix
+```
 
 ### Animations
 
