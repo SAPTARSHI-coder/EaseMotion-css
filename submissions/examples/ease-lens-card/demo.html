@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lens Card – Magnifies Portion Underneath</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🔍 Lens Card</h1>
+    <p class="subtitle">Magnifies the portion underneath</p>
+
+    <div class="lens-container">
+      <div class="lens-card" id="lensCard">
+        <!-- Background image with content -->
+        <div class="card-content" id="cardContent">
+          <div class="card-pattern">
+            <div class="pattern-grid"></div>
+            <div class="pattern-circles"></div>
+            <div class="pattern-text">
+              <span class="big-text">✦</span>
+              <span class="mid-text">LENS</span>
+              <span class="small-text">magnify the world</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Magnifying lens -->
+        <div class="lens" id="lens">
+          <div class="lens-magnifier" id="lensMagnifier">
+            <div class="lens-ring"></div>
+            <div class="lens-glow"></div>
+            <div class="lens-handle"></div>
+          </div>
+          <div class="lens-cursor"></div>
+        </div>
+        
+        <!-- Lens overlay info -->
+        <div class="lens-info" id="lensInfo">
+          <span class="zoom-level" id="zoomLevel">🔍 2.0×</span>
+        </div>
+      </div>
+      
+      <!-- Info overlay -->
+      <div class="info-overlay">
+        <span class="lens-status" id="lensStatus">🔍 Move mouse to magnify</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn zoom-in" id="zoomInBtn">➕ Zoom In</button>
+      <button class="ctrl-btn zoom-out" id="zoomOutBtn">➖ Zoom Out</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">👁️ Toggle</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Zoom Level</span>
+      <input type="range" id="zoomSlider" min="1.2" max="4" step="0.1" value="2" />
+      <span class="slider-value" id="zoomValue">2.0×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Lens Size</span>
+      <input type="range" id="sizeSlider" min="60" max="200" value="120" />
+      <span class="slider-value" id="sizeValue">120px</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🔍 Hover over the card to magnify</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Mouse</kbd> Move lens · <kbd>+</kbd> Zoom In · <kbd>-</kbd> Zoom Out · <kbd>T</kbd> Toggle
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const lensCard = document.getElementById('lensCard');
+      const lens = document.getElementById('lens');
+      const lensMagnifier = document.getElementById('lensMagnifier');
+      const lensInfo = document.getElementById('lensInfo');
+      const zoomLevel = document.getElementById('zoomLevel');
+      const lensStatus = document.getElementById('lensStatus');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const status = document.getElementById('status');
+      const zoomSlider = document.getElementById('zoomSlider');
+      const zoomValue = document.getElementById('zoomValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+
+      // State
+      let zoom = 2.0;
+      let lensSize = 120;
+      let isLensVisible = true;
+      let mouseX = 0;
+      let mouseY = 0;
+      let isHovering = false;
+      let animationId = null;
+      let time = 0;
+
+      // ----- Update lens -----
+      function updateLens() {
+        if (!isLensVisible) {
+          lens.style.display = 'none';
+          lensInfo.style.display = 'none';
+          return;
+        }
+
+        lens.style.display = 'block';
+        lensInfo.style.display = 'flex';
+
+        const cardRect = lensCard.getBoundingClientRect();
+        const x = mouseX - cardRect.left;
+        const y = mouseY - cardRect.top;
+
+        // Clamp lens position to card bounds
+        const halfSize = lensSize / 2;
+        const clampedX = Math.max(halfSize, Math.min(cardRect.width - halfSize, x));
+        const clampedY = Math.max(halfSize, Math.min(cardRect.height - halfSize, y));
+
+        // Position the lens
+        lens.style.left = (clampedX - halfSize) + 'px';
+        lens.style.top = (clampedY - halfSize) + 'px';
+        lens.style.width = lensSize + 'px';
+        lens.style.height = lensSize + 'px';
+
+        // Update magnifier clip
+        const magnifierSize = lensSize * 0.92;
+        const offset = (lensSize - magnifierSize) / 2;
+        lensMagnifier.style.width = magnifierSize + 'px';
+        lensMagnifier.style.height = magnifierSize + 'px';
+        lensMagnifier.style.left = offset + 'px';
+        lensMagnifier.style.top = offset + 'px';
+
+        // Update zoom level
+        zoomLevel.textContent = `🔍 ${zoom.toFixed(1)}×`;
+        zoomValue.textContent = zoom.toFixed(1) + '×';
+
+        // Update cursor position on the magnified content
+        const bgX = (clampedX / cardRect.width) * 100;
+        const bgY = (clampedY / cardRect.height) * 100;
+        
+        // Calculate the zoomed background position
+        const bgSize = 100 * zoom;
+        const bgPosX = 50 - (clampedX / cardRect.width) * 100 * (zoom - 1);
+        const bgPosY = 50 - (clampedY / cardRect.height) * 100 * (zoom - 1);
+
+        lensMagnifier.style.backgroundSize = bgSize + '%';
+        lensMagnifier.style.backgroundPosition = bgPosX + '% ' + bgPosY + '%';
+
+        // Update ring rotation
+        const ring = document.querySelector('.lens-ring');
+        if (ring) {
+          ring.style.transform = `rotate(${time * 20}deg)`;
+        }
+
+        // Update glow pulse
+        const glow = document.querySelector('.lens-glow');
+        if (glow) {
+          const pulse = 0.8 + 0.2 * Math.sin(time * 2);
+          glow.style.opacity = pulse * 0.3;
+          glow.style.transform = `scale(${pulse})`;
+        }
+
+        // Update lens status
+        if (isHovering) {
+          lensStatus.textContent = `🔍 Magnifying at ${zoom.toFixed(1)}×`;
+        } else {
+          lensStatus.textContent = '🔍 Move mouse to magnify';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        updateLens();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Set zoom -----
+      function setZoom(value) {
+        zoom = Math.max(1.2, Math.min(4, value));
+        zoomSlider.value = zoom;
+        zoomValue.textContent = zoom.toFixed(1) + '×';
+        status.textContent = `🔍 Zoom: ${zoom.toFixed(1)}×`;
+        updateLens();
+      }
+
+      // ----- Set lens size -----
+      function setLensSize(value) {
+        lensSize = Math.max(60, Math.min(200, value));
+        sizeSlider.value = lensSize;
+        sizeValue.textContent = Math.round(lensSize) + 'px';
+        updateLens();
+      }
+
+      // ----- Toggle lens -----
+      function toggleLens() {
+        isLensVisible = !isLensVisible;
+        toggleBtn.textContent = isLensVisible ? '👁️ Toggle' : '👁️ Hidden';
+        status.textContent = isLensVisible ? '🔍 Lens visible' : '🔍 Lens hidden';
+        updateLens();
+      }
+
+      // ----- Reset -----
+      function resetLens() {
+        setZoom(2.0);
+        setLensSize(120);
+        isLensVisible = true;
+        toggleBtn.textContent = '👁️ Toggle';
+        status.textContent = '↺ Lens reset to default';
+        updateLens();
+      }
+
+      // ----- Event Listeners -----
+      // Mouse tracking on the card
+      lensCard.addEventListener('mousemove', (e) => {
+        const rect = lensCard.getBoundingClientRect();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        isHovering = true;
+        updateLens();
+      });
+
+      lensCard.addEventListener('mouseenter', () => {
+        isHovering = true;
+        lens.style.opacity = '1';
+        status.textContent = '🔍 Magnifying...';
+        updateLens();
+      });
+
+      lensCard.addEventListener('mouseleave', () => {
+        isHovering = false;
+        lens.style.opacity = '0';
+        status.textContent = '🔍 Move mouse over the card to magnify';
+        setTimeout(() => {
+          if (!isHovering) {
+            lensStatus.textContent = '🔍 Move mouse to magnify';
+          }
+        }, 300);
+      });
+
+      // Touch support for mobile
+      lensCard.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = lensCard.getBoundingClientRect();
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
+        isHovering = true;
+        lens.style.opacity = '1';
+        updateLens();
+      });
+
+      lensCard.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        mouseX = touch.clientX;
+        mouseY = touch.clientY;
+        updateLens();
+      });
+
+      lensCard.addEventListener('touchend', () => {
+        isHovering = false;
+        lens.style.opacity = '0';
+        setTimeout(() => {
+          if (!isHovering) {
+            lensStatus.textContent = '🔍 Move mouse to magnify';
+          }
+        }, 300);
+      });
+
+      // Buttons
+      zoomInBtn.addEventListener('click', () => setZoom(zoom + 0.2));
+      zoomOutBtn.addEventListener('click', () => setZoom(zoom - 0.2));
+      resetBtn.addEventListener('click', resetLens);
+      toggleBtn.addEventListener('click', toggleLens);
+
+      // Sliders
+      zoomSlider.addEventListener('input', (e) => {
+        setZoom(parseFloat(e.target.value));
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        setLensSize(parseFloat(e.target.value));
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === '+' || e.key === '=') {
+          e.preventDefault();
+          setZoom(zoom + 0.2);
+        }
+        if (e.key === '-') {
+          e.preventDefault();
+          setZoom(zoom - 0.2);
+        }
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleLens();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetLens();
+        }
+      });
+
+      // ----- Init -----
+      function init() {
+        setZoom(2.0);
+        setLensSize(120);
+        isLensVisible = true;
+        startAnimation();
+        status.textContent = '🔍 Hover over the card to magnify!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
