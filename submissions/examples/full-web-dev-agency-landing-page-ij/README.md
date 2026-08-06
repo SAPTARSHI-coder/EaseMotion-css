@@ -1,0 +1,7 @@
+# Web Dev Agency Landing Page
+
+1. What does this do? A full landing page for a web development agency called CodeCraft Studios. Contains a hero with a portfolio preview mockup, three services (web apps, mobile web, e-commerce), portfolio showcase with gradient thumbnails and metrics, a tech stack badges grid, a four-step discovery-to-launch process timeline, client testimonials, and a "get a free quote" CTA. All animations use EaseMotion CSS classes (ease-slide-up, ease-fade-in, ease-reveal-up, ease-card-hover, ease-hover-grow, etc.).
+
+2. How is it used? Open demo.html in any browser. The page loads EaseMotion's framework from easemotion.css. The reveal.js script enables scroll-triggered entrance animations. Update the portfolio projects, service descriptions, tech badges, and testimonials in demo.html and style.css to match a specific agency.
+
+3. Why is it useful? Web development agencies need a portfolio-focused landing page that showcases technical capability and past results. This template uses EaseMotion animations for smooth scroll reveals and card hover effects, presenting a polished, professional image without writing custom CSS animations. Fully responsive and production-ready.
