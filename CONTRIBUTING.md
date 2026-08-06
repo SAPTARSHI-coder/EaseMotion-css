@@ -345,6 +345,15 @@ Feedback is technical and direct. Be respectful of other contributors and the ma
 
 ---
 
+## Release Process (Maintainer Only)
+
+Automated releases to npm and GitHub Releases are managed by GitHub Actions via `.github/workflows/release.yml`. This workflow triggers automatically whenever a new version tag (e.g., `v1.2.3`) is pushed.
+
+**Required Repository Secrets for Publishing:**
+- `NPM_TOKEN`: A valid npm automation access token required to publish the package to the `easemotion-css` registry.
+
+---
+
 ## 🌐 Official Maintainer
 
 **Saptarshi Sadhu**  
