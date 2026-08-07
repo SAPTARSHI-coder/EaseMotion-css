@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EaseMotion a11y AST Interception Demo</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="ease-a11y-demo-wrapper">
+    <div class="controls">
+      <label class="toggle">
+        <input type="checkbox" id="reduced-motion-toggle">
+        <span class="slider"></span>
+      </label>
+      <span>Simulate OS Reduced Motion</span>
+    </div>
+    
+    <div class="animation-container">
+      <div id="test-element" class="demo-box" em="slide-up bounce zoom-in">Watch Me Animate</div>
+    </div>
+    
+    <div class="controls">
+      <button id="trigger-animation">Replay Animation</button>
+    </div>
+  </div>
+
+  <script>
+    class MockASTCompiler {
+      constructor() {
+        this.fallbackUtility = 'ease-kf-fade-in'; 
+        this.heavyMotionPattern = /slide|zoom|bounce|flip/i;
+      }
+
+      compileAndApply(element, forceReducedMotion = false) {
+        const emTokenString = element.getAttribute('em');
+        if (!emTokenString) return;
+
+        const osPrefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const isReducedMotion = forceReducedMotion || osPrefersReducedMotion;
+
+        let astTokens = emTokenString.split(/\s+/).filter(Boolean);
+
+        if (isReducedMotion) {
+          let intercepted = false;
+          
+          astTokens = astTokens.filter(token => {
+            if (this.heavyMotionPattern.test(token)) {
+              intercepted = true;
+              return false; 
+            }
+            return true;
+          });
+
+          if (intercepted && !astTokens.includes(this.fallbackUtility)) {
+            astTokens.push(this.fallbackUtility);
+          }
+        }
+
+        element.style.animation = 'none';
+        element.className = 'demo-box';
+        
+        void element.offsetWidth;
+        
+        element.style.animation = '';
+        astTokens.forEach(token => element.classList.add(token));
+        
+        console.log(`[AST Compiler Output] Final mapped tokens:`, astTokens);
+      }
+    }
+
+    const compiler = new MockASTCompiler();
+    const targetElement = document.getElementById('test-element');
+    const simToggle = document.getElementById('reduced-motion-toggle');
+    const replayBtn = document.getElementById('trigger-animation');
+
+    function executeEngine() {
+      compiler.compileAndApply(targetElement, simToggle.checked);
+    }
+
+    simToggle.addEventListener('change', executeEngine);
+    replayBtn.addEventListener('click', executeEngine);
+    
+    executeEngine();
+  </script>
+</body>
+</html>

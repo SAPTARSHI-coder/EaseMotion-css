@@ -8,4 +8,4 @@ Include the component as usual. The new CSS variables and dark mode media querie
 
 ## Why is it useful?
 Ensures compliance with WCAG AA accessibility standards.
-Fixes: #35940
+Fixes: #60255

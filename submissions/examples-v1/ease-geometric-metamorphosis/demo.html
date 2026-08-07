@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geometric Metamorphosis</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Geometric Metamorphosis</h1>
+        <p class="subtitle">Shape transforms from circle to square to triangle seamlessly</p>
+
+        <div class="metamorphosis-wrapper">
+            <canvas id="morphCanvas"></canvas>
+
+            <div class="controls">
+                <button id="shapeBtn">Shape: Auto</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Morphing...</span>
+                <span id="shapeDisplay">Circle</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('morphCanvas');
+        const ctx = canvas.getContext('2d');
+        const shapeBtn = document.getElementById('shapeBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const shapeDisplay = document.getElementById('shapeDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 500;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let progress = 0;
+        let speed = 0.008;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let shapeMode = 0; // 0: auto, 1: circle, 2: square, 3: triangle
+        let targetShape = 1;
+        let currentShape = 1;
+        let morphProgress = 0;
+        let isReversing = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let points = [];
+        let numPoints = 100;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.004 },
+            { name: 'Normal', value: 0.008 },
+            { name: 'Fast', value: 0.015 },
+            { name: 'Very Fast', value: 0.025 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            { name: 'Rainbow', fn: getRainbowColor },
+            { name: 'Ocean', fn: getOceanColor },
+            { name: 'Fire', fn: getFireColor },
+            { name: 'Galaxy', fn: getGalaxyColor },
+            { name: 'Pastel', fn: getPastelColor },
+            { name: 'Neon', fn: getNeonColor },
+            { name: 'Monochrome', fn: getMonochromeColor },
+            { name: 'Sunset', fn: getSunsetColor },
+        ];
+
+        // ===== SHAPE GENERATORS =====
+        function getCirclePoints(cx, cy, radius, count) {
+            const pts = [];
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * Math.PI * 2;
+                pts.push({
+                    x: cx + Math.cos(angle) * radius,
+                    y: cy + Math.sin(angle) * radius
+                });
+            }
+            return pts;
+        }
+
+        function getSquarePoints(cx, cy, radius, count) {
+            const pts = [];
+            const halfSize = radius * 0.8;
+            const corners = 4;
+            const ptsPerCorner = Math.floor(count / corners);
+            
+            for (let i = 0; i < count; i++) {
+                const corner = Math.floor(i / ptsPerCorner) % corners;
+                const t = (i % ptsPerCorner) / ptsPerCorner;
+                
+                let x, y;
+                switch(corner) {
+                    case 0: // Top to right
+                        x = cx + halfSize * (1 - t) + halfSize * t;
+                        y = cy - halfSize;
+                        break;
+                    case 1: // Right to bottom
+                        x = cx + halfSize;
+                        y = cy - halfSize * (1 - t) + halfSize * t;
+                        break;
+                    case 2: // Bottom to left
+                        x = cx + halfSize * (1 - t) - halfSize * t;
+                        y = cy + halfSize;
+                        break;
+                    case 3: // Left to top
+                        x = cx - halfSize;
+                        y = cy + halfSize * (1 - t) - halfSize * t;
+                        break;
+                }
+                pts.push({ x, y });
+            }
+            return pts;
+        }
+
+        function getTrianglePoints(cx, cy, radius, count) {
+            const pts = [];
+            const corners = 3;
+            const ptsPerCorner = Math.floor(count / corners);
+            const angleOffset = -Math.PI / 2;
+            
+            for (let i = 0; i < count; i++) {
+                const corner = Math.floor(i / ptsPerCorner) % corners;
+                const t = (i % ptsPerCorner) / ptsPerCorner;
+                
+                const angle1 = angleOffset + (corner / corners) * Math.PI * 2;
+                const angle2 = angleOffset + ((corner + 1) / corners) * Math.PI * 2;
+                
+                const x1 = cx + Math.cos(angle1) * radius;
+                const y1 = cy + Math.sin(angle1) * radius;
+                const x2 = cx + Math.cos(angle2) * radius;
+                const y2 = cy + Math.sin(angle2) * radius;
+                
+                pts.push({
+                    x: x1 + (x2 - x1) * t,
+                    y: y1 + (y2 - y1) * t
+                });
+            }
+            return pts;
+        }
+
+        function getStarPoints(cx, cy, radius, count) {
+            const pts = [];
+            const spikes = 5;
+            const outerRadius = radius;
+            const innerRadius = radius * 0.4;
+            
+            for (let i = 0; i < count; i++) {
+                const spike = Math.floor(i / (count / (spikes * 2)));
+                const t = (i % (count / (spikes * 2))) / (count / (spikes * 2));
+                const isOuter = spike % 2 === 0;
+                const r = isOuter ? outerRadius : innerRadius;
+                const angle = (spike / (spikes * 2)) * Math.PI * 2 + t * (Math.PI / spikes);
+                pts.push({
+                    x: cx + Math.cos(angle) * r,
+                    y: cy + Math.sin(angle) * r
+                });
+            }
+            return pts;
+        }
+
+        function getHexagonPoints(cx, cy, radius, count) {
+            const pts = [];
+            const sides = 6;
+            const ptsPerSide = Math.floor(count / sides);
+            
+            for (let i = 0; i < count; i++) {
+                const side = Math.floor(i / ptsPerSide) % sides;
+                const t = (i % ptsPerSide) / ptsPerSide;
+                const angle1 = (side / sides) * Math.PI * 2 - Math.PI / 2;
+                const angle2 = ((side + 1) / sides) * Math.PI * 2 - Math.PI / 2;
+                const x1 = cx + Math.cos(angle1) * radius;
+                const y1 = cy + Math.sin(angle1) * radius;
+                const x2 = cx + Math.cos(angle2) * radius;
+                const y2 = cy + Math.sin(angle2) * radius;
+                pts.push({
+                    x: x1 + (x2 - x1) * t,
+                    y: y1 + (y2 - y1) * t
+                });
+            }
+            return pts;
+        }
+
+        // ===== COLOR FUNCTIONS =====
+        function getRainbowColor(t, i) {
+            const hue = (t * 360 + i * 2) % 360;
+            return `hsl(${hue}, 100%, 60%)`;
+        }
+
+        function getOceanColor(t, i) {
+            const hue = 200 + t * 40 + i * 0.5;
+            const sat = 60 + t * 20;
+            const light = 40 + t * 20;
+            return `hsl(${hue}, ${sat}%, ${light}%)`;
+        }
+
+        function getFireColor(t, i) {
+            const hue = 10 + t * 40 + i * 0.3;
+            const sat = 80 + t * 20;
+            const light = 40 + t * 30;
+            return `hsl(${hue}, ${sat}%, ${light}%)`;
+        }
+
+        function getGalaxyColor(t, i) {
+            const hue = 250 + t * 40 + i * 0.7;
+            const sat = 70 + t * 30;
+            const light = 35 + t * 30;
+            return `hsl(${hue}, ${sat}%, ${light}%)`;
+        }
+
+        function getPastelColor(t, i) {
+            const hue = (t * 360 + i * 3) % 360;
+            return `hsl(${hue}, 60%, 75%)`;
+        }
+
+        function getNeonColor(t, i) {
+            const hue = (t * 360 + i * 5) % 360;
+            return `hsl(${hue}, 100%, 55%)`;
+        }
+
+        function getMonochromeColor(t, i) {
+            const val = 40 + t * 40 + i * 0.1;
+            return `hsl(0, 0%, ${val}%)`;
+        }
+
+        function getSunsetColor(t, i) {
+            const hue = 20 + t * 30 + i * 0.4;
+            const sat = 70 + t * 30;
+            const light = 40 + t * 30;
+            return `hsl(${hue}, ${sat}%, ${light}%)`;
+        }
+
+        // ===== MORPHING FUNCTION =====
+        function morphShapes(shape1Points, shape2Points, progress) {
+            const result = [];
+            const count = Math.min(shape1Points.length, shape2Points.length);
+            
+            // Ensure both arrays have same length
+            const p1 = shape1Points.length === count ? shape1Points : 
+                interpolatePoints(shape1Points, count);
+            const p2 = shape2Points.length === count ? shape2Points : 
+                interpolatePoints(shape2Points, count);
+            
+            for (let i = 0; i < count; i++) {
+                result.push({
+                    x: p1[i].x + (p2[i].x - p1[i].x) * progress,
+                    y: p1[i].y + (p2[i].y - p1[i].y) * progress
+                });
+            }
+            return result;
+        }
+
+        function interpolatePoints(pts, count) {
+            const result = [];
+            const totalLen = pts.length;
+            for (let i = 0; i < count; i++) {
+                const idx = (i / count) * totalLen;
+                const idx1 = Math.floor(idx) % totalLen;
+                const idx2 = (idx1 + 1) % totalLen;
+                const t = idx - Math.floor(idx);
+                result.push({
+                    x: pts[idx1].x + (pts[idx2].x - pts[idx1].x) * t,
+                    y: pts[idx1].y + (pts[idx2].y - pts[idx1].y) * t
+                });
+            }
+            return result;
+        }
+
+        // ===== DRAW FUNCTION =====
+        function drawShape(pts) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.35;
+            
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+            
+            // Background glow
+            const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.5);
+            const colorFn = colorModes[colorMode].fn;
+            const bgColor = colorFn(0.5, 0);
+            bgGrad.addColorStop(0, bgColor + '20');
+            bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+            
+            // Draw shape with glow
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            grad.addColorStop(0, 'rgba(255,255,255,0.1)');
+            grad.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+            
+            // Draw connecting lines
+            ctx.beginPath();
+            for (let i = 0; i < pts.length; i++) {
+                const p = pts[i];
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(i / pts.length, i);
+                
+                if (i === 0) {
+                    ctx.moveTo(p.x, p.y);
+                } else {
+                    ctx.lineTo(p.x, p.y);
+                }
+                
+                // Draw points
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2 + Math.sin(i / pts.length * Math.PI * 2 + progress * 10) * 1, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            ctx.closePath();
+            
+            // Fill with gradient
+            const fillGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            const c1 = colorFn(0, 0);
+            const c2 = colorFn(0.5, 10);
+            const c3 = colorFn(1, 20);
+            fillGrad.addColorStop(0, c1 + '60');
+            fillGrad.addColorStop(0.5, c2 + '40');
+            fillGrad.addColorStop(1, c3 + '20');
+            ctx.fillStyle = fillGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = c1 + '40';
+            ctx.fill();
+            
+            // Stroke with color
+            ctx.strokeStyle = colorFn(0.5, 0);
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = colorFn(0.5, 0) + '60';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // ===== SHAPE SELECTION =====
+        function getShape(shapeType, cx, cy, radius, count) {
+            switch(shapeType) {
+                case 1: return getCirclePoints(cx, cy, radius, count);
+                case 2: return getSquarePoints(cx, cy, radius, count);
+                case 3: return getTrianglePoints(cx, cy, radius, count);
+                case 4: return getStarPoints(cx, cy, radius, count);
+                case 5: return getHexagonPoints(cx, cy, radius, count);
+                default: return getCirclePoints(cx, cy, radius, count);
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.35;
+            
+            // Update progress
+            if (shapeMode === 0) {
+                // Auto mode - cycle through shapes
+                progress += speed;
+                if (progress >= 1) {
+                    progress = 0;
+                    currentShape = (currentShape % 5) + 1;
+                    targetShape = (currentShape % 5) + 1;
+                }
+            } else {
+                // Manual mode - morph to selected shape
+                const target = shapeMode;
+                if (currentShape !== target) {
+                    progress += speed;
+                    if (progress >= 1) {
+                        progress = 0;
+                        currentShape = target;
+                    }
+                }
+            }
+            
+            // Get shape points
+            const shape1 = getShape(currentShape, cx, cy, radius, numPoints);
+            const shape2 = getShape(targetShape, cx, cy, radius, numPoints);
+            
+            // Morph
+            const morphed = morphShapes(shape1, shape2, progress);
+            
+            // Draw
+            drawShape(morphed);
+            
+            // Update display
+            const shapeNames = ['', 'Circle', 'Square', 'Triangle', 'Star', 'Hexagon'];
+            const currentName = shapeNames[currentShape] || 'Circle';
+            const targetName = shapeNames[targetShape] || 'Circle';
+            
+            if (shapeMode === 0) {
+                shapeDisplay.textContent = `${currentName} → ${targetName}`;
+            } else {
+                shapeDisplay.textContent = targetName;
+            }
+            
+            // Update status
+            if (progress < 0.1 || progress > 0.9) {
+                statusText.textContent = '🔄 Morphing...';
+            } else {
+                statusText.textContent = '✨ Seamless transition';
+            }
+            
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Shape mode
+        shapeBtn.addEventListener('click', () => {
+            shapeMode = (shapeMode + 1) % 6;
+            const modes = ['Auto', 'Circle', 'Square', 'Triangle', 'Star', 'Hexagon'];
+            shapeBtn.textContent = `Shape: ${modes[shapeMode]}`;
+            
+            if (shapeMode === 0) {
+                currentShape = 1;
+                targetShape = 2;
+                progress = 0;
+                statusText.textContent = '🔄 Auto cycling';
+            } else {
+                currentShape = shapeMode;
+                targetShape = shapeMode;
+                progress = 0;
+                statusText.textContent = `📍 ${modes[shapeMode]}`;
+            }
+            
+            setTimeout(() => {
+                statusText.textContent = '🌀 Morphing...';
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Morphing...';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Morphing...';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            shapeMode = 0;
+            currentShape = 1;
+            targetShape = 2;
+            progress = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            
+            shapeBtn.textContent = 'Shape: Auto';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            
+            setTimeout(() => {
+                statusText.textContent = '🌀 Morphing...';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                shapeBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Manual morph trigger
+                if (shapeMode === 0) {
+                    const next = (currentShape % 5) + 1;
+                    currentShape = next;
+                    targetShape = (next % 5) + 1;
+                    progress = 0;
+                }
+            }
+        });
+
+        // ===== INIT =====
+        shapeBtn.textContent = 'Shape: Auto';
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        currentShape = 1;
+        targetShape = 2;
+        progress = 0;
+        statusText.textContent = '🌀 Morphing...';
+        shapeDisplay.textContent = 'Circle → Square';
+
+        // Start animation
+        render(performance.now());
+
+        console.log('🔷 Geometric Metamorphosis loaded!');
+        console.log('💡 S - Change shape mode');
+        console.log('💡 P - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Manual morph trigger');
+    </script>
+</body>
+</html>

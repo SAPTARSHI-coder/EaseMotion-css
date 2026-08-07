@@ -17,4 +17,4 @@ sticky/fixed navigation headers that commonly use `z-index: 1000`.
 ## Why is it useful?
 A dropdown appearing behind the site header is completely unusable.
 The z-index hierarchy (header: 1000, dropdown: 1100, modal: 10000) ensures
-correct stacking. Fixes: #35799
+correct stacking. Fixes: #59815

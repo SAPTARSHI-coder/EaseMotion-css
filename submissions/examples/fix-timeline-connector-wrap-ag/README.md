@@ -18,4 +18,4 @@ the next dot regardless of how many lines of content the item has.
 
 ## Why is it useful?
 `height: 100%` on the connector only works when the parent has an explicit
-height. Using absolute `bottom: 0` always reaches the next item. Fixes: #35844
+height. Using absolute `bottom: 0` always reaches the next item. Fixes: #59815

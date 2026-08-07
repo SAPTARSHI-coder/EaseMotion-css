@@ -1,16 +1,37 @@
-# Skew-Active Tooltip (Accessible Web Layouts)
+# CSS Skew-Active Tooltip
 
-A modern kinetic CSS animation pattern that uses micro-skew transitions without depending on JavaScript engines. It is completely structured around modern web accessibility requirements.
+A modern tooltip with a smooth skew-to-normal animation using only HTML and CSS.
 
-## Design Concept
-Upon activation, the element transitions dynamically from an idle skew angle (`-12deg`) to a flattened base alignment (`0deg`). This introduces a rapid visual snap-to-place motion.
+## Features
 
-## Optimization Configuration
+- Pure HTML & CSS
+- Skew entrance animation
+- Responsive layout
+- Accessible (`prefers-reduced-motion`)
+- Lightweight
+- No JavaScript
 
-Configurations are isolated within the CSS properties block:
+## Folder Structure
 
-| Property | Default Value | Functional Usage |
-| :--- | :--- | :--- |
-| `--tooltip-skew-start` | `-12deg` | Initial distortion offset on the X-axis prior to focus |
-| `--tooltip-scale-start` | `0.85` | Lower bounds of scaling interpolation before component focus |
-| `--tooltip-duration` | `0.25s` | Window performance curve timing length |
+```text
+skew-active-tooltip/
+├── demo.html
+├── style.css
+└── README.md
+```
+
+## Usage
+
+Open `demo.html` in any browser and hover over the buttons.
+
+## Customization
+
+- Tooltip colors
+- Animation duration
+- Border radius
+- Font size
+- Padding
+
+## Browser Support
+
+Works in all modern browsers supporting CSS transforms and transitions.
