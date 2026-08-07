@@ -1,0 +1,163 @@
+// ==========================================================================
+// EaseMotion CSS — Hover Intent mixin
+// Issue #61720
+// --------------------------------------------------------------------------
+// Reveals content on hover with an asymmetric delay: slow to open, instant
+// to close.
+//
+// The asymmetry is the whole idea. A symmetric delay makes revealed content
+// trail the cursor around the page — you leave a tooltip and it lingers.
+// Delaying only the *open* transition filters out incidental pointer travel
+// across a dense UI while still dismissing the moment intent ends.
+//
+// The `hover: none` guard is not optional polish. On a touch device there is
+// no hover-out event, so a `:hover`-revealed panel latches on first tap and
+// stays open with no way to dismiss it.
+// ==========================================================================
+
+@use "sass:list";
+@use "sass:meta";
+
+$hover-intent-delay: 320ms !default;
+$hover-intent-duration: 180ms !default;
+$hover-intent-easing: cubic-bezier(0.16, 1, 0.3, 1) !default;
+
+// --------------------------------------------------------------------------
+// hover-intent
+//
+// Applies the closed state to the current selector and the open state under
+// `:hover` and `:focus-within`. Focus parity is included by default rather
+// than left to the caller — a hover-only reveal is unreachable by keyboard.
+//
+// @param {Number} $delay     Opening delay. No delay is applied on close.
+// @param {Number} $duration  Transition duration, both directions.
+// @param {String} $easing    Timing function.
+// @param {List}   $props     Properties to transition.
+// @content Extra declarations applied to the OPEN state.
+// --------------------------------------------------------------------------
+@mixin hover-intent(
+    $delay: $hover-intent-delay,
+    $duration: $hover-intent-duration,
+    $easing: $hover-intent-easing,
+    $props: (opacity, transform)
+) {
+    @if meta.type-of($delay) != "number" {
+        @error "hover-intent(): $delay must be a number, got `#{$delay}`.";
+    }
+
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+
+    // Closing: no delay, and `visibility` waits out the fade so the element
+    // stays hittable/visible for the duration of its own exit.
+    transition:
+        #{build-transition($props, $duration, $easing, 0s)},
+        visibility 0s linear $duration;
+
+    &:hover,
+    &:focus-within {
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+
+        // Opening: every property waits out $delay, including visibility,
+        // so the element never becomes hittable before it is visible.
+        transition:
+            #{build-transition($props, $duration, $easing, $delay)},
+            visibility 0s linear $delay;
+
+        @content;
+    }
+
+    // Touch devices: reveal immediately on tap rather than after a delay
+    // that the user cannot perceive the purpose of, and never latch closed.
+    @media (hover: none) {
+        transition-delay: 0s;
+
+        &:hover,
+        &:focus-within {
+            transition-delay: 0s;
+        }
+    }
+
+    // The intent delay is deliberately preserved under reduced motion — it
+    // is an interaction filter, not decoration. Removing it would make
+    // content flicker on every incidental pointer movement, which is worse
+    // for motion-sensitive users, not better.
+    @media (prefers-reduced-motion: reduce) {
+        transition-duration: 1ms;
+
+        &:hover,
+        &:focus-within {
+            transition-duration: 1ms;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// hover-intent-parent
+//
+// Variant for the common case where the trigger is a parent and the revealed
+// element is a child, so hovering anywhere on the trigger opens the child.
+//
+// @param {String} $child  Selector for the revealed descendant.
+// --------------------------------------------------------------------------
+@mixin hover-intent-parent(
+    $child,
+    $delay: $hover-intent-delay,
+    $duration: $hover-intent-duration,
+    $easing: $hover-intent-easing
+) {
+    position: relative;
+
+    #{$child} {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+        transition:
+            opacity $duration $easing 0s,
+            visibility 0s linear $duration;
+    }
+
+    &:hover #{$child},
+    &:focus-within #{$child} {
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+        transition:
+            opacity $duration $easing $delay,
+            visibility 0s linear $delay;
+    }
+
+    @media (hover: none) {
+        &:hover #{$child},
+        &:focus-within #{$child} {
+            transition-delay: 0s;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        #{$child},
+        &:hover #{$child},
+        &:focus-within #{$child} {
+            transition-duration: 1ms;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// build-transition
+//
+// Compose a comma-separated transition list from a property list.
+// Kept internal — exported only so the mixins above can interpolate it.
+// --------------------------------------------------------------------------
+@function build-transition($props, $duration, $easing, $delay) {
+    $out: ();
+
+    @each $prop in $props {
+        $out: list.append($out, #{$prop} $duration $easing $delay, comma);
+    }
+
+    @return $out;
+}
