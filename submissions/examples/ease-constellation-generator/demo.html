@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constellation Generator – Creates Constellations on Click</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>✨ Constellation Generator</h1>
+    <p class="subtitle">Click anywhere to create a new constellation</p>
+
+    <div class="constellation-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="star-count" id="starCount">⭐ 0 stars</span>
+        <span class="constellation-name" id="constellationName">Click to create</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn generate" id="generateBtn">🌟 Generate</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn random" id="randomBtn">🎲 Random</button>
+      <button class="ctrl-btn save" id="saveBtn">💾 Save</button>
+    </div>
+
+    <!-- Options -->
+    <div class="options">
+      <div class="option-group">
+        <label for="starCountSlider">Stars: <span id="starCountDisplay">12</span></label>
+        <input type="range" id="starCountSlider" min="5" max="30" value="12" />
+      </div>
+      <div class="option-group">
+        <label for="connectionChance">Connections: <span id="connectionDisplay">40%</span></label>
+        <input type="range" id="connectionChance" min="10" max="80" value="40" />
+      </div>
+      <div class="option-group">
+        <label for="spreadSlider">Spread: <span id="spreadDisplay">Medium</span></label>
+        <input type="range" id="spreadSlider" min="0" max="100" value="50" />
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">✨ Click the canvas or Generate to create constellations</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Click</kbd> Add star · <kbd>G</kbd> Generate · <kbd>C</kbd> Clear · <kbd>R</kbd> Random · <kbd>S</kbd> Save
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const starCount = document.getElementById('starCount');
+      const constellationName = document.getElementById('constellationName');
+      const generateBtn = document.getElementById('generateBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const randomBtn = document.getElementById('randomBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const status = document.getElementById('status');
+      const starCountSlider = document.getElementById('starCountSlider');
+      const starCountDisplay = document.getElementById('starCountDisplay');
+      const connectionChance = document.getElementById('connectionChance');
+      const connectionDisplay = document.getElementById('connectionDisplay');
+      const spreadSlider = document.getElementById('spreadSlider');
+      const spreadDisplay = document.getElementById('spreadDisplay');
+
+      // State
+      let stars = [];
+      let connections = [];
+      let isDrawing = false;
+      let animationId = null;
+      let glowParticles = [];
+      let constellationNames = [
+        'Orion', 'Ursa Major', 'Cassiopeia', 'Draco', 'Lyra', 'Cygnus',
+        'Pegasus', 'Andromeda', 'Perseus', 'Hercules', 'Aquila', 'Scorpius',
+        'Leo', 'Virgo', 'Libra', 'Sagittarius', 'Capricornus', 'Aquarius',
+        'Pisces', 'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo Minor',
+        'Lynx', 'Ursa Minor', 'Canis Major', 'Canis Minor', 'Bootes',
+        'Corona Borealis', 'Serpens', 'Ophiuchus', 'Sextans', 'Crater'
+      ];
+      let currentNameIndex = 0;
+
+      // Constants
+      const MAX_STARS = 30;
+      const MIN_STARS = 5;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        draw();
+      }
+
+      // ----- Star generation -----
+      function generateStars(count, spread = 50) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const padding = 40;
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const maxRadius = Math.min(w, h) / 2 - padding;
+        const radius = maxRadius * (0.3 + (spread / 100) * 0.6);
+
+        const newStars = [];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const r = radius * Math.sqrt(Math.random());
+          const x = centerX + Math.cos(angle) * r;
+          const y = centerY + Math.sin(angle) * r;
+          const size = 3 + Math.random() * 5;
+          const brightness = 0.5 + Math.random() * 0.5;
+          newStars.push({ x, y, size, brightness, angle: Math.random() * Math.PI * 2 });
+        }
+        return newStars;
+      }
+
+      // ----- Connection generation -----
+      function generateConnections(stars, chance = 0.4) {
+        const newConnections = [];
+        for (let i = 0; i < stars.length; i++) {
+          for (let j = i + 1; j < stars.length; j++) {
+            if (Math.random() < chance) {
+              const dx = stars[i].x - stars[j].x;
+              const dy = stars[i].y - stars[j].y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              newConnections.push({
+                a: i,
+                b: j,
+                distance: dist,
+                opacity: 0.2 + Math.random() * 0.3
+              });
+            }
+          }
+        }
+        // Sort by distance for visual layering
+        newConnections.sort((a, b) => a.distance - b.distance);
+        return newConnections;
+      }
+
+      // ----- Create glow particles -----
+      function createGlowParticles(stars) {
+        const particles = [];
+        stars.forEach((star, index) => {
+          const count = 3 + Math.floor(Math.random() * 5);
+          for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.2 + Math.random() * 0.5;
+            const radius = 10 + Math.random() * 30;
+            particles.push({
+              x: star.x,
+              y: star.y,
+              targetX: star.x + Math.cos(angle) * radius,
+              targetY: star.y + Math.sin(angle) * radius,
+              size: 1 + Math.random() * 2,
+              speed: speed,
+              angle: angle,
+              radius: radius,
+              life: 0.3 + Math.random() * 0.7,
+              maxLife: 0.3 + Math.random() * 0.7,
+              starIndex: index
+            });
+          }
+        });
+        return particles;
+      }
+
+      // ----- Generate constellation -----
+      function generateConstellation(count = null, spread = null, chance = null) {
+        const starCount = count || parseInt(starCountSlider.value);
+        const spreadVal = spread !== null ? spread : parseInt(spreadSlider.value);
+        const connectionVal = chance !== null ? chance : parseInt(connectionChance.value) / 100;
+
+        stars = generateStars(Math.min(starCount, MAX_STARS), spreadVal);
+        connections = generateConnections(stars, connectionVal);
+        glowParticles = createGlowParticles(stars);
+
+        // Update display
+        starCount.textContent = `⭐ ${stars.length} stars`;
+        constellationName.textContent = getConstellationName();
+        status.textContent = `✨ Generated constellation with ${stars.length} stars and ${connections.length} connections`;
+
+        draw();
+        animateGlow();
+      }
+
+      // ----- Get constellation name -----
+      function getConstellationName() {
+        const name = constellationNames[currentNameIndex % constellationNames.length];
+        currentNameIndex++;
+        return name;
+      }
+
+      // ----- Drawing -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Clear with dark background
+        ctx.clearRect(0, 0, w, h);
+
+        // Background gradient
+        const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        gradient.addColorStop(0, 'rgba(20, 30, 60, 0.3)');
+        gradient.addColorStop(1, 'rgba(5, 10, 25, 0.8)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw subtle grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < w; i += 40) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i, h);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i);
+          ctx.lineTo(w, i);
+          ctx.stroke();
+        }
+
+        // Draw connections
+        connections.forEach(conn => {
+          const starA = stars[conn.a];
+          const starB = stars[conn.b];
+          if (!starA || !starB) return;
+
+          const gradient2 = ctx.createLinearGradient(starA.x, starA.y, starB.x, starB.y);
+          const opacity = conn.opacity || 0.3;
+          gradient2.addColorStop(0, `rgba(200, 220, 255, ${opacity * 0.5})`);
+          gradient2.addColorStop(0.5, `rgba(255, 255, 255, ${opacity})`);
+          gradient2.addColorStop(1, `rgba(200, 220, 255, ${opacity * 0.5})`);
+
+          ctx.beginPath();
+          ctx.moveTo(starA.x, starA.y);
+          ctx.lineTo(starB.x, starB.y);
+          ctx.strokeStyle = gradient2;
+          ctx.lineWidth = 1 + conn.opacity * 1.5;
+          ctx.shadowColor = 'rgba(200, 220, 255, 0.1)';
+          ctx.shadowBlur = 10;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        });
+
+        // Draw glow particles
+        glowParticles.forEach(p => {
+          const alpha = p.life / p.maxLife * 0.6;
+          const gradient3 = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+          gradient3.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+          gradient3.addColorStop(1, `rgba(200, 220, 255, 0)`);
+          ctx.fillStyle = gradient3;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Draw stars
+        stars.forEach((star, index) => {
+          // Glow
+          const glow = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 4);
+          const brightness = star.brightness || 0.7;
+          glow.addColorStop(0, `rgba(255, 255, 255, ${0.1 * brightness})`);
+          glow.addColorStop(1, `rgba(255, 255, 255, 0)`);
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size * 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Star body
+          const gradient4 = ctx.createRadialGradient(
+            star.x - star.size * 0.3, star.y - star.size * 0.3, 0,
+            star.x, star.y, star.size
+          );
+          gradient4.addColorStop(0, `rgba(255, 255, 255, ${0.9 * brightness})`);
+          gradient4.addColorStop(0.5, `rgba(255, 240, 200, ${0.7 * brightness})`);
+          gradient4.addColorStop(1, `rgba(200, 200, 255, ${0.3 * brightness})`);
+
+          ctx.shadowColor = `rgba(255, 255, 255, ${0.2 * brightness})`;
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = gradient4;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Cross sparkle
+          const sparkleSize = star.size * 0.6;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 * brightness})`;
+          ctx.lineWidth = 1;
+          for (let i = 0; i < 4; i++) {
+            const angle = i * Math.PI / 4 + star.angle || 0;
+            ctx.beginPath();
+            ctx.moveTo(star.x + Math.cos(angle) * sparkleSize, star.y + Math.sin(angle) * sparkleSize);
+            ctx.lineTo(star.x + Math.cos(angle + Math.PI) * sparkleSize, star.y + Math.sin(angle + Math.PI) * sparkleSize);
+            ctx.stroke();
+          }
+        });
+      }
+
+      // ----- Glow animation -----
+      function animateGlow() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+
+        let time = 0;
+
+        function animate() {
+          time += 0.02;
+
+          // Update glow particles
+          glowParticles.forEach(p => {
+            const progress = (time * p.speed + p.life) % 1;
+            const angle = p.angle + progress * Math.PI * 2;
+            const radius = p.radius * (0.5 + 0.5 * Math.sin(progress * Math.PI));
+            p.x = p.targetX + Math.cos(angle) * radius * 0.3;
+            p.y = p.targetY + Math.sin(angle) * radius * 0.3;
+            p.life = (p.life + 0.01) % p.maxLife;
+          });
+
+          draw();
+          animationId = requestAnimationFrame(animate);
+        }
+
+        animate();
+      }
+
+      // ----- Add star on click -----
+      function addStar(x, y) {
+        if (stars.length >= MAX_STARS) {
+          status.textContent = '⚠️ Maximum stars reached!';
+          return;
+        }
+
+        // Check if clicking near existing star
+        for (let star of stars) {
+          const dx = star.x - x;
+          const dy = star.y - y;
+          if (Math.sqrt(dx*dx + dy*dy) < 15) {
+            status.textContent = '⚠️ Too close to existing star!';
+            return;
+          }
+        }
+
+        const size = 3 + Math.random() * 4;
+        const brightness = 0.5 + Math.random() * 0.5;
+        stars.push({ x, y, size, brightness, angle: Math.random() * Math.PI * 2 });
+
+        // Regenerate connections
+        const chance = parseInt(connectionChance.value) / 100;
+        connections = generateConnections(stars, chance);
+        glowParticles = createGlowParticles(stars);
+
+        starCount.textContent = `⭐ ${stars.length} stars`;
+        status.textContent = `✨ Added star ${stars.length}/${MAX_STARS}`;
+        draw();
+      }
+
+      // ----- Clear all -----
+      function clearAll() {
+        stars = [];
+        connections = [];
+        glowParticles = [];
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        starCount.textContent = '⭐ 0 stars';
+        constellationName.textContent = 'Click to create';
+        status.textContent = '🗑️ Cleared all stars';
+        draw();
+      }
+
+      // ----- Random constellation -----
+      function randomConstellation() {
+        const count = MIN_STARS + Math.floor(Math.random() * (MAX_STARS - MIN_STARS));
+        const spread = Math.random() * 100;
+        const chance = 0.1 + Math.random() * 0.7;
+        generateConstellation(count, spread, chance);
+        status.textContent = `🎲 Random constellation: ${count} stars, ${connections.length} connections`;
+      }
+
+      // ----- Save as image -----
+      function saveImage() {
+        const link = document.createElement('a');
+        link.download = `constellation-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        status.textContent = '💾 Constellation saved!';
+      }
+
+      // ----- Event Listeners -----
+      // Canvas click to add star
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        addStar(x, y);
+      });
+
+      // Generate button
+      generateBtn.addEventListener('click', () => {
+        const count = parseInt(starCountSlider.value);
+        const spread = parseInt(spreadSlider.value);
+        const chance = parseInt(connectionChance.value) / 100;
+        generateConstellation(count, spread, chance);
+      });
+
+      // Clear button
+      clearBtn.addEventListener('click', clearAll);
+
+      // Random button
+      randomBtn.addEventListener('click', randomConstellation);
+
+      // Save button
+      saveBtn.addEventListener('click', saveImage);
+
+      // Sliders
+      starCountSlider.addEventListener('input', (e) => {
+        starCountDisplay.textContent = e.target.value;
+      });
+
+      connectionChance.addEventListener('input', (e) => {
+        connectionDisplay.textContent = e.target.value + '%';
+      });
+
+      spreadSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        let label = 'Medium';
+        if (val < 30) label = 'Tight';
+        else if (val < 60) label = 'Medium';
+        else label = 'Wide';
+        spreadDisplay.textContent = label;
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'g' || e.key === 'G') {
+          e.preventDefault();
+          generateBtn.click();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearBtn.click();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          randomBtn.click();
+        }
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          saveBtn.click();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          draw();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        // Generate initial constellation
+        generateConstellation(12, 50, 0.4);
+        status.textContent = '✨ Click the canvas to add stars, or Generate for a new constellation';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
