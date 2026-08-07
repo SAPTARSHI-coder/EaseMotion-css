@@ -6,8 +6,7 @@ style.css
 README.md
 
 ✨ Features
-    💡 Bright cyan neon glow
-    🌟 Animated shine sweep on hover
-    🚀 Smooth lift and scale effect
-    📱 Fully responsive
-    🎨 Pure HTML & CSS (no JavaScript)
+💡 Bright cyan neon glow
+🌟 Animated shine sweep on hover🚀 Smooth lift and scale effect
+📱 Fully responsive
+🎨 Pure HTML & CSS (no JavaScript)
