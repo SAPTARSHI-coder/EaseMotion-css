@@ -102,13 +102,43 @@ jobs:
                       owner, repo, issue_number: issue.number, assignees: [user]
                     });
                     
-                    // Comment on the issue
-                    await github.rest.issues.createComment({
-                      owner, repo, issue_number: issue.number,
-                      body: `⚠️ **Stale Assignment Cleanup:** @${user}, it has been more than 24 hours (1 day) since you were assigned to this issue and no open pull request referencing this issue was found. To keep the project moving, you have been unassigned.\n\nIf you are still working on this, feel free to claim it again when you are ready to open a pull request!\n\n> 🔓 **Status:** This issue is now open and available for anyone to claim by commenting \`/claim\`. 🚀`
+                    // Retrieve updated assignees to check if any remain
+                    const { data: updatedIssue } = await github.rest.issues.get({
+                      owner, repo, issue_number: issue.number
                     });
                     
-                    console.log(`  Successfully unassigned and commented.`);
+                    let isIssueClosed = false;
+                    if (!updatedIssue.assignees || updatedIssue.assignees.length === 0) {
+                      // Check if a PR was already merged
+                      try {
+                        const searchMerged = await github.rest.search.issuesAndPullRequests({
+                          q: `repo:${owner}/${repo} type:pr is:merged "${issue.number}"`
+                        });
+                        if (searchMerged.data.total_count > 0) {
+                          console.log(`Closing Issue #${issue.number} since all assignees are cleared and a PR has been merged.`);
+                          await github.rest.issues.update({
+                            owner, repo, issue_number: issue.number, state: 'closed', state_reason: 'completed'
+                          });
+                          await github.rest.issues.createComment({
+                            owner, repo, issue_number: issue.number,
+                            body: `🔒 **Issue Closed:** All active assignments have expired or been completed, and a resolving Pull Request was successfully merged. Thank you! 🎉`
+                          });
+                          isIssueClosed = true;
+                        }
+                      } catch (err) {
+                        console.log(`Failed to check merged PRs during unassignment: ${err.message}`);
+                      }
+                    }
+                    
+                    if (!isIssueClosed) {
+                      // Comment on the issue
+                      await github.rest.issues.createComment({
+                        owner, repo, issue_number: issue.number,
+                        body: `⚠️ **Stale Assignment Cleanup:** @${user}, it has been more than 24 hours (1 day) since you were assigned to this issue and no open pull request referencing this issue was found. To keep the project moving, you have been unassigned.\n\nIf you are still working on this, feel free to claim it again when you are ready to open a pull request!\n\n> 🔓 **Status:** This issue is now open and available for anyone to claim by commenting \`/claim\`. 🚀`
+                      });
+                    }
+                    
+                    console.log(`  Successfully processed unassignment for @${user}.`);
                   }
                 }
               }

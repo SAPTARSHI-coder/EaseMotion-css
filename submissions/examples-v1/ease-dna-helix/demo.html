@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DNA Helix Animation</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>🧬 DNA Helix</h1>
+        <p class="subtitle">Two strands rotating with connecting bars</p>
+
+        <!-- DNA HELIX COMPONENT -->
+        <div class="dna-container" id="dnaContainer">
+            <canvas id="dnaCanvas" width="500" height="400"></canvas>
+
+            <!-- Controls -->
+            <div class="dna-controls">
+                <button class="control-btn" id="resetBtn" title="Reset">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="control-btn" id="pauseBtn" title="Pause/Play">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="control-btn" id="speedBtn" title="Toggle Speed">
+                    <span style="font-size:10px;font-weight:bold;">1x</span>
+                </button>
+                <button class="control-btn" id="colorBtn" title="Toggle Color">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" stroke="none"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Status -->
+            <div class="dna-status" id="statusDisplay">
+                <span class="status-text">🧬 Running</span>
+                <span class="base-pair-count" id="basePairCount">Base Pairs: 12</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('dnaCanvas');
+            const ctx = canvas.getContext('2d');
+            const resetBtn = document.getElementById('resetBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const speedBtn = document.getElementById('speedBtn');
+            const colorBtn = document.getElementById('colorBtn');
+            const statusText = document.querySelector('.status-text');
+            const basePairCount = document.getElementById('basePairCount');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                // DNA properties
+                helixRadius: 60,
+                helixHeight: 300,
+                turns: 3,
+                basePairs: 12,
+                strandThickness: 4,
+                barThickness: 2,
+                // Colors
+                strand1Color: '#4facfe',
+                strand2Color: '#43e97b',
+                barColor: '#f093fb',
+                barColorAlt: '#f5576c',
+                glowColor: 'rgba(79, 172, 254, 0.1)',
+                // Animation
+                rotationSpeed: 0.008,
+                // Speed options
+                speeds: [0.25, 0.5, 1, 2, 4],
+                currentSpeedIndex: 2,
+                isPaused: false,
+                // Color themes
+                themes: [
+                    { name: 'Ocean', strand1: '#4facfe', strand2: '#43e97b', bar: '#f093fb', barAlt: '#f5576c' },
+                    { name: 'Fire', strand1: '#f7971e', strand2: '#ffd200', bar: '#f5576c', barAlt: '#f093fb' },
+                    { name: 'Neon', strand1: '#00f5a0', strand2: '#00d9f5', bar: '#f5a0d9', barAlt: '#f5f5a0' },
+                    { name: 'Purple', strand1: '#a18cd1', strand2: '#fbc2eb', bar: '#f6d365', barAlt: '#fda085' },
+                ],
+                currentThemeIndex: 0,
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let angle = 0;
+            let animationId = null;
+            let basePairs = [];
+            let particles = [];
+
+            // ============================================
+            // CALCULATIONS
+            // ============================================
+            const W = canvas.width;
+            const H = canvas.height;
+            const centerX = W / 2;
+            const centerY = H / 2;
+
+            function getHelixY(index, total) {
+                const progress = index / total;
+                return -CONFIG.helixHeight / 2 + progress * CONFIG.helixHeight;
+            }
+
+            function getHelixX(angle, radius) {
+                return Math.cos(angle) * radius;
+            }
+
+            function getHelixZ(angle, radius) {
+                return Math.sin(angle) * radius;
+            }
+
+            // ============================================
+            // BASE PAIR CLASS
+            // ============================================
+            class BasePair {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    this.phase = (index / total) * Math.PI * 2 * CONFIG.turns;
+                    this.y = getHelixY(index, total);
+                    this.angle = this.phase;
+                    this.connected = true;
+                    this.pulseOffset = Math.random() * Math.PI * 2;
+                }
+
+                update(rotationAngle) {
+                    this.angle = this.phase + rotationAngle;
+                }
+
+                draw(ctx) {
+                    const x1 = centerX + getHelixX(this.angle, CONFIG.helixRadius);
+                    const z1 = getHelixZ(this.angle, CONFIG.helixRadius);
+                    const x2 = centerX + getHelixX(this.angle + Math.PI, CONFIG.helixRadius);
+                    const z2 = getHelixZ(this.angle + Math.PI, CONFIG.helixRadius);
+                    const yPos = centerY + this.y;
+
+                    // Depth scaling
+                    const scale1 = 1 + z1 * 0.002;
+                    const scale2 = 1 + z2 * 0.002;
+
+                    // Strand 1 (front)
+                    const sx1 = centerX + (x1 - centerX) * scale1;
+                    const sy1 = yPos;
+                    const size1 = 6 * scale1;
+
+                    // Strand 2 (back)
+                    const sx2 = centerX + (x2 - centerX) * scale2;
+                    const sy2 = yPos;
+                    const size2 = 6 * scale2;
+
+                    // Determine which strand is in front
+                    const isFront = z1 > z2;
+
+                    // Draw connecting bar
+                    if (this.connected) {
+                        const barWidth = Math.abs(z1 - z2) * 0.1 + 2;
+                        const gradient = ctx.createLinearGradient(sx1, sy1, sx2, sy2);
+                        const theme = CONFIG.themes[CONFIG.currentThemeIndex];
+                        gradient.addColorStop(0, theme.bar);
+                        gradient.addColorStop(0.5, theme.barAlt);
+                        gradient.addColorStop(1, theme.bar);
+
+                        ctx.beginPath();
+                        ctx.moveTo(sx1, sy1);
+                        ctx.lineTo(sx2, sy2);
+                        ctx.strokeStyle = gradient;
+                        ctx.lineWidth = CONFIG.barThickness * (1 + Math.abs(z1 - z2) * 0.02);
+                        ctx.shadowColor = 'rgba(255,255,255,0.1)';
+                        ctx.shadowBlur = 10;
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+
+                        // Add glow effect on bar
+                        ctx.beginPath();
+                        ctx.moveTo(sx1, sy1);
+                        ctx.lineTo(sx2, sy2);
+                        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                        ctx.lineWidth = CONFIG.barThickness * 3;
+                        ctx.stroke();
+                    }
+
+                    // Draw strand 1 (draw behind or in front based on depth)
+                    if (isFront) {
+                        this.drawStrand(ctx, sx1, sy1, size1, CONFIG.themes[CONFIG.currentThemeIndex].strand1, true);
+                        this.drawStrand(ctx, sx2, sy2, size2, CONFIG.themes[CONFIG.currentThemeIndex].strand2, false);
+                    } else {
+                        this.drawStrand(ctx, sx2, sy2, size2, CONFIG.themes[CONFIG.currentThemeIndex].strand2, false);
+                        this.drawStrand(ctx, sx1, sy1, size1, CONFIG.themes[CONFIG.currentThemeIndex].strand1, true);
+                    }
+                }
+
+                drawStrand(ctx, x, y, size, color, isFront) {
+                    // Glow
+                    const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
+                    glowGrad.addColorStop(0, color + '40');
+                    glowGrad.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Main sphere
+                    const gradient = ctx.createRadialGradient(
+                        x - size * 0.3, y - size * 0.3, 0,
+                        x, y, size
+                    );
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(0.3, color);
+                    gradient.addColorStop(1, color + '88');
+
+                    ctx.shadowColor = color + '60';
+                    ctx.shadowBlur = isFront ? 20 : 5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(x - size * 0.25, y - size * 0.25, size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.fill();
+
+                    // Small shine
+                    ctx.beginPath();
+                    ctx.arc(x - size * 0.1, y - size * 0.4, size * 0.1, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.fill();
+
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            // ============================================
+            // PARTICLE SYSTEM (floating particles)
+            // ============================================
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.3;
+                    this.speedY = (Math.random() - 0.5) * 0.3;
+                    this.opacity = Math.random() * 0.3 + 0.1;
+                    this.phase = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.phase += 0.01;
+
+                    if (this.x < 0 || this.x > W) this.speedX *= -1;
+                    if (this.y < 0 || this.y > H) this.speedY *= -1;
+                }
+
+                draw(ctx) {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255,255,255,${this.opacity * (0.8 + Math.sin(this.phase) * 0.2)})`;
+                    ctx.fill();
+                }
+            }
+
+            // ============================================
+            // INIT FUNCTIONS
+            // ============================================
+            function initBasePairs() {
+                basePairs = [];
+                for (let i = 0; i < CONFIG.basePairs; i++) {
+                    basePairs.push(new BasePair(i, CONFIG.basePairs));
+                }
+            }
+
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 50; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            // ============================================
+            // DRAW FUNCTIONS
+            // ============================================
+            function drawBackground() {
+                // Dark gradient background
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 50,
+                    centerX, centerY, 350
+                );
+                gradient.addColorStop(0, 'rgba(20, 20, 40, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(10, 10, 20, 0.9)');
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            function drawConnectingLines() {
+                // Draw subtle grid lines for depth
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    const y = i * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < 30; i++) {
+                    const x = i * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            function drawHelixGlow() {
+                // Glow behind helix
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, 0,
+                    centerX, centerY, CONFIG.helixRadius * 1.5
+                );
+                const theme = CONFIG.themes[CONFIG.currentThemeIndex];
+                gradient.addColorStop(0, theme.strand1 + '10');
+                gradient.addColorStop(0.5, theme.strand2 + '08');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            function drawTitle() {
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                ctx.font = '120px -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🧬', centerX, centerY + 10);
+                ctx.restore();
+            }
+
+            // ============================================
+            // MAIN RENDER LOOP
+            // ============================================
+            function render() {
+                // Clear
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw layers
+                drawBackground();
+                drawConnectingLines();
+
+                // Update particles
+                particles.forEach(p => p.update());
+
+                // Draw particles (behind DNA)
+                particles.forEach(p => p.draw(ctx));
+
+                // Draw helix glow
+                drawHelixGlow();
+
+                // Update base pairs
+                const speed = CONFIG.speeds[CONFIG.currentSpeedIndex] || 1;
+                if (!CONFIG.isPaused) {
+                    angle += CONFIG.rotationSpeed * speed;
+                }
+
+                basePairs.forEach(bp => bp.update(angle));
+
+                // Sort base pairs by depth for proper rendering
+                const sortedPairs = [...basePairs].sort((a, b) => {
+                    const z1 = getHelixZ(a.angle, CONFIG.helixRadius);
+                    const z2 = getHelixZ(b.angle, CONFIG.helixRadius);
+                    return z2 - z1;
+                });
+
+                // Draw base pairs
+                sortedPairs.forEach(bp => bp.draw(ctx));
+
+                // Draw title
+                drawTitle();
+
+                // Update status
+                if (CONFIG.isPaused) {
+                    statusText.textContent = '⏸️ Paused';
+                } else {
+                    statusText.textContent = '🧬 Running';
+                }
+
+                const theme = CONFIG.themes[CONFIG.currentThemeIndex];
+                basePairCount.textContent = `Base Pairs: ${CONFIG.basePairs} • ${theme.name}`;
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            resetBtn.addEventListener('click', () => {
+                angle = 0;
+                CONFIG.isPaused = false;
+                pauseBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                    </svg>
+                `;
+                statusText.textContent = '🧬 Running';
+                initBasePairs();
+            });
+
+            pauseBtn.addEventListener('click', () => {
+                CONFIG.isPaused = !CONFIG.isPaused;
+                if (CONFIG.isPaused) {
+                    pauseBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M8 5v14l11-7z" fill="currentColor"/>
+                        </svg>
+                    `;
+                    statusText.textContent = '⏸️ Paused';
+                } else {
+                    pauseBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
+                        </svg>
+                    `;
+                    statusText.textContent = '🧬 Running';
+                }
+            });
+
+            speedBtn.addEventListener('click', () => {
+                CONFIG.currentSpeedIndex = (CONFIG.currentSpeedIndex + 1) % CONFIG.speeds.length;
+                const speed = CONFIG.speeds[CONFIG.currentSpeedIndex];
+                const labels = ['0.25x', '0.5x', '1x', '2x', '4x'];
+                speedBtn.innerHTML = `<span style="font-size:10px;font-weight:bold;">${labels[CONFIG.currentSpeedIndex]}</span>`;
+                statusText.textContent = `⚡ ${labels[CONFIG.currentSpeedIndex]}`;
+                setTimeout(() => {
+                    if (!CONFIG.isPaused) {
+                        statusText.textContent = '🧬 Running';
+                    } else {
+                        statusText.textContent = '⏸️ Paused';
+                    }
+                }, 1500);
+            });
+
+            colorBtn.addEventListener('click', () => {
+                CONFIG.currentThemeIndex = (CONFIG.currentThemeIndex + 1) % CONFIG.themes.length;
+                const theme = CONFIG.themes[CONFIG.currentThemeIndex];
+                colorBtn.style.color = theme.strand1;
+                statusText.textContent = `🎨 ${theme.name}`;
+                setTimeout(() => {
+                    if (!CONFIG.isPaused) {
+                        statusText.textContent = '🧬 Running';
+                    } else {
+                        statusText.textContent = '⏸️ Paused';
+                    }
+                }, 1500);
+            });
+
+            // ============================================
+            // KEYBOARD CONTROLS
+            // ============================================
+            document.addEventListener('keydown', (e) => {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    pauseBtn.click();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    speedBtn.click();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    colorBtn.click();
+                }
+            });
+
+            // ============================================
+            // RESIZE HANDLER
+            // ============================================
+            function handleResize() {
+                // Canvas is fixed size, but we could scale if needed
+            }
+
+            window.addEventListener('resize', handleResize);
+
+            // ============================================
+            // INIT
+            // ============================================
+            initBasePairs();
+            initParticles();
+            colorBtn.style.color = CONFIG.themes[CONFIG.currentThemeIndex].strand1;
+            statusText.textContent = '🧬 Running';
+
+            // Start animation
+            render();
+
+            // ============================================
+            // EXPOSE API
+            // ============================================
+            window.DNAHelix = {
+                reset: () => resetBtn.click(),
+                pause: () => { if (!CONFIG.isPaused) pauseBtn.click(); },
+                play: () => { if (CONFIG.isPaused) pauseBtn.click(); },
+                toggle: () => pauseBtn.click(),
+                setSpeed: (index) => {
+                    if (index >= 0 && index < CONFIG.speeds.length) {
+                        CONFIG.currentSpeedIndex = index;
+                        const labels = ['0.25x', '0.5x', '1x', '2x', '4x'];
+                        speedBtn.innerHTML = `<span style="font-size:10px;font-weight:bold;">${labels[index]}</span>`;
+                    }
+                },
+                setTheme: (index) => {
+                    if (index >= 0 && index < CONFIG.themes.length) {
+                        CONFIG.currentThemeIndex = index;
+                        const theme = CONFIG.themes[index];
+                        colorBtn.style.color = theme.strand1;
+                    }
+                },
+                getBasePairs: () => CONFIG.basePairs,
+                getThemes: () => CONFIG.themes,
+            };
+
+            console.log('✅ DNA Helix Animation initialized!');
+            console.log('📖 Controls: Space (pause), R (reset), S (speed), C (color)');
+            console.log('📖 API: window.DNAHelix');
+
+        })();
+    </script>
+</body>
+</html>

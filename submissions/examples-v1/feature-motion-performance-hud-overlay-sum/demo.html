@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Motion Performance HUD Overlay</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="hud-page">
+      <header class="hud-header">
+        <h1>Motion Performance HUD Overlay</h1>
+        <p>
+          Compare GPU-friendly motion (transform + opacity) against layout-thrashing animation
+          (width, height, top, left). The on-screen HUD tracks FPS and flags long tasks.
+        </p>
+      </header>
+
+      <div class="hud-controls">
+        <button type="button" class="hud-btn hud-btn--primary" id="toggle-scene" aria-pressed="false">
+          Start animation
+        </button>
+        <button type="button" class="hud-btn" id="mode-gpu" aria-pressed="true">GPU-friendly mode</button>
+        <button type="button" class="hud-btn" id="mode-layout" aria-pressed="false">Layout-thrash mode</button>
+      </div>
+
+      <div class="hud-scene-wrap">
+        <div class="hud-scene hud-scene--gpu" id="scene" aria-hidden="true">
+          <div class="hud-grid"></div>
+          <div class="hud-orb hud-orb--a"></div>
+          <div class="hud-orb hud-orb--b"></div>
+          <div class="hud-orb hud-orb--c"></div>
+        </div>
+
+        <aside class="hud-overlay" aria-live="polite" aria-label="Performance HUD">
+          <p class="hud-overlay-title">Performance HUD</p>
+          <div class="hud-stat-row">
+            <span class="hud-stat-label">FPS</span>
+            <span class="hud-stat-value hud-stat-value--good" id="fps-value">—</span>
+          </div>
+          <div class="hud-stat-row">
+            <span class="hud-stat-label">Frame time</span>
+            <span class="hud-stat-value" id="frame-time">—</span>
+          </div>
+          <div class="hud-stat-row">
+            <span class="hud-stat-label">Long tasks</span>
+            <span class="hud-stat-value" id="long-task-count">0</span>
+          </div>
+          <span class="hud-mode-badge hud-mode-badge--gpu" id="mode-badge">GPU-friendly</span>
+          <div class="hud-warnings" id="warnings"></div>
+        </aside>
+      </div>
+
+      <section class="hud-tip" aria-labelledby="tip-heading">
+        <h2 id="tip-heading">Tip: composite-only properties</h2>
+        <p>
+          Animating <strong>transform</strong> and <strong>opacity</strong> keeps work on the compositor
+          thread. Changing <strong>width</strong>, <strong>height</strong>, or positional layout properties
+          forces style recalc and reflow every frame — often visible as FPS drops and long-task spikes in
+          DevTools.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        var scene = document.getElementById("scene");
+        var toggleBtn = document.getElementById("toggle-scene");
+        var gpuBtn = document.getElementById("mode-gpu");
+        var layoutBtn = document.getElementById("mode-layout");
+        var fpsEl = document.getElementById("fps-value");
+        var frameTimeEl = document.getElementById("frame-time");
+        var longTaskEl = document.getElementById("long-task-count");
+        var modeBadge = document.getElementById("mode-badge");
+        var warningsEl = document.getElementById("warnings");
+
+        var running = false;
+        var mode = "gpu";
+        var rafId = null;
+        var lastTime = 0;
+        var frameTimes = [];
+        var longTaskCount = 0;
+        var observerSupported = typeof PerformanceObserver !== "undefined";
+        var longTaskObserver = null;
+        var heuristicTimer = null;
+        var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        function setMode(next) {
+          mode = next;
+          scene.classList.toggle("hud-scene--gpu", mode === "gpu");
+          scene.classList.toggle("hud-scene--layout", mode === "layout");
+          gpuBtn.setAttribute("aria-pressed", mode === "gpu" ? "true" : "false");
+          layoutBtn.setAttribute("aria-pressed", mode === "layout" ? "true" : "false");
+          modeBadge.textContent = mode === "gpu" ? "GPU-friendly" : "Layout-thrash";
+          modeBadge.className =
+            "hud-mode-badge " + (mode === "gpu" ? "hud-mode-badge--gpu" : "hud-mode-badge--layout");
+        }
+
+        function fpsClass(fps) {
+          if (fps >= 55) return "hud-stat-value--good";
+          if (fps >= 40) return "hud-stat-value--warn";
+          return "hud-stat-value--bad";
+        }
+
+        function pushWarning(text) {
+          var item = document.createElement("p");
+          item.className = "hud-warning-item";
+          item.textContent = text;
+          warningsEl.prepend(item);
+          while (warningsEl.children.length > 4) {
+            warningsEl.removeChild(warningsEl.lastChild);
+          }
+        }
+
+        function recordLongTask(source) {
+          longTaskCount += 1;
+          longTaskEl.textContent = String(longTaskCount);
+          longTaskEl.className = "hud-stat-value hud-stat-value--warn";
+          pushWarning("Long task detected (" + source + ")");
+        }
+
+        function startLongTaskObserver() {
+          if (!observerSupported) return;
+          try {
+            longTaskObserver = new PerformanceObserver(function (list) {
+              list.getEntries().forEach(function () {
+                recordLongTask("PerformanceObserver");
+              });
+            });
+            longTaskObserver.observe({ type: "longtask", buffered: true });
+          } catch (err) {
+            observerSupported = false;
+          }
+        }
+
+        function startHeuristicFallback() {
+          if (observerSupported || reducedMotion) return;
+          heuristicTimer = window.setInterval(function () {
+            if (!running || mode !== "layout") return;
+            if (Math.random() > 0.72) {
+              var start = performance.now();
+              while (performance.now() - start < 55) {
+                /* simulate main-thread pressure during layout animation */
+              }
+              recordLongTask("heuristic fallback");
+            }
+          }, 1800);
+        }
+
+        function measureFrame(now) {
+          if (!running) return;
+          if (lastTime) {
+            var delta = now - lastTime;
+            frameTimes.push(delta);
+            if (frameTimes.length > 30) frameTimes.shift();
+            var avg = frameTimes.reduce(function (a, b) {
+              return a + b;
+            }, 0) / frameTimes.length;
+            var fps = Math.round(1000 / avg);
+            fpsEl.textContent = String(fps);
+            fpsEl.className = "hud-stat-value " + fpsClass(fps);
+            frameTimeEl.textContent = avg.toFixed(1) + " ms";
+          }
+          lastTime = now;
+          rafId = requestAnimationFrame(measureFrame);
+        }
+
+        function startScene() {
+          running = true;
+          lastTime = 0;
+          frameTimes = [];
+          toggleBtn.textContent = "Stop animation";
+          toggleBtn.setAttribute("aria-pressed", "true");
+          rafId = requestAnimationFrame(measureFrame);
+        }
+
+        function stopScene() {
+          running = false;
+          toggleBtn.textContent = "Start animation";
+          toggleBtn.setAttribute("aria-pressed", "false");
+          if (rafId) cancelAnimationFrame(rafId);
+          fpsEl.textContent = "—";
+          fpsEl.className = "hud-stat-value";
+          frameTimeEl.textContent = "—";
+        }
+
+        toggleBtn.addEventListener("click", function () {
+          if (running) stopScene();
+          else startScene();
+        });
+
+        gpuBtn.addEventListener("click", function () {
+          setMode("gpu");
+        });
+
+        layoutBtn.addEventListener("click", function () {
+          setMode("layout");
+        });
+
+        startLongTaskObserver();
+        startHeuristicFallback();
+
+        if (reducedMotion) {
+          pushWarning("Reduced motion: animations paused; HUD still tracks frame timing.");
+        }
+      })();
+    </script>
+  </body>
+</html>

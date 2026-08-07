@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gauge Meter Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Gauge Meter</h1>
+        <p class="subtitle">Needle sweeps to value</p>
+
+        <!-- GAUGE METER COMPONENT -->
+        <div class="gauge-container">
+            <div class="gauge-wrapper">
+                <div class="gauge-canvas-wrapper">
+                    <canvas id="gaugeCanvas" width="400" height="300"></canvas>
+                    <div class="gauge-value" id="gaugeValue">0%</div>
+                    <div class="gauge-label" id="gaugeLabel">Loading...</div>
+                </div>
+                <div class="gauge-controls">
+                    <button class="gauge-btn" id="animateBtn">▶ Animate</button>
+                    <button class="gauge-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="gauge-btn" id="randomBtn">🎲 Random</button>
+                    <input type="range" class="gauge-slider" id="gaugeSlider" min="0" max="100" value="0" />
+                </div>
+                <div class="gauge-footer">
+                    <span class="footer-label">Value:</span>
+                    <span class="footer-value" id="footerValue">0%</span>
+                    <span class="footer-label">Status:</span>
+                    <span class="footer-value" id="footerStatus">Idle</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button class="demo-btn" id="speedSlow">🐢 Slow</button>
+            <button class="demo-btn" id="speedNormal">🐇 Normal</button>
+            <button class="demo-btn" id="speedFast">🚀 Fast</button>
+            <button class="demo-btn" id="toggleTheme">🎨 Toggle Theme</button>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <canvas width="180" height="140"></canvas>
+                    <span class="variant-label">Speed</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <canvas width="180" height="140"></canvas>
+                    <span class="variant-label">Battery</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <canvas width="180" height="140"></canvas>
+                    <span class="variant-label">Temperature</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('gaugeCanvas');
+            const ctx = canvas.getContext('2d');
+            const gaugeValue = document.getElementById('gaugeValue');
+            const gaugeLabel = document.getElementById('gaugeLabel');
+            const gaugeSlider = document.getElementById('gaugeSlider');
+            const footerValue = document.getElementById('footerValue');
+            const footerStatus = document.getElementById('footerStatus');
+            const animateBtn = document.getElementById('animateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomBtn = document.getElementById('randomBtn');
+            const speedSlow = document.getElementById('speedSlow');
+            const speedNormal = document.getElementById('speedNormal');
+            const speedFast = document.getElementById('speedFast');
+            const toggleThemeBtn = document.getElementById('toggleTheme');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const THEMES = {
+                default: {
+                    arcColor: '#e5e7eb',
+                    fillColor: '#4facfe',
+                    needleColor: '#1a1a2e',
+                    needleBaseColor: '#4facfe',
+                    textColor: '#1a1a2e',
+                    labelColor: '#6b7280',
+                    tickColor: '#6b7280',
+                    valueColor: '#1a1a2e'
+                },
+                dark: {
+                    arcColor: '#2a2a3e',
+                    fillColor: '#6fc3ff',
+                    needleColor: '#e8e8f0',
+                    needleBaseColor: '#6fc3ff',
+                    textColor: '#e8e8f0',
+                    labelColor: '#8888a0',
+                    tickColor: '#8888a0',
+                    valueColor: '#e8e8f0'
+                },
+                success: {
+                    arcColor: '#e5e7eb',
+                    fillColor: '#34c759',
+                    needleColor: '#1a1a2e',
+                    needleBaseColor: '#34c759',
+                    textColor: '#1a1a2e',
+                    labelColor: '#6b7280',
+                    tickColor: '#6b7280',
+                    valueColor: '#1a1a2e'
+                },
+                danger: {
+                    arcColor: '#e5e7eb',
+                    fillColor: '#ff3b30',
+                    needleColor: '#1a1a2e',
+                    needleBaseColor: '#ff3b30',
+                    textColor: '#1a1a2e',
+                    labelColor: '#6b7280',
+                    tickColor: '#6b7280',
+                    valueColor: '#1a1a2e'
+                }
+            };
+
+            const CONFIG = {
+                minValue: 0,
+                maxValue: 100,
+                unit: '%',
+                label: 'Loading...',
+                duration: 1500, // ms
+                theme: 'default',
+                onComplete: function(value) {
+                    console.log(`📊 Gauge reached: ${value}%`);
+                },
+                onUpdate: function(value) {
+                    console.log(`📈 Gauge: ${value}%`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let currentValue = 0;
+            let targetValue = 0;
+            let isAnimating = false;
+            let animationId = null;
+            let startTime = 0;
+            let startValue = 0;
+            let speedMultiplier = 1;
+            let currentTheme = 'default';
+
+            // ============================================
+            // DRAWING FUNCTIONS
+            // ============================================
+            function getTheme() {
+                return THEMES[currentTheme] || THEMES.default;
+            }
+
+            function drawGauge(value) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h * 0.85;
+                const radius = Math.min(w, h) * 0.6;
+                const startAngle = Math.PI * 0.75;
+                const endAngle = Math.PI * 2.25;
+                const totalAngle = endAngle - startAngle;
+                const theme = getTheme();
+
+                ctx.clearRect(0, 0, w, h);
+
+                // Background arc
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle, endAngle);
+                ctx.strokeStyle = theme.arcColor;
+                ctx.lineWidth = 20;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.restore();
+
+                // Fill arc
+                const progress = (value - CONFIG.minValue) / (CONFIG.maxValue - CONFIG.minValue);
+                const fillAngle = startAngle + progress * totalAngle;
+
+                // Glow effect
+                ctx.save();
+                ctx.shadowColor = theme.fillColor + '40';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, startAngle, fillAngle);
+                ctx.strokeStyle = theme.fillColor;
+                ctx.lineWidth = 20;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.restore();
+
+                // Tick marks
+                ctx.save();
+                for (let i = 0; i <= 10; i++) {
+                    const tickProgress = i / 10;
+                    const tickAngle = startAngle + tickProgress * totalAngle;
+                    const isMajor = i % 5 === 0;
+                    const innerRadius = radius - (isMajor ? 25 : 18);
+                    const outerRadius = radius - 10;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(
+                        cx + Math.cos(tickAngle) * innerRadius,
+                        cy + Math.sin(tickAngle) * innerRadius
+                    );
+                    ctx.lineTo(
+                        cx + Math.cos(tickAngle) * outerRadius,
+                        cy + Math.sin(tickAngle) * outerRadius
+                    );
+                    ctx.strokeStyle = theme.tickColor;
+                    ctx.lineWidth = isMajor ? 2.5 : 1.5;
+                    ctx.stroke();
+
+                    // Labels
+                    if (isMajor) {
+                        const labelRadius = radius - 32;
+                        const label = Math.round(CONFIG.minValue + tickProgress * (CONFIG.maxValue - CONFIG.minValue));
+                        ctx.fillStyle = theme.tickColor;
+                        ctx.font = '12px -apple-system, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            label,
+                            cx + Math.cos(tickAngle) * labelRadius,
+                            cy + Math.sin(tickAngle) * labelRadius
+                        );
+                    }
+                }
+                ctx.restore();
+
+                // Needle
+                const needleLength = radius - 30;
+                const needleAngle = startAngle + progress * totalAngle;
+                const needleX = cx + Math.cos(needleAngle) * needleLength;
+                const needleY = cy + Math.sin(needleAngle) * needleLength;
+
+                // Needle shadow
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(needleX, needleY);
+                ctx.strokeStyle = theme.needleColor;
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.restore();
+
+                // Needle base (circle)
+                ctx.save();
+                const gradient = ctx.createRadialGradient(cx - 4, cy - 4, 0, cx, cy, 12);
+                gradient.addColorStop(0, '#ffffff');
+                gradient.addColorStop(0.3, theme.needleBaseColor);
+                gradient.addColorStop(1, theme.needleBaseColor + '88');
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = theme.needleBaseColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+
+                // Inner dot
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.restore();
+
+                // Update text
+                const displayValue = Math.round(value);
+                gaugeValue.textContent = displayValue + CONFIG.unit;
+                gaugeValue.style.color = theme.valueColor;
+                footerValue.textContent = displayValue + CONFIG.unit;
+
+                // Update status
+                const percentage = (value - CONFIG.minValue) / (CONFIG.maxValue - CONFIG.minValue);
+                if (percentage >= 0.8) {
+                    footerStatus.textContent = 'High';
+                    footerStatus.style.color = '#ff3b30';
+                } else if (percentage >= 0.5) {
+                    footerStatus.textContent = 'Medium';
+                    footerStatus.style.color = '#f59e0b';
+                } else {
+                    footerStatus.textContent = 'Low';
+                    footerStatus.style.color = '#34c759';
+                }
+
+                // Update label
+                gaugeLabel.textContent = CONFIG.label;
+                gaugeLabel.style.color = theme.labelColor;
+
+                // Update slider
+                gaugeSlider.value = value;
+
+                // Update footer
+                footerValue.textContent = Math.round(value) + CONFIG.unit;
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = (timestamp - startTime) * speedMultiplier;
+                const progress = Math.min(elapsed / CONFIG.duration, 1);
+
+                // Ease in-out cubic
+                const eased = progress < 0.5 ? 
+                    4 * progress * progress * progress : 
+                    1 - Math.pow(-2 * progress + 2, 3) / 2;
+                
+                const value = startValue + (targetValue - startValue) * eased;
+                currentValue = value;
+
+                drawGauge(value);
+                CONFIG.onUpdate(value);
+
+                if (progress < 1) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    currentValue = targetValue;
+                    drawGauge(targetValue);
+                    isAnimating = false;
+                    animateBtn.textContent = '▶ Animate';
+                    CONFIG.onComplete(targetValue);
+                }
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function animateTo(value) {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                targetValue = Math.min(Math.max(value, CONFIG.minValue), CONFIG.maxValue);
+                startValue = currentValue;
+                startTime = 0;
+                isAnimating = true;
+                animateBtn.textContent = '⏸ Pause';
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function pause() {
+                if (!isAnimating) return;
+                isAnimating = false;
+                animateBtn.textContent = '▶ Resume';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+
+            function resume() {
+                if (isAnimating) return;
+                isAnimating = true;
+                animateBtn.textContent = '⏸ Pause';
+                startTime = 0;
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function togglePlay() {
+                if (isAnimating) {
+                    pause();
+                } else {
+                    if (currentValue >= CONFIG.maxValue) {
+                        reset();
+                        setTimeout(() => animateTo(targetValue || CONFIG.maxValue), 100);
+                    } else if (currentValue === targetValue && currentValue > 0) {
+                        // Resume from pause
+                        resume();
+                    } else {
+                        animateTo(targetValue || 75);
+                    }
+                }
+            }
+
+            function reset() {
+                pause();
+                currentValue = CONFIG.minValue;
+                targetValue = CONFIG.minValue;
+                drawGauge(CONFIG.minValue);
+                animateBtn.textContent = '▶ Animate';
+            }
+
+            function setValue(value) {
+                const clamped = Math.min(Math.max(value, CONFIG.minValue), CONFIG.maxValue);
+                currentValue = clamped;
+                targetValue = clamped;
+                drawGauge(clamped);
+                if (isAnimating) {
+                    pause();
+                }
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            animateBtn.addEventListener('click', togglePlay);
+
+            resetBtn.addEventListener('click', function() {
+                reset();
+            });
+
+            randomBtn.addEventListener('click', function() {
+                const value = Math.round(CONFIG.minValue + Math.random() * (CONFIG.maxValue - CONFIG.minValue));
+                animateTo(value);
+            });
+
+            gaugeSlider.addEventListener('input', function() {
+                const value = parseFloat(this.value);
+                setValue(value);
+            });
+
+            speedSlow.addEventListener('click', function() {
+                speedMultiplier = 0.3;
+                if (isAnimating) {
+                    pause();
+                    setTimeout(() => resume(), 100);
+                }
+            });
+
+            speedNormal.addEventListener('click', function() {
+                speedMultiplier = 1;
+                if (isAnimating) {
+                    pause();
+                    setTimeout(() => resume(), 100);
+                }
+            });
+
+            speedFast.addEventListener('click', function() {
+                speedMultiplier = 2.5;
+                if (isAnimating) {
+                    pause();
+                    setTimeout(() => resume(), 100);
+                }
+            });
+
+            toggleThemeBtn.addEventListener('click', function() {
+                const themes = ['default', 'dark', 'success', 'danger'];
+                const currentIndex = themes.indexOf(currentTheme);
+                currentTheme = themes[(currentIndex + 1) % themes.length];
+                drawGauge(currentValue);
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(canvas, label, theme, value) {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                
+                function draw() {
+                    const cx = w / 2;
+                    const cy = h * 0.8;
+                    const radius = Math.min(w, h) * 0.55;
+                    const startAngle = Math.PI * 0.75;
+                    const endAngle = Math.PI * 2.25;
+                    const totalAngle = endAngle - startAngle;
+                    
+                    ctx.clearRect(0, 0, w, h);
+                    
+                    // Background arc
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, endAngle);
+                    ctx.strokeStyle = '#e5e7eb';
+                    ctx.lineWidth = 12;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Fill arc
+                    const progress = value / 100;
+                    const fillAngle = startAngle + progress * totalAngle;
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, fillAngle);
+                    ctx.strokeStyle = theme;
+                    ctx.lineWidth = 12;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Needle
+                    const needleLength = radius - 15;
+                    const needleAngle = startAngle + progress * totalAngle;
+                    const needleX = cx + Math.cos(needleAngle) * needleLength;
+                    const needleY = cy + Math.sin(needleAngle) * needleLength;
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(needleX, needleY);
+                    ctx.strokeStyle = '#1a1a2e';
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Center dot
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = theme;
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Animate variant
+                let progress = 0;
+                const target = value;
+                
+                function animateVariant() {
+                    if (progress >= 1) return;
+                    progress += 0.015;
+                    const currentValue = Math.min(progress * target, target);
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height * 0.8;
+                    const radius = Math.min(canvas.width, canvas.height) * 0.55;
+                    const startAngle = Math.PI * 0.75;
+                    const endAngle = Math.PI * 2.25;
+                    const totalAngle = endAngle - startAngle;
+                    
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    // Background arc
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, endAngle);
+                    ctx.strokeStyle = '#e5e7eb';
+                    ctx.lineWidth = 12;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Fill arc
+                    const p = currentValue / 100;
+                    const fillAngle = startAngle + p * totalAngle;
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, startAngle, fillAngle);
+                    ctx.strokeStyle = theme;
+                    ctx.lineWidth = 12;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Needle
+                    const needleLength = radius - 15;
+                    const needleAngle = startAngle + p * totalAngle;
+                    const needleX = cx + Math.cos(needleAngle) * needleLength;
+                    const needleY = cy + Math.sin(needleAngle) * needleLength;
+                    
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(needleX, needleY);
+                    ctx.strokeStyle = '#1a1a2e';
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Center dot
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = theme;
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateVariant);
+                    }
+                }
+                
+                setTimeout(() => animateVariant(), 500 + Math.random() * 1000);
+                draw();
+            }
+
+            // Initialize variants
+            initVariant(
+                document.querySelector('#variant1 canvas'),
+                'Speed',
+                '#4facfe',
+                72
+            );
+            initVariant(
+                document.querySelector('#variant2 canvas'),
+                'Battery',
+                '#34c759',
+                45
+            );
+            initVariant(
+                document.querySelector('#variant3 canvas'),
+                'Temperature',
+                '#f59e0b',
+                88
+            );
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBtn.click();
+                }
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const newValue = Math.min(currentValue + 5, CONFIG.maxValue);
+                    animateTo(newValue);
+                }
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const newValue = Math.max(currentValue - 5, CONFIG.minValue);
+                    animateTo(newValue);
+                }
+            });
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.GaugeMeter = {
+                animateTo: animateTo,
+                setValue: setValue,
+                reset: reset,
+                pause: pause,
+                resume: resume,
+                toggle: togglePlay,
+                getValue: () => currentValue,
+                getTarget: () => targetValue,
+                isAnimating: () => isAnimating,
+                setTheme: (theme) => {
+                    if (THEMES[theme]) {
+                        currentTheme = theme;
+                        drawGauge(currentValue);
+                    }
+                },
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    drawGauge(currentValue);
+                },
+                setSpeed: (speed) => {
+                    speedMultiplier = speed;
+                }
+            };
+
+            // ============================================
+            // RESPONSIVE CANVAS
+            // ============================================
+            function resizeCanvas() {
+                const wrapper = canvas.parentElement;
+                const rect = wrapper.getBoundingClientRect();
+                const width = Math.min(400, rect.width - 20);
+                const ratio = 300 / 400;
+                canvas.width = width;
+                canvas.height = width * ratio;
+                drawGauge(currentValue);
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+            setTimeout(resizeCanvas, 100);
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            currentValue = CONFIG.minValue;
+            targetValue = CONFIG.minValue;
+            drawGauge(CONFIG.minValue);
+            gaugeSlider.value = CONFIG.minValue;
+
+            console.log('✅ Gauge Meter initialized!');
+            console.log('📖 API: window.GaugeMeter');
+            console.log('📖 Usage:');
+            console.log('  - Click "Animate" to sweep the needle');
+            console.log('  - Use slider to manually set value');
+            console.log('  - Keyboard shortcuts: Space (play/pause), R (reset), Arrow keys');
+            console.log('  - Variants show different themes');
+
+        })();
+    </script>
+</body>
+</html>

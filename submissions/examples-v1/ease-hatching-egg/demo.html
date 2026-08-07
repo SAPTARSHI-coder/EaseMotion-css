@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hatching Egg</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🥚 Hatching Egg</h1>
+        <p class="subtitle">Egg cracking with emerging creature</p>
+
+        <div class="egg-wrapper">
+            <canvas id="eggCanvas"></canvas>
+
+            <div class="controls">
+                <button id="hatchBtn">🥚 Hatch</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🥚 Ready to hatch</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('eggCanvas');
+        const ctx = canvas.getContext('2d');
+        const hatchBtn = document.getElementById('hatchBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let hatchProgress = 0;
+        let isHatching = false;
+        let isHatched = false;
+        let creature = {
+            x: 0,
+            y: 0,
+            size: 0,
+            bodyParts: [],
+            eyes: [],
+            wings: [],
+            antennae: [],
+            legs: [],
+            color: '#ff6b6b',
+            type: 'dragon',
+            animation: 0,
+            scale: 1,
+            rotation: 0,
+            bounce: 0,
+        };
+        let eggPieces = [];
+        let particles = [];
+        let glowParticles = [];
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let crackLines = [];
+        let glowIntensity = 0;
+        let shakeIntensity = 0;
+        let sparkles = [];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                egg: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                creature: '#ff6b6b',
+                glow: '#ffd93d'
+            },
+            {
+                name: 'Dragon',
+                egg: ['#e8434a', '#d63333', '#c92a2a', '#bb2020', '#ad1a1a'],
+                creature: '#e8434a',
+                glow: '#ff6b00'
+            },
+            {
+                name: 'Ice',
+                egg: ['#4a8aaa', '#3a7a9a', '#2a6a8a', '#1a5a7a', '#0a4a6a'],
+                creature: '#80d0ff',
+                glow: '#60b0ff'
+            },
+            {
+                name: 'Cosmic',
+                egg: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                creature: '#a78bfa',
+                glow: '#c084fc'
+            },
+            {
+                name: 'Golden',
+                egg: ['#d4a02a', '#c4901a', '#b4800a', '#a4700a', '#94600a'],
+                creature: '#ffd700',
+                glow: '#ffb300'
+            },
+            {
+                name: 'Nature',
+                egg: ['#2d7d46', '#3a8a55', '#4a9a65', '#5aaa75', '#6aba8a'],
+                creature: '#4a9a65',
+                glow: '#6aba8a'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color, size) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = size || 2 + Math.random() * 4;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 40;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size * 3);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== GLOW PARTICLE CLASS =====
+        class GlowParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 1 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.distance = 0;
+                this.maxDistance = 20 + Math.random() * 30;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.distance += this.speed * 0.5;
+                this.angle += 0.02;
+                if (this.distance > this.maxDistance) this.distance = this.maxDistance;
+                this.x += Math.cos(this.angle) * 0.1;
+                this.y += Math.sin(this.angle) * 0.1;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== EGG PIECE CLASS =====
+        class EggPiece {
+            constructor(x, y, size, angle) {
+                this.x = x;
+                this.y = y;
+                this.size = size || 10 + Math.random() * 20;
+                this.angle = angle || Math.random() * Math.PI * 2;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = (Math.random() - 0.5) * 5 - 2;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 60;
+                this.age = 0;
+                this.gravity = 0.1 + Math.random() * 0.1;
+                this.color = '';
+                this.shape = Math.random() > 0.5 ? 'round' : 'irregular';
+                this.opacity = 1;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.rotation += this.rotSpeed;
+                this.life = 1 - this.age / this.maxLife;
+                this.opacity = this.life;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const size = this.size * this.life;
+                ctx.globalAlpha = this.opacity * 0.8;
+
+                if (this.shape === 'round') {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    const points = 5 + Math.floor(Math.random() * 3);
+                    for (let i = 0; i < points; i++) {
+                        const angle = (i / points) * Math.PI * 2;
+                        const r = size * (0.6 + 0.4 * Math.sin(angle * 2 + this.rotation));
+                        const px = Math.cos(angle) * r;
+                        const py = Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== CREATURE DRAWING =====
+        function drawCreature(ctx, cx, cy, scale) {
+            const s = scale || 1;
+            const palette = colorPalettes[colorMode];
+            const color = creature.color || palette.creature;
+            const glowColor = palette.glow;
+            const size = creature.size * s;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(creature.scale, creature.scale);
+            ctx.rotate(creature.rotation);
+
+            // Glow
+            const glowGrad = ctx.createRadialGradient(0, -size * 0.2, 0, 0, -size * 0.2, size * 2);
+            glowGrad.addColorStop(0, glowColor + '40');
+            glowGrad.addColorStop(0.5, glowColor + '20');
+            glowGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.2, size * 2, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Body
+            const bodyGrad = ctx.createRadialGradient(
+                -size * 0.1, -size * 0.2, 0,
+                0, 0, size
+            );
+            bodyGrad.addColorStop(0, color);
+            bodyGrad.addColorStop(0.5, color);
+            bodyGrad.addColorStop(1, color + '80');
+            
+            ctx.fillStyle = bodyGrad;
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = glowColor + '60';
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.1, size * 0.8, size * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Head
+            ctx.fillStyle = bodyGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = glowColor + '40';
+            ctx.beginPath();
+            ctx.ellipse(0, -size * 0.4, size * 0.5, size * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes
+            const eyeY = -size * 0.45;
+            const eyeSize = size * 0.12;
+            // Left eye
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(-size * 0.1, eyeY + 1, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.arc(-size * 0.08, eyeY - 1, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Right eye
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.beginPath();
+            ctx.arc(size * 0.15, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#1a1a1a';
+            ctx.beginPath();
+            ctx.arc(size * 0.2, eyeY + 1, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.5;
+            ctx.beginPath();
+            ctx.arc(size * 0.22, eyeY - 1, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Mouth (smile)
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.2, size * 0.12, 0.1, Math.PI - 0.1);
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Wings (if dragon type)
+            if (creature.type === 'dragon') {
+                const wingAngle = Math.sin(time * 0.5) * 0.2;
+                
+                // Left wing
+                ctx.fillStyle = color + '80';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = glowColor + '40';
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.5, -size * 0.2);
+                ctx.quadraticCurveTo(
+                    -size * 1.2,
+                    -size * 0.5 + Math.sin(time * 0.5) * 10,
+                    -size * 0.8,
+                    -size * 0.1 + Math.sin(time * 0.3) * 5
+                );
+                ctx.quadraticCurveTo(
+                    -size * 0.9,
+                    size * 0.2 + Math.sin(time * 0.4) * 5,
+                    -size * 0.5,
+                    size * 0.1
+                );
+                ctx.closePath();
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Right wing
+                ctx.fillStyle = color + '80';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = glowColor + '40';
+                ctx.beginPath();
+                ctx.moveTo(size * 0.5, -size * 0.2);
+                ctx.quadraticCurveTo(
+                    size * 1.2,
+                    -size * 0.5 + Math.sin(time * 0.5 + 1) * 10,
+                    size * 0.8,
+                    -size * 0.1 + Math.sin(time * 0.3 + 1) * 5
+                );
+                ctx.quadraticCurveTo(
+                    size * 0.9,
+                    size * 0.2 + Math.sin(time * 0.4 + 1) * 5,
+                    size * 0.5,
+                    size * 0.1
+                );
+                ctx.closePath();
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Tail
+            ctx.fillStyle = color + '80';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            ctx.beginPath();
+            ctx.moveTo(0, size * 0.3);
+            ctx.quadraticCurveTo(
+                size * 0.3,
+                size * 0.6 + Math.sin(time * 0.4) * 5,
+                size * 0.1,
+                size * 0.9 + Math.sin(time * 0.5) * 5
+            );
+            ctx.quadraticCurveTo(
+                -size * 0.2,
+                size * 0.7 + Math.sin(time * 0.6) * 5,
+                0,
+                size * 0.5
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Legs
+            const legOffset = Math.sin(time * 0.3) * 0.05;
+            ctx.fillStyle = color + '80';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            
+            // Left leg
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.2, size * 0.4 + legOffset * 5, size * 0.1, size * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Left foot
+            ctx.beginPath();
+            ctx.ellipse(-size * 0.25, size * 0.6 + legOffset * 5, size * 0.12, size * 0.06, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right leg
+            ctx.beginPath();
+            ctx.ellipse(size * 0.2, size * 0.4 - legOffset * 5, size * 0.1, size * 0.2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Right foot
+            ctx.beginPath();
+            ctx.ellipse(size * 0.25, size * 0.6 - legOffset * 5, size * 0.12, size * 0.06, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Bounce
+            creature.bounce = Math.sin(time * 0.3) * 2;
+
+            ctx.restore();
+        }
+
+        // ===== DRAW EGG =====
+        function drawEgg(ctx, cx, cy, scale) {
+            const s = scale || 1;
+            const palette = colorPalettes[colorMode];
+            const eggColors = palette.egg;
+            const size = 60 * s;
+            const progress = hatchProgress;
+
+            // Egg glow
+            const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 2);
+            glowGrad.addColorStop(0, palette.glow + '20');
+            glowGrad.addColorStop(1, palette.glow + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, size * 2, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            // Egg shadow
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+            // Egg body
+            const eggGrad = ctx.createRadialGradient(
+                cx - size * 0.2,
+                cy - size * 0.3,
+                0,
+                cx,
+                cy,
+                size
+            );
+            const colorIdx = Math.floor(progress * (eggColors.length - 1));
+            const nextIdx = Math.min(colorIdx + 1, eggColors.length - 1);
+            const frac = (progress * (eggColors.length - 1)) % 1;
+            const color1 = eggColors[colorIdx];
+            const color2 = eggColors[nextIdx];
+            
+            // Interpolate colors
+            const r1 = parseInt(color1.slice(1,3), 16);
+            const g1 = parseInt(color1.slice(3,5), 16);
+            const b1 = parseInt(color1.slice(5,7), 16);
+            const r2 = parseInt(color2.slice(1,3), 16);
+            const g2 = parseInt(color2.slice(3,5), 16);
+            const b2 = parseInt(color2.slice(5,7), 16);
+            const r = Math.round(r1 + (r2 - r1) * frac);
+            const g = Math.round(g1 + (g2 - g1) * frac);
+            const b = Math.round(b1 + (b2 - b1) * frac);
+            const currentColor = `rgb(${r}, ${g}, ${b})`;
+
+            eggGrad.addColorStop(0, currentColor);
+            eggGrad.addColorStop(0.5, currentColor);
+            eggGrad.addColorStop(1, currentColor + '80');
+
+            // Egg shape (with cracks)
+            const crackOffset = progress * 5;
+            const wobble = 1 + progress * 0.05;
+            
+            ctx.beginPath();
+            const points = 40;
+            for (let i = 0; i <= points; i++) {
+                const t = i / points;
+                const angle = t * Math.PI * 2;
+                const x = cx + Math.cos(angle) * size * (0.5 + 0.15 * Math.cos(angle)) * wobble;
+                const y = cy + Math.sin(angle) * size * (0.7 + 0.1 * Math.sin(angle) * 0.5) * wobble;
+                
+                // Crack distortion
+                const crackWave = Math.sin(angle * 3 + progress * 10) * progress * 5;
+                const crackWave2 = Math.sin(angle * 5 + progress * 15 + 1) * progress * 3;
+                
+                const px = x + crackWave + crackWave2;
+                const py = y + Math.sin(angle * 2 + progress * 8) * progress * 4;
+                
+                if (i === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fillStyle = eggGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Crack lines
+            if (progress > 0.1) {
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx.lineWidth = 1;
+                const numCracks = 5 + Math.floor(progress * 10);
+                for (let i = 0; i < numCracks; i++) {
+                    const angle = (i / numCracks) * Math.PI * 2 + progress * 2;
+                    const dist = size * (0.3 + progress * 0.3);
+                    const x1 = cx + Math.cos(angle) * dist;
+                    const y1 = cy + Math.sin(angle) * dist * 0.8;
+                    const x2 = cx + Math.cos(angle + 0.2 + progress * 0.5) * (dist + 10 + progress * 20);
+                    const y2 = cy + Math.sin(angle + 0.2 + progress * 0.5) * (dist + 10 + progress * 20) * 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.quadraticCurveTo(
+                        (x1 + x2) / 2 + Math.sin(angle + progress) * 5,
+                        (y1 + y2) / 2 + Math.cos(angle + progress) * 5,
+                        x2, y2
+                    );
+                    ctx.stroke();
+                }
+            }
+
+            // Hatching glow
+            if (progress > 0.3 && progress < 1) {
+                const glowSize = size * (0.5 + progress * 0.5);
+                const hatchGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, glowSize);
+                hatchGlow.addColorStop(0, palette.glow + '40');
+                hatchGlow.addColorStop(0.5, palette.glow + '20');
+                hatchGlow.addColorStop(1, palette.glow + '00');
+                ctx.beginPath();
+                ctx.arc(cx, cy, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = hatchGlow;
+                ctx.fill();
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Floating particles
+            for (let i = 0; i < 20; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3 + time * 0.002) * 30) % w;
+                const y = (i * 23 + Math.cos(i * 0.5 + time * 0.003) * 20) % h;
+                const size = 0.5 + Math.sin(i + time * 0.01) * 0.3;
+                const palette = colorPalettes[colorMode];
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = palette.glow + `${Math.floor(10 + Math.sin(i + time * 0.005) * 5)}`;
+                ctx.fill();
+            }
+
+            // Ground
+            const groundY = h * 0.78;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 50, 30, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 50, 30, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 50, 30, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 50, 30, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Grass
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(i * 0.5 + time * 0.005) * 5;
+                const y = groundY + Math.sin(i * 1.3 + time * 0.008) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.005) * 4,
+                    y - 8 - Math.sin(i * 0.7 + time * 0.01) * 4,
+                    x + Math.sin(i * 1.5 + time * 0.006) * 6,
+                    y - 12 - Math.sin(i * 1.1 + time * 0.01) * 5
+                );
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.1 + Math.sin(i + time * 0.005) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // ===== HATCH =====
+        function hatch() {
+            if (isHatching || isHatched) return;
+
+            isHatching = true;
+            hatchProgress = 0;
+            statusText.textContent = '🥚 Hatching...';
+            hatchBtn.textContent = '🥚 Hatching...';
+
+            // Spawn initial particles
+            const palette = colorPalettes[colorMode];
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 - 10;
+            for (let i = 0; i < 20; i++) {
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 40,
+                    cy + (Math.random() - 0.5) * 40,
+                    palette.glow
+                );
+                p.vx = (Math.random() - 0.5) * 3;
+                p.vy = -Math.random() * 3 - 1;
+                particles.push(p);
+            }
+
+            // Start hatching animation
+            const hatchInterval = setInterval(() => {
+                hatchProgress += 0.02;
+
+                // Spawn glow particles
+                if (Math.random() < 0.1) {
+                    const g = new GlowParticle(
+                        cx + (Math.random() - 0.5) * 50,
+                        cy + (Math.random() - 0.5) * 50,
+                        palette.glow
+                    );
+                    glowParticles.push(g);
+                }
+
+                // Spawn particles
+                if (Math.random() < 0.05) {
+                    const p = new Particle(
+                        cx + (Math.random() - 0.5) * 60,
+                        cy + (Math.random() - 0.5) * 60,
+                        palette.egg[Math.floor(Math.random() * palette.egg.length)]
+                    );
+                    p.vx = (Math.random() - 0.5) * 4;
+                    p.vy = -Math.random() * 4 - 1;
+                    particles.push(p);
+                }
+
+                // Create egg pieces during hatching
+                if (hatchProgress > 0.3 && Math.random() < 0.02) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 20 + Math.random() * 30;
+                    const piece = new EggPiece(
+                        cx + Math.cos(angle) * dist,
+                        cy + Math.sin(angle) * dist * 0.8,
+                        5 + Math.random() * 15,
+                        angle + Math.random() * 0.5
+                    );
+                    piece.color = palette.egg[Math.floor(Math.random() * palette.egg.length)];
+                    piece.vx = Math.cos(angle + 0.5) * (2 + Math.random() * 3);
+                    piece.vy = -Math.random() * 4 - 1;
+                    eggPieces.push(piece);
+                }
+
+                // Shake effect
+                shakeIntensity = hatchProgress * 0.5;
+
+                // Creature emerges
+                if (hatchProgress > 0.5) {
+                    creature.size = 10 + (hatchProgress - 0.5) * 80;
+                    creature.scale = Math.min(1, (hatchProgress - 0.5) * 3);
+                    creature.rotation = Math.sin(time * 0.2) * 0.05;
+                }
+
+                if (hatchProgress >= 1) {
+                    clearInterval(hatchInterval);
+                    isHatching = false;
+                    isHatched = true;
+                    hatchBtn.textContent = '🐣 Hatched!';
+                    statusText.textContent = '🐣 A new creature!';
+                    
+                    // Final burst of particles
+                    for (let i = 0; i < 30; i++) {
+                        const p = new Particle(
+                            cx + (Math.random() - 0.5) * 60,
+                            cy + (Math.random() - 0.5) * 60,
+                            palette.glow
+                        );
+                        p.vx = (Math.random() - 0.5) * 6;
+                        p.vy = -Math.random() * 6 - 2;
+                        p.size = 2 + Math.random() * 6;
+                        particles.push(p);
+                    }
+
+                    setTimeout(() => {
+                        statusText.textContent = '🐣 Creature hatched! Click reset to try again';
+                    }, 1500);
+                }
+            }, 50);
+        }
+
+        // ===== RESET =====
+        function resetEgg() {
+            isHatching = false;
+            isHatched = false;
+            hatchProgress = 0;
+            eggPieces = [];
+            particles = [];
+            glowParticles = [];
+            creature.size = 0;
+            creature.scale = 0;
+            creature.rotation = 0;
+            shakeIntensity = 0;
+            hatchBtn.textContent = '🥚 Hatch';
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🥚 Ready to hatch';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 - 10;
+            const scale = Math.min(w, h) / 400;
+            time += 0.01;
+
+            // Update glow particles
+            for (let i = glowParticles.length - 1; i >= 0; i--) {
+                const g = glowParticles[i];
+                g.update();
+                if (g.isDead()) {
+                    glowParticles.splice(i, 1);
+                }
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update egg pieces
+            for (let i = eggPieces.length - 1; i >= 0; i--) {
+                const p = eggPieces[i];
+                p.update();
+                if (p.isDead()) {
+                    eggPieces.splice(i, 1);
+                }
+            }
+
+            // Update creature
+            if (isHatched || isHatching) {
+                creature.animation += 0.02;
+                creature.bounce = Math.sin(time * 0.3) * 2;
+                if (isHatched) {
+                    creature.rotation = Math.sin(time * 0.2) * 0.03;
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw egg pieces (behind egg)
+            for (const p of eggPieces) {
+                p.draw(ctx);
+            }
+
+            // Draw glow particles
+            for (const g of glowParticles) {
+                g.draw(ctx);
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw egg or creature
+            if (isHatched || (isHatching && hatchProgress > 0.5)) {
+                // Draw creature on top
+                drawCreature(ctx, cx, cy + creature.bounce, scale);
+                
+                // Draw remaining egg pieces around creature
+                if (hatchProgress < 1) {
+                    drawEgg(ctx, cx, cy, scale * (1 - hatchProgress * 0.3));
+                }
+            } else {
+                drawEgg(ctx, cx, cy, scale);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0 && !isHatching && !isHatched) {
+                statusText.textContent = '🥚 Ready to hatch';
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Hatch
+        hatchBtn.addEventListener('click', hatch);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            creature.color = colorPalettes[colorMode].creature;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🥚 Ready to hatch';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetEgg);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'h' || e.key === 'H') {
+                hatchBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                hatchBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', hatch);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            hatch();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🥚 Ready to hatch';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🥚 Hatching Egg loaded!');
+        console.log('💡 H - Hatch');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Hatch');
+        console.log('💡 Click egg - Hatch');
+    </script>
+</body>
+</html>
