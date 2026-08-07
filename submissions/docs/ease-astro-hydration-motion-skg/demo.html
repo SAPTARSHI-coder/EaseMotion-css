@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Astro Island Hydration + EaseMotion CSS — Integration Guide</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- ── Hero ─────────────────────────────────────────────── -->
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="hero-badge">Docs Track · Integration Guide</div>
+        <h1>Astro Islands &amp; EaseMotion CSS</h1>
+        <p class="hero-sub">
+          Understand how <code>client:*</code> hydration timing affects
+          EaseMotion hover and entrance animations — and how to keep motion
+          smooth and predictable.
+        </p>
+        <nav class="toc" aria-label="Page sections">
+          <a href="#concepts">Concepts</a>
+          <a href="#directives">Directives</a>
+          <a href="#pitfalls">Pitfalls</a>
+          <a href="#patterns">Patterns</a>
+          <a href="#chooser">Chooser</a>
+          <a href="#snippets">Snippets</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- ── Section 1: Core Concepts ─────────────────────── -->
+      <section id="concepts" class="section">
+        <div class="section-inner">
+          <h2 class="section-title">Core Concepts</h2>
+          <p class="section-desc">
+            Before diving into problems and solutions, let's align on what
+            each term means in this context.
+          </p>
+
+          <div class="concept-grid">
+            <div class="concept-card">
+              <div class="concept-icon">🏝️</div>
+              <h3>Astro Islands</h3>
+              <p>Interactive UI components rendered inside an otherwise
+              static Astro page. Each island is an isolated JavaScript
+              bundle that hydrates independently.</p>
+            </div>
+            <div class="concept-card">
+              <div class="concept-icon">💧</div>
+              <h3>Hydration</h3>
+              <p>The process where the browser downloads a component's JS,
+              runs it, and makes it interactive. Until hydration completes,
+              the component is a static HTML snapshot.</p>
+            </div>
+            <div class="concept-card">
+              <div class="concept-icon">🎨</div>
+              <h3>EaseMotion CSS</h3>
+              <p>A utility CSS framework. Because it is pure CSS, animations
+              like entrance fades and hover effects are <strong>always
+              active</strong> — they require no JavaScript to run.</p>
+            </div>
+            <div class="concept-card">
+              <div class="concept-icon">⚡</div>
+              <h3>The Mismatch</h3>
+              <p>CSS animations run immediately. JS-driven interactions
+              (click handlers, state changes) wait for hydration.
+              Confusing the two is the source of most Astro + motion bugs.</p>
+            </div>
+          </div>
+
+          <!-- Key insight callout -->
+          <div class="insight-callout">
+            <div class="insight-icon">💡</div>
+            <div>
+              <strong>Key insight:</strong> EaseMotion entrance and hover
+              animations work in any Astro component — hydrated or not —
+              because they are driven entirely by CSS. Hydration only matters
+              when you need JavaScript to <em>add or remove</em> an EaseMotion
+              class at runtime.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 2: Hydration Directives ──────────────── -->
+      <section id="directives" class="section section-alt">
+        <div class="section-inner">
+          <h2 class="section-title">Hydration Directives &amp; Timing</h2>
+          <p class="section-desc">
+            Each <code>client:*</code> directive decides <em>when</em> a
+            component becomes interactive. Click a directive to see its
+            timing and motion impact.
+          </p>
+
+          <div class="directive-list" id="directive-list">
+
+            <div class="directive-item" data-dir="load">
+              <div class="directive-header">
+                <span class="dir-tag tag-fast">Fastest</span>
+                <code class="dir-name">client:load</code>
+                <span class="dir-chevron">▼</span>
+              </div>
+              <div class="directive-body">
+                <p><strong>When:</strong> Hydrates immediately as the page
+                loads — highest priority.</p>
+                <p><strong>Motion impact:</strong> Minimal delay. The
+                component is interactive almost as soon as the HTML paints.
+                Safe for hero animations and above-the-fold entrance
+                effects that also need JS class toggling.</p>
+                <div class="timeline-bar">
+                  <div class="timeline-fill fill-100" title="100% — hydrates on load"></div>
+                </div>
+                <p class="timeline-label">Hydrates: immediately on page load</p>
+              </div>
+            </div>
+
+            <div class="directive-item" data-dir="idle">
+              <div class="directive-header">
+                <span class="dir-tag tag-med">Deferred</span>
+                <code class="dir-name">client:idle</code>
+                <span class="dir-chevron">▼</span>
+              </div>
+              <div class="directive-body">
+                <p><strong>When:</strong> Waits for the browser's
+                <code>requestIdleCallback</code> — after high-priority
+                work finishes.</p>
+                <p><strong>Motion impact:</strong> Can be 200 ms – 2 s
+                after paint on busy pages. CSS entrance animations will
+                already be done. JS-toggled hover classes will silently
+                fail until hydration completes — users may click with no
+                visible response.</p>
+                <div class="timeline-bar">
+                  <div class="timeline-fill fill-60" title="Hydrates after idle"></div>
+                </div>
+                <p class="timeline-label">Hydrates: after browser idle (variable delay)</p>
+              </div>
+            </div>
+
+            <div class="directive-item" data-dir="visible">
+              <div class="directive-header">
+                <span class="dir-tag tag-med">Lazy</span>
+                <code class="dir-name">client:visible</code>
+                <span class="dir-chevron">▼</span>
+              </div>
+              <div class="directive-body">
+                <p><strong>When:</strong> Uses <code>IntersectionObserver</code>
+                — hydrates only when the component enters the viewport.</p>
+                <p><strong>Motion impact:</strong> Perfect for scroll-triggered
+                CSS entrance animations (they fire on scroll naturally).
+                Dangerous for hover effects: the user can hover before
+                hydration, triggering the CSS animation but not any JS
+                handler.</p>
+                <div class="timeline-bar">
+                  <div class="timeline-fill fill-40" title="Hydrates on scroll into view"></div>
+                </div>
+                <p class="timeline-label">Hydrates: when scrolled into viewport</p>
+              </div>
+            </div>
+
+            <div class="directive-item" data-dir="media">
+              <div class="directive-header">
+                <span class="dir-tag tag-cond">Conditional</span>
+                <code class="dir-name">client:media</code>
+                <span class="dir-chevron">▼</span>
+              </div>
+              <div class="directive-body">
+                <p><strong>When:</strong> Hydrates when a CSS media query
+                matches (e.g. <code>client:media="(max-width: 768px)"</code>).</p>
+                <p><strong>Motion impact:</strong> Component is static on
+                non-matching viewports. EaseMotion CSS animations still
+                run. JS-dependent interactions are dead until the
+                breakpoint is reached.</p>
+                <div class="timeline-bar">
+                  <div class="timeline-fill fill-30" title="Conditional hydration"></div>
+                </div>
+                <p class="timeline-label">Hydrates: when media query matches</p>
+              </div>
+            </div>
+
+            <div class="directive-item" data-dir="only">
+              <div class="directive-header">
+                <span class="dir-tag tag-never">No JS</span>
+                <code class="dir-name">client:only</code>
+                <span class="dir-chevron">▼</span>
+              </div>
+              <div class="directive-body">
+                <p><strong>When:</strong> Renders entirely client-side —
+                no SSR HTML. Hydrates on load like <code>client:load</code>
+                but skips server rendering.</p>
+                <p><strong>Motion impact:</strong> There is no server HTML
+                snapshot, so entrance animations play <em>after</em> the
+                JS bundle downloads and renders the component. This can
+                cause a blank flash before the animation starts on slow
+                connections.</p>
+                <div class="timeline-bar">
+                  <div class="timeline-fill fill-20" title="Renders client-side only"></div>
+                </div>
+                <p class="timeline-label">Hydrates: client-only render (no SSR)</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 3: Pitfalls ───────────────────────────── -->
+      <section id="pitfalls" class="section">
+        <div class="section-inner">
+          <h2 class="section-title">Common Pitfalls</h2>
+          <p class="section-desc">
+            These are the patterns that look right but silently break motion
+            UX in Astro projects. Click each card to expand the explanation.
+          </p>
+
+          <div class="pitfall-list">
+
+            <div class="pitfall-card" data-pitfall="p1">
+              <div class="pitfall-header">
+                <span class="pitfall-num">01</span>
+                <h3>JS toggling an EaseMotion class before hydration</h3>
+                <span class="pitfall-chevron">▼</span>
+              </div>
+              <div class="pitfall-body">
+                <div class="code-compare">
+                  <div class="code-panel code-bad">
+                    <div class="code-label label-bad">❌ Problematic</div>
+                    <pre><span class="c-comment">// Button.jsx — uses client:idle</span>
+<span class="c-kw">const</span> [active, setActive] = useState(<span class="c-bool">false</span>);
+<span class="c-kw">return</span> (
+  <span class="c-tag">&lt;button</span>
+    <span class="c-attr">className</span>=<span class="c-str">{`btn ${active ? "ease-pulse" : ""}`}</span>
+    <span class="c-attr">onClick</span>=<span class="c-str">{() =&gt; setActive(true)}</span>
+  <span class="c-tag">&gt;</span>
+    Click me
+  <span class="c-tag">&lt;/button&gt;</span>
+);</pre>
+                    <p class="code-note">User clicks during idle delay → no animation,
+                    no feedback. Hydration hasn't run yet so <code>onClick</code>
+                    is dead.</p>
+                  </div>
+                  <div class="code-panel code-good">
+                    <div class="code-label label-good">✅ Fix: use client:load</div>
+                    <pre><span class="c-comment">// Switch to client:load in the .astro file</span>
+<span class="c-tag">&lt;Button</span> <span class="c-attr">client:load</span> <span class="c-tag">/&gt;</span>
+
+<span class="c-comment">// Or keep client:idle but add CSS-only fallback</span>
+<span class="c-tag">&lt;button</span>
+  <span class="c-attr">class</span>=<span class="c-str">"btn ease-hover-scale"</span>
+  <span class="c-attr">data-js-pulse</span>
+<span class="c-tag">&gt;</span>
+  Click me
+<span class="c-tag">&lt;/button&gt;</span>
+<span class="c-comment">/* CSS hover works always.
+   JS adds ease-pulse only after hydration. */</span></pre>
+                    <p class="code-note">CSS hover animation is always live.
+                    JS enhancement layers on top after hydration.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pitfall-card" data-pitfall="p2">
+              <div class="pitfall-header">
+                <span class="pitfall-num">02</span>
+                <h3>Entrance animation replays after client:only renders</h3>
+                <span class="pitfall-chevron">▼</span>
+              </div>
+              <div class="pitfall-body">
+                <div class="code-compare">
+                  <div class="code-panel code-bad">
+                    <div class="code-label label-bad">❌ Problematic</div>
+                    <pre><span class="c-comment">// Card.astro — hero card</span>
+<span class="c-tag">&lt;Card</span> <span class="c-attr">client:only</span>=<span class="c-str">"react"</span> <span class="c-tag">/&gt;</span>
+
+<span class="c-comment">// Card.jsx</span>
+<span class="c-kw">return</span> <span class="c-tag">&lt;div</span> <span class="c-attr">className</span>=<span class="c-str">"card ease-fade-in"</span><span class="c-tag">&gt;</span>...<span class="c-tag">&lt;/div&gt;</span>;</pre>
+                    <p class="code-note">No SSR HTML → blank space until JS
+                    loads → card pops in and plays fade-in. Users on slow
+                    connections see a layout jump.</p>
+                  </div>
+                  <div class="code-panel code-good">
+                    <div class="code-label label-good">✅ Fix: use client:visible or SSR</div>
+                    <pre><span class="c-comment">// Prefer client:visible for below-fold cards</span>
+<span class="c-tag">&lt;Card</span> <span class="c-attr">client:visible</span> <span class="c-tag">/&gt;</span>
+
+<span class="c-comment">// Or extract static shell to .astro,
+// keep only interactive part as island</span>
+<span class="c-tag">&lt;div</span> <span class="c-attr">class</span>=<span class="c-str">"card ease-fade-in"</span><span class="c-tag">&gt;</span>
+  <span class="c-comment">&lt;!-- static SSR content --&gt;</span>
+  <span class="c-tag">&lt;CardInteractive</span> <span class="c-attr">client:idle</span> <span class="c-tag">/&gt;</span>
+<span class="c-tag">&lt;/div&gt;</span></pre>
+                    <p class="code-note">Static shell renders server-side,
+                    so CSS entrance runs immediately. Only the interactive
+                    part waits for JS.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pitfall-card" data-pitfall="p3">
+              <div class="pitfall-header">
+                <span class="pitfall-num">03</span>
+                <h3>Scroll entrance fires before client:visible hydrates</h3>
+                <span class="pitfall-chevron">▼</span>
+              </div>
+              <div class="pitfall-body">
+                <div class="code-compare">
+                  <div class="code-panel code-bad">
+                    <div class="code-label label-bad">❌ Problematic</div>
+                    <pre><span class="c-comment">// Section.astro</span>
+<span class="c-tag">&lt;AnimatedSection</span> <span class="c-attr">client:visible</span> <span class="c-tag">/&gt;</span>
+
+<span class="c-comment">// AnimatedSection.jsx — adds class on scroll</span>
+<span class="c-kw">useEffect</span>(() =&gt; {
+  <span class="c-kw">const</span> obs = <span class="c-kw">new</span> IntersectionObserver(([e]) =&gt; {
+    <span class="c-kw">if</span> (e.isIntersecting)
+      ref.current.classList.add(<span class="c-str">"ease-slide-up"</span>);
+  });
+  obs.observe(ref.current);
+}, []);</pre>
+                    <p class="code-note">The CSS entrance plays when scrolled
+                    into view (CSS is always live). Then hydration fires and
+                    <em>re-adds</em> the class via JS — animation replays
+                    unexpectedly.</p>
+                  </div>
+                  <div class="code-panel code-good">
+                    <div class="code-label label-good">✅ Fix: check if class already present</div>
+                    <pre><span class="c-kw">useEffect</span>(() =&gt; {
+  <span class="c-kw">const</span> obs = <span class="c-kw">new</span> IntersectionObserver(([e]) =&gt; {
+    <span class="c-kw">if</span> (e.isIntersecting
+      &amp;&amp; !ref.current.classList
+           .contains(<span class="c-str">"ease-slide-up"</span>)) {
+      ref.current.classList.add(<span class="c-str">"ease-slide-up"</span>);
+    }
+  });
+  obs.observe(ref.current);
+}, []);</pre>
+                    <p class="code-note">Guard prevents double-firing.
+                    Or use a CSS-only scroll reveal so JS is never needed.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 4: Recommended Patterns ──────────────── -->
+      <section id="patterns" class="section section-alt">
+        <div class="section-inner">
+          <h2 class="section-title">Recommended Patterns</h2>
+          <p class="section-desc">
+            Four integration patterns that keep motion smooth regardless of
+            hydration timing.
+          </p>
+
+          <div class="pattern-grid">
+            <div class="pattern-card">
+              <div class="pattern-num">A</div>
+              <h3>CSS-first, JS-enhanced</h3>
+              <p>Always write CSS-driven motion as the baseline. Layer JS
+              class toggling on top only where needed. Users get smooth
+              animation before hydration; JS adds richer interaction after.</p>
+              <pre class="pattern-code"><span class="c-comment">&lt;!-- Always has hover animation via CSS --&gt;</span>
+&lt;button class=<span class="c-str">"btn ease-hover-lift"</span>
+        data-ripple&gt;
+  Submit
+&lt;/button&gt;
+<span class="c-comment">&lt;!-- JS adds ripple AFTER hydration --&gt;</span></pre>
+            </div>
+
+            <div class="pattern-card">
+              <div class="pattern-num">B</div>
+              <h3>Static shell + minimal island</h3>
+              <p>Keep the visual structure in <code>.astro</code> with
+              EaseMotion classes applied at build time. Only wrap the
+              smallest interactive piece in a framework component.</p>
+              <pre class="pattern-code"><span class="c-comment">&lt;!-- Page.astro --&gt;</span>
+&lt;section class=<span class="c-str">"ease-fade-in"</span>&gt;
+  &lt;h2&gt;Static title&lt;/h2&gt;
+  &lt;p&gt;Static body&lt;/p&gt;
+  &lt;LikeButton <span class="c-attr">client:idle</span> /&gt;
+&lt;/section&gt;</pre>
+            </div>
+
+            <div class="pattern-card">
+              <div class="pattern-num">C</div>
+              <h3>is-hydrated guard class</h3>
+              <p>Add a sentinel class once hydration completes. Use it in
+              CSS to enable JS-dependent animations, preventing them from
+              triggering before the component is interactive.</p>
+              <pre class="pattern-code"><span class="c-comment">// Component.jsx</span>
+<span class="c-kw">useEffect</span>(() =&gt; {
+  ref.current.classList
+    .add(<span class="c-str">'is-hydrated'</span>);
+}, []);
+
+<span class="c-comment">/* style.css */</span>
+.card .ease-pulse { display: none; }
+.card.is-hydrated .ease-pulse {
+  display: block;
+}</pre>
+            </div>
+
+            <div class="pattern-card">
+              <div class="pattern-num">D</div>
+              <h3>animation-fill-mode: both</h3>
+              <p>For entrance animations on <code>client:only</code>
+              components, add <code>animation-fill-mode: both</code> and
+              a small delay. This hides the blank-flash period and lets
+              the animation play cleanly once the component mounts.</p>
+              <pre class="pattern-code"><span class="c-comment">/* style.css */</span>
+.island-entrance {
+  animation: ease-kf-fade-in 0.5s
+    ease-out 0.1s both;
+  <span class="c-comment">/* 'both' = stays at keyframe 0
+     until the delay passes */</span>
+}</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 5: Directive Chooser ─────────────────── -->
+      <section id="chooser" class="section">
+        <div class="section-inner">
+          <h2 class="section-title">Directive Chooser</h2>
+          <p class="section-desc">
+            Answer two questions and get the recommended hydration directive
+            for your use case.
+          </p>
+
+          <div class="chooser-box">
+            <div class="chooser-step" id="step-1">
+              <p class="chooser-q">Does the component need JavaScript to function correctly on first interaction?</p>
+              <div class="chooser-btns">
+                <button class="chooser-btn" data-step="1" data-ans="yes">Yes — click/keyboard handlers are essential</button>
+                <button class="chooser-btn" data-step="1" data-ans="no">No — CSS hover/entrance is enough</button>
+              </div>
+            </div>
+
+            <div class="chooser-step hidden" id="step-2a">
+              <p class="chooser-q">Is this component above the fold / in the hero area?</p>
+              <div class="chooser-btns">
+                <button class="chooser-btn" data-step="2a" data-ans="yes">Yes — visible immediately on load</button>
+                <button class="chooser-btn" data-step="2a" data-ans="no">No — below the fold or secondary UI</button>
+              </div>
+            </div>
+
+            <div class="chooser-step hidden" id="step-2b">
+              <p class="chooser-q">Does the component appear in the viewport on load?</p>
+              <div class="chooser-btns">
+                <button class="chooser-btn" data-step="2b" data-ans="yes">Yes</button>
+                <button class="chooser-btn" data-step="2b" data-ans="no">No — it's off-screen initially</button>
+              </div>
+            </div>
+
+            <div class="chooser-result hidden" id="result-load">
+              <div class="result-card result-green">
+                <div class="result-directive">client:load</div>
+                <p>Critical above-fold interactivity — hydrate immediately.
+                Pair EaseMotion entrance classes directly; they will play
+                as the page paints.</p>
+              </div>
+              <button class="chooser-reset">Start over</button>
+            </div>
+
+            <div class="chooser-result hidden" id="result-idle">
+              <div class="result-card result-yellow">
+                <div class="result-directive">client:idle</div>
+                <p>Non-critical interactivity — hydrate after load. Use
+                pattern A (CSS-first) so hover and entrance animations
+                work before the JS kicks in.</p>
+              </div>
+              <button class="chooser-reset">Start over</button>
+            </div>
+
+            <div class="chooser-result hidden" id="result-visible">
+              <div class="result-card result-yellow">
+                <div class="result-directive">client:visible</div>
+                <p>Off-screen component — hydrate on scroll. Entrance
+                animations are safe. Add the double-fire guard (Pattern C)
+                if JS also adds motion classes.</p>
+              </div>
+              <button class="chooser-reset">Start over</button>
+            </div>
+
+            <div class="chooser-result hidden" id="result-none">
+              <div class="result-card result-blue">
+                <div class="result-directive">No directive needed</div>
+                <p>EaseMotion CSS classes work with zero JavaScript.
+                Keep the component as a plain <code>.astro</code> file
+                or static HTML — no island required.</p>
+              </div>
+              <button class="chooser-reset">Start over</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Section 6: Copy-Ready Snippets ───────────────── -->
+      <section id="snippets" class="section section-alt">
+        <div class="section-inner">
+          <h2 class="section-title">Copy-Ready Snippets</h2>
+          <p class="section-desc">
+            Practical code you can drop straight into an Astro project.
+            Click the copy button on any snippet.
+          </p>
+
+          <div class="snippet-list">
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span class="snippet-title">CSS-only entrance in an Astro component</span>
+                <button class="copy-code-btn" aria-label="Copy snippet">📋 Copy</button>
+              </div>
+              <pre class="snippet-code"><span class="c-comment">---
+// HeroCard.astro — no client directive needed
+---</span>
+&lt;div class=<span class="c-str">"card ease-fade-in"</span>&gt;
+  &lt;h2&gt;Hello from Astro&lt;/h2&gt;
+  &lt;p&gt;This entrance animation needs zero JavaScript.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;style&gt;
+  .card { animation-fill-mode: both; }
+&lt;/style&gt;</pre>
+            </div>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span class="snippet-title">CSS-first hover + JS enhancement (React island)</span>
+                <button class="copy-code-btn" aria-label="Copy snippet">📋 Copy</button>
+              </div>
+              <pre class="snippet-code"><span class="c-comment">// Button.jsx — used with client:idle</span>
+<span class="c-kw">import</span> { useRef, useEffect } <span class="c-kw">from</span> <span class="c-str">'react'</span>;
+
+<span class="c-kw">export default function</span> Button({ label }) {
+  <span class="c-kw">const</span> ref = useRef(<span class="c-bool">null</span>);
+
+  <span class="c-comment">// Adds ripple class only after hydration</span>
+  useEffect(() =&gt; {
+    ref.current.addEventListener(<span class="c-str">'click'</span>, () =&gt; {
+      ref.current.classList.add(<span class="c-str">'ease-pulse'</span>);
+      setTimeout(() =&gt;
+        ref.current.classList.remove(<span class="c-str">'ease-pulse'</span>), 600);
+    });
+  }, []);
+
+  <span class="c-kw">return</span> (
+    &lt;button
+      ref={ref}
+      <span class="c-comment">// ease-hover-lift works BEFORE hydration via CSS</span>
+      className=<span class="c-str">"btn ease-hover-lift"</span>
+    &gt;
+      {label}
+    &lt;/button&gt;
+  );
+}</pre>
+            </div>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span class="snippet-title">is-hydrated guard for JS-gated animations</span>
+                <button class="copy-code-btn" aria-label="Copy snippet">📋 Copy</button>
+              </div>
+              <pre class="snippet-code"><span class="c-comment">// AnimatedWidget.jsx — client:visible</span>
+<span class="c-kw">import</span> { useRef, useEffect } <span class="c-kw">from</span> <span class="c-str">'react'</span>;
+
+<span class="c-kw">export default function</span> AnimatedWidget() {
+  <span class="c-kw">const</span> ref = useRef(<span class="c-bool">null</span>);
+
+  useEffect(() =&gt; {
+    <span class="c-comment">// Signal that JS is ready</span>
+    ref.current?.classList.add(<span class="c-str">'is-hydrated'</span>);
+  }, []);
+
+  <span class="c-kw">return</span> &lt;div ref={ref} className=<span class="c-str">"widget"</span>&gt;...&lt;/div&gt;;
+}
+
+<span class="c-comment">/* style.css */</span>
+<span class="c-comment">/* JS-only animation hidden until hydrated */</span>
+.widget .js-only-pulse  { display: none; }
+.widget.is-hydrated .js-only-pulse { display: block; }</pre>
+            </div>
+
+            <div class="snippet-block">
+              <div class="snippet-header">
+                <span class="snippet-title">client:only blank-flash fix with animation delay</span>
+                <button class="copy-code-btn" aria-label="Copy snippet">📋 Copy</button>
+              </div>
+              <pre class="snippet-code"><span class="c-comment">// Page.astro</span>
+&lt;HeavyWidget <span class="c-attr">client:only</span>=<span class="c-str">"react"</span> /&gt;
+
+<span class="c-comment">/* HeavyWidget.module.css — applied in the component */</span>
+.root {
+  <span class="c-comment">/* Stays invisible at keyframe-0 during JS load delay */</span>
+  animation: ease-kf-fade-in 0.45s ease-out 0.15s both;
+}
+
+<span class="c-comment">// HeavyWidget.jsx</span>
+<span class="c-kw">import</span> styles <span class="c-kw">from</span> <span class="c-str">'./HeavyWidget.module.css'</span>;
+<span class="c-kw">export default function</span> HeavyWidget() {
+  <span class="c-kw">return</span> &lt;div className={styles.root}&gt;...&lt;/div&gt;;
+}</pre>
+            </div>
+
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <div class="footer-inner">
+        <p>EaseMotion CSS · Astro Island Hydration Integration Guide</p>
+        <p>Submission by <strong>karrisanthoshigayatri</strong> · Issue #47699</p>
+      </div>
+    </footer>
+
+    <div id="copy-toast" class="toast" role="status" aria-live="polite">
+      Copied to clipboard!
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
