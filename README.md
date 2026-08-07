@@ -30,6 +30,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
 [![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu%20%28Rank%20%233%20Public%20%7C%20%235%20All%20Time%20Private%20🇮🇳%29-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
+<img src="https://img.shields.io/badge/bundle%20size-18.4kb%20gzip-brightgreen" alt="Bundle Size">
 
 </div>
 
