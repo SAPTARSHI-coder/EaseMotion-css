@@ -23,10 +23,10 @@ Follow these steps to contribute a new component example:
    ```
 
 2. **Copy the boilerplate files**:
-   Copy `index.html`, `style.css`, `script.js`, and `README.md` from this template directory into your new folder.
+   Copy `demo.html`, `style.css`, `script.js`, and `README.md` from this template directory into your new folder.
 
 3. **Develop & Inspect**:
-   Open `index.html` in your browser. Use the top **Environment Inspector Bar** to verify:
+   Open `demo.html` in your browser. Use the top **Environment Inspector Bar** to verify:
    - 🌙 **Dark Mode (Default)** & ☀️ **Light Mode** rendering
    - 👁️ **High Contrast Mode** compliance
    - ⇄ **RTL (Right-to-Left)** text direction alignment
@@ -47,13 +47,14 @@ All submissions under `submissions/examples/` MUST strictly follow this folder a
 
 ```
 submissions/examples/<component-name-author-initials>/
-├── index.html   (or demo.html - standalone, self-contained HTML page)
-├── style.css    (vanilla CSS containing design tokens, animations, and responsive styles)
+├── demo.html    (REQUIRED: standalone, self-contained HTML demo page with <!DOCTYPE html>)
+├── style.css    (REQUIRED: vanilla CSS containing design tokens, animations, and responsive styles)
 ├── script.js    (vanilla JS for interactive behaviors and keyboard nav; optional for static CSS)
-└── README.md    (standardized component documentation and usage guide)
+└── README.md    (REQUIRED: standardized component documentation and usage guide)
 ```
 
 > [!IMPORTANT]
+> - **`demo.html` is mandatory** — the repository automated CI validator checks specifically for `demo.html`, `style.css`, and `README.md`.
 > - Do **NOT** use external CSS frameworks like Tailwind CSS or Bootstrap unless explicitly requested.
 > - Do **NOT** use external JS libraries (like React, jQuery, or GSAP). All scripts must be zero-dependency Vanilla JS.
 > - Keep asset references local or use standard Google Fonts URLs.
@@ -156,7 +157,7 @@ Copy the markdown block below when creating your component's `README.md`:
 
 ## 🎯 How is it used?
 
-### 1. HTML Structure
+### 1. HTML Structure (`demo.html`)
 
 \`\`\`html
 <article class="em-card" role="region" aria-labelledby="component-title">
@@ -169,7 +170,7 @@ Copy the markdown block below when creating your component's `README.md`:
 </article>
 \`\`\`
 
-### 2. CSS Custom Properties
+### 2. CSS Custom Properties (`style.css`)
 
 \`\`\`css
 :root {
@@ -217,7 +218,7 @@ Copy the markdown block below when creating your component's `README.md`:
 Before opening your Pull Request, double check:
 
 - [ ] Folder created under `submissions/examples/<component-name-author-initials>/`
-- [ ] Folder contains `index.html` (or `demo.html`), `style.css`, `script.js` (if applicable), and `README.md`
+- [ ] Folder contains `demo.html` (REQUIRED), `style.css` (REQUIRED), `script.js` (if applicable), and `README.md` (REQUIRED)
 - [ ] Tested with Light, Dark, High Contrast, RTL, and Reduced Motion in the Showcase Inspector
 - [ ] Verified keyboard navigation (`Tab`, `Space`, `Enter`, `Escape`)
 - [ ] `git status` clean with no extraneous build files or temporary scratch files
