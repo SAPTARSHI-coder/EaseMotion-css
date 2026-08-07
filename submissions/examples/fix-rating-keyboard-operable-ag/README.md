@@ -16,4 +16,4 @@ making the rating component fully keyboard-operable and screen-reader accessible
 ## Why is it useful?
 `<input type="radio">` provides native keyboard interaction (Arrow keys to
 navigate, Space to select) and announces the selected value to screen readers.
-Fixes: #35846
+Fixes: #59815

@@ -1,14 +1,17 @@
 # Skeleton Loading Shimmer
 
-## Description
-A loading skeleton animation that provides a smooth left-to-right shimmer effect on placeholder elements. It gives users visual feedback that content is actively loading, rather than just showing a static gray box.
+## What does this do?
+Renders animated placeholder blocks (circle, text lines) with a moving shimmer
+gradient to indicate content is loading, replacing blank space or a spinner.
 
-## Usage
-Simply apply the `skeleton-shimmer` class to any block-level element that you want to act as a placeholder. Be sure to specify its dimensions (width and height) or use utility classes/inline styles for layout.
+## How is it used?
+Add .skeleton to any block-level element plus a shape modifier
+(.skeleton-circle for avatars, .skeleton-line for text) and a width
+utility class if needed. Swap the skeleton markup for real content once data
+arrives.
 
-```html
-<div class="skeleton-shimmer" style="width: 250px; height: 150px; border-radius: 8px;"></div>
-```
-
-## Why is this useful for EaseMotion CSS?
-This fits the animation-first philosophy by bringing life to otherwise static loading states. It's highly composable—developers can add it to any block-level element (cards, avatars, text placeholders) simply by applying the class.
+## Why is it useful?
+- Zero JavaScript, zero dependencies — pure CSS animation
+- Improves perceived performance on slow network/API calls
+- Reusable across cards, lists, tables, and profile sections
+- Matches EaseMotion's animation-first, human-readable philosophy

@@ -8,4 +8,4 @@ Include the component as usual. The new CSS handles all state transitions automa
 
 ## Why is it useful?
 Improves user experience by providing fluid visual feedback and ensures consistent accessibility indicators.
-Fixes: #37147
+Fixes: #59819

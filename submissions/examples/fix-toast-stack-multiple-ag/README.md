@@ -14,4 +14,4 @@ Introduces `.ease-toast-container` — a `position: fixed` flex-column wrapper
 
 ## Why is it useful?
 Without a stacking container, all toasts share the same screen position
-and overlap, making only the last one visible. Fixes: #35826
+and overlap, making only the last one visible. Fixes: #59815

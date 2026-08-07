@@ -14,4 +14,4 @@ see a clear focus indicator when the dismiss button is focused via Tab.
 
 ## Why is it useful?
 Without a focus ring, keyboard users cannot tell which element is focused,
-making the dismiss button effectively unusable for them. Fixes: #35808
+making the dismiss button effectively unusable for them. Fixes: #59815

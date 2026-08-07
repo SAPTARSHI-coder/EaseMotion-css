@@ -1,20 +1,43 @@
-# Animated Skeleton Loading UI
+# Animated Skeleton Loader
 
-A clean, modern, and fully responsive **Skeleton Loading Component** that improves perceived performance while data is fetching. This example demonstrates how to combine **EaseMotion CSS** for staggered skeleton block entrances and continuous pulsing effects with a smooth crossfade transition to the actual loaded content.
+A pure CSS animated skeleton loader component that provides loading placeholders with smooth shimmer (wave) and pulse effects. It is designed to improve the user experience while content is loading.
 
-## 🚀 Features
+## Features
 
-- **Staggered Skeleton Entrances**: Each skeleton block fades in sequentially using `ease-pulse` and `ease-delay-*` to create a realistic, cascading load effect.
-- **Custom Shimmer Effect**: A CSS gradient overlay sweeps across the skeleton blocks continuously to simulate a loading shimmer.
-- **Smooth Crossfade Transition**: The skeleton state smoothly fades out while the loaded content fades in, preventing jarring layout shifts.
-- **Interactive Reload Button**: Click the "Simulate Reload" button to see the loading state and transition multiple times.
-- **Realistic Layout**: The skeleton blocks perfectly match the dimensions and layout of the actual loaded content (avatar, title, image, text lines).
-- **Fully Responsive**: Adapts gracefully to mobile screens with adjusted image heights and padding.
+- Pure HTML and CSS (no JavaScript required)
+- Shimmer (wave) loading animation
+- Pulse animation variant
+- Avatar, title, subtitle, image, text, and button placeholders
+- Rounded modern UI
+- Responsive layout
+- Supports `prefers-reduced-motion` for accessibility
 
-## 📂 File Structure
+## Files
 
-```text
-submissions/examples/animated-skeleton-loader/
-├── demo.html    # HTML structure, EaseMotion utility classes, and JavaScript
-├── style.css    # Custom CSS for skeleton layout, shimmer effect, and transitions
-└── README.md    # Documentation
+```
+animated-skeleton-loader/
+├── demo.html
+├── style.css
+├── script.js
+└── README.md
+```
+
+## Usage
+
+1. Open `demo.html` in any modern web browser.
+2. The shimmer effect is enabled using the `wave` class.
+3. The pulse effect is enabled using the `pulse` class.
+
+## Accessibility
+
+- Uses `aria-busy="true"` and `role="status"` for loading states.
+- Respects `prefers-reduced-motion` by disabling animations when reduced motion is preferred.
+
+## Technologies Used
+
+- HTML5
+- CSS3
+
+## Author
+
+Created as a contribution for the EaseMotion CSS open-source project.

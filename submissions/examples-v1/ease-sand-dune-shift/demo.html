@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sand Dune Shift</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🏜️ Sand Dune Shift</h1>
+        <p class="subtitle">Sand particles shifting like wind-blown dunes</p>
+
+        <div class="sand-wrapper">
+            <canvas id="sandCanvas"></canvas>
+
+            <div class="controls">
+                <button id="windBtn">💨 Wind: Gentle</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="densityBtn">Density: Medium</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🏜️ Shifting sands</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('sandCanvas');
+        const ctx = canvas.getContext('2d');
+        const windBtn = document.getElementById('windBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const densityBtn = document.getElementById('densityBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let sandParticles = [];
+        let duneHeight = [];
+        let windStrength = 2;
+        let windLevel = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let density = 1;
+        let densityLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = -100;
+        let mouseY = -100;
+        let isHovering = false;
+
+        // ===== WIND OPTIONS =====
+        const windLevels = [
+            { name: 'Gentle', value: 1 },
+            { name: 'Moderate', value: 2 },
+            { name: 'Strong', value: 4 },
+            { name: 'Storm', value: 7 },
+        ];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== DENSITY OPTIONS =====
+        const densities = [
+            { name: 'Sparse', value: 0.5 },
+            { name: 'Medium', value: 1 },
+            { name: 'Dense', value: 1.5 },
+            { name: 'Thick', value: 2 },
+        ];
+
+        // ===== SAND PARTICLE CLASS =====
+        class SandParticle {
+            constructor(x, y, size) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || canvas.height * 0.7 + Math.random() * canvas.height * 0.2;
+                this.size = size || 1 + Math.random() * 2.5;
+                this.baseX = this.x;
+                this.baseY = this.y;
+                this.vx = 0;
+                this.vy = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.wobbleAmount = 0.2 + Math.random() * 0.5;
+                this.density = 0.5 + Math.random() * 0.5;
+                this.height = 0;
+                this.targetHeight = 0;
+                this.settled = false;
+                this.age = 0;
+                this.maxAge = 500 + Math.random() * 500;
+                this.color = this.randomColor();
+                this.glowIntensity = 0.1 + Math.random() * 0.2;
+                this.driftFactor = 0.5 + Math.random() * 0.5;
+            }
+
+            randomColor() {
+                const base = 180 + Math.random() * 40;
+                const variation = Math.random() * 20 - 10;
+                return {
+                    r: base + variation,
+                    g: base - 10 + variation,
+                    b: base - 30 + variation * 0.5
+                };
+            }
+
+            update(time, speed, wind, density) {
+                this.age += speed * 2;
+
+                // Wind effect
+                const windForce = wind * this.driftFactor * speed * 10;
+                this.vx += windForce * 0.01;
+                this.vx *= 0.99;
+
+                // Wobble
+                this.phase += this.wobbleSpeed * speed * 5;
+                const wobbleX = Math.sin(this.phase + time * 0.01) * this.wobbleAmount;
+                const wobbleY = Math.cos(this.phase * 0.7 + time * 0.01) * this.wobbleAmount * 0.3;
+
+                // Dune height influence
+                const duneHeight = getDuneHeight(this.x);
+                this.targetHeight = duneHeight;
+
+                // Settling
+                if (this.y < this.targetHeight) {
+                    this.vy += 0.02 * speed * 10;
+                } else {
+                    this.vy *= 0.95;
+                    this.settled = true;
+                }
+
+                // Movement
+                this.x += this.vx + wobbleX * 0.02 * speed * 10;
+                this.y += this.vy + wobbleY * 0.01 * speed * 5;
+
+                // Boundary
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.x < 0) { this.x = 0; this.vx *= -0.5; }
+                if (this.x > w) { this.x = w; this.vx *= -0.5; }
+                if (this.y > h) { this.y = h; this.vy = 0; }
+                if (this.y < 10) { this.y = 10; this.vy *= -0.5; }
+
+                // Height tracking
+                this.height = this.y;
+
+                // Wind erosion - particles drift with wind
+                if (Math.random() < 0.001 * wind * speed * 20) {
+                    this.vx += (Math.random() - 0.5) * 0.1;
+                    this.vy += (Math.random() - 0.5) * 0.05;
+                }
+            }
+
+            draw(ctx) {
+                const { r, g, b } = this.color;
+
+                // Glow
+                const grad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size * 3 * this.glowIntensity
+                );
+                grad.addColorStop(0, `rgba(${r + 20}, ${g + 20}, ${b + 10}, ${0.05})`);
+                grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3 * this.glowIntensity, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Main particle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                const brightness = 0.7 + 0.3 * (1 - this.y / canvas.height);
+                ctx.fillStyle = `rgb(${r * brightness}, ${g * brightness}, ${b * brightness})`;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, 0.1)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                if (this.size > 1.5) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.x - this.size * 0.2,
+                        this.y - this.size * 0.2,
+                        this.size * 0.2,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(255, 255, 200, ${0.1 + Math.random() * 0.05})`;
+                    ctx.fill();
+                }
+            }
+
+            isDead() {
+                return this.age > this.maxAge;
+            }
+        }
+
+        // ===== DUNE HEIGHT MAP =====
+        function getDuneHeight(x) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const base = h * 0.7;
+            
+            // Multiple sine waves for dune shape
+            const dune1 = Math.sin(x * 0.008 + time * 0.002 * windStrength) * 40;
+            const dune2 = Math.sin(x * 0.015 + time * 0.001 * windStrength + 2) * 25;
+            const dune3 = Math.sin(x * 0.003 + time * 0.003 * windStrength + 5) * 60;
+            const dune4 = Math.sin(x * 0.02 + time * 0.0005 * windStrength + 8) * 15;
+            
+            // Ridge effect
+            const ridge = Math.sin(x * 0.005 + time * 0.004 * windStrength) * 30;
+            
+            // Wind drift - dunes shift with wind
+            const windShift = time * 0.005 * windStrength * 0.3;
+            const shiftedX = x + windShift;
+            
+            const height = base + 
+                Math.sin(shiftedX * 0.008 + time * 0.002 * windStrength) * 40 +
+                Math.sin(shiftedX * 0.015 + time * 0.001 * windStrength + 2) * 25 +
+                Math.sin(shiftedX * 0.003 + time * 0.003 * windStrength + 5) * 60 +
+                Math.sin(shiftedX * 0.02 + time * 0.0005 * windStrength + 8) * 15 +
+                ridge;
+            
+            return Math.max(h * 0.5, Math.min(h - 20, height));
+        }
+
+        // ===== INIT DUNE =====
+        function initDune() {
+            const w = canvas.width;
+            const h = canvas.height;
+            sandParticles = [];
+            const numParticles = Math.floor(150 * density);
+
+            for (let i = 0; i < numParticles; i++) {
+                const x = Math.random() * w;
+                const y = getDuneHeight(x) + (Math.random() - 0.5) * 10;
+                const size = 1 + Math.random() * 2.5;
+                const particle = new SandParticle(x, y, size);
+                particle.driftFactor = 0.3 + Math.random() * 0.7;
+                particle.wobbleAmount = 0.1 + Math.random() * 0.3;
+                sandParticles.push(particle);
+            }
+        }
+        initDune();
+
+        // ===== DRAW DUNE SURFACE =====
+        function drawDuneSurface(ctx) {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Draw dune silhouette
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            for (let x = 0; x <= w; x += 2) {
+                const y = getDuneHeight(x);
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(w, h);
+            ctx.closePath();
+
+            // Dune gradient
+            const grad = ctx.createLinearGradient(0, h * 0.5, 0, h);
+            grad.addColorStop(0, 'rgba(200, 180, 150, 0.1)');
+            grad.addColorStop(0.3, 'rgba(220, 200, 170, 0.2)');
+            grad.addColorStop(0.6, 'rgba(200, 180, 150, 0.3)');
+            grad.addColorStop(0.8, 'rgba(180, 160, 130, 0.4)');
+            grad.addColorStop(1, 'rgba(160, 140, 110, 0.5)');
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Dune ridge line
+            ctx.beginPath();
+            for (let x = 0; x <= w; x += 2) {
+                const y = getDuneHeight(x);
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'rgba(240, 220, 190, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+            const timeOfDay = (Math.sin(time * 0.003) + 1) / 2;
+            const r1 = 180 + timeOfDay * 40;
+            const g1 = 160 + timeOfDay * 50;
+            const b1 = 120 + timeOfDay * 60;
+            const r2 = 120 + timeOfDay * 30;
+            const g2 = 100 + timeOfDay * 40;
+            const b2 = 70 + timeOfDay * 50;
+            skyGrad.addColorStop(0, `rgb(${r1}, ${g1}, ${b1})`);
+            skyGrad.addColorStop(0.5, `rgb(${r1 * 0.8}, ${g1 * 0.8}, ${b1 * 0.7})`);
+            skyGrad.addColorStop(1, `rgb(${r2}, ${g2}, ${b2})`);
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h * 0.7);
+
+            // Sun
+            const sunX = w * 0.8;
+            const sunY = h * 0.15;
+            const sunSize = 25 + Math.sin(time * 0.01) * 2;
+            const sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+            sunGrad.addColorStop(0, `rgba(255, 220, 150, ${0.4 + Math.sin(time * 0.01) * 0.1})`);
+            sunGrad.addColorStop(0.3, `rgba(255, 200, 130, ${0.2 + Math.sin(time * 0.01) * 0.05})`);
+            sunGrad.addColorStop(1, `rgba(255, 180, 100, 0)`);
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunSize * 3, 0, Math.PI * 2);
+            ctx.fillStyle = sunGrad;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 220, 150, ${0.8 + Math.sin(time * 0.01) * 0.1})`;
+            ctx.fill();
+
+            // Distant dunes
+            ctx.fillStyle = 'rgba(160, 140, 110, 0.05)';
+            for (let i = 0; i < 3; i++) {
+                const offset = i * 100 + time * 0.1 * windStrength * 0.2;
+                ctx.beginPath();
+                ctx.moveTo(0, h * 0.5 + i * 20);
+                for (let x = 0; x <= w; x += 2) {
+                    const y = h * 0.5 + i * 20 + Math.sin(x * 0.01 + offset) * 20 + Math.sin(x * 0.02 + offset * 1.5) * 10;
+                    ctx.lineTo(x, y);
+                }
+                ctx.lineTo(w, h);
+                ctx.lineTo(0, h);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Sand grain texture (background)
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * w;
+                const y = h * 0.5 + Math.random() * h * 0.4;
+                const size = 0.5 + Math.random() * 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 180, 150, ${0.02 + Math.random() * 0.03})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            const wind = windLevels[windLevel].value;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Draw dune surface
+            drawDuneSurface(ctx);
+
+            // Update and draw sand particles
+            for (const particle of sandParticles) {
+                particle.update(time, speed, wind, density);
+                particle.draw(ctx);
+            }
+
+            // Remove dead particles and spawn new ones
+            sandParticles = sandParticles.filter(p => !p.isDead());
+            
+            // Spawn new particles to maintain density
+            const targetCount = Math.floor(150 * density);
+            while (sandParticles.length < targetCount) {
+                const x = Math.random() * w;
+                const y = getDuneHeight(x) + (Math.random() - 0.5) * 10;
+                const size = 1 + Math.random() * 2.5;
+                const particle = new SandParticle(x, y, size);
+                particle.driftFactor = 0.3 + Math.random() * 0.7;
+                particle.wobbleAmount = 0.1 + Math.random() * 0.3;
+                sandParticles.push(particle);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🏜️ ${sandParticles.length} grains • ${windLevels[windLevel].name} wind • ${densities[densityLevel].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Wind
+        windBtn.addEventListener('click', () => {
+            windLevel = (windLevel + 1) % windLevels.length;
+            windBtn.textContent = `💨 Wind: ${windLevels[windLevel].name}`;
+            statusText.textContent = `💨 ${windLevels[windLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🏜️ ${sandParticles.length} grains`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🏜️ ${sandParticles.length} grains`;
+            }, 1000);
+        });
+
+        // Density
+        densityBtn.addEventListener('click', () => {
+            densityLevel = (densityLevel + 1) % densities.length;
+            density = densities[densityLevel].value;
+            densityBtn.textContent = `Density: ${densities[densityLevel].name}`;
+            statusText.textContent = `🏜️ ${densities[densityLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🏜️ ${sandParticles.length} grains`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            windLevel = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            densityLevel = 1;
+            density = densities[1].value;
+            
+            windBtn.textContent = `💨 Wind: ${windLevels[0].name}`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            densityBtn.textContent = `Density: ${densities[1].name}`;
+            initDune();
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🏜️ ${sandParticles.length} grains`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') {
+                windBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                densityBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle wind
+                windBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initDune();
+        });
+
+        // ===== INIT =====
+        windBtn.textContent = `💨 Wind: ${windLevels[0].name}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        densityBtn.textContent = `Density: ${densities[1].name}`;
+        statusText.textContent = `🏜️ ${sandParticles.length} grains`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🏜️ Sand Dune Shift loaded!');
+        console.log('💡 W - Change wind');
+        console.log('💡 S - Change speed');
+        console.log('💡 D - Change density');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle wind');
+    </script>
+</body>
+</html>

@@ -15,4 +15,4 @@ remains visible in Windows High Contrast / forced-colors mode.
 CSS `background-image` SVGs are stripped in forced-colors mode.
 Without a fallback, the select looks like a plain text box with no affordance
 that it is interactive. `forced-color-adjust: none` + system color keywords
-(`ButtonText`, `Field`) restore the visual correctly. Fixes: #35778
+(`ButtonText`, `Field`) restore the visual correctly. Fixes: #59815
