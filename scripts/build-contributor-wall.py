@@ -51,14 +51,31 @@ def build_wall(contributors):
 
 def main():
     with open(INPUT) as f:
-        contributors = json.load(f)
+        data = json.load(f)
 
-    if not contributors:
-        print("ERROR: No contributors found in JSON.", file=sys.stderr)
-        sys.exit(1)
+    if not data:
+        print("WARNING: Empty contributors JSON payload. Skipping contributor wall update safely.", file=sys.stderr)
+        sys.exit(0)
 
-    # Filter out bots and invalid authors
-    contributors = [c for c in contributors if c.get("author") and c["author"].get("login") and c["author"].get("type") != "Bot" and "bot" not in c["author"]["login"].lower()]
+    contributors = []
+    for item in data:
+        if isinstance(item, dict):
+            # Format 1: /stats/contributors payload
+            if "author" in item and item["author"]:
+                login = item["author"].get("login")
+                user_type = item["author"].get("type", "User")
+                count = item.get("total", 0)
+            # Format 2: /contributors payload
+            else:
+                login = item.get("login")
+                user_type = item.get("type", "User")
+                count = item.get("contributions", 0)
+
+            if login and user_type != "Bot" and "bot" not in login.lower():
+                contributors.append({
+                    "author": {"login": login, "type": user_type},
+                    "total": count
+                })
     
     # Sort by total commits descending
     contributors.sort(key=lambda x: x["total"], reverse=True)

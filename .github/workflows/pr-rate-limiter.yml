@@ -10,87 +10,64 @@ permissions:
 
 jobs:
   check-rate-limit:
-    name: Check Hourly PR Rate Limit & Cooldown
+    name: Check Daily PR Rate Limit
     runs-on: ubuntu-latest
     steps:
-      - name: Check Contributor PR Count & Cooldown
+      - name: Check Contributor PR Count
         uses: actions/github-script@v7
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const prAuthor = context.payload.pull_request.user.login;
-            const currentPRCreated = new Date(context.payload.pull_request.created_at).getTime();
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const HOURLY_LIMIT = 10;
-            const COOLDOWN_MS = 6 * 60 * 1000; // 6 minutes in milliseconds
+            const DAILY_LIMIT = 100;
             
-            console.log(`Checking rate limit & cooldown for author "${prAuthor}"...`);
+            console.log(`Checking daily PR rate limit for author "${prAuthor}"...`);
             
-            // Exclude repository owner from rate limiting
-            if (prAuthor === owner) {
-              console.log("Author is the repository owner. Skipping rate limit check.");
+            // Exclude repository owner and VIP exempt user @babin123456 from rate limiting
+            const EXEMPT_USERS = [owner, 'babin123456'];
+            if (EXEMPT_USERS.includes(prAuthor.toLowerCase()) || prAuthor === owner) {
+              console.log(`Author @${prAuthor} is exempt from rate limiting (unlimited contribution limit).`);
               return;
             }
 
-            // 1. Fetch user's recent PRs
-            let matchingPulls = [];
+            // Calculate date 24 hours ago in ISO format
+            const limitDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('.')[0] + 'Z';
+            const q = `repo:${owner}/${repo} is:pr author:${prAuthor} created:>=${limitDate}`;
+            
+            let totalCount = 0;
             try {
-              const pulls = await github.rest.pulls.list({
-                owner, repo, state: 'all', per_page: 100
-              });
-              matchingPulls = pulls.data.filter(p => p.user.login === prAuthor);
+              const searchResult = await github.rest.search.issuesAndPullRequests({ q });
+              totalCount = searchResult.data.total_count;
             } catch (err) {
-              console.log(`Error listing pulls: ${err.message}`);
+              console.log(`Error calling search API: ${err.message}`);
+              const limitMs = Date.now() - 24 * 60 * 60 * 1000;
+              const pulls = await github.rest.pulls.list({ owner, repo, state: 'all', per_page: 100 });
+              totalCount = pulls.data.filter(p => p.user.login === prAuthor && new Date(p.created_at).getTime() >= limitMs).length;
             }
 
-            // 2. Check 6-minute Cooldown
-            const previousPRs = matchingPulls.filter(p => p.number !== prNumber);
-            if (previousPRs.length > 0) {
-              const latestPrevPR = previousPRs.reduce((latest, p) => {
-                const t = new Date(p.created_at).getTime();
-                return t > latest ? t : latest;
-              }, 0);
+            console.log(`User @${prAuthor} has opened ${totalCount} PRs in the last 24 hours.`);
 
-              const timeDiff = currentPRCreated - latestPrevPR;
-              if (timeDiff < COOLDOWN_MS) {
-                const minutesLeft = Math.ceil((COOLDOWN_MS - timeDiff) / (60 * 1000));
-                console.log(`User @${prAuthor} triggered 6-minute cooldown (${Math.round(timeDiff / 1000)}s since last PR).`);
+            if (totalCount > DAILY_LIMIT) {
+              console.log(`User @${prAuthor} exceeded daily limit of ${DAILY_LIMIT} PRs (${totalCount} opened).`);
 
-                const cooldownComment = `### ⏳ PR Submission Cooldown Active\n\n` +
-                  `Hi @${prAuthor}! 👋\n\n` +
-                  `To maintain code review quality and repository stability, EaseMotion CSS enforces a **6-minute cooldown between PR submissions** per contributor.\n\n` +
-                  `Your last pull request was submitted less than 6 minutes ago. Please wait **${minutesLeft} more minute(s)** before opening your next pull request.\n\n` +
-                  `Thank you for your understanding! 🚀`;
-
-                await github.rest.issues.createComment({
-                  owner, repo, issue_number: prNumber, body: cooldownComment
-                });
-
-                await github.rest.pulls.update({
-                  owner, repo, pull_number: prNumber, state: 'closed'
-                });
-                return;
-              }
-            }
-
-            // 3. Check Hourly Limit (10 PRs / hour)
-            const oneHourAgo = currentPRCreated - (60 * 60 * 1000);
-            const hourlyPullsCount = matchingPulls.filter(p => new Date(p.created_at).getTime() >= oneHourAgo).length;
-
-            if (hourlyPullsCount > HOURLY_LIMIT) {
-              console.log(`User @${prAuthor} opened ${hourlyPullsCount} PRs in the last hour. Exceeds limit of ${HOURLY_LIMIT}.`);
-
-              const limitComment = `### 🛑 Hourly Contribution Rate Limit Exceeded\n\n` +
+              const limitComment = `### 🛑 Daily Contribution Rate Limit Exceeded\n\n` +
                 `Hi @${prAuthor}! 👋\n\n` +
-                `To maintain repository stability and fair contribution distribution, EaseMotion CSS enforces a rate limit of **10 PRs per hour** per contributor.\n\n` +
-                `You have submitted **${hourlyPullsCount} pull requests** in the last hour, exceeding the limit of 10 PRs/hr.\n\n` +
-                `This pull request has been automatically closed. Please wait an hour before submitting new pull requests.\n\n` +
-                `Thank you for your cooperation! 🚀`;
+                `To maintain repository stability and fair contribution distribution, EaseMotion CSS enforces a rate limit of up to **100 PRs per day** per contributor.\n\n` +
+                `You have submitted **${totalCount} pull requests** in the last 24 hours, exceeding the daily limit of 100 PRs/day.\n\n` +
+                `This pull request has been automatically closed for now. Please wait until tomorrow or focus on reviewing your active PRs.\n\n` +
+                `Thank you for your understanding and cooperation! 🚀`;
 
               await github.rest.issues.createComment({
                 owner, repo, issue_number: prNumber, body: limitComment
               });
+
+              try {
+                await github.rest.issues.addLabels({
+                  owner, repo, issue_number: prNumber, labels: ['rate-limited']
+                });
+              } catch (e) {}
 
               await github.rest.pulls.update({
                 owner, repo, pull_number: prNumber, state: 'closed'
@@ -98,4 +75,4 @@ jobs:
               return;
             }
 
-            console.log(`User @${prAuthor} passed rate limit & cooldown checks.`);
+            console.log(`User @${prAuthor} is within the daily limit (${totalCount}/${DAILY_LIMIT}).`);
