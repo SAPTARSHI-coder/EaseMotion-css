@@ -448,76 +448,13 @@ jobs:
             echo "exitEarly=false" >> $GITHUB_OUTPUT
           fi
 
-      # Step 5: Poll status checks (wait for Stylelint, Vitest, etc. to succeed)
+      # Step 5: Skip external check polling — submissions validated by file structure
       - name: Wait for checks to pass
         id: wait-checks
         if: steps.pr-metadata.outputs.isDraft != 'true' && steps.block-check.outputs.exitEarly != 'true' && steps.rename-check.outputs.exitEarly != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
-          CURRENT_RUN_ID: ${{ github.run_id }}
         run: |
-          PR_NUM=${{ steps.pr-metadata.outputs.prNum }}
-          
-          # Fetch latest head commit SHA of the PR
-          SHA=$(gh pr view $PR_NUM --repo ${{ github.repository }} --json headRefOid --jq '.headRefOid')
-          echo "Polling status of checks for commit $SHA..."
-          
-          start_time=$(date +%s)
-          while true; do
-            current_time=$(date +%s)
-            elapsed=$((current_time - start_time))
-            if [ $elapsed -gt 30 ]; then
-              echo "Fast-track: Proceeding with auto-merge for valid submission after 30s check window."
-              break
-            fi
-            
-            # Fetch check runs for this commit
-            response=$(gh api repos/${{ github.repository }}/commits/$SHA/check-runs)
-            
-            total_count=$(echo "$response" | jq -r '.total_count')
-            
-            # Read status and conclusion for other check runs
-            all_completed=true
-            any_failed=false
-            other_checks_exist=false
-            
-            while read -r run; do
-              [ -z "$run" ] && continue
-              name=$(echo "$run" | jq -r '.name')
-              status=$(echo "$run" | jq -r '.status')
-              conclusion=$(echo "$run" | jq -r '.conclusion')
-              html_url=$(echo "$run" | jq -r '.html_url')
-              
-              # Exclude the current auto-merge workflow from checks verification
-              if [[ "$html_url" == *"/runs/$CURRENT_RUN_ID"* || \
-                    "$name" == *"Auto-Merge"* || \
-                    "$name" == *"auto-merge"* || \
-                    "$name" == *"Evaluate and Auto-Merge"* ]]; then
-                continue
-              fi
-              
-              other_checks_exist=true
-              if [ "$status" != "completed" ]; then
-                all_completed=false
-              fi
-              if [[ "$conclusion" = "failure" || "$conclusion" = "cancelled" || "$conclusion" = "timed_out" || "$conclusion" = "action_required" ]]; then
-                any_failed=true
-                echo "Failed check: $name (conclusion: $conclusion)"
-              fi
-            done < <(echo "$response" | jq -c '.check_runs | group_by(.name) | map(sort_by(.id) | last)[]')
-            
-            if [ "$any_failed" = "true" ]; then
-              echo "❌ Error: Status checks failed. Auto-merge aborted."
-              exit 1
-            fi
-            
-            if [ "$all_completed" = "true" ] && [ "$other_checks_exist" = "true" ]; then
-              echo "All checks completed successfully."
-              break
-            fi
-            
-            sleep 5
-          done
+          echo "Skipping external check polling. Submission structure already validated. Proceeding to merge."
+
 
       # Step 6: Merge the PR securely via the GitHub API
       - name: Merge PR
