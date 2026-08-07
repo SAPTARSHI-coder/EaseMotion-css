@@ -13,6 +13,7 @@ EaseMotion CSS lets you build polished interfaces with readable class names such
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
+[![Bundle Size](https://img.shields.io/badge/bundle%20size-18.4kb%20gzip-brightgreen?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css)
 [![committers.top public badge](https://user-badge.committers.top/india_public/SAPTARSHI-coder.svg)](https://committers.top/india_public)
 [![committers.top private badge](https://user-badge.committers.top/india_private/SAPTARSHI-coder.svg)](https://committers.top/india_private)
 [![Sponsor](https://img.shields.io/badge/Sponsor-💖-ea4aaa?style=flat-square)](https://github.com/sponsors/SAPTARSHI-coder)
