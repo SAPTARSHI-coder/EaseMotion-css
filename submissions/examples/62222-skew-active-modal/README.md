@@ -212,3 +212,95 @@ The animation is short and purposeful.
 The implementation stays within platform CSS.
 
 That makes it portable and easy to study.
+
+## Implementation notes
+
+The card establishes the positioning context for the modal.
+
+The modal is layered above the product content.
+
+The glass background preserves the relationship with the card.
+
+The border separates the active layer from the background.
+
+The shadow reinforces depth.
+
+The blur transition makes the layer feel closer to the viewer.
+
+The skew is removed during the active state.
+
+The translate value is also removed during the active state.
+
+Opacity and visibility change together.
+
+This avoids an invisible element intercepting interaction.
+
+The transition uses transform instead of layout properties.
+
+This keeps the motion efficient.
+
+The keyframe animation is limited to the supporting hero panel.
+
+The catalog itself remains still until interaction.
+
+The product information is concise by design.
+
+The action link remains reachable when the modal is active.
+
+The same structure can support different products.
+
+The component does not require unique IDs for its motion.
+
+The CSS selectors are local to the feature.
+
+The feature folder is intentionally self-contained.
+
+## Testing guidance
+
+Resize the browser to desktop width.
+
+Confirm all three cards fit comfortably.
+
+Resize to tablet width.
+
+Confirm the grid becomes two columns.
+
+Resize to phone width.
+
+Confirm the grid becomes one column.
+
+Use Tab to move through navigation links.
+
+Confirm focus outlines are visible.
+
+Tab into a product card action.
+
+Confirm the modal opens through focus-within.
+
+Enable reduced-motion in the operating system.
+
+Confirm strong motion is removed.
+
+Confirm product content remains readable.
+
+## Reuse checklist
+
+Copy the product card markup.
+
+Keep the `.card` positioning context.
+
+Keep the `.modal` inside the card.
+
+Replace product artwork with a project-specific visual.
+
+Replace product copy with meaningful supporting content.
+
+Keep the focusable action inside the card.
+
+Retheme the CSS variables when needed.
+
+Preserve the reduced-motion rule.
+
+Preserve focus-visible outlines.
+
+Avoid adding JavaScript solely to reproduce the motion.
