@@ -180,3 +180,97 @@ No browser-specific JavaScript is required.
 - [x] Keyboard focus support.
 - [x] Reduced-motion support.
 - [x] Issue number in folder name.
+
+## Implementation notes
+
+The dock uses fixed positioning so it remains near the viewport edge.
+
+The resting transform moves the dock below the visible area.
+
+The active transform brings it upward.
+
+The transition uses transform rather than layout properties.
+
+This keeps the entrance lightweight.
+
+The glass surface creates separation from catalog content.
+
+The navigation labels remain visible in the active state.
+
+Focus-within exposes the dock for keyboard users.
+
+Hover exposes the dock for pointer users.
+
+The two states share the same final transform.
+
+The hero panel provides a related rise animation.
+
+The catalog remains visually stable.
+
+The dock is the primary moving element.
+
+The navigation is intentionally compact.
+
+The small-screen layout gives each item equal space.
+
+The dock can therefore remain usable on narrow displays.
+
+Reduced-motion users receive an immediately visible dock.
+
+The content does not depend on movement.
+
+The navigation is still a normal semantic landmark.
+
+The component is self-contained.
+
+## Testing guidance
+
+Open the page at desktop width.
+
+Move the pointer toward the navigation area.
+
+Confirm the dock rises into view.
+
+Move the pointer away.
+
+Confirm the dock returns below the viewport.
+
+Use Tab to reach a navigation link.
+
+Confirm the dock remains visible while focus is inside.
+
+Resize to tablet width.
+
+Confirm catalog cards remain readable.
+
+Resize to phone width.
+
+Confirm navigation items remain evenly spaced.
+
+Enable reduced motion.
+
+Confirm the dock stays visible without a transition.
+
+Confirm focus outlines remain visible.
+
+## Reuse guidance
+
+Keep the navigation landmark.
+
+Keep the accessible navigation label.
+
+Keep the dock positioning context.
+
+Retheme the panel surface as needed.
+
+Adjust the resting translate value carefully.
+
+Adjust transition duration for the surrounding interface.
+
+Preserve focus-within behavior.
+
+Preserve reduced-motion behavior.
+
+Add or remove navigation links according to the catalog.
+
+Avoid hiding essential navigation exclusively behind hover.
