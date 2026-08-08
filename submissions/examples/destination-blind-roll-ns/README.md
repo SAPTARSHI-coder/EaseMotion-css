@@ -1,23 +1,16 @@
-# Ease Destination Blind Roll
+# Destination Blind Roll
 
-A CSS-only animated bus destination blind component for the EaseMotion CSS library.
+## What does this do?
+Renders a self-contained CSS-only `ease-destination-blind-roll` demo: Bus destination blind rolling to a new city name.
 
-## Features
-
-- Pure HTML and CSS
-- No JavaScript required
-- Real-world bus destination blind visual metaphor
-- Vertical destination rolling animation
-- Motion blur during transitions
-- Animated physical control dial
-- Status indicators
-- Responsive layout
-- `prefers-reduced-motion` support
-- Easy to customize with CSS variables
-
-## Usage
-
-Include the component stylesheet:
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-destination-blind-roll`. No build step or JavaScript is required for the effect.
 
 ```html
-<link rel="stylesheet" href="style.css">
+<section class="ease-destination-blind-roll">
+  <div class="ease-destination-blind-roll__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
