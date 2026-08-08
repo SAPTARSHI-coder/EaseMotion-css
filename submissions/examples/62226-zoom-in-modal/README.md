@@ -198,3 +198,53 @@ It can work in catalogs, dashboards, portfolios, and service listings.
 - [x] Reduced-motion support.
 - [x] Issue number in folder name.
 - [x] Feature-specific folder.
+
+## Implementation notes
+
+The modal uses a transform-based scale rather than changing width or height.
+
+This prevents the card layout from reflowing during interaction.
+
+The transform origin is placed near the lower center of the card.
+
+The result feels connected to the product surface.
+
+The blur is removed at the same time as the scale settles.
+
+The opacity transition softens the initial appearance.
+
+Visibility changes prevent an inactive layer from remaining interactive.
+
+The focus-within selector gives keyboard users an equivalent state.
+
+The supporting hero animation demonstrates the same visual language.
+
+The product content stays readable without motion.
+
+The feature is self-contained and easy to extract.
+
+## Testing guidance
+
+Open the demo at desktop width.
+
+Hover each product card.
+
+Confirm the modal grows into focus.
+
+Use Tab to reach the product action.
+
+Confirm focus opens the same modal state.
+
+Resize to tablet width.
+
+Confirm the grid becomes two columns.
+
+Resize to phone width.
+
+Confirm the grid becomes one column.
+
+Enable reduced motion.
+
+Confirm the scale transition is removed.
+
+Confirm the product details remain available.
