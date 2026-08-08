@@ -1,77 +1,87 @@
-# Glitch-Flicker Dropdown
+# CSS Glitch-Flicker Dropdown
 
-A pure HTML/CSS dropdown menu powered by the native `<details>` element, featuring a controlled "glitch-flicker" entrance animation. Designed for minimalist technology interfaces, dashboards, and cyber-aesthetic web applications.
+A lightweight, purely native HTML dropdown featuring a subtle cyberpunk-inspired glitch-flicker entrance effect, designed for minimalist technology and SaaS layouts.
 
-## 1. What the Glitch-Flicker Dropdown Does
-This component provides a robust, interactive dropdown menu without relying on any JavaScript for state management. By utilizing the native `<details>` and `<summary>` HTML tags, it automatically handles click toggles while applying a CSS `@keyframes` animation to gracefully, yet strikingly, glitch the menu into view when opened.
+## Feature Overview
 
-## 2. Main Features
-- **Pure HTML and CSS**: Zero JavaScript required for state or animation.
-- **Native Interaction**: Built on `<details>` and `<summary>` for semantic, out-of-the-box browser support.
-- **Glitch-Flicker Animation**: Hardware-accelerated CSS animations manipulating `opacity`, `transform`, `box-shadow`, and `filter` create a brief, high-tech entrance effect.
-- **Minimalist Tech UI**: Monospace typography, clean borders, SVG icons, and cyber-cyan accents.
-- **Theming**: Inherently supports both Light and Dark mode via `prefers-color-scheme`.
-- **Responsive**: Adapts to mobile viewports without overflowing horizontally.
-- **Accessible**: Features explicit `:focus-visible` styling with `outline-offset` and completely disables animations for users preferring reduced motion.
+The component leverages the native HTML `<details>` and `<summary>` elements to create a fully accessible, zero-JavaScript dropdown menu. When opened, it utilizes CSS pseudo-elements (`::before` and `::after`) and `@keyframes` to create a brief, non-distracting glitch animation on the trigger text.
 
-## 3. How to Use It
-Simply drop the CSS into your stylesheet and use the structure provided in the example. No JavaScript initialization is necessary.
+## Glitch-Flicker Behavior
+
+- **Normal State**: The dropdown appears as a clean, minimalist input-style container.
+- **Hover State**: The border lightens slightly, providing interactive feedback.
+- **Open State**: The border transitions to the accent color. The native `[open]` attribute triggers two simultaneous `@keyframes` animations (`glitch-flicker-1` and `glitch-flicker-2`) on hidden pseudo-elements. These elements briefly flash red and blue offset shadows, simulating a digital glitch before returning to zero opacity.
+- **Menu Animation**: The dropdown panel itself smoothly fades and slides down (`translateY`).
+
+## Dropdown Structure
 
 ```html
-<!-- Example Usage -->
-<details class="dropdown" name="tech-dropdown">
-    <summary class="dropdown-trigger" tabindex="0">
-        <span class="trigger-text">System Menu</span>
-        <span class="trigger-icon" aria-hidden="true"><!-- SVG --></span>
+<details class="dropdown">
+    <summary class="dropdown-trigger" data-label="System Modules">
+        System Modules
     </summary>
-
     <div class="dropdown-menu">
-        <div class="dropdown-group">
-            <a href="#" class="dropdown-item">Dashboard</a>
-            <a href="#" class="dropdown-item">Settings</a>
-        </div>
+        <a href="#core">Core Interface</a>
     </div>
 </details>
 ```
 
-## 4. HTML Class Structure
-- `.dropdown`: Applied to the `<details>` element; establishes the absolute positioning context.
-- `.dropdown-trigger`: Applied to the `<summary>`; styles the main button and handles the click target.
-- `.trigger-icon`: Wraps the chevron SVG and rotates when the dropdown is open.
-- `.dropdown-menu`: The absolute container for the menu items that receives the glitch-flicker animation.
-- `.dropdown-group`: A flex container for grouping related items.
-- `.dropdown-divider`: A 1px line separator.
-- `.dropdown-item`: The interactive anchors/buttons inside the menu.
-- `.item-danger`: An optional modifier class for destructive actions (e.g., Terminate Instance).
+Using `<details>` is preferred because the browser natively handles state management, click event bubbling, and keyboard interactions (Space/Enter to toggle) without any JavaScript.
 
-## 5. CSS Custom Properties
-Customize the dropdown extensively via these variables:
-- `--dropdown-bg`, `--dropdown-border`, `--dropdown-text`: Base surface styling.
-- `--dropdown-border-hover`, `--dropdown-item-hover`: Interactive hover states.
-- `--dropdown-accent`: Primary highlight color for focus states and icons.
-- `--dropdown-danger`: Color scheme applied to destructive items.
-- `--dropdown-shadow`: Soft drop shadow for depth.
-- `--dropdown-radius`: Corner rounding.
-- `--glitch-duration`: Animation timing (default `0.35s`).
-- `--glitch-color-1`, `--glitch-color-2`: The RGB separation colors used during the glitch.
+## Features
 
-## 6. How the Glitch-Flicker animation works
-When a user clicks the `<summary>`, the browser natively applies the `[open]` attribute to the `<details>` parent, causing the `.dropdown-menu` to render. Immediately upon rendering, the `glitch-flicker-dropdown` animation triggers. Over `0.35s`, the menu rapidly jumps between slight opacity dips, small horizontal/vertical `translate` offsets, and chromatic aberration via `box-shadow`, before instantly snapping into a crisp, readable state.
+- Pure HTML and CSS implementation
+- Native HTML `<details>` dropdown state management
+- Brief, performant `@keyframes` glitch-flicker effect
+- Smooth panel slide-down entrance
+- Fully responsive layout
+- CSS custom properties for easy theming
+- 100% keyboard accessible
+- Explicit `:focus-visible` states
+- Complete `prefers-reduced-motion` support
+- No JavaScript required
+- No external dependencies, fonts, or images
 
-## 7. Responsive Behavior
-On desktop and tablet, the dropdown conforms to its internal content width (min-width `240px`). On mobile viewports (`max-width: 480px`), the trigger and menu naturally expand to fill `100%` of their container block, ensuring touch targets are large enough and no horizontal scrolling occurs.
+## CSS Custom Properties
 
-## 8. Accessibility Support
-- Automatically inherits click and keyboard `Space` / `Enter` interactions via the native `<summary>`.
-- Provides high-contrast `:focus-visible` outlines shifted away from the element using `outline-offset: 3px`.
-- Decorative icons are hidden via `aria-hidden="true"`.
-- Menu items should use standard anchor (`<a>`) or button (`<button>`) tags to ensure they remain focusable.
+Easily theme the component by adjusting these root variables:
 
-## 9. `prefers-reduced-motion` Support
-A media query ensures that if a user has requested reduced motion at the OS level, all glitch animations and chevron rotations are bypassed. The menu immediately appears fully opaque, prioritizing usability and comfort.
+- `--page-bg`: Background color of the main page.
+- `--dropdown-bg`: Background color of the trigger button.
+- `--dropdown-panel`: Background color of the open menu.
+- `--dropdown-text`: Primary text color.
+- `--dropdown-muted`: Subdued text color.
+- `--dropdown-accent`: Primary brand/highlight color used for borders and focus rings.
+- `--dropdown-border`: Default border color.
+- `--dropdown-radius`: Border radius applied to the container and menu.
+- `--dropdown-shadow`: Elevation shadow for the dropdown panel.
 
-## 10. Example Usage
-Open `demo.html` in a browser for a live demonstration of the component, including grouped items and destructive actions.
+## Responsive Behavior
 
-## 11. Why it fits EaseMotion CSS
-This dropdown component exemplifies EaseMotion CSS by bringing a highly stylized, typically JS-heavy effect (the digital glitch) entirely into CSS. It requires zero JavaScript, relies purely on native HTML APIs, and carefully balances a striking entrance animation with long-term usability and accessibility.
+- **Desktop (`> 700px`)**: The dropdown has a comfortable, fixed maximum width (`420px`) and sits centered within a spacious layout.
+- **Tablet & Mobile (`<= 700px`)**: The page padding is reduced, and the dropdown expands to take up `100%` of the available container width to ensure maximum tap target size. Menu items maintain generous padding to prevent mis-clicks.
+
+## Accessibility
+
+- **Semantic HTML**: By relying on the native `<details>` element, screen readers are automatically informed of the expanded/collapsed state.
+- **Keyboard Navigation**: The `<summary>` element acts as a native button. Users can tab to it and press `Space` or `Enter` to open it.
+- **Visible Focus**: Custom `:focus-visible` outlines ensure keyboard users always know what element has focus, substituting default browser rings with clear, theme-aligned outlines.
+- **Contrast**: The hover and focus states for menu items adjust both background color and transform, ensuring visual feedback does not rely on color alone.
+
+## Reduced Motion
+
+The component includes comprehensive `prefers-reduced-motion: reduce` support. When enabled at the OS level, all animations and transitions are forced to `0.01ms`. This effectively disables the `glitch-flicker` animation and the panel slide, causing the dropdown to open instantly and safely for users sensitive to motion.
+
+## Usage
+
+Simply copy the HTML structure into your document and link `style.css`. Adjust the `href` attributes in the `.dropdown-menu` to point to your desired destinations. Open `demo.html` in any modern browser to see the effect.
+
+## Browser Compatibility
+
+This component uses modern web standards supported by all major browsers (Chrome, Firefox, Safari, Edge), including:
+- `<details>` and `<summary>`
+- CSS Custom Properties (Variables)
+- CSS Animations and Transitions
+- `attr()` function in CSS
+- `:focus-visible` pseudo-class
+- `@media (prefers-reduced-motion)`
