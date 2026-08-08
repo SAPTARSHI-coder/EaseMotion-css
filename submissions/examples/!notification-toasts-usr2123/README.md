@@ -10,4 +10,4 @@ Combine the base `.toast` class with a variant (`.toast-success`, `.toast-warnin
 - Toasts are a fundamental UI pattern for user feedback.
 - Demonstrates composition of EaseMotion entrance animations with custom styled components.
 - Fully accessible: respects `prefers-reduced-motion` to prevent unwanted movement for sensitive users.
-- Maintainer can easily standardize this as `.ease-toast-[YOUR_INITIALS]` in the core library.
+- Maintainer can easily standardize this as `.ease-toast-[YOUR_INITIALS]` in the core library. 
