@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine Bug Demo — em Keyframe Pruning (#40060)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>Motion Engine Bug: em-Generated Keyframes Get Pruned</h1>
+    <p class="lede">
+      A minimal, runnable reproduction of issue
+      <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/40060" target="_blank" rel="noopener">#40060</a>,
+      plus the proposed fix — inlined here so this demo runs standalone,
+      without importing the real engine modules.
+    </p>
+
+    <section class="panel">
+      <h2>Live preview</h2>
+      <div class="stage">
+        <div class="box current"></div>
+        <p class="box-label">Box animates using em="fade-in" styling logic</p>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>What's broken (current optimizer logic)</h2>
+      <pre id="before-output" class="code-output"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>What the fix produces</h2>
+      <pre id="after-output" class="code-output"></pre>
+    </section>
+
+    <section class="panel explain">
+      <h2>Root cause</h2>
+      <p>
+        <code>usedKeyframes</code> is built only from
+        <code>ease-*</code>-prefixed classes via a naive
+        <code>ease-*</code> → <code>ease-kf-*</code> string replace.
+        <code>em="..."</code> attributes compile to hashed
+        <code>_em_xxxxx</code> class names, which never match that
+        pattern — so the keyframe an em-generated rule actually needs
+        is never registered before pruning runs, and gets stripped.
+      </p>
+      <h2>Fix</h2>
+      <p>
+        Export the compiler's existing <code>KEYFRAME_MAP</code> and,
+        while processing each parsed <code>em</code> AST, register its
+        mapped keyframe into <code>usedKeyframes</code> before pruning
+        executes. See linked PR for the full engine-file diff.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // ── Minimal, faithful inline reproduction of the real bug ──
+    // (Mirrors easemotion/engine/optimizer.js + compiler.js logic
+    // exactly, scoped down for a standalone, no-import demo.)
+
+    const KEYFRAME_MAP = {
+      'fade-in': 'ease-kf-fade-in',
+    };
+
+    const sampleCss = `
+@keyframes ease-kf-fade-in { from { opacity:0 } to { opacity:1 } }
+@keyframes ease-kf-slide-up { from { transform:translateY(24px) } to { transform:none } }
+`.trim();
+
+    function pruneKeyframes(css, usedKeyframes) {
+      const kfRe = /@keyframes\s+([\w-]+)\s*\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g;
+      return css.replace(kfRe, (block, name) => (usedKeyframes.has(name) ? block : ''));
+    }
+
+    // BEFORE: bug reproduced — em-generated rule references a keyframe
+    // that usedKeyframes never learns about.
+    function optimizeBuggy() {
+      const usedKeyframes = new Set(); // never populated from em usage
+      const rule = `._em_a1b2c3 { animation: ${KEYFRAME_MAP['fade-in']} 300ms both; }`;
+      const prunedCss = pruneKeyframes(sampleCss, usedKeyframes);
+      return `${prunedCss}\n\n${rule}`.trim();
+    }
+
+    // AFTER: fix applied — keyframe registered before pruning.
+    function optimizeFixed() {
+      const usedKeyframes = new Set();
+      const animation = 'fade-in';
+      const keyframe = KEYFRAME_MAP[animation];
+      if (keyframe) usedKeyframes.add(keyframe); // <- the fix
+      const rule = `._em_a1b2c3 { animation: ${keyframe} 300ms both; }`;
+      const prunedCss = pruneKeyframes(sampleCss, usedKeyframes);
+      return `${prunedCss}\n\n${rule}`.trim();
+    }
+
+    document.getElementById('before-output').textContent = optimizeBuggy();
+    document.getElementById('after-output').textContent = optimizeFixed();
+  </script>
+</body>
+</html>

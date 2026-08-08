@@ -4,12 +4,18 @@
 
 All PRs that modify `core/` or `components/` will be **closed without review**. Not negotiable.
 
+> [!IMPORTANT]
+> **Strict Directory Structure Required**
+> The `submissions/` directory strictly contains only **4 subdirectories**: `examples/`, `react/`, `scss/`, and `docs/`. **Never place or create feature folders directly in `submissions/your-feature/`**. Any PR creating folders directly in `submissions/` root will be automatically rejected and closed by validator bots.
+
 ---
 
 ## 📦 Submission Structure
 
-Create a folder inside `submissions/examples/` named after your feature:
+EaseMotion CSS has four distinct contribution subdirectories. Your folder structure depends on the track you choose:
 
+### 1. Standard Track (HTML/CSS)
+For standard animations and CSS utility additions:
 ```
 submissions/examples/your-feature-name/
 ├── demo.html       ← self-contained working demo (required)
@@ -17,15 +23,39 @@ submissions/examples/your-feature-name/
 └── README.md       ← description: what, how, why (required)
 ```
 
-All three files are required. Missing any one of them will result in the PR being asked to revise.
+### 2. React Track
+For React components using EaseMotion classes:
+```
+submissions/react/your-component-name/
+├── YourComponent.jsx   ← React component file (required)
+├── README.md           ← Prop docs and usage example (required)
+└── style.css           ← Optional component styles
+```
+
+### 3. SCSS Track
+For SCSS mixins and token utilities:
+```
+submissions/scss/your-mixin-name/
+├── _your-mixin.scss    ← SCSS partial/mixin file (required)
+└── README.md           ← Description, params and @include example (required)
+```
+
+### 4. Core & Docs Showcase Track
+For core bug fix demonstrations and documentation showcases:
+```
+submissions/docs/your-feature-name/
+├── demo.html       ← self-contained working demo (required)
+├── style.css       ← your raw CSS (required)
+└── README.md       ← description: what, how, why (required)
+```
 
 ---
 
 ## 📢 Contribution Policy Update
 
-All contributions are welcome and eligible for merge when submitted inside the `submissions/examples/` folder following the repository structure and guidelines.
+All contributions are welcome and eligible for merge when submitted inside the correct track folder under the `submissions/` directory following the repository guidelines.
 
-To avoid naming conflicts and overlapping components, contributors must append a short unique identifier or abbreviation to their feature/component name.
+To avoid naming conflicts and overlapping implementations, contributors must append a short unique identifier or abbreviation to their feature/component/mixin name.
 
 **Example:**
 *   `ease-hover-sap`
@@ -33,7 +63,7 @@ To avoid naming conflicts and overlapping components, contributors must append a
 *   `ease-card-pr`
 
 This ensures:
-*   Unambiguous component naming,
+*   Unambiguous component/mixin naming,
 *   Preservation of every contributor’s work,
 *   Conflict-free merges,
 *   Easier maintenance and review workflow,
@@ -202,12 +232,12 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 
 | Rule | Detail |
 |------|--------|
-| ✅ Add folder to `submissions/examples/` | One folder per feature |
-| ✅ Include all three required files | `demo.html`, `style.css`, `README.md` |
-| ✅ One feature per PR | Focused, reviewable |
-| ❌ Do NOT use `ease-` prefix in your CSS | Maintainer handles naming |
-| ❌ Do NOT edit `core/` | PR will be closed |
-| ❌ Do NOT edit `components/` | PR will be closed |
+| ✅ Add folder to the correct track directory | Standard: `submissions/examples/`<br>React: `submissions/react/`<br>SCSS: `submissions/scss/` |
+| ✅ Include all required files per track | Standard: `demo.html`, `style.css`, `README.md`<br>React: `YourComponent.jsx`, `README.md`<br>SCSS: `_your-mixin.scss`, `README.md` |
+| ✅ One feature/component/mixin per PR | Focused, reviewable |
+| ❌ Do NOT use `ease-` prefix in standard CSS | Maintainer standardizes names. *(Note: React/SCSS tracks should reference framework classes/tokens)* |
+| ❌ Do NOT edit existing code/files | PR will be closed immediately (except for stashed conflicts resolved by bot) |
+| ❌ Do NOT edit core directories (`core/`, `components/`) | PR will be closed immediately |
 | ❌ Do NOT merge your own PR | Maintainer-only |
 
 ---
@@ -216,7 +246,7 @@ This is enough for review: one small behavior, one local stylesheet, and one sho
 
 Open a **Feature Request** issue first to confirm the idea fits EaseMotion CSS. This saves you from building something that gets rejected. Small additions (a new animation, a hover effect) rarely need pre-approval. New component systems should be discussed first.
 
-→ [Open a Feature Request](../../issues/new?template=feature_request.md)
+→ [Open a Feature Request](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md)
 
 ## Getting Started
 

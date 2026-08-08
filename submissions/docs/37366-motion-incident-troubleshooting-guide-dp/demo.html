@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Motion Incident Troubleshooting Guide — EaseMotion CSS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="hero">
+        <div class="hero__inner">
+            <p class="hero__eyebrow">EaseMotion CSS · Engineering Handbook</p>
+            <h1 class="hero__title">Production Motion Incident Troubleshooting Guide</h1>
+            <p class="hero__subtitle">
+                A structured reference for diagnosing and resolving animation-related
+                issues in production — jank, layout shift, accessibility gaps, and
+                browser inconsistencies — the way an engineering team would triage
+                a real incident.
+            </p>
+        </div>
+    </header>
+
+    <nav class="quicknav" aria-label="Quick navigation">
+        <div class="quicknav__inner">
+            <a class="quicknav__card" href="#common-issues">
+                <span class="quicknav__title">Common Issues</span>
+                <span class="quicknav__desc">Recognize symptoms first</span>
+            </a>
+            <a class="quicknav__card" href="#root-cause">
+                <span class="quicknav__title">Root Cause Analysis</span>
+                <span class="quicknav__desc">Match symptoms to causes</span>
+            </a>
+            <a class="quicknav__card" href="#performance">
+                <span class="quicknav__title">Performance</span>
+                <span class="quicknav__desc">Layout, paint, GPU</span>
+            </a>
+            <a class="quicknav__card" href="#accessibility">
+                <span class="quicknav__title">Accessibility</span>
+                <span class="quicknav__desc">Reduced motion &amp; focus</span>
+            </a>
+            <a class="quicknav__card" href="#browser-issues">
+                <span class="quicknav__title">Browser Issues</span>
+                <span class="quicknav__desc">Engine differences</span>
+            </a>
+            <a class="quicknav__card" href="#debugging-workflow">
+                <span class="quicknav__title">Debugging Workflow</span>
+                <span class="quicknav__desc">A repeatable process</span>
+            </a>
+            <a class="quicknav__card" href="#checklist">
+                <span class="quicknav__title">Checklist</span>
+                <span class="quicknav__desc">Pre-ship verification</span>
+            </a>
+            <a class="quicknav__card" href="#best-practices">
+                <span class="quicknav__title">Best Practices</span>
+                <span class="quicknav__desc">Standing recommendations</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="content">
+
+        <section class="section" id="common-issues" aria-labelledby="common-issues-title">
+            <h2 id="common-issues-title" class="section__title">Common Motion Incidents</h2>
+            <p class="section__lead">
+                These are the symptoms most frequently reported in production. Use
+                them as an entry point, then move to Root Cause Analysis to narrow
+                down the actual defect.
+            </p>
+
+            <div class="incident-grid">
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Animation Jank</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Choppy or uneven motion, dropped frames</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Layout-triggering properties, too many concurrent animations</dd>
+                        <dt>Impact</dt>
+                        <dd>Perceived low quality, especially on lower-end devices</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Layout Shift</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Nearby content jumps or reflows during animation</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Animating width, height, or margin directly</dd>
+                        <dt>Impact</dt>
+                        <dd>Poor CLS scores, disorienting user experience</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Flickering</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Brief flash or incorrect state at animation boundaries</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Missing animation-fill-mode, specificity conflicts</dd>
+                        <dt>Impact</dt>
+                        <dd>Feels broken or unpolished even if functionally correct</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Unexpected Restart</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Animation replays from the start unexpectedly</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Element remounting, class toggling on every render</dd>
+                        <dt>Impact</dt>
+                        <dd>Distracting, breaks continuity of the interface</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Battery Drain</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Unusually high power usage reported on animation-heavy pages</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Continuous animations running while tab is hidden</dd>
+                        <dt>Impact</dt>
+                        <dd>Degrades mobile experience, user complaints</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Repaint Issues</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Visible smearing, ghosting, or slow-to-update regions</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Animating box-shadow, filter, or background-position</dd>
+                        <dt>Impact</dt>
+                        <dd>Reduced frame rate, especially on large elements</dd>
+                    </dl>
+                </article>
+
+                <article class="incident-card">
+                    <h3 class="incident-card__title">Reduced Motion Problems</h3>
+                    <dl class="incident-card__list">
+                        <dt>Symptoms</dt>
+                        <dd>Some animations respect reduced motion settings, others don't</dd>
+                        <dt>Possible Causes</dt>
+                        <dd>Per-component overrides instead of centralized handling</dd>
+                        <dt>Impact</dt>
+                        <dd>Accessibility risk for motion-sensitive users</dd>
+                    </dl>
+                </article>
+
+            </div>
+        </section>
+
+        <section class="section" id="root-cause" aria-labelledby="root-cause-title">
+            <h2 id="root-cause-title" class="section__title">Root Cause Analysis</h2>
+            <p class="section__lead">
+                Cross-reference each issue against its likely cause, how to confirm
+                it, and the recommended fix.
+            </p>
+
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Issue</th>
+                            <th scope="col">Likely Cause</th>
+                            <th scope="col">Diagnostic Method</th>
+                            <th scope="col">Recommended Fix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Animation Jank</td>
+                            <td>Layout-triggering properties animated directly</td>
+                            <td>Performance panel recording, check for Layout/Paint blocks</td>
+                            <td>Animate transform and opacity instead</td>
+                        </tr>
+                        <tr>
+                            <td>Layout Shift</td>
+                            <td>width/height/margin changing during animation</td>
+                            <td>Lighthouse CLS audit, Layout Shift regions</td>
+                            <td>Use transform: scale() or reserve space in advance</td>
+                        </tr>
+                        <tr>
+                            <td>Flickering</td>
+                            <td>Missing animation-fill-mode or specificity conflict</td>
+                            <td>Inspect computed styles at first/last frame</td>
+                            <td>Set explicit fill-mode, resolve conflicting rules</td>
+                        </tr>
+                        <tr>
+                            <td>Unexpected Restart</td>
+                            <td>Element remounted instead of updated</td>
+                            <td>Check DOM node identity across re-renders</td>
+                            <td>Toggle state via attributes, avoid remounting</td>
+                        </tr>
+                        <tr>
+                            <td>Battery Drain</td>
+                            <td>Continuous animation runs while tab is hidden</td>
+                            <td>Check animation-play-state during tab switch</td>
+                            <td>Pause via Page Visibility API when hidden</td>
+                        </tr>
+                        <tr>
+                            <td>Repaint Issues</td>
+                            <td>Paint-heavy property animated on a large element</td>
+                            <td>Enable paint flashing in DevTools</td>
+                            <td>Replace with transform-based equivalent</td>
+                        </tr>
+                        <tr>
+                            <td>Reduced Motion Problems</td>
+                            <td>Reduced-motion handling implemented per-component</td>
+                            <td>Toggle OS setting, audit every animated component</td>
+                            <td>Centralize reduced-motion logic in one shared layer</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="section" id="performance" aria-labelledby="performance-title">
+            <h2 id="performance-title" class="section__title">Performance Diagnostics</h2>
+
+            <div class="topic-grid">
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Layout Thrashing</h3>
+                    <p class="topic-card__text">
+                        Repeatedly reading a layout property and then writing a style
+                        change forces the browser to recalculate layout multiple times
+                        per frame. Batch all reads before all writes to avoid this.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Paint-Heavy Animations</h3>
+                    <p class="topic-card__text">
+                        Properties like box-shadow, filter, and background-position
+                        force a repaint every frame. Prefer compositor-only properties
+                        wherever the visual result allows it.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">GPU-Friendly Properties</h3>
+                    <p class="topic-card__text">
+                        Only transform and opacity can animate purely on the compositor
+                        thread, skipping layout and paint entirely. Treat these as the
+                        default choice for motion.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Transform vs Width</h3>
+                    <p class="topic-card__text">
+                        Animating width recalculates layout on every frame. Animating
+                        transform: scale() achieves a similar visual effect while
+                        staying on the compositor thread.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Opacity vs Display</h3>
+                    <p class="topic-card__text">
+                        Toggling display removes an element from the render tree
+                        instantly, which cannot be transitioned. Animate opacity (and
+                        visibility, where needed) instead.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="accessibility" aria-labelledby="accessibility-title">
+            <h2 id="accessibility-title" class="section__title">Accessibility Troubleshooting</h2>
+
+            <div class="topic-grid">
+                <article class="topic-card">
+                    <h3 class="topic-card__title">prefers-reduced-motion</h3>
+                    <p class="topic-card__text">
+                        Verify every animated component individually with the OS-level
+                        reduced motion setting enabled — support is often implemented
+                        inconsistently across a codebase.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Focus Visibility</h3>
+                    <p class="topic-card__text">
+                        Animated transforms on a focused element can misalign or hide
+                        the focus ring mid-transition. Keep focus indicators on a
+                        stable, non-animated layer.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Vestibular Considerations</h3>
+                    <p class="topic-card__text">
+                        Large parallax, rapid scaling, and spinning motion can cause
+                        discomfort independent of general reduced-motion preference.
+                        Reduce magnitude, not just duration.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Keyboard Users</h3>
+                    <p class="topic-card__text">
+                        Confirm that animated state changes never trap or skip keyboard
+                        focus, and that interactive elements remain operable throughout
+                        a transition.
+                    </p>
+                </article>
+                <article class="topic-card">
+                    <h3 class="topic-card__title">Screen Readers</h3>
+                    <p class="topic-card__text">
+                        Synchronize aria-live announcements with the meaningful point of
+                        an animation, rather than firing before the visual change has
+                        actually completed.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="browser-issues" aria-labelledby="browser-issues-title">
+            <h2 id="browser-issues-title" class="section__title">Browser Compatibility</h2>
+
+            <div class="browser-grid">
+                <article class="browser-card">
+                    <h3 class="browser-card__title">Chrome</h3>
+                    <p class="browser-card__text">
+                        Broadest support for modern motion features such as
+                        scroll-driven animations and View Transitions, but frequently
+                        ships experimental behavior ahead of other engines.
+                    </p>
+                </article>
+                <article class="browser-card">
+                    <h3 class="browser-card__title">Firefox</h3>
+                    <p class="browser-card__text">
+                        Generally strong standards compliance; newer experimental CSS
+                        features often land later than in Chromium-based browsers.
+                    </p>
+                </article>
+                <article class="browser-card">
+                    <h3 class="browser-card__title">Safari</h3>
+                    <p class="browser-card__text">
+                        Historically slower to adopt new animation APIs; pay particular
+                        attention to backdrop-filter, clip-path, and compositing
+                        differences.
+                    </p>
+                </article>
+                <article class="browser-card">
+                    <h3 class="browser-card__title">Edge</h3>
+                    <p class="browser-card__text">
+                        Chromium-based and generally aligned with Chrome, but still
+                        worth verifying independently for enterprise-managed policy
+                        differences.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" id="debugging-workflow" aria-labelledby="debugging-workflow-title">
+            <h2 id="debugging-workflow-title" class="section__title">Debugging Workflow</h2>
+            <p class="section__lead">
+                A repeatable sequence for investigating any motion-related
+                production issue.
+            </p>
+
+            <ol class="timeline">
+                <li class="timeline__step">
+                    <span class="timeline__marker">1</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Identify Problem</h3>
+                        <p class="timeline__text">Reproduce reliably across device, browser, and settings.</p>
+                    </div>
+                </li>
+                <li class="timeline__step">
+                    <span class="timeline__marker">2</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Inspect Animation</h3>
+                        <p class="timeline__text">Isolate the element and review its computed styles and timing.</p>
+                    </div>
+                </li>
+                <li class="timeline__step">
+                    <span class="timeline__marker">3</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Determine Cause</h3>
+                        <p class="timeline__text">Profile with DevTools rather than guessing at the source.</p>
+                    </div>
+                </li>
+                <li class="timeline__step">
+                    <span class="timeline__marker">4</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Apply Fix</h3>
+                        <p class="timeline__text">Change one variable at a time to confirm the actual cause.</p>
+                    </div>
+                </li>
+                <li class="timeline__step">
+                    <span class="timeline__marker">5</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Retest</h3>
+                        <p class="timeline__text">Verify across target browsers, real devices, and reduced motion.</p>
+                    </div>
+                </li>
+                <li class="timeline__step">
+                    <span class="timeline__marker">6</span>
+                    <div class="timeline__content">
+                        <h3 class="timeline__title">Ship</h3>
+                        <p class="timeline__text">Document the root cause and fix for future reference.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section class="section" id="checklist" aria-labelledby="checklist-title">
+            <h2 id="checklist-title" class="section__title">Production Checklist</h2>
+
+            <ul class="checklist">
+                <li class="checklist__item">Timing consistency across related animations</li>
+                <li class="checklist__item">Easing consistency across related animations</li>
+                <li class="checklist__item">Accessibility verified, including reduced motion</li>
+                <li class="checklist__item">Performance profiled on a real, non-flagship device</li>
+                <li class="checklist__item">Browser compatibility confirmed across targets</li>
+                <li class="checklist__item">Responsive behavior tested at multiple breakpoints</li>
+                <li class="checklist__item">Reduced-motion support implemented and manually verified</li>
+            </ul>
+        </section>
+
+        <section class="section" id="best-practices" aria-labelledby="best-practices-title">
+            <h2 id="best-practices-title" class="section__title">Best Practices</h2>
+
+            <div class="callout-grid">
+                <div class="callout callout--tip">
+                    <p class="callout__label">Tip</p>
+                    <p class="callout__text">Default to transform and opacity for any new animation.</p>
+                </div>
+                <div class="callout callout--warning">
+                    <p class="callout__label">Warning</p>
+                    <p class="callout__text">Avoid overusing will-change — remove it once the animation completes.</p>
+                </div>
+                <div class="callout callout--tip">
+                    <p class="callout__label">Tip</p>
+                    <p class="callout__text">Centralize prefers-reduced-motion handling instead of per-component
+                        overrides.</p>
+                </div>
+                <div class="callout callout--note">
+                    <p class="callout__label">Note</p>
+                    <p class="callout__text">Profile before optimizing — assumptions about performance are frequently
+                        wrong.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Production Motion Incident Troubleshooting Guide — a reference for
+            diagnosing animation issues systematically. Part of EaseMotion CSS
+            documentation.
+        </p>
+    </footer>
+
+</body>
+
+</html>

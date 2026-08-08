@@ -1,0 +1,722 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Balance Beam · ⚖️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>⚖️ Balance Beam</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">📦 Objects</span>
+                    <span id="objectCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">⚖️ Balance</span>
+                    <span id="balanceDisplay">0%</span>
+                </div>
+                <div class="stat">
+                    <span class="label">💨 Wind</span>
+                    <span id="windDisplay">0%</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🏆 Score</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <!-- Object Palette -->
+            <div class="palette" id="objectPalette">
+                <div class="palette-title">📦 Objects</div>
+                <div class="object-slots">
+                    <div class="object-slot" data-weight="light" data-color="#ff6b6b">
+                        <div class="object-preview" style="background:#ff6b6b;width:30px;height:20px;border-radius:4px;"></div>
+                        <span class="weight-label">Light</span>
+                    </div>
+                    <div class="object-slot" data-weight="medium" data-color="#ffd93d">
+                        <div class="object-preview" style="background:#ffd93d;width:35px;height:25px;border-radius:4px;"></div>
+                        <span class="weight-label">Medium</span>
+                    </div>
+                    <div class="object-slot" data-weight="heavy" data-color="#6c5ce7">
+                        <div class="object-preview" style="background:#6c5ce7;width:40px;height:30px;border-radius:4px;"></div>
+                        <span class="weight-label">Heavy</span>
+                    </div>
+                    <div class="object-slot" data-weight="very-heavy" data-color="#fd79a8">
+                        <div class="object-preview" style="background:#fd79a8;width:45px;height:35px;border-radius:4px;"></div>
+                        <span class="weight-label">Very Heavy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="game-controls">
+                <button id="resetBtn" class="btn-secondary">🔄 Reset</button>
+                <button id="windBtn" class="btn-secondary">💨 Toggle Wind</button>
+                <span class="hint">🖱️ Drag objects to the beam • Click object to remove</span>
+            </div>
+
+            <!-- Overlays -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>⚖️ Balance Beam</h2>
+                    <p>Stack objects on the beam without tipping!</p>
+                    <p class="sub-text">Different weights • Wind effects • Physics-based</p>
+                    <button id="startBtn" class="btn-primary">🎯 Start Balancing</button>
+                </div>
+            </div>
+
+            <div id="gameOverOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>💫 Tipped Over!</h2>
+                    <div class="final-stats">
+                        <p>📦 Objects Stacked: <span id="finalObjects">0</span></p>
+                        <p>🏆 Score: <span id="finalScore">0</span></p>
+                        <p>⚖️ Best Balance: <span id="bestBalance">0%</span></p>
+                    </div>
+                    <button id="restartBtn" class="btn-primary">🔄 Try Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== BALANCE BEAM GAME ==========
+        class BalanceBeam {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                
+                // Game state
+                this.state = 'start'; // 'start' | 'playing' | 'gameover'
+                this.score = 0;
+                this.objectCount = 0;
+                this.balance = 0; // -100 to 100
+                this.bestBalance = 0;
+                this.tiltAngle = 0;
+                this.windActive = false;
+                this.windForce = 0;
+                this.windTimer = 0;
+                this.dragging = false;
+                this.draggedObject = null;
+                this.dragOffsetX = 0;
+                this.dragOffsetY = 0;
+                this.frame = 0;
+                
+                // Beam properties
+                this.beam = {
+                    x: 450,
+                    y: 400,
+                    width: 400,
+                    height: 12,
+                    pivotX: 450,
+                    pivotY: 400,
+                    angle: 0,
+                    targetAngle: 0,
+                    angularVelocity: 0,
+                    damping: 0.85,
+                    maxAngle: 30 * Math.PI / 180
+                };
+                
+                // Objects on beam
+                this.objects = [];
+                this.objectId = 0;
+                
+                // Available object types
+                this.objectTypes = {
+                    light: { weight: 1, color: '#ff6b6b', label: 'Light', size: 20 },
+                    medium: { weight: 2, color: '#ffd93d', label: 'Medium', size: 25 },
+                    heavy: { weight: 3, color: '#6c5ce7', label: 'Heavy', size: 30 },
+                    'very-heavy': { weight: 5, color: '#fd79a8', label: 'Very Heavy', size: 35 }
+                };
+                
+                // Particles
+                this.particles = [];
+                
+                // Background
+                this.bgStars = [];
+                for (let i = 0; i < 50; i++) {
+                    this.bgStars.push({
+                        x: Math.random() * 900,
+                        y: Math.random() * 600,
+                        size: Math.random() * 2 + 0.5,
+                        twinkle: Math.random() * Math.PI * 2
+                    });
+                }
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.state = 'start';
+                this.score = 0;
+                this.objectCount = 0;
+                this.balance = 0;
+                this.bestBalance = 0;
+                this.tiltAngle = 0;
+                this.windForce = 0;
+                this.windTimer = 0;
+                this.objects = [];
+                this.particles = [];
+                this.dragging = false;
+                this.draggedObject = null;
+                this.frame = 0;
+                
+                this.beam.angle = 0;
+                this.beam.targetAngle = 0;
+                this.beam.angularVelocity = 0;
+                
+                document.getElementById('objectCount').textContent = '0';
+                document.getElementById('balanceDisplay').textContent = '0%';
+                document.getElementById('windDisplay').textContent = '0%';
+                document.getElementById('scoreDisplay').textContent = '0';
+                document.getElementById('startOverlay').style.display = 'flex';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+            }
+            
+            addObjectToBeam(weight, color, x) {
+                const obj = {
+                    id: this.objectId++,
+                    weight: weight,
+                    color: color,
+                    x: x || (this.beam.x + (Math.random() - 0.5) * this.beam.width * 0.6),
+                    y: this.beam.y - 10,
+                    width: 20 + weight * 5,
+                    height: 15 + weight * 4,
+                    rotation: 0,
+                    onBeam: false,
+                    settling: true,
+                    settleTimer: 0
+                };
+                obj.onBeam = true;
+                this.objects.push(obj);
+                this.objectCount++;
+                this.updatePhysics();
+                this.updateUI();
+                this.spawnParticles(obj.x, obj.y, 10, color);
+                return obj;
+            }
+            
+            updatePhysics() {
+                // Calculate total weight on each side
+                let leftWeight = 0;
+                let rightWeight = 0;
+                let totalWeight = 0;
+                
+                for (const obj of this.objects) {
+                    if (!obj.onBeam) continue;
+                    const relativeX = obj.x - this.beam.pivotX;
+                    const distanceFactor = relativeX / (this.beam.width / 2);
+                    const weightContribution = obj.weight * (1 + distanceFactor * 0.5);
+                    
+                    if (relativeX < 0) {
+                        leftWeight += weightContribution;
+                    } else {
+                        rightWeight += weightContribution;
+                    }
+                    totalWeight += obj.weight;
+                }
+                
+                // Calculate balance (-100 to 100)
+                const total = leftWeight + rightWeight;
+                if (total > 0) {
+                    this.balance = ((rightWeight - leftWeight) / total) * 100;
+                } else {
+                    this.balance = 0;
+                }
+                
+                // Apply wind force
+                if (this.windActive) {
+                    this.windTimer += 0.02;
+                    this.windForce = Math.sin(this.windTimer * 0.5) * 15 + Math.random() * 5;
+                    // Wind pushes objects on one side
+                    const windEffect = this.windForce * 0.01;
+                    this.balance += windEffect;
+                } else {
+                    this.windForce *= 0.95;
+                }
+                
+                // Clamp balance
+                this.balance = Math.max(-100, Math.min(100, this.balance));
+                
+                // Calculate target angle
+                this.beam.targetAngle = (this.balance / 100) * this.beam.maxAngle;
+                
+                // Physics smoothing
+                this.beam.angularVelocity += (this.beam.targetAngle - this.beam.angle) * 0.05;
+                this.beam.angularVelocity *= this.beam.damping;
+                this.beam.angle += this.beam.angularVelocity;
+                
+                // Update object positions
+                for (const obj of this.objects) {
+                    if (!obj.onBeam) continue;
+                    
+                    // Calculate position on tilted beam
+                    const relX = obj.x - this.beam.pivotX;
+                    const angle = this.beam.angle;
+                    const cosA = Math.cos(angle);
+                    const sinA = Math.sin(angle);
+                    
+                    // Rotate position around pivot
+                    const newX = this.beam.pivotX + relX * cosA;
+                    const newY = this.beam.pivotY + relX * sinA - obj.height / 2;
+                    
+                    // Smooth transition
+                    obj.x += (newX - obj.x) * 0.3;
+                    obj.y += (newY - obj.y) * 0.3;
+                    obj.rotation = this.beam.angle * 0.3;
+                    
+                    // Check if object slides off
+                    if (Math.abs(relX) > this.beam.width / 2 + 10) {
+                        obj.onBeam = false;
+                        this.spawnParticles(obj.x, obj.y, 15, '#ff6b6b');
+                        this.objectCount--;
+                        this.gameOver();
+                    }
+                }
+                
+                // Check if beam is too tilted
+                if (Math.abs(this.beam.angle) > this.beam.maxAngle * 0.9) {
+                    this.gameOver();
+                }
+                
+                // Update best balance
+                if (Math.abs(this.balance) < Math.abs(this.bestBalance) || this.bestBalance === 0) {
+                    this.bestBalance = this.balance;
+                }
+                
+                // Score based on balance (closer to 0 = better)
+                const balanceScore = Math.max(0, 100 - Math.abs(this.balance));
+                this.score += Math.floor(balanceScore / 20);
+                
+                this.updateUI();
+            }
+            
+            updateUI() {
+                document.getElementById('objectCount').textContent = this.objectCount;
+                document.getElementById('balanceDisplay').textContent = Math.round(this.balance) + '%';
+                document.getElementById('windDisplay').textContent = Math.round(Math.abs(this.windForce)) + '%';
+                document.getElementById('scoreDisplay').textContent = this.score;
+                
+                // Change balance color based on value
+                const balanceEl = document.getElementById('balanceDisplay');
+                const absBalance = Math.abs(this.balance);
+                if (absBalance < 10) {
+                    balanceEl.style.color = '#4ecdc4';
+                } else if (absBalance < 30) {
+                    balanceEl.style.color = '#ffd93d';
+                } else if (absBalance < 60) {
+                    balanceEl.style.color = '#ff9f43';
+                } else {
+                    balanceEl.style.color = '#ff6b6b';
+                }
+            }
+            
+            spawnParticles(x, y, count, color) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * 3;
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1,
+                        life: 1,
+                        decay: 0.015 + Math.random() * 0.02,
+                        size: 2 + Math.random() * 4,
+                        color: color || '#ffd93d'
+                    });
+                }
+            }
+            
+            gameOver() {
+                if (this.state === 'gameover') return;
+                this.state = 'gameover';
+                document.getElementById('finalObjects').textContent = this.objectCount;
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('bestBalance').textContent = Math.abs(this.bestBalance).toFixed(1) + '%';
+                document.getElementById('gameOverOverlay').style.display = 'flex';
+                this.spawnParticles(this.beam.x, this.beam.y, 30, '#ff6b6b');
+            }
+            
+            render() {
+                const ctx = this.ctx;
+                const W = 900, H = 600;
+                
+                // Clear background
+                const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                gradient.addColorStop(0, '#0f0c29');
+                gradient.addColorStop(0.5, '#302b63');
+                gradient.addColorStop(1, '#24243e');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw background stars
+                for (const star of this.bgStars) {
+                    const brightness = 0.5 + 0.5 * Math.sin(star.twinkle + this.frame * 0.01);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.6})`;
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw wind effect
+                if (this.windActive && Math.abs(this.windForce) > 1) {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.windForce) * 0.01})`;
+                    for (let i = 0; i < 20; i++) {
+                        const x = (i / 20) * W + this.frame * (this.windForce > 0 ? 2 : -2);
+                        const y = 100 + Math.sin(i + this.frame * 0.05) * 50;
+                        ctx.beginPath();
+                        ctx.arc(x % W, y, 2 + Math.random() * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // Wind direction arrow
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.font = '20px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(this.windForce > 0 ? '→' : '←', 50, 50);
+                }
+                
+                // Draw support pillar
+                ctx.fillStyle = '#4a4a6a';
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(this.beam.pivotX - 8, this.beam.pivotY, 16, 50);
+                
+                // Draw beam
+                ctx.save();
+                ctx.translate(this.beam.pivotX, this.beam.pivotY);
+                ctx.rotate(this.beam.angle);
+                
+                // Beam shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 5;
+                
+                // Main beam
+                const beamGrad = ctx.createLinearGradient(-this.beam.width/2, 0, this.beam.width/2, 0);
+                beamGrad.addColorStop(0, '#6a6a8a');
+                beamGrad.addColorStop(0.3, '#8a8aaa');
+                beamGrad.addColorStop(0.5, '#aaaacc');
+                beamGrad.addColorStop(0.7, '#8a8aaa');
+                beamGrad.addColorStop(1, '#6a6a8a');
+                ctx.fillStyle = beamGrad;
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetY = 3;
+                ctx.fillRect(-this.beam.width/2, -this.beam.height/2, this.beam.width, this.beam.height);
+                
+                // Beam edge details
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(-this.beam.width/2, -this.beam.height/2, this.beam.width, this.beam.height);
+                
+                // Center pivot
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffd93d';
+                ctx.beginPath();
+                ctx.arc(0, 0, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Balance level indicator
+                const level = this.balance / 100;
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(-this.beam.width/2 + 10, -this.beam.height/2 - 15, this.beam.width - 20, 8);
+                ctx.fillStyle = this.getBalanceColor();
+                const indicatorWidth = (this.beam.width - 20) * (0.5 + level * 0.5);
+                ctx.fillRect(-this.beam.width/2 + 10, -this.beam.height/2 - 15, Math.max(0, Math.min(this.beam.width - 20, indicatorWidth)), 8);
+                
+                ctx.restore();
+                
+                // Draw objects on beam
+                for (const obj of this.objects) {
+                    if (!obj.onBeam) continue;
+                    ctx.save();
+                    ctx.translate(obj.x, obj.y);
+                    ctx.rotate(obj.rotation);
+                    
+                    // Shadow
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetY = 3;
+                    
+                    // Object body
+                    const grad = ctx.createLinearGradient(-obj.width/2, -obj.height/2, obj.width/2, obj.height/2);
+                    grad.addColorStop(0, obj.color);
+                    grad.addColorStop(1, this.darkenColor(obj.color, 0.3));
+                    ctx.fillStyle = grad;
+                    
+                    // Rounded rectangle
+                    const r = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(-obj.width/2 + r, -obj.height/2);
+                    ctx.lineTo(obj.width/2 - r, -obj.height/2);
+                    ctx.quadraticCurveTo(obj.width/2, -obj.height/2, obj.width/2, -obj.height/2 + r);
+                    ctx.lineTo(obj.width/2, obj.height/2 - r);
+                    ctx.quadraticCurveTo(obj.width/2, obj.height/2, obj.width/2 - r, obj.height/2);
+                    ctx.lineTo(-obj.width/2 + r, obj.height/2);
+                    ctx.quadraticCurveTo(-obj.width/2, obj.height/2, -obj.width/2, obj.height/2 - r);
+                    ctx.lineTo(-obj.width/2, -obj.height/2 + r);
+                    ctx.quadraticCurveTo(-obj.width/2, -obj.height/2, -obj.width/2 + r, -obj.height/2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Weight label
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    const weightLabels = ['', 'L', 'M', 'H', 'VH'];
+                    ctx.fillText(weightLabels[obj.weight] || '', 0, 0);
+                    
+                    ctx.restore();
+                }
+                
+                // Draw particles
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                
+                // Draw palette indicator on canvas
+                if (this.dragging && this.draggedObject) {
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillStyle = this.draggedObject.color;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.draggedObject.color;
+                    ctx.beginPath();
+                    ctx.arc(this.dragOffsetX, this.dragOffsetY, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            getBalanceColor() {
+                const abs = Math.abs(this.balance);
+                if (abs < 10) return '#4ecdc4';
+                if (abs < 30) return '#ffd93d';
+                if (abs < 60) return '#ff9f43';
+                return '#ff6b6b';
+            }
+            
+            darkenColor(color, amount) {
+                let hex = color.replace('#', '');
+                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                let r = parseInt(hex.substring(0,2), 16);
+                let g = parseInt(hex.substring(2,4), 16);
+                let b = parseInt(hex.substring(4,6), 16);
+                r = Math.floor(r * (1 - amount));
+                g = Math.floor(g * (1 - amount));
+                b = Math.floor(b * (1 - amount));
+                return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+            }
+            
+            update() {
+                if (this.state !== 'playing') return;
+                this.frame++;
+                
+                // Update physics
+                this.updatePhysics();
+                
+                // Update particles
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // Update UI
+                this.updateUI();
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+            
+            setupEventListeners() {
+                // Start button
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.state = 'playing';
+                    document.getElementById('startOverlay').style.display = 'none';
+                });
+                
+                // Restart button
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.init();
+                    this.state = 'playing';
+                    document.getElementById('startOverlay').style.display = 'none';
+                    document.getElementById('gameOverOverlay').style.display = 'none';
+                });
+                
+                // Reset button
+                document.getElementById('resetBtn').addEventListener('click', () => {
+                    this.init();
+                    this.state = 'playing';
+                    document.getElementById('startOverlay').style.display = 'none';
+                    document.getElementById('gameOverOverlay').style.display = 'none';
+                });
+                
+                // Wind toggle
+                document.getElementById('windBtn').addEventListener('click', () => {
+                    this.windActive = !this.windActive;
+                    document.getElementById('windBtn').textContent = 
+                        this.windActive ? '💨 Wind: ON' : '💨 Toggle Wind';
+                });
+                
+                // Object palette drag
+                const slots = document.querySelectorAll('.object-slot');
+                slots.forEach(slot => {
+                    slot.addEventListener('mousedown', (e) => {
+                        if (this.state !== 'playing') return;
+                        const weight = slot.dataset.weight;
+                        const color = slot.dataset.color;
+                        const rect = this.canvas.getBoundingClientRect();
+                        const scaleX = this.canvas.width / rect.width;
+                        const scaleY = this.canvas.height / rect.height;
+                        
+                        const x = (e.clientX - rect.left) * scaleX;
+                        const y = (e.clientY - rect.top) * scaleY;
+                        
+                        this.dragging = true;
+                        const weightValue = this.objectTypes[weight].weight;
+                        this.draggedObject = {
+                            weight: weightValue,
+                            color: color,
+                            x: x,
+                            y: y
+                        };
+                        this.dragOffsetX = x;
+                        this.dragOffsetY = y;
+                    });
+                });
+                
+                // Canvas events for dropping
+                this.canvas.addEventListener('mousemove', (e) => {
+                    if (!this.dragging || this.state !== 'playing') return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    this.dragOffsetX = (e.clientX - rect.left) * scaleX;
+                    this.dragOffsetY = (e.clientY - rect.top) * scaleY;
+                });
+                
+                this.canvas.addEventListener('mouseup', (e) => {
+                    if (!this.dragging || this.state !== 'playing') return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    
+                    const x = (e.clientX - rect.left) * scaleX;
+                    const y = (e.clientY - rect.top) * scaleY;
+                    
+                    // Check if dropped on beam
+                    const beamLeft = this.beam.x - this.beam.width/2;
+                    const beamRight = this.beam.x + this.beam.width/2;
+                    const beamTop = this.beam.y - 40;
+                    const beamBottom = this.beam.y + 20;
+                    
+                    if (x > beamLeft && x < beamRight && y > beamTop && y < beamBottom) {
+                        // Add object to beam
+                        this.addObjectToBeam(
+                            this.draggedObject.weight,
+                            this.draggedObject.color,
+                            x
+                        );
+                    }
+                    
+                    this.dragging = false;
+                    this.draggedObject = null;
+                });
+                
+                // Touch support
+                let touchObj = null;
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (this.state !== 'playing') return;
+                    // Check if touching an object on beam to remove it
+                    const touch = e.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    const x = (touch.clientX - rect.left) * scaleX;
+                    const y = (touch.clientY - rect.top) * scaleY;
+                    
+                    // Check for object click (remove)
+                    for (let i = this.objects.length - 1; i >= 0; i--) {
+                        const obj = this.objects[i];
+                        if (!obj.onBeam) continue;
+                        const dx = x - obj.x;
+                        const dy = y - obj.y;
+                        if (Math.abs(dx) < obj.width/2 && Math.abs(dy) < obj.height/2) {
+                            obj.onBeam = false;
+                            this.objectCount--;
+                            this.spawnParticles(obj.x, obj.y, 15, obj.color);
+                            this.updateUI();
+                            break;
+                        }
+                    }
+                }, { passive: false });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.state === 'start') {
+                            this.state = 'playing';
+                            document.getElementById('startOverlay').style.display = 'none';
+                        } else if (this.state === 'gameover') {
+                            this.init();
+                            this.state = 'playing';
+                            document.getElementById('startOverlay').style.display = 'none';
+                            document.getElementById('gameOverOverlay').style.display = 'none';
+                        }
+                    }
+                    if (e.key === 'w' || e.key === 'W') {
+                        document.getElementById('windBtn').click();
+                    }
+                    if (e.key === 'r' || e.key === 'R') {
+                        document.getElementById('resetBtn').click();
+                    }
+                });
+            }
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new BalanceBeam();
+        });
+    </script>
+</body>
+</html>
