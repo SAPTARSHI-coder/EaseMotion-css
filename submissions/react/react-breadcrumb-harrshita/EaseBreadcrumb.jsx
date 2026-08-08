@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Breadcrumb Component
- * 
- * A native React wrapper for the ease-breadcrumb CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-breadcrumb` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseBreadcrumb = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

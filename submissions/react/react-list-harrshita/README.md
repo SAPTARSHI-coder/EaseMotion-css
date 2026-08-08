@@ -1,19 +1,18 @@
-# React List Integration
 
-This is a React functional component wrapper for the `ease-list` class.
+# React List Component
+
+This component provides a thin React wrapper around the `ease-list` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseList } from './EaseList';
 
-function App() {
+function Example() {
   return (
-    <EaseList className="custom-utility">
-      Hello EaseMotion!
-    </EaseList>
+    <EaseList className="custom-utility">Hello EaseMotion!</EaseList>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-list` class.

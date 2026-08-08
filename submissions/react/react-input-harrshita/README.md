@@ -1,19 +1,18 @@
-# React Input Integration
 
-This is a React functional component wrapper for the `ease-input` class.
+# React Input Component
+
+This component provides a thin React wrapper around the `ease-input` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseInput } from './EaseInput';
 
-function App() {
+function Example() {
   return (
-    <EaseInput className="custom-utility">
-      Hello EaseMotion!
-    </EaseInput>
+    <EaseInput className="custom-utility">Hello EaseMotion!</EaseInput>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-input` class.

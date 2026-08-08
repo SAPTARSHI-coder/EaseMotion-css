@@ -1,19 +1,18 @@
-# React Progress Integration
 
-This is a React functional component wrapper for the `ease-progress` class.
+# React Progress Component
+
+This component provides a thin React wrapper around the `ease-progress` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseProgress } from './EaseProgress';
 
-function App() {
+function Example() {
   return (
-    <EaseProgress className="custom-utility">
-      Hello EaseMotion!
-    </EaseProgress>
+    <EaseProgress className="custom-utility">Hello EaseMotion!</EaseProgress>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-progress` class.

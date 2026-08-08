@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Popover Component
- * 
- * A native React wrapper for the ease-popover CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-popover` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EasePopover = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

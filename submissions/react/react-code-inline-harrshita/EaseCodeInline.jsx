@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion CodeInline Component
- * 
- * A native React wrapper for the ease-code-inline CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-code-inline` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseCodeInline = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

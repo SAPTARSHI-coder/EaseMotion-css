@@ -1,19 +1,18 @@
-# React Carousel Integration
 
-This is a React functional component wrapper for the `ease-carousel` class.
+# React Carousel Component
+
+This component provides a thin React wrapper around the `ease-carousel` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseCarousel } from './EaseCarousel';
 
-function App() {
+function Example() {
   return (
-    <EaseCarousel className="custom-utility">
-      Hello EaseMotion!
-    </EaseCarousel>
+    <EaseCarousel className="custom-utility">Hello EaseMotion!</EaseCarousel>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-carousel` class.

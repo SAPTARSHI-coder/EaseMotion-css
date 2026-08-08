@@ -1,19 +1,18 @@
-# React CodeBlock Integration
 
-This is a React functional component wrapper for the `ease-code-block` class.
+# React CodeBlock Component
+
+This component provides a thin React wrapper around the `ease-code-block` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseCodeBlock } from './EaseCodeBlock';
 
-function App() {
+function Example() {
   return (
-    <EaseCodeBlock className="custom-utility">
-      Hello EaseMotion!
-    </EaseCodeBlock>
+    <EaseCodeBlock className="custom-utility">Hello EaseMotion!</EaseCodeBlock>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-code-block` class.

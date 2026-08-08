@@ -1,19 +1,18 @@
-# React Image Integration
 
-This is a React functional component wrapper for the `ease-image` class.
+# React Image Component
+
+This component provides a thin React wrapper around the `ease-image` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseImage } from './EaseImage';
 
-function App() {
+function Example() {
   return (
-    <EaseImage className="custom-utility">
-      Hello EaseMotion!
-    </EaseImage>
+    <EaseImage className="custom-utility">Hello EaseMotion!</EaseImage>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-image` class.

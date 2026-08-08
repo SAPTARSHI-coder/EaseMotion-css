@@ -1,19 +1,18 @@
-# React Form Integration
 
-This is a React functional component wrapper for the `ease-form` class.
+# React Form Component
+
+This component provides a thin React wrapper around the `ease-form` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseForm } from './EaseForm';
 
-function App() {
+function Example() {
   return (
-    <EaseForm className="custom-utility">
-      Hello EaseMotion!
-    </EaseForm>
+    <EaseForm className="custom-utility">Hello EaseMotion!</EaseForm>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-form` class.

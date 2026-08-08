@@ -1,19 +1,18 @@
-# React Navbar Integration
 
-This is a React functional component wrapper for the `ease-navbar` class.
+# React Navbar Component
+
+This component provides a thin React wrapper around the `ease-navbar` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseNavbar } from './EaseNavbar';
 
-function App() {
+function Example() {
   return (
-    <EaseNavbar className="custom-utility">
-      Hello EaseMotion!
-    </EaseNavbar>
+    <EaseNavbar className="custom-utility">Hello EaseMotion!</EaseNavbar>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-navbar` class.

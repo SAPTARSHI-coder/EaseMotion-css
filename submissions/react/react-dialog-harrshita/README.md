@@ -1,19 +1,18 @@
-# React Dialog Integration
 
-This is a React functional component wrapper for the `ease-dialog` class.
+# React Dialog Component
+
+This component provides a thin React wrapper around the `ease-dialog` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseDialog } from './EaseDialog';
 
-function App() {
+function Example() {
   return (
-    <EaseDialog className="custom-utility">
-      Hello EaseMotion!
-    </EaseDialog>
+    <EaseDialog className="custom-utility">Hello EaseMotion!</EaseDialog>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-dialog` class.

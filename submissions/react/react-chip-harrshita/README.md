@@ -1,19 +1,18 @@
-# React Chip Integration
 
-This is a React functional component wrapper for the `ease-chip` class.
+# React Chip Component
+
+This component provides a thin React wrapper around the `ease-chip` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseChip } from './EaseChip';
 
-function App() {
+function Example() {
   return (
-    <EaseChip className="custom-utility">
-      Hello EaseMotion!
-    </EaseChip>
+    <EaseChip className="custom-utility">Hello EaseMotion!</EaseChip>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-chip` class.

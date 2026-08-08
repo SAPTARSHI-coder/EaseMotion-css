@@ -1,19 +1,18 @@
-# React Dropdown Integration
 
-This is a React functional component wrapper for the `ease-dropdown` class.
+# React Dropdown Component
+
+This component provides a thin React wrapper around the `ease-dropdown` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseDropdown } from './EaseDropdown';
 
-function App() {
+function Example() {
   return (
-    <EaseDropdown className="custom-utility">
-      Hello EaseMotion!
-    </EaseDropdown>
+    <EaseDropdown className="custom-utility">Hello EaseMotion!</EaseDropdown>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-dropdown` class.

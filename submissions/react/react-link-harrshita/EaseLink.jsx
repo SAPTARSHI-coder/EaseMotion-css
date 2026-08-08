@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Link Component
- * 
- * A native React wrapper for the ease-link CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-link` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseLink = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

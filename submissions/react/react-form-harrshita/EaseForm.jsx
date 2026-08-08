@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Form Component
- * 
- * A native React wrapper for the ease-form CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-form` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseForm = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

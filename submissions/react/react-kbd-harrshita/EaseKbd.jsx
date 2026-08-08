@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Kbd Component
- * 
- * A native React wrapper for the ease-kbd CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-kbd` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseKbd = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

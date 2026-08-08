@@ -1,19 +1,18 @@
-# React Pagination Integration
 
-This is a React functional component wrapper for the `ease-pagination` class.
+# React Pagination Component
+
+This component provides a thin React wrapper around the `ease-pagination` utility class.
 
 ## Usage
 
 ```jsx
 import { EasePagination } from './EasePagination';
 
-function App() {
+function Example() {
   return (
-    <EasePagination className="custom-utility">
-      Hello EaseMotion!
-    </EasePagination>
+    <EasePagination className="custom-utility">Hello EaseMotion!</EasePagination>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-pagination` class.

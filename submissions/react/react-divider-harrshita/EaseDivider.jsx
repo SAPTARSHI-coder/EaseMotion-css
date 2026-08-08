@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Divider Component
- * 
- * A native React wrapper for the ease-divider CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-divider` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseDivider = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

@@ -1,19 +1,18 @@
-# React Breadcrumb Integration
 
-This is a React functional component wrapper for the `ease-breadcrumb` class.
+# React Breadcrumb Component
+
+This component provides a thin React wrapper around the `ease-breadcrumb` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseBreadcrumb } from './EaseBreadcrumb';
 
-function App() {
+function Example() {
   return (
-    <EaseBreadcrumb className="custom-utility">
-      Hello EaseMotion!
-    </EaseBreadcrumb>
+    <EaseBreadcrumb className="custom-utility">Hello EaseMotion!</EaseBreadcrumb>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-breadcrumb` class.

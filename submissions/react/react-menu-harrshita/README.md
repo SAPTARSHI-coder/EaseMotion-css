@@ -1,19 +1,18 @@
-# React Menu Integration
 
-This is a React functional component wrapper for the `ease-menu` class.
+# React Menu Component
+
+This component provides a thin React wrapper around the `ease-menu` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseMenu } from './EaseMenu';
 
-function App() {
+function Example() {
   return (
-    <EaseMenu className="custom-utility">
-      Hello EaseMotion!
-    </EaseMenu>
+    <EaseMenu className="custom-utility">Hello EaseMotion!</EaseMenu>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-menu` class.

@@ -1,19 +1,18 @@
-# React Drawer Integration
 
-This is a React functional component wrapper for the `ease-drawer` class.
+# React Drawer Component
+
+This component provides a thin React wrapper around the `ease-drawer` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseDrawer } from './EaseDrawer';
 
-function App() {
+function Example() {
   return (
-    <EaseDrawer className="custom-utility">
-      Hello EaseMotion!
-    </EaseDrawer>
+    <EaseDrawer className="custom-utility">Hello EaseMotion!</EaseDrawer>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-drawer` class.

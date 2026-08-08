@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion List Component
- * 
- * A native React wrapper for the ease-list CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-list` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseList = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

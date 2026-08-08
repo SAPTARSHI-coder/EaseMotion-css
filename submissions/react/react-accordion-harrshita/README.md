@@ -1,19 +1,18 @@
-# React Accordion Integration
 
-This is a React functional component wrapper for the `ease-accordion` class.
+# React Accordion Component
+
+This component provides a thin React wrapper around the `ease-accordion` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseAccordion } from './EaseAccordion';
 
-function App() {
+function Example() {
   return (
-    <EaseAccordion className="custom-utility">
-      Hello EaseMotion!
-    </EaseAccordion>
+    <EaseAccordion className="custom-utility">Hello EaseMotion!</EaseAccordion>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-accordion` class.

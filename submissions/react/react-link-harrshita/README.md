@@ -1,19 +1,18 @@
-# React Link Integration
 
-This is a React functional component wrapper for the `ease-link` class.
+# React Link Component
+
+This component provides a thin React wrapper around the `ease-link` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseLink } from './EaseLink';
 
-function App() {
+function Example() {
   return (
-    <EaseLink className="custom-utility">
-      Hello EaseMotion!
-    </EaseLink>
+    <EaseLink className="custom-utility">Hello EaseMotion!</EaseLink>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-link` class.

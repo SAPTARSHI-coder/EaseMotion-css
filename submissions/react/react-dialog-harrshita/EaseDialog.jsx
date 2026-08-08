@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Dialog Component
- * 
- * A native React wrapper for the ease-dialog CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-dialog` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseDialog = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

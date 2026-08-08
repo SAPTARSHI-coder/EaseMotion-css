@@ -1,19 +1,18 @@
-# React Card Integration
 
-This is a React functional component wrapper for the `ease-card` class.
+# React Card Component
+
+This component provides a thin React wrapper around the `ease-card` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseCard } from './EaseCard';
 
-function App() {
+function Example() {
   return (
-    <EaseCard className="custom-utility">
-      Hello EaseMotion!
-    </EaseCard>
+    <EaseCard className="custom-utility">Hello EaseMotion!</EaseCard>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-card` class.

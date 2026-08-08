@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Badge Component
- * 
- * A native React wrapper for the ease-badge CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-badge` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseBadge = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

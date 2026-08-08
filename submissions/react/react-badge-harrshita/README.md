@@ -1,19 +1,18 @@
-# React Badge Integration
 
-This is a React functional component wrapper for the `ease-badge` class.
+# React Badge Component
+
+This component provides a thin React wrapper around the `ease-badge` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseBadge } from './EaseBadge';
 
-function App() {
+function Example() {
   return (
-    <EaseBadge className="custom-utility">
-      Hello EaseMotion!
-    </EaseBadge>
+    <EaseBadge className="custom-utility">Hello EaseMotion!</EaseBadge>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-badge` class.

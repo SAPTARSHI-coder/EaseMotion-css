@@ -1,10 +1,11 @@
+
 import React from 'react';
 
 /**
  * EaseMotion Drawer Component
- * 
- * A native React wrapper for the ease-drawer CSS class.
- * Supports standard React props and forwards ref.
+ *
+ * A native React wrapper for the `ease-drawer` CSS class.
+ * Supports standard React props, ref forwarding, and className merging.
  */
 export const EaseDrawer = React.forwardRef(({ className, children, ...props }, ref) => {
   return (

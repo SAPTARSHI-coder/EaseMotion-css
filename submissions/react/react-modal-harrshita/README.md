@@ -1,19 +1,18 @@
-# React Modal Integration
 
-This is a React functional component wrapper for the `ease-modal` class.
+# React Modal Component
+
+This component provides a thin React wrapper around the `ease-modal` utility class.
 
 ## Usage
 
 ```jsx
 import { EaseModal } from './EaseModal';
 
-function App() {
+function Example() {
   return (
-    <EaseModal className="custom-utility">
-      Hello EaseMotion!
-    </EaseModal>
+    <EaseModal className="custom-utility">Hello EaseMotion!</EaseModal>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+The wrapper forwards refs, spreads remaining props onto the `<div>`, and merges any custom `className` you provide with the core `ease-modal` class.
