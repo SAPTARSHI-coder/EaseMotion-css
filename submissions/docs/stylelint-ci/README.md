@@ -1,28 +1,29 @@
 # Stylelint CI — Submission
 
-What this submission does
-- Proposes a GitHub Actions workflow to run Stylelint on CSS files in CI.
-- Provides a `.stylelintignore` and a ready-to-copy workflow YAML (`stylelint-workflow.yml`) that maintainers can place in `.github/workflows/`.
+## Summary
+This submission proposes a ready-to-use GitHub Actions workflow to run Stylelint on the repository's CSS files in CI. It includes:
+- a candidate workflow YAML (`stylelint-workflow.yml`),
+- a `.stylelintignore` to exclude build artifacts,
+- a small demo page, and
+- this README with adoption instructions.
 
-Why this is in `submissions/`
-- EaseMotion CSS enforces a submission-first model: contributors add proposals under `submissions/` and the maintainer reviews and integrates accepted items into the repository root. This submission follows that model and avoids editing root config files directly.
+Issue: Fixes / relates to #63629
 
-How to adopt (maintainer instructions)
-1. If accepted, copy `stylelint-workflow.yml` to `.github/workflows/stylelint.yml`.
-2. Merge `.stylelintignore` content into the repo root if desired.
-3. CI will run `npx stylelint "**/*.css" --max-warnings=0` (fail on warnings).
+---
 
-Copy instruction:
-1.Copy stylelint-workflow.yml to .github/workflows/stylelint.yml.
-2.Copy .stylelintignore to the repository root (or merge its contents into the existing .stylelintignore).
-3.Run npm ci once in CI (the workflow already uses that).
+## Files included
+- `stylelint-workflow.yml` — Candidate GitHub Actions workflow (copy to `.github/workflows/stylelint.yml` to enable).
+- `.stylelintignore` — Files & directories to exclude from linting (copy to repo root or merge into existing ignore).
+- `demo.html` + `style.css` — Minimal demo files required by the `submissions/docs/` track.
+- `README.md` — This file (instructions and rationale).
 
-Local testing
-1. From repo root:
-   - npm ci
-   - npm run lint:css
-   (The repo already has stylelint in devDependencies and a `lint:css` script.)
+All files live under `submissions/docs/stylelint-ci/` per the project’s submission model.
 
-Notes
-- This submission intentionally re-uses the existing top-level `.stylelintrc.json` and does not add another `.stylelintrc.json`.
-- "The workflow uses --ignore-path .stylelintignore and --allow-empty-input to avoid linting build artifacts and to avoid failing when no CSS files are present."
+---
+
+## Adoption — step-by-step (for maintainers)
+If you accept this proposal, perform the following to enable the workflow:
+
+1. Copy the workflow YAML into the workflows folder:
+```bash
+cp submissions/docs/stylelint-ci/stylelint-workflow.yml .github/workflows/stylelint.yml
