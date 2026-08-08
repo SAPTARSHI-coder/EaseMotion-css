@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Engine Safe Warn — environment-agnostic dev warnings</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="sw-wrap">
+    <h1 class="sw-title">Engine Safe Warn</h1>
+    <p class="sw-lede">
+      The engine runtime warns on an unparseable <code>em=""</code> value. Doing that
+      with a bare <code>process.env</code> check throws in the browser, which kills the
+      MutationObserver callback. Press the buttons to compare both guards.
+    </p>
+
+    <section class="sw-panel">
+      <button class="sw-btn sw-btn--bad" type="button" id="run-bad">Run unguarded check</button>
+      <button class="sw-btn sw-btn--good" type="button" id="run-good">Run safe check</button>
+      <output class="sw-out" id="out" role="status" aria-live="polite">Awaiting a run…</output>
+    </section>
+
+    <section class="sw-panel">
+      <h2 class="sw-h2">Why the optional chain is not enough</h2>
+      <pre class="sw-code"><code>// throws ReferenceError in a browser: `process` was never declared
+if (process?.env?.NODE_ENV !== 'production') { /* ... */ }
+
+// safe: typeof never throws on an undeclared identifier
+const isDev =
+  typeof process !== 'undefined' &amp;&amp; process.env
+    ? process.env.NODE_ENV !== 'production'
+    : true;</code></pre>
+      <p class="sw-note">
+        Optional chaining short-circuits on <em>null</em> and <em>undefined</em> values.
+        It does not protect against an identifier that was never declared in scope —
+        only <code>typeof</code> does.
+      </p>
+    </section>
+  </main>
+  <script>
+(function () {
+  'use strict';
+  var out = document.getElementById('out');
+
+  function show(kind, text) {
+    out.textContent = text;
+    out.className = 'sw-out sw-out--' + kind;
+  }
+
+  document.getElementById('run-bad').addEventListener('click', function () {
+    // Evaluated in a scope with no `process` binding, mirroring a real browser bundle.
+    var probe = new Function('return process?.env?.NODE_ENV !== "production";');
+    try {
+      var withProcess = probe();
+      show('ok', 'No throw here — Node defines a global `process`. Result: ' + withProcess);
+    } catch (err) {
+      show('bad', err.name + ': ' + err.message + '  ← the observer callback dies here');
+    }
+  });
+
+  document.getElementById('run-good').addEventListener('click', function () {
+    var isDev =
+      typeof process !== 'undefined' && process.env
+        ? process.env.NODE_ENV !== 'production'
+        : true;
+    show('good', 'Safe guard returned isDev=' + isDev + ' with no exception thrown.');
+  });
+})();
+</script>
+</body>
+</html>
