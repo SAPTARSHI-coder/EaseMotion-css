@@ -12,6 +12,8 @@ A pure CSS interactive modal component designed for Minimalist Tech Layouts. It 
 - Clean, structured aesthetic utilizing the `Inter` font, subtle borders, and distinct header/body/footer data layouts.
 - Fully accessible with `prefers-reduced-motion` support. For motion-sensitive users, the aggressive spatial rotation and flipping are completely disabled. The complex transforms are locked to their final state, and the interaction safely falls back to an immediate opacity cross-fade.
 
+> **Note on Z-Index and Stacking Contexts:** Because the 3D-Flip modal uses `transform: rotateX(...)` and `perspective`, it creates a new stacking context. Elements inside the modal with absolute positioning and high z-index (like dropdowns) may be clipped or trapped. If you need tooltips or dropdowns inside the modal, you can append the `.ease-flatten-z` utility class to the modal content via JavaScript after the animation completes to remove the transform and restore normal z-index behavior.
+
 ## Usage
 Open `demo.html` in your browser. You will see a mock dashboard area. Click the "View Diagnostics" button on the yellow alert card. Watch as the dark overlay fades in, and the detailed diagnostics modal snaps down from the top of the screen with a snappy, bouncy 3D hinge effect. Click the overlay background or the cancel buttons to reverse the animation and close the modal.
 
