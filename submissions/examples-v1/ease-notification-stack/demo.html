@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Stack</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Notification Stack</h1>
+        <p class="subtitle">Notifications that stack and slide with different priorities</p>
+
+        <div class="notification-wrapper">
+            <div class="controls-panel">
+                <div class="control-group">
+                    <button id="addInfoBtn">ℹ️ Info</button>
+                    <button id="addSuccessBtn">✅ Success</button>
+                    <button id="addWarningBtn">⚠️ Warning</button>
+                    <button id="addErrorBtn">❌ Error</button>
+                </div>
+                <div class="control-group">
+                    <button id="clearAllBtn">🗑️ Clear All</button>
+                    <button id="toggleAnimationBtn">⏸️ Pause</button>
+                </div>
+            </div>
+
+            <div class="notification-container" id="notificationContainer">
+                <!-- Notifications will be inserted here -->
+            </div>
+
+            <div class="status">
+                <span id="notificationCount">0 notifications</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const container = document.getElementById('notificationContainer');
+        const addInfoBtn = document.getElementById('addInfoBtn');
+        const addSuccessBtn = document.getElementById('addSuccessBtn');
+        const addWarningBtn = document.getElementById('addWarningBtn');
+        const addErrorBtn = document.getElementById('addErrorBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const toggleAnimationBtn = document.getElementById('toggleAnimationBtn');
+        const notificationCount = document.getElementById('notificationCount');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== STATE =====
+        let notifications = [];
+        let idCounter = 0;
+        let isPaused = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+
+        // ===== NOTIFICATION TYPES =====
+        const types = {
+            info: {
+                icon: 'ℹ️',
+                color: '#4d96ff',
+                bg: 'rgba(77, 150, 255, 0.12)',
+                border: 'rgba(77, 150, 255, 0.2)',
+                label: 'Info'
+            },
+            success: {
+                icon: '✅',
+                color: '#6bcb77',
+                bg: 'rgba(107, 203, 119, 0.12)',
+                border: 'rgba(107, 203, 119, 0.2)',
+                label: 'Success'
+            },
+            warning: {
+                icon: '⚠️',
+                color: '#ffd93d',
+                bg: 'rgba(255, 217, 61, 0.12)',
+                border: 'rgba(255, 217, 61, 0.2)',
+                label: 'Warning'
+            },
+            error: {
+                icon: '❌',
+                color: '#ff6b6b',
+                bg: 'rgba(255, 107, 107, 0.12)',
+                border: 'rgba(255, 107, 107, 0.2)',
+                label: 'Error'
+            }
+        };
+
+        // ===== MESSAGE TEMPLATES =====
+        const messages = {
+            info: [
+                'New update available',
+                'Your profile has been viewed',
+                'Connection established',
+                'Data synced successfully',
+                'Welcome back!',
+                'New feature released',
+                'System ready',
+                'Check out our new blog post'
+            ],
+            success: [
+                'Changes saved successfully',
+                'Task completed! 🎉',
+                'Account verified',
+                'Payment processed',
+                'File uploaded successfully',
+                'Subscription activated',
+                'Your order is confirmed',
+                'Profile updated'
+            ],
+            warning: [
+                'Storage almost full',
+                'Password expires soon',
+                'Unusual login attempt',
+                'Session about to expire',
+                'Low battery',
+                'Network connection unstable',
+                'SSL certificate expiring',
+                'Resource usage high'
+            ],
+            error: [
+                'Connection lost',
+                'Failed to save changes',
+                'Invalid credentials',
+                'Server error occurred',
+                'File upload failed',
+                'Payment declined',
+                'Account locked',
+                'Network timeout'
+            ]
+        };
+
+        // ===== NOTIFICATION CLASS =====
+        class Notification {
+            constructor(type, message, duration) {
+                this.id = idCounter++;
+                this.type = type;
+                this.message = message || this.getRandomMessage(type);
+                this.duration = duration || this.getDuration(type);
+                this.createdAt = Date.now();
+                this.remaining = this.duration;
+                this.isPaused = false;
+                this.isRemoving = false;
+                this.height = 0;
+                this.opacity = 1;
+                this.transform = 'translateX(0)';
+                this.progress = 1;
+                this.priority = this.getPriority(type);
+                
+                // DOM element
+                this.element = this.createElement();
+                this.updateHeight();
+            }
+
+            getRandomMessage(type) {
+                const msgs = messages[type] || messages.info;
+                return msgs[Math.floor(Math.random() * msgs.length)];
+            }
+
+            getDuration(type) {
+                switch(type) {
+                    case 'error': return 6000;
+                    case 'warning': return 5000;
+                    case 'success': return 4000;
+                    default: return 3000;
+                }
+            }
+
+            getPriority(type) {
+                switch(type) {
+                    case 'error': return 4;
+                    case 'warning': return 3;
+                    case 'success': return 2;
+                    default: return 1;
+                }
+            }
+
+            createElement() {
+                const typeData = types[this.type];
+                const div = document.createElement('div');
+                div.className = `notification notification-${this.type}`;
+                div.dataset.id = this.id;
+                div.style.setProperty('--notification-color', typeData.color);
+                div.style.setProperty('--notification-bg', typeData.bg);
+                div.style.setProperty('--notification-border', typeData.border);
+
+                div.innerHTML = `
+                    <div class="notification-icon">${typeData.icon}</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-type">${typeData.label}</span>
+                            <span class="notification-time">just now</span>
+                        </div>
+                        <div class="notification-message">${this.message}</div>
+                    </div>
+                    <button class="notification-close" data-id="${this.id}">✕</button>
+                    <div class="notification-progress">
+                        <div class="notification-progress-bar"></div>
+                    </div>
+                `;
+
+                // Close button
+                const closeBtn = div.querySelector('.notification-close');
+                closeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.remove();
+                });
+
+                // Click to dismiss
+                div.addEventListener('click', () => {
+                    this.remove();
+                });
+
+                return div;
+            }
+
+            updateHeight() {
+                this.element.style.height = 'auto';
+                this.height = this.element.offsetHeight;
+                this.element.style.height = this.height + 'px';
+            }
+
+            update(time) {
+                if (this.isRemoving) return;
+
+                if (!this.isPaused) {
+                    this.remaining -= 16; // ~60fps
+                    this.progress = Math.max(0, this.remaining / this.duration);
+                    
+                    // Update progress bar
+                    const bar = this.element.querySelector('.notification-progress-bar');
+                    if (bar) {
+                        bar.style.transform = `scaleX(${this.progress})`;
+                    }
+
+                    // Auto-remove when expired
+                    if (this.remaining <= 0) {
+                        this.remove();
+                    }
+
+                    // Update time
+                    const timeEl = this.element.querySelector('.notification-time');
+                    if (timeEl) {
+                        const elapsed = Math.floor((Date.now() - this.createdAt) / 1000);
+                        if (elapsed < 60) {
+                            timeEl.textContent = 'just now';
+                        } else if (elapsed < 3600) {
+                            timeEl.textContent = `${Math.floor(elapsed / 60)}m ago`;
+                        } else {
+                            timeEl.textContent = `${Math.floor(elapsed / 3600)}h ago`;
+                        }
+                    }
+                }
+            }
+
+            remove() {
+                if (this.isRemoving) return;
+                this.isRemoving = true;
+                this.element.classList.add('notification-removing');
+                
+                setTimeout(() => {
+                    this.element.remove();
+                    const index = notifications.indexOf(this);
+                    if (index > -1) {
+                        notifications.splice(index, 1);
+                        updateCount();
+                    }
+                }, 400);
+            }
+
+            pause() {
+                this.isPaused = true;
+                this.element.classList.add('notification-paused');
+            }
+
+            resume() {
+                this.isPaused = false;
+                this.element.classList.remove('notification-paused');
+            }
+        }
+
+        // ===== UPDATE COUNT =====
+        function updateCount() {
+            const count = container.querySelectorAll('.notification:not(.notification-removing)').length;
+            notificationCount.textContent = `${count} notification${count !== 1 ? 's' : ''}`;
+        }
+
+        // ===== ADD NOTIFICATION =====
+        function addNotification(type, message) {
+            const notification = new Notification(type, message);
+            notifications.push(notification);
+            
+            // Insert with priority sorting
+            const children = container.querySelectorAll('.notification:not(.notification-removing)');
+            let inserted = false;
+            
+            for (let i = 0; i < children.length; i++) {
+                const child = children[i];
+                const childId = parseInt(child.dataset.id);
+                const childNotif = notifications.find(n => n.id === childId);
+                if (childNotif && notification.priority > childNotif.priority) {
+                    container.insertBefore(notification.element, child);
+                    inserted = true;
+                    break;
+                }
+            }
+            
+            if (!inserted) {
+                container.appendChild(notification.element);
+            }
+
+            // Trigger entrance animation
+            requestAnimationFrame(() => {
+                notification.element.classList.add('notification-enter');
+                notification.element.style.opacity = '1';
+                notification.element.style.transform = 'translateX(0)';
+            });
+
+            updateCount();
+
+            // Auto-expand container
+            container.style.maxHeight = container.scrollHeight + 'px';
+            
+            return notification;
+        }
+
+        // ===== ADD WITH RANDOM MESSAGE =====
+        function addRandomNotification(type) {
+            const msgs = messages[type] || messages.info;
+            const msg = msgs[Math.floor(Math.random() * msgs.length)];
+            addNotification(type, msg);
+        }
+
+        // ===== CLEAR ALL =====
+        function clearAll() {
+            const notifs = [...notifications];
+            for (const n of notifs) {
+                n.remove();
+            }
+        }
+
+        // ===== TOGGLE ANIMATION =====
+        function toggleAnimation() {
+            isPaused = !isPaused;
+            toggleAnimationBtn.textContent = isPaused ? '▶️ Resume' : '⏸️ Pause';
+            
+            for (const n of notifications) {
+                if (isPaused) {
+                    n.pause();
+                } else {
+                    n.resume();
+                }
+            }
+        }
+
+        // ===== AUTO-ADD DEMO NOTIFICATIONS =====
+        function addDemoNotifications() {
+            setTimeout(() => addRandomNotification('success'), 300);
+            setTimeout(() => addRandomNotification('info'), 800);
+            setTimeout(() => addRandomNotification('warning'), 1300);
+            setTimeout(() => addRandomNotification('error'), 1800);
+            setTimeout(() => addRandomNotification('success'), 2300);
+            setTimeout(() => addRandomNotification('info'), 2800);
+        }
+
+        // ===== ANIMATION LOOP =====
+        function animate(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            // Update notifications
+            for (const n of notifications) {
+                n.update(time);
+            }
+
+            // Update container height
+            const visible = container.querySelectorAll('.notification:not(.notification-removing)');
+            if (visible.length === 0) {
+                container.style.maxHeight = '0px';
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // ===== EVENT LISTENERS =====
+        addInfoBtn.addEventListener('click', () => addRandomNotification('info'));
+        addSuccessBtn.addEventListener('click', () => addRandomNotification('success'));
+        addWarningBtn.addEventListener('click', () => addRandomNotification('warning'));
+        addErrorBtn.addEventListener('click', () => addRandomNotification('error'));
+        clearAllBtn.addEventListener('click', clearAll);
+        toggleAnimationBtn.addEventListener('click', toggleAnimation);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') addRandomNotification('info');
+            if (e.key === '2') addRandomNotification('success');
+            if (e.key === '3') addRandomNotification('warning');
+            if (e.key === '4') addRandomNotification('error');
+            if (e.key === 'c' || e.key === 'C') clearAll();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                toggleAnimation();
+            }
+        });
+
+        // ===== INIT =====
+        updateCount();
+        lastFpsUpdate = performance.now();
+        animate(lastFpsUpdate);
+
+        // Add demo notifications after a moment
+        setTimeout(addDemoNotifications, 500);
+
+        console.log('🔔 Notification Stack loaded!');
+        console.log('💡 1 - Info, 2 - Success, 3 - Warning, 4 - Error');
+        console.log('💡 C - Clear all');
+        console.log('💡 SPACE - Pause/Resume');
+        console.log('💡 Notifications stack by priority');
+    </script>
+</body>
+</html>

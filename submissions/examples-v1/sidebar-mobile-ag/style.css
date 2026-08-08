@@ -1,0 +1,163 @@
+/* Sidebar Mobile Bug Reproduction & Investigation */
+
+:root {
+    --bg-main: #f1f5f9;
+    --sidebar-bg: #1e293b;
+    --text-light: #f8fafc;
+    --accent: #3b82f6;
+    --overlay: rgba(0, 0, 0, 0.5);
+    --sidebar-width: 280px;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-main);
+    overflow-x: hidden;
+}
+
+/* 
+ * 1. The Original (Buggy) Implementation
+ * Common cause of mobile stutter/skip: Animating non-composite properties (left, margin)
+ * or relying on transitions that mobile browsers deprioritize during layout shifts.
+ */
+.sidebar-original {
+    position: fixed;
+    top: 0;
+    left: calc(var(--sidebar-width) * -1); /* Hidden by default */
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    color: var(--text-light);
+    transition: left 0.3s ease; /* BUG SOURCE: Animating layout-triggering property */
+    z-index: 100;
+    padding: 2rem 1rem;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+/* When active, change left property */
+.sidebar-original.is-open {
+    left: 0;
+}
+
+/* 
+ * 2. The Optimized (Proposed Fix) Implementation
+ * Uses hardware-accelerated transforms (translate3d) which run on the GPU.
+ * This guarantees smooth 60fps animations on mobile devices.
+ */
+.sidebar-optimized {
+    position: fixed;
+    top: 0;
+    left: 0; /* Base position is always visible in layout... */
+    width: var(--sidebar-width);
+    height: 100vh;
+    background-color: var(--sidebar-bg);
+    color: var(--text-light);
+    /* ...but visually shifted off-screen via transform */
+    transform: translate3d(-100%, 0, 0); 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform; /* Hint to browser to create a GPU layer */
+    z-index: 100;
+    padding: 2rem 1rem;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+/* When active, transform back to 0 */
+.sidebar-optimized.is-open {
+    transform: translate3d(0, 0, 0);
+}
+
+/* 
+ * Demo Layout Styles 
+ */
+.app-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.control-group {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1.5rem;
+}
+
+.control-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--overlay);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 50;
+    will-change: opacity;
+}
+
+.overlay.is-active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Sidebar internals */
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.close-btn {
+    background: transparent;
+    padding: 4px 8px;
+    margin: 0;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.sidebar-nav a {
+    display: block;
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+}

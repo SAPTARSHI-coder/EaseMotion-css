@@ -1,0 +1,306 @@
+/* ==========================================================================
+   Accessible Web Zoom-In Carousel
+   ========================================================================== */
+
+:root {
+    /* Zoom-In Transition Variables */
+    --crsl-duration: 0.6s;
+    --crsl-easing: ease-in-out;
+    
+    /* Scale logic for Zoom transition */
+    --crsl-scale-past: 1.15; /* Exiting forward */
+    --crsl-scale-future: 0.85; /* Waiting in back */
+    
+    /* Accessible Theme (High Contrast) */
+    --color-bg-base: #f4f4f5; /* Light gray */
+    --color-card-bg: #ffffff; /* Pure white */
+    --color-text-main: #18181b; /* Very dark gray (WCAG AAA) */
+    --color-text-muted: #3f3f46; /* High contrast gray (WCAG AAA) */
+    --color-primary: #004ecc; /* High contrast blue (WCAG AAA against white) */
+    --color-focus: #d97706; /* High contrast orange for prominent focus rings */
+    
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    /* Atkinson Hyperlegible is designed for optimal readability by the Braille Institute */
+    font-family: 'Atkinson Hyperlegible', Arial, sans-serif;
+    font-size: 18px; /* Larger base font size for readability */
+    background-color: var(--color-bg-base);
+    color: var(--color-text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    line-height: 1.5;
+}
+
+/* Accessibility helper */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Carousel Container
+   -------------------------------------------------------------------------- */
+.a11y-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 850px;
+    height: 400px;
+    margin-bottom: 50px;
+}
+
+@media (max-width: 768px) {
+    .a11y-carousel { height: auto; min-height: 550px; }
+}
+
+.a11y-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.a11y-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* Base Inactive State */
+    opacity: 0;
+    visibility: hidden; /* CRITICAL: Hides from screen readers when inactive so users can't tab into invisible content */
+    pointer-events: none;
+    
+    transition: 
+        transform var(--crsl-duration) var(--crsl-easing),
+        opacity var(--crsl-duration) ease,
+        visibility var(--crsl-duration);
+}
+
+/* --------------------------------------------------------------------------
+   Card Styling
+   -------------------------------------------------------------------------- */
+.a11y-card {
+    width: 100%;
+    height: 100%;
+    background: var(--color-card-bg);
+    border: 2px solid #d4d4d8;
+    border-radius: 8px; /* Structured, clean layout */
+    padding: 3rem;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .a11y-card {
+        flex-direction: column;
+        padding: 2rem;
+        gap: 2rem;
+        text-align: center;
+    }
+}
+
+.a11y-visual {
+    flex: 0 0 150px;
+    height: 150px;
+    background-color: #f4f4f5;
+    border: 2px solid var(--color-primary);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-primary);
+}
+
+.a11y-visual svg {
+    width: 60px;
+    height: 60px;
+}
+
+.a11y-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .a11y-content { align-items: center; }
+}
+
+.a11y-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--color-text-main);
+}
+
+.a11y-desc {
+    font-size: 1.125rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+    max-width: 600px;
+}
+
+.a11y-link {
+    display: inline-block;
+    color: var(--color-primary);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    padding: 0.5rem 0.5rem 0.5rem 0;
+}
+
+.a11y-link:hover, .a11y-link:focus {
+    color: #003399; /* Darker on hover/focus */
+    text-decoration-thickness: 3px;
+}
+
+.a11y-link:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   State Logic (Zoom-In Engine Matrix)
+   -------------------------------------------------------------------------- */
+.a11y-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+/* 
+   Logic Matrix:
+   - Active Slide: scale(1)
+   - Slides BEFORE Active: scale(past)
+   - Slides AFTER Active: scale(future)
+*/
+
+/* 1. Slide 1 Active */
+#slide-1:checked ~ .a11y-track .a11y-slide:nth-child(1) { transform: scale(1); opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+#slide-1:checked ~ .a11y-track .a11y-slide:nth-child(2) { transform: scale(var(--crsl-scale-future)); }
+#slide-1:checked ~ .a11y-track .a11y-slide:nth-child(3) { transform: scale(var(--crsl-scale-future)); }
+
+/* 2. Slide 2 Active */
+#slide-2:checked ~ .a11y-track .a11y-slide:nth-child(1) { transform: scale(var(--crsl-scale-past)); }
+#slide-2:checked ~ .a11y-track .a11y-slide:nth-child(2) { transform: scale(1); opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+#slide-2:checked ~ .a11y-track .a11y-slide:nth-child(3) { transform: scale(var(--crsl-scale-future)); }
+
+/* 3. Slide 3 Active */
+#slide-3:checked ~ .a11y-track .a11y-slide:nth-child(1) { transform: scale(var(--crsl-scale-past)); }
+#slide-3:checked ~ .a11y-track .a11y-slide:nth-child(2) { transform: scale(var(--crsl-scale-past)); }
+#slide-3:checked ~ .a11y-track .a11y-slide:nth-child(3) { transform: scale(1); opacity: 1; visibility: visible; pointer-events: auto; z-index: 10; }
+
+/* --------------------------------------------------------------------------
+   Pagination Controls
+   -------------------------------------------------------------------------- */
+.a11y-controls {
+    position: absolute;
+    bottom: -50px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.a11y-dot {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--color-text-main); /* High contrast border */
+    border-radius: 50%;
+    background-color: var(--color-card-bg);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.a11y-dot-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+
+/* Hover state adds color contrast */
+.a11y-dot:hover {
+    background-color: #e4e4e7;
+}
+
+/* Active Dot Logic - Not just color change, shape/fill change for redundant visual cues */
+#slide-1:checked ~ .a11y-controls .a11y-dot:nth-child(1) .a11y-dot-inner,
+#slide-2:checked ~ .a11y-controls .a11y-dot:nth-child(2) .a11y-dot-inner,
+#slide-3:checked ~ .a11y-controls .a11y-dot:nth-child(3) .a11y-dot-inner {
+    background-color: var(--color-primary);
+}
+#slide-1:checked ~ .a11y-controls .a11y-dot:nth-child(1),
+#slide-2:checked ~ .a11y-controls .a11y-dot:nth-child(2),
+#slide-3:checked ~ .a11y-controls .a11y-dot:nth-child(3) {
+    border-color: var(--color-primary);
+    border-width: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   Accessibility Focus Ring
+   -------------------------------------------------------------------------- */
+/* Focus styles must be extremely clear and meet WCAG non-text contrast */
+.a11y-input:focus-visible:nth-of-type(1) ~ .a11y-controls .a11y-dot:nth-child(1),
+.a11y-input:focus-visible:nth-of-type(2) ~ .a11y-controls .a11y-dot:nth-child(2),
+.a11y-input:focus-visible:nth-of-type(3) ~ .a11y-controls .a11y-dot:nth-child(3) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   Prefers Reduced Motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+    .a11y-slide {
+        /* Remove the scale transformations entirely */
+        transition: opacity var(--crsl-duration) ease, visibility var(--crsl-duration);
+    }
+    
+    #slide-1:checked ~ .a11y-track .a11y-slide:nth-child(1),
+    #slide-2:checked ~ .a11y-track .a11y-slide:nth-child(2),
+    #slide-3:checked ~ .a11y-track .a11y-slide:nth-child(3) {
+        transform: none;
+    }
+    
+    #slide-1:checked ~ .a11y-track .a11y-slide:nth-child(2),
+    #slide-1:checked ~ .a11y-track .a11y-slide:nth-child(3),
+    #slide-2:checked ~ .a11y-track .a11y-slide:nth-child(1),
+    #slide-2:checked ~ .a11y-track .a11y-slide:nth-child(3),
+    #slide-3:checked ~ .a11y-track .a11y-slide:nth-child(1),
+    #slide-3:checked ~ .a11y-track .a11y-slide:nth-child(2) {
+        transform: none;
+    }
+}

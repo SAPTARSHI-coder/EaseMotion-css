@@ -1,0 +1,443 @@
+/* ==========================================================================
+   SPRING POLL WIDGET - EaseMotion CSS
+   ==========================================================================
+   Design reasoning, up front:
+   - Every option's result (bar + percentage) is visible in the DOM at
+     all times - never display:none or aria-hidden. Selecting a radio
+     option spotlights that option with a spring-style pop and glow, but
+     it is a visual emphasis layered on top of already-available
+     information, not a gate that hides results until you "vote". This
+     keeps the component honest for screen reader users while still
+     giving mouse/keyboard users a satisfying selection moment.
+   - The spring feel comes from cubic-bezier curves that overshoot past
+     their target before settling (a standard way to fake spring physics
+     in CSS transitions/keyframes without a JS physics library).
+   - Selection styling uses the plain CSS sibling combinator
+     (`input:checked + label`), which needs no experimental selectors
+     and works in every browser that supports radio inputs at all.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+/* --------------------------------------------------------------------------
+   1. EaseMotion CSS design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  /* Page */
+  --page-bg: #0b0c14;
+  --text-primary: #f1f2fb;
+  --text-secondary: #8d92ad;
+  --text-muted: #656b87;
+
+  /* Widget surface */
+  --widget-bg: #12131e;
+  --widget-border: #1f2233;
+  --widget-radius: 24px;
+
+  /* Option surface */
+  --option-bg: #171a29;
+  --option-bg-selected: #1c2036;
+  --option-border: #262a40;
+
+  /* Gaming-inspired neon accent pair */
+  --accent-cyan: #33e4ff;
+  --accent-magenta: #ff3ea5;
+  --accent-glow: rgba(51, 228, 255, 0.35);
+
+  /* Bar track */
+  --bar-track: #22263a;
+
+  /* Motion tokens - EaseMotion CSS conventions */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Overshoot curves used for the "spring" feel */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring-soft: cubic-bezier(0.22, 1.28, 0.36, 1);
+  --duration-fade: 0.6s;
+  --duration-hover: 0.25s;
+  --duration-spring: 0.55s;
+
+  /* Fonts */
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* --------------------------------------------------------------------------
+   2. Reset and page scaffold
+   -------------------------------------------------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--page-bg);
+}
+
+.stage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 56px 20px;
+}
+
+.stage-intro {
+  text-align: center;
+  max-width: 540px;
+}
+
+.stage-eyebrow {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent-cyan);
+  margin-bottom: 8px;
+}
+
+.stage-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.stage-subtitle {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Accessibility helper
+   -------------------------------------------------------------------------- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. Widget shell
+   -------------------------------------------------------------------------- */
+.poll-widget {
+  width: 100%;
+  max-width: 560px;
+  padding: 32px 30px 28px;
+  border-radius: var(--widget-radius);
+  background: var(--widget-bg);
+  border: 1px solid var(--widget-border);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+
+  /* Entry animation: fades and springs up into place on load */
+  animation: widgetEntry var(--duration-fade) var(--ease-spring-soft) both;
+}
+
+@keyframes widgetEntry {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Header
+   -------------------------------------------------------------------------- */
+.poll-header {
+  margin-bottom: 24px;
+}
+
+.poll-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-magenta);
+  margin-bottom: 8px;
+}
+
+.poll-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.poll-meta {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   6. Poll options - Flexbox layout, no fixed widths
+   -------------------------------------------------------------------------- */
+.poll-options {
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.poll-option {
+  position: relative;
+}
+
+/* The radio input stays a real, focusable form control - sized to match
+   its label and made invisible with opacity rather than display:none or
+   clip, so it remains a normal tab stop with normal semantics. */
+.poll-option-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.poll-option-label {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--option-bg);
+  border: 1px solid var(--option-border);
+  cursor: pointer;
+  flex-wrap: wrap;
+
+  transition: background-color var(--duration-hover) var(--ease-standard),
+    border-color var(--duration-hover) var(--ease-standard),
+    transform var(--duration-hover) var(--ease-standard);
+}
+
+/* Hover: a gentle lift, available to mouse users as a preview of the
+   spring selection effect */
+.poll-option-label:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+/* Keyboard focus: styled on the label via the sibling combinator, since
+   the input itself is visually hidden - a clearly visible ring distinct
+   from the plain hover lift */
+.poll-option-input:focus-visible + .poll-option-label {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   7. Selected state - the "spring" moment
+   -------------------------------------------------------------------------- */
+.poll-option-input:checked + .poll-option-label {
+  background: var(--option-bg-selected);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 0 1px var(--accent-cyan), 0 12px 26px var(--accent-glow);
+  animation: springSelect var(--duration-spring) var(--ease-spring) both;
+}
+
+@keyframes springSelect {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.035);
+  }
+  70% {
+    transform: scale(0.99);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* "Your pick" badge, added purely with CSS content on the selected label */
+.poll-option-input:checked + .poll-option-label::after {
+  content: "Your Pick";
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0b0c14;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   8. Option content: icon, label text, result bar, percentage
+   -------------------------------------------------------------------------- */
+.option-icon {
+  flex-shrink: 0;
+  display: flex;
+  color: var(--accent-cyan);
+  transition: color var(--duration-hover) var(--ease-standard);
+}
+
+.poll-option-input:checked + .poll-option-label .option-icon {
+  color: var(--accent-magenta);
+}
+
+.option-text {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+/* Result row: bar + percentage share one line, wrapped as a unit onto
+   its own row below the icon/name row */
+.option-result {
+  flex: 1 1 100%;
+  order: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Result bar track + fill */
+.option-bar {
+  flex: 1 1 auto;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bar-track);
+  overflow: hidden;
+}
+
+.option-bar-fill {
+  display: block;
+  height: 100%;
+  width: var(--result, 0%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-magenta));
+
+  /* Bars animate in on page load, growing from 0 to their result width */
+  animation: barGrow 1s var(--ease-spring-soft) both;
+  animation-delay: 0.15s;
+}
+
+@keyframes barGrow {
+  from {
+    width: 0%;
+  }
+}
+
+/* Selected option's bar gets an extra glow to match its highlighted label */
+.poll-option-input:checked + .poll-option-label .option-bar-fill {
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+.option-percent {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 38px;
+  text-align: right;
+}
+
+.poll-option-input:checked + .poll-option-label .option-percent {
+  color: var(--accent-cyan);
+}
+
+/* --------------------------------------------------------------------------
+   9. Footer hint
+   -------------------------------------------------------------------------- */
+.poll-hint {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   10. Reduced motion
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .poll-widget,
+  .poll-option-label,
+  .poll-option-input:checked + .poll-option-label,
+  .option-bar-fill {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .poll-widget {
+    opacity: 1;
+    transform: none;
+  }
+
+  .option-bar-fill {
+    width: var(--result, 0%);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. Responsive breakpoints
+   -------------------------------------------------------------------------- */
+
+/* Tablet: slightly tighter widget padding */
+@media (max-width: 768px) {
+  .poll-widget {
+    padding: 28px 24px 24px;
+  }
+}
+
+/* Mobile: stack each option's content into two lines (icon+name on one
+   row, bar+percentage on the next) so nothing gets cramped or clipped */
+@media (max-width: 480px) {
+  .stage {
+    padding: 40px 16px;
+    gap: 28px;
+  }
+
+  .stage-title {
+    font-size: 1.6rem;
+  }
+
+  .poll-widget {
+    padding: 24px 18px 20px;
+    border-radius: 20px;
+  }
+
+  .poll-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .poll-option-label {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .option-text {
+    min-width: 0;
+  }
+
+  .poll-option-input:checked + .poll-option-label::after {
+    order: 5;
+    margin-left: 0;
+    flex-basis: 100%;
+    text-align: center;
+  }
+}

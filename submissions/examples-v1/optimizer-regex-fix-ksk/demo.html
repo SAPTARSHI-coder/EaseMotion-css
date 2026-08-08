@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimizer Regex Fix Demo — EaseMotion CSS Bug #40061</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <div class="app-header">
+      <h1>🐛 Bug #40061 — Regex Spacing Fix</h1>
+      <p>
+        <code>extractEaseClasses()</code> and <code>extractEmAttributes()</code> miss valid HTML attributes
+        when spaces surround the <code>=</code> sign. This demo shows the broken vs. fixed behaviour live.
+      </p>
+    </div>
+
+    <!-- Bug explanation -->
+    <div class="bug-box">
+      <strong>Root Cause</strong>
+      Both regex patterns in <code>optimizer.js</code> require <code>=</code> with no surrounding whitespace.
+      HTML allows spaces around <code>=</code>, so <code>&lt;div class = "ease-fade-in"&gt;</code> is silently
+      skipped — causing the build-time optimizer to incorrectly drop valid classes and <code>em</code> animations.
+    </div>
+
+    <!-- Minimal diff -->
+    <div class="diff-block">
+      <h3>Minimal Fix — 2 lines in optimizer.js</h3>
+      <div class="diff-ctx">// extractEmAttributes() — line 24</div>
+      <div class="diff-del">- const re = /\bem=(['"])([^"']+)\1/g;</div>
+      <div class="diff-add">+ const re = /\bem\s*=\s*(['"])([^"']+)\1/g;</div>
+      <br>
+      <div class="diff-ctx">// extractEaseClasses() — line 40</div>
+      <div class="diff-del">- const classRe = /class=(['"])([^"']+)\1/g;</div>
+      <div class="diff-add">+ const classRe = /class\s*=\s*(['"])([^"']+)\1/g;</div>
+    </div>
+
+    <!-- Interactive tester -->
+    <div class="tester-panel">
+      <h3>Live Tester — Try it yourself</h3>
+      <div class="input-row">
+        <input
+          type="text"
+          id="html-input"
+          value='<div class = "ease-fade-in ease-hover-grow"></div>'
+          placeholder='Paste HTML with class= or em= attribute'
+        >
+        <button class="test-btn" id="test-btn">Test</button>
+      </div>
+      <div class="result-grid">
+        <div class="result-box result-buggy">
+          <h4>❌ Buggy (no \s*)</h4>
+          <div class="match-value" id="buggy-result"><span class="no-match">—</span></div>
+        </div>
+        <div class="result-box result-fixed">
+          <h4>✅ Fixed (\s* added)</h4>
+          <div class="match-value" id="fixed-result"><span class="no-match">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preset test cases -->
+    <div class="tester-panel">
+      <h3>Preset Test Cases</h3>
+      <div class="input-row" style="flex-wrap:wrap; gap:8px;">
+        <button class="test-btn" style="background:#1e2235;color:#94a3b8;box-shadow:none;border:1px solid rgba(255,255,255,0.08);" onclick="setInput('<div class=&quot;ease-fade-in&quot;></div>')">class= standard</button>
+        <button class="test-btn" style="background:#1e2235;color:#94a3b8;box-shadow:none;border:1px solid rgba(255,255,255,0.08);" onclick="setInput('<div class = &quot;ease-fade-in&quot;></div>')">class = spaced</button>
+        <button class="test-btn" style="background:#1e2235;color:#94a3b8;box-shadow:none;border:1px solid rgba(255,255,255,0.08);" onclick="setInput('<div em=&quot;fade-in&quot;></div>')">em= standard</button>
+        <button class="test-btn" style="background:#1e2235;color:#94a3b8;box-shadow:none;border:1px solid rgba(255,255,255,0.08);" onclick="setInput('<div em = &quot;fade-in&quot;></div>')">em = spaced</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Buggy regexes (current optimizer.js)
+    function extractClassesBuggy(html) {
+      const found = [];
+      const re = /class=(['"])([^"']+)\1/g;
+      let m;
+      while ((m = re.exec(html)) !== null)
+        m[2].split(/\s+/).filter(c => c.startsWith('ease-')).forEach(c => found.push(c));
+      return found;
+    }
+    function extractEmBuggy(html) {
+      const found = [];
+      const re = /\bem=(['"])([^"']+)\1/g;
+      let m;
+      while ((m = re.exec(html)) !== null) found.push(m[2]);
+      return found;
+    }
+
+    // Fixed regexes (\s* around =)
+    function extractClassesFixed(html) {
+      const found = [];
+      const re = /class\s*=\s*(['"])([^"']+)\1/g;
+      let m;
+      while ((m = re.exec(html)) !== null)
+        m[2].split(/\s+/).filter(c => c.startsWith('ease-')).forEach(c => found.push(c));
+      return found;
+    }
+    function extractEmFixed(html) {
+      const found = [];
+      const re = /\bem\s*=\s*(['"])([^"']+)\1/g;
+      let m;
+      while ((m = re.exec(html)) !== null) found.push(m[2]);
+      return found;
+    }
+
+    function render(html) {
+      const buggyClasses = extractClassesBuggy(html);
+      const buggyEm      = extractEmBuggy(html);
+      const fixedClasses = extractClassesFixed(html);
+      const fixedEm      = extractEmFixed(html);
+
+      const buggyAll = [...buggyClasses, ...buggyEm];
+      const fixedAll = [...fixedClasses, ...fixedEm];
+
+      document.getElementById('buggy-result').innerHTML =
+        buggyAll.length ? buggyAll.map(v => `<span>${v}</span>`).join('<br>') : '<span class="no-match">No matches found</span>';
+
+      document.getElementById('fixed-result').innerHTML =
+        fixedAll.length ? fixedAll.map(v => `<span>${v}</span>`).join('<br>') : '<span class="no-match">No matches found</span>';
+    }
+
+    function setInput(val) {
+      document.getElementById('html-input').value = val;
+      render(val);
+    }
+
+    document.getElementById('test-btn').addEventListener('click', () => {
+      render(document.getElementById('html-input').value);
+    });
+
+    document.getElementById('html-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') render(e.target.value);
+    });
+
+    // Run on load with default value
+    render(document.getElementById('html-input').value);
+  </script>
+</body>
+</html>

@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waving Hand</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>👋 Waving Hand</h1>
+        <p class="subtitle">Hand waving with different speeds</p>
+
+        <div class="hand-wrapper">
+            <canvas id="handCanvas"></canvas>
+
+            <div class="controls">
+                <button id="waveBtn">👋 Wave</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Skin</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">👋 Ready to wave</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('handCanvas');
+        const ctx = canvas.getContext('2d');
+        const waveBtn = document.getElementById('waveBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let waveAngle = 0;
+        let targetAngle = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isWaving = false;
+        let wavePhase = 0;
+        let handX = 0;
+        let handY = 0;
+        let particles = [];
+        let wristAngle = 0;
+        let fingers = [];
+        let glowIntensity = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Skin',
+                palm: '#e8b88a',
+                finger: '#dba67a',
+                shadow: '#c9946a',
+                nail: '#f5c4a0',
+                outline: '#b8825a'
+            },
+            {
+                name: 'Blue',
+                palm: '#4a8aba',
+                finger: '#3a7aaa',
+                shadow: '#2a6a9a',
+                nail: '#6aaada',
+                outline: '#1a5a8a'
+            },
+            {
+                name: 'Green',
+                palm: '#4a9a6a',
+                finger: '#3a8a5a',
+                shadow: '#2a7a4a',
+                nail: '#6aba8a',
+                outline: '#1a6a3a'
+            },
+            {
+                name: 'Purple',
+                palm: '#8a6aba',
+                finger: '#7a5aaa',
+                shadow: '#6a4a9a',
+                nail: '#aa8ada',
+                outline: '#5a3a8a'
+            },
+            {
+                name: 'Gold',
+                palm: '#d4a02a',
+                finger: '#c4901a',
+                shadow: '#b4800a',
+                nail: '#e4b04a',
+                outline: '#a4700a'
+            },
+            {
+                name: 'Pink',
+                palm: '#e87a8a',
+                finger: '#d86a7a',
+                shadow: '#c85a6a',
+                nail: '#f89aaa',
+                outline: '#b84a5a'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 3 - 1;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW HAND =====
+        function drawHand(ctx, cx, cy, scale) {
+            const palette = colorPalettes[colorMode];
+            const palmColor = palette.palm;
+            const fingerColor = palette.finger;
+            const shadowColor = palette.shadow;
+            const nailColor = palette.nail;
+            const outlineColor = palette.outline;
+
+            const s = scale || 1;
+            const handSize = 60 * s;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // Wrist
+            const wristWidth = 20 * s;
+            const wristHeight = 30 * s;
+            ctx.beginPath();
+            ctx.ellipse(0, 20 * s, wristWidth, wristHeight, 0, 0, Math.PI * 2);
+            ctx.fillStyle = palmColor;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Palm
+            const palmWidth = 35 * s;
+            const palmHeight = 30 * s;
+            ctx.beginPath();
+            ctx.ellipse(0, -10 * s, palmWidth, palmHeight, 0.1, 0, Math.PI * 2);
+            ctx.fillStyle = palmColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0,0,0,0.15)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Palm shadow
+            ctx.beginPath();
+            ctx.ellipse(-5 * s, 5 * s, palmWidth * 0.6, palmHeight * 0.4, 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = shadowColor;
+            ctx.globalAlpha = 0.2;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Fingers
+            const fingerLengths = [28 * s, 32 * s, 30 * s, 25 * s, 18 * s];
+            const fingerAngles = [-0.6, -0.25, 0, 0.25, 0.6];
+            const fingerBaseX = [12 * s, 6 * s, 0, -6 * s, -12 * s];
+            const fingerBaseY = [-20 * s, -22 * s, -22 * s, -20 * s, -18 * s];
+
+            // Wave animation for fingers
+            const waveOffset = isWaving ? Math.sin(wavePhase) * 0.3 : 0;
+
+            for (let i = 0; i < 5; i++) {
+                const angle = fingerAngles[i] + waveOffset * 0.3 * (i / 4);
+                const length = fingerLengths[i];
+                const baseX = fingerBaseX[i];
+                const baseY = fingerBaseY[i];
+
+                // Finger joint 1
+                const j1x = baseX + Math.sin(angle) * length * 0.3;
+                const j1y = baseY + Math.cos(angle) * length * 0.3;
+
+                // Finger joint 2
+                const j2x = j1x + Math.sin(angle + 0.1 * waveOffset) * length * 0.35;
+                const j2y = j1y + Math.cos(angle + 0.1 * waveOffset) * length * 0.35;
+
+                // Finger tip
+                const tipX = j2x + Math.sin(angle + 0.2 * waveOffset) * length * 0.35;
+                const tipY = j2y + Math.cos(angle + 0.2 * waveOffset) * length * 0.35;
+
+                // Finger shadow
+                ctx.beginPath();
+                ctx.moveTo(baseX + 2 * s, baseY + 2 * s);
+                ctx.lineTo(j1x + 2 * s, j1y + 2 * s);
+                ctx.lineTo(j2x + 2 * s, j2y + 2 * s);
+                ctx.lineTo(tipX + 2 * s, tipY + 2 * s);
+                ctx.strokeStyle = shadowColor;
+                ctx.globalAlpha = 0.2;
+                ctx.lineWidth = 4 * s;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                // Finger body
+                ctx.beginPath();
+                ctx.moveTo(baseX, baseY);
+                ctx.lineTo(j1x, j1y);
+                ctx.lineTo(j2x, j2y);
+                ctx.lineTo(tipX, tipY);
+                ctx.strokeStyle = fingerColor;
+                ctx.lineWidth = 5 * s;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Finger outline
+                ctx.beginPath();
+                ctx.moveTo(baseX, baseY);
+                ctx.lineTo(j1x, j1y);
+                ctx.lineTo(j2x, j2y);
+                ctx.lineTo(tipX, tipY);
+                ctx.strokeStyle = outlineColor;
+                ctx.globalAlpha = 0.15;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                // Nail
+                const nailAngle = angle + 0.2 * waveOffset;
+                const nailX = tipX - Math.sin(nailAngle) * 3 * s;
+                const nailY = tipY - Math.cos(nailAngle) * 3 * s;
+                ctx.beginPath();
+                ctx.ellipse(nailX, nailY, 4 * s, 3 * s, nailAngle, 0, Math.PI * 2);
+                ctx.fillStyle = nailColor;
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Finger highlight
+                ctx.beginPath();
+                ctx.moveTo(baseX - 2 * s, baseY + 2 * s);
+                ctx.lineTo(j1x - 2 * s, j1y + 2 * s);
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1 * s;
+                ctx.stroke();
+            }
+
+            // Thumb
+            const thumbAngle = 0.8 + waveOffset * 0.2;
+            const thumbBaseX = 14 * s;
+            const thumbBaseY = -6 * s;
+            const thumbLen = 22 * s;
+            const thumbTipX = thumbBaseX + Math.sin(thumbAngle) * thumbLen;
+            const thumbTipY = thumbBaseY + Math.cos(thumbAngle) * thumbLen;
+
+            ctx.beginPath();
+            ctx.moveTo(thumbBaseX, thumbBaseY);
+            ctx.lineTo(thumbTipX, thumbTipY);
+            ctx.strokeStyle = fingerColor;
+            ctx.lineWidth = 6 * s;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Thumb nail
+            const thumbNailX = thumbTipX + Math.sin(thumbAngle) * 3 * s;
+            const thumbNailY = thumbTipY + Math.cos(thumbAngle) * 3 * s;
+            ctx.beginPath();
+            ctx.ellipse(thumbNailX, thumbNailY, 3 * s, 2 * s, thumbAngle, 0, Math.PI * 2);
+            ctx.fillStyle = nailColor;
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Wrist band (decorative)
+            ctx.beginPath();
+            ctx.ellipse(0, 35 * s, 22 * s, 5 * s, 0, 0, Math.PI * 2);
+            ctx.fillStyle = outlineColor;
+            ctx.globalAlpha = 0.1;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Wrist lines
+            for (let i = -1; i <= 1; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * 8 * s, 22 * s);
+                ctx.lineTo(i * 8 * s + 10 * s, 28 * s);
+                ctx.strokeStyle = outlineColor;
+                ctx.globalAlpha = 0.05;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            // Glow effect when waving
+            if (isWaving && glowIntensity > 0.1) {
+                const glowSize = handSize * 2 * glowIntensity;
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+                const palette2 = colorPalettes[colorMode];
+                const glowColor = palette2.palm;
+                grad.addColorStop(0, glowColor + '20');
+                grad.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.palm;
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2 + 20, 0, w/2, h/2 + 20, Math.max(w, h) * 0.2);
+            ambientGlow.addColorStop(0, glowColor + '08');
+            ambientGlow.addColorStop(1, glowColor + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // ===== WAVE =====
+        function toggleWave() {
+            isWaving = !isWaving;
+            waveBtn.textContent = isWaving ? '👋 Waving...' : '👋 Wave';
+            if (isWaving) {
+                wavePhase = 0;
+                statusText.textContent = '👋 Waving!';
+                // Spawn particles
+                const palette = colorPalettes[colorMode];
+                for (let i = 0; i < 15; i++) {
+                    const p = new Particle(
+                        canvas.width / 2 + (Math.random() - 0.5) * 60,
+                        canvas.height / 2 + (Math.random() - 0.5) * 60,
+                        palette.palm
+                    );
+                    p.vx = (Math.random() - 0.5) * 4;
+                    p.vy = -Math.random() * 3 - 1;
+                    particles.push(p);
+                }
+            } else {
+                statusText.textContent = '👋 Hand resting';
+                wavePhase = 0;
+                glowIntensity = 0;
+            }
+        }
+
+        // ===== RESET =====
+        function resetHand() {
+            isWaving = false;
+            wavePhase = 0;
+            glowIntensity = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            particles = [];
+            waveBtn.textContent = '👋 Wave';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '👋 Ready to wave';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+            const scale = Math.min(w, h) / 400;
+            time += speed;
+
+            // Wave animation
+            if (isWaving) {
+                wavePhase += speed * 8;
+                glowIntensity = 0.5 + 0.5 * Math.sin(wavePhase * 0.5);
+                
+                // Spawn particles during wave
+                if (Math.random() < 0.02) {
+                    const palette = colorPalettes[colorMode];
+                    const p = new Particle(
+                        cx + (Math.random() - 0.5) * 60,
+                        cy + (Math.random() - 0.5) * 60,
+                        palette.palm
+                    );
+                    p.vx = (Math.random() - 0.5) * 3;
+                    p.vy = -Math.random() * 2 - 1;
+                    particles.push(p);
+                }
+            } else {
+                glowIntensity *= 0.98;
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw hand
+            drawHand(ctx, cx, cy, scale);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isWaving ? '👋 Waving' : '👋 Resting';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Wave
+        waveBtn.addEventListener('click', toggleWave);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = isWaving ? '👋 Waving!' : '👋 Ready to wave';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = isWaving ? '👋 Waving!' : '👋 Ready to wave';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetHand);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w' || e.key === 'W') {
+                waveBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                waveBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '👋 Ready to wave';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('👋 Waving Hand loaded!');
+        console.log('💡 W - Toggle wave');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle wave');
+    </script>
+</body>
+</html>

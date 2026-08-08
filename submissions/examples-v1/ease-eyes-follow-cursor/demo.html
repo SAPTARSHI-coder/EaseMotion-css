@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eyes Follow Cursor Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Eyes Follow Cursor</h1>
+        <p class="subtitle">Eyes on screen track mouse movement</p>
+
+        <!-- EYES FOLLOW CURSOR COMPONENT -->
+        <div class="eyes-container">
+            <div class="eyes-wrapper">
+                <div class="eyes-display" id="eyesDisplay">
+                    <canvas id="eyesCanvas"></canvas>
+                    <div class="eyes-overlay">
+                        <span class="overlay-icon">👁️</span>
+                        <span class="overlay-text">Move your cursor</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="eyes-controls">
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1" />
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="eyeSizeSlider">Eye Size:</label>
+                        <input type="range" id="eyeSizeSlider" min="20" max="60" step="2" value="40" />
+                        <span id="eyeSizeValue">40</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="pupilSizeSlider">Pupil Size:</label>
+                        <input type="range" id="pupilSizeSlider" min="5" max="20" step="1" value="12" />
+                        <span id="pupilSizeValue">12</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="eyes-actions">
+                    <button class="eyes-ctrl-btn" id="toggleBtn">⏸ Toggle</button>
+                    <button class="eyes-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="eyes-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="eyes-ctrl-btn" id="toggleStyleBtn">🎨 Style</button>
+                </div>
+
+                <div class="eyes-status">
+                    <span class="status-label">Eyes:</span>
+                    <span class="status-value" id="eyesStatus">Active</span>
+                    <span class="status-label">Style:</span>
+                    <span class="status-value" id="styleStatus">Normal</span>
+                    <span class="status-label">FPS:</span>
+                    <span class="status-value" id="fpsDisplay">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #00d2d3);">
+                        <span>👀</span>
+                    </div>
+                    <span class="variant-label">Ocean</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>👀</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>👀</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>👀</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('eyesCanvas');
+            const ctx = canvas.getContext('2d');
+            const eyesStatus = document.getElementById('eyesStatus');
+            const styleStatus = document.getElementById('styleStatus');
+            const fpsDisplay = document.getElementById('fpsDisplay');
+            const speedSlider = document.getElementById('speedSlider');
+            const eyeSizeSlider = document.getElementById('eyeSizeSlider');
+            const pupilSizeSlider = document.getElementById('pupilSizeSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const speedValue = document.getElementById('speedValue');
+            const eyeSizeValue = document.getElementById('eyeSizeValue');
+            const pupilSizeValue = document.getElementById('pupilSizeValue');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const toggleStyleBtn = document.getElementById('toggleStyleBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                speed: 1,
+                eyeSize: 40,
+                pupilSize: 12,
+                color: '#4facfe',
+                enabled: true,
+                style: 'normal', // 'normal', 'cartoon', 'minimal', 'glow'
+                onToggle: function(state) {
+                    console.log(`👁️ Eyes ${state ? 'enabled' : 'disabled'}`);
+                },
+                onStyleChange: function(style) {
+                    console.log(`🎨 Style changed to: ${style}`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let mouseX = 0;
+            let mouseY = 0;
+            let targetX = 0;
+            let targetY = 0;
+            let currentX = 0;
+            let currentY = 0;
+            let isEnabled = CONFIG.enabled;
+            let currentStyle = CONFIG.style;
+            let animationId = null;
+            let frameCount = 0;
+            let lastFpsUpdate = 0;
+            let currentFps = 0;
+            let eyePositions = [];
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // EYE RENDERING
+            // ============================================
+            function drawEye(cx, cy, eyeSize, pupilSize, color, style, eyeAngle) {
+                const s = eyeSize / 2;
+                const p = pupilSize / 2;
+
+                ctx.save();
+                ctx.translate(cx, cy);
+
+                // Eye white (sclera)
+                const grad = ctx.createRadialGradient(-s * 0.2, -s * 0.2, 0, 0, 0, s);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.7, '#f0f0f0');
+                grad.addColorStop(1, '#e0e0e0');
+
+                // Different styles
+                switch(style) {
+                    case 'cartoon':
+                        // Cartoon style - round with outline
+                        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s, 0, Math.PI * 2);
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = '#333';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+
+                        // Eyelid (top half)
+                        ctx.beginPath();
+                        ctx.arc(0, -s * 0.1, s * 0.9, Math.PI, 0);
+                        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        break;
+
+                    case 'minimal':
+                        // Minimal style - simple circle
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s, 0, Math.PI * 2);
+                        ctx.fillStyle = '#f5f5f5';
+                        ctx.fill();
+                        ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        break;
+
+                    case 'glow':
+                        // Glow style - with glow effect
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 30;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s, 0, Math.PI * 2);
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+
+                        // Glow ring
+                        ctx.shadowColor = color;
+                        ctx.shadowBlur = 20;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s * 0.85, 0, Math.PI * 2);
+                        ctx.strokeStyle = color + '40';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                        ctx.shadowBlur = 0;
+                        break;
+
+                    default:
+                        // Normal style
+                        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                        ctx.shadowBlur = 5;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s, 0, Math.PI * 2);
+                        ctx.fillStyle = grad;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+
+                        // Iris ring
+                        ctx.beginPath();
+                        ctx.arc(0, 0, s * 0.85, 0, Math.PI * 2);
+                        ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                        break;
+                }
+
+                // Iris
+                const irisSize = s * 0.8;
+                const irisGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, irisSize);
+                irisGrad.addColorStop(0, color);
+                irisGrad.addColorStop(0.6, color);
+                irisGrad.addColorStop(1, color + '88');
+
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(0, 0, irisSize, 0, Math.PI * 2);
+                ctx.fillStyle = irisGrad;
+                ctx.fill();
+
+                // Iris details (lines)
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2 + eyeAngle;
+                    const r1 = irisSize * 0.5;
+                    const r2 = irisSize * 0.85;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(angle) * r1, Math.sin(angle) * r1);
+                    ctx.lineTo(Math.cos(angle) * r2, Math.sin(angle) * r2);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                // Pupil
+                const pupilX = Math.sin(eyeAngle) * p * 0.5;
+                const pupilY = Math.cos(eyeAngle) * p * 0.5;
+
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 5;
+                ctx.beginPath();
+                ctx.arc(pupilX, pupilY, p, 0, Math.PI * 2);
+                ctx.fillStyle = '#1a1a2e';
+                ctx.fill();
+
+                // Pupil highlight
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.arc(pupilX - p * 0.3, pupilY - p * 0.3, p * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+
+                // Secondary highlight
+                ctx.beginPath();
+                ctx.arc(pupilX + p * 0.1, pupilY - p * 0.5, p * 0.1, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // ============================================
+            // EYE TRACKING
+            // ============================================
+            function updateEyes() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const eyeSize = parseInt(eyeSizeSlider.value);
+                const pupilSize = parseInt(pupilSizeSlider.value);
+                const color = colorPicker.value;
+                const speed = parseFloat(speedSlider.value);
+
+                // Clear canvas with fade
+                ctx.fillStyle = 'rgba(10, 10, 26, 0.05)';
+                ctx.fillRect(0, 0, w, h);
+
+                if (!isEnabled) {
+                    // Draw static eyes in center
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    const spacing = eyeSize * 1.8;
+
+                    drawEye(cx - spacing / 2, cy, eyeSize, pupilSize, color, currentStyle, 0);
+                    drawEye(cx + spacing / 2, cy, eyeSize, pupilSize, color, currentStyle, 0);
+                    return;
+                }
+
+                // Smooth eye movement
+                const dx = mouseX - currentX;
+                const dy = mouseY - currentY;
+                const smoothSpeed = 0.1 * speed;
+                currentX += dx * smoothSpeed;
+                currentY += dy * smoothSpeed;
+
+                // Calculate eye positions
+                const cx = w / 2;
+                const cy = h / 2;
+                const spacing = eyeSize * 1.8;
+
+                // Calculate angles for each eye
+                const eye1Angle = Math.atan2(currentY - cy, currentX - (cx - spacing / 2));
+                const eye2Angle = Math.atan2(currentY - cy, currentX - (cx + spacing / 2));
+
+                // Limit pupil movement within eye
+                const maxAngle = 0.5;
+                const eye1AngleLimited = Math.max(-maxAngle, Math.min(maxAngle, eye1Angle * 0.3));
+                const eye2AngleLimited = Math.max(-maxAngle, Math.min(maxAngle, eye2Angle * 0.3));
+
+                // Draw eyes with tracking
+                drawEye(cx - spacing / 2, cy, eyeSize, pupilSize, color, currentStyle, eye1AngleLimited);
+                drawEye(cx + spacing / 2, cy, eyeSize, pupilSize, color, currentStyle, eye2AngleLimited);
+
+                // Update FPS
+                frameCount++;
+                const now = performance.now();
+                if (now - lastFpsUpdate > 1000) {
+                    currentFps = frameCount;
+                    frameCount = 0;
+                    lastFpsUpdate = now;
+                    fpsDisplay.textContent = currentFps;
+                }
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate() {
+                updateEyes();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // MOUSE / TOUCH EVENTS
+            // ============================================
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            });
+
+            canvas.addEventListener('mouseleave', function() {
+                // Reset to center slowly
+                mouseX = canvas.width / 2;
+                mouseY = canvas.height / 2;
+            });
+
+            // Touch support
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const rect = this.getBoundingClientRect();
+                const touch = e.touches[0];
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (touch.clientX - rect.left) * scaleX;
+                mouseY = (touch.clientY - rect.top) * scaleY;
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', function() {
+                mouseX = canvas.width / 2;
+                mouseY = canvas.height / 2;
+            });
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function toggleEyes() {
+                isEnabled = !isEnabled;
+                eyesStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                eyesStatus.style.color = isEnabled ? '#34c759' : '#ff3b30';
+                toggleBtn.textContent = isEnabled ? '⏸ Toggle' : '▶ Toggle';
+                CONFIG.onToggle(isEnabled);
+                if (!isEnabled) {
+                    // Reset eye position
+                    currentX = canvas.width / 2;
+                    currentY = canvas.height / 2;
+                }
+            }
+
+            function resetEyes() {
+                currentX = canvas.width / 2;
+                currentY = canvas.height / 2;
+                mouseX = canvas.width / 2;
+                mouseY = canvas.height / 2;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                eyesStatus.textContent = 'Reset';
+                setTimeout(() => {
+                    eyesStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                }, 1000);
+            }
+
+            function randomizeColor() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+            }
+
+            function toggleStyle() {
+                const styles = ['normal', 'cartoon', 'minimal', 'glow'];
+                const currentIndex = styles.indexOf(currentStyle);
+                const nextIndex = (currentIndex + 1) % styles.length;
+                currentStyle = styles[nextIndex];
+                styleStatus.textContent = currentStyle.charAt(0).toUpperCase() + currentStyle.slice(1);
+                toggleStyleBtn.textContent = `🎨 ${styleStatus.textContent}`;
+                CONFIG.onStyleChange(currentStyle);
+            }
+
+            function updateConfig() {
+                CONFIG.speed = parseFloat(speedSlider.value);
+                CONFIG.eyeSize = parseInt(eyeSizeSlider.value);
+                CONFIG.pupilSize = parseInt(pupilSizeSlider.value);
+                CONFIG.color = colorPicker.value;
+                speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+                eyeSizeValue.textContent = CONFIG.eyeSize;
+                pupilSizeValue.textContent = CONFIG.pupilSize;
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            speedSlider.addEventListener('input', updateConfig);
+            eyeSizeSlider.addEventListener('input', updateConfig);
+            pupilSizeSlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+
+            toggleBtn.addEventListener('click', toggleEyes);
+            resetBtn.addEventListener('click', resetEyes);
+            randomColorBtn.addEventListener('click', randomizeColor);
+            toggleStyleBtn.addEventListener('click', toggleStyle);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleEyes();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetEyes();
+                }
+                if (e.key === 's' || e.key === 'S') {
+                    toggleStyle();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Ocean': ['#4facfe', '#00d2d3'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#00d2d3'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    eyesStatus.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        eyesStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.EyesFollowCursor = {
+                toggle: toggleEyes,
+                reset: resetEyes,
+                randomize: randomizeColor,
+                toggleStyle: toggleStyle,
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    updateConfig();
+                },
+                setEyeSize: (size) => {
+                    eyeSizeSlider.value = size;
+                    updateConfig();
+                },
+                setPupilSize: (size) => {
+                    pupilSizeSlider.value = size;
+                    updateConfig();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                },
+                isEnabled: () => isEnabled,
+                getState: () => ({
+                    enabled: isEnabled,
+                    speed: CONFIG.speed,
+                    eyeSize: CONFIG.eyeSize,
+                    pupilSize: CONFIG.pupilSize,
+                    color: CONFIG.color,
+                    style: currentStyle
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                    }
+                    if (config.eyeSize) {
+                        eyeSizeSlider.value = config.eyeSize;
+                    }
+                    if (config.pupilSize) {
+                        pupilSizeSlider.value = config.pupilSize;
+                    }
+                    if (config.style) {
+                        currentStyle = config.style;
+                        styleStatus.textContent = currentStyle.charAt(0).toUpperCase() + currentStyle.slice(1);
+                        toggleStyleBtn.textContent = `🎨 ${styleStatus.textContent}`;
+                    }
+                    if (config.enabled !== undefined) {
+                        isEnabled = config.enabled;
+                    }
+                    updateConfig();
+                    eyesStatus.textContent = isEnabled ? 'Active' : 'Paused';
+                    toggleBtn.textContent = isEnabled ? '⏸ Toggle' : '▶ Toggle';
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            currentX = canvas.width / 2;
+            currentY = canvas.height / 2;
+            mouseX = canvas.width / 2;
+            mouseY = canvas.height / 2;
+            updateConfig();
+            styleStatus.textContent = 'Normal';
+            eyesStatus.textContent = 'Active';
+            eyesStatus.style.color = '#34c759';
+            animate(0);
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                    currentX = canvas.width / 2;
+                    currentY = canvas.height / 2;
+                    mouseX = canvas.width / 2;
+                    mouseY = canvas.height / 2;
+                }, 200);
+            });
+
+            console.log('👁️ Eyes Follow Cursor initialized!');
+            console.log('📖 API: window.EyesFollowCursor');
+            console.log('📖 Usage:');
+            console.log('  - Move your cursor to see the eyes track it');
+            console.log('  - Keyboard shortcuts: Space (toggle), R (reset), S (style)');
+            console.log('  - Adjust speed, eye size, pupil size, and color');
+
+        })();
+    </script>
+</body>
+</html>

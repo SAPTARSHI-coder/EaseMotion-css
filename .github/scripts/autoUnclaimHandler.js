@@ -3,9 +3,14 @@ async function handleUnclaim({ github, context }) {
   const { owner, repo } = context.repo;
   const issueNumber = context.payload.issue.number;
   const commenter = context.payload.comment.user.login;
-  const issueState = context.payload.issue.state;
+  // Fetch the latest issue state to prevent race conditions
+  const { data: issue } = await github.rest.issues.get({
+    owner,
+    repo,
+    issue_number: issueNumber,
+  });
 
-  if (issueState === 'closed') {
+  if (issue.state === 'closed') {
     await github.rest.issues.createComment({
       owner,
       repo,
@@ -15,7 +20,7 @@ async function handleUnclaim({ github, context }) {
     return;
   }
 
-  const currentAssignees = context.payload.issue.assignees.map((a) => a.login.toLowerCase());
+  const currentAssignees = issue.assignees.map((a) => a.login.toLowerCase());
 
   if (!currentAssignees.includes(commenter.toLowerCase())) {
     await github.rest.issues.createComment({

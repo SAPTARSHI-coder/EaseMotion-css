@@ -1,0 +1,107 @@
+@function _is-map($value) {
+  @return type-of($value) == map;
+}
+
+@function _is-valid-value($value) {
+  $type: type-of($value);
+  @return $type == color or $type == number or $type == string or $type == list
+    or $type == null;
+}
+
+@function _join-name($prefix, $key) {
+  @return if($prefix == null, "#{$key}", "#{$prefix}-#{$key}");
+}
+
+@function flatten-theme($map, $prefix: null) {
+  @if not _is-map($map) {
+    @error "flatten-theme() expects a map, got #{type-of($map)}.";
+  }
+
+  @if length($map) == 0 {
+    @warn "Theme map is empty; no custom properties will be generated.";
+  }
+
+  $result: ();
+
+  @each $key, $value in $map {
+    $name: _join-name($prefix, $key);
+
+    @if _is-map($value) {
+      $result: map-merge($result, flatten-theme($value, $name));
+    } @else {
+      @if not _is-valid-value($value) {
+        @warn "Unsupported value type for '#{$name}': #{type-of($value)}.";
+      }
+      $result: map-merge(
+        $result,
+        (
+          $name: $value,
+        )
+      );
+    }
+  }
+
+  @return $result;
+}
+
+@function nested-theme-delta($base, $override, $prefix: null) {
+  @if not _is-map($base) or not _is-map($override) {
+    @error "nested-theme-delta() expects two maps, got #{type-of($base)} and #{type-of($override)}.";
+  }
+
+  @if length($override) == 0 {
+    @warn "Override theme map is empty; no overrides will be generated.";
+  }
+
+  $delta: ();
+
+  @each $key, $override-value in $override {
+    $name: _join-name($prefix, $key);
+    $base-has-key: map-has-key($base, $key);
+    $base-value: if($base-has-key, map-get($base, $key), null);
+
+    @if _is-map($override-value) {
+      @if $base-has-key and not _is-map($base-value) {
+        @error "Invalid nested structure at '#{$name}': base is #{type-of($base-value)}, override is a map.";
+      }
+      $nested-base: if($base-has-key, $base-value, ());
+      $delta: map-merge(
+        $delta,
+        nested-theme-delta($nested-base, $override-value, $name)
+      );
+    } @else {
+      @if $base-has-key and _is-map($base-value) {
+        @error "Invalid nested structure at '#{$name}': base is a map, override is #{type-of($override-value)}.";
+      }
+      @if not _is-valid-value($override-value) {
+        @warn "Unsupported value type for '#{$name}': #{type-of($override-value)}.";
+      }
+      @if not $base-has-key or $base-value != $override-value {
+        $delta: map-merge(
+          $delta,
+          (
+            $name: $override-value,
+          )
+        );
+      }
+    }
+  }
+
+  @return $delta;
+}
+
+@mixin emit-nested-theme($selector, $theme) {
+  @if not _is-map($theme) {
+    @error "emit-nested-theme() expects a flat map, got #{type-of($theme)}.";
+  }
+
+  @if length($theme) == 0 {
+    @warn "No custom properties to emit for selector '#{$selector}'.";
+  } @else {
+    #{$selector} {
+      @each $name, $value in $theme {
+        --#{$name}: #{$value};
+      }
+    }
+  }
+}

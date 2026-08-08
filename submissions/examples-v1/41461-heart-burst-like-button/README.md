@@ -1,0 +1,5 @@
+# Heart Burst Like Button
+
+1. **What does this do?** A like button that pops and sends small heart particles bursting outward and fading away when clicked, similar to the Twitter/Instagram like animation.
+2. **How is it used?** Apply `.heart-burst-btn` to a button element. A small inline script toggles a `.is-liked` class on click and dynamically creates several `.burst-particle` heart elements positioned outward at random angles/distances via CSS custom properties (`--x`, `--y`), which animate outward and fade using the `burst-fly` keyframe.
+3. **Why is it useful?** This resolves issue #41461. EaseMotion CSS already has a continuous heartbeat-style pulse like button, but no one-time burst/particle click feedback — one of the most recognized micro-interactions on the web. This is a distinct, self-contained variant that complements the existing pulse effect rather than duplicating it. Respects `prefers-reduced-motion` by disabling the pop and hiding burst particles entirely for users who request reduced motion.

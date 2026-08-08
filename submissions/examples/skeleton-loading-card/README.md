@@ -1,25 +1,12 @@
-# Skeleton Loading Card
+# Animated Skeleton Loading Card Component
 
-1. **What does this do?**
-   A full skeleton loading card with a shimmer animation — includes avatar circle, title bar, image placeholder, body lines, and action buttons.
+A lightweight, animation-first UI placeholder element designed to decrease perceived loading times and enhance overall user layout experience.
 
-2. **How is it used?**
-```html
-   <div class="skeleton-card">
-     <div class="skeleton-header">
-       <div class="skeleton-block skeleton-avatar"></div>
-       <div class="skeleton-header-text">
-         <div class="skeleton-block skeleton-title"></div>
-         <div class="skeleton-block skeleton-subtitle"></div>
-       </div>
-     </div>
-     <div class="skeleton-block skeleton-image"></div>
-     <div class="skeleton-block skeleton-line"></div>
-     <div class="skeleton-footer">
-       <div class="skeleton-block skeleton-btn"></div>
-     </div>
-   </div>
-```
+## Features
+- Hardware-accelerated CSS shimmer overlay effect using linear gradients.
+- Isolated class wrapping to guarantee zero external style sheet contamination.
+- Built-in `prefers-reduced-motion` safety media rule parameters.
 
-3. **Why is it useful?**
-   Skeleton screens reduce perceived load time and eliminate layout shift. This component assembles EaseMotion's shimmer animation into a ready-to-use card pattern that fits any content-loading UI.
+## Folder Contents
+- `demo.html`: Interactive structural canvas template.
+- `style.css`: Core pure keyframe styling definitions.

@@ -1,0 +1,130 @@
+// =============================================================================
+// Motion Namespace Generator
+// -----------------------------------------------------------------------------
+// A framework-agnostic SCSS utility that generates consistent, collision-safe
+// namespaces for animation selectors and @keyframes from a single
+// configurable prefix. Prevents naming collisions as a motion library or
+// design system grows, without hand-maintaining prefix conventions.
+// =============================================================================
+
+// Global prefix used for every generated namespace. Change it with
+// set-motion-namespace() rather than reassigning directly.
+$__motion-namespace-prefix: "ease" !default;
+
+// Internal registry of every namespace generated so far, used to detect
+// accidental collisions at compile time.
+$__motion-namespace-registry: () !default;
+
+// -----------------------------------------------------------------------------
+// set-motion-namespace($prefix)
+// Sets the global prefix used by all namespace generation going forward.
+// Call this once near the top of your stylesheet, before defining selectors
+// or keyframes, if you want something other than the "ease" default.
+// -----------------------------------------------------------------------------
+@mixin set-motion-namespace($prefix) {
+  $__motion-namespace-prefix: $prefix !global;
+}
+
+// -----------------------------------------------------------------------------
+// motion-namespace($name, $separator: "-")
+// Returns a namespaced string for a selector/utility name, without
+// registering it. Useful when you just need the string (e.g. to reference
+// it elsewhere) without creating a rule.
+// -----------------------------------------------------------------------------
+@function motion-namespace($name, $separator: "-") {
+  @return $__motion-namespace-prefix + $separator + $name;
+}
+
+// -----------------------------------------------------------------------------
+// motion-modifier-namespace($name, $modifier, $separator: "-")
+// Returns a namespaced string for a modifier/variant of a base name,
+// following a BEM-style double-dash convention, e.g. "ease-fade--slow".
+// -----------------------------------------------------------------------------
+@function motion-modifier-namespace($name, $modifier, $separator: "-") {
+  @return motion-namespace($name, $separator) + "--" + $modifier;
+}
+
+// -----------------------------------------------------------------------------
+// motion-keyframe-namespace($name, $separator: "-")
+// Returns a namespaced string reserved for @keyframes names, e.g.
+// "ease-fade-kf". Kept distinct from selector namespaces so a keyframe and
+// a selector can share the same base $name without colliding.
+// -----------------------------------------------------------------------------
+@function motion-keyframe-namespace($name, $separator: "-") {
+  @return motion-namespace($name, $separator) + $separator + "kf";
+}
+
+// -----------------------------------------------------------------------------
+// _motion-register($namespace)
+// Internal helper. Registers a generated namespace and errors at compile
+// time if it has already been used, preventing silent collisions.
+// -----------------------------------------------------------------------------
+@function _motion-register($namespace) {
+  @if index($__motion-namespace-registry, $namespace) {
+    @error "Motion namespace collision: `#{$namespace}` has already been generated. Choose a different name, modifier, or prefix.";
+  }
+  $__motion-namespace-registry: append($__motion-namespace-registry, $namespace) !global;
+  @return $namespace;
+}
+
+// -----------------------------------------------------------------------------
+// motion-selector($name, $separator: "-")
+// Generates and registers a namespaced class selector, then yields its
+// content block inside that selector.
+//
+//   @include motion-selector("fade") { opacity: 1; }
+//   -> .ease-fade { opacity: 1; }
+// -----------------------------------------------------------------------------
+@mixin motion-selector($name, $separator: "-") {
+  $namespace: _motion-register(motion-namespace($name, $separator));
+
+  .#{$namespace} {
+    @content;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// motion-modifier-selector($name, $modifier, $separator: "-")
+// Generates and registers a namespaced modifier selector.
+//
+//   @include motion-modifier-selector("fade", "slow") { animation-duration: 1s; }
+//   -> .ease-fade--slow { animation-duration: 1s; }
+// -----------------------------------------------------------------------------
+@mixin motion-modifier-selector($name, $modifier, $separator: "-") {
+  $namespace: _motion-register(motion-modifier-namespace($name, $modifier, $separator));
+
+  .#{$namespace} {
+    @content;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// motion-keyframes($name, $separator: "-")
+// Generates and registers a namespaced @keyframes block, then yields its
+// content block inside that @keyframes rule.
+//
+//   @include motion-keyframes("fade") {
+//     from { opacity: 0; }
+//     to   { opacity: 1; }
+//   }
+//   -> @keyframes ease-fade-kf { from { opacity: 0; } to { opacity: 1; } }
+// -----------------------------------------------------------------------------
+@mixin motion-keyframes($name, $separator: "-") {
+  $namespace: _motion-register(motion-keyframe-namespace($name, $separator));
+
+  @keyframes #{$namespace} {
+    @content;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// use-motion-keyframe-name($name, $separator: "-")
+// Returns the namespaced keyframe name for use in an `animation-name` or
+// `animation` declaration, WITHOUT registering it again. Use this to
+// reference a keyframe previously defined with motion-keyframes().
+//
+//   .ease-toast { animation-name: use-motion-keyframe-name("fade"); }
+// -----------------------------------------------------------------------------
+@function use-motion-keyframe-name($name, $separator: "-") {
+  @return motion-keyframe-namespace($name, $separator);
+}

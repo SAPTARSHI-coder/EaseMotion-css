@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wormhole Loader Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Wormhole Loader</h1>
+        <p class="subtitle">Spinning tunnel effect</p>
+
+        <!-- WORMHOLE LOADER COMPONENT -->
+        <div class="wormhole-container">
+            <div class="wormhole-wrapper">
+                <div class="wormhole-display">
+                    <canvas id="wormholeCanvas"></canvas>
+                    <div class="wormhole-overlay">
+                        <span class="overlay-icon">🌀</span>
+                        <span class="overlay-text">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="wormhole-controls">
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1" />
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="ringsSlider">Rings:</label>
+                        <input type="range" id="ringsSlider" min="5" max="20" step="1" value="12" />
+                        <span id="ringsValue">12</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                    <div class="control-group">
+                        <label for="bgColorPicker">Background:</label>
+                        <input type="color" id="bgColorPicker" value="#0a0a1a" />
+                    </div>
+                </div>
+
+                <div class="wormhole-actions">
+                    <button class="wormhole-ctrl-btn" id="toggleBtn">⏸ Pause</button>
+                    <button class="wormhole-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="wormhole-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="wormhole-ctrl-btn" id="directionBtn">🔄 Direction</button>
+                </div>
+
+                <div class="wormhole-status">
+                    <span class="status-label">State:</span>
+                    <span class="status-value" id="stateDisplay">Running</span>
+                    <span class="status-label">Speed:</span>
+                    <span class="status-value" id="speedDisplay">1.0x</span>
+                    <span class="status-label">Rings:</span>
+                    <span class="status-value" id="ringsDisplay">12</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #43e97b);">
+                        <span>🌀</span>
+                    </div>
+                    <span class="variant-label">Aurora</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>🌀</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>🌀</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>🌀</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('wormholeCanvas');
+            const ctx = canvas.getContext('2d');
+            const stateDisplay = document.getElementById('stateDisplay');
+            const speedDisplay = document.getElementById('speedDisplay');
+            const ringsDisplay = document.getElementById('ringsDisplay');
+            const speedSlider = document.getElementById('speedSlider');
+            const ringsSlider = document.getElementById('ringsSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const bgColorPicker = document.getElementById('bgColorPicker');
+            const speedValue = document.getElementById('speedValue');
+            const ringsValue = document.getElementById('ringsValue');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const directionBtn = document.getElementById('directionBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                speed: 1,
+                rings: 12,
+                color: '#4facfe',
+                bgColor: '#0a0a1a',
+                direction: 1, // 1 = clockwise, -1 = counter-clockwise
+                onToggle: function(state) {
+                    console.log(`🌀 Wormhole ${state ? 'paused' : 'running'}`);
+                },
+                onDirectionChange: function(dir) {
+                    console.log(`🌀 Direction: ${dir === 1 ? 'Clockwise' : 'Counter-clockwise'}`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let isPaused = false;
+            let angle = 0;
+            let animationId = null;
+            let isInitialized = false;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // WORMHOLE RENDERER
+            // ============================================
+            function drawWormhole() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const maxRadius = Math.min(w, h) / 2 - 20;
+                const rings = parseInt(ringsSlider.value);
+                const color = colorPicker.value;
+                const bgColor = bgColorPicker.value;
+                const speed = parseFloat(speedSlider.value);
+                const dir = CONFIG.direction;
+
+                // Clear with background
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, w, h);
+
+                // Draw wormhole rings
+                for (let i = 0; i < rings; i++) {
+                    const progress = i / rings;
+                    const radius = maxRadius * (0.1 + 0.9 * progress);
+                    const alpha = 0.1 + 0.9 * (1 - progress);
+                    const rotation = angle * speed * dir * (0.5 + progress * 0.5);
+                    
+                    // Number of segments increases with radius
+                    const segments = Math.max(8, Math.floor(12 + progress * 24));
+                    
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(rotation);
+                    
+                    // Draw ring with segments
+                    for (let j = 0; j < segments; j++) {
+                        const segAngle = (j / segments) * Math.PI * 2;
+                        const nextAngle = ((j + 1) / segments) * Math.PI * 2;
+                        
+                        const x1 = Math.cos(segAngle) * radius;
+                        const y1 = Math.sin(segAngle) * radius;
+                        const x2 = Math.cos(nextAngle) * radius;
+                        const y2 = Math.sin(nextAngle) * radius;
+                        
+                        // Segment color with gradient
+                        const hue = (j / segments) * 360 + i * 10;
+                        const sat = 80 + 20 * (1 - progress);
+                        const lig = 50 + 30 * (1 - progress);
+                        const segColor = `hsl(${hue}, ${sat}%, ${lig}%)`;
+                        
+                        // Thickness decreases with radius
+                        const thickness = 2 + 6 * (1 - progress);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1);
+                        ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = segColor;
+                        ctx.lineWidth = thickness;
+                        ctx.lineCap = 'round';
+                        ctx.globalAlpha = alpha * 0.6;
+                        ctx.stroke();
+                        
+                        // Glow effect on outer rings
+                        if (progress > 0.7) {
+                            ctx.shadowColor = color;
+                            ctx.shadowBlur = 10 * (progress - 0.7) * 5;
+                            ctx.stroke();
+                            ctx.shadowBlur = 0;
+                        }
+                    }
+                    
+                    ctx.restore();
+                }
+
+                // Draw center glow
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxRadius * 0.3);
+                gradient.addColorStop(0, color + '80');
+                gradient.addColorStop(0.5, color + '20');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, maxRadius * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw center dot
+                ctx.beginPath();
+                ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Draw outer glow
+                const outerGradient = ctx.createRadialGradient(cx, cy, maxRadius * 0.8, cx, cy, maxRadius * 1.1);
+                outerGradient.addColorStop(0, 'transparent');
+                outerGradient.addColorStop(0.5, color + '10');
+                outerGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = outerGradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, maxRadius * 1.1, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Update angle
+                if (!isPaused) {
+                    angle += 0.015 * speed;
+                }
+
+                // Update status
+                stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                stateDisplay.style.color = isPaused ? '#f59e0b' : '#34c759';
+                speedDisplay.textContent = speed.toFixed(1) + 'x';
+                ringsDisplay.textContent = rings;
+            }
+
+            // ============================================
+            // ANIMATION LOOP
+            // ============================================
+            function animate() {
+                drawWormhole();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+                CONFIG.onToggle(isPaused);
+            }
+
+            function resetWormhole() {
+                angle = 0;
+                if (isPaused) {
+                    togglePause();
+                }
+                CONFIG.onToggle(false);
+            }
+
+            function randomizeColors() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43', '#a29bfe', '#55efc4'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+            }
+
+            function toggleDirection() {
+                CONFIG.direction *= -1;
+                directionBtn.textContent = CONFIG.direction === 1 ? '🔄 Direction' : '🔄 Reversed';
+                CONFIG.onDirectionChange(CONFIG.direction);
+            }
+
+            function updateConfig() {
+                CONFIG.speed = parseFloat(speedSlider.value);
+                CONFIG.rings = parseInt(ringsSlider.value);
+                CONFIG.color = colorPicker.value;
+                CONFIG.bgColor = bgColorPicker.value;
+                speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+                ringsValue.textContent = CONFIG.rings;
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            speedSlider.addEventListener('input', updateConfig);
+            ringsSlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+            bgColorPicker.addEventListener('input', updateConfig);
+
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetWormhole);
+            randomColorBtn.addEventListener('click', randomizeColors);
+            directionBtn.addEventListener('click', toggleDirection);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetWormhole();
+                }
+                if (e.key === 'd' || e.key === 'D') {
+                    toggleDirection();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Aurora': ['#4facfe', '#43e97b'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#43e97b'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    stateDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.WormholeLoader = {
+                toggle: togglePause,
+                reset: resetWormhole,
+                randomize: randomizeColors,
+                toggleDirection: toggleDirection,
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    updateConfig();
+                },
+                setRings: (rings) => {
+                    ringsSlider.value = rings;
+                    updateConfig();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                },
+                setBgColor: (color) => {
+                    bgColorPicker.value = color;
+                    updateConfig();
+                },
+                isPaused: () => isPaused,
+                getState: () => ({
+                    paused: isPaused,
+                    speed: CONFIG.speed,
+                    rings: CONFIG.rings,
+                    color: CONFIG.color,
+                    direction: CONFIG.direction
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                    }
+                    if (config.rings) {
+                        ringsSlider.value = config.rings;
+                    }
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.bgColor) {
+                        bgColorPicker.value = config.bgColor;
+                    }
+                    updateConfig();
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            updateConfig();
+            animate();
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                }, 200);
+            });
+
+            console.log('🌀 Wormhole Loader initialized!');
+            console.log('📖 API: window.WormholeLoader');
+            console.log('📖 Usage:');
+            console.log('  - Watch the spinning wormhole tunnel effect');
+            console.log('  - Keyboard shortcuts: Space (pause), R (reset), D (direction)');
+            console.log('  - Adjust speed, rings, and colors');
+
+        })();
+    </script>
+</body>
+</html>

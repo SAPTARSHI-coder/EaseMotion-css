@@ -1,30 +1,40 @@
-# CSS-only Accordion Component
+# CSS-Only Smooth Animated Accordion
 
-## What does this do?
-A lightweight accordion component built with semantic HTML and pure CSS. It lets users expand and collapse content sections without JavaScript, using the native `<details>` and `<summary>` elements.
+A modern, interactive Accordion/FAQ component that expands and collapses with smooth height and opacity transitions, built entirely without JavaScript.
 
-## How is it used?
-Add the class to any HTML element:
+## 🚀 Features
 
-```html
-<div class="accordion">
-  <details class="accordion-item">
-    <summary class="accordion-trigger">Question</summary>
-    <div class="accordion-content">Answer</div>
-  </details>
-</div>
+- **Pure CSS**: Uses the native `<details>` and `<summary>` HTML elements.
+- **Accessible**: Built-in keyboard navigation (Tab/Space/Enter) and screen reader support without needing ARIA attributes.
+- **Smooth Animation**: Utilizes modern CSS Grid (`grid-template-rows: 0fr to 1fr`) to transition the height of the content seamlessly.
+- **Premium Aesthetics**: Features a sleek dark mode design, subtle glassmorphism effects, glowing borders on focus/hover, and rotating chevron icons.
+
+## 🛠️ Implementation Details
+
+The core of the animation logic relies on a wrapper element inside the `<details>` component:
+
+```css
+.ease-accordion .ease-accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.4s ease, opacity 0.4s ease;
+}
+
+details[open] .ease-accordion-content {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.ease-accordion .ease-accordion-inner {
+  overflow: hidden;
+}
 ```
 
-## Why is it useful?
-This fits EaseMotion CSS because it is human-readable, animation-first, and composable. Developers often need accordions for FAQs and docs, and a CSS-only version keeps the library lightweight while still feeling interactive.
+This ensures that the content gracefully expands and fades in, providing a buttery-smooth user experience while adhering strictly to EaseMotion's JavaScript-free philosophy.
 
-## Tech Stack
-- HTML
-- CSS (no frameworks, no JavaScript)
+## 📁 File Structure
 
-## Preview
-Open demo.html directly in your browser to see the effect.
-
-## Contribution Notes
-- Class naming was handled by the contributor
-- Maintainer will rename to ease-* convention before merging
+- `demo.html`: The HTML structure containing the FAQ accordion.
+- `style.css`: The CSS stylesheet with the `0fr` to `1fr` grid transitions and styling.
+- `README.md`: Documentation for the component.

@@ -1,0 +1,683 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Typing Speedrun · ⌨️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>⌨️ Typing Speedrun</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">⚡ WPM</span>
+                    <span id="wpmDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🎯 Accuracy</span>
+                    <span id="accuracyDisplay">100%</span>
+                </div>
+                <div class="stat">
+                    <span class="label">✅ Words</span>
+                    <span id="wordCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">⏱️ Time</span>
+                    <span id="timerDisplay">30</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="900" height="500"></canvas>
+            
+            <!-- Input Area -->
+            <div class="input-area">
+                <input type="text" id="wordInput" placeholder="Type the word..." autofocus>
+                <div id="currentWordDisplay" class="current-word">Start typing...</div>
+                <div id="progressBar" class="progress-bar">
+                    <div id="progressFill" class="progress-fill" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-hint">
+                <span>⌨️ Type words to eliminate them • 🎯 Accuracy matters • ⚡ Speed up!</span>
+            </div>
+
+            <!-- Start Overlay -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>⌨️ Typing Speedrun</h2>
+                    <p>Type words before they reach the bottom!</p>
+                    <p class="sub-text">Fast typing • High accuracy • Boss battles</p>
+                    <div class="difficulty-select">
+                        <button class="diff-btn active" data-diff="easy">😊 Easy</button>
+                        <button class="diff-btn" data-diff="medium">🤔 Medium</button>
+                        <button class="diff-btn" data-diff="hard">😈 Hard</button>
+                    </div>
+                    <button id="startBtn" class="btn-primary">⚡ Start Typing</button>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameOverOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>💥 Time's Up!</h2>
+                    <div class="final-stats">
+                        <p>⚡ WPM: <span id="finalWpm">0</span></p>
+                        <p>🎯 Accuracy: <span id="finalAccuracy">0%</span></p>
+                        <p>✅ Words Typed: <span id="finalWords">0</span></p>
+                        <p>🏆 Score: <span id="finalScore">0</span></p>
+                        <p>🐉 Bosses Defeated: <span id="finalBosses">0</span></p>
+                    </div>
+                    <button id="restartBtn" class="btn-primary">🔄 Try Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== TYPING SPEEDRUN GAME ==========
+        class TypingSpeedrun {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.W = 900;
+                this.H = 500;
+                
+                // Game state
+                this.state = 'start';
+                this.score = 0;
+                this.wordsTyped = 0;
+                this.correctTyped = 0;
+                this.wrongTyped = 0;
+                this.wpm = 0;
+                this.accuracy = 100;
+                this.timer = 30;
+                this.maxTimer = 30;
+                this.difficulty = 'easy';
+                this.frame = 0;
+                this.bossCount = 0;
+                this.bossActive = false;
+                
+                // Words
+                this.words = [];
+                this.currentWord = '';
+                this.wordInput = '';
+                this.wordQueue = [];
+                
+                // Word lists by language
+                this.wordLists = {
+                    english: {
+                        easy: ['cat', 'dog', 'run', 'sun', 'hat', 'cup', 'map', 'pen', 'box', 'red', 'big', 'hot', 'cool', 'fast', 'slow', 'jump', 'walk', 'talk', 'sing', 'play'],
+                        medium: ['apple', 'happy', 'smile', 'water', 'house', 'music', 'power', 'light', 'dream', 'world', 'peace', 'heart', 'magic', 'storm', 'cloud', 'green', 'quick', 'brave', 'strong', 'think'],
+                        hard: ['champion', 'victory', 'mountain', 'galaxy', 'crystal', 'element', 'journey', 'wisdom', 'strength', 'liberty', 'horizon', 'wonder', 'balance', 'harmony', 'courage', 'destiny', 'eternal', 'infinite', 'illusion', 'mystery']
+                    },
+                    spanish: {
+                        easy: ['hola', 'sol', 'luna', 'agua', 'pan', 'casa', 'perro', 'gato', 'rojo', 'flor'],
+                        medium: ['amigo', 'gracias', 'familia', 'feliz', 'trabajo', 'ciudad', 'tiempo', 'sueño', 'poder', 'mundo'],
+                        hard: ['corazón', 'alegría', 'sabiduría', 'libertad', 'esperanza', 'fuerza', 'victoria', 'eternidad', 'destino', 'amistad']
+                    }
+                };
+                
+                // Boss system
+                this.bosses = [];
+                this.bossWords = [];
+                this.bossHealth = 0;
+                this.maxBossHealth = 0;
+                
+                // Particles
+                this.particles = [];
+                
+                // Controls
+                this.keys = [];
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.state = 'start';
+                this.score = 0;
+                this.wordsTyped = 0;
+                this.correctTyped = 0;
+                this.wrongTyped = 0;
+                this.wpm = 0;
+                this.accuracy = 100;
+                this.timer = this.maxTimer;
+                this.frame = 0;
+                this.bossCount = 0;
+                this.bossActive = false;
+                this.words = [];
+                this.particles = [];
+                this.bosses = [];
+                this.bossWords = [];
+                this.currentWord = '';
+                this.wordInput = '';
+                this.wordQueue = [];
+                
+                document.getElementById('wordInput').value = '';
+                document.getElementById('wordInput').disabled = true;
+                document.getElementById('currentWordDisplay').textContent = 'Start typing...';
+                document.getElementById('progressFill').style.width = '0%';
+                
+                this.updateUI();
+                document.getElementById('startOverlay').style.display = 'flex';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+            }
+            
+            startGame() {
+                this.state = 'playing';
+                this.timer = this.maxTimer;
+                this.words = [];
+                this.particles = [];
+                this.bosses = [];
+                this.bossWords = [];
+                this.score = 0;
+                this.wordsTyped = 0;
+                this.correctTyped = 0;
+                this.wrongTyped = 0;
+                this.bossCount = 0;
+                this.bossActive = false;
+                
+                document.getElementById('startOverlay').style.display = 'none';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                document.getElementById('wordInput').disabled = false;
+                document.getElementById('wordInput').focus();
+                
+                // Generate initial words
+                this.spawnWords();
+                this.updateUI();
+            }
+            
+            getWordList() {
+                const lang = 'english';
+                return this.wordLists[lang][this.difficulty] || this.wordLists.english.easy;
+            }
+            
+            spawnWords() {
+                const wordList = this.getWordList();
+                const count = this.difficulty === 'easy' ? 8 : this.difficulty === 'medium' ? 10 : 12;
+                
+                for (let i = 0; i < count; i++) {
+                    const word = wordList[Math.floor(Math.random() * wordList.length)];
+                    const x = 50 + Math.random() * (this.W - 200);
+                    const y = -20 - Math.random() * 100;
+                    const speed = this.getWordSpeed();
+                    
+                    this.words.push({
+                        text: word,
+                        x: x,
+                        y: y,
+                        speed: speed,
+                        color: this.getWordColor(word),
+                        width: word.length * 14 + 20,
+                        height: 30,
+                        alive: true,
+                        scale: 1,
+                        pulse: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+            
+            getWordSpeed() {
+                const baseSpeed = this.difficulty === 'easy' ? 0.3 : this.difficulty === 'medium' ? 0.5 : 0.7;
+                return baseSpeed + (this.wordsTyped / 200) * 0.1;
+            }
+            
+            getWordColor(word) {
+                const colors = ['#ff6b6b', '#ffd93d', '#4ecdc4', '#6c5ce7', '#ff9f43', '#fd79a8', '#00d2ff', '#a29bfe'];
+                let hash = 0;
+                for (let i = 0; i < word.length; i++) {
+                    hash = word.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                return colors[Math.abs(hash) % colors.length];
+            }
+            
+            spawnBoss() {
+                const wordList = this.getWordList();
+                const word = wordList[Math.floor(Math.random() * wordList.length)].toUpperCase();
+                
+                this.bossActive = true;
+                this.bossHealth = 50 + this.bossCount * 10;
+                this.maxBossHealth = this.bossHealth;
+                this.bossWords = [];
+                
+                // Split boss word into letters
+                for (let i = 0; i < word.length; i++) {
+                    this.bossWords.push({
+                        char: word[i],
+                        x: 300 + i * 60,
+                        y: 100,
+                        hit: false
+                    });
+                }
+                
+                // Spawn boss visual
+                this.bosses.push({
+                    x: this.W / 2,
+                    y: 80,
+                    width: 200,
+                    height: 80,
+                    health: this.bossHealth,
+                    maxHealth: this.maxBossHealth,
+                    word: word,
+                    phase: 0
+                });
+                
+                this.spawnParticles(this.W / 2, 80, 30, '#ff6b6b', 8);
+                this.updateUI();
+            }
+            
+            spawnParticles(x, y, count, color, spread) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * (spread || 5);
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 2,
+                        life: 1,
+                        decay: 0.015 + Math.random() * 0.02,
+                        size: 2 + Math.random() * 4,
+                        color: color || '#ffd93d'
+                    });
+                }
+            }
+            
+            checkWordInput() {
+                const input = document.getElementById('wordInput');
+                const typed = input.value.toLowerCase().trim();
+                
+                if (typed === '') return;
+                
+                // Check against falling words
+                let wordFound = false;
+                for (const word of this.words) {
+                    if (word.text === typed && word.alive) {
+                        // Correct word typed
+                        word.alive = false;
+                        this.correctTyped++;
+                        this.wordsTyped++;
+                        this.score += 10 + Math.floor(word.speed * 10);
+                        this.spawnParticles(word.x, word.y, 15, word.color, 5);
+                        wordFound = true;
+                        
+                        // Boss damage if boss active
+                        if (this.bossActive) {
+                            this.bossHealth -= 5;
+                            this.spawnParticles(word.x, word.y, 5, '#ff6b6b', 3);
+                            if (this.bossHealth <= 0) {
+                                this.bossActive = false;
+                                this.bossCount++;
+                                this.score += 100;
+                                this.spawnParticles(this.W / 2, 80, 40, '#ffd93d', 10);
+                                this.spawnWords();
+                            }
+                        }
+                        
+                        input.value = '';
+                        this.updateUI();
+                        break;
+                    }
+                }
+                
+                if (!wordFound) {
+                    // Wrong word typed
+                    this.wrongTyped++;
+                    input.value = '';
+                    input.style.borderColor = '#ff6b6b';
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                    }, 300);
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('wpmDisplay').textContent = Math.floor(this.wpm);
+                document.getElementById('accuracyDisplay').textContent = Math.floor(this.accuracy) + '%';
+                document.getElementById('wordCount').textContent = this.wordsTyped;
+                document.getElementById('timerDisplay').textContent = Math.ceil(this.timer);
+                
+                // Update progress bar
+                const progress = (this.wordsTyped % 20) / 20 * 100;
+                document.getElementById('progressFill').style.width = progress + '%';
+                
+                // Show current word
+                if (this.words.length > 0 && this.words[0] && this.words[0].alive) {
+                    document.getElementById('currentWordDisplay').textContent = this.words[0].text;
+                }
+            }
+            
+            update() {
+                if (this.state !== 'playing') return;
+                this.frame++;
+                
+                // Timer
+                if (this.frame % 60 === 0) {
+                    this.timer--;
+                    if (this.timer <= 0) {
+                        this.gameOver();
+                        return;
+                    }
+                }
+                
+                // Update WPM (words per minute)
+                const elapsed = (this.maxTimer - this.timer) / 60;
+                if (elapsed > 0) {
+                    this.wpm = this.wordsTyped / elapsed;
+                }
+                
+                // Update accuracy
+                const total = this.correctTyped + this.wrongTyped;
+                this.accuracy = total > 0 ? (this.correctTyped / total) * 100 : 100;
+                
+                // Spawn new words
+                if (this.words.length < 15 && !this.bossActive) {
+                    if (this.frame % 120 === 0) {
+                        this.spawnWords();
+                    }
+                }
+                
+                // Update words
+                for (let i = this.words.length - 1; i >= 0; i--) {
+                    const word = this.words[i];
+                    if (!word.alive) {
+                        this.words.splice(i, 1);
+                        continue;
+                    }
+                    
+                    word.y += word.speed;
+                    word.pulse += 0.05;
+                    word.scale = 1 + 0.05 * Math.sin(word.pulse);
+                    
+                    // Check if word reached bottom
+                    if (word.y > this.H - 80) {
+                        this.words.splice(i, 1);
+                        // Wrong - missed word
+                        if (this.bossActive) {
+                            this.bossHealth -= 2;
+                            if (this.bossHealth <= 0) {
+                                this.bossActive = false;
+                                this.bossCount++;
+                                this.score += 50;
+                                this.spawnParticles(this.W / 2, 80, 30, '#ffd93d', 8);
+                            }
+                        }
+                    }
+                }
+                
+                // Update boss
+                if (this.bossActive && this.bosses.length > 0) {
+                    const boss = this.bosses[0];
+                    boss.phase += 0.02;
+                    boss.health = this.bossHealth;
+                    boss.y = 80 + Math.sin(boss.phase) * 10;
+                }
+                
+                // Update particles
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // Boss spawn chance
+                if (!this.bossActive && this.wordsTyped > 0 && this.wordsTyped % 15 === 0 && this.bossCount < 5) {
+                    this.spawnBoss();
+                }
+                
+                this.updateUI();
+            }
+            
+            render() {
+                const ctx = this.ctx;
+                const W = this.W, H = this.H;
+                
+                // Background
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, '#0a0a2a');
+                grad.addColorStop(0.5, '#0d0d3a');
+                grad.addColorStop(1, '#050510');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid lines
+                ctx.strokeStyle = 'rgba(78, 205, 196, 0.03)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < W; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, H);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < H; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(W, i);
+                    ctx.stroke();
+                }
+                
+                // Draw boss
+                if (this.bossActive && this.bosses.length > 0) {
+                    const boss = this.bosses[0];
+                    ctx.save();
+                    
+                    // Boss glow
+                    ctx.shadowColor = '#ff6b6b';
+                    ctx.shadowBlur = 50;
+                    
+                    // Boss body
+                    ctx.fillStyle = '#2d2d44';
+                    ctx.strokeStyle = '#ff6b6b';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.roundRect(boss.x - boss.width/2, boss.y - boss.height/2, boss.width, boss.height, 10);
+                    ctx.fill();
+                    ctx.stroke();
+                    
+                    // Boss health bar
+                    ctx.shadowBlur = 0;
+                    const healthPercent = boss.health / boss.maxHealth;
+                    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                    ctx.fillRect(boss.x - 80, boss.y - boss.height/2 - 20, 160, 12);
+                    ctx.fillStyle = healthPercent > 0.5 ? '#4ecdc4' : healthPercent > 0.25 ? '#ffd93d' : '#ff6b6b';
+                    ctx.fillRect(boss.x - 80, boss.y - boss.height/2 - 20, 160 * healthPercent, 12);
+                    
+                    // Boss word letters
+                    ctx.shadowColor = '#ffd93d';
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#ffd93d';
+                    ctx.font = 'bold 28px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    
+                    for (const letter of this.bossWords) {
+                        const idx = this.bossWords.indexOf(letter);
+                        ctx.fillStyle = letter.hit ? '#4ecdc4' : '#ffd93d';
+                        ctx.fillText(letter.char, 300 + idx * 60, boss.y + 5);
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+                
+                // Draw words
+                for (const word of this.words) {
+                    if (!word.alive) continue;
+                    ctx.save();
+                    
+                    const textWidth = word.text.length * 14;
+                    const x = word.x;
+                    const y = word.y;
+                    
+                    // Background glow
+                    ctx.shadowColor = word.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = word.color + '20';
+                    ctx.beginPath();
+                    ctx.roundRect(x - textWidth/2 - 10, y - 15, textWidth + 20, 30, 8);
+                    ctx.fill();
+                    
+                    // Text
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = word.color;
+                    ctx.font = `bold ${18 * word.scale}px monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(word.text, x, y + 2);
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                }
+                
+                // Draw particles
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                
+                // Danger zone indicator
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.02)';
+                ctx.fillRect(0, this.H - 60, this.W, 60);
+                ctx.strokeStyle = 'rgba(255, 0, 0, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(0, this.H - 60);
+                ctx.lineTo(this.W, this.H - 60);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Word count indicator
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Words: ${this.words.length} | Bosses: ${this.bossCount}`, this.W - 15, 25);
+            }
+            
+            gameOver() {
+                this.state = 'gameover';
+                document.getElementById('wordInput').disabled = true;
+                document.getElementById('finalWpm').textContent = Math.floor(this.wpm);
+                document.getElementById('finalAccuracy').textContent = Math.floor(this.accuracy) + '%';
+                document.getElementById('finalWords').textContent = this.wordsTyped;
+                document.getElementById('finalScore').textContent = Math.floor(this.score);
+                document.getElementById('finalBosses').textContent = this.bossCount;
+                document.getElementById('gameOverOverlay').style.display = 'flex';
+                this.spawnParticles(this.W/2, this.H/2, 50, '#ff6b6b', 10);
+            }
+            
+            setupEventListeners() {
+                // Start button
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Restart button
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.init();
+                    this.startGame();
+                });
+                
+                // Difficulty buttons
+                document.querySelectorAll('.diff-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.difficulty = btn.dataset.diff;
+                        
+                        switch(this.difficulty) {
+                            case 'easy': this.maxTimer = 35; break;
+                            case 'medium': this.maxTimer = 25; break;
+                            case 'hard': this.maxTimer = 15; break;
+                        }
+                        this.timer = this.maxTimer;
+                        document.getElementById('timerDisplay').textContent = this.timer;
+                    });
+                });
+                
+                // Input handling
+                const input = document.getElementById('wordInput');
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && this.state === 'playing') {
+                        e.preventDefault();
+                        this.checkWordInput();
+                    }
+                    if (e.key === ' ' && this.state === 'playing') {
+                        e.preventDefault();
+                        this.checkWordInput();
+                    }
+                });
+                
+                input.addEventListener('input', () => {
+                    if (this.state === 'playing') {
+                        // Auto-submit on space or when word is complete
+                        const val = input.value.trim();
+                        if (val.includes(' ')) {
+                            this.checkWordInput();
+                        }
+                    }
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        if (this.state === 'playing') {
+                            this.gameOver();
+                        }
+                    }
+                });
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // RoundRect polyfill
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+            CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+                if (r > w/2) r = w/2;
+                if (r > h/2) r = h/2;
+                this.moveTo(x + r, y);
+                this.lineTo(x + w - r, y);
+                this.quadraticCurveTo(x + w, y, x + w, y + r);
+                this.lineTo(x + w, y + h - r);
+                this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                this.lineTo(x + r, y + h);
+                this.quadraticCurveTo(x, y + h, x, y + h - r);
+                this.lineTo(x, y + r);
+                this.quadraticCurveTo(x, y, x + r, y);
+                return this;
+            };
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new TypingSpeedrun();
+        });
+    </script>
+</body>
+</html>

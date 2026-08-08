@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Echo Dot – Sends Out Sound Wave Rings Like Echo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🔊 Echo Dot</h1>
+    <p class="subtitle">Sends out sound wave rings like an echo</p>
+
+    <div class="echo-container">
+      <div class="echo-stage" id="echoStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Center dot -->
+        <div class="center-dot" id="centerDot">
+          <div class="dot-pulse"></div>
+          <div class="dot-core"></div>
+        </div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="echo-status" id="echoStatus">🔊 Ready</span>
+          <span class="ring-count" id="ringCount">✦ 0 rings</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn echo" id="echoBtn">🔊 Echo</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Ring Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Ring Size</span>
+      <input type="range" id="sizeSlider" min="20" max="100" value="60" />
+      <span class="slider-value" id="sizeValue">60%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Ring Count</span>
+      <input type="range" id="countSlider" min="3" max="12" value="6" />
+      <span class="slider-value" id="countValue">6</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🔊 Click Echo to send out sound wave rings</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>E</kbd> Echo · <kbd>C</kbd> Clear · <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const echoStatus = document.getElementById('echoStatus');
+      const ringCount = document.getElementById('ringCount');
+      const echoBtn = document.getElementById('echoBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let rings = [];
+      let particles = [];
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let ringCountVal = 0;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Ring class -----
+      class Ring {
+        constructor() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          
+          this.x = cx;
+          this.y = cy;
+          this.radius = 5;
+          this.maxRadius = Math.min(w, h) * 0.45 * (parseInt(sizeSlider.value) / 100);
+          this.speed = 0.5 + parseInt(speedSlider.value) * 0.15;
+          this.hue = parseInt(colorSlider.value);
+          this.opacity = 0.8;
+          this.alive = true;
+          this.rings = parseInt(countSlider.value);
+          this.wobble = 0;
+          this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+          this.wobbleAmount = 0.5 + Math.random() * 1.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.trail = [];
+          this.trailLength = 8 + Math.floor(Math.random() * 12);
+          this.particles = [];
+          this.glowSize = 15 + Math.random() * 25;
+        }
+
+        update() {
+          this.radius += this.speed;
+          this.wobble += this.wobbleSpeed;
+          
+          if (this.radius > this.maxRadius) {
+            this.alive = false;
+          }
+
+          // Update trail
+          const wobbleOffset = Math.sin(this.wobble + this.phase) * this.wobbleAmount;
+          this.trail.push({ 
+            x: this.x + wobbleOffset * 0.3, 
+            y: this.y + Math.cos(this.wobble * 0.7 + this.phase) * this.wobbleAmount * 0.3,
+            radius: this.radius
+          });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+
+          // Generate particles
+          if (this.radius < this.maxRadius * 0.7 && Math.random() < 0.05) {
+            const angle = Math.random() * Math.PI * 2;
+            const r = this.radius * (0.8 + Math.random() * 0.2);
+            const x = this.x + Math.cos(angle) * r;
+            const y = this.y + Math.sin(angle) * r;
+            this.particles.push(new RingParticle(x, y, this.hue + (Math.random() - 0.5) * 30));
+          }
+
+          // Update particles
+          this.particles = this.particles.filter(p => p.update());
+        }
+
+        draw(ctx) {
+          const progress = this.radius / this.maxRadius;
+          const alpha = this.opacity * (1 - progress * 0.6);
+
+          // Draw glow
+          const glowGrad = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, this.radius * 1.1
+          );
+          glowGrad.addColorStop(0, `hsla(${this.hue + 20}, 100%, 80%, ${alpha * 0.03})`);
+          glowGrad.addColorStop(0.5, `hsla(${this.hue + 10}, 100%, 60%, ${alpha * 0.02})`);
+          glowGrad.addColorStop(1, `hsla(${this.hue}, 100%, 40%, 0)`);
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 1.1, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Draw rings
+          const ringCount = this.rings;
+          for (let i = 0; i < ringCount; i++) {
+            const ringRadius = this.radius * (0.1 + (i / ringCount) * 0.9);
+            const ringAlpha = alpha * (1 - i / ringCount * 0.4);
+            const hue = this.hue + (i / ringCount) * 60;
+            const width = 1 + (1 - i / ringCount) * 2.5;
+
+            if (ringRadius < 2) continue;
+
+            // Glow
+            ctx.shadowColor = `hsla(${hue + 20}, 100%, 60%, ${ringAlpha * 0.1})`;
+            ctx.shadowBlur = 10;
+
+            // Main ring with wobble
+            const wobbleOffset = Math.sin(this.wobble + i * 0.5 + this.phase) * this.wobbleAmount * 0.2;
+            const segments = 50;
+            ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${ringAlpha * 0.8})`;
+            ctx.lineWidth = width;
+            ctx.beginPath();
+            for (let j = 0; j <= segments; j++) {
+              const angle = (j / segments) * Math.PI * 2;
+              const wavyR = ringRadius + Math.sin(angle * 4 + time * 0.3 + i * 0.5) * wobbleOffset * 0.5;
+              const x = this.x + Math.cos(angle) * wavyR;
+              const y = this.y + Math.sin(angle) * wavyR;
+              if (j === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Inner glow ring
+            if (i % 2 === 0) {
+              ctx.strokeStyle = `hsla(${hue + 30}, 100%, 80%, ${ringAlpha * 0.1})`;
+              ctx.lineWidth = width * 0.4;
+              ctx.beginPath();
+              for (let j = 0; j <= segments; j++) {
+                const angle = (j / segments) * Math.PI * 2;
+                const wavyR = ringRadius * 0.7 + Math.sin(angle * 3 + time * 0.2 + i * 0.7) * wobbleOffset * 0.3;
+                const x = this.x + Math.cos(angle) * wavyR;
+                const y = this.y + Math.sin(angle) * wavyR;
+                if (j === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+              }
+              ctx.closePath();
+              ctx.stroke();
+            }
+          }
+
+          // Draw trail rings
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i += 2) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.1;
+              const trailRadius = this.trail[i].radius * (0.3 + 0.7 * t);
+              const hue = this.hue + t * 60;
+              
+              if (trailRadius > 2) {
+                ctx.strokeStyle = `hsla(${hue}, 100%, 70%, ${trailAlpha})`;
+                ctx.lineWidth = 0.5 + t * 1;
+                ctx.beginPath();
+                ctx.arc(this.trail[i].x, this.trail[i].y, trailRadius, 0, Math.PI * 2);
+                ctx.stroke();
+              }
+            }
+          }
+
+          // Draw particles
+          this.particles.forEach(p => p.draw(ctx));
+
+          // Center glow
+          if (this.radius < this.maxRadius * 0.15) {
+            const centerGrad = ctx.createRadialGradient(
+              this.x, this.y, 0,
+              this.x, this.y, this.radius * 0.2
+            );
+            centerGrad.addColorStop(0, `hsla(${this.hue + 30}, 100%, 90%, ${alpha * 0.15})`);
+            centerGrad.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+            ctx.fillStyle = centerGrad;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // ----- Ring particle class -----
+      class RingParticle {
+        constructor(x, y, hue) {
+          this.x = x;
+          this.y = y;
+          this.hue = hue;
+          this.size = 0.5 + Math.random() * 2;
+          this.life = 1;
+          this.decay = 0.01 + Math.random() * 0.02;
+          this.vx = (Math.random() - 0.5) * 0.3;
+          this.vy = (Math.random() - 0.5) * 0.3;
+          this.opacity = 0.3 + Math.random() * 0.5;
+          this.glowSize = this.size * 3;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+          this.life -= this.decay;
+          this.size *= 0.998;
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity;
+          const size = this.size * this.life;
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, this.glowSize * this.life
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.2})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.glowSize * this.life, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Create echo -----
+      function createEcho() {
+        const ring = new Ring();
+        rings.push(ring);
+        ringCountVal++;
+        ringCount.textContent = `✦ ${ringCountVal} rings`;
+        echoStatus.textContent = '🔊 Echoing!';
+        status.textContent = '🔊 Sound wave rings spreading!';
+        setTimeout(() => {
+          if (rings.length > 0) {
+            echoStatus.textContent = '🔊 Active';
+          } else {
+            echoStatus.textContent = '🔊 Ready';
+          }
+        }, 1000);
+      }
+
+      // ----- Clear rings -----
+      function clearRings() {
+        rings = [];
+        ringCountVal = 0;
+        ringCount.textContent = '✦ 0 rings';
+        echoStatus.textContent = '🔊 Ready';
+        status.textContent = '🗑️ Rings cleared';
+        setTimeout(() => {
+          status.textContent = '🔊 Click Echo to send out sound wave rings';
+        }, 1000);
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        echoStatus.textContent = isPaused ? '⏸ Paused' : '🔊 Ready';
+      }
+
+      // ----- Reset -----
+      function resetEcho() {
+        rings = [];
+        isPaused = false;
+        toggleBtn.textContent = '⏸ Pause';
+        echoStatus.textContent = '🔊 Ready';
+        ringCountVal = 0;
+        ringCount.textContent = '✦ 0 rings';
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        sizeSlider.value = 60;
+        sizeValue.textContent = '60%';
+        countSlider.value = 6;
+        countValue.textContent = '6';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        status.textContent = '↺ Reset';
+        setTimeout(() => {
+          status.textContent = '🔊 Click Echo to send out sound wave rings';
+        }, 500);
+      }
+
+      // ----- Draw background -----
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        // Dark background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < w; i += 40) {
+          ctx.beginPath();
+          ctx.moveTo(i, 0);
+          ctx.lineTo(i, h);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, i);
+          ctx.lineTo(w, i);
+          ctx.stroke();
+        }
+      }
+
+      // ----- Draw -----
+      function draw() {
+        drawBackground();
+
+        // Update rings
+        if (!isPaused) {
+          rings = rings.filter(r => r.alive);
+          rings.forEach(r => r.update());
+        }
+
+        // Draw rings
+        rings.forEach(r => r.draw(ctx));
+
+        // Update status
+        if (rings.length === 0 && !isPaused) {
+          echoStatus.textContent = '🔊 Ready';
+        }
+        ringCount.textContent = `✦ ${rings.length} rings`;
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      echoBtn.addEventListener('click', createEcho);
+      clearBtn.addEventListener('click', clearRings);
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetEcho);
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+        // Update existing rings' speed
+        rings.forEach(r => {
+          r.speed = 0.5 + parseInt(e.target.value) * 0.15;
+        });
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + '%';
+      });
+
+      countSlider.addEventListener('input', (e) => {
+        countValue.textContent = e.target.value;
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+        rings.forEach(r => {
+          r.hue = parseInt(e.target.value);
+        });
+      });
+
+      // Click canvas to echo
+      canvas.addEventListener('click', createEcho);
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'e' || e.key === 'E') {
+          e.preventDefault();
+          createEcho();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearRings();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetEcho();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '🔊 Click Echo to send out sound wave rings!';
+        // Create initial echo
+        setTimeout(() => {
+          createEcho();
+        }, 500);
+        setTimeout(() => {
+          createEcho();
+        }, 1200);
+        setTimeout(() => {
+          createEcho();
+        }, 1900);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Popcorn Popper</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🍿 Popcorn Popper</h1>
+        <p class="subtitle">Kernels popping with visual effects</p>
+
+        <div class="popcorn-wrapper">
+            <canvas id="popcornCanvas"></canvas>
+
+            <div class="controls">
+                <button id="popBtn">🍿 Pop!</button>
+                <button id="countBtn">Count: 30</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🍿 Click to pop!</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('popcornCanvas');
+        const ctx = canvas.getContext('2d');
+        const popBtn = document.getElementById('popBtn');
+        const countBtn = document.getElementById('countBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let kernels = [];
+        let popped = [];
+        let particles = [];
+        let numKernels = 30;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isPopping = false;
+        let popCount = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Golden',
+                fn: (t) => {
+                    const hue = 35 + t * 20 + Math.sin(time * 0.02) * 5;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Classic',
+                fn: (t) => {
+                    const hue = 40 + t * 10;
+                    return `hsl(${hue}, 60%, ${45 + t * 35}%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [10, 20, 30, 50, 75, 100];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color, size) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6 - 3;
+                this.size = size || 2 + Math.random() * 4;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${40 + Math.random() * 20}, 80%, 60%)`;
+                this.gravity = 0.05 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.1;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.997;
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== KERNEL CLASS =====
+        class Kernel {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height * 0.3 + canvas.height * 0.5;
+                this.radius = 4 + Math.random() * 3;
+                this.targetRadius = this.radius;
+                this.angle = Math.random() * Math.PI * 2;
+                this.velocity = 0;
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.color = `hsl(${30 + Math.random() * 20}, 50%, ${30 + Math.random() * 20}%)`;
+                this.popped = false;
+                this.popping = false;
+                this.popProgress = 0;
+                this.popSpeed = 0.02 + Math.random() * 0.03;
+                this.vx = 0;
+                this.vy = 0;
+                this.gravity = 0.005;
+                this.damping = 0.99;
+                this.bounce = 0.3;
+                this.popColor = '';
+                this.popSize = 8 + Math.random() * 6;
+                this.popParticles = [];
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.3 + Math.random() * 0.3;
+                this.isFlying = false;
+                this.flyTime = 0;
+                this.maxFlyTime = 30 + Math.random() * 40;
+            }
+
+            update(time) {
+                if (this.popped) return;
+
+                if (this.popping) {
+                    this.popProgress += this.popSpeed;
+                    
+                    // Create pop particles
+                    if (this.popProgress > 0.1 && this.popParticles.length === 0) {
+                        const colorFn = colorPalettes[colorMode].fn;
+                        for (let i = 0; i < 15; i++) {
+                            const p = new Particle(
+                                this.x + (Math.random() - 0.5) * 5,
+                                this.y + (Math.random() - 0.5) * 5,
+                                colorFn(Math.random())
+                            );
+                            p.vx += (Math.random() - 0.5) * 6;
+                            p.vy += (Math.random() - 0.5) * 6 - 3;
+                            p.size = 2 + Math.random() * 5;
+                            this.popParticles.push(p);
+                        }
+                    }
+
+                    if (this.popProgress >= 1) {
+                        this.popped = true;
+                        this.popping = false;
+                        this.isFlying = true;
+                        this.flyTime = 0;
+                        this.vy = -2 - Math.random() * 3;
+                        this.vx = (Math.random() - 0.5) * 2;
+                        // Add popped kernel to popped array
+                        const colorFn = colorPalettes[colorMode].fn;
+                        const popColor = colorFn(Math.random());
+                        popped.push({
+                            x: this.x,
+                            y: this.y,
+                            radius: this.popSize,
+                            color: popColor,
+                            vx: this.vx,
+                            vy: this.vy,
+                            life: 1,
+                            rotation: 0,
+                            rotSpeed: (Math.random() - 0.5) * 0.05
+                        });
+                    }
+                    return;
+                }
+
+                // Idle wobble
+                this.phase += 0.02;
+                this.radius = this.targetRadius + Math.sin(this.phase) * this.wobble * 0.3;
+
+                // Rotation
+                this.rotation += this.rotSpeed;
+            }
+
+            draw(ctx) {
+                if (this.popped) return;
+
+                if (this.popping) {
+                    // Draw kernel with pop effect
+                    const scale = 1 + this.popProgress * 1.5;
+                    const size = this.radius * scale;
+                    
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    
+                    // Glow
+                    const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+                    const colorFn = colorPalettes[colorMode].fn;
+                    const glowColor = colorFn(Math.random());
+                    grad.addColorStop(0, glowColor + '40');
+                    grad.addColorStop(1, glowColor + '00');
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // Expanding kernel
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = 'rgba(255, 200, 100, 0.3)';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+
+                    // Draw pop particles
+                    for (const p of this.popParticles) {
+                        p.draw(ctx);
+                    }
+                    return;
+                }
+
+                // Normal kernel
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Kernel shadow
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+                // Kernel body
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.radius, this.radius * 0.9, 0, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(
+                    -this.radius * 0.2,
+                    -this.radius * 0.2,
+                    0,
+                    0,
+                    0,
+                    this.radius
+                );
+                grad.addColorStop(0, this.color);
+                grad.addColorStop(0.5, this.color);
+                grad.addColorStop(1, this.color + '80');
+                ctx.fillStyle = grad;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.ellipse(-this.radius * 0.2, -this.radius * 0.2, this.radius * 0.2, this.radius * 0.15, -0.5, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            startPop() {
+                if (this.popped || this.popping) return;
+                this.popping = true;
+                this.popProgress = 0;
+                this.popParticles = [];
+                popCount++;
+            }
+
+            isPopped() {
+                return this.popped;
+            }
+
+            isPopping() {
+                return this.popping;
+            }
+        }
+
+        // ===== INIT KERNELS =====
+        function initKernels(count) {
+            numKernels = count;
+            kernels = [];
+            popped = [];
+            particles = [];
+            popCount = 0;
+            
+            const w = canvas.width;
+            const h = canvas.height;
+            const margin = 50;
+            const cols = Math.ceil(Math.sqrt(count * 1.5));
+            const rows = Math.ceil(count / cols);
+            const spacingX = (w - margin * 2) / cols;
+            const spacingY = (h * 0.5) / rows;
+
+            for (let i = 0; i < count; i++) {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                const x = margin + col * spacingX + spacingX / 2 + (Math.random() - 0.5) * 10;
+                const y = h * 0.5 + row * spacingY + spacingY / 2 + (Math.random() - 0.5) * 10;
+                const kernel = new Kernel(x, y);
+                kernel.radius = 3 + Math.random() * 3;
+                kernel.targetRadius = kernel.radius;
+                kernel.color = `hsl(${30 + Math.random() * 20}, 50%, ${25 + Math.random() * 25}%)`;
+                kernels.push(kernel);
+            }
+        }
+        initKernels(numKernels);
+
+        // ===== POP KERNELS =====
+        function popKernels() {
+            if (isPopping) return;
+            
+            const unpopped = kernels.filter(k => !k.isPopped() && !k.isPopping());
+            if (unpopped.length === 0) {
+                statusText.textContent = '🍿 All popped!';
+                setTimeout(() => {
+                    statusText.textContent = '🍿 Click to pop!';
+                }, 1500);
+                return;
+            }
+
+            isPopping = true;
+            const numToPop = Math.min(3 + Math.floor(Math.random() * 5), unpopped.length);
+            const toPop = [];
+            const shuffled = unpopped.sort(() => Math.random() - 0.5);
+            
+            for (let i = 0; i < numToPop; i++) {
+                if (i < shuffled.length) {
+                    toPop.push(shuffled[i]);
+                }
+            }
+
+            for (const k of toPop) {
+                k.startPop();
+                
+                // Create pop particles around kernel
+                const colorFn = colorPalettes[colorMode].fn;
+                for (let i = 0; i < 8; i++) {
+                    const p = new Particle(
+                        k.x + (Math.random() - 0.5) * 10,
+                        k.y + (Math.random() - 0.5) * 10,
+                        colorFn(Math.random())
+                    );
+                    p.vx += (Math.random() - 0.5) * 4;
+                    p.vy += (Math.random() - 0.5) * 4 - 2;
+                    p.size = 1 + Math.random() * 3;
+                    particles.push(p);
+                }
+            }
+
+            statusText.textContent = `🍿 Popped ${toPop.length}!`;
+            setTimeout(() => {
+                isPopping = false;
+                const remaining = kernels.filter(k => !k.isPopped() && !k.isPopping()).length;
+                if (remaining === 0) {
+                    statusText.textContent = '🍿 All popped! 🎉';
+                } else {
+                    statusText.textContent = `🍿 ${remaining} kernels left`;
+                }
+                setTimeout(() => {
+                    if (remaining === 0) {
+                        statusText.textContent = '🍿 All popped! Click reset to go again';
+                    } else {
+                        statusText.textContent = '🍿 Click to pop!';
+                    }
+                }, 1500);
+            }, 500);
+        }
+
+        // ===== RESET =====
+        function resetPopcorn() {
+            initKernels(numKernels);
+            isPopping = false;
+            popCount = 0;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🍿 Click to pop!';
+            }, 1000);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#1a0a0a');
+            grad.addColorStop(0.3, '#0f0606');
+            grad.addColorStop(0.6, '#060303');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Bowl
+            const bowlY = h * 0.85;
+            const bowlW = w * 0.6;
+            const bowlH = h * 0.15;
+            
+            // Bowl shadow
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            
+            // Bowl body
+            ctx.beginPath();
+            ctx.ellipse(w/2, bowlY + 10, bowlW/2, 15, 0, Math.PI, 0);
+            ctx.fillStyle = 'rgba(40, 30, 20, 0.3)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Bowl rim
+            ctx.beginPath();
+            ctx.ellipse(w/2, bowlY, bowlW/2, 12, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(50, 40, 30, 0.2)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(50, 40, 30, 0.15)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Bowl interior
+            ctx.beginPath();
+            ctx.ellipse(w/2, bowlY + 5, bowlW/2 - 10, 8, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(30, 20, 15, 0.15)';
+            ctx.fill();
+
+            // Steam lines
+            for (let i = 0; i < 5; i++) {
+                const x = w * 0.3 + i * w * 0.1 + Math.sin(time * 0.01 + i) * 10;
+                const y = h * 0.2 + Math.sin(time * 0.015 + i * 0.7) * 20;
+                ctx.beginPath();
+                ctx.moveTo(x, y + 30);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(time * 0.02 + i) * 15,
+                    y + 15,
+                    x + Math.sin(time * 0.025 + i * 0.5) * 20,
+                    y
+                );
+                ctx.strokeStyle = `rgba(255, 200, 150, ${0.03 + Math.sin(time * 0.01 + i) * 0.02})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Popcorn text
+            ctx.fillStyle = 'rgba(255,200,150,0.03)';
+            ctx.font = 'bold 60px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍿', w/2, h * 0.15);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update kernels
+            for (const kernel of kernels) {
+                kernel.update(time);
+            }
+
+            // Update popped popcorn
+            for (let i = popped.length - 1; i >= 0; i--) {
+                const p = popped[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.05;
+                p.vx *= 0.99;
+                p.rotation += p.rotSpeed;
+                
+                // Ground collision
+                const groundY = h * 0.85;
+                if (p.y > groundY - p.radius) {
+                    p.y = groundY - p.radius;
+                    p.vy *= -0.2;
+                    p.vx *= 0.9;
+                }
+                
+                // Fade out after settling
+                if (Math.abs(p.vy) < 0.1 && p.y > groundY - p.radius - 5) {
+                    p.life *= 0.999;
+                }
+                
+                if (p.life < 0.01) {
+                    popped.splice(i, 1);
+                }
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw kernels
+            for (const kernel of kernels) {
+                kernel.draw(ctx);
+            }
+
+            // Draw popped popcorn
+            for (const p of popped) {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+                
+                const grad = ctx.createRadialGradient(
+                    -p.radius * 0.2,
+                    -p.radius * 0.3,
+                    0,
+                    0,
+                    0,
+                    p.radius
+                );
+                grad.addColorStop(0, p.color);
+                grad.addColorStop(0.5, p.color);
+                grad.addColorStop(1, p.color + '80');
+                ctx.beginPath();
+                ctx.arc(0, 0, p.radius * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = p.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(-p.radius * 0.2 * p.life, -p.radius * 0.3 * p.life, p.radius * 0.2 * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const unpopped = kernels.filter(k => !k.isPopped() && !k.isPopping()).length;
+                const popping = kernels.filter(k => k.isPopping()).length;
+                const poppedCount = popped.length;
+                statusText.textContent = `🍿 ${unpopped} kernels • ${poppedCount} popped • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Canvas click
+        canvas.addEventListener('click', popKernels);
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            popKernels();
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Pop
+        popBtn.addEventListener('click', popKernels);
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numKernels);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Count: ${newCount}`;
+            initKernels(newCount);
+            statusText.textContent = `📐 ${newCount} kernels`;
+            setTimeout(() => {
+                statusText.textContent = '🍿 Click to pop!';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🍿 Click to pop!';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetPopcorn);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'p' || e.key === 'P') {
+                popBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 'l' || e.key === 'L') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                popBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initKernels(numKernels);
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Count: ${numKernels}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🍿 Click to pop!';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🍿 Popcorn Popper loaded!');
+        console.log('💡 P - Pop');
+        console.log('💡 C - Change count');
+        console.log('💡 L - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Pop');
+        console.log('💡 Click canvas - Pop');
+    </script>
+</body>
+</html>

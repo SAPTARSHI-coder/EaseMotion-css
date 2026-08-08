@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Volume Knob</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Volume Knob</h1>
+        <p class="subtitle">Interactive knob with rotation and light indicators</p>
+
+        <div class="knob-wrapper">
+            <div class="knob-container">
+                <canvas id="knobCanvas"></canvas>
+                <div class="knob-value" id="knobValue">50%</div>
+                <div class="knob-label">Volume</div>
+            </div>
+
+            <div class="controls">
+                <button id="resetBtn">↺ Reset</button>
+                <button id="muteBtn">🔇 Mute</button>
+                <button id="randomBtn">🎲 Random</button>
+            </div>
+
+            <div class="status">
+                <span id="volumeStatus">Volume: 50%</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('knobCanvas');
+        const ctx = canvas.getContext('2d');
+        const knobValue = document.getElementById('knobValue');
+        const volumeStatus = document.getElementById('volumeStatus');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const resetBtn = document.getElementById('resetBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const randomBtn = document.getElementById('randomBtn');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            const size = Math.min(wrapper.clientWidth, 300);
+            canvas.width = size;
+            canvas.height = size;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let volume = 0.5;
+        let targetVolume = 0.5;
+        let isDragging = false;
+        let isMuted = false;
+        let previousVolume = 0.5;
+        let angle = 0;
+        let targetAngle = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let glowIntensity = 0;
+        let rippleIntensity = 0;
+        let clickParticles = [];
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHovering = false;
+
+        // ===== CONSTANTS =====
+        const MIN_ANGLE = -135;
+        const MAX_ANGLE = 135;
+        const LED_COUNT = 12;
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.size = 2 + Math.random() * 4;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || '#4d96ff';
+                this.gravity = 0.05 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW FUNCTIONS =====
+        function drawKnob() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.38;
+            const ledRadius = radius * 0.85;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background glow
+            const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.5);
+            bgGrad.addColorStop(0, 'rgba(10, 10, 30, 0.3)');
+            bgGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw outer ring
+            const ringGrad = ctx.createRadialGradient(cx, cy, radius * 0.9, cx, cy, radius);
+            ringGrad.addColorStop(0, 'rgba(40, 40, 70, 0.3)');
+            ringGrad.addColorStop(0.5, 'rgba(60, 60, 90, 0.2)');
+            ringGrad.addColorStop(1, 'rgba(80, 80, 110, 0.4)');
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = ringGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Outer border
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // LED indicators
+            const ledCount = LED_COUNT;
+            const ledAngleRange = 270;
+            const ledStartAngle = -135;
+            const ledRadiusOffset = 8;
+
+            for (let i = 0; i < ledCount; i++) {
+                const t = i / (ledCount - 1);
+                const angleDeg = ledStartAngle + t * ledAngleRange;
+                const angleRad = (angleDeg * Math.PI) / 180;
+                const ledX = cx + Math.cos(angleRad) * ledRadius;
+                const ledY = cy + Math.sin(angleRad) * ledRadius;
+
+                const isActive = t <= volume;
+
+                // LED glow
+                if (isActive) {
+                    const glowSize = 6 + 3 * Math.sin(time * 0.02 + i * 0.5);
+                    const grad = ctx.createRadialGradient(ledX, ledY, 0, ledX, ledY, glowSize);
+                    const hue = 200 + t * 40;
+                    grad.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.4)`);
+                    grad.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
+                    ctx.beginPath();
+                    ctx.arc(ledX, ledY, glowSize, 0, Math.PI * 2);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+
+                // LED dot
+                const ledRadius2 = isActive ? 4 : 2.5;
+                ctx.beginPath();
+                ctx.arc(ledX, ledY, ledRadius2, 0, Math.PI * 2);
+
+                if (isActive) {
+                    const hue = 200 + t * 40;
+                    const bright = 60 + t * 20;
+                    ctx.fillStyle = `hsl(${hue}, 100%, ${bright}%)`;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `hsl(${hue}, 100%, 70%)`;
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.shadowBlur = 0;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Tick marks
+            for (let i = 0; i <= 10; i++) {
+                const t = i / 10;
+                const angleDeg = MIN_ANGLE + t * (MAX_ANGLE - MIN_ANGLE);
+                const angleRad = (angleDeg * Math.PI) / 180;
+                const innerR = radius * 0.75;
+                const outerR = radius * 0.85;
+                const isMain = i % 5 === 0;
+
+                const x1 = cx + Math.cos(angleRad) * innerR;
+                const y1 = cy + Math.sin(angleRad) * innerR;
+                const x2 = cx + Math.cos(angleRad) * (isMain ? outerR : radius * 0.8);
+                const y2 = cy + Math.sin(angleRad) * (isMain ? outerR : radius * 0.8);
+
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = isMain ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)';
+                ctx.lineWidth = isMain ? 2 : 1;
+                ctx.stroke();
+            }
+
+            // Knob body
+            const knobRadius = radius * 0.6;
+            const knobGrad = ctx.createRadialGradient(
+                cx - knobRadius * 0.2,
+                cy - knobRadius * 0.3,
+                0,
+                cx,
+                cy,
+                knobRadius
+            );
+            knobGrad.addColorStop(0, 'rgba(60, 60, 100, 0.3)');
+            knobGrad.addColorStop(0.5, 'rgba(40, 40, 70, 0.4)');
+            knobGrad.addColorStop(1, 'rgba(20, 20, 40, 0.5)');
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, knobRadius, 0, Math.PI * 2);
+            ctx.fillStyle = knobGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Knob border
+            ctx.beginPath();
+            ctx.arc(cx, cy, knobRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Knob indicator line
+            const indicatorAngle = (targetAngle * Math.PI) / 180;
+            const indicatorLen = knobRadius * 0.7;
+            const ix = cx + Math.cos(indicatorAngle) * indicatorLen;
+            const iy = cy + Math.sin(indicatorAngle) * indicatorLen;
+
+            // Glow on indicator
+            const grad2 = ctx.createRadialGradient(ix, iy, 0, ix, iy, 20);
+            const hue = 200 + volume * 40;
+            grad2.addColorStop(0, `hsla(${hue}, 100%, 70%, 0.15)`);
+            grad2.addColorStop(1, `hsla(${hue}, 100%, 70%, 0)`);
+            ctx.beginPath();
+            ctx.arc(ix, iy, 20, 0, Math.PI * 2);
+            ctx.fillStyle = grad2;
+            ctx.fill();
+
+            // Indicator line
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ix, iy);
+            const hue2 = 200 + volume * 40;
+            ctx.strokeStyle = `hsl(${hue2}, 100%, 70%)`;
+            ctx.lineWidth = 3;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = `hsla(${hue2}, 100%, 70%, 0.4)`;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.fill();
+
+            // Center dot ring
+            ctx.beginPath();
+            ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Volume label inside knob
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.font = `${knobRadius * 0.25}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(Math.round(volume * 100) + '%', cx, cy + knobRadius * 0.1);
+
+            // Ripple effect
+            if (rippleIntensity > 0) {
+                const rippleRadius = knobRadius * (0.5 + rippleIntensity * 0.5);
+                ctx.beginPath();
+                ctx.arc(cx, cy, rippleRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = `hsla(200, 100%, 70%, ${0.1 * rippleIntensity})`;
+                ctx.lineWidth = 2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = `hsla(200, 100%, 70%, ${0.1 * rippleIntensity})`;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                rippleIntensity *= 0.98;
+            }
+
+            // Draw particles
+            for (const p of clickParticles) {
+                p.draw(ctx);
+            }
+
+            // Hover glow
+            if (isHovering) {
+                const hoverGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                hoverGrad.addColorStop(0, 'rgba(255,255,255,0.02)');
+                hoverGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.fillStyle = hoverGrad;
+                ctx.fill();
+            }
+        }
+
+        // ===== UPDATE VOLUME =====
+        function updateVolume(value) {
+            volume = Math.max(0, Math.min(1, value));
+            targetAngle = MIN_ANGLE + volume * (MAX_ANGLE - MIN_ANGLE);
+            knobValue.textContent = Math.round(volume * 100) + '%';
+            volumeStatus.textContent = `Volume: ${Math.round(volume * 100)}%`;
+            
+            // Trigger ripple
+            rippleIntensity = 1;
+            
+            // Create particles
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const hue = 200 + volume * 40;
+            for (let i = 0; i < 10; i++) {
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 40,
+                    cy + (Math.random() - 0.5) * 40,
+                    `hsl(${hue}, 100%, 70%)`
+                );
+                p.vx += (Math.random() - 0.5) * 4;
+                p.vy += (Math.random() - 0.5) * 4 - 2;
+                clickParticles.push(p);
+            }
+        }
+
+        // ===== MOUSE INTERACTION =====
+        function getAngleFromMouse(x, y) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const dx = x - cx;
+            const dy = y - cy;
+            let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // Normalize to -180 to 180
+            if (angle < -180) angle += 360;
+            if (angle > 180) angle -= 360;
+            
+            return angle;
+        }
+
+        function getVolumeFromAngle(angle) {
+            // Clamp angle to min/max
+            let clamped = Math.max(MIN_ANGLE, Math.min(MAX_ANGLE, angle));
+            return (clamped - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+            const radius = Math.min(canvas.width, canvas.height) * 0.38;
+            
+            if (dist < radius) {
+                isDragging = true;
+                const angle = getAngleFromMouse(x, y);
+                const vol = getVolumeFromAngle(angle);
+                updateVolume(vol);
+                canvas.style.cursor = 'grabbing';
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const dist = Math.sqrt((mouseX - cx) ** 2 + (mouseY - cy) ** 2);
+            const radius = Math.min(canvas.width, canvas.height) * 0.38;
+            
+            isHovering = dist < radius;
+            canvas.style.cursor = isHovering ? 'grab' : 'default';
+            
+            if (isDragging) {
+                const angle = getAngleFromMouse(mouseX, mouseY);
+                const vol = getVolumeFromAngle(angle);
+                updateVolume(vol);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'default';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            isHovering = false;
+            canvas.style.cursor = 'default';
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+            const radius = Math.min(canvas.width, canvas.height) * 0.38;
+            
+            if (dist < radius) {
+                isDragging = true;
+                const angle = getAngleFromMouse(x, y);
+                const vol = getVolumeFromAngle(angle);
+                updateVolume(vol);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const x = (touch.clientX - rect.left) * scaleX;
+                const y = (touch.clientY - rect.top) * scaleY;
+                const angle = getAngleFromMouse(x, y);
+                const vol = getVolumeFromAngle(angle);
+                updateVolume(vol);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // ===== CONTROLS =====
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            updateVolume(0.5);
+            isMuted = false;
+            muteBtn.textContent = '🔇 Mute';
+            volumeStatus.textContent = 'Volume: 50%';
+        });
+
+        // Mute
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            if (isMuted) {
+                previousVolume = volume;
+                updateVolume(0);
+                muteBtn.textContent = '🔊 Unmute';
+                volumeStatus.textContent = '🔇 Muted';
+            } else {
+                updateVolume(previousVolume);
+                muteBtn.textContent = '🔇 Mute';
+                volumeStatus.textContent = `Volume: ${Math.round(previousVolume * 100)}%`;
+            }
+        });
+
+        // Random
+        randomBtn.addEventListener('click', () => {
+            const randomVol = Math.random();
+            updateVolume(randomVol);
+            if (isMuted) {
+                isMuted = false;
+                muteBtn.textContent = '🔇 Mute';
+            }
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key === '=') {
+                e.preventDefault();
+                updateVolume(Math.min(1, volume + 0.05));
+                if (isMuted) {
+                    isMuted = false;
+                    muteBtn.textContent = '🔇 Mute';
+                }
+            }
+            if (e.key === 'ArrowDown' || e.key === '-') {
+                e.preventDefault();
+                updateVolume(Math.max(0, volume - 0.05));
+                if (isMuted) {
+                    isMuted = false;
+                    muteBtn.textContent = '🔇 Mute';
+                }
+            }
+            if (e.key === 'm' || e.key === 'M') {
+                muteBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+        });
+
+        // ===== ANIMATION LOOP =====
+        function animate(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            // Smooth angle interpolation
+            angle += (targetAngle - angle) * 0.12;
+
+            // Update particles
+            for (let i = clickParticles.length - 1; i >= 0; i--) {
+                const p = clickParticles[i];
+                p.update();
+                if (p.isDead()) {
+                    clickParticles.splice(i, 1);
+                }
+            }
+
+            drawKnob();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        updateVolume(0.5);
+        lastFpsUpdate = performance.now();
+        animate(lastFpsUpdate);
+
+        console.log('🔊 Volume Knob loaded!');
+        console.log('💡 Click and drag to adjust volume');
+        console.log('💡 ↑ ↓ or + - to adjust');
+        console.log('💡 M - Mute/Unmute');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starfield Generator – Creates Star Fields on Click</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>⭐ Starfield Generator</h1>
+    <p class="subtitle">Click to create a new star field</p>
+
+    <div class="starfield-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="star-count" id="starCount">✦ 0 stars</span>
+        <span class="field-status" id="fieldStatus">✨ Click to generate</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn generate" id="generateBtn">🌟 Generate</button>
+      <button class="ctrl-btn nebula" id="nebulaBtn">🌌 Nebula</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn save" id="saveBtn">💾 Save</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Star Count</span>
+      <input type="range" id="countSlider" min="50" max="1000" value="300" step="10" />
+      <span class="slider-value" id="countValue">300</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Spread</span>
+      <input type="range" id="spreadSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="spreadValue">50%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Brightness</span>
+      <input type="range" id="brightnessSlider" min="0" max="100" value="60" />
+      <span class="slider-value" id="brightnessValue">60%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color Temp</span>
+      <input type="range" id="colorSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="colorValue">Neutral</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">⭐ Click Generate or the canvas to create a starfield</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Click</kbd> Generate · <kbd>G</kbd> Generate · <kbd>N</kbd> Nebula · <kbd>C</kbd> Clear · <kbd>S</kbd> Save
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const starCount = document.getElementById('starCount');
+      const fieldStatus = document.getElementById('fieldStatus');
+      const generateBtn = document.getElementById('generateBtn');
+      const nebulaBtn = document.getElementById('nebulaBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const spreadSlider = document.getElementById('spreadSlider');
+      const spreadValue = document.getElementById('spreadValue');
+      const brightnessSlider = document.getElementById('brightnessSlider');
+      const brightnessValue = document.getElementById('brightnessValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let stars = [];
+      let nebulaColors = [];
+      let isNebula = false;
+      let time = 0;
+      let animationId = null;
+
+      // Color temperature names
+      const COLOR_NAMES = ['Cool', 'Neutral', 'Warm'];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Generate starfield -----
+      function generateStarfield() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const count = parseInt(countSlider.value);
+        const spread = parseInt(spreadSlider.value) / 100;
+        const brightness = parseInt(brightnessSlider.value) / 100;
+        const colorTemp = parseInt(colorSlider.value) / 100;
+
+        stars = [];
+        isNebula = false;
+        nebulaColors = [];
+
+        // Determine color temperature
+        const temp = colorTemp * 2 - 1; // -1 (cool) to 1 (warm)
+
+        for (let i = 0; i < count; i++) {
+          const x = (Math.random() - 0.5) * 2 * w * (0.2 + spread * 0.8) + w / 2;
+          const y = (Math.random() - 0.5) * 2 * h * (0.2 + spread * 0.8) + h / 2;
+          
+          // Size distribution (more small stars, fewer large)
+          const sizeRand = Math.random();
+          let size;
+          if (sizeRand < 0.6) {
+            size = 0.5 + Math.random() * 1;
+          } else if (sizeRand < 0.85) {
+            size = 1 + Math.random() * 1.5;
+          } else if (sizeRand < 0.97) {
+            size = 2.5 + Math.random() * 2;
+          } else {
+            size = 4.5 + Math.random() * 3;
+          }
+          size *= (0.5 + brightness * 0.5);
+
+          // Brightness variation
+          const starBrightness = 0.3 + Math.random() * 0.7;
+
+          // Color based on temperature
+          let r, g, b;
+          if (temp < -0.3) {
+            // Cool - blue/white
+            const t = (temp + 1) / 0.7;
+            r = 150 + t * 80;
+            g = 180 + t * 60;
+            b = 220 + t * 35;
+          } else if (temp < 0.3) {
+            // Neutral - white
+            const t = (temp + 0.3) / 0.6;
+            r = 230 + t * 25;
+            g = 240 + t * 15;
+            b = 255 - t * 25;
+          } else {
+            // Warm - yellow/orange
+            const t = (temp - 0.3) / 0.7;
+            r = 255;
+            g = 255 - t * 100;
+            b = 230 - t * 150;
+          }
+
+          // Random color variation
+          const variation = 20;
+          r += (Math.random() - 0.5) * variation;
+          g += (Math.random() - 0.5) * variation;
+          b += (Math.random() - 0.5) * variation;
+          
+          r = Math.max(0, Math.min(255, r));
+          g = Math.max(0, Math.min(255, g));
+          b = Math.max(0, Math.min(255, b));
+
+          const color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+
+          stars.push({
+            x,
+            y,
+            size,
+            brightness: starBrightness,
+            color,
+            twinkleSpeed: 0.5 + Math.random() * 1.5,
+            twinklePhase: Math.random() * Math.PI * 2,
+            rotation: Math.random() * Math.PI * 2
+          });
+        }
+
+        updateUI();
+        status.textContent = `⭐ Generated ${stars.length} stars`;
+        fieldStatus.textContent = `✨ ${stars.length} stars`;
+      }
+
+      // ----- Generate nebula -----
+      function generateNebula() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const count = parseInt(countSlider.value);
+        const spread = parseInt(spreadSlider.value) / 100;
+        const brightness = parseInt(brightnessSlider.value) / 100;
+
+        stars = [];
+        isNebula = true;
+        nebulaColors = [];
+
+        // Generate nebula color palette
+        const numColors = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < numColors; i++) {
+          const hue = Math.random() * 360;
+          const sat = 60 + Math.random() * 40;
+          const light = 30 + Math.random() * 40;
+          nebulaColors.push({ hue, sat, light });
+        }
+
+        // Generate nebula particles
+        const nebulaCount = Math.floor(count * 0.7);
+        for (let i = 0; i < nebulaCount; i++) {
+          const x = (Math.random() - 0.5) * 2 * w * (0.5 + spread * 0.5) + w / 2;
+          const y = (Math.random() - 0.5) * 2 * h * (0.5 + spread * 0.5) + h / 2;
+          
+          const size = 3 + Math.random() * 8 * brightness;
+          const colorIdx = Math.floor(Math.random() * nebulaColors.length);
+          const c = nebulaColors[colorIdx];
+          const alpha = 0.05 + Math.random() * 0.15;
+
+          stars.push({
+            x,
+            y,
+            size,
+            brightness: 0.5 + Math.random() * 0.5,
+            color: `hsla(${c.hue}, ${c.sat}%, ${c.light + Math.random() * 20}%, ${alpha})`,
+            isNebulaParticle: true,
+            twinkleSpeed: 0.2 + Math.random() * 0.5,
+            twinklePhase: Math.random() * Math.PI * 2
+          });
+        }
+
+        // Add bright stars on top
+        const starCount = Math.floor(count * 0.3);
+        for (let i = 0; i < starCount; i++) {
+          const x = (Math.random() - 0.5) * 2 * w * (0.6 + spread * 0.4) + w / 2;
+          const y = (Math.random() - 0.5) * 2 * h * (0.6 + spread * 0.4) + h / 2;
+          
+          const size = 0.5 + Math.random() * 2.5;
+          const starBrightness = 0.5 + Math.random() * 0.5;
+          
+          // Warm white for stars in nebula
+          const temp = 0.3 + Math.random() * 0.4;
+          const r = 255;
+          const g = 200 + temp * 55;
+          const b = 150 + temp * 80;
+          const color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+
+          stars.push({
+            x,
+            y,
+            size,
+            brightness: starBrightness,
+            color,
+            twinkleSpeed: 0.5 + Math.random() * 1.5,
+            twinklePhase: Math.random() * Math.PI * 2,
+            rotation: Math.random() * Math.PI * 2,
+            isStar: true
+          });
+        }
+
+        updateUI();
+        status.textContent = `🌌 Generated nebula with ${stars.length} particles`;
+        fieldStatus.textContent = `🌌 Nebula`;
+      }
+
+      // ----- Clear starfield -----
+      function clearStarfield() {
+        stars = [];
+        isNebula = false;
+        nebulaColors = [];
+        updateUI();
+        status.textContent = '🗑️ Starfield cleared';
+        fieldStatus.textContent = '✨ Empty';
+        draw();
+      }
+
+      // ----- Save as image -----
+      function saveImage() {
+        const link = document.createElement('a');
+        link.download = `starfield-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        status.textContent = '💾 Starfield saved!';
+      }
+
+      // ----- Update UI -----
+      function updateUI() {
+        starCount.textContent = `✦ ${stars.length} stars`;
+        countValue.textContent = stars.length || countSlider.value;
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Deep space background
+        const bgGradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        if (stars.length === 0) {
+          // Draw empty message
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+          ctx.font = '20px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('Click to generate a starfield', w/2, h/2);
+          return;
+        }
+
+        // Sort stars by size for depth (small first)
+        const sortedStars = [...stars].sort((a, b) => a.size - b.size);
+
+        // Draw nebula background
+        if (isNebula) {
+          for (let i = 0; i < sortedStars.length; i++) {
+            const star = sortedStars[i];
+            if (star.isNebulaParticle) {
+              const twinkle = 0.5 + 0.5 * Math.sin(time * star.twinkleSpeed + star.twinklePhase);
+              const alpha = parseFloat(star.color.match(/[\d.]+%\)$/)[0].replace('%', '')) / 100;
+              const color = star.color.replace(/[\d.]+%\)$/, (alpha * twinkle * 1.5 * 100) + '%)');
+              
+              const gradient = ctx.createRadialGradient(
+                star.x, star.y, 0,
+                star.x, star.y, star.size * (0.5 + 0.5 * twinkle)
+              );
+              gradient.addColorStop(0, color);
+              gradient.addColorStop(1, 'rgba(0,0,0,0)');
+              
+              ctx.fillStyle = gradient;
+              ctx.beginPath();
+              ctx.arc(star.x, star.y, star.size * (0.5 + 0.5 * twinkle), 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+
+        // Draw stars
+        for (let i = 0; i < sortedStars.length; i++) {
+          const star = sortedStars[i];
+          if (star.isNebulaParticle) continue;
+
+          const twinkle = 0.5 + 0.5 * Math.sin(time * star.twinkleSpeed + star.twinklePhase);
+          const brightness = star.brightness * (0.3 + 0.7 * twinkle);
+          const size = star.size * (0.6 + 0.4 * twinkle);
+
+          // Glow
+          const glowSize = size * 4;
+          const gradient = ctx.createRadialGradient(
+            star.x, star.y, 0,
+            star.x, star.y, glowSize
+          );
+          
+          // Parse color for alpha
+          const colorMatch = star.color.match(/\d+/g);
+          if (colorMatch) {
+            const [r, g, b] = colorMatch.map(Number);
+            gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${brightness * 0.6})`);
+            gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${brightness * 0.2})`);
+            gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+          } else {
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${brightness * 0.6})`);
+            gradient.addColorStop(0.5, `rgba(255, 255, 255, ${brightness * 0.2})`);
+            gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+          }
+
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Star core
+          ctx.shadowColor = `rgba(255, 255, 255, ${brightness * 0.2})`;
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = star.color;
+          ctx.globalAlpha = 0.5 + 0.5 * brightness;
+          ctx.beginPath();
+          ctx.arc(star.x, star.y, Math.max(0.3, size * 0.5), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.shadowBlur = 0;
+
+          // Cross sparkle for larger stars
+          if (size > 2 && twinkle > 0.6) {
+            const sparkleSize = size * (0.5 + 0.5 * twinkle);
+            ctx.strokeStyle = `rgba(255, 255, 255, ${brightness * 0.2 * twinkle})`;
+            ctx.lineWidth = 0.5;
+            for (let j = 0; j < 4; j++) {
+              const angle = j * Math.PI / 4 + star.rotation + time * 0.2;
+              ctx.beginPath();
+              ctx.moveTo(star.x + Math.cos(angle) * sparkleSize * 0.3, star.y + Math.sin(angle) * sparkleSize * 0.3);
+              ctx.lineTo(star.x + Math.cos(angle + Math.PI) * sparkleSize * 0.3, star.y + Math.sin(angle + Math.PI) * sparkleSize * 0.3);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // Color temperature indicator
+        const colorTemp = parseInt(colorSlider.value);
+        const tempNames = ['❄️ Cool', '⚪ Neutral', '🔥 Warm'];
+        const tempIndex = colorTemp < 33 ? 0 : (colorTemp < 66 ? 1 : 2);
+        colorValue.textContent = tempNames[tempIndex];
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      generateBtn.addEventListener('click', generateStarfield);
+      nebulaBtn.addEventListener('click', generateNebula);
+      clearBtn.addEventListener('click', clearStarfield);
+      saveBtn.addEventListener('click', saveImage);
+
+      countSlider.addEventListener('input', (e) => {
+        countValue.textContent = e.target.value;
+      });
+
+      spreadSlider.addEventListener('input', (e) => {
+        spreadValue.textContent = e.target.value + '%';
+      });
+
+      brightnessSlider.addEventListener('input', (e) => {
+        brightnessValue.textContent = e.target.value + '%';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        const names = ['❄️ Cool', '⚪ Neutral', '🔥 Warm'];
+        const idx = val < 33 ? 0 : (val < 66 ? 1 : 2);
+        colorValue.textContent = names[idx];
+      });
+
+      // Click on canvas to generate
+      canvas.addEventListener('click', generateStarfield);
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'g' || e.key === 'G') {
+          e.preventDefault();
+          generateStarfield();
+        }
+        if (e.key === 'n' || e.key === 'N') {
+          e.preventDefault();
+          generateNebula();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearStarfield();
+        }
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          saveImage();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          draw();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateStarfield();
+        startAnimation();
+        status.textContent = '⭐ Click Generate, Nebula, or the canvas to create starfields!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
