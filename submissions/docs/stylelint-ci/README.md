@@ -12,6 +12,11 @@ How to adopt (maintainer instructions)
 2. Merge `.stylelintignore` content into the repo root if desired.
 3. CI will run `npx stylelint "**/*.css" --max-warnings=0` (fail on warnings).
 
+Copy instruction:
+1.Copy stylelint-workflow.yml to .github/workflows/stylelint.yml.
+2.Copy .stylelintignore to the repository root (or merge its contents into the existing .stylelintignore).
+3.Run npm ci once in CI (the workflow already uses that).
+
 Local testing
 1. From repo root:
    - npm ci
@@ -20,3 +25,4 @@ Local testing
 
 Notes
 - This submission intentionally re-uses the existing top-level `.stylelintrc.json` and does not add another `.stylelintrc.json`.
+- "The workflow uses --ignore-path .stylelintignore and --allow-empty-input to avoid linting build artifacts and to avoid failing when no CSS files are present."
