@@ -178,3 +178,91 @@ No browser-specific script is required.
 - [x] Focus support.
 - [x] Reduced-motion support.
 - [x] Issue number in folder name.
+
+## Implementation notes
+
+The card is the local containing block for the detail surface.
+
+The detail surface starts outside the left edge.
+
+Visibility and opacity prevent an inactive layer from being distracting.
+
+The transform performs the actual movement.
+
+The transition uses a custom cubic-bezier curve.
+
+The curve intentionally overshoots the final position.
+
+The overshoot is small enough to remain professional.
+
+The active state settles at zero translation.
+
+The hover and focus states share the same rule.
+
+This makes pointer and keyboard behavior consistent.
+
+The hero panel demonstrates a related spring idea.
+
+The card content itself remains stable.
+
+Only the supporting detail layer moves.
+
+This keeps the interaction easy to scan.
+
+The background remains static.
+
+The glass surface adds depth without requiring images.
+
+The product artwork can be replaced independently.
+
+The motion is suitable for catalogs and service grids.
+
+## Testing guidance
+
+Open the demo at desktop width.
+
+Hover each product card.
+
+Confirm the detail layer enters from the side.
+
+Watch for the small elastic settling motion.
+
+Use Tab to reach a card action.
+
+Confirm focus activates the detail state.
+
+Resize to tablet width.
+
+Confirm the two-column layout.
+
+Resize to phone width.
+
+Confirm the single-column layout.
+
+Enable reduced motion.
+
+Confirm the slide is removed.
+
+Confirm the detail content remains usable.
+
+## Reuse guidance
+
+Keep the `.card` container.
+
+Keep the `.detail` layer inside it.
+
+Replace product content as needed.
+
+Replace artwork independently.
+
+Tune the starting translate value.
+
+Tune the cubic-bezier curve carefully.
+
+Tune duration for the surrounding interface.
+
+Preserve focus-visible outlines.
+
+Preserve reduced-motion behavior.
+
+Avoid replacing the transform with layout animation.
