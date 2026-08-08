@@ -181,3 +181,97 @@ No browser-specific script is required.
 - [x] Focus support.
 - [x] Reduced-motion support.
 - [x] Issue number in folder name.
+
+## Implementation notes
+
+The float keyframe uses only a small vertical movement.
+
+The movement is intentionally subtle.
+
+Each card receives a different animation delay.
+
+Negative delays create different starting phases.
+
+This prevents the entire grid from moving together.
+
+The hero panel uses the same visual language.
+
+The hero motion is slower than the card rhythm.
+
+Active cards pause their ambient animation.
+
+Pausing improves reading comfort.
+
+The detail surface appears only during interaction.
+
+The transform keeps the card in its layout position.
+
+No layout reflow is needed for the float effect.
+
+The page can remain interactive while the animation runs.
+
+Reduced motion disables all continuous movement.
+
+The static presentation remains polished.
+
+The glass surface provides visual depth.
+
+The accent token can be rethemed.
+
+The product artwork is independent from motion.
+
+The component remains self-contained.
+
+## Testing guidance
+
+Open the page at desktop width.
+
+Observe the small vertical drift.
+
+Confirm cards use different phases.
+
+Hover a card.
+
+Confirm its drift pauses.
+
+Confirm the detail layer appears.
+
+Use Tab to reach the product action.
+
+Confirm focus activates the same state.
+
+Resize to tablet width.
+
+Confirm two columns remain readable.
+
+Resize to phone width.
+
+Confirm one column remains readable.
+
+Enable reduced motion.
+
+Confirm the continuous drift disappears.
+
+Confirm content remains fully usable.
+
+## Reuse guidance
+
+Copy the card markup.
+
+Keep the animation delay strategy.
+
+Tune the float distance conservatively.
+
+Tune duration for the surrounding interface.
+
+Keep the hover pause behavior.
+
+Keep focus-within support.
+
+Keep reduced-motion support.
+
+Retheme the CSS variables.
+
+Replace product copy as needed.
+
+Avoid using continuous motion when the content itself is already visually busy.
