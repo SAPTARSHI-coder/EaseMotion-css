@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Badge Component
- * 
- * A native React wrapper for the ease-badge CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseBadge = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-badge ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseBadge component
+       *
+       * Small status indicator badges
+       *
+       * @component
+       * @example
+       * <EaseBadge className="my-class">Content</EaseBadge>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseBadge = React.forwardRef(function EaseBadge(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <span
+    ref={ref}
+    className={`ease-badge ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </span>
+);
+      });
 
-EaseBadge.displayName = 'EaseBadge';
-export default EaseBadge;
+      EaseBadge.displayName = 'EaseBadge';
+
+      export { EaseBadge };
+      export default EaseBadge;

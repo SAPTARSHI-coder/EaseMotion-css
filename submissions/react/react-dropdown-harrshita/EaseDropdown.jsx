@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Dropdown Component
- * 
- * A native React wrapper for the ease-dropdown CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseDropdown = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-dropdown ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseDropdown component
+       *
+       * Dropdown menu component
+       *
+       * @component
+       * @example
+       * <EaseDropdown className="my-class">Content</EaseDropdown>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseDropdown = React.forwardRef(function EaseDropdown(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <div
+    ref={ref}
+    className={`ease-dropdown ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </div>
+);
+      });
 
-EaseDropdown.displayName = 'EaseDropdown';
-export default EaseDropdown;
+      EaseDropdown.displayName = 'EaseDropdown';
+
+      export { EaseDropdown };
+      export default EaseDropdown;

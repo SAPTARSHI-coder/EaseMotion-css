@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion CodeBlock Component
- * 
- * A native React wrapper for the ease-code-block CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseCodeBlock = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-code-block ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseCodeBlock component
+       *
+       * Syntax highlighted code block
+       *
+       * @component
+       * @example
+       * <EaseCodeBlock className="my-class">Content</EaseCodeBlock>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseCodeBlock = React.forwardRef(function EaseCodeBlock(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <pre
+    ref={ref}
+    className={`ease-code-block ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </pre>
+);
+      });
 
-EaseCodeBlock.displayName = 'EaseCodeBlock';
-export default EaseCodeBlock;
+      EaseCodeBlock.displayName = 'EaseCodeBlock';
+
+      export { EaseCodeBlock };
+      export default EaseCodeBlock;

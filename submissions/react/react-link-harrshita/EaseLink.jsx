@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Link Component
- * 
- * A native React wrapper for the ease-link CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseLink = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-link ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseLink component
+       *
+       * Styled anchor link
+       *
+       * @component
+       * @example
+       * <EaseLink className="my-class">Content</EaseLink>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseLink = React.forwardRef(function EaseLink(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <a
+    ref={ref}
+    className={`ease-link ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </a>
+);
+      });
 
-EaseLink.displayName = 'EaseLink';
-export default EaseLink;
+      EaseLink.displayName = 'EaseLink';
+
+      export { EaseLink };
+      export default EaseLink;

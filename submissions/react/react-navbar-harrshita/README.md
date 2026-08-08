@@ -1,19 +1,75 @@
-# React Navbar Integration
+# EaseNavbar
 
-This is a React functional component wrapper for the `ease-navbar` class.
+Top navigation bar for [EaseMotion CSS](https://github.com/SAPTARSHI-coder/EaseMotion-css).
 
-## Usage
+## Installation
+
+Import the component and its stylesheet:
 
 ```jsx
 import { EaseNavbar } from './EaseNavbar';
+import './style.css';
+```
+
+## Basic Usage
+
+```jsx
+import React from 'react';
+import { EaseNavbar } from './EaseNavbar';
+import './style.css';
 
 function App() {
   return (
-    <EaseNavbar className="custom-utility">
-      Hello EaseMotion!
+    <EaseNavbar>
+      Hello from EaseMotion!
     </EaseNavbar>
   );
 }
 ```
 
-Provides automatic ref forwarding, prop spreading, and strict styling encapsulation.
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `className` | `string` | `''` | Additional CSS classes to apply |
+| `ariaLabel` | `string` | `undefined` | Accessible label for screen readers |
+| `children` | `ReactNode` | `undefined` | Child content |
+| `ref` | `Ref` | `undefined` | Forwarded ref to the root element |
+
+## CSS Modifiers
+
+| Class | Description |
+|-------|-------------|
+| `ease-navbar--compact` | Reduced padding and smaller font |
+| `ease-navbar--primary` | Filled primary color variant |
+| `ease-navbar--outlined` | Outlined border variant |
+
+## CSS Variables
+
+Override any of these in your own stylesheet:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ease-navbar-color` | `#6c63ff` | Accent color |
+| `--ease-navbar-bg` | `#f8f8ff` | Background color |
+| `--ease-navbar-radius` | `6px` | Border radius |
+| `--ease-navbar-transition` | `0.25s ease` | Animation timing |
+| `--ease-navbar-shadow` | box-shadow value | Shadow style |
+
+## Dark Mode
+
+This component supports automatic dark mode via `prefers-color-scheme` media query.
+
+## Accessibility
+
+- Passes the `ariaLabel` prop as `aria-label` where applicable.
+- Supports `ref` forwarding for integration with focus management libraries.
+- Includes `:focus-visible` styles for keyboard navigation.
+
+## Files
+
+| File | Description |
+|------|-------------|
+| `EaseNavbar.jsx` | React component source |
+| `style.css` | Component styles |
+| `README.md` | This documentation |

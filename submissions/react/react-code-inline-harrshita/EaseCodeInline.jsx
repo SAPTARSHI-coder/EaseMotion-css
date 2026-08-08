@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion CodeInline Component
- * 
- * A native React wrapper for the ease-code-inline CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseCodeInline = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-code-inline ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseCodeInline component
+       *
+       * Inline code snippet
+       *
+       * @component
+       * @example
+       * <EaseCodeInline className="my-class">Content</EaseCodeInline>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseCodeInline = React.forwardRef(function EaseCodeInline(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <code
+    ref={ref}
+    className={`ease-code-inline ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </code>
+);
+      });
 
-EaseCodeInline.displayName = 'EaseCodeInline';
-export default EaseCodeInline;
+      EaseCodeInline.displayName = 'EaseCodeInline';
+
+      export { EaseCodeInline };
+      export default EaseCodeInline;

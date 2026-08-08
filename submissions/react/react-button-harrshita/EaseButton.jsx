@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Button Component
- * 
- * A native React wrapper for the ease-button CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseButton = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-button ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseButton component
+       *
+       * Styled clickable button
+       *
+       * @component
+       * @example
+       * <EaseButton className="my-class">Content</EaseButton>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseButton = React.forwardRef(function EaseButton(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <button
+    ref={ref}
+    className={`ease-button ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </button>
+);
+      });
 
-EaseButton.displayName = 'EaseButton';
-export default EaseButton;
+      EaseButton.displayName = 'EaseButton';
+
+      export { EaseButton };
+      export default EaseButton;

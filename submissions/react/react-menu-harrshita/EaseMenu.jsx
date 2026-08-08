@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Menu Component
- * 
- * A native React wrapper for the ease-menu CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseMenu = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-menu ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseMenu component
+       *
+       * Navigation menu
+       *
+       * @component
+       * @example
+       * <EaseMenu className="my-class">Content</EaseMenu>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseMenu = React.forwardRef(function EaseMenu(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <nav
+    ref={ref}
+    className={`ease-menu ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </nav>
+);
+      });
 
-EaseMenu.displayName = 'EaseMenu';
-export default EaseMenu;
+      EaseMenu.displayName = 'EaseMenu';
+
+      export { EaseMenu };
+      export default EaseMenu;

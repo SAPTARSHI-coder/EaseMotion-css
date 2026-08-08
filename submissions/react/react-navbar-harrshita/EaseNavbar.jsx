@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Navbar Component
- * 
- * A native React wrapper for the ease-navbar CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseNavbar = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-navbar ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseNavbar component
+       *
+       * Top navigation bar
+       *
+       * @component
+       * @example
+       * <EaseNavbar className="my-class">Content</EaseNavbar>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseNavbar = React.forwardRef(function EaseNavbar(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <header
+    ref={ref}
+    className={`ease-navbar ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </header>
+);
+      });
 
-EaseNavbar.displayName = 'EaseNavbar';
-export default EaseNavbar;
+      EaseNavbar.displayName = 'EaseNavbar';
+
+      export { EaseNavbar };
+      export default EaseNavbar;

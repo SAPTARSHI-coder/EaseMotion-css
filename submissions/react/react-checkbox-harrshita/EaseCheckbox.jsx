@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Checkbox Component
- * 
- * A native React wrapper for the ease-checkbox CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseCheckbox = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-checkbox ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseCheckbox component
+       *
+       * Styled checkbox input
+       *
+       * @component
+       * @example
+       * <EaseCheckbox className="my-class">Content</EaseCheckbox>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseCheckbox = React.forwardRef(function EaseCheckbox(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <label
+    ref={ref}
+    className={`ease-checkbox ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </label>
+);
+      });
 
-EaseCheckbox.displayName = 'EaseCheckbox';
-export default EaseCheckbox;
+      EaseCheckbox.displayName = 'EaseCheckbox';
+
+      export { EaseCheckbox };
+      export default EaseCheckbox;

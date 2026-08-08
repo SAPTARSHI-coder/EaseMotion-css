@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Chip Component
- * 
- * A native React wrapper for the ease-chip CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseChip = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-chip ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseChip component
+       *
+       * Compact element chip
+       *
+       * @component
+       * @example
+       * <EaseChip className="my-class">Content</EaseChip>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseChip = React.forwardRef(function EaseChip(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <span
+    ref={ref}
+    className={`ease-chip ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </span>
+);
+      });
 
-EaseChip.displayName = 'EaseChip';
-export default EaseChip;
+      EaseChip.displayName = 'EaseChip';
+
+      export { EaseChip };
+      export default EaseChip;

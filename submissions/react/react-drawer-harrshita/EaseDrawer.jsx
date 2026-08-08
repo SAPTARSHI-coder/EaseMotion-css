@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Drawer Component
- * 
- * A native React wrapper for the ease-drawer CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseDrawer = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-drawer ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseDrawer component
+       *
+       * Side panel drawer
+       *
+       * @component
+       * @example
+       * <EaseDrawer className="my-class">Content</EaseDrawer>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseDrawer = React.forwardRef(function EaseDrawer(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <aside
+    ref={ref}
+    className={`ease-drawer ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </aside>
+);
+      });
 
-EaseDrawer.displayName = 'EaseDrawer';
-export default EaseDrawer;
+      EaseDrawer.displayName = 'EaseDrawer';
+
+      export { EaseDrawer };
+      export default EaseDrawer;

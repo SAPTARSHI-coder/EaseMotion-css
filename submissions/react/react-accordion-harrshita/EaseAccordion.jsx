@@ -1,22 +1,37 @@
-import React from 'react';
+      import React from 'react';
 
-/**
- * EaseMotion Accordion Component
- * 
- * A native React wrapper for the ease-accordion CSS class.
- * Supports standard React props and forwards ref.
- */
-export const EaseAccordion = React.forwardRef(({ className, children, ...props }, ref) => {
-  return (
-    <div
-      ref={ref}
-      className={`ease-accordion ${className || ''}`.trim()}
-      {...props}
-    >
-      {children}
-    </div>
-  );
-});
+      /**
+       * EaseAccordion component
+       *
+       * Collapsible content sections
+       *
+       * @component
+       * @example
+       * <EaseAccordion className="my-class">Content</EaseAccordion>
+       *
+       * @param {object} props - Component props
+       * @param {string} [props.className] - Additional CSS classes
+       * @param {string} [props.ariaLabel] - Accessible label
+       * @param {React.ReactNode} [props.children] - Child elements
+       * @param {React.Ref} ref - Forwarded ref
+       */
+      const EaseAccordion = React.forwardRef(function EaseAccordion(
+        { className, children, ariaLabel, ...props },
+        ref
+      ) {
+        return (
+  <div
+    ref={ref}
+    className={`ease-accordion ${className || ''}`.trim()}
+    aria-label={ariaLabel || undefined}
+    {...props}
+  >
+    {children}
+  </div>
+);
+      });
 
-EaseAccordion.displayName = 'EaseAccordion';
-export default EaseAccordion;
+      EaseAccordion.displayName = 'EaseAccordion';
+
+      export { EaseAccordion };
+      export default EaseAccordion;
