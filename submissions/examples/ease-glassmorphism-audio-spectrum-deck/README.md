@@ -2,6 +2,7 @@
 
 Multi-bar audio frequency analyzer deck with glowing peak decay caps and frosted glass overlay.
 
+
 ## Features
 - 32-bar animated audio equalizer display
 - Peak decay indicators with gravity falling animation
