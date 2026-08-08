@@ -194,3 +194,91 @@ Translation communicates direction.
 Staggering communicates sequence.
 
 The result is expressive while remaining lightweight.
+
+## Implementation notes
+
+The grid is built with CSS Grid.
+
+Each card owns its own animation delay.
+
+The delay values are intentionally incremental.
+
+The first card establishes the beginning of the sequence.
+
+The later cards extend the rhythm.
+
+The cards do not require JavaScript intersection observers.
+
+The keyframes provide a deterministic entrance.
+
+Opacity is paired with transform.
+
+The transform avoids layout reflow during the animation.
+
+The hover lift is deliberately smaller than the entrance.
+
+The focus state mirrors the hover state.
+
+This keeps pointer and keyboard interactions consistent.
+
+The artwork is decorative.
+
+The product copy carries the meaningful information.
+
+The action links remain visible.
+
+The design works with or without backdrop blur.
+
+The surface remains readable against the page background.
+
+The feature is self-contained inside its issue folder.
+
+## Testing guidance
+
+Open the page at a wide desktop viewport.
+
+Confirm three cards are visible.
+
+Reload the page and observe the stagger.
+
+Resize to tablet width.
+
+Confirm two columns are used.
+
+Resize to phone width.
+
+Confirm one column is used.
+
+Use Tab to move through links.
+
+Confirm focus outlines remain visible.
+
+Enable reduced motion.
+
+Reload the page.
+
+Confirm cards are immediately visible.
+
+Confirm no distracting animation remains.
+
+## Extension ideas
+
+Additional product cards can be appended.
+
+Each card can receive another delay.
+
+The artwork gradients can be replaced with images.
+
+The typography can be rethemed.
+
+The panel surface can be made darker.
+
+The radius can be reduced for a sharper design.
+
+The entrance distance can be increased carefully.
+
+The duration can be tuned for the surrounding interface.
+
+The same pattern can be reused for service grids.
+
+The same pattern can be reused for portfolio galleries.
