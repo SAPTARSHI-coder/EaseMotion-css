@@ -1,31 +1,38 @@
 # Scale-Hover Pricing Table
 
-A responsive glassmorphism pricing table that gently scales the active card on hover or keyboard focus.
+A detailed glassmorphism pricing component where the active plan gently scales above the surrounding cards on hover or keyboard focus.
 
-## Usage
+## File structure
 
-Open `demo.html` directly in a browser and use `.plans`, `.plan`, and `.featured` to compose the cards.
-
-```html
-<article class="plan">
-  <p class="name">Starter</p>
-  <p class="price">$9 <small>/ month</small></p>
-  <a href="#starter">Choose plan</a>
-</article>
+```text
+scale-hover-pricing-table/
+├── demo.html
+├── style.css
+└── README.md
 ```
-
-## CSS custom properties
-
-The component uses `--bg`, `--glass`, `--border`, `--text`, and `--muted` as its primary design tokens.
 
 ## Features
 
-- Pure HTML/CSS with a smooth `transform: scale()` interaction.
-- Hover and focus states share the same visual treatment.
-- Responsive desktop and mobile layout.
-- Semantic content and visible keyboard focus indicators.
-- `prefers-reduced-motion` disables scaling transitions.
+- Complete three-tier pricing content with supporting descriptions.
+- `transform: scale()` interaction with a custom easing curve.
+- Soft radial highlight appears inside the active card.
+- Glassmorphism surfaces with depth shadows and backdrop blur.
+- Responsive grid with a smaller scale factor on mobile.
+- Keyboard focus receives the same visual hierarchy as hover.
+- Reduced-motion support removes scaling and highlight movement.
 
-## Why it is useful
+## Usage
 
-A small scale change provides immediate visual hierarchy without scripting, making the pricing choices feel interactive while staying lightweight.
+Open `demo.html` directly. The component requires only `style.css` and can be dropped into an existing page without JavaScript.
+
+## Motion details
+
+The card scales to `1.055` on larger screens and `1.025` on smaller screens. This difference prevents the interaction from feeling oversized on narrow displays. The card uses `z-index` during the active state so its shadow and border remain visually above neighboring cards.
+
+## Customization
+
+The `--ease` token controls the personality of the scale transition. Increase the scale slightly for a stronger showcase effect, or reduce it toward `1.025` for a subtle product UI.
+
+## Accessibility
+
+The component uses semantic links for actions and visible focus outlines. The animation is decorative and does not communicate information unavailable elsewhere. Reduced-motion users receive the same content and layout without transform movement.
