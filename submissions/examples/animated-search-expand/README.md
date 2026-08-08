@@ -2,18 +2,22 @@
 
 ## Description
 
-A compact search field that expands smoothly when focused.
+An expanding search field that grows smoothly when the user focuses the input.
 
 ## Features
 
-- Focus expansion
-- Smooth transition
-- Rounded search UI
-- Pure CSS
-- Keyboard accessible
+- Smooth width expansion
+- Focus-within interaction
+- Accessible search input
+- Pure CSS animation
+- Responsive design
+
+## Usage
+
+Use the provided HTML structure and include `style.css`.
 
 ## Browser Support
 
 Modern browsers.
 
-**Level: Advanced**
+Level: Advanced
