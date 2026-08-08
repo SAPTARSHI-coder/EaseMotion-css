@@ -189,3 +189,93 @@ No browser-specific script is required.
 - [x] Focus support.
 - [x] Reduced-motion support.
 - [x] Issue number in folder name.
+
+## Implementation notes
+
+The outer card establishes a perspective distance.
+
+The inner wrapper contains both visual faces.
+
+The front face is the initial reading surface.
+
+The back face is rotated before interaction.
+
+Both faces are hidden from the reverse side.
+
+This prevents mirrored text during the turn.
+
+The transform origin remains centered.
+
+The easing curve gives the rotation a natural finish.
+
+The card remains a normal document element.
+
+The motion does not change document layout.
+
+The front artwork is decorative.
+
+The back copy carries detailed information.
+
+The action remains a standard link.
+
+The focus state activates the same transform.
+
+Reduced motion removes the physical rotation.
+
+The alternate content remains available.
+
+This pattern is suitable for product discovery.
+
+It can be adapted to pricing comparisons.
+
+It can be adapted to team profiles.
+
+It can be adapted to portfolio cards.
+
+## Testing guidance
+
+Open the page at desktop width.
+
+Hover each card and observe the rotation.
+
+Confirm the front and back share the same footprint.
+
+Use Tab to reach the product action.
+
+Confirm focus activates the same state.
+
+Resize to tablet width.
+
+Confirm the grid becomes two columns.
+
+Resize to phone width.
+
+Confirm the grid becomes one column.
+
+Enable reduced motion.
+
+Confirm the strong rotation is removed.
+
+Confirm both content states remain understandable.
+
+## Reuse guidance
+
+Keep the `.flip-card` perspective container.
+
+Keep the `.flip-inner` transform surface.
+
+Keep the two `.face` elements together.
+
+Replace artwork with project-specific visuals.
+
+Replace copy with useful secondary information.
+
+Retheme the custom properties.
+
+Tune perspective carefully.
+
+Tune duration for the surrounding interface.
+
+Preserve focus-visible styles.
+
+Preserve reduced-motion behavior.
