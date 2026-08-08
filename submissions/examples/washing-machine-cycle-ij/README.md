@@ -1,10 +1,10 @@
 # ease-washing-machine-cycle
 
-A washer where the drum spins behind the door, bubbles rise up the glass, and the cycle label blinks beneath the dial.
+A front-load washer where the drum tumbles inside the door window, the cycle timer ticks, and the program knob turns.
 
 ## Run
 Open `demo.html` directly in a browser to watch the drum spin.
 
 ## Notes
-- The drum spins behind the door.
-- The bubbles rise up the glass.
+- The drum tumbles inside the door.
+- The program knob turns in place.
