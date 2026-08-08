@@ -1,38 +1,40 @@
 # Zoom-In Pricing Table
 
-A responsive glassmorphism pricing table that uses a restrained CSS zoom-in interaction to emphasize a plan on hover or keyboard focus.
+A responsive glassmorphism pricing table built around a controlled `transform: scale()` interaction. The active card grows toward the viewer while surrounding choices remain readable.
 
-## Usage
+## File structure
 
-Open `demo.html` directly in a browser. The component uses the `.pricing__grid`, `.plan`, `.plan--featured`, and `.plan a` classes.
-
-```html
-<section class="pricing__grid" aria-label="Pricing plans">
-  <article class="plan">
-    <p class="plan__name">Starter</p>
-    <p class="plan__price">$9 <small>/ month</small></p>
-    <a href="#starter">Choose Starter</a>
-  </article>
-</section>
+```text
+zoom-in-pricing-table/
+├── demo.html
+├── style.css
+└── README.md
 ```
-
-## CSS custom properties
-
-- `--bg` controls the page background.
-- `--panel` controls the translucent glass surface.
-- `--border` controls the default panel border.
-- `--text` and `--muted` control typography colors.
-- `--accent` controls the primary accent token.
-- `--radius` controls card corner radius.
 
 ## Features
 
-- Pure HTML and CSS with no JavaScript or framework dependency.
-- Smooth `transform: scale()` zoom interaction on hover and keyboard focus.
-- Responsive three-column layout that becomes a single column on smaller screens.
-- Semantic pricing cards and visible keyboard focus styles.
-- `prefers-reduced-motion` support removes transition motion when requested.
+- Three complete pricing cards with plan summaries, feature lists, and actions.
+- Smooth zoom-in effect on hover and keyboard focus.
+- Subtle inactive-card de-emphasis on capable browsers using `:has()`.
+- Glass blur, layered gradients, borders, and depth shadows.
+- Responsive desktop and mobile behavior.
+- No JavaScript or external assets.
+- Reduced-motion support removes scaling and opacity changes.
 
-## Why it is useful
+## Usage
 
-The effect gives pricing choices a clear visual hierarchy without adding scripting, while the restrained scale keeps the interaction lightweight and suitable for glassmorphism interfaces.
+Open `demo.html` directly in a browser. The core component is the `.plans` grid containing `.plan` cards.
+
+## Motion details
+
+The interaction uses `transform: scale(1.065)` with a custom easing curve. The transform is intentionally centered so the card expands evenly instead of shifting the layout. On smaller screens the scale is reduced to prevent excessive overflow.
+
+The `:has()` enhancement lowers the opacity of inactive cards while one is being hovered. The layout remains fully usable in browsers without `:has()` because the base card styling is independent of that enhancement.
+
+## Customization
+
+Modify the scale amount, transition duration, or `--ease` token to tune the personality. For a calmer interface, values around `1.03` and `320ms` are recommended.
+
+## Accessibility
+
+The same interaction is available through `:focus-within`, not just mouse hover. Links have visible focus indicators and content remains readable without motion. `prefers-reduced-motion: reduce` disables scaling and inactive-card fading.
