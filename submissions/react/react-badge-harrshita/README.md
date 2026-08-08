@@ -1,3 +1,4 @@
+
 # React Badge Integration
 
 This is a React functional component wrapper for the `ease-badge` class.
@@ -9,9 +10,7 @@ import { EaseBadge } from './EaseBadge';
 
 function App() {
   return (
-    <EaseBadge className="custom-utility">
-      Hello EaseMotion!
-    </EaseBadge>
+    <EaseBadge className="custom-utility">Hello EaseMotion!</EaseBadge>
   );
 }
 ```

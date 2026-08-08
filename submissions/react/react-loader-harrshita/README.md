@@ -1,3 +1,4 @@
+
 # React Loader Integration
 
 This is a React functional component wrapper for the `ease-loader` class.
@@ -9,9 +10,7 @@ import { EaseLoader } from './EaseLoader';
 
 function App() {
   return (
-    <EaseLoader className="custom-utility">
-      Hello EaseMotion!
-    </EaseLoader>
+    <EaseLoader className="custom-utility">Hello EaseMotion!</EaseLoader>
   );
 }
 ```

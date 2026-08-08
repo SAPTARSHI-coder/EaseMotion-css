@@ -1,3 +1,4 @@
+
 # React List Integration
 
 This is a React functional component wrapper for the `ease-list` class.
@@ -9,9 +10,7 @@ import { EaseList } from './EaseList';
 
 function App() {
   return (
-    <EaseList className="custom-utility">
-      Hello EaseMotion!
-    </EaseList>
+    <EaseList className="custom-utility">Hello EaseMotion!</EaseList>
   );
 }
 ```

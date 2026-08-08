@@ -1,3 +1,4 @@
+
 # React Icon Integration
 
 This is a React functional component wrapper for the `ease-icon` class.
@@ -9,9 +10,7 @@ import { EaseIcon } from './EaseIcon';
 
 function App() {
   return (
-    <EaseIcon className="custom-utility">
-      Hello EaseMotion!
-    </EaseIcon>
+    <EaseIcon className="custom-utility">Hello EaseMotion!</EaseIcon>
   );
 }
 ```

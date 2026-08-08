@@ -1,3 +1,4 @@
+
 # React Carousel Integration
 
 This is a React functional component wrapper for the `ease-carousel` class.
@@ -9,9 +10,7 @@ import { EaseCarousel } from './EaseCarousel';
 
 function App() {
   return (
-    <EaseCarousel className="custom-utility">
-      Hello EaseMotion!
-    </EaseCarousel>
+    <EaseCarousel className="custom-utility">Hello EaseMotion!</EaseCarousel>
   );
 }
 ```

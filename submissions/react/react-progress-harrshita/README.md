@@ -1,3 +1,4 @@
+
 # React Progress Integration
 
 This is a React functional component wrapper for the `ease-progress` class.
@@ -9,9 +10,7 @@ import { EaseProgress } from './EaseProgress';
 
 function App() {
   return (
-    <EaseProgress className="custom-utility">
-      Hello EaseMotion!
-    </EaseProgress>
+    <EaseProgress className="custom-utility">Hello EaseMotion!</EaseProgress>
   );
 }
 ```

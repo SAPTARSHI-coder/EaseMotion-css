@@ -1,3 +1,4 @@
+
 # React Breadcrumb Integration
 
 This is a React functional component wrapper for the `ease-breadcrumb` class.
@@ -9,9 +10,7 @@ import { EaseBreadcrumb } from './EaseBreadcrumb';
 
 function App() {
   return (
-    <EaseBreadcrumb className="custom-utility">
-      Hello EaseMotion!
-    </EaseBreadcrumb>
+    <EaseBreadcrumb className="custom-utility">Hello EaseMotion!</EaseBreadcrumb>
   );
 }
 ```

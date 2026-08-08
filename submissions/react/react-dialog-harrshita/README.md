@@ -1,3 +1,4 @@
+
 # React Dialog Integration
 
 This is a React functional component wrapper for the `ease-dialog` class.
@@ -9,9 +10,7 @@ import { EaseDialog } from './EaseDialog';
 
 function App() {
   return (
-    <EaseDialog className="custom-utility">
-      Hello EaseMotion!
-    </EaseDialog>
+    <EaseDialog className="custom-utility">Hello EaseMotion!</EaseDialog>
   );
 }
 ```

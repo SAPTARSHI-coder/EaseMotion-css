@@ -1,3 +1,4 @@
+
 # React Input Integration
 
 This is a React functional component wrapper for the `ease-input` class.
@@ -9,9 +10,7 @@ import { EaseInput } from './EaseInput';
 
 function App() {
   return (
-    <EaseInput className="custom-utility">
-      Hello EaseMotion!
-    </EaseInput>
+    <EaseInput className="custom-utility">Hello EaseMotion!</EaseInput>
   );
 }
 ```

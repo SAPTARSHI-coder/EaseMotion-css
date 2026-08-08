@@ -1,3 +1,4 @@
+
 # React Menu Integration
 
 This is a React functional component wrapper for the `ease-menu` class.
@@ -9,9 +10,7 @@ import { EaseMenu } from './EaseMenu';
 
 function App() {
   return (
-    <EaseMenu className="custom-utility">
-      Hello EaseMotion!
-    </EaseMenu>
+    <EaseMenu className="custom-utility">Hello EaseMotion!</EaseMenu>
   );
 }
 ```

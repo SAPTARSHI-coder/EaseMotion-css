@@ -1,3 +1,4 @@
+
 # React CodeInline Integration
 
 This is a React functional component wrapper for the `ease-code-inline` class.
@@ -9,9 +10,7 @@ import { EaseCodeInline } from './EaseCodeInline';
 
 function App() {
   return (
-    <EaseCodeInline className="custom-utility">
-      Hello EaseMotion!
-    </EaseCodeInline>
+    <EaseCodeInline className="custom-utility">Hello EaseMotion!</EaseCodeInline>
   );
 }
 ```

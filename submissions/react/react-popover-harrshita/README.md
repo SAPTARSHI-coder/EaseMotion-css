@@ -1,3 +1,4 @@
+
 # React Popover Integration
 
 This is a React functional component wrapper for the `ease-popover` class.
@@ -9,9 +10,7 @@ import { EasePopover } from './EasePopover';
 
 function App() {
   return (
-    <EasePopover className="custom-utility">
-      Hello EaseMotion!
-    </EasePopover>
+    <EasePopover className="custom-utility">Hello EaseMotion!</EasePopover>
   );
 }
 ```

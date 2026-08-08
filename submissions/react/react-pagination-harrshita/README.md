@@ -1,3 +1,4 @@
+
 # React Pagination Integration
 
 This is a React functional component wrapper for the `ease-pagination` class.
@@ -9,9 +10,7 @@ import { EasePagination } from './EasePagination';
 
 function App() {
   return (
-    <EasePagination className="custom-utility">
-      Hello EaseMotion!
-    </EasePagination>
+    <EasePagination className="custom-utility">Hello EaseMotion!</EasePagination>
   );
 }
 ```

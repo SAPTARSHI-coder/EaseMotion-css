@@ -1,3 +1,4 @@
+
 # React Avatar Integration
 
 This is a React functional component wrapper for the `ease-avatar` class.
@@ -9,9 +10,7 @@ import { EaseAvatar } from './EaseAvatar';
 
 function App() {
   return (
-    <EaseAvatar className="custom-utility">
-      Hello EaseMotion!
-    </EaseAvatar>
+    <EaseAvatar className="custom-utility">Hello EaseMotion!</EaseAvatar>
   );
 }
 ```

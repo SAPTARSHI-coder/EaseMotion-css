@@ -1,3 +1,4 @@
+
 # React Form Integration
 
 This is a React functional component wrapper for the `ease-form` class.
@@ -9,9 +10,7 @@ import { EaseForm } from './EaseForm';
 
 function App() {
   return (
-    <EaseForm className="custom-utility">
-      Hello EaseMotion!
-    </EaseForm>
+    <EaseForm className="custom-utility">Hello EaseMotion!</EaseForm>
   );
 }
 ```

@@ -1,3 +1,4 @@
+
 # React Card Integration
 
 This is a React functional component wrapper for the `ease-card` class.
@@ -9,9 +10,7 @@ import { EaseCard } from './EaseCard';
 
 function App() {
   return (
-    <EaseCard className="custom-utility">
-      Hello EaseMotion!
-    </EaseCard>
+    <EaseCard className="custom-utility">Hello EaseMotion!</EaseCard>
   );
 }
 ```

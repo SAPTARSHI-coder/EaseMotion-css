@@ -1,3 +1,4 @@
+
 # React Divider Integration
 
 This is a React functional component wrapper for the `ease-divider` class.
@@ -9,9 +10,7 @@ import { EaseDivider } from './EaseDivider';
 
 function App() {
   return (
-    <EaseDivider className="custom-utility">
-      Hello EaseMotion!
-    </EaseDivider>
+    <EaseDivider className="custom-utility">Hello EaseMotion!</EaseDivider>
   );
 }
 ```

@@ -1,3 +1,4 @@
+
 # React Dropdown Integration
 
 This is a React functional component wrapper for the `ease-dropdown` class.
@@ -9,9 +10,7 @@ import { EaseDropdown } from './EaseDropdown';
 
 function App() {
   return (
-    <EaseDropdown className="custom-utility">
-      Hello EaseMotion!
-    </EaseDropdown>
+    <EaseDropdown className="custom-utility">Hello EaseMotion!</EaseDropdown>
   );
 }
 ```

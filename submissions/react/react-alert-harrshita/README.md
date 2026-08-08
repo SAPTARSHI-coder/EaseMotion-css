@@ -1,3 +1,4 @@
+
 # React Alert Integration
 
 This is a React functional component wrapper for the `ease-alert` class.
@@ -9,9 +10,7 @@ import { EaseAlert } from './EaseAlert';
 
 function App() {
   return (
-    <EaseAlert className="custom-utility">
-      Hello EaseMotion!
-    </EaseAlert>
+    <EaseAlert className="custom-utility">Hello EaseMotion!</EaseAlert>
   );
 }
 ```

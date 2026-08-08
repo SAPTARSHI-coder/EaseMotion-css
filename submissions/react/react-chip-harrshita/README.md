@@ -1,3 +1,4 @@
+
 # React Chip Integration
 
 This is a React functional component wrapper for the `ease-chip` class.
@@ -9,9 +10,7 @@ import { EaseChip } from './EaseChip';
 
 function App() {
   return (
-    <EaseChip className="custom-utility">
-      Hello EaseMotion!
-    </EaseChip>
+    <EaseChip className="custom-utility">Hello EaseMotion!</EaseChip>
   );
 }
 ```

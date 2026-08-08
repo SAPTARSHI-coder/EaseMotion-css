@@ -1,3 +1,4 @@
+
 # React Checkbox Integration
 
 This is a React functional component wrapper for the `ease-checkbox` class.
@@ -9,9 +10,7 @@ import { EaseCheckbox } from './EaseCheckbox';
 
 function App() {
   return (
-    <EaseCheckbox className="custom-utility">
-      Hello EaseMotion!
-    </EaseCheckbox>
+    <EaseCheckbox className="custom-utility">Hello EaseMotion!</EaseCheckbox>
   );
 }
 ```

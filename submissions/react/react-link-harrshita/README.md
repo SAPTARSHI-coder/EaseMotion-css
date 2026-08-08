@@ -1,3 +1,4 @@
+
 # React Link Integration
 
 This is a React functional component wrapper for the `ease-link` class.
@@ -9,9 +10,7 @@ import { EaseLink } from './EaseLink';
 
 function App() {
   return (
-    <EaseLink className="custom-utility">
-      Hello EaseMotion!
-    </EaseLink>
+    <EaseLink className="custom-utility">Hello EaseMotion!</EaseLink>
   );
 }
 ```

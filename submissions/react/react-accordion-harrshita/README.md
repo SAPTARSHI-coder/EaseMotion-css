@@ -1,3 +1,4 @@
+
 # React Accordion Integration
 
 This is a React functional component wrapper for the `ease-accordion` class.
@@ -9,9 +10,7 @@ import { EaseAccordion } from './EaseAccordion';
 
 function App() {
   return (
-    <EaseAccordion className="custom-utility">
-      Hello EaseMotion!
-    </EaseAccordion>
+    <EaseAccordion className="custom-utility">Hello EaseMotion!</EaseAccordion>
   );
 }
 ```

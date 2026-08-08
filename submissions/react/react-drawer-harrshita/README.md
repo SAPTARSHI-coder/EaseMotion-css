@@ -1,3 +1,4 @@
+
 # React Drawer Integration
 
 This is a React functional component wrapper for the `ease-drawer` class.
@@ -9,9 +10,7 @@ import { EaseDrawer } from './EaseDrawer';
 
 function App() {
   return (
-    <EaseDrawer className="custom-utility">
-      Hello EaseMotion!
-    </EaseDrawer>
+    <EaseDrawer className="custom-utility">Hello EaseMotion!</EaseDrawer>
   );
 }
 ```

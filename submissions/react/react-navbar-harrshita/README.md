@@ -1,3 +1,4 @@
+
 # React Navbar Integration
 
 This is a React functional component wrapper for the `ease-navbar` class.
@@ -9,9 +10,7 @@ import { EaseNavbar } from './EaseNavbar';
 
 function App() {
   return (
-    <EaseNavbar className="custom-utility">
-      Hello EaseMotion!
-    </EaseNavbar>
+    <EaseNavbar className="custom-utility">Hello EaseMotion!</EaseNavbar>
   );
 }
 ```

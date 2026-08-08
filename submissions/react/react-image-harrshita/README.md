@@ -1,3 +1,4 @@
+
 # React Image Integration
 
 This is a React functional component wrapper for the `ease-image` class.
@@ -9,9 +10,7 @@ import { EaseImage } from './EaseImage';
 
 function App() {
   return (
-    <EaseImage className="custom-utility">
-      Hello EaseMotion!
-    </EaseImage>
+    <EaseImage className="custom-utility">Hello EaseMotion!</EaseImage>
   );
 }
 ```

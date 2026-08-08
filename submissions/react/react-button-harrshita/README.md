@@ -1,3 +1,4 @@
+
 # React Button Integration
 
 This is a React functional component wrapper for the `ease-button` class.
@@ -9,9 +10,7 @@ import { EaseButton } from './EaseButton';
 
 function App() {
   return (
-    <EaseButton className="custom-utility">
-      Hello EaseMotion!
-    </EaseButton>
+    <EaseButton className="custom-utility">Hello EaseMotion!</EaseButton>
   );
 }
 ```
