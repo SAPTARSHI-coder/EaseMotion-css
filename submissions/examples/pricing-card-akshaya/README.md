@@ -1,24 +1,21 @@
 # Responsive Pricing Card
 
-A responsive pricing card example for EaseMotion CSS.
-
-This demo provides three pricing plans with responsive layouts, hover
-animations, featured-plan styling, accessible markup, and reduced-motion
-support.
+A responsive pricing card component built with HTML and CSS. It demonstrates a
+modern three-plan pricing layout with hover animations, responsive behavior,
+and accessible semantic markup.
 
 ## Features
 
-- Three pricing plans
-- Responsive desktop and mobile layout
-- Featured / most popular plan
-- Hover lift animation
-- Animated CTA buttons
-- CSS custom properties
-- Dark visual theme
-- Keyboard focus styles
-- Reduced-motion support
-- No JavaScript required
-- No third-party dependencies
+- Three pricing plans: Basic, Pro, and Enterprise
+- Plan name and description
+- Monthly pricing and billing period
+- Feature lists
+- Call-to-action buttons
+- Smooth hover animation
+- Responsive layout for desktop, tablet, and mobile
+- CSS-only visual effects
+- Beginner-friendly HTML and CSS
+- Works without JavaScript or external libraries
 
 ## Files
 
