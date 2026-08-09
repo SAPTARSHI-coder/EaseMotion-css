@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fractal Zoom</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Fractal Zoom</h1>
+        <p class="subtitle">Infinite zoom into fractal patterns with color morphing</p>
+
+        <div class="fractal-wrapper">
+            <canvas id="fractalCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Infinite zoom</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('fractalCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let zoom = 1;
+        let maxIterations = 100;
+        let speed = 1.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let offsetX = -0.5;
+        let offsetY = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let imageData = null;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 1.008 },
+            { name: 'Normal', value: 1.02 },
+            { name: 'Fast', value: 1.04 },
+            { name: 'Very Fast', value: 1.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = (t * 360 + zoom * 10) % 360;
+                    const sat = 80 + Math.sin(zoom * 0.1) * 20;
+                    const light = 30 + t * 50;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = 200 + t * 40 + Math.sin(zoom * 0.05) * 10;
+                    const sat = 60 + t * 30;
+                    const light = 20 + t * 50 + Math.sin(zoom * 0.08 + x * 10) * 10;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Fire',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = 10 + t * 40 + Math.sin(zoom * 0.03) * 10;
+                    const sat = 80 + t * 20;
+                    const light = 20 + t * 50 + Math.sin(zoom * 0.06 + y * 10) * 10;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = 250 + t * 40 + Math.sin(zoom * 0.04) * 15;
+                    const sat = 70 + t * 30;
+                    const light = 15 + t * 40 + Math.sin(zoom * 0.07 + x * 5 + y * 5) * 15;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = (t * 360 + zoom * 5 + x * 50 + y * 30) % 360;
+                    const sat = 40 + Math.sin(zoom * 0.05) * 20;
+                    const light = 60 + t * 30;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = (t * 360 + zoom * 15 + x * 100 + y * 80) % 360;
+                    const sat = 90 + Math.sin(zoom * 0.08) * 10;
+                    const light = 40 + t * 40 + Math.sin(zoom * 0.05 + x * 20 + y * 20) * 15;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const hue = 20 + t * 30 + Math.sin(zoom * 0.02) * 10;
+                    const sat = 70 + t * 30;
+                    const light = 30 + t * 40 + Math.sin(zoom * 0.04 + x * 10 + y * 10) * 10;
+                    return `hsl(${hue}, ${sat}%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (iter, maxIter, zoom, x, y) => {
+                    const t = iter / maxIter;
+                    const val = 20 + t * 60 + Math.sin(zoom * 0.03 + x * 20 + y * 20) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== MANDELBROT ALGORITHM =====
+        function mandelbrot(cx, cy, maxIter) {
+            let zx = 0;
+            let zy = 0;
+            let iter = 0;
+            
+            while (iter < maxIter) {
+                const zx2 = zx * zx;
+                const zy2 = zy * zy;
+                if (zx2 + zy2 > 4) break;
+                const temp = zx2 - zy2 + cx;
+                zy = 2 * zx * zy + cy;
+                zx = temp;
+                iter++;
+            }
+            
+            return iter;
+        }
+
+        // ===== GENERATE FRACTAL =====
+        function generateFractal() {
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Calculate viewport
+            const aspect = w / h;
+            const range = 3.0 / zoom;
+            const xMin = offsetX - range * aspect;
+            const xMax = offsetX + range * aspect;
+            const yMin = offsetY - range;
+            const yMax = offsetY + range;
+            
+            // Adjust iterations based on zoom
+            maxIterations = Math.min(100 + Math.floor(zoom * 5), 500);
+            
+            // Create image data
+            imageData = ctx.createImageData(w, h);
+            const data = imageData.data;
+            
+            // Generate pixel by pixel
+            for (let py = 0; py < h; py++) {
+                for (let px = 0; px < w; px++) {
+                    const x = xMin + (px / w) * (xMax - xMin);
+                    const y = yMin + (py / h) * (yMax - yMin);
+                    
+                    const iter = mandelbrot(x, y, maxIterations);
+                    const colorFn = colorModes[colorMode].fn;
+                    const color = colorFn(iter, maxIterations, zoom, x, y);
+                    
+                    // Parse HSL to RGB
+                    const rgb = hslToRgb(color);
+                    
+                    const idx = (py * w + px) * 4;
+                    data[idx] = rgb[0];
+                    data[idx + 1] = rgb[1];
+                    data[idx + 2] = rgb[2];
+                    data[idx + 3] = 255;
+                }
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // ===== HSL TO RGB CONVERSION =====
+        function hslToRgb(hslStr) {
+            // Parse hsl(hue, sat%, light%)
+            const match = hslStr.match(/hsl\(([^,]+),\s*([^%]+)%,\s*([^%]+)%\)/);
+            if (!match) return [0, 0, 0];
+            
+            let h = parseFloat(match[1]) / 360;
+            let s = parseFloat(match[2]) / 100;
+            let l = parseFloat(match[3]) / 100;
+            
+            let r, g, b;
+            
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        }
+
+        // ===== RENDER LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            // Zoom in
+            zoom *= speed;
+            
+            // Generate fractal
+            generateFractal();
+            
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 Zoom: ${zoom.toFixed(2)}x • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 Zoom: ${zoom.toFixed(2)}x`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 Zoom: ${zoom.toFixed(2)}x`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            zoom = 1;
+            offsetX = -0.5;
+            offsetY = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            
+            setTimeout(() => {
+                statusText.textContent = `🌀 Zoom: ${zoom.toFixed(2)}x`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Pause not implemented
+            }
+            // Arrow keys to pan
+            if (e.key === 'ArrowUp') offsetY -= 0.05 / zoom;
+            if (e.key === 'ArrowDown') offsetY += 0.05 / zoom;
+            if (e.key === 'ArrowLeft') offsetX -= 0.05 / zoom;
+            if (e.key === 'ArrowRight') offsetX += 0.05 / zoom;
+        });
+
+        // ===== MOUSE INTERACTION =====
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let offsetStartX = 0;
+        let offsetStartY = 0;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            dragStartX = (e.clientX - rect.left) * scaleX;
+            dragStartY = (e.clientY - rect.top) * scaleY;
+            offsetStartX = offsetX;
+            offsetStartY = offsetY;
+            canvas.style.cursor = 'grabbing';
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (e.clientX - rect.left) * scaleX;
+                const mouseY = (e.clientY - rect.top) * scaleY;
+                
+                const dx = (mouseX - dragStartX) / canvas.width * 3 / zoom;
+                const dy = (mouseY - dragStartY) / canvas.height * 3 / zoom;
+                
+                offsetX = offsetStartX - dx;
+                offsetY = offsetStartY - dy;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+
+        // Scroll to zoom
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoom *= (1 + delta);
+            zoom = Math.max(0.5, Math.min(10000, zoom));
+        }, { passive: false });
+
+        // ===== TOUCH SUPPORT =====
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchOffsetX = 0;
+        let touchOffsetY = 0;
+        let lastTouchDist = 0;
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                touchStartX = (touch.clientX - rect.left) * scaleX;
+                touchStartY = (touch.clientY - rect.top) * scaleY;
+                touchOffsetX = offsetX;
+                touchOffsetY = offsetY;
+            }
+            if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                lastTouchDist = Math.hypot(
+                    touch1.clientX - touch2.clientX,
+                    touch1.clientY - touch2.clientY
+                );
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const mouseX = (touch.clientX - rect.left) * scaleX;
+                const mouseY = (touch.clientY - rect.top) * scaleY;
+                
+                const dx = (mouseX - touchStartX) / canvas.width * 3 / zoom;
+                const dy = (mouseY - touchStartY) / canvas.height * 3 / zoom;
+                
+                offsetX = touchOffsetX - dx;
+                offsetY = touchOffsetY - dy;
+            }
+            if (e.touches.length === 2) {
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const dist = Math.hypot(
+                    touch1.clientX - touch2.clientX,
+                    touch1.clientY - touch2.clientY
+                );
+                const delta = (dist - lastTouchDist) / 100;
+                zoom *= (1 + delta);
+                zoom = Math.max(0.5, Math.min(10000, zoom));
+                lastTouchDist = dist;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            // Reset touch
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            generateFractal();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🌀 Zoom: ${zoom.toFixed(2)}x`;
+        canvas.style.cursor = 'grab';
+        lastFpsUpdate = performance.now();
+
+        // Generate initial fractal
+        generateFractal();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Fractal Zoom loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 Arrow keys - Pan');
+        console.log('💡 Scroll - Zoom in/out');
+        console.log('💡 Drag - Pan');
+        console.log('💡 SPACE - Pause (coming soon)');
+    </script>
+</body>
+</html>

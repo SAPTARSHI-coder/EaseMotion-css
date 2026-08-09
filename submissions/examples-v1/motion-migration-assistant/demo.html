@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Migration Assistant — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Migration Assistant</h1>
+    <p>
+      Detect deprecated EaseMotion utility classes in your HTML and get instant
+      suggestions for their modern replacements. Generate a full migration report
+      to confidently upgrade between library versions.
+    </p>
+    <div class="badges">
+      <span class="badge">🔄 Version Migration</span>
+      <span class="badge">🔍 Deprecation Scan</span>
+      <span class="badge">📋 Migration Report</span>
+    </div>
+  </header>
+
+  <main class="assistant-container">
+
+    <!-- ── INPUT SECTION ──────────────────────────────────────── -->
+    <section class="panel input-panel">
+      <div class="panel-header">
+        <span class="section-label">1. Your HTML to Scan</span>
+        <div class="version-tag">v1.x → v2.x</div>
+      </div>
+      <p class="panel-desc">Paste your legacy HTML below. The assistant will find deprecated <code>ease-*</code> classes and map them to their modern equivalents.</p>
+
+      <textarea id="htmlInput" class="code-editor" spellcheck="false" placeholder="Paste HTML with legacy ease-* classes...">
+<div class="ease-old-fade ease-old-bounce">
+  Legacy Animation
+</div>
+
+<button class="ease-appear ease-jiggle">
+  Old Button
+</button>
+
+<div class="ease-fade-up ease-scale">
+  Already Modern
+</div>
+      </textarea>
+
+      <div class="quick-tests">
+        <span>Load Sample:</span>
+        <button class="test-btn" id="loadSample1">Simple Deprecations</button>
+        <button class="test-btn" id="loadSample2">Mixed Legacy + Modern</button>
+      </div>
+
+      <button id="scanBtn" class="ease-btn">Scan for Deprecations 🔍</button>
+    </section>
+
+    <!-- ── RESULTS SECTION ────────────────────────────────────── -->
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <span class="section-label">2. Migration Report</span>
+        <div id="summaryBadge" class="summary-badge">Pending scan</div>
+      </div>
+
+      <div id="reportContainer" class="report-container">
+        <div class="empty-state">Your migration report will appear here after scanning.</div>
+      </div>
+
+      <div class="panel-footer">
+        <button id="copyBtn" class="copy-btn" style="display:none;">Copy Fixed HTML 📋</button>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Migration Assistant Logic
+     * Maps deprecated v1.x class names to their modern v2.x equivalents.
+     */
+
+    // Deprecation mapping: old class → new class (or null if removed)
+    const DEPRECATION_MAP = {
+      'ease-old-fade':    { replacement: 'ease-fade-up',      reason: 'Renamed for clarity (v2.0)' },
+      'ease-old-bounce':  { replacement: 'ease-bounce-y',     reason: 'Renamed with directional suffix (v2.0)' },
+      'ease-appear':      { replacement: 'ease-fade-in',      reason: 'Standardized naming convention (v1.5)' },
+      'ease-jiggle':      { replacement: 'ease-shake',        reason: 'Consolidated into ease-shake (v1.8)' },
+      'ease-pop-in':      { replacement: 'ease-scale-in',     reason: 'Renamed for consistency (v2.0)' },
+      'ease-slide':       { replacement: 'ease-slide-up',     reason: 'Default direction made explicit (v1.9)' },
+      'ease-animate':     { replacement: null,                reason: 'Generic class removed. Use specific utilities.' },
+      'ease-go':          { replacement: 'ease-slide-right',  reason: 'Renamed for clarity (v2.0)' },
+    };
+
+    const htmlInput = document.getElementById('htmlInput');
+    const scanBtn = document.getElementById('scanBtn');
+    const reportContainer = document.getElementById('reportContainer');
+    const summaryBadge = document.getElementById('summaryBadge');
+    const copyBtn = document.getElementById('copyBtn');
+
+    let fixedHtml = '';
+
+    document.getElementById('loadSample1').addEventListener('click', () => {
+      htmlInput.value = `<div class="ease-old-fade ease-old-bounce">\n  Legacy Animation\n</div>`;
+      scan();
+    });
+
+    document.getElementById('loadSample2').addEventListener('click', () => {
+      htmlInput.value = `<nav class="ease-appear ease-scale">\n  <button class="ease-jiggle">Action</button>\n</nav>\n<p class="ease-slide-up">Already up to date</p>`;
+      scan();
+    });
+
+    scanBtn.addEventListener('click', scan);
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(fixedHtml).then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy Fixed HTML 📋'; }, 2000);
+      });
+    });
+
+    function scan() {
+      const html = htmlInput.value;
+      if (!html.trim()) return;
+
+      const findings = [];
+
+      // Extract all unique ease-* classes from the HTML
+      const allClassMatches = html.match(/ease-[\w-]+/g) || [];
+      const uniqueClasses = [...new Set(allClassMatches)];
+
+      uniqueClasses.forEach(cls => {
+        if (DEPRECATION_MAP[cls]) {
+          findings.push({ deprecated: cls, ...DEPRECATION_MAP[cls] });
+        }
+      });
+
+      // Generate fixed HTML
+      fixedHtml = html;
+      findings.forEach(f => {
+        const regex = new RegExp(`\\b${f.deprecated}\\b`, 'g');
+        fixedHtml = fixedHtml.replace(regex, f.replacement || `/* removed: ${f.deprecated} */`);
+      });
+
+      renderReport(findings);
+    }
+
+    function renderReport(findings) {
+      const deprecatedCount = findings.length;
+
+      if (deprecatedCount === 0) {
+        summaryBadge.textContent = '✅ All classes up to date';
+        summaryBadge.className = 'summary-badge success';
+        reportContainer.innerHTML = `
+          <div class="report-success">
+            <div class="icon">🎉</div>
+            <p>No deprecated classes found. Your project is fully compatible with the latest EaseMotion version.</p>
+          </div>`;
+        copyBtn.style.display = 'none';
+        return;
+      }
+
+      summaryBadge.textContent = `${deprecatedCount} deprecated class${deprecatedCount !== 1 ? 'es' : ''} found`;
+      summaryBadge.className = 'summary-badge warning';
+
+      const rows = findings.map(f => `
+        <div class="finding-card">
+          <div class="finding-header">
+            <span class="deprecated-tag">DEPRECATED</span>
+            <code class="cls-old">${f.deprecated}</code>
+          </div>
+          <div class="finding-body">
+            ${f.replacement
+              ? `<div class="finding-row"><span class="row-label">Replace with:</span> <code class="cls-new">${f.replacement}</code></div>`
+              : `<div class="finding-row"><span class="row-label">Action:</span> <code class="cls-removed">Remove entirely</code></div>`
+            }
+            <div class="finding-row"><span class="row-label">Reason:</span> <span class="reason-text">${f.reason}</span></div>
+          </div>
+        </div>
+      `).join('');
+
+      reportContainer.innerHTML = rows;
+      copyBtn.style.display = 'block';
+    }
+
+    // Auto-scan on load
+    scan();
+  </script>
+
+</body>
+</html>

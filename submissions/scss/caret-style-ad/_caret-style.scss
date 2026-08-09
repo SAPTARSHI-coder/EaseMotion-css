@@ -1,0 +1,126 @@
+// ==========================================================================
+// EaseMotion CSS — Caret Style mixin
+// Issue #63811
+// --------------------------------------------------------------------------
+// Keeps the text caret visible on custom-styled inputs.
+//
+// The caret defaults to the element's `color`. That is fine until the
+// input is styled — a dark-themed field with light text on a light-focus
+// background, a search box that inverts on focus, or a contenteditable
+// surface with a coloured backdrop can all end up with a caret that
+// matches its own background and is effectively invisible.
+//
+// The user then cannot tell where they are typing, or whether the field
+// is focused at all. It is a small property and a total failure of the
+// control when it goes wrong, and it is easy to miss because the caret
+// only exists while focused.
+//
+// `caret-color` decouples it from `color`, so the caret can be pinned to
+// something that always contrasts.
+// ==========================================================================
+
+@use "sass:color";
+@use "sass:math";
+@use "sass:meta";
+
+$caret-color: #38bdf8 !default;
+$caret-selection-bg: rgba(56, 189, 248, 0.3) !default;
+$caret-selection-fg: #f1f5f9 !default;
+
+// --------------------------------------------------------------------------
+// caret-style
+//
+// @param {Color} $color      Caret colour.
+// @param {Color} $select-bg  Selection background.
+// @param {Color} $select-fg  Selection foreground.
+// --------------------------------------------------------------------------
+@mixin caret-style(
+    $color: $caret-color,
+    $select-bg: $caret-selection-bg,
+    $select-fg: $caret-selection-fg
+) {
+    @if meta.type-of($color) != "color" and $color != auto {
+        @error "caret-style(): $color must be a color or `auto`, got `#{$color}`.";
+    }
+
+    caret-color: $color;
+
+    // Both halves of ::selection, always. Setting only the background is
+    // the common bug: the inherited text colour can land on top of the
+    // new background with no contrast, so the selected text disappears
+    // exactly when the user is trying to read it.
+    &::selection {
+        background: $select-bg;
+        color: $select-fg;
+    }
+
+    // Firefox needs the prefixed pseudo-element separately — it cannot be
+    // grouped with the standard one, because an unrecognised selector in
+    // a list invalidates the whole rule.
+    &::-moz-selection {
+        background: $select-bg;
+        color: $select-fg;
+    }
+}
+
+// --------------------------------------------------------------------------
+// caret-contrast
+//
+// Picks a caret colour that contrasts with the field's own background,
+// for themes where the input surface is not known at author time.
+// --------------------------------------------------------------------------
+@mixin caret-contrast($background, $light: #ffffff, $dark: #0b1120) {
+    @if meta.type-of($background) != "color" {
+        @error "caret-contrast(): $background must be a color.";
+    }
+
+    caret-color: pick-caret($background, $light, $dark);
+}
+
+@function pick-caret($background, $light, $dark) {
+    // Perceptual luminance rather than lightness — a saturated blue and a
+    // saturated yellow can share a lightness value while needing opposite
+    // carets.
+    $r: color.channel($background, "red", $space: rgb);
+    $g: color.channel($background, "green", $space: rgb);
+    $b: color.channel($background, "blue", $space: rgb);
+    $luminance: math.div(0.2126 * $r + 0.7152 * $g + 0.0722 * $b, 255);
+
+    @if $luminance > 0.55 {
+        @return $dark;
+    }
+
+    @return $light;
+}
+
+// --------------------------------------------------------------------------
+// caret-editable
+//
+// For contenteditable surfaces. An empty contenteditable collapses to
+// zero height, so the caret has nowhere to render and the user cannot
+// tell the field is focused. `min-height` plus an empty-state placeholder
+// keeps it visible.
+// --------------------------------------------------------------------------
+@mixin caret-editable($color: $caret-color, $min-height: 1.5em, $placeholder: "") {
+    caret-color: $color;
+    min-height: $min-height;
+
+    @if $placeholder != "" {
+        &:empty::before {
+            content: $placeholder;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// caret-hidden
+//
+// Suppresses the caret on elements that accept focus but not text input —
+// a custom listbox or a segmented control rendered as a focusable div.
+// A blinking caret in a non-text control implies typing will do something.
+// --------------------------------------------------------------------------
+@mixin caret-hidden {
+    caret-color: transparent;
+}
