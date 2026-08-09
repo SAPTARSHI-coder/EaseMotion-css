@@ -1,10 +1,11 @@
 # ease-mobile-pull-refresh-spinner
 
-A phone-style inbox whose circular spinner rotates with the pull distance.
+A mobile pull-to-refresh demo where the spinner rotates with the drag distance via `--pull-progress`.
 
 ## Run
-Open `demo.html` directly in a browser and drag down on the message list.
+Open `demo.html` directly in a browser.
 
 ## Notes
-- Drag distance maps to a CSS progress variable.
-- Releasing past the threshold spins out a refresh cycle.
+- Drag down on the list to rotate the spinner proportionally.
+- Release past the threshold to trigger the refresh spin.
+- The content translates down with the pull gesture.
