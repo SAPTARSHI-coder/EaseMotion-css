@@ -1,19 +1,26 @@
-# 3D Flip Cards Team Showcase
+# 3D Flip Card Component
 
-A highly interactive **3D Flip Card** component designed for team profiles or service showcases. This example demonstrates how to combine CSS 3D transforms with **EaseMotion CSS** to create a smooth, staggered entrance animation and a satisfying hover-flip effect.
+## What does this add?
 
-## 🚀 Features
+Introduces an `.ease-flip-card` component that reveals back-side content (like product details, pricing, or social links) through a smooth 3D rotation when hovered.
 
-- **3D Flip Effect**: Cards smoothly rotate 180 degrees on the Y-axis when hovered, revealing hidden content on the back.
-- **Staggered Load Animations**: Uses `ease-zoom-in` combined with `ease-delay-*` classes so the cards pop in sequentially.
-- **Dark Mode Aesthetic**: Modern, sleek dark theme with gradient backgrounds and subtle shadows.
-- **Responsive Grid**: Uses CSS Grid (`auto-fit`) to automatically adjust the number of columns based on screen size.
-- **Interactive Social Links**: Clean, pill-shaped buttons on the back of the cards with hover inversions.
+## How does a developer use it?
 
-## 📂 File Structure
+```html
+<div class="ease-flip-card">
+  <div class="ease-flip-card-inner">
+    <div class="front">
+      <!-- Front Content Here -->
+    </div>
+    <div class="back">
+      <!-- Back Content Here -->
+    </div>
+  </div>
+</div>
+```
 
-```text
-submissions/examples/3d-flip-cards/
-├── demo.html    # HTML structure and EaseMotion utility classes
-├── style.css    # Custom CSS for 3D perspective and flip transitions
-└── README.md    # Documentation
+Be sure to give the `.ease-flip-card` element a specific width and height in your project so that the inner absolutely-positioned faces have dimensions to fill!
+
+## Why does it fit EaseMotion CSS?
+
+3D flip cards are incredibly popular in modern web design. This adds a highly interactive and premium motion component to the EaseMotion CSS library, utilizing advanced CSS transforms, all while strictly adhering to the "animation-first" philosophy using pure CSS and zero JavaScript.

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wormhole Spiral</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Wormhole Spiral</h1>
+        <p class="subtitle">Spiraling tunnel with color distortion effect</p>
+
+        <div class="wormhole-wrapper">
+            <canvas id="wormholeCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="twistBtn">Twist: Medium</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Spiraling</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('wormholeCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const twistBtn = document.getElementById('twistBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let speed = 0.02;
+        let speedLevel = 1;
+        let twist = 3;
+        let twistLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let rotation = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== TWIST OPTIONS =====
+        const twists = [
+            { name: 'Light', value: 1.5 },
+            { name: 'Medium', value: 3 },
+            { name: 'Heavy', value: 5 },
+            { name: 'Extreme', value: 8 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 60%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 60 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Fire',
+                fn: (t) => {
+                    const hue = 10 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 90%, ${50 + t * 40}%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== DRAW SPIRAL =====
+        function drawSpiral() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const maxDim = Math.max(w, h);
+            const numPoints = 800;
+            const turns = 8;
+            const colorFn = colorModes[colorMode].fn;
+
+            // Clear with fade trail
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.08)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw multiple spiral layers
+            for (let layer = 0; layer < 3; layer++) {
+                const layerOffset = layer * 0.3;
+                const layerScale = 1 + layer * 0.05;
+                const layerAlpha = 0.3 + layer * 0.1;
+
+                ctx.beginPath();
+                let first = true;
+
+                for (let i = 0; i < numPoints; i++) {
+                    const t = i / numPoints;
+                    const angle = t * turns * Math.PI * 2 + rotation + layerOffset;
+                    const radius = t * maxDim * 0.42 * layerScale;
+                    
+                    // Distortion wave
+                    const wave = Math.sin(t * 20 + time * 0.5) * 3;
+                    const x = cx + Math.cos(angle) * (radius + wave);
+                    const y = cy + Math.sin(angle) * (radius + wave) * 0.6;
+
+                    if (first) {
+                        ctx.moveTo(x, y);
+                        first = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                const color = colorFn(0.5 + layer * 0.1);
+                ctx.strokeStyle = color;
+                ctx.lineWidth = (2 + layer * 0.5) * (0.5 + 0.5 * Math.sin(time * 0.02));
+                ctx.shadowBlur = 20 + layer * 10;
+                ctx.shadowColor = color;
+                ctx.globalAlpha = layerAlpha;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Glowing dots along spiral
+            const numDots = 60;
+            for (let i = 0; i < numDots; i++) {
+                const t = i / numDots;
+                const angle = t * turns * Math.PI * 2 + rotation;
+                const radius = t * maxDim * 0.42;
+                const wave = Math.sin(t * 20 + time * 0.5) * 3;
+                const x = cx + Math.cos(angle) * (radius + wave);
+                const y = cy + Math.sin(angle) * (radius + wave) * 0.6;
+                
+                const dotSize = 2 + Math.sin(t * 30 + time) * 1;
+                const color = colorFn(t);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color;
+                ctx.globalAlpha = 0.8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Inner glow
+            const innerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxDim * 0.15);
+            innerGlow.addColorStop(0, 'rgba(255,255,255,0.05)');
+            innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = innerGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Rotation
+            rotation += 0.003 * speed * 10;
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 80; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += speed;
+
+            // Draw
+            drawBackground();
+            drawSpiral();
+
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name} • ${twists[twistLevel].name} twist`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        twistBtn.addEventListener('click', () => {
+            twistLevel = (twistLevel + 1) % twists.length;
+            twist = twists[twistLevel].value;
+            twistBtn.textContent = `Twist: ${twists[twistLevel].name}`;
+            statusText.textContent = `🌀 ${twists[twistLevel].name} twist`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            time = 0;
+            rotation = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            twistLevel = 1;
+            twist = twists[1].value;
+            colorMode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            twistBtn.textContent = `Twist: ${twists[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 't' || e.key === 'T') twistBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        twistBtn.textContent = `Twist: ${twists[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🌀 ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🌀 Wormhole Spiral loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 T - Change twist');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>

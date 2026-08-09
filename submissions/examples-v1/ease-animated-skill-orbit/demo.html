@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Skill Orbit</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Animated Skill Orbit</h1>
+        <p class="subtitle">Skills orbiting around central hub like planets</p>
+
+        <div class="orbit-wrapper">
+            <canvas id="orbitCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="orbitBtn">Orbits: 3</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🪐 Orbiting skills</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('orbitCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const orbitBtn = document.getElementById('orbitBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let skills = [];
+        let orbits = [];
+        let numOrbits = 3;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isPaused = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHovering = false;
+        let selectedSkill = null;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t, time) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t, time) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t, time) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t, time) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== ORBIT OPTIONS =====
+        const orbitCounts = [2, 3, 4, 5, 6];
+
+        // ===== SKILL DATA =====
+        const skillData = [
+            { name: 'HTML', icon: '🌐', color: '#e34f26' },
+            { name: 'CSS', icon: '🎨', color: '#264de4' },
+            { name: 'JS', icon: '⚡', color: '#f7df1e' },
+            { name: 'React', icon: '⚛️', color: '#61dafb' },
+            { name: 'Vue', icon: '🟢', color: '#4fc08d' },
+            { name: 'Angular', icon: '🔴', color: '#dd0031' },
+            { name: 'Python', icon: '🐍', color: '#3776ab' },
+            { name: 'Java', icon: '☕', color: '#007396' },
+            { name: 'C++', icon: '⚙️', color: '#00599c' },
+            { name: 'Ruby', icon: '💎', color: '#cc342d' },
+            { name: 'Go', icon: '🐹', color: '#00add8' },
+            { name: 'Rust', icon: '🦀', color: '#dea584' },
+            { name: 'PHP', icon: '🐘', color: '#777bb4' },
+            { name: 'Swift', icon: '🦅', color: '#fa7343' },
+            { name: 'Kotlin', icon: '📱', color: '#7f52ff' },
+            { name: 'TypeScript', icon: '📘', color: '#3178c6' },
+            { name: 'Node.js', icon: '🟩', color: '#339933' },
+            { name: 'Django', icon: '🌿', color: '#092e20' },
+            { name: 'Flask', icon: '🧪', color: '#000000' },
+            { name: 'MongoDB', icon: '🍃', color: '#47a248' },
+            { name: 'MySQL', icon: '🐬', color: '#4479a1' },
+            { name: 'PostgreSQL', icon: '🐘', color: '#336791' },
+            { name: 'Docker', icon: '🐳', color: '#2496ed' },
+            { name: 'Kubernetes', icon: '☸️', color: '#326ce5' },
+            { name: 'AWS', icon: '☁️', color: '#ff9900' },
+            { name: 'Git', icon: '📚', color: '#f05032' },
+            { name: 'Figma', icon: '🎯', color: '#f24e1e' },
+            { name: 'Photoshop', icon: '🖌️', color: '#31a8ff' },
+            { name: 'Illustrator', icon: '✏️', color: '#ff9a00' },
+            { name: 'Blender', icon: '🌀', color: '#ff9900' },
+        ];
+
+        // ===== SKILL CLASS =====
+        class Skill {
+            constructor(data, orbitIndex, orbitCount, totalSkills) {
+                this.data = data;
+                this.orbitIndex = orbitIndex;
+                this.index = totalSkills;
+                this.angle = Math.random() * Math.PI * 2;
+                this.orbitRadius = 70 + orbitIndex * 50;
+                this.size = 18 + Math.random() * 8;
+                this.speed = 0.005 + Math.random() * 0.008;
+                this.phase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.trail = [];
+                this.maxTrail = 15 + Math.floor(Math.random() * 10);
+                this.selected = false;
+                this.scale = 1;
+                this.targetScale = 1;
+                this.opacity = 1;
+                this.hoverScale = 1.3;
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            update(time, speed, centerX, centerY) {
+                // Orbit
+                this.angle += this.speed * speed * 5;
+                
+                // Pulse
+                this.phase += this.pulseSpeed * speed * 5;
+                const pulse = 0.7 + 0.3 * Math.sin(this.phase);
+
+                // Position
+                const x = centerX + Math.cos(this.angle) * this.orbitRadius;
+                const y = centerY + Math.sin(this.angle) * this.orbitRadius;
+                
+                this.x = x;
+                this.y = y;
+                this.pulse = pulse;
+                
+                // Scale
+                this.scale += (this.targetScale - this.scale) * 0.1;
+                
+                // Rotation
+                this.rotation += this.rotSpeed * speed * 5;
+                
+                // Trail
+                this.trail.push({ x, y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.97;
+                }
+            }
+
+            draw(ctx, time) {
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.index / 30, time);
+                const x = this.x;
+                const y = this.y;
+                const size = this.size * this.scale * (0.7 + 0.3 * this.pulse);
+                const alpha = this.opacity;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.15 * alpha;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 3 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                grad.addColorStop(0, color + '50');
+                grad.addColorStop(0.5, color + '20');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                // Skill circle
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.rotation);
+
+                const grad2 = ctx.createRadialGradient(
+                    -size * 0.2,
+                    -size * 0.3,
+                    0,
+                    0,
+                    0,
+                    size
+                );
+                grad2.addColorStop(0, color);
+                grad2.addColorStop(0.5, color);
+                grad2.addColorStop(1, color + '80');
+                ctx.beginPath();
+                ctx.arc(0, 0, size, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Icon
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `${size * 0.8}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.fillText(this.data.icon, 0, 2);
+                ctx.shadowBlur = 0;
+
+                // Skill name label (hidden unless selected)
+                if (this.selected || this.scale > 1.1) {
+                    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+                    ctx.font = '11px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                    ctx.fillText(this.data.name, 0, -size - 6);
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.restore();
+
+                // Selection ring
+                if (this.selected) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 1.4, 0, Math.PI * 2);
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = 0.3 + 0.3 * Math.sin(time * 0.05);
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            contains(mx, my) {
+                if (!this.x || !this.y) return false;
+                const dx = mx - this.x;
+                const dy = my - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const size = this.size * this.scale * (0.7 + 0.3 * this.pulse);
+                return dist < size * 1.2;
+            }
+
+            setSelected(selected) {
+                this.selected = selected;
+                this.targetScale = selected ? 1.4 : 1;
+            }
+        }
+
+        // ===== ORBIT CLASS =====
+        class Orbit {
+            constructor(index, total, radius) {
+                this.index = index;
+                this.total = total;
+                this.radius = radius || 70 + index * 50;
+                this.dashOffset = 0;
+                this.dashSpeed = 0.005 + Math.random() * 0.005;
+                this.alpha = 0.1 + (1 - index / total) * 0.15;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update(time, speed) {
+                this.dashOffset += this.dashSpeed * speed * 5;
+                this.phase += 0.01 * speed * 5;
+            }
+
+            draw(ctx, cx, cy, color) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = this.alpha * 0.2;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 8]);
+                ctx.lineDashOffset = -this.dashOffset;
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1;
+
+                // Orbital glow
+                ctx.beginPath();
+                ctx.arc(cx, cy, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = this.alpha * 0.05;
+                ctx.lineWidth = 15;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== INIT =====
+        function initOrbits() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Create orbits
+            orbits = [];
+            for (let i = 0; i < numOrbits; i++) {
+                const radius = 70 + i * 50;
+                orbits.push(new Orbit(i, numOrbits, radius));
+            }
+
+            // Create skills
+            skills = [];
+            const totalSkills = Math.min(30, skillData.length);
+            const skillsPerOrbit = Math.floor(totalSkills / numOrbits);
+            
+            let skillIndex = 0;
+            for (let orbitIdx = 0; orbitIdx < numOrbits; orbitIdx++) {
+                const count = orbitIdx < totalSkills % numOrbits ? 
+                    skillsPerOrbit + 1 : skillsPerOrbit;
+                
+                for (let i = 0; i < count && skillIndex < totalSkills; i++) {
+                    const data = skillData[skillIndex % skillData.length];
+                    const skill = new Skill(data, orbitIdx, numOrbits, skillIndex);
+                    skill.angle = (i / count) * Math.PI * 2 + (orbitIdx * 0.5);
+                    skill.orbitRadius = 70 + orbitIdx * 50;
+                    skills.push(skill);
+                    skillIndex++;
+                }
+            }
+
+            // Shuffle skills for variety
+            skills.sort(() => Math.random() - 0.5);
+            
+            // Re-assign indices for colors
+            skills.forEach((s, i) => s.index = i);
+
+            // Select first skill
+            if (skills.length > 0) {
+                skills[0].setSelected(true);
+                selectedSkill = skills[0];
+            }
+        }
+        initOrbits();
+
+        // ===== DRAW CENTER =====
+        function drawCenter(ctx, cx, cy) {
+            const radius = 35;
+            const time = performance.now() / 1000;
+            const colorFn = colorModes[colorMode].fn;
+            const color = colorFn(0.5, time);
+
+            // Center glow
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 3);
+            grad.addColorStop(0, color + '30');
+            grad.addColorStop(0.5, color + '10');
+            grad.addColorStop(1, color + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 3, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Center circle
+            const grad2 = ctx.createRadialGradient(
+                cx - radius * 0.2,
+                cy - radius * 0.3,
+                0,
+                cx,
+                cy,
+                radius
+            );
+            grad2.addColorStop(0, '#ffffff');
+            grad2.addColorStop(0.3, color);
+            grad2.addColorStop(0.7, color);
+            grad2.addColorStop(1, color + '80');
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad2;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = color + '60';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Center icon
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '28px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fillText('🚀', cx, cy + 2);
+            ctx.shadowBlur = 0;
+
+            // Pulsing ring
+            const pulseSize = radius * 1.2 + Math.sin(time * 0.02) * 5;
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseSize, 0, Math.PI * 2);
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = 0.2 + 0.1 * Math.sin(time * 0.02);
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.globalAlpha = 1;
+
+            // Label
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('SKILLS', cx, cy + radius + 10);
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 80; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.03 + Math.sin(i + time * 0.01) * 0.02;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Connecting lines between nearby skills
+            ctx.globalAlpha = 0.03;
+            for (let i = 0; i < skills.length; i++) {
+                for (let j = i + 1; j < skills.length; j++) {
+                    const dx = skills[i].x - skills[j].x;
+                    const dy = skills[i].y - skills[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 150) {
+                        const alpha = 1 - dist / 150;
+                        ctx.beginPath();
+                        ctx.moveTo(skills[i].x, skills[i].y);
+                        ctx.lineTo(skills[j].x, skills[j].y);
+                        const colorFn = colorModes[colorMode].fn;
+                        ctx.strokeStyle = colorFn(0.5, time);
+                        ctx.globalAlpha = alpha * 0.05;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            time += 0.01;
+
+            const colorFn = colorModes[colorMode].fn;
+            const orbitColor = colorFn(0.5, time);
+
+            // Update orbits
+            for (const orbit of orbits) {
+                orbit.update(time, speed);
+            }
+
+            // Update skills
+            for (const skill of skills) {
+                skill.update(time, speed, cx, cy);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw orbits
+            for (const orbit of orbits) {
+                orbit.draw(ctx, cx, cy, orbitColor);
+            }
+
+            // Draw skills
+            for (const skill of skills) {
+                skill.draw(ctx, time);
+            }
+
+            // Draw center
+            drawCenter(ctx, cx, cy);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const selected = skills.filter(s => s.selected).length;
+                statusText.textContent = `🪐 ${skills.length} skills • ${selected} selected • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== MOUSE INTERACTION =====
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+
+            // Check hover on skills
+            let found = false;
+            for (const skill of skills) {
+                if (skill.contains(mouseX, mouseY)) {
+                    skill.targetScale = 1.3;
+                    canvas.style.cursor = 'pointer';
+                    found = true;
+                } else if (!skill.selected) {
+                    skill.targetScale = 1;
+                }
+            }
+            if (!found) {
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            for (const skill of skills) {
+                if (!skill.selected) {
+                    skill.targetScale = 1;
+                }
+            }
+            canvas.style.cursor = 'default';
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            // Find clicked skill
+            let clicked = null;
+            for (const skill of skills) {
+                if (skill.contains(x, y)) {
+                    clicked = skill;
+                    break;
+                }
+            }
+
+            if (clicked) {
+                // Deselect all
+                for (const s of skills) {
+                    s.setSelected(false);
+                }
+                // Select clicked
+                clicked.setSelected(true);
+                selectedSkill = clicked;
+                
+                // Update status
+                statusText.textContent = `🪐 Selected: ${clicked.data.name} (${clicked.data.icon})`;
+                setTimeout(() => {
+                    statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+                }, 1500);
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            let clicked = null;
+            for (const skill of skills) {
+                if (skill.contains(x, y)) {
+                    clicked = skill;
+                    break;
+                }
+            }
+
+            if (clicked) {
+                for (const s of skills) {
+                    s.setSelected(false);
+                }
+                clicked.setSelected(true);
+                selectedSkill = clicked;
+                statusText.textContent = `🪐 Selected: ${clicked.data.name}`;
+                setTimeout(() => {
+                    statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+                }, 1500);
+            }
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Orbits
+        orbitBtn.addEventListener('click', () => {
+            const currentIndex = orbitCounts.indexOf(numOrbits);
+            const nextIndex = (currentIndex + 1) % orbitCounts.length;
+            numOrbits = orbitCounts[nextIndex];
+            orbitBtn.textContent = `Orbits: ${numOrbits}`;
+            initOrbits();
+            statusText.textContent = `🪐 ${numOrbits} orbits`;
+            setTimeout(() => {
+                statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            numOrbits = 3;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            orbitBtn.textContent = `Orbits: 3`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            initOrbits();
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'o' || e.key === 'O') {
+                orbitBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Cycle through skills
+                if (skills.length > 0) {
+                    const currentIdx = skills.findIndex(s => s.selected);
+                    const nextIdx = (currentIdx + 1) % skills.length;
+                    for (const s of skills) {
+                        s.setSelected(false);
+                    }
+                    skills[nextIdx].setSelected(true);
+                    selectedSkill = skills[nextIdx];
+                    statusText.textContent = `🪐 Selected: ${selectedSkill.data.name}`;
+                    setTimeout(() => {
+                        statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[colorMode].name}`;
+                    }, 1500);
+                }
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initOrbits();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        orbitBtn.textContent = `Orbits: ${numOrbits}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🪐 ${skills.length} skills • ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🚀 Animated Skill Orbit loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 O - Change orbits');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Cycle skills');
+        console.log('💡 Click a skill to select it');
+    </script>
+</body>
+</html>
