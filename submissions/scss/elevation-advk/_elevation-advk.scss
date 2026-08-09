@@ -1,0 +1,70 @@
+// ---------------------------------------------------------------------------
+// elevation-advk
+// A shadow scale where each level is two layered shadows -- a tight contact
+// shadow plus a wide ambient one -- which is what makes depth look real.
+// ---------------------------------------------------------------------------
+
+@use "sass:map";
+
+$shadow-hue: 220 !default;
+$shadow-sat: 25% !default;
+
+/// Build a two-layer shadow for a given elevation level.
+@function -layers($y1, $b1, $a1, $y2, $b2, $a2) {
+  @return
+    0 #{$y1} #{$b1} hsla($shadow-hue, $shadow-sat, 18%, $a1),
+    0 #{$y2} #{$b2} hsla($shadow-hue, $shadow-sat, 18%, $a2);
+}
+
+$elevations: (
+  0: none,
+  1: -layers(1px, 2px, 0.06, 0 1px, 3px, 0.10),
+  2: -layers(2px, 4px, 0.06, 0 2px, 8px, 0.10),
+  3: -layers(4px, 6px, 0.05, 0 6px, 16px, 0.12),
+  4: -layers(6px, 10px, 0.05, 0 12px, 28px, 0.14),
+  5: -layers(10px, 16px, 0.04, 0 22px, 48px, 0.16),
+) !default;
+
+/// Apply an elevation level.
+@mixin elevation($level: 1) {
+  @if not map.has-key($elevations, $level) {
+    @error "Unknown elevation '#{$level}'. Available: #{map.keys($elevations)}.";
+  }
+
+  box-shadow: map.get($elevations, $level);
+
+  // box-shadow is not painted in forced colors; restore an edge.
+  @media (forced-colors: active) {
+    @if $level != 0 {
+      border: 1px solid CanvasText;
+    }
+  }
+}
+
+/// Elevation that rises on hover and focus, with the transition included.
+@mixin elevation-interactive($rest: 1, $raised: 3, $duration: 220ms) {
+  @include elevation($rest);
+
+  transition: box-shadow $duration ease, translate $duration ease;
+
+  &:hover,
+  &:focus-visible {
+    @include elevation($raised);
+
+    translate: 0 -2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: box-shadow $duration ease;
+
+    &:hover,
+    &:focus-visible { translate: none; }
+  }
+}
+
+/// Emit the scale as custom properties for use from plain CSS.
+@mixin elevation-custom-properties {
+  @each $level, $shadow in $elevations {
+    --elevation-#{$level}: #{$shadow};
+  }
+}
