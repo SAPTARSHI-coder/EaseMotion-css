@@ -1,0 +1,118 @@
+name: CDN Asset Integrity Validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-cdn-assets:
+    name: Validate CDN Assets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production CSS
+        run: npm run build
+
+      - name: Verify required CSS assets
+        shell: bash
+        run: |
+          set -e
+
+          required_files=(
+            "easemotion.css"
+            "easemotion.min.css"
+          )
+
+          echo "Checking required CDN assets..."
+
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "Missing required asset: $file"
+              exit 1
+            fi
+
+            if [ ! -s "$file" ]; then
+              echo "Asset is empty: $file"
+              exit 1
+            fi
+
+            echo "Verified: $file"
+          done
+
+      - name: Generate integrity hashes
+        shell: bash
+        run: |
+          set -e
+
+          mkdir -p integrity-report
+
+          sha256sum easemotion.css > integrity-report/SHA256.txt
+          sha256sum easemotion.min.css >> integrity-report/SHA256.txt
+
+          openssl dgst -sha384 easemotion.css > integrity-report/SHA384.txt
+          openssl dgst -sha384 easemotion.min.css >> integrity-report/SHA384.txt
+
+          echo "SHA-256:"
+          cat integrity-report/SHA256.txt
+
+          echo "SHA-384:"
+          cat integrity-report/SHA384.txt
+
+      - name: Create job summary
+        shell: bash
+        run: |
+          {
+            echo "# CDN Asset Integrity Validation"
+            echo ""
+            echo "## Verified Assets"
+            echo ""
+            echo "- easemotion.css - Verified"
+            echo "- easemotion.min.css - Verified"
+            echo ""
+            echo "## SHA-256"
+            echo ""
+            echo '```text'
+            sha256sum easemotion.css
+            sha256sum easemotion.min.css
+            echo '```'
+            echo ""
+            echo "## SHA-384"
+            echo ""
+            echo '```text'
+            openssl dgst -sha384 easemotion.css
+            openssl dgst -sha384 easemotion.min.css
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload CDN assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-assets
+          path: |
+            easemotion.css
+            easemotion.min.css
+
+      - name: Upload integrity reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-integrity-report
+          path: integrity-report/
