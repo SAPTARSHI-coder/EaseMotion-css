@@ -1,13 +1,23 @@
-# Interactive Morphing Stepper Showcase
+# Interactive Morphing Stepper Process Bar
 
-A multi-step **Interactive Stepper Component** with morphing step connectors, progress line transitions, and form validation panels.
+A responsive progress stepper UI featuring liquid fill line indicators, active node pulse animations, and keyboard navigation support.
 
-## 🌟 Key Features
+## 1. What does this do?
+This component renders a multi-step progress wizard control with CSS keyframe pulsing indicators, completed step checkmarks, and smooth track width transitions.
 
-- **Progress Line Morphing**: Animated CSS line width transition representing completion percentage.
-- **Active Step Node Physics**: Scale bounce and glow effect (`cubic-bezier(0.34, 1.56, 0.64, 1)`).
-- **Form Panel Transitions**: Smooth fade and slide-up transitions between step views.
+## 2. How is it used?
+Link `style.css` in your document head and implement the stepper structure:
 
-## 🚀 Usage
+```html
+<link rel="stylesheet" href="style.css">
 
-Open `demo.html` in your browser.
+<div class="stepper-container">
+  <div class="stepper-track"><div class="stepper-fill" style="width: 50%;"></div></div>
+  <div class="stepper-steps">
+    <div class="step completed"><div class="step-node">✓</div></div>
+  </div>
+</div>
+```
+
+## 3. Why is it useful?
+It provides e-commerce checkouts, onboarding workflows, and form wizard interfaces with clear progress feedback and responsive design without heavy framework overhead.
