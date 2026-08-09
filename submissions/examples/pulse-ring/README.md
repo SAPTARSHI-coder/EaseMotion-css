@@ -1,16 +1,33 @@
-# Pulse Ring Effect
+# Pulse Ring Animation
 
-## 1. What does this do?
-Shows expanding concentric pulse rings emanating from a central dot, similar to a radar ping or live indicator.
+## Description
 
-## 2. How is it used?
-Add a `.pulse-dot` inside a `.pulse-container`. Customize the color with `--pulse-color`.
+A pure CSS-only pulse ring animation utility named `emPulseRing` for the EaseMotion CSS library. It expands a circular ring smoothly outward while fading out. The animation is completely loopable, infinitely repeating, and uses only GPU-accelerated properties (`transform` and `opacity`) to ensure high performance and prevent layout shifts.
+
+## Files
+
+- demo.html
+- style.css
+
+## Features
+
+- CSS only
+- Infinite animation
+- GPU accelerated
+- Responsive
+- Easy customization
+
+## Usage
+
+Include a simple HTML example:
+
 ```html
-<div class="pulse-container">
-  <div class="pulse-dot"></div>
-  <span class="pulse-label">Live</span>
+<!-- Position relative wrapper is required around the pulsed element -->
+<div class="em-pulse-ring-wrapper">
+  <!-- Target element to pulse -->
+  <span
+    class="em-pulse-ring"
+    style="--em-ring-color: #ef4444; --em-ring-size: 2.2;"
+  ></span>
 </div>
 ```
-
-## 3. Why is it useful?
-A lightweight, pure CSS live/online indicator using only `box-shadow` animation. Color is customizable via CSS variable. Respects `prefers-reduced-motion` and shows a static ring when motion is reduced.
