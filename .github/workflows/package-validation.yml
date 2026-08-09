@@ -1,0 +1,85 @@
+name: Package Validation
+
+# Validates the npm package before publishing by running `npm pack --dry-run`
+# and verifying that exactly the intended files (per package.json `files`)
+# are included — catching accidental inclusions (.github/, tests, screenshots)
+# or missing assets (compiled CSS, README, LICENSE). Runs on PRs, pushes to
+# main, and version tags, and uploads the packed tarball as an artifact.
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: package-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-package:
+    name: Validate npm package contents
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Build minified CSS (ensure assets exist)
+        run: npm run build
+
+      - name: Validate package manifest
+        run: npm run validate:manifest
+
+      - name: Dry-run pack and verify file allowlist
+        id: pack
+        run: |
+          set -o pipefail
+          npm pack --dry-run 2>&1 | tee pack-dryrun.txt
+          # the repo's own validator cross-checks packed files vs package.json `files`
+          npm run validate:pack
+
+      - name: Create real tarball for artifact
+        run: npm pack
+
+      - name: Upload package tarball + dry-run log
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package-${{ github.sha }}
+          path: |
+            easemotion-css-*.tgz
+            pack-dryrun.txt
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## npm package validation" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ \`npm pack --dry-run\` succeeded and the packed file list matches \`package.json#files\`." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "❌ Package validation failed — see the dry-run log above." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details><summary>Packed file list</summary>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat pack-dryrun.txt 2>/dev/null >> "$GITHUB_STEP_SUMMARY" || echo "(no log)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "</details>" >> "$GITHUB_STEP_SUMMARY"
