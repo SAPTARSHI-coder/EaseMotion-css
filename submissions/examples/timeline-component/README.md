@@ -1,37 +1,37 @@
 # Timeline Component
 
-A responsive CSS-only timeline component with a smooth staggered reveal animation.
+A CSS vertical timeline with alternating left and right entries.
 
 ## Features
 
-- Pure HTML and CSS
-- Staggered reveal animation
-- Responsive design
-- No JavaScript required
-- Customizable CSS variables
-- Mobile-friendly layout
-- Supports reduced-motion preferences
+- Alternating left/right card layout on desktop
+- Single-column layout on mobile (below 520px)
+- Central vertical line with indigo dot markers
+- Staggered fade-in entrance animation
+- CSS custom properties for easy theming
+- Accessible with `prefers-reduced-motion` support
+- Pure CSS — no JavaScript required
 
-## Files
+## Customization
 
-- `demo.html` - Timeline demonstration
-- `style.css` - Component styles and animations
+```css
+:root {
+  --tlc-white: #ffffff;
+  --tlc-bg: #f3f4f6;
+  --tlc-text: #1f2937;
+  --tlc-muted: #6b7280;
+  --tlc-indigo: #6366f1;
+  --tlc-line: #d1d5db;
+}
+```
 
 ## Usage
 
-Add the timeline structure to your HTML and include `style.css`.
-
 ```html
-<section class="timeline">
+<link rel="stylesheet" href="style.css">
+```
 
-  <article class="timeline-item">
-    <div class="timeline-dot"></div>
+## Files
 
-    <div class="timeline-content">
-      <span class="timeline-date">2026</span>
-      <h2>Timeline Event</h2>
-      <p>Timeline event description.</p>
-    </div>
-  </article>
-
-</section>
+- `demo.html` — Demo page with 5 timeline entries
+- `style.css` — All styles, responsive breakpoints, and animations
