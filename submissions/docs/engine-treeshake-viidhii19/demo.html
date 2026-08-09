@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AST-driven Tree-Shaking POC</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <header>
+      <h1>AST Tree-Shaker</h1>
+      <p>Zero-dependency CSS variable optimizer for EaseMotion.</p>
+    </header>
+    <main>
+      <div class="editor-panel">
+        <label for="html-input">Input HTML</label>
+        <textarea id="html-input" spellcheck="false">
+<div class="card ease-fade-in ease-slide-up">
+  <h2>Optimized Loading</h2>
+  <p>This component uses specific EaseMotion classes.</p>
+</div>
+<button class="btn ease-scale-up">Click Me</button>
+        </textarea>
+      </div>
+
+      <div class="editor-panel">
+        <label for="css-input">Input CSS (:root & classes)</label>
+        <textarea id="css-input" spellcheck="false">
+:root {
+  --ease-speed-slow: 0.8s;
+  --ease-speed-medium: 0.4s;
+  --ease-speed-fast: 0.2s;
+  --ease-distance-sm: 10px;
+  --ease-distance-md: 20px;
+  --ease-distance-lg: 40px;
+  --ease-opacity-hidden: 0;
+  --ease-opacity-visible: 1;
+  --ease-scale-hidden: 0.95;
+  --ease-scale-visible: 1;
+  
+  /* Unused variables that should be shaken */
+  --ease-rotate-sm: 45deg;
+  --ease-rotate-md: 90deg;
+  --ease-color-primary: #ff0055;
+  --ease-color-secondary: #00ffaa;
+  
+  /* Internal dependencies */
+  --ease-transition-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ease-fade-in {
+  opacity: var(--ease-opacity-hidden);
+  transition: opacity var(--ease-speed-medium) var(--ease-transition-smooth);
+}
+.ease-fade-in.is-visible {
+  opacity: var(--ease-opacity-visible);
+}
+
+.ease-slide-up {
+  transform: translateY(var(--ease-distance-md));
+  transition: transform var(--ease-speed-medium) var(--ease-transition-smooth);
+}
+.ease-slide-up.is-visible {
+  transform: translateY(0);
+}
+
+.ease-scale-up {
+  transform: scale(var(--ease-scale-hidden));
+  transition: transform var(--ease-speed-fast) var(--ease-transition-bounce);
+}
+.ease-scale-up:hover {
+  transform: scale(var(--ease-scale-visible));
+}
+
+/* Unused classes in HTML */
+.ease-rotate-right {
+  transform: rotate(var(--ease-rotate-md));
+  transition: transform var(--ease-speed-slow);
+}
+        </textarea>
+      </div>
+
+      <div class="actions">
+        <button id="optimize-btn">Run Tree-Shaker</button>
+      </div>
+
+      <div class="editor-panel output-panel">
+        <label for="css-output">Optimized CSS Output</label>
+        <pre id="css-output"><code>/* Output will appear here... */</code></pre>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.getElementById('optimize-btn').addEventListener('click', () => {
+      const html = document.getElementById('html-input').value;
+      const css = document.getElementById('css-input').value;
+      
+      const optimized = treeShake(html, css);
+      document.getElementById('css-output').textContent = optimized;
+    });
+
+    function treeShake(html, css) {
+      // 1. Extract used classes from HTML
+      const classRegex = /class=["']([^"']+)["']/g;
+      const usedClasses = new Set();
+      let match;
+      
+      while ((match = classRegex.exec(html)) !== null) {
+        const classes = match[1].split(/\s+/);
+        classes.forEach(c => {
+          if (c.startsWith('ease-')) {
+            usedClasses.add(c);
+          }
+        });
+      }
+
+      // 2. Extract CSS variables used by these classes in the CSS
+      const usedVars = new Set();
+      usedClasses.forEach(cls => {
+        // Find rule blocks for the class (including pseudo-classes and modifiers)
+        const ruleRegex = new RegExp(`\\.${cls}[^{]*\\{([^}]+)\\}`, 'gs');
+        let ruleMatch;
+        while ((ruleMatch = ruleRegex.exec(css)) !== null) {
+          const ruleContent = ruleMatch[1];
+          // Find var(--something)
+          const varRegex = /var\((--[^)]+)\)/g;
+          let vMatch;
+          while ((vMatch = varRegex.exec(ruleContent)) !== null) {
+            usedVars.add(vMatch[1]);
+          }
+        }
+      });
+
+      // 3. Resolve dependencies within :root
+      const rootRegex = /:root\s*\{([^}]+)\}/s;
+      const rootMatch = rootRegex.exec(css);
+      
+      if (!rootMatch) return css; // No root block found
+      
+      const rootContent = rootMatch[1];
+      const varDefRegex = /(--[^:]+):\s*([^;]+);/g;
+      const varMap = {};
+      
+      let vDefMatch;
+      while ((vDefMatch = varDefRegex.exec(rootContent)) !== null) {
+        const varName = vDefMatch[1].trim();
+        const varVal = vDefMatch[2];
+        const deps = [];
+        
+        const depRegex = /var\((--[^)]+)\)/g;
+        let dMatch;
+        while ((dMatch = depRegex.exec(varVal)) !== null) {
+          deps.push(dMatch[1]);
+        }
+        
+        varMap[varName] = { value: varVal, deps: deps, original: vDefMatch[0] };
+      }
+
+      // Recursively add variables that are dependencies of used variables
+      let added = true;
+      while (added) {
+        added = false;
+        for (const v of usedVars) {
+          if (varMap[v] && varMap[v].deps.length > 0) {
+            varMap[v].deps.forEach(dep => {
+              if (!usedVars.has(dep)) {
+                usedVars.add(dep);
+                added = true;
+              }
+            });
+          }
+        }
+      }
+
+      // 4. Reconstruct optimized :root block
+      let newRootContent = '\n';
+      let removedCount = 0;
+      let keptCount = 0;
+      
+      for (const [varName, varData] of Object.entries(varMap)) {
+        if (usedVars.has(varName) || !varName.startsWith('--ease-')) {
+          newRootContent += `  ${varName}: ${varData.value.trim()};\n`;
+          keptCount++;
+        } else {
+          removedCount++;
+        }
+      }
+      
+      const optimizedRoot = `:root {${newRootContent}}\n/* Shook out ${removedCount} unused variables. Kept ${keptCount} */`;
+      
+      // Replace the root block in the original CSS.
+      let optimizedCss = css.replace(rootRegex, optimizedRoot);
+      
+      return optimizedCss;
+    }
+    
+    // Run on load
+    document.getElementById('optimize-btn').click();
+  </script>
+</body>
+</html>

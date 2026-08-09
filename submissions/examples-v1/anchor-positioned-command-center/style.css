@@ -1,0 +1,460 @@
+/* =========================================================================
+   Anchor-Positioned Contextual Command Center
+   EaseMotion CSS · submissions/examples/anchor-positioned-command-center
+
+   This file demonstrates the CSS Anchor Positioning API:
+     - `anchor-name`      marks a trigger element as a positioning anchor
+     - `position-anchor`  ties an absolutely-positioned element to that anchor
+     - `anchor()`         reads coordinates off the anchor (bottom/left/etc.)
+     - `position-try-fallbacks` lets the overlay flip itself when it would
+                          overflow the viewport — still zero JavaScript.
+
+   No JS is used anywhere in this file's logic to calculate placement.
+   ========================================================================= */
+
+:root {
+  /* -- palette -------------------------------------------------------- */
+  --cc-bg:          #0a0e14;
+  --cc-surface:     #12161f;
+  --cc-surface-2:   #171c27;
+  --cc-border:      #262c3a;
+  --cc-border-soft: #1c2230;
+  --cc-text:        #e7eaf2;
+  --cc-text-muted:  #8b93a7;
+  --cc-teal:        #17e0b8;
+  --cc-teal-dim:    rgba(23, 224, 184, 0.16);
+  --cc-amber:       #ffb020;
+  --cc-amber-dim:   rgba(255, 176, 32, 0.16);
+  --cc-danger:      #ff6b6b;
+
+  /* -- type ------------------------------------------------------------ */
+  --cc-font-ui:   'Space Grotesk', system-ui, sans-serif;
+  --cc-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* -- motion ------------------------------------------------------------ */
+  --cc-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --cc-dur: 160ms;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--cc-bg);
+  color: var(--cc-text);
+  font-family: var(--cc-font-ui);
+  position: relative;
+}
+
+/* faint grain so the near-black background doesn't feel flat/templated */
+.cc-noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  z-index: 0;
+  background-image: radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+.cc-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* =========================================================================
+   Toolbar
+   ========================================================================= */
+
+.cc-toolbar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 28px;
+  background: var(--cc-surface);
+  border-bottom: 1px solid var(--cc-border);
+}
+
+.cc-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
+}
+.cc-brand-mark { color: var(--cc-teal); font-size: 1.2rem; }
+.cc-brand-text { font-weight: 600; letter-spacing: 0.01em; }
+.cc-brand-tag {
+  font-family: var(--cc-font-mono);
+  font-size: 0.7rem;
+  color: var(--cc-text-muted);
+  border: 1px solid var(--cc-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.cc-search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+  /* This element is the anchor for the #cc-suggestions popover */
+  anchor-name: --cc-search-anchor;
+}
+.cc-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cc-text-muted);
+}
+.cc-search {
+  width: 100%;
+  padding: 9px 40px 9px 34px;
+  border-radius: 8px;
+  border: 1px solid var(--cc-border);
+  background: var(--cc-surface-2);
+  color: var(--cc-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+.cc-search:focus-visible { outline: 2px solid var(--cc-teal); outline-offset: 1px; }
+.cc-kbd {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--cc-font-mono);
+  font-size: 0.7rem;
+  color: var(--cc-text-muted);
+  border: 1px solid var(--cc-border);
+  border-radius: 5px;
+  padding: 2px 6px;
+  background: var(--cc-surface);
+}
+.cc-kbd-sm { position: static; transform: none; }
+
+.cc-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.cc-btn {
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--cc-text);
+  background: var(--cc-surface-2);
+  border: 1px solid var(--cc-border);
+  border-radius: 8px;
+  padding: 9px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background var(--cc-dur) var(--cc-ease), border-color var(--cc-dur) var(--cc-ease),
+              box-shadow var(--cc-dur) var(--cc-ease);
+}
+.cc-btn:hover { border-color: #3a4256; }
+.cc-btn:focus-visible { outline: 2px solid var(--cc-teal); outline-offset: 2px; }
+
+.cc-btn-primary {
+  background: var(--cc-teal);
+  border-color: var(--cc-teal);
+  color: #04241d;
+  font-weight: 600;
+}
+.cc-btn-primary:hover { background: #29f0c8; }
+.cc-btn-plus { font-size: 1rem; line-height: 1; }
+
+.cc-btn-icon {
+  position: relative;
+  padding: 9px;
+  width: 38px;
+  height: 38px;
+  justify-content: center;
+}
+.cc-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cc-amber);
+  box-shadow: 0 0 0 2px var(--cc-surface);
+}
+.cc-avatar {
+  background: var(--cc-surface-2);
+  font-family: var(--cc-font-mono);
+  font-size: 0.75rem;
+}
+
+/* Anchors: each trigger declares an anchor-name so a popover elsewhere in
+   the DOM can be pinned to it via position-anchor. */
+.cc-anchor-new-file { anchor-name: --cc-new-file-anchor; }
+.cc-anchor-bell      { anchor-name: --cc-bell-anchor; }
+.cc-anchor-avatar    { anchor-name: --cc-avatar-anchor; }
+
+/* =========================================================================
+   Popover base (native <div popover> reset + shared shell)
+   ========================================================================= */
+
+.cc-popover {
+  margin: 0;              /* popovers are top-layer; margin: auto centering is off by default */
+  padding: 8px;
+  border: 1px solid var(--cc-border);
+  border-radius: 10px;
+  background: var(--cc-surface-2);
+  color: var(--cc-text);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  min-width: 220px;
+
+  /* entry/exit choreography, driven by the popover's own open state */
+  opacity: 0;
+  transform: scale(0.94) translateY(-4px);
+  transition: opacity var(--cc-dur) var(--cc-ease), transform var(--cc-dur) var(--cc-ease),
+              overlay var(--cc-dur) allow-discrete, display var(--cc-dur) allow-discrete;
+}
+.cc-popover:popover-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+@starting-style {
+  .cc-popover:popover-open {
+    opacity: 0;
+    transform: scale(0.94) translateY(-4px);
+  }
+}
+
+.cc-popover-eyebrow {
+  margin: 4px 8px 6px;
+  font-family: var(--cc-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cc-text-muted);
+}
+
+.cc-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cc-text);
+  font-family: inherit;
+  font-size: 0.86rem;
+  text-align: left;
+  cursor: pointer;
+}
+.cc-menu-item:hover, .cc-menu-item:focus-visible { background: var(--cc-surface); }
+.cc-menu-item:focus-visible { outline: 2px solid var(--cc-teal); outline-offset: -2px; }
+.cc-menu-item--danger { color: var(--cc-danger); }
+.cc-menu-icon { width: 1.1em; text-align: center; opacity: 0.85; }
+.cc-menu-divider { border: 0; border-top: 1px solid var(--cc-border); margin: 6px 4px; }
+
+/* =========================================================================
+   Anchor positioning per popover — the actual feature being demonstrated
+   ========================================================================= */
+
+.cc-command-popover {
+  position: absolute;
+  position-anchor: --cc-new-file-anchor;
+  top: calc(anchor(bottom) + 8px);
+  left: anchor(left);
+  position-try-fallbacks: flip-block;
+}
+
+.cc-suggestions {
+  position: absolute;
+  position-anchor: --cc-search-anchor;
+  top: calc(anchor(bottom) + 8px);
+  left: anchor(left);
+  width: anchor-size(width);
+  position-try-fallbacks: flip-block;
+}
+.cc-suggestion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--cc-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cc-suggestion:hover, .cc-suggestion:focus-visible { background: var(--cc-surface); }
+.cc-suggestion-icon { opacity: 0.85; }
+.cc-suggestion-title { display: block; font-size: 0.86rem; }
+.cc-suggestion-sub { display: block; font-size: 0.72rem; color: var(--cc-text-muted); }
+
+.cc-notif-popover {
+  position: absolute;
+  position-anchor: --cc-bell-anchor;
+  top: calc(anchor(bottom) + 10px);
+  right: anchor(right);
+  width: 260px;
+  position-try-fallbacks: flip-block;
+}
+.cc-notif-item { display: flex; gap: 10px; padding: 8px 10px; font-size: 0.82rem; }
+.cc-notif-sub { display: block; color: var(--cc-text-muted); font-size: 0.72rem; }
+.cc-notif-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: none; }
+.cc-notif-dot--teal { background: var(--cc-teal); }
+.cc-notif-dot--amber { background: var(--cc-amber); }
+
+.cc-profile-popover {
+  position: absolute;
+  position-anchor: --cc-avatar-anchor;
+  top: calc(anchor(bottom) + 10px);
+  right: anchor(right);
+  min-width: 190px;
+  position-try-fallbacks: flip-block;
+}
+
+.cc-card-menu {
+  position: absolute;
+  top: calc(anchor(top) + 34px);
+  right: calc(anchor(right) - 10px);
+  min-width: 170px;
+  position-try-fallbacks: flip-block;
+}
+
+/* =========================================================================
+   Main content
+   ========================================================================= */
+
+.cc-main {
+  position: relative;
+  z-index: 1;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 40px 28px 80px;
+}
+.cc-main-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.cc-h1 { font-size: 1.4rem; margin: 0; font-weight: 600; }
+
+.cc-tether-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--cc-text-muted);
+  cursor: pointer;
+}
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.cc-card {
+  position: relative;
+  background: var(--cc-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: 12px;
+  padding: 18px;
+  transition: box-shadow var(--cc-dur) var(--cc-ease), border-color var(--cc-dur) var(--cc-ease);
+}
+.cc-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.cc-card-badge {
+  font-family: var(--cc-font-mono);
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--cc-border);
+  color: var(--cc-text-muted);
+}
+.cc-card-badge--teal { color: var(--cc-teal); background: var(--cc-teal-dim); border-color: transparent; }
+.cc-card-badge--amber { color: var(--cc-amber); background: var(--cc-amber-dim); border-color: transparent; }
+
+.cc-kebab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--cc-text-muted);
+  border-radius: 6px;
+  width: 26px; height: 26px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.cc-kebab:hover { background: var(--cc-surface-2); color: var(--cc-text); }
+.cc-kebab:focus-visible { outline: 2px solid var(--cc-teal); outline-offset: 1px; }
+
+.cc-card-title { margin: 12px 0 6px; font-size: 1rem; font-weight: 600; }
+.cc-card-desc { margin: 0; font-size: 0.84rem; color: var(--cc-text-muted); line-height: 1.5; }
+.cc-card-foot { margin-top: 14px; font-family: var(--cc-font-mono); font-size: 0.72rem; color: var(--cc-text-muted); }
+
+.cc-fallback-note {
+  margin-top: 24px;
+  padding: 12px 14px;
+  border: 1px dashed var(--cc-border);
+  border-radius: 8px;
+  color: var(--cc-text-muted);
+  font-size: 0.82rem;
+  max-width: 640px;
+}
+
+/* =========================================================================
+   Signature interaction: the "live tether" ring.
+   When a popover is open, its own anchor trigger lights up — proving the
+   anchor ↔ overlay relationship visually. Done entirely with :has() and
+   :popover-open, no JavaScript geometry involved.
+   ========================================================================= */
+
+.cc-show-tethers .cc-search-wrap:has(#cc-suggestions:popover-open) .cc-search,
+.cc-show-tethers:has(#cc-command-popover:popover-open) .cc-anchor-new-file,
+.cc-show-tethers:has(#cc-notif-popover:popover-open) .cc-anchor-bell,
+.cc-show-tethers:has(#cc-profile-popover:popover-open) .cc-anchor-avatar {
+  box-shadow: 0 0 0 3px var(--cc-teal-dim), 0 0 0 1px var(--cc-teal);
+}
+
+.cc-show-tethers .cc-card:has(+ .cc-card-menu:popover-open) {
+  border-color: var(--cc-teal);
+  box-shadow: 0 0 0 3px var(--cc-teal-dim);
+}
+
+/* =========================================================================
+   Fallback for browsers without Anchor Positioning support.
+   Overlays still work (via the native Popover API) — they just render as
+   a simple centered/stacked layer instead of pinned to their trigger.
+   ========================================================================= */
+
+@supports not (anchor-name: --cc-a) {
+  .cc-popover {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(320px, 90vw);
+  }
+  .cc-popover:popover-open { transform: translate(-50%, -50%); }
+}
+
+/* =========================================================================
+   Motion & accessibility preferences
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-popover, .cc-btn, .cc-card { transition: none; }
+  .cc-popover { opacity: 1; transform: none; }
+}
+
+::backdrop { background: transparent; }
