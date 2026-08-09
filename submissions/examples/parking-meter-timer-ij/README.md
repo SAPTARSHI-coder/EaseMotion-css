@@ -1,10 +1,10 @@
 # ease-parking-meter-timer
 
-A parking meter whose needle counts down while the digits tick and the expired flag drops.
+A parking meter where the coins drop, the time ticks, and the flag flips.
 
 ## Run
-Open `demo.html` directly in a browser to watch the meter run down.
+Open `demo.html` directly in a browser to watch the coin drop.
 
 ## Notes
-- The needle sweeps from full to empty.
-- The red flag drops when time runs out.
+- The coin drops into the slot.
+- The status flag flips.
