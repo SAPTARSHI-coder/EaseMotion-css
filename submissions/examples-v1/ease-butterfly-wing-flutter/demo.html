@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Butterfly Wing Flutter</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🦋 Butterfly Wing Flutter</h1>
+        <p class="subtitle">Symmetrical patterns that open and close like butterfly wings</p>
+
+        <div class="butterfly-wrapper">
+            <canvas id="butterflyCanvas"></canvas>
+
+            <div class="controls">
+                <button id="flapBtn">🦋 Flap</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="patternBtn">Pattern: Monarch</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🦋 Wings fluttering</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('butterflyCanvas');
+        const ctx = canvas.getContext('2d');
+        const flapBtn = document.getElementById('flapBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const patternBtn = document.getElementById('patternBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let wingAngle = 0;
+        let targetWingAngle = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let patternIndex = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isFlapping = false;
+        let flapPhase = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== BUTTERFLY PATTERNS =====
+        const patterns = [
+            {
+                name: 'Monarch',
+                colors: ['#ff6b00', '#ff8c00', '#ffa500', '#ffb347', '#2d1b0e', '#4a2810'],
+                wingShape: 'rounded',
+                spots: true,
+                spotColor: '#ffffff',
+                borderColor: '#1a0e06'
+            },
+            {
+                name: 'Blue Morpho',
+                colors: ['#0066ff', '#0088ff', '#00aaff', '#00ccff', '#0a0a2a', '#1a1a3a'],
+                wingShape: 'pointed',
+                spots: false,
+                borderColor: '#0a0a2a'
+            },
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                wingShape: 'rounded',
+                spots: true,
+                spotColor: '#ffffff',
+                borderColor: '#1a1a1a'
+            },
+            {
+                name: 'Glasswing',
+                colors: ['rgba(255,255,255,0.3)', 'rgba(200,200,255,0.4)', 'rgba(150,150,255,0.3)', 'rgba(255,255,255,0.2)'],
+                wingShape: 'delicate',
+                spots: true,
+                spotColor: 'rgba(255,255,255,0.6)',
+                borderColor: 'rgba(200,200,255,0.3)'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff4500', '#ff6b00', '#ff8c00', '#ffb347', '#ffcc80', '#ffd54f'],
+                wingShape: 'rounded',
+                spots: true,
+                spotColor: '#ffe082',
+                borderColor: '#4a1a00'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#4a0080', '#6a00a0', '#8a00c0', '#aa00e0', '#cc00ff', '#ee00ff'],
+                wingShape: 'pointed',
+                spots: true,
+                spotColor: '#e0a0ff',
+                borderColor: '#2a0040'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00ff', '#00ff80'],
+                wingShape: 'rounded',
+                spots: false,
+                borderColor: '#00ffff'
+            },
+            {
+                name: 'Nature',
+                colors: ['#2d5a27', '#3a7a33', '#4a8a43', '#6aaa5a', '#8aca7a', '#aa8a5a'],
+                wingShape: 'rounded',
+                spots: true,
+                spotColor: '#d4c4a0',
+                borderColor: '#1a2a1a'
+            },
+        ];
+
+        // ===== WING PATTERN GENERATORS =====
+        function drawWing(ctx, wingX, wingY, angle, scale, pattern, side) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const colors = pattern.colors;
+            const spotColor = pattern.spotColor || '#ffffff';
+            const borderColor = pattern.borderColor || '#1a1a1a';
+
+            ctx.save();
+            ctx.translate(wingX, wingY);
+            ctx.scale(scale, scale);
+
+            // Wing angle
+            if (side === -1) {
+                ctx.scale(-1, 1);
+            }
+
+            // Wing shape based on pattern
+            const wingPoints = getWingPoints(angle, pattern);
+
+            // Wing shadow
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+            // Wing fill with gradient
+            const grad = ctx.createRadialGradient(-30, -20, 10, 0, 0, 80);
+            for (let i = 0; i < colors.length; i++) {
+                const t = i / (colors.length - 1);
+                grad.addColorStop(t, colors[i] || colors[0]);
+            }
+            ctx.beginPath();
+            ctx.moveTo(wingPoints[0].x, wingPoints[0].y);
+            for (let i = 1; i < wingPoints.length; i++) {
+                ctx.lineTo(wingPoints[i].x, wingPoints[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Wing border
+            ctx.beginPath();
+            ctx.moveTo(wingPoints[0].x, wingPoints[0].y);
+            for (let i = 1; i < wingPoints.length; i++) {
+                ctx.lineTo(wingPoints[i].x, wingPoints[i].y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Wing veins
+            drawVeins(ctx, wingPoints, pattern);
+
+            // Spots
+            if (pattern.spots) {
+                drawSpots(ctx, wingPoints, spotColor, pattern);
+            }
+
+            // Inner glow
+            const glowGrad = ctx.createRadialGradient(0, -10, 5, 0, 0, 60);
+            glowGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
+            glowGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.beginPath();
+            ctx.moveTo(wingPoints[0].x, wingPoints[0].y);
+            for (let i = 1; i < wingPoints.length; i++) {
+                ctx.lineTo(wingPoints[i].x, wingPoints[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function getWingPoints(angle, pattern) {
+            const points = [];
+            const spread = 0.3 + 0.7 * (1 - Math.abs(angle) / (Math.PI / 3));
+            const scale = 0.8 + 0.2 * spread;
+
+            // Wing shape parameters
+            const topWidth = 30 * scale;
+            const midWidth = 65 * scale;
+            const bottomWidth = 35 * scale;
+            const topHeight = 40 * scale;
+            const midHeight = 70 * scale;
+            const bottomHeight = 50 * scale;
+
+            // Top edge
+            points.push({ x: 0, y: 0 });
+            points.push({ x: topWidth * 0.3, y: -topHeight * 0.6 });
+            points.push({ x: topWidth * 0.7, y: -topHeight * 0.8 });
+            points.push({ x: topWidth, y: -topHeight * 0.5 });
+
+            // Outer edge
+            const shape = pattern.wingShape || 'rounded';
+            if (shape === 'pointed') {
+                points.push({ x: midWidth + 10, y: -midHeight * 0.2 });
+                points.push({ x: midWidth + 15, y: 0 });
+                points.push({ x: midWidth + 10, y: midHeight * 0.2 });
+            } else if (shape === 'delicate') {
+                points.push({ x: midWidth * 0.8, y: -midHeight * 0.3 });
+                points.push({ x: midWidth * 0.9, y: 0 });
+                points.push({ x: midWidth * 0.8, y: midHeight * 0.3 });
+            } else {
+                points.push({ x: midWidth, y: -midHeight * 0.3 });
+                points.push({ x: midWidth + 5, y: 0 });
+                points.push({ x: midWidth, y: midHeight * 0.3 });
+            }
+
+            // Bottom edge
+            points.push({ x: bottomWidth * 0.7, y: bottomHeight * 0.8 });
+            points.push({ x: bottomWidth * 0.3, y: bottomHeight * 0.6 });
+            points.push({ x: 0, y: 0 });
+
+            return points;
+        }
+
+        function drawVeins(ctx, points, pattern) {
+            ctx.save();
+            ctx.globalAlpha = 0.15;
+            ctx.strokeStyle = pattern.borderColor || '#1a1a1a';
+            ctx.lineWidth = 0.5;
+
+            // Main veins radiating from center
+            const centerX = 0;
+            const centerY = 0;
+            const numVeins = 5;
+
+            for (let i = 0; i < numVeins; i++) {
+                const t = (i + 1) / (numVeins + 1);
+                const angle = -Math.PI / 2 + t * Math.PI;
+                const length = 40 + t * 30;
+
+                const x = centerX + Math.cos(angle) * length;
+                const y = centerY + Math.sin(angle) * length;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Small branches
+                for (let b = 0; b < 3; b++) {
+                    const bt = (b + 1) / 4;
+                    const bx = centerX + Math.cos(angle) * length * bt;
+                    const by = centerY + Math.sin(angle) * length * bt;
+                    const branchAngle = angle + (Math.random() - 0.5) * 0.8;
+                    const branchLen = 8 + Math.random() * 12;
+
+                    ctx.beginPath();
+                    ctx.moveTo(bx, by);
+                    ctx.lineTo(bx + Math.cos(branchAngle) * branchLen, by + Math.sin(branchAngle) * branchLen);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        function drawSpots(ctx, points, spotColor, pattern) {
+            ctx.save();
+            ctx.globalAlpha = 0.6;
+            ctx.fillStyle = spotColor;
+
+            const spots = [
+                { x: 15, y: -10, r: 4 },
+                { x: 25, y: -20, r: 3 },
+                { x: 35, y: -15, r: 5 },
+                { x: 20, y: 5, r: 3 },
+                { x: 30, y: 10, r: 4 },
+                { x: 15, y: 15, r: 3 },
+                { x: 25, y: 25, r: 4 },
+                { x: 40, y: -5, r: 3 },
+                { x: 45, y: 5, r: 2 },
+                { x: 10, y: -25, r: 2 },
+            ];
+
+            for (const spot of spots) {
+                ctx.beginPath();
+                ctx.arc(spot.x, spot.y, spot.r * (0.6 + 0.4 * Math.sin(time + spot.x)), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = spotColor + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.restore();
+        }
+
+        // ===== DRAW BUTTERFLY =====
+        function drawButterfly(ctx, wingAngle) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+            const scale = Math.min(w, h) / 500;
+
+            const pattern = patterns[patternIndex];
+
+            // Body
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+
+            // Draw wings
+            drawWing(ctx, -5, 0, wingAngle, 1, pattern, -1);
+            drawWing(ctx, 5, 0, wingAngle, 1, pattern, 1);
+
+            // Body shadow
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 6, 30, 0, 0, Math.PI * 2);
+            const bodyGrad = ctx.createLinearGradient(0, -30, 0, 30);
+            bodyGrad.addColorStop(0, '#2a1a0a');
+            bodyGrad.addColorStop(0.5, '#3a2a1a');
+            bodyGrad.addColorStop(1, '#2a1a0a');
+            ctx.fillStyle = bodyGrad;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Body segments
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.ellipse(0, i * 6, 4, 2, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(20,10,5,0.3)';
+                ctx.fill();
+            }
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(0, -30, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#2a1a0a';
+            ctx.fill();
+
+            // Eyes
+            ctx.beginPath();
+            ctx.arc(-4, -32, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(4, -32, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Antennae
+            for (let side = -1; side <= 1; side += 2) {
+                ctx.beginPath();
+                ctx.moveTo(side * 4, -34);
+                const antLength = 25 + Math.sin(time + side) * 3;
+                ctx.quadraticCurveTo(
+                    side * 20,
+                    -45 - Math.sin(time * 0.5 + side) * 5,
+                    side * 30,
+                    -55 - Math.sin(time * 0.7 + side + 1) * 3
+                );
+                ctx.strokeStyle = '#2a1a0a';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Antennae tips
+                ctx.beginPath();
+                ctx.arc(side * 30, -55 - Math.sin(time * 0.7 + side + 1) * 3, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffd700';
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Glow effect
+            const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.4);
+            const lastColor = pattern.colors[pattern.colors.length - 1] || 'rgba(255,255,255,0)';
+            glowGrad.addColorStop(0, lastColor + '10');
+            glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background gradient
+            const bgGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            bgGrad.addColorStop(0, '#1a2a3a');
+            bgGrad.addColorStop(0.5, '#0a1a2a');
+            bgGrad.addColorStop(1, '#000000');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Wing angle animation
+            if (isFlapping) {
+                flapPhase += speed * 3;
+                wingAngle = Math.sin(flapPhase) * 0.8;
+            } else {
+                // Gentle flutter
+                wingAngle = Math.sin(time * 0.5) * 0.15 + 0.3;
+            }
+
+            // Smooth interpolation
+            wingAngle += (targetWingAngle - wingAngle) * 0.05;
+
+            // Draw butterfly
+            drawButterfly(ctx, wingAngle);
+
+            // Draw decorative particles
+            drawParticles(ctx);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🦋 ${patterns[patternIndex].name} • ${isFlapping ? 'Flapping' : 'Fluttering'}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== PARTICLES =====
+        let particles = [];
+
+        function drawParticles(ctx) {
+            // Spawn particles occasionally
+            if (Math.random() < 0.02 * speed * 20) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const x = w/2 + (Math.random() - 0.5) * 100;
+                const y = h/2 + (Math.random() - 0.5) * 100;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: -0.3 - Math.random() * 0.5,
+                    life: 1,
+                    maxLife: 60 + Math.random() * 80,
+                    size: 1 + Math.random() * 2,
+                    color: `hsl(${Math.random() * 360}, 80%, 70%)`
+                });
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 1 / p.maxLife;
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life * 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = p.color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== CONTROLS =====
+
+        // Flap
+        flapBtn.addEventListener('click', () => {
+            isFlapping = !isFlapping;
+            if (isFlapping) {
+                flapPhase = 0;
+                flapBtn.textContent = '🦋 Stop';
+                statusText.textContent = '🦋 Flapping!';
+            } else {
+                flapBtn.textContent = '🦋 Flap';
+                statusText.textContent = '🦋 Fluttering';
+            }
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🦋 ${patterns[patternIndex].name}`;
+            }, 1000);
+        });
+
+        // Pattern
+        patternBtn.addEventListener('click', () => {
+            patternIndex = (patternIndex + 1) % patterns.length;
+            patternBtn.textContent = `Pattern: ${patterns[patternIndex].name}`;
+            statusText.textContent = `🎨 ${patterns[patternIndex].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🦋 ${patterns[patternIndex].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            isFlapping = false;
+            flapPhase = 0;
+            wingAngle = 0.3;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            patternIndex = 0;
+            particles = [];
+            
+            flapBtn.textContent = '🦋 Flap';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            patternBtn.textContent = `Pattern: ${patterns[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🦋 ${patterns[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                flapBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                patternBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                flapBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        wingAngle = 0.3;
+        targetWingAngle = 0.3;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        patternBtn.textContent = `Pattern: ${patterns[0].name}`;
+        statusText.textContent = `🦋 ${patterns[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🦋 Butterfly Wing Flutter loaded!');
+        console.log('💡 F - Flap wings');
+        console.log('💡 S - Change speed');
+        console.log('💡 P - Change pattern');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle flap');
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+/* ==========================================================================
+   Ease Thermal Camera View
+   Visual concept: a handheld thermal-imaging viewfinder HUD. Matte black
+   body, phosphor-green readouts, corner reticle brackets, faint scanlines.
+   ========================================================================== */
+
+:root {
+  --body-black: #0a0d0a;
+  --panel-black: #12160f;
+  --hud-green: #6ee79a;
+  --hud-green-dim: #3d8f5c;
+  --hud-amber: #e7b46e;
+  --hud-red: #e0524a;
+  --bracket: rgba(110, 231, 154, 0.55);
+  --font-hud: "IBM Plex Mono", "Courier New", monospace;
+  --radius: 4px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--body-black);
+  color: var(--hud-green);
+  font-family: var(--font-hud);
+  min-height: 100vh;
+  padding: 28px 16px 48px;
+}
+
+.rig {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* -- Header -------------------------------------------------------------- */
+
+.rig-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid var(--hud-green-dim);
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+}
+
+.rig-header h1 {
+  font-size: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 500;
+}
+
+.rig-header .model {
+  font-size: 11px;
+  color: var(--hud-green-dim);
+  letter-spacing: 0.08em;
+}
+
+/* -- Viewport / viewfinder ------------------------------------------------ */
+
+.viewport {
+  position: relative;
+  background: var(--panel-black);
+  border: 1px solid #22281e;
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 2px;
+  background: #000;
+}
+
+#thermal-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+}
+
+/* faint scanline texture over the image */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.14) 0px,
+    rgba(0, 0, 0, 0.14) 1px,
+    transparent 2px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+/* corner reticle brackets */
+.bracket {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--bracket);
+  pointer-events: none;
+}
+.bracket.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.bracket.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.bracket.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.bracket.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+/* mode badge, top-left */
+.mode-badge {
+  position: absolute;
+  top: 10px;
+  left: 38px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border: 1px solid var(--hud-green-dim);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.mode-badge[data-mode="live"] {
+  color: var(--hud-red);
+  border-color: var(--hud-red);
+}
+
+.rec-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hud-red);
+  margin-right: 5px;
+  animation: blink 1s steps(1) infinite;
+}
+
+.mode-badge[data-mode="demo"] .rec-dot {
+  background: var(--hud-green);
+  animation: none;
+}
+
+@keyframes blink {
+  50% { opacity: 0.15; }
+}
+
+/* readout, bottom-right */
+.readout {
+  position: absolute;
+  bottom: 10px;
+  right: 38px;
+  font-size: 11px;
+  text-align: right;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--hud-green-dim);
+  border-radius: 2px;
+  padding: 4px 7px;
+  line-height: 1.5;
+  min-width: 108px;
+}
+
+.readout .temp {
+  font-size: 15px;
+  color: var(--hud-amber);
+  display: block;
+}
+
+.readout .hint {
+  color: var(--hud-green-dim);
+  font-size: 9px;
+}
+
+/* crosshair that follows the cursor */
+.crosshair {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--hud-amber);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: none;
+}
+.crosshair::before,
+.crosshair::after {
+  content: "";
+  position: absolute;
+  background: var(--hud-amber);
+}
+.crosshair::before { top: 50%; left: -5px; right: -5px; height: 1px; }
+.crosshair::after { left: 50%; top: -5px; bottom: -5px; width: 1px; }
+
+/* -- Controls -------------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+
+button, select {
+  font-family: var(--font-hud);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--panel-black);
+  color: var(--hud-green);
+  border: 1px solid var(--hud-green-dim);
+  border-radius: 2px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+button:hover, select:hover {
+  border-color: var(--hud-green);
+}
+
+button:focus-visible, select:focus-visible {
+  outline: 2px solid var(--hud-amber);
+  outline-offset: 2px;
+}
+
+button.primary {
+  background: var(--hud-green-dim);
+  color: #0a0d0a;
+  border-color: var(--hud-green-dim);
+}
+
+button.primary:hover {
+  background: var(--hud-green);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.palette-group {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.palette-group button[aria-pressed="true"] {
+  background: var(--hud-green);
+  color: #0a0d0a;
+}
+
+/* -- Status line ------------------------------------------------------------ */
+
+#status {
+  margin-top: 10px;
+  font-size: 11px;
+  min-height: 16px;
+  color: var(--hud-green-dim);
+}
+
+#status[data-state="error"] {
+  color: var(--hud-red);
+}
+
+/* -- Footer ------------------------------------------------------------------ */
+
+footer {
+  margin-top: 26px;
+  font-size: 10.5px;
+  color: var(--hud-green-dim);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+footer a {
+  color: var(--hud-amber);
+}
+
+/* -- Reduced motion ----------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .rec-dot {
+    animation: none;
+  }
+}
+
+/* -- Responsive ---------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  .rig-header h1 {
+    font-size: 15px;
+  }
+  .palette-group {
+    margin-left: 0;
+  }
+  .readout {
+    right: 10px;
+  }
+}

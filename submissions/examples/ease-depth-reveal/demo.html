@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Depth Reveal · 3D depth on interaction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="depth-container">
+      <div class="depth-display" id="depthDisplay">
+        <!-- Depth Layers -->
+        <div class="depth-layer layer-back" id="layerBack">
+          <div class="layer-content">
+            <span class="layer-icon">🌌</span>
+            <span class="layer-label">Background</span>
+          </div>
+        </div>
+        
+        <div class="depth-layer layer-mid" id="layerMid">
+          <div class="layer-content">
+            <span class="layer-icon">🏔️</span>
+            <span class="layer-label">Midground</span>
+          </div>
+        </div>
+        
+        <div class="depth-layer layer-front" id="layerFront">
+          <div class="layer-content">
+            <span class="layer-icon">✨</span>
+            <span class="layer-label">Foreground</span>
+          </div>
+        </div>
+        
+        <div class="depth-layer layer-ui" id="layerUI">
+          <div class="layer-content">
+            <span class="layer-icon">🎯</span>
+            <span class="layer-label">UI Overlay</span>
+          </div>
+        </div>
+
+        <!-- Depth Indicator -->
+        <div class="depth-indicator" id="depthIndicator">
+          <div class="depth-bar">
+            <div class="depth-fill" id="depthFill"></div>
+          </div>
+          <span class="depth-value" id="depthValue">Depth: 0%</span>
+        </div>
+      </div>
+      
+      <div class="depth-status">
+        <span id="depthStatus">👆 Hover or click to reveal depth</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reveal" id="revealBtn">🔍 Reveal Depth</button>
+      <button class="btn btn-mode" id="modeBtn">🔄 Toggle Effect</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>📐 3D depth layers · parallax effect · 4 depth levels</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const depthDisplay = document.getElementById('depthDisplay');
+      const layerBack = document.getElementById('layerBack');
+      const layerMid = document.getElementById('layerMid');
+      const layerFront = document.getElementById('layerFront');
+      const layerUI = document.getElementById('layerUI');
+      const depthFill = document.getElementById('depthFill');
+      const depthValue = document.getElementById('depthValue');
+      const depthStatus = document.getElementById('depthStatus');
+      const revealBtn = document.getElementById('revealBtn');
+      const modeBtn = document.getElementById('modeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // State
+      let depthLevel = 0;
+      let isRevealed = false;
+      let effectMode = 'parallax'; // parallax, pop, tilt, explode
+      let targetDepth = 0;
+      let currentDepth = 0;
+      let animationId = null;
+
+      // Effect modes
+      const modes = {
+        parallax: {
+          label: 'Parallax',
+          icon: '📐',
+          description: 'Smooth parallax depth'
+        },
+        pop: {
+          label: 'Pop',
+          icon: '💥',
+          description: 'Layers pop outward'
+        },
+        tilt: {
+          label: 'Tilt',
+          icon: '🔄',
+          description: 'Tilt-based depth'
+        },
+        explode: {
+          label: 'Explode',
+          icon: '💫',
+          description: 'Layers explode apart'
+        }
+      };
+
+      // Update depth display
+      function updateDepth(value) {
+        currentDepth = value;
+        const percent = Math.round(value * 100);
+        
+        // Update depth fill
+        depthFill.style.width = percent + '%';
+        depthValue.textContent = `Depth: ${percent}%`;
+        
+        // Update layer transforms based on mode
+        const parallaxAmount = value * 40;
+        const popAmount = value * 60;
+        const tiltAmount = value * 30;
+        const explodeAmount = value * 80;
+
+        switch(effectMode) {
+          case 'parallax':
+            // Parallax: layers move at different speeds
+            layerBack.style.transform = `translateX(${-parallaxAmount * 0.3}px) translateY(${-parallaxAmount * 0.2}px) scale(${1 - value * 0.05})`;
+            layerMid.style.transform = `translateX(${-parallaxAmount * 0.15}px) translateY(${-parallaxAmount * 0.1}px) scale(${1 - value * 0.02})`;
+            layerFront.style.transform = `translateX(${parallaxAmount * 0.1}px) translateY(${parallaxAmount * 0.05}px) scale(${1 + value * 0.02})`;
+            layerUI.style.transform = `translateX(${parallaxAmount * 0.2}px) translateY(${parallaxAmount * 0.1}px) scale(${1 + value * 0.05})`;
+            break;
+            
+          case 'pop':
+            // Pop: layers pop outward from center
+            layerBack.style.transform = `translateZ(${-popAmount * 0.5}px) scale(${1 - value * 0.1})`;
+            layerMid.style.transform = `translateZ(${-popAmount * 0.2}px) scale(${1 - value * 0.05})`;
+            layerFront.style.transform = `translateZ(${popAmount * 0.3}px) scale(${1 + value * 0.05})`;
+            layerUI.style.transform = `translateZ(${popAmount * 0.6}px) scale(${1 + value * 0.1})`;
+            break;
+            
+          case 'tilt':
+            // Tilt: layers tilt in 3D
+            const tiltX = tiltAmount * 0.3;
+            const tiltY = tiltAmount * 0.2;
+            layerBack.style.transform = `rotateX(${-tiltX}deg) rotateY(${tiltY}deg) translateZ(${-value * 20}px)`;
+            layerMid.style.transform = `rotateX(${-tiltX * 0.5}deg) rotateY(${tiltY * 0.5}deg) translateZ(${-value * 10}px)`;
+            layerFront.style.transform = `rotateX(${tiltX * 0.3}deg) rotateY(${-tiltY * 0.3}deg) translateZ(${value * 10}px)`;
+            layerUI.style.transform = `rotateX(${tiltX * 0.6}deg) rotateY(${-tiltY * 0.6}deg) translateZ(${value * 20}px)`;
+            break;
+            
+          case 'explode':
+            // Explode: layers explode apart
+            layerBack.style.transform = `translateX(${-explodeAmount * 0.4}px) translateY(${-explodeAmount * 0.3}px) scale(${1 - value * 0.15})`;
+            layerMid.style.transform = `translateX(${-explodeAmount * 0.2}px) translateY(${-explodeAmount * 0.15}px) scale(${1 - value * 0.08})`;
+            layerFront.style.transform = `translateX(${explodeAmount * 0.2}px) translateY(${explodeAmount * 0.15}px) scale(${1 + value * 0.08})`;
+            layerUI.style.transform = `translateX(${explodeAmount * 0.4}px) translateY(${explodeAmount * 0.3}px) scale(${1 + value * 0.15})`;
+            break;
+        }
+
+        // Update layer opacities for depth effect
+        layerBack.style.opacity = 0.7 + value * 0.3;
+        layerMid.style.opacity = 0.8 + value * 0.2;
+        layerFront.style.opacity = 0.9 + value * 0.1;
+        layerUI.style.opacity = 1;
+
+        // Update status
+        if (value > 0.8) {
+          depthStatus.textContent = '🌟 Full depth revealed!';
+          depthStatus.style.color = '#fbbf24';
+        } else if (value > 0.4) {
+          depthStatus.textContent = '📐 Depth unfolding...';
+          depthStatus.style.color = '#818cf8';
+        } else if (value > 0) {
+          depthStatus.textContent = '🔍 Revealing depth...';
+          depthStatus.style.color = '#94a3b8';
+        } else {
+          depthStatus.textContent = '👆 Hover or click to reveal depth';
+          depthStatus.style.color = '#94a3b8';
+        }
+      }
+
+      // Animate depth
+      function animateDepth() {
+        const speed = 0.05;
+        const diff = targetDepth - currentDepth;
+        
+        if (Math.abs(diff) < 0.001) {
+          currentDepth = targetDepth;
+          updateDepth(currentDepth);
+          animationId = null;
+          return;
+        }
+        
+        currentDepth += diff * speed;
+        updateDepth(currentDepth);
+        
+        animationId = requestAnimationFrame(animateDepth);
+      }
+
+      // Reveal depth
+      function revealDepth() {
+        targetDepth = 1;
+        if (!animationId) {
+          animateDepth();
+        }
+        isRevealed = true;
+        depthDisplay.classList.add('depth-active');
+        revealBtn.textContent = '🔍 Depth Revealed';
+      }
+
+      // Hide depth
+      function hideDepth() {
+        targetDepth = 0;
+        if (!animationId) {
+          animateDepth();
+        }
+        isRevealed = false;
+        depthDisplay.classList.remove('depth-active');
+        revealBtn.textContent = '🔍 Reveal Depth';
+      }
+
+      // Toggle reveal
+      function toggleReveal() {
+        if (isRevealed) {
+          hideDepth();
+        } else {
+          revealDepth();
+        }
+      }
+
+      // Change mode
+      function changeMode() {
+        const modeKeys = Object.keys(modes);
+        const currentIndex = modeKeys.indexOf(effectMode);
+        const nextIndex = (currentIndex + 1) % modeKeys.length;
+        effectMode = modeKeys[nextIndex];
+        
+        const mode = modes[effectMode];
+        modeBtn.textContent = `🔄 ${mode.icon} ${mode.label}`;
+        
+        // Reset depth to apply new mode
+        const wasRevealed = isRevealed;
+        hideDepth();
+        setTimeout(() => {
+          if (wasRevealed) {
+            revealDepth();
+          }
+        }, 100);
+        
+        depthStatus.textContent = `🎯 Mode: ${mode.label} (${mode.description})`;
+        depthStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          if (!isRevealed) {
+            depthStatus.textContent = '👆 Hover or click to reveal depth';
+            depthStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetDepth() {
+        hideDepth();
+        effectMode = 'parallax';
+        const mode = modes.parallax;
+        modeBtn.textContent = `🔄 ${mode.icon} ${mode.label}`;
+        depthStatus.textContent = '🔄 Reset complete';
+        depthStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          depthStatus.textContent = '👆 Hover or click to reveal depth';
+        }, 1000);
+      }
+
+      // Event listeners
+      if (revealBtn) {
+        revealBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleReveal();
+        });
+      }
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          changeMode();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetDepth();
+        });
+      }
+
+      // Mouse hover on depth display
+      depthDisplay.addEventListener('mouseenter', function() {
+        if (!isRevealed) {
+          revealDepth();
+        }
+      });
+
+      depthDisplay.addEventListener('mouseleave', function() {
+        if (isRevealed && !depthDisplay.classList.contains('depth-active')) {
+          // Only hide if not manually revealed
+        }
+      });
+
+      // Click to toggle on display
+      depthDisplay.addEventListener('click', function(e) {
+        if (e.target === depthDisplay || e.target.closest('.depth-layer')) {
+          toggleReveal();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          toggleReveal();
+        } else if (key === 'm' || key === 'M') {
+          e.preventDefault();
+          changeMode();
+        } else if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleReveal();
+        }
+      });
+
+      // Initialize
+      depthFill.style.width = '0%';
+      depthValue.textContent = 'Depth: 0%';
+      updateDepth(0);
+      
+      // Add 3D perspective to display
+      depthDisplay.style.perspective = '1000px';
+      depthDisplay.style.transformStyle = 'preserve-3d';
+      
+      console.log('📐 Depth Reveal ready · shortcuts: [R] Reveal, [M] Mode, [Space] Toggle');
+    })();
+  </script>
+</body>
+</html>
