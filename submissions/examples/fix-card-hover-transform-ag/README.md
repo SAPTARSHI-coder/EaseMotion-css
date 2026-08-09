@@ -16,4 +16,4 @@ GPU-composited transform property animates.
 ## Why is it useful?
 Animating `box-shadow` triggers repaint on every frame. Animating `transform`
 only uses the GPU compositor — eliminating paint entirely and making the
-hover effect butter-smooth on all devices. Fixes: #35803
+hover effect butter-smooth on all devices. Fixes: #59815

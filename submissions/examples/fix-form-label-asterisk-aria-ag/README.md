@@ -16,4 +16,4 @@ so AT users hear "required" instead of "asterisk".
 ## Why is it useful?
 Screen readers literalize the `*` character as "asterisk", which is confusing.
 `aria-hidden` removes it from the AT tree; `aria-required` communicates the
-semantic requirement properly. Fixes: #35823
+semantic requirement properly. Fixes: #59815

@@ -16,4 +16,4 @@ in `<nav aria-label="Breadcrumb">` for screen reader landmark navigation.
 
 ## Why is it useful?
 Without `aria-current="page"`, screen readers cannot tell users which
-breadcrumb represents the current page. Fixes: #35810
+breadcrumb represents the current page. Fixes: #59815

@@ -19,4 +19,4 @@ window.scrollTo(0, savedScrollY);
 ## Why is it useful?
 Without scroll lock, background page content scrolls while the modal
 is open, which is confusing UX. On iOS, `overflow: hidden` alone is
-insufficient — `position: fixed` is required. Fixes: #35821
+insufficient — `position: fixed` is required. Fixes: #59815

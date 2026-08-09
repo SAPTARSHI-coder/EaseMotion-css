@@ -8,4 +8,4 @@ Include the component as usual. The new CSS handles accessibility automatically 
 
 ## Accessibility Compliance
 Ensures compliance with WCAG 2.1 by making boundaries and interactive states visible for visually impaired users.
-Fixes: #37949
+Fixes: #59817

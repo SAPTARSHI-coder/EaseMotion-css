@@ -12,4 +12,4 @@ slider thumb looks identical in Firefox, Chrome, and Safari.
 ## Why is it useful?
 Without Firefox-specific vendor prefix selectors, the slider thumb
 uses the OS default in Firefox — visually inconsistent with Chrome/Safari.
-Fixes: #35785
+Fixes: #59815

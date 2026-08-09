@@ -8,4 +8,4 @@ Include the component as usual. The new CSS handles accessibility automatically.
 
 ## Accessibility Compliance
 Ensures compliance with WCAG 2.1 Focus Visible standards by guaranteeing the focus indicator remains unobscured.
-Fixes: #37977
+Fixes: #59728

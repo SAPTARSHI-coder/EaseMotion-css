@@ -26,11 +26,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api "repos/${{ github.repository }}/contributors?per_page=100" \
-            --paginate \
-            | jq -s 'add | map(select(.type != "Bot" and (.login | ascii_downcase | test("bot") | not)))' \
-            > /tmp/contributors.json
-          echo "Contributors fetched: $(jq length /tmp/contributors.json)"
+          for i in {1..5}; do
+            gh api "repos/${{ github.repository }}/stats/contributors" > /tmp/contributors.json
+            if [ -s /tmp/contributors.json ] && [ "$(cat /tmp/contributors.json)" != "[]" ]; then
+              echo "Contributors stats fetched successfully."
+              exit 0
+            fi
+            echo "Waiting for GitHub stats computation (attempt $i/5)..."
+            sleep 6
+          done
+
+          echo "Fallback: Fetching via /contributors endpoint..."
+          gh api "repos/${{ github.repository }}/contributors?per_page=100" > /tmp/contributors.json
 
       - name: Pull latest before building
         run: git pull --rebase origin main

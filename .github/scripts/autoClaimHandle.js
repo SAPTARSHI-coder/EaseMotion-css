@@ -25,6 +25,8 @@ async function handleClaim({ github, context }) {
   const { owner, repo } = context.repo;
   const issueNumber = context.payload.issue.number;
   const commenter = context.payload.comment.user.login;
+  const bodyText = context.payload.comment.body.trim();
+  const programName = 'GSSoC-26';
 
   // Fetch the latest issue state to prevent race conditions on closed issues
   const { data: issue } = await github.rest.issues.get({
@@ -118,13 +120,23 @@ async function handleClaim({ github, context }) {
     assignees: [commenter],
   });
 
+  // Label the issue with GSSoC-26 if missing
+  if (!issue.labels.some((l) => l.name === 'GSSoC-26')) {
+    await github.rest.issues.addLabels({
+      owner,
+      repo,
+      issue_number: issueNumber,
+      labels: ['GSSoC-26', 'gssoc:approved'],
+    }).catch(() => {});
+  }
+
   // comment message
   const contributingUrl = `https://github.com/${owner}/${repo}/blob/main/CONTRIBUTING.md`;
   await github.rest.issues.createComment({
     owner,
     repo,
     issue_number: issueNumber,
-    body: `🎉 **Assigned!** Welcome aboard, @${commenter}! 🌟\n\n⏳ **Timeframe:** You have **24 hours** of exclusive time to complete the issue and make a Pull Request. Please submit a PR before claiming any other issue.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
+    body: `🎉 **Assigned!** Welcome aboard, @${commenter} (${programName})! 🌟\n\n⏳ **Timeframe:** You have **24 hours** of exclusive time to complete the issue and make a Pull Request. Please submit a PR before claiming any other issue.\n\n> 💡 **Tip:** Be sure to check out our [CONTRIBUTING.md](${contributingUrl}) to get off to a great start.\n\nHappy coding! 🚀✨`,
   });
 }
 

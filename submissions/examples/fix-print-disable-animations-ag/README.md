@@ -12,4 +12,4 @@ suppressed in print context.
 ## Why is it useful?
 CSS animations frozen mid-frame can print as invisible elements, producing
 blank pages. `animation-duration: 0.01ms` effectively stops all animations
-without removing their final state. Fixes: #35835
+without removing their final state. Fixes: #59815
