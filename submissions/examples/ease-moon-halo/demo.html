@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moon Halo · luminous ring forms around moon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="moonhalo-container">
+      <div class="moonhalo-display" id="moonhaloDisplay">
+        <!-- Canvas for moon halo -->
+        <canvas id="moonhaloCanvas"></canvas>
+        
+        <!-- Moon Halo Info -->
+        <div class="moonhalo-info">
+          <span class="info-label">🌙 Halos</span>
+          <span class="info-value" id="haloCount">0</span>
+        </div>
+
+        <!-- Moon Halo Controls -->
+        <div class="moonhalo-controls">
+          <div class="control-group">
+            <label class="control-label">✨ Intensity</label>
+            <input type="range" class="control-slider" id="intensitySlider" min="0" max="100" value="50">
+            <span class="control-value" id="intensityValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌈 Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="white" title="White">🤍</button>
+              <button class="color-btn" data-color="gold" title="Gold">💛</button>
+              <button class="color-btn" data-color="blue" title="Blue">💙</button>
+              <button class="color-btn" data-color="purple" title="Purple">💜</button>
+              <button class="color-btn" data-color="pink" title="Pink">💗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Moon Halo Text -->
+        <div class="moonhalo-text">
+          <span class="text-label">🌙 Moon Halo</span>
+          <span class="text-message" id="moonhaloMessage">A luminous ring forms around the moon</span>
+        </div>
+      </div>
+      
+      <div class="moonhalo-status">
+        <span id="moonhaloStatus">🌙 Click the moon to create a luminous halo</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-halo" id="haloBtn">🌙 Create Halo</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌙 luminous rings · 5 colors · halo effect</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('moonhaloCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('moonhaloDisplay');
+      const haloCount = document.getElementById('haloCount');
+      const moonhaloStatus = document.getElementById('moonhaloStatus');
+      const moonhaloMessage = document.getElementById('moonhaloMessage');
+      const haloBtn = document.getElementById('haloBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let halos = [];
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+      let totalHalos = 0;
+      let currentColor = 'white';
+
+      // Color configurations
+      const colors = {
+        white: { main: '#f0f0f0', glow: 'rgba(255,255,255,0.3)', ring: 'rgba(255,255,255,0.15)', accent: '#ffffff' },
+        gold: { main: '#fbbf24', glow: 'rgba(251,191,36,0.3)', ring: 'rgba(251,191,36,0.15)', accent: '#f59e0b' },
+        blue: { main: '#60a5fa', glow: 'rgba(96,165,250,0.3)', ring: 'rgba(96,165,250,0.15)', accent: '#3b82f6' },
+        purple: { main: '#a78bfa', glow: 'rgba(167,139,250,0.3)', ring: 'rgba(167,139,250,0.15)', accent: '#8b5cf6' },
+        pink: { main: '#f472b6', glow: 'rgba(244,114,182,0.3)', ring: 'rgba(244,114,182,0.15)', accent: '#ec4899' }
+      };
+
+      // Halo class
+      class Halo {
+        constructor(x, y, intensity, color) {
+          this.x = x;
+          this.y = y;
+          this.intensity = intensity / 100;
+          this.color = colors[color];
+          this.radius = 30 + this.intensity * 70;
+          this.maxRadius = this.radius * 2.5;
+          this.life = 0;
+          this.maxLife = 1 + this.intensity * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.rings = [];
+          this.particles = [];
+          this.glowIntensity = 0.3 + this.intensity * 0.5;
+          
+          // Create halo rings
+          const ringCount = 3 + Math.floor(this.intensity * 4);
+          for (let i = 0; i < ringCount; i++) {
+            this.rings.push({
+              radius: this.radius * (0.3 + (i / ringCount) * 0.7),
+              opacity: 0.1 + (i / ringCount) * 0.3,
+              width: 1 + this.intensity * 2,
+              phase: Math.random() * Math.PI * 2
+            });
+          }
+          
+          // Create sparkle particles
+          const particleCount = 20 + Math.floor(this.intensity * 30);
+          for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = this.radius * (0.2 + Math.random() * 0.8);
+            this.particles.push({
+              x: this.x + Math.cos(angle) * dist,
+              y: this.y + Math.sin(angle) * dist,
+              angle: angle,
+              distance: dist,
+              size: 1 + Math.random() * 3,
+              speed: 0.01 + Math.random() * 0.02,
+              phase: Math.random() * Math.PI * 2,
+              twinkle: 0.5 + Math.random() * 0.5
+            });
+          }
+        }
+
+        update() {
+          this.life += 0.005 * this.intensity;
+          this.phase += 0.01;
+          
+          // Update rings
+          this.rings.forEach(ring => {
+            ring.radius += 0.2 * this.intensity;
+            ring.opacity *= 0.998;
+            ring.phase += 0.005;
+          });
+          
+          // Update particles
+          this.particles.forEach(p => {
+            p.angle += p.speed * this.intensity;
+            p.distance += 0.1 * this.intensity;
+            p.twinkle = 0.5 + Math.sin(this.phase * 2 + p.phase) * 0.5;
+          });
+          
+          return this.life < this.maxLife && this.rings[0].opacity > 0.01;
+        }
+
+        draw(ctx) {
+          const progress = Math.min(this.life / this.maxLife, 1);
+          const alpha = progress * this.intensity;
+          
+          // Glow
+          const glowRadius = this.radius * 2 * (0.5 + progress * 0.5);
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowRadius);
+          grad.addColorStop(0, this.color.glow);
+          grad.addColorStop(0.3, this.color.glow);
+          grad.addColorStop(0.7, this.color.ring);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.save();
+          ctx.globalAlpha = 0.5 * alpha;
+          ctx.fillStyle = grad;
+          ctx.shadowColor = this.color.main;
+          ctx.shadowBlur = 30;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          
+          // Rings
+          this.rings.forEach(ring => {
+            if (ring.opacity < 0.01) return;
+            ctx.save();
+            ctx.globalAlpha = ring.opacity * alpha * this.glowIntensity;
+            ctx.strokeStyle = this.color.main;
+            ctx.lineWidth = ring.width * progress;
+            ctx.shadowColor = this.color.main;
+            ctx.shadowBlur = 15;
+            
+            // Ring with slight distortion
+            ctx.beginPath();
+            const segments = 60;
+            for (let i = 0; i <= segments; i++) {
+              const angle = (i / segments) * Math.PI * 2;
+              const wobble = Math.sin(angle * 3 + ring.phase) * 2;
+              const r = ring.radius + wobble;
+              const x = this.x + Math.cos(angle) * r;
+              const y = this.y + Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+          });
+          
+          // Sparkle particles
+          this.particles.forEach(p => {
+            if (p.distance > this.radius * 2) return;
+            const alpha2 = p.twinkle * 0.6 * alpha;
+            const x = this.x + Math.cos(p.angle) * p.distance;
+            const y = this.y + Math.sin(p.angle) * p.distance;
+            
+            ctx.save();
+            ctx.globalAlpha = alpha2;
+            ctx.fillStyle = this.color.accent;
+            ctx.shadowColor = this.color.main;
+            ctx.shadowBlur = 10;
+            
+            // Star shape
+            const size = p.size * p.twinkle;
+            ctx.beginPath();
+            ctx.moveTo(x, y - size);
+            ctx.lineTo(x + size * 0.3, y - size * 0.3);
+            ctx.lineTo(x + size, y);
+            ctx.lineTo(x + size * 0.3, y + size * 0.3);
+            ctx.lineTo(x, y + size);
+            ctx.lineTo(x - size * 0.3, y + size * 0.3);
+            ctx.lineTo(x - size, y);
+            ctx.lineTo(x - size * 0.3, y - size * 0.3);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+          });
+        }
+      }
+
+      // Draw moon
+      function drawMoon() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = Math.min(w, h) * 0.1;
+        
+        // Moon glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 4);
+        grad.addColorStop(0, 'rgba(200, 220, 240, 0.05)');
+        grad.addColorStop(0.5, 'rgba(200, 220, 240, 0.02)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Moon body
+        const moonGrad = ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, 0, cx, cy, radius);
+        moonGrad.addColorStop(0, '#fff5e6');
+        moonGrad.addColorStop(0.3, '#f5e6d3');
+        moonGrad.addColorStop(0.7, '#e8d5c0');
+        moonGrad.addColorStop(1, '#d4b896');
+        ctx.fillStyle = moonGrad;
+        ctx.shadowColor = 'rgba(255, 230, 200, 0.2)';
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Craters
+        const craters = [
+          { x: -0.3, y: -0.2, r: 0.08 },
+          { x: 0.2, y: -0.3, r: 0.06 },
+          { x: -0.1, y: 0.3, r: 0.1 },
+          { x: 0.3, y: 0.1, r: 0.05 }
+        ];
+        craters.forEach(c => {
+          const x = cx + c.x * radius;
+          const y = cy + c.y * radius;
+          const r = c.r * radius;
+          ctx.fillStyle = 'rgba(180, 160, 140, 0.15)';
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Night sky
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(5, 10, 25, 0.4)');
+        grad.addColorStop(0.5, 'rgba(10, 15, 30, 0.5)');
+        grad.addColorStop(1, 'rgba(0, 0, 10, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Stars
+        for (let i = 0; i < 100; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.1 + Math.random() * 0.3;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Create halo
+      function createHalo(x, y) {
+        const intensity = parseInt(intensitySlider.value);
+        const color = currentColor;
+        const halo = new Halo(x, y, intensity, color);
+        halos.push(halo);
+        totalHalos++;
+        haloCount.textContent = totalHalos;
+        
+        moonhaloStatus.textContent = `🌙 Luminous halo formed! (${totalHalos})`;
+        moonhaloStatus.style.color = colors[color].main;
+        moonhaloMessage.textContent = '✨ A luminous ring surrounds the moon';
+        moonhaloMessage.style.color = colors[color].main;
+        
+        setTimeout(() => {
+          moonhaloStatus.textContent = '🌙 Click the moon to create a luminous halo';
+          moonhaloStatus.style.color = '#94a3b8';
+          moonhaloMessage.textContent = 'A luminous ring forms around the moon';
+          moonhaloMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawMoon();
+        
+        // Update and draw halos
+        halos = halos.filter(h => {
+          const alive = h.update();
+          if (alive) h.draw(ctx);
+          return alive;
+        });
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetHalos() {
+        halos = [];
+        totalHalos = 0;
+        haloCount.textContent = '0';
+        moonhaloStatus.textContent = '🔄 Reset complete';
+        moonhaloStatus.style.color = '#94a3b8';
+        moonhaloMessage.textContent = 'A luminous ring forms around the moon';
+        moonhaloMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          moonhaloStatus.textContent = '🌙 Click the moon to create a luminous halo';
+          moonhaloStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        const colorNames = {
+          white: 'White',
+          gold: 'Gold',
+          blue: 'Blue',
+          purple: 'Purple',
+          pink: 'Pink'
+        };
+        moonhaloStatus.textContent = `🎨 Color: ${colorNames[color]}`;
+        moonhaloStatus.style.color = colors[color].main;
+        setTimeout(() => {
+          moonhaloStatus.textContent = '🌙 Click the moon to create a luminous halo';
+          moonhaloStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const radius = Math.min(canvas.width, canvas.height) * 0.1;
+        const dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        
+        if (dist < radius * 2) {
+          createHalo(x, y);
+        }
+      });
+
+      if (haloBtn) {
+        haloBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          createHalo(cx + (Math.random() - 0.5) * 60, cy + (Math.random() - 0.5) * 60);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetHalos();
+        });
+      }
+
+      // Slider updates
+      intensitySlider.addEventListener('input', function() {
+        intensityValue.textContent = this.value + '%';
+      });
+
+      // Color buttons
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          createHalo(cx + (Math.random() - 0.5) * 60, cy + (Math.random() - 0.5) * 60);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetHalos();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌙 Moon Halo ready · shortcuts: [Space] Create, [R] Reset');
+    })();
+  </script>
+</body>
+</html>
