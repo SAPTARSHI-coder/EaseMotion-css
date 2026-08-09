@@ -1,13 +1,47 @@
-# Skeleton Loading Shimmer
+# ease-skeleton-shimmer
 
-A modern skeleton placeholder with a sweeping light shimmer effect, commonly used to indicate that content is loading.
+Animated skeleton placeholders that display a moving gradient highlight while actual content is loading. Pure CSS/HTML — no JavaScript required.
 
-## Preview
+## Why this is useful
 
-Open `demo.html` in your browser to see a mock user profile card displaying the shimmer loading state.
+Skeleton loaders improve perceived performance and give users a visual cue that content is on its way, instead of a blank screen or a spinner. This component provides reusable shimmer blocks for common UI patterns:
 
-## Implementation Details
+- **Text lines** — paragraph/heading placeholders
+- **Profile row** — avatar + text combo (e.g. comment, user card)
+- **Content card** — thumbnail image + text lines (e.g. feed/dashboard card)
+- **Simple skeleton** — minimal `<div class="skeleton"><i></i>...</div>` structure matching common skeleton markup conventions
 
-- **No Images/JavaScript:** The shimmer is created entirely mathematically using CSS gradients.
-- **The Gradient:** The base color of the skeleton elements is a solid light gray (`#e2e5e7`). On top of that, a `linear-gradient` is applied as a `background-image`. This gradient transitions from transparent, to semi-transparent white (the "shimmer"), back to transparent.
-- **Animation:** The gradient's `background-size` is stretched to `200%` width. The `@keyframes shimmer` animation then continuously sweeps the `background-position` from left (`-200%`) to right (`200%`), passing the white highlight over the gray elements repeatedly.
+## How it works
+
+Each skeleton element is a solid-colored block (`.skeleton` / `.skeleton-line` / etc.) with a `::after` pseudo-element containing a translucent gradient. The gradient is animated with `transform: translateX()` from `-100%` to `100%`, creating a left-to-right sweeping highlight over the base color.
+
+```css
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.65) 50%, transparent 100%);
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+```
+
+## Usage
+
+```html
+<div class="skeleton-card">
+  <div class="skeleton skeleton-line w-80"></div>
+  <div class="skeleton skeleton-line w-100"></div>
+  <div class="skeleton skeleton-line w-60"></div>
+</div>
+```
+
+Width utility classes (`w-40` through `w-100`) let you vary line lengths for a more natural, non-uniform placeholder look.
+
+## Accessibility
+
+Respects `prefers-reduced-motion: reduce` — the shimmer animation is disabled for users who have that preference set.
+
+## Browser support
+
+Uses standard CSS `linear-gradient`, `transform`, and `@keyframes` — supported in all modern browsers.
