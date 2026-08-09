@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harmonic Vibration – Vibrates at Harmonic Frequency</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>〰️ Harmonic Vibration</h1>
+    <p class="subtitle">Vibrates at harmonic frequency</p>
+
+    <div class="harmonic-container">
+      <div class="harmonic-stage" id="harmonicStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="harmonic-status" id="harmonicStatus">〰️ Vibrating</span>
+          <span class="frequency-display" id="frequencyDisplay">Frequency: 1.0×</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn wave" id="waveBtn">🌊 Wave</button>
+      <button class="ctrl-btn resonance" id="resonanceBtn">💫 Resonance</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Frequency</span>
+      <input type="range" id="frequencySlider" min="1" max="20" value="5" step="0.5" />
+      <span class="slider-value" id="frequencyValue">5.0×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Amplitude</span>
+      <input type="range" id="amplitudeSlider" min="0" max="100" value="60" />
+      <span class="slider-value" id="amplitudeValue">60%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Harmonics</span>
+      <input type="range" id="harmonicsSlider" min="1" max="8" value="3" />
+      <span class="slider-value" id="harmonicsValue">3</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="220" />
+      <span class="slider-value" id="colorValue">220°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">〰️ Harmonic vibration at 5.0× frequency</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset · <kbd>W</kbd> Wave · <kbd>Q</kbd> Resonance
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const harmonicStatus = document.getElementById('harmonicStatus');
+      const frequencyDisplay = document.getElementById('frequencyDisplay');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const waveBtn = document.getElementById('waveBtn');
+      const resonanceBtn = document.getElementById('resonanceBtn');
+      const status = document.getElementById('status');
+      const frequencySlider = document.getElementById('frequencySlider');
+      const frequencyValue = document.getElementById('frequencyValue');
+      const amplitudeSlider = document.getElementById('amplitudeSlider');
+      const amplitudeValue = document.getElementById('amplitudeValue');
+      const harmonicsSlider = document.getElementById('harmonicsSlider');
+      const harmonicsValue = document.getElementById('harmonicsValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let wavePoints = [];
+      let resonanceParticles = [];
+      let isResonating = false;
+      let resonanceTimer = null;
+      let wavePhase = 0;
+      let isWaveMode = false;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Resonance particle class -----
+      class ResonanceParticle {
+        constructor(x, y) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.5 + Math.random() * 2;
+          this.x = x;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.size = 1 + Math.random() * 3;
+          this.life = 1;
+          this.decay = 0.01 + Math.random() * 0.02;
+          this.hue = parseInt(colorSlider.value) + (Math.random() - 0.5) * 30;
+          this.saturation = 80 + Math.random() * 20;
+          this.lightness = 60 + Math.random() * 30;
+          this.opacity = 0.5 + Math.random() * 0.5;
+          this.glowSize = this.size * 4;
+          this.frequency = 1 + Math.random() * 2;
+        }
+
+        update(time, freq) {
+          this.x += this.vx + Math.sin(time * this.frequency + this.vx) * 0.1;
+          this.y += this.vy + Math.cos(time * this.frequency * 0.7 + this.vy) * 0.1;
+          this.vx *= 0.99;
+          this.vy *= 0.99;
+          this.life -= this.decay;
+          this.size *= 0.998;
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity * 0.8;
+          const size = this.size * this.life;
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, size * 5
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.3})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Draw harmonic vibration -----
+      function drawHarmonic() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const freq = parseFloat(frequencySlider.value);
+        const amplitude = parseInt(amplitudeSlider.value) / 100;
+        const harmonics = parseInt(harmonicsSlider.value);
+        const hue = parseInt(colorSlider.value);
+        const speed = freq * 0.5;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw wave mode
+        if (isWaveMode) {
+          drawWaveMode(w, h, cx, cy, freq, amplitude, harmonics, hue, speed);
+        } else {
+          drawCircularMode(w, h, cx, cy, freq, amplitude, harmonics, hue, speed);
+        }
+
+        // Draw resonance particles
+        if (isResonating) {
+          resonanceParticles = resonanceParticles.filter(p => p.update(time, freq));
+          resonanceParticles.forEach(p => p.draw(ctx));
+          if (resonanceParticles.length === 0) {
+            isResonating = false;
+          }
+        }
+
+        // Update status
+        frequencyDisplay.textContent = `Frequency: ${freq.toFixed(1)}×`;
+        if (!isPaused) {
+          harmonicStatus.textContent = '〰️ Vibrating';
+          status.textContent = `〰️ Harmonic vibration at ${freq.toFixed(1)}× frequency`;
+        } else {
+          harmonicStatus.textContent = '⏸ Paused';
+          status.textContent = '⏸ Paused';
+        }
+      }
+
+      // ----- Draw circular mode -----
+      function drawCircularMode(w, h, cx, cy, freq, amplitude, harmonics, hue, speed) {
+        const radius = Math.min(w, h) * 0.3;
+        
+        // Draw harmonic rings
+        for (let hIdx = 0; hIdx < harmonics; hIdx++) {
+          const harmonicFreq = freq * (hIdx + 1);
+          const harmonicAmp = amplitude * (1 - hIdx * 0.15);
+          const ringRadius = radius * (0.3 + hIdx * 0.15);
+          const alpha = 0.3 + 0.5 * (1 - hIdx / harmonics);
+          const hueShift = hIdx * 30;
+
+          // Draw vibration ring
+          const segments = 80;
+          ctx.beginPath();
+          for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const angle = t * Math.PI * 2;
+            const wave = Math.sin(angle * harmonicFreq + time * speed + hIdx) * harmonicAmp * 20;
+            const r = ringRadius + wave;
+            const x = cx + Math.cos(angle) * r;
+            const y = cy + Math.sin(angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+
+          const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, ringRadius * 1.5);
+          grad.addColorStop(0, `hsla(${hue + hueShift + 20}, 100%, 80%, ${alpha * 0.1})`);
+          grad.addColorStop(0.5, `hsla(${hue + hueShift}, 100%, 60%, ${alpha * 0.15})`);
+          grad.addColorStop(1, `hsla(${hue + hueShift - 20}, 100%, 40%, 0)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          ctx.shadowColor = `hsla(${hue + hueShift}, 100%, 60%, ${alpha * 0.05})`;
+          ctx.shadowBlur = 15;
+          ctx.strokeStyle = `hsla(${hue + hueShift + 20}, 100%, 70%, ${alpha * 0.6})`;
+          ctx.lineWidth = 1 + (1 - hIdx / harmonics) * 2;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          // Draw nodes
+          for (let i = 0; i < harmonicFreq * 2; i++) {
+            const angle = (i / (harmonicFreq * 2)) * Math.PI * 2;
+            const wave = Math.sin(angle * harmonicFreq + time * speed + hIdx) * harmonicAmp * 20;
+            const r = ringRadius + wave;
+            const x = cx + Math.cos(angle) * r;
+            const y = cy + Math.sin(angle) * r;
+            const nodeSize = 2 + 3 * (1 - hIdx / harmonics) * (0.5 + 0.5 * Math.sin(time * speed + angle));
+            
+            const grad2 = ctx.createRadialGradient(x, y, 0, x, y, nodeSize);
+            grad2.addColorStop(0, `hsla(${hue + hueShift + 40}, 100%, 95%, ${alpha * 0.8})`);
+            grad2.addColorStop(1, `hsla(${hue + hueShift + 20}, 100%, 70%, ${alpha * 0.3})`);
+            ctx.fillStyle = grad2;
+            ctx.beginPath();
+            ctx.arc(x, y, nodeSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Center glow
+        const centerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+        centerGlow.addColorStop(0, `hsla(${hue + 30}, 100%, 90%, ${0.1 + amplitude * 0.15})`);
+        centerGlow.addColorStop(1, `hsla(${hue + 30}, 100%, 60%, 0)`);
+        ctx.fillStyle = centerGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Center dot
+        const dotSize = 3 + 5 * amplitude;
+        ctx.fillStyle = `hsla(${hue + 40}, 100%, 95%, ${0.3 + 0.4 * amplitude})`;
+        ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.1 * amplitude})`;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(cx, cy, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // ----- Draw wave mode -----
+      function drawWaveMode(w, h, cx, cy, freq, amplitude, harmonics, hue, speed) {
+        const waveWidth = w * 0.8;
+        const waveHeight = h * 0.4;
+        const startX = (w - waveWidth) / 2;
+        const centerY = cy;
+
+        // Draw multiple harmonic waves
+        for (let hIdx = 0; hIdx < harmonics; hIdx++) {
+          const harmonicFreq = freq * (hIdx + 1);
+          const harmonicAmp = amplitude * (1 - hIdx * 0.2);
+          const alpha = 0.3 + 0.5 * (1 - hIdx / harmonics);
+          const hueShift = hIdx * 30;
+          const yOffset = (hIdx - (harmonics - 1) / 2) * 40;
+
+          // Draw wave
+          ctx.beginPath();
+          const segments = 120;
+          for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const x = startX + t * waveWidth;
+            const wave = Math.sin(t * Math.PI * 2 * harmonicFreq + time * speed + hIdx * 0.5) * harmonicAmp * waveHeight * 0.5;
+            const y = centerY + yOffset + wave;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+
+          ctx.shadowColor = `hsla(${hue + hueShift}, 100%, 60%, ${alpha * 0.05})`;
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `hsla(${hue + hueShift + 20}, 100%, 70%, ${alpha * 0.7})`;
+          ctx.lineWidth = 1.5 + (1 - hIdx / harmonics) * 2;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          // Fill under wave
+          ctx.beginPath();
+          for (let i = 0; i <= segments; i++) {
+            const t = i / segments;
+            const x = startX + t * waveWidth;
+            const wave = Math.sin(t * Math.PI * 2 * harmonicFreq + time * speed + hIdx * 0.5) * harmonicAmp * waveHeight * 0.5;
+            const y = centerY + yOffset + wave;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          const lastY = centerY + yOffset;
+          ctx.lineTo(startX + waveWidth, lastY);
+          ctx.lineTo(startX, lastY);
+          ctx.closePath();
+
+          const grad = ctx.createLinearGradient(0, centerY - waveHeight, 0, centerY + waveHeight);
+          grad.addColorStop(0, `hsla(${hue + hueShift + 20}, 100%, 80%, ${alpha * 0.05})`);
+          grad.addColorStop(0.5, `hsla(${hue + hueShift}, 100%, 60%, ${alpha * 0.08})`);
+          grad.addColorStop(1, `hsla(${hue + hueShift - 20}, 100%, 40%, 0)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+
+          // Draw nodes (peaks)
+          const numPeaks = Math.round(harmonicFreq * 2);
+          for (let i = 0; i < numPeaks; i++) {
+            const t = (i + 0.5) / numPeaks;
+            const x = startX + t * waveWidth;
+            const wave = Math.sin(t * Math.PI * 2 * harmonicFreq + time * speed + hIdx * 0.5) * harmonicAmp * waveHeight * 0.5;
+            const y = centerY + yOffset + wave;
+            const nodeSize = 2 + 3 * (1 - hIdx / harmonics) * (0.5 + 0.5 * Math.sin(time * speed + i));
+            
+            const grad2 = ctx.createRadialGradient(x, y, 0, x, y, nodeSize);
+            grad2.addColorStop(0, `hsla(${hue + hueShift + 40}, 100%, 95%, ${alpha * 0.8})`);
+            grad2.addColorStop(1, `hsla(${hue + hueShift + 20}, 100%, 70%, ${alpha * 0.3})`);
+            ctx.fillStyle = grad2;
+            ctx.beginPath();
+            ctx.arc(x, y, nodeSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Axis line
+        ctx.strokeStyle = `hsla(${hue}, 50%, 50%, 0.1)`;
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(startX, centerY);
+        ctx.lineTo(startX + waveWidth, centerY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        harmonicStatus.textContent = isPaused ? '⏸ Paused' : '〰️ Vibrating';
+      }
+
+      // ----- Reset -----
+      function resetHarmonic() {
+        isPaused = false;
+        isWaveMode = false;
+        isResonating = false;
+        toggleBtn.textContent = '⏸ Pause';
+        frequencySlider.value = 5;
+        frequencyValue.textContent = '5.0×';
+        amplitudeSlider.value = 60;
+        amplitudeValue.textContent = '60%';
+        harmonicsSlider.value = 3;
+        harmonicsValue.textContent = '3';
+        colorSlider.value = 220;
+        colorValue.textContent = '220°';
+        resonanceParticles = [];
+        wavePhase = 0;
+        status.textContent = '↺ Reset';
+        harmonicStatus.textContent = '〰️ Vibrating';
+        setTimeout(() => {
+          status.textContent = `〰️ Harmonic vibration at 5.0× frequency`;
+        }, 500);
+      }
+
+      // ----- Toggle wave mode -----
+      function toggleWaveMode() {
+        isWaveMode = !isWaveMode;
+        waveBtn.textContent = isWaveMode ? '📐 Wave' : '🌊 Wave';
+        status.textContent = isWaveMode ? '🌊 Wave mode activated' : '〰️ Circular mode activated';
+        setTimeout(() => {
+          if (!isPaused) {
+            status.textContent = `〰️ Harmonic vibration at ${parseFloat(frequencySlider.value).toFixed(1)}× frequency`;
+          }
+        }, 1500);
+      }
+
+      // ----- Resonance effect -----
+      function resonanceEffect() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const count = 30 + Math.floor(Math.random() * 40);
+        
+        isResonating = true;
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 10 + Math.random() * 50;
+          const x = cx + Math.cos(angle) * radius;
+          const y = cy + Math.sin(angle) * radius;
+          resonanceParticles.push(new ResonanceParticle(x, y));
+        }
+        
+        status.textContent = '💫 Resonance!';
+        setTimeout(() => {
+          if (!isPaused) {
+            status.textContent = `〰️ Harmonic vibration at ${parseFloat(frequencySlider.value).toFixed(1)}× frequency`;
+          }
+        }, 1500);
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        if (!isPaused) {
+          wavePhase += 0.01;
+        }
+        drawHarmonic();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetHarmonic);
+      waveBtn.addEventListener('click', toggleWaveMode);
+      resonanceBtn.addEventListener('click', resonanceEffect);
+
+      frequencySlider.addEventListener('input', (e) => {
+        frequencyValue.textContent = parseFloat(e.target.value).toFixed(1) + '×';
+        if (!isPaused) {
+          status.textContent = `〰️ Harmonic vibration at ${parseFloat(e.target.value).toFixed(1)}× frequency`;
+        }
+      });
+
+      amplitudeSlider.addEventListener('input', (e) => {
+        amplitudeValue.textContent = e.target.value + '%';
+      });
+
+      harmonicsSlider.addEventListener('input', (e) => {
+        harmonicsValue.textContent = e.target.value;
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetHarmonic();
+        }
+        if (e.key === 'w' || e.key === 'W') {
+          e.preventDefault();
+          toggleWaveMode();
+        }
+        if (e.key === 'q' || e.key === 'Q') {
+          e.preventDefault();
+          resonanceEffect();
+        }
+      });
+
+      // Click canvas for resonance
+      canvas.addEventListener('click', resonanceEffect);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = `〰️ Harmonic vibration at 5.0× frequency`;
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>
