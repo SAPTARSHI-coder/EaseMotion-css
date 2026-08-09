@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fractal Tree Growth</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌳 Fractal Tree Growth</h1>
+        <p class="subtitle">Tree branches that grow recursively with leaf clusters</p>
+
+        <div class="tree-wrapper">
+            <canvas id="treeCanvas"></canvas>
+
+            <div class="controls">
+                <button id="growBtn">🌱 Grow</button>
+                <button id="depthBtn">Depth: 6</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌳 Growing</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('treeCanvas');
+        const ctx = canvas.getContext('2d');
+        const growBtn = document.getElementById('growBtn');
+        const depthBtn = document.getElementById('depthBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let branches = [];
+        let leaves = [];
+        let maxDepth = 6;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let growthProgress = 0;
+        let isGrowing = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let treeComplete = false;
+        let leafClusters = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== DEPTH OPTIONS =====
+        const depthOptions = [3, 4, 5, 6, 7, 8];
+
+        // ===== BRANCH CLASS =====
+        class Branch {
+            constructor(x1, y1, x2, y2, depth, angle, length, parent) {
+                this.x1 = x1;
+                this.y1 = y1;
+                this.x2 = x2;
+                this.y2 = y2;
+                this.depth = depth;
+                this.angle = angle;
+                this.length = length;
+                this.parent = parent;
+                this.children = [];
+                this.growth = 0;
+                this.targetGrowth = 1;
+                this.isTip = true;
+                this.hasLeaves = false;
+                this.leafCluster = null;
+                this.thickness = Math.max(1, 6 - depth * 0.6);
+                this.color = this.getColor();
+                this.swingPhase = Math.random() * Math.PI * 2;
+                this.swingSpeed = 0.01 + Math.random() * 0.02;
+                this.swingAmount = 0.02 + Math.random() * 0.03;
+                this.age = 0;
+                this.maxAge = 100 + Math.random() * 100;
+            }
+
+            getColor() {
+                const depthFactor = this.depth / maxDepth;
+                const r = 60 + depthFactor * 40;
+                const g = 40 + depthFactor * 30;
+                const b = 20 + depthFactor * 20;
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                
+                // Growth
+                if (this.growth < this.targetGrowth) {
+                    this.growth += speed * 1.5;
+                    if (this.growth > this.targetGrowth) {
+                        this.growth = this.targetGrowth;
+                        // When fully grown, create leaves if at max depth
+                        if (this.depth === maxDepth && !this.hasLeaves) {
+                            this.createLeafCluster();
+                        }
+                        // Branch if not at max depth
+                        if (this.depth < maxDepth && this.isTip && Math.random() < 0.3) {
+                            this.branch();
+                        }
+                    }
+                }
+
+                // Swing
+                this.swingPhase += this.swingSpeed * speed * 5;
+                const swing = Math.sin(this.swingPhase + time * 0.01) * this.swingAmount;
+
+                // Calculate end position with swing
+                const currentAngle = this.angle + swing;
+                const grownLength = this.length * this.growth;
+                this.x2 = this.x1 + Math.cos(currentAngle) * grownLength;
+                this.y2 = this.y1 + Math.sin(currentAngle) * grownLength;
+
+                // Update children
+                for (const child of this.children) {
+                    child.update(time, speed);
+                }
+
+                // Update leaf cluster
+                if (this.leafCluster) {
+                    this.leafCluster.update(time, speed);
+                }
+            }
+
+            branch() {
+                this.isTip = false;
+                const numBranches = 2 + Math.floor(Math.random() * 1);
+                
+                for (let i = 0; i < numBranches; i++) {
+                    const branchAngle = this.angle + (Math.random() - 0.5) * 1.2;
+                    const branchLength = this.length * (0.6 + Math.random() * 0.3);
+                    const child = new Branch(
+                        this.x2,
+                        this.y2,
+                        this.x2 + Math.cos(branchAngle) * branchLength,
+                        this.y2 + Math.sin(branchAngle) * branchLength,
+                        this.depth + 1,
+                        branchAngle,
+                        branchLength,
+                        this
+                    );
+                    child.swingAmount = this.swingAmount * (0.8 + Math.random() * 0.4);
+                    child.swingSpeed = this.swingSpeed * (0.8 + Math.random() * 0.4);
+                    this.children.push(child);
+                }
+            }
+
+            createLeafCluster() {
+                this.hasLeaves = true;
+                const numLeaves = 5 + Math.floor(Math.random() * 8);
+                const cluster = new LeafCluster(this.x2, this.y2, numLeaves, this.depth);
+                leafClusters.push(cluster);
+                this.leafCluster = cluster;
+            }
+
+            draw(ctx) {
+                if (this.growth <= 0) return;
+
+                // Draw branch
+                const endX = this.x1 + (this.x2 - this.x1) * this.growth;
+                const endY = this.y1 + (this.y2 - this.y1) * this.growth;
+
+                ctx.beginPath();
+                ctx.moveTo(this.x1, this.y1);
+                ctx.lineTo(endX, endY);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.thickness * (0.2 + 0.8 * this.growth);
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(50, 30, 10, 0.2)';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Draw children
+                for (const child of this.children) {
+                    child.draw(ctx);
+                }
+            }
+
+            isFullyGrown() {
+                return this.growth >= this.targetGrowth;
+            }
+
+            getEndPosition() {
+                return { x: this.x2, y: this.y2 };
+            }
+        }
+
+        // ===== LEAF CLUSTER CLASS =====
+        class LeafCluster {
+            constructor(x, y, count, depth) {
+                this.x = x;
+                this.y = y;
+                this.count = count || 5 + Math.floor(Math.random() * 8);
+                this.depth = depth || 0;
+                this.leaves = [];
+                this.growth = 0;
+                this.targetGrowth = 1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.size = 3 + Math.random() * 4;
+
+                for (let i = 0; i < this.count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = Math.random() * 15 + 5;
+                    const leafSize = 3 + Math.random() * 5;
+                    const hue = 90 + Math.random() * 40;
+                    const sat = 60 + Math.random() * 30;
+                    const light = 40 + Math.random() * 30;
+                    this.leaves.push({
+                        x: Math.cos(angle) * dist,
+                        y: Math.sin(angle) * dist,
+                        size: leafSize,
+                        angle: angle + (Math.random() - 0.5) * 0.5,
+                        phase: Math.random() * Math.PI * 2,
+                        speed: 0.02 + Math.random() * 0.03,
+                        color: `hsl(${hue}, ${sat}%, ${light}%)`,
+                        wobble: 0.3 + Math.random() * 0.5,
+                    });
+                }
+            }
+
+            update(time, speed) {
+                if (this.growth < this.targetGrowth) {
+                    this.growth += speed * 1.5;
+                    if (this.growth > this.targetGrowth) this.growth = this.targetGrowth;
+                }
+                this.phase += 0.02 * speed * 10;
+            }
+
+            draw(ctx) {
+                if (this.growth <= 0) return;
+
+                const size = this.size * this.growth;
+
+                // Cluster glow
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 4);
+                grad.addColorStop(0, 'rgba(100, 200, 50, 0.1)');
+                grad.addColorStop(1, 'rgba(100, 200, 50, 0)');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                for (const leaf of this.leaves) {
+                    const wobble = Math.sin(this.phase + leaf.phase) * leaf.wobble * 0.3;
+                    const lx = this.x + (leaf.x + wobble) * this.growth;
+                    const ly = this.y + (leaf.y + Math.sin(this.phase * 0.7 + leaf.phase) * 0.5) * this.growth;
+                    const ls = leaf.size * this.growth * (0.7 + 0.3 * Math.sin(this.phase + leaf.phase));
+
+                    // Leaf shape
+                    ctx.save();
+                    ctx.translate(lx, ly);
+                    ctx.rotate(leaf.angle + Math.sin(this.phase + leaf.phase) * 0.1);
+
+                    // Leaf glow
+                    const leafGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, ls);
+                    leafGrad.addColorStop(0, leaf.color + '80');
+                    leafGrad.addColorStop(1, leaf.color + '20');
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, -ls * 0.5);
+                    ctx.quadraticCurveTo(ls * 0.5, -ls * 0.1, ls * 0.7, 0);
+                    ctx.quadraticCurveTo(ls * 0.5, ls * 0.1, 0, ls * 0.5);
+                    ctx.quadraticCurveTo(-ls * 0.5, ls * 0.1, -ls * 0.7, 0);
+                    ctx.quadraticCurveTo(-ls * 0.5, -ls * 0.1, 0, -ls * 0.5);
+                    ctx.closePath();
+
+                    ctx.fillStyle = leafGrad;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = leaf.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Leaf vein
+                    ctx.beginPath();
+                    ctx.moveTo(0, -ls * 0.3);
+                    ctx.lineTo(0, ls * 0.3);
+                    ctx.strokeStyle = 'rgba(30, 80, 30, 0.2)';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            }
+
+            isFullyGrown() {
+                return this.growth >= this.targetGrowth;
+            }
+        }
+
+        // ===== INIT TREE =====
+        function initTree() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const startX = w / 2;
+            const startY = h * 0.85;
+            const trunkLength = Math.min(w, h) * 0.2;
+
+            branches = [];
+            leaves = [];
+            leafClusters = [];
+            treeComplete = false;
+
+            const trunk = new Branch(
+                startX, startY,
+                startX, startY - trunkLength,
+                1,
+                -Math.PI / 2,
+                trunkLength,
+                null
+            );
+            trunk.thickness = 8;
+            trunk.swingAmount = 0.01;
+            branches.push(trunk);
+
+            growthProgress = 0;
+            isGrowing = false;
+        }
+        initTree();
+
+        // ===== GROW TREE =====
+        function growTree() {
+            if (isGrowing || treeComplete) return;
+            isGrowing = true;
+            statusText.textContent = '🌱 Growing...';
+
+            // Grow all branches and leaves
+            let allGrown = true;
+            for (const branch of branches) {
+                if (branch.growth < branch.targetGrowth) {
+                    branch.growth = branch.targetGrowth;
+                    allGrown = false;
+                }
+                // Force branching
+                if (branch.depth < maxDepth && branch.isTip && branch.growth >= branch.targetGrowth) {
+                    branch.branch();
+                }
+            }
+
+            // Check if tree is complete
+            let complete = true;
+            for (const branch of branches) {
+                if (branch.depth < maxDepth && branch.isTip) {
+                    complete = false;
+                    break;
+                }
+            }
+
+            if (complete) {
+                treeComplete = true;
+                statusText.textContent = '🌳 Tree complete!';
+                setTimeout(() => {
+                    statusText.textContent = '🌳 Full grown';
+                }, 1500);
+            } else {
+                setTimeout(() => {
+                    isGrowing = false;
+                    statusText.textContent = '🌱 Growing...';
+                }, 200);
+            }
+
+            isGrowing = false;
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#0a0a1a');
+            grad.addColorStop(0.3, '#0f1a0f');
+            grad.addColorStop(0.6, '#0f1a0f');
+            grad.addColorStop(0.8, '#1a2a1a');
+            grad.addColorStop(1, '#0a1a0a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground
+            const groundGrad = ctx.createLinearGradient(0, h * 0.85, 0, h);
+            groundGrad.addColorStop(0, 'rgba(20, 50, 20, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 60, 30, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(40, 70, 40, 0.2)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, h * 0.85, w, h * 0.15);
+
+            // Grass hints
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.01) * 5;
+                const y = h * 0.85 + Math.sin(i * 2 + time * 0.02) * 8;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.sin(i + time * 0.01) * 3, y - 8 - Math.sin(i * 1.3 + time * 0.02) * 6);
+                ctx.strokeStyle = `rgba(30, 80, 30, ${0.15 + Math.sin(i + time * 0.01) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % (h * 0.7);
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${0.1 + Math.sin(i + time * 0.01) * 0.05})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update branches
+            for (const branch of branches) {
+                branch.update(time, speed);
+                branch.draw(ctx);
+            }
+
+            // Draw leaf clusters
+            for (const cluster of leafClusters) {
+                cluster.draw(ctx);
+            }
+
+            // Auto-grow occasionally
+            if (!isGrowing && !treeComplete && Math.random() < 0.001 * speed * 50) {
+                growTree();
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const branchCount = branches.length;
+                const leafCount = leafClusters.length;
+                const totalLeaves = leafClusters.reduce((sum, c) => sum + c.count, 0);
+                statusText.textContent = `🌳 ${branchCount} branches • ${leafCount} clusters • ${totalLeaves} leaves`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Grow
+        growBtn.addEventListener('click', growTree);
+
+        // Depth
+        depthBtn.addEventListener('click', () => {
+            const currentIndex = depthOptions.indexOf(maxDepth);
+            const nextIndex = (currentIndex + 1) % depthOptions.length;
+            maxDepth = depthOptions[nextIndex];
+            depthBtn.textContent = `Depth: ${maxDepth}`;
+            initTree();
+            statusText.textContent = `🔄 Depth ${maxDepth}`;
+            setTimeout(() => {
+                statusText.textContent = '🌳 Growing';
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌳 Growing';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initTree();
+            speedLevel = 1;
+            speed = speeds[1].value;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌳 Growing';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                growBtn.click();
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                depthBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                growBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initTree();
+        });
+
+        // ===== INIT =====
+        depthBtn.textContent = `Depth: ${maxDepth}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        statusText.textContent = '🌳 Growing';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌳 Fractal Tree Growth loaded!');
+        console.log('💡 G - Grow tree');
+        console.log('💡 D - Change depth');
+        console.log('💡 S - Change speed');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Quick grow');
+    </script>
+</body>
+</html>

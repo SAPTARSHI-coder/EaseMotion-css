@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Motion Performance Analyzer — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Motion Performance Analyzer</h1>
+    <p>
+      Analyze your EaseMotion utility combinations to estimate rendering cost.
+      Ensure your animations are GPU-accelerated and avoid expensive layout recalculations
+      for the smoothest possible user experience.
+    </p>
+    <div class="badges">
+      <span class="badge">⚡ Performance Score</span>
+      <span class="badge">🖥️ GPU Acceleration</span>
+      <span class="badge">🎨 Paint/Layout Analysis</span>
+    </div>
+  </header>
+
+  <main class="analyzer-container">
+
+    <!-- ── INPUT SECTION ──────────────────────────────────────── -->
+    <section class="input-section">
+      <label for="classInput" class="section-label">Analyze EaseMotion Classes:</label>
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="classInput"
+          class="ease-input"
+          placeholder="e.g., ease-fade ease-scale ease-shadow-lg"
+          value="ease-fade ease-scale ease-shadow-lg"
+          autocomplete="off"
+        />
+        <button id="analyzeBtn" class="ease-btn">Analyze</button>
+      </div>
+
+      <div class="quick-tests">
+        <span>Presets:</span>
+        <button class="test-btn" data-classes="ease-fade ease-scale ease-slide-up">Fast (Transforms/Opacity)</button>
+        <button class="test-btn" data-classes="ease-fade ease-shadow-lg">Moderate (Box-Shadow)</button>
+        <button class="test-btn" data-classes="ease-move-top ease-width-expand">Slow (Layout Triggers)</button>
+      </div>
+    </section>
+
+    <!-- ── RESULTS SECTION ────────────────────────────────────── -->
+    <section class="results-section">
+      <!-- Score Ring -->
+      <div class="score-panel">
+        <span class="section-label">Performance Score</span>
+        <div class="score-ring-wrapper">
+          <svg class="score-ring" viewBox="0 0 36 36">
+            <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path id="ringFill" class="ring-fill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+          <div id="scoreText" class="score-text">0</div>
+        </div>
+      </div>
+
+      <!-- Analysis Output -->
+      <div class="analysis-panel">
+        <span class="section-label">Diagnostic Output</span>
+        <div id="consoleOutput" class="console-output">
+          <!-- Diagnostics injected via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Motion Performance Analyzer Logic
+     * Assigns cost penalties based on the CSS properties the classes animate.
+     * 
+     * Base Score: 100
+     * - Composite (Opacity/Transform): -0 pts
+     * - Paint (Colors/Shadows): -15 pts
+     * - Layout (Width/Height/Top/Left): -40 pts
+     */
+
+    const CLASS_DICTIONARY = {
+      // Fast (Composite / GPU Accelerated)
+      'ease-fade': { type: 'composite', prop: 'opacity', penalty: 0 },
+      'ease-scale': { type: 'composite', prop: 'transform: scale', penalty: 0 },
+      'ease-slide-up': { type: 'composite', prop: 'transform: translate', penalty: 0 },
+      'ease-slide-down': { type: 'composite', prop: 'transform: translate', penalty: 0 },
+      'ease-rotate': { type: 'composite', prop: 'transform: rotate', penalty: 0 },
+
+      // Moderate (Paint Triggers)
+      'ease-shadow-lg': { type: 'paint', prop: 'box-shadow', penalty: 15 },
+      'ease-glow': { type: 'paint', prop: 'box-shadow', penalty: 15 },
+      'ease-bg-color': { type: 'paint', prop: 'background-color', penalty: 10 },
+      'ease-text-color': { type: 'paint', prop: 'color', penalty: 10 },
+
+      // Slow (Layout Triggers)
+      'ease-move-top': { type: 'layout', prop: 'top', penalty: 40 },
+      'ease-move-left': { type: 'layout', prop: 'left', penalty: 40 },
+      'ease-width-expand': { type: 'layout', prop: 'width', penalty: 40 },
+      'ease-height-expand': { type: 'layout', prop: 'height', penalty: 40 },
+    };
+
+    const classInput = document.getElementById('classInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const consoleOutput = document.getElementById('consoleOutput');
+    const ringFill = document.getElementById('ringFill');
+    const scoreText = document.getElementById('scoreText');
+    const testBtns = document.querySelectorAll('.test-btn');
+
+    testBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        classInput.value = btn.getAttribute('data-classes');
+        analyze();
+      });
+    });
+
+    analyzeBtn.addEventListener('click', analyze);
+    classInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') analyze();
+    });
+
+    function analyze() {
+      const rawInput = classInput.value.trim();
+      if (!rawInput) return;
+
+      const classes = [...new Set(rawInput.split(/\s+/))];
+      
+      let score = 100;
+      let hasComposite = false;
+      let hasPaint = false;
+      let hasLayout = false;
+      
+      const logs = [];
+
+      classes.forEach(cls => {
+        const data = CLASS_DICTIONARY[cls];
+        if (data) {
+          score -= data.penalty;
+          
+          if (data.type === 'composite') hasComposite = true;
+          if (data.type === 'paint') hasPaint = true;
+          if (data.type === 'layout') hasLayout = true;
+        } else {
+          // Unrecognized classes get a default minor penalty just in case
+          score -= 5;
+          logs.push({ type: 'info', icon: 'ℹ️', msg: `Unknown class <code>${cls}</code>. Assumed minor cost.` });
+        }
+      });
+
+      // Clamp score
+      score = Math.max(0, Math.min(100, score));
+
+      // Generate Diagnostic Logs (Matching the requested output format)
+      if (!hasLayout && !hasPaint && hasComposite) {
+        logs.unshift({ type: 'success', icon: '✔', msg: 'Composite Only (Highly performant)' });
+        logs.unshift({ type: 'success', icon: '✔', msg: 'GPU Accelerated' });
+      }
+
+      if (hasPaint) {
+        logs.push({ type: 'warning', icon: '⚠', msg: 'Heavy Paint Operation Detected (e.g., box-shadow or colors)' });
+      }
+
+      if (hasLayout) {
+        logs.push({ type: 'error', icon: '⚠', msg: 'Layout Thrashing Detected (Animating layout properties)' });
+        logs.push({ type: 'tip', icon: '💡', msg: 'Consider using <code>transform</code> instead of <code>top/left/width</code> animations.' });
+      }
+
+      if (score === 100) {
+        logs.push({ type: 'success', icon: '💡', msg: 'Excellent! These animations run at 60fps smoothly.' });
+      }
+
+      renderResults(score, logs);
+    }
+
+    function renderResults(score, logs) {
+      // Update Score UI
+      scoreText.textContent = score;
+      ringFill.setAttribute('stroke-dasharray', `${score}, 100`);
+      
+      // Update Ring Color
+      let strokeColor = '#22c55e'; // Green
+      if (score < 80) strokeColor = '#eab308'; // Yellow
+      if (score < 50) strokeColor = '#ef4444'; // Red
+      ringFill.style.stroke = strokeColor;
+
+      // Update Console
+      consoleOutput.innerHTML = logs.map(log => {
+        return `<div class="log-entry log-${log.type}">
+                  <span class="log-icon">${log.icon}</span>
+                  <span class="log-text">${log.msg}</span>
+                </div>`;
+      }).join('');
+    }
+
+    // Run initial analysis
+    analyze();
+  </script>
+
+</body>
+</html>
