@@ -1,7 +1,8 @@
-# Component Name
+# CSS Ripple Button Effect
 
-A pure CSS implementation of the component.
+A material-design inspired button that creates a ripple animation when clicked, entirely without JavaScript.
 
-## Usage
-
-Include the `style.css` in your project and copy the HTML structure from `demo.html`.
+## Features
+- Pure CSS using `:active` and `:focus` states to trigger the animation
+- Clean `@keyframes` for the scaling and fading effect
+- Responsive centered pseudo-element overlay

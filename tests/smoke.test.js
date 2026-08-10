@@ -117,7 +117,7 @@ const modals = readFileSync(resolve(componentsDir, 'modals.css'), 'utf8');
     expect(css).toContain('.ease-btn-loading > *');
     expect(css).toContain('visibility: hidden');
     expect(css).toContain('.ease-btn-loading::after');
-    expect(css).toContain('border: 2px solid var(--ease-btn-loading-color');
+    expect(css).toContain('border: 2px solid currentColor');
   });
 
   it('minified bundle should be valid and contain key classes', () => {

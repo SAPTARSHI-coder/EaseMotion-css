@@ -1,44 +1,11 @@
-# CSS Weather Widget
+# Interactive Weather Dashboard Widget
 
-An animated and responsive weather widget built entirely with HTML and CSS.
+An advanced, layout-isolated micro-dashboard component utilizing glassmorphic depth filters, pure CSS semantic clouds, and zero-repaint hardware-accelerated timeline channels.
 
-## Features
+## Core Layout Architecture
+- `.ease-weather-card` : Primary composited container context bounding frosted backdrop mechanics.
+- `.ease-css-cloud` : 100% dependency-free, hardware-accelerated floating CSS atmospheric element.
+- `.ease-ambient-glow` : GPU-driven environment lighting map tracker.
 
-- Animated sun and cloud illustration
-- Animated atmospheric clouds
-- CSS rain animation
-- Temperature display
-- Weather condition
-- Humidity information
-- Wind speed
-- Atmospheric pressure
-- Five-day forecast
-- Glassmorphism UI
-- Responsive mobile layout
-- Hover interactions
-- Keyboard focus states
-- `prefers-reduced-motion` accessibility support
-- No JavaScript required
-
-## Technologies
-
-- HTML5
-- CSS3
-- CSS Grid
-- CSS Flexbox
-- CSS Animations
-- CSS Gradients
-- CSS Backdrop Filter
-
-## Files
-
-- `demo.html`
-- `style.css`
-
-## Issue
-
-Implements #68606 — CSS Weather Widget.
-
-## Submission Track
-
-`submissions/examples/`
+## Composition Variant Modifiers
+- `.ease-weather-stormy` : Overrides default highlights with high-frequency lightning keyframe configurations.

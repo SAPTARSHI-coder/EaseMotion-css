@@ -1,25 +1,13 @@
-# Interactive Accordion with Smooth Animation
+# Smooth CSS-Grid Accordion Component Sandbox
 
 ## Overview
-This submission provides a clean, modern **Interactive Accordion Component** featuring smooth content expansion/collapse states, rotating chevron indicators, and custom easing transitions. It is designed to handle FAQs or side-navigation categories cleanly while fitting EaseMotion's animation-first design philosophy.
+An animation-first, highly accessible expanding accordion collection panel engineered inside an isolated sandbox ecosystem. This component leverages native semantic structures paired with modern CSS grid animation tracks to animate dynamic heights without requiring JavaScript.
 
-## Usage
-Add the following HTML structure to your project alongside the styling sheet:
+## 📁 Sandbox Configuration Files
+* `demo.html` — Standalone presentation preview staging a multi-row interactive accordion module.
+* `style.css` — Scoped styling properties utilizing `0fr -> 1fr` interpolation paths linked backward to root variables.
 
-```html
-<div class="accordion-container">
-  <details class="accordion-item">
-    <summary class="accordion-header">
-      <span>Your Question Here</span>
-      <span class="accordion-icon">▼</span>
-    </summary>
-    <div class="accordion-body">
-      <p>Your answer or hidden content text goes here.</p>
-    </div>
-  </details>
-</div>
-```
-## Why it fits EaseMotion CSS
-Animation-First: Brings fluid motion to static layout toggles via smooth rotation and entrance fades.
-Human-Readable: Relies on native semantic HTML elements (<details> and <summary>) coupled with simple classes.
-Zero Dependencies: Pure HTML and CSS layout requiring no heavy Javascript libraries.
+## 🚀 Key Layout Mechanics
+1. **Dynamic Auto-Height Transitions:** Rather than utilizing hacky `max-height` constraints which skew motion speeds, this engine animates structural `grid-template-rows` values for consistent, graceful velocity.
+2. **Native Keyboard Accessibility:** Arrow keys, Enter, and Spacebar commands interact with the layout headers automatically due to semantic elements.
+3. **No Script Execution Jitter:** Eliminates layout-thrashing window recalculations, saving processing cycles on resource-constrained browsers.

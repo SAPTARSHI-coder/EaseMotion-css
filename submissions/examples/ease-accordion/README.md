@@ -1,18 +1,39 @@
-# Pure CSS Animated Accordion (`.ease-accordion`)
+# Animated Accordion / Collapsible FAQ
 
-## Description
-This submission fulfills Issue #57081. It provides a lightweight, highly performant accordion component that does not require a single line of JavaScript.
+A pure CSS animated accordion built on native `<details>` and `<summary>` HTML elements. Uses the `grid-template-rows: 0fr → 1fr` technique for smooth height animation and a CSS-only rotating chevron indicator. Zero JavaScript required.
 
-By utilizing the native HTML `<details>` and `<summary>` tags alongside modern CSS Grid transitions (`grid-template-rows: 0fr` to `1fr`), we can achieve buttery smooth opening and closing animations that respond dynamically to the content height.
+---
 
-## Features
-- **Zero JavaScript:** Relies entirely on native browser behavior and CSS.
-- **Dynamic Height Animation:** No hardcoded heights. The CSS Grid trick allows it to animate smoothly regardless of how much text is inside.
-- **Accessible by Default:** Because it uses `<details>` and `<summary>`, it is natively keyboard accessible and screen-reader friendly.
-- **Micro-interactions:** The icon rotates 180 degrees smoothly on open, and the content fades/slides in sequentially after the accordion opens.
-- **Composable:** Designed to pair perfectly with existing framework classes like `.ease-card`.
+## Overview
 
-## Files Included
-- `demo.html`: An interactive FAQ page demonstrating the accordion.
-- `style.css`: The component CSS, ready to be integrated into the core framework.
-- `README.md`: This documentation.
+- **Animation technique:** `grid-template-rows` transition from `0fr` to `1fr` on the body wrapper, which animates the height from zero to full without needing `max-height` hacks.
+- **Chevron:** `transform: rotate(90deg)` applied to `.ease-accordion__chevron` when `details[open]`.
+- **Accessibility:** Native `<details>` / `<summary>` is keyboard-navigable and screen-reader friendly. `aria-hidden="true"` on the decorative chevron. `focus-visible` outline for keyboard users.
+- **Dark mode:** All colors use CSS custom properties.
+- **Reduced motion:** Transitions are disabled when `prefers-reduced-motion: reduce` is active.
+
+---
+
+## Usage
+
+```html
+<div class="ease-accordion">
+  <details class="ease-accordion__item">
+    <summary class="ease-accordion__header">
+      Your question here
+      <span class="ease-accordion__chevron" aria-hidden="true">▸</span>
+    </summary>
+    <div class="ease-accordion__body">
+      <p>Your answer here.</p>
+    </div>
+  </details>
+</div>
+```
+
+Add the `open` attribute to a `<details>` element to have it expanded on page load.
+
+### CSS Variable Reference
+
+| Variable | Default | Description |
+|---|---|---|
+| `--accordion-duration` | `0.35s` | Open/close transition duration |

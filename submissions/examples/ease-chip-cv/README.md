@@ -1,28 +1,32 @@
-# Chip/Tag (cv variant)
+# Animated Chip (`ease-chip-cv`)
 
-## What does this do?
-A collection of animated chip/tag components with 3 style variants (Solid, Outline, Soft), 5 color options (Primary, Info, Success, Warning, Danger), 3 sizes, and optional removable close button. Perfect for tags, filters, selections, and categorization.
+A lightweight animated chip component built with **HTML5** and **Pure CSS**.
 
-## How is it used?
+## Features
 
-### Basic Usage:
+- Hover lift animation
+- Glow/brightness effect
+- Ripple animation
+- Removable chip style
+- Multiple color variants
+- Responsive layout
+- Pure CSS
+- No JavaScript
+- No external dependencies
 
-```html
-<!-- Simple chip -->
-<span class="ease-chip-cv ease-chip-cv-solid">React</span>
+## Folder Structure
 
-<span class="ease-chip-cv ease-chip-cv-solid ease-chip-cv-primary">Primary</span>
-<span class="ease-chip-cv ease-chip-cv-solid ease-chip-cv-info">Info</span>
-<span class="ease-chip-cv ease-chip-cv-solid ease-chip-cv-success">Success</span>
-<span class="ease-chip-cv ease-chip-cv-solid ease-chip-cv-warning">Warning</span>
-<span class="ease-chip-cv ease-chip-cv-solid ease-chip-cv-danger">Danger</span>
+```text
+ease-chip-cv/
+├── demo.html
+├── style.css
+└── README.md
+```
 
-<span class="ease-chip-cv ease-chip-cv-solid">
-    Removable
-    <button class="ease-chip-cv-close" aria-label="Remove">×</button>
-</span>
+## Usage
 
-<span class="ease-chip-cv ease-chip-cv-solid">
-    Removable
-    <button class="ease-chip-cv-close" aria-label="Remove">×</button>
-</span>
+Open `demo.html` directly in a browser.
+
+## Browser Support
+
+Works in all modern browsers.

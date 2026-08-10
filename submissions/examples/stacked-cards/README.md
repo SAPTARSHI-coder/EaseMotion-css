@@ -1,24 +1,12 @@
-# CSS Stacked Cards Interaction
+# Stacked Cards
 
-A responsive stacked-card interaction built using pure HTML and CSS.
+**What does this do?**
+A CSS-only stacked cards component.
 
-## ✨ Features
+**How is it used?**
+``html
+<div class="deck"><div class="card">1</div><div class="card">2</div><div class="card">3</div></div>
+`` 
 
-- Pure CSS implementation
-- No JavaScript required
-- Cards stacked with rotation and offset
-- Cards expand on hover
-- Keyboard accessible using `Tab`
-- Visible focus state
-- Responsive layout
-- Mobile-friendly interaction
-- Supports `prefers-reduced-motion`
-- No external dependencies
-
-## 📁 Files
-
-```text
-stacked-cards/
-├── demo.html
-├── style.css
-└── README.md
+**Why is it useful?**
+Lightweight, zero-dependency implementation.

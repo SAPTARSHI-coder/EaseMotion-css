@@ -1,19 +1,18 @@
-cat > submissions/examples/ease-magnetic-hover/README.md <<'EOF'
-# Ease Magnetic Hover
+# ease-magnetic-hover
 
-## What does this add?
+A smooth magnetic hover effect where elements scale up on hover, creating a magnetic "pull" feeling.
 
-A lightweight magnetic hover interaction that gently pulls an element toward the user's cursor.
+## Classes
 
-The effect is implemented with CSS transforms and a small amount of JavaScript to calculate the cursor's distance from the element's center.
+| Class | Effect |
+|-------|--------|
+| `ease-magnetic` | Scales to 1.05x on hover |
+| `ease-magnetic-light` | Scales to 1.02x on hover |
+| `ease-magnetic-strong` | Scales to 1.10x on hover |
 
-## How does it work?
+## Usage
 
-The cursor position is compared with the center of the element. The resulting X and Y offsets are multiplied by a configurable magnetic strength and applied using CSS custom properties.
-
-```css
-transform: translate3d(
-  var(--magnetic-x),
-  var(--magnetic-y),
-  0
-);
+```html
+<div class="ease-magnetic">Hover me</div>
+<div class="ease-magnetic-light">Light pull</div>
+<div class="ease-magnetic-strong">Strong pull</div>

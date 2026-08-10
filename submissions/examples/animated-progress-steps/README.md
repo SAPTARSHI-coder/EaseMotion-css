@@ -1,22 +1,36 @@
 # Animated Progress Steps
 
-A responsive CSS-only multi-step progress indicator with animated
-connecting-line fill and active-step animation.
+## What it does
 
-## Features
+A wizard-style progress stepper with animated transitions between steps. Shows current step, completed steps with checkmarks, and pending steps.
 
-- Pure HTML and CSS
-- No JavaScript required
-- Animated progress line
-- Completed, active, and inactive states
-- Responsive layout
-- Accessible progress structure
-- Reduced-motion support
-- Lightweight and dependency-free
+## How to use it
 
-## Usage
+<div class="ease-progress-steps">
+    <div class="ease-step active">
+        <div class="ease-step-number">1</div>
+        <div class="ease-step-label">Step 1</div>
+    </div>
+    <div class="ease-step">
+        <div class="ease-step-number">2</div>
+        <div class="ease-step-label">Step 2</div>
+    </div>
+</div>
 
-Include the stylesheet:
+## Variants
 
-```html
-<link rel="stylesheet" href="style.css">
+- ease-progress-steps-vertical - Vertical layout
+- ease-step-pulse - Pulsing animation on active step
+
+## States
+
+- active - Current step (glowing gradient)
+- completed - Completed step (green with checkmark)
+- default - Pending step
+
+## Why it fits EaseMotion CSS
+
+- Pure CSS transitions
+- Visual progress feedback
+- Multiple layout options
+- Accessible states

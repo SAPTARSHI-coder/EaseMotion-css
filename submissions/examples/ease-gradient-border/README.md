@@ -1,94 +1,28 @@
-# ease-gradient-border
+# Animated Gradient Border
 
-A rotating gradient border effect built entirely with CSS — powered by the **CSS Houdini `@property`** API. Created for **Issue #64063**.
+**What does this do?**
+Creates a rotating conic-gradient border around cards, buttons, or any UI element using `@property --ease-angle` while keeping the inner background untouched.
 
----
-
-## What does this do?
-
-This component wraps any card (or container) in a smoothly rotating conic-gradient border. The rotation is driven by a single CSS custom property (`--border-angle`) whose type is registered as `<angle>` via the Houdini `@property` rule. Because the browser knows the property holds an angle, it can **natively interpolate** between keyframe values on the compositor thread, producing a seamless 360° loop at 60 fps — with zero JavaScript.
-
-A secondary `::after` pseudo-element applies the same gradient with a `blur(20px)` filter to create a soft ambient glow behind the card.
-
----
-
-## How is it used?
-
-### 1. Register the custom property
-
-```css
-@property --border-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-```
-
-### 2. Animate the property
-
-```css
-@keyframes rotate-gradient {
-  to {
-    --border-angle: 360deg;
-  }
-}
-```
-
-### 3. Apply the conic gradient
-
-```css
-.ease-gradient-border::before {
-  background: conic-gradient(
-    from var(--border-angle),
-    #3b82f6, #ec4899, #10b981, #3b82f6
-  );
-  animation: rotate-gradient 4s linear infinite;
-}
-```
-
-### 4. Markup
+**How is it used?**
+Apply the `.ease-gradient-border` utility class and optionally customize using the custom properties:
 
 ```html
-<div class="ease-gradient-wrapper">
-  <div class="ease-gradient-border">
-    <h2>Houdini Gradient</h2>
-    <p>Your content here.</p>
-  </div>
-</div>
+<article class="ease-gradient-border" style="--ease-gb-width: 4px; --ease-gb-speed: 6s;">
+  <h2>Gradient border</h2>
+  <p>The border rotates continuously without JavaScript.</p>
+</article>
 ```
 
-Open `demo.html` in any modern Chromium-based browser to see it in action.
+### Customization Options
 
----
+You can override these properties on the element style:
+- `--ease-gb-width`: Width of the border (default: `3px`)
+- `--ease-gb-radius`: Border radius (default: `18px`)
+- `--ease-gb-speed`: Rotation duration (default: `6s`)
+- `--ease-gb-color-a`: First gradient stop color (default: `#2dd4bf`)
+- `--ease-gb-color-b`: Second gradient stop color (default: `#3b82f6`)
+- `--ease-gb-color-c`: Third gradient stop color (default: `#f43f5e`)
+- `--ease-gb-fallback`: Fallback solid border color for unsupported browsers (default: `#3b82f6`)
 
-## Why is it useful?
-
-Traditional rotating gradient borders require JavaScript `requestAnimationFrame` loops — often rendering to a hidden `<canvas>` or manually updating inline styles every frame. This approach:
-
-| Concern | JS Canvas Hack | CSS Houdini `@property` |
-|---|---|---|
-| Animation thread | Main thread (JS) | Compositor thread (GPU) |
-| Frame rate | Prone to jank under load | Consistent 60 fps |
-| Code complexity | High (rAF + canvas API) | Low (pure CSS) |
-| Bundle size impact | Adds JS payload | Zero |
-| Progressive enhancement | Requires JS enabled | Degrades to static gradient |
-
-By declaring `syntax: "<angle>"`, we tell the browser that `--border-angle` is not an opaque string but a typed angle value. The browser's rendering pipeline can then hand the interpolation off to the **compositor thread**, which runs independently of the main thread. The result is butter-smooth animation that never competes with JavaScript execution, layout, or paint work.
-
----
-
-## Browser Support
-
-CSS Houdini `@property` is supported in:
-
-- ✅ Chrome 85+
-- ✅ Edge 85+
-- ✅ Opera 71+
-- ⚠️ Firefox 128+ (behind flag in earlier versions)
-- ❌ Safari — not yet supported (falls back to a static gradient)
-
----
-
-## License
-
-Part of the [EaseMotion CSS](https://github.com/Viidhii19/EaseMotion-css) project.
+**Why is it useful?**
+Animated borders are a compact way to call attention to featured content, active states, and premium actions. This fits EaseMotion CSS by standardizing the effect into a readable utility with configurable properties while preserving a no-build, dependency-free workflow.

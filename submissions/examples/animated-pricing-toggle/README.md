@@ -1,16 +1,9 @@
-# ease-pricing-toggle
+# Animated Pricing Toggle Card
 
-A specialized Monthly/Yearly pricing switch for **EaseMotion CSS**, with a conditionally-visible savings badge.
+Closes #6859
 
-## Usage
+Hover lift animation on pricing cards with featured card scale. Uses `transform` and `box-shadow` transitions.
 
-```html
-<div class="pricing-toggle">
-  <span class="pricing-toggle-label">Monthly</span>
-  <label class="pricing-toggle-switch">
-    <input type="checkbox">
-    <span class="pricing-toggle-track"><span class="pricing-toggle-thumb"></span></span>
-  </label>
-  <span class="pricing-toggle-label">Yearly</span>
-  <span class="pricing-toggle-badge">Save 20%</span>
-</div>
+## Classes
+- `.pricing-card` — base card with hover lift
+- `.pricing-card.featured` — scaled featured card

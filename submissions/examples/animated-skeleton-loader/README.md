@@ -1,43 +1,22 @@
 # Animated Skeleton Loader
 
-A pure CSS animated skeleton loader component that provides loading placeholders with smooth shimmer (wave) and pulse effects. It is designed to improve the user experience while content is loading.
+A responsive animated skeleton loader component built using pure HTML and CSS.
 
 ## Features
 
-- Pure HTML and CSS (no JavaScript required)
-- Shimmer (wave) loading animation
-- Pulse animation variant
-- Avatar, title, subtitle, image, text, and button placeholders
-- Rounded modern UI
-- Responsive layout
-- Supports `prefers-reduced-motion` for accessibility
-
-## Files
-
-```
-animated-skeleton-loader/
-├── demo.html
-├── style.css
-├── script.js
-└── README.md
-```
+- Shimmer loading animations
+- Card and text placeholder layouts
+- Responsive skeleton structures
+- Reusable loading utility patterns
+- Smooth gradient animation effects
+- Pure CSS implementation
 
 ## Usage
 
-1. Open `demo.html` in any modern web browser.
-2. The shimmer effect is enabled using the `wave` class.
-3. The pulse effect is enabled using the `pulse` class.
+Open `demo.html` in a browser to view the animated skeleton loader component.
 
-## Accessibility
+## Files
 
-- Uses `aria-busy="true"` and `role="status"` for loading states.
-- Respects `prefers-reduced-motion` by disabling animations when reduced motion is preferred.
-
-## Technologies Used
-
-- HTML5
-- CSS3
-
-## Author
-
-Created as a contribution for the EaseMotion CSS open-source project.
+- `demo.html` → Skeleton loader structure
+- `style.css` → Skeleton styles and shimmer animations
+- `README.md` → Documentation

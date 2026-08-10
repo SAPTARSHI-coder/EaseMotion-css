@@ -1,27 +1,25 @@
-# CSS-Only Cyberpunk Glitch Text Effect
+# Glitch Text Effect
 
-A high-energy, cyberpunk-style glitching animation for typography using advanced CSS clipping and shadows.
+## What it does
 
-## Features
-- Pure CSS implementation using pseudo-elements (`::before` and `::after`).
-- Complex `@keyframes` animation utilizing `clip-path: polygon(...)` to randomly slice text clones.
-- Paired with rapid `transform: translate()` shifts for a chaotic glitch look.
-- Uses `data-text` attribute to sync content.
-- Two variations:
-  - Constant glitch effect.
-  - Hover-only glitch effect.
+Creates a cyberpunk-style glitching text animation using offset pseudo-elements.
 
-## Usage
+## How to use it
 
-1. Include the CSS file.
-2. Add the `.ease-glitch-text` class to your text element and provide the exact same text in the `data-text` attribute.
+<h1 class="ease-glitch-text">GLITCH</h1>
 
-```html
-<h1 class="ease-glitch-text" data-text="CYBERPUNK">CYBERPUNK</h1>
-```
+## Variants
 
-For a hover-only effect, add the `.ease-glitch-hover-only` class as well:
+- ease-glitch-fast - 1.5s cycle
+- ease-glitch-slow - 5s cycle
+- ease-glitch-intense - Stronger offsets
+- ease-glitch-subtle - Semi-transparent colors
+- ease-glitch-neon - Neon glow effect
+- ease-glitch-hover - Triggers on hover only
 
-```html
-<h1 class="ease-glitch-text ease-glitch-hover-only" data-text="HOVER ME">HOVER ME</h1>
-```
+## Why it fits EaseMotion CSS
+
+- Pure CSS, zero JavaScript
+- Pseudo-element offset animation
+- Multiple intensity variants
+- Cyberpunk aesthetic

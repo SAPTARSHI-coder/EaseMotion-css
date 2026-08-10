@@ -1,40 +1,26 @@
-# CSS-Only Smooth Animated Accordion
+# CSS-Only Animated Accordion
 
-A modern, interactive Accordion/FAQ component that expands and collapses with smooth height and opacity transitions, built entirely without JavaScript.
+This submission adds a pure CSS, interactive Accordion component to the EaseMotion framework.
 
-## 🚀 Features
+## Features
+- **Zero JavaScript:** Relies entirely on the hidden checkbox hack (`:checked`).
+- **Smooth Height Transitions:** Uses modern CSS Grid (`grid-template-rows: 0fr -> 1fr`) to overcome the traditional `height: auto` transition limitation.
+- **Accessible:** Uses `.ease-sr-only` to ensure screen reader compatibility, and implements `:focus-visible` to support keyboard navigation (Tab & Space).
+- **Animated Icons:** Icons automatically rotate using `transform` when the accordion is expanded.
 
-- **Pure CSS**: Uses the native `<details>` and `<summary>` HTML elements.
-- **Accessible**: Built-in keyboard navigation (Tab/Space/Enter) and screen reader support without needing ARIA attributes.
-- **Smooth Animation**: Utilizes modern CSS Grid (`grid-template-rows: 0fr to 1fr`) to transition the height of the content seamlessly.
-- **Premium Aesthetics**: Features a sleek dark mode design, subtle glassmorphism effects, glowing borders on focus/hover, and rotating chevron icons.
+## Usage
 
-## 🛠️ Implementation Details
-
-The core of the animation logic relies on a wrapper element inside the `<details>` component:
-
-```css
-.ease-accordion .ease-accordion-content {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 0.4s ease, opacity 0.4s ease;
-}
-
-details[open] .ease-accordion-content {
-  grid-template-rows: 1fr;
-  opacity: 1;
-}
-
-.ease-accordion .ease-accordion-inner {
-  overflow: hidden;
-}
+```html
+<div class="ease-accordion">
+  <input type="checkbox" id="faq-1" class="ease-accordion-trigger ease-sr-only">
+  <label for="faq-1" class="ease-accordion-header">
+    <span>Question</span>
+    <div class="ease-accordion-icon">⬇️</div>
+  </label>
+  <div class="ease-accordion-content">
+    <div class="ease-accordion-inner">
+      <p>Answer text goes here.</p>
+    </div>
+  </div>
+</div>
 ```
-
-This ensures that the content gracefully expands and fades in, providing a buttery-smooth user experience while adhering strictly to EaseMotion's JavaScript-free philosophy.
-
-## 📁 File Structure
-
-- `demo.html`: The HTML structure containing the FAQ accordion.
-- `style.css`: The CSS stylesheet with the `0fr` to `1fr` grid transitions and styling.
-- `README.md`: Documentation for the component.

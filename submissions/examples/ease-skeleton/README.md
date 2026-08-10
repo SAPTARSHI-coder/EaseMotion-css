@@ -1,17 +1,144 @@
-# Animated Skeleton Loaders (`.ease-skeleton`)
+\## ease-skeleton
 
-## Description
-This submission fulfills Issue #57083. Skeleton screens are a modern UX pattern that replace traditional spinning loading wheels with wireframes of the UI that is about to load, greatly improving perceived performance.
 
-This component provides a pure CSS skeleton loader with a continuous, hardware-accelerated shimmering effect.
 
-## Features
-- **Zero JavaScript:** Powered entirely by CSS `@keyframes`.
-- **Hardware Accelerated:** Uses `background-position` translation of a `linear-gradient` for a smooth, performant shimmer effect without recalculating layouts.
-- **Shape Modifiers:** Includes `.ease-skeleton-text` for paragraph lines and `.ease-skeleton-circle` for avatars out of the box.
-- **Accessible:** Respects `prefers-reduced-motion` by disabling the infinite shimmer animation, presenting a static placeholder to prevent distraction or nausea for users with vestibular disorders.
+\*\*What does this do?\*\*
 
-## Files Included
-- `demo.html`: A mock profile card demonstrating how to compose skeletons together to build a loading state.
-- `style.css`: The component CSS, ready to be integrated into the core framework.
-- `README.md`: This documentation.
+A shimmer-style loading placeholder component that mimics content shape
+
+(text, avatar, image, card) while data is loading, using a pure CSS
+
+gradient sweep animation — no JavaScript required.
+
+
+
+\*\*How is it used?\*\*
+
+Apply the base `skeleton` class with a shape variant:
+
+
+
+```html
+
+<div class="skeleton skeleton-text"></div>
+
+<div class="skeleton skeleton-text short"></div>
+
+<div class="skeleton skeleton-avatar"></div>
+
+<div class="skeleton skeleton-image"></div>
+
+```
+
+
+
+Combine into a full card layout:
+
+
+
+```html
+
+<div class="skeleton-card">
+
+&#x20; <div class="skeleton-card-header">
+
+&#x20;   <div class="skeleton skeleton-avatar"></div>
+
+&#x20;   <div class="skeleton skeleton-text"></div>
+
+&#x20; </div>
+
+&#x20; <div class="skeleton skeleton-image"></div>
+
+&#x20; <div class="skeleton skeleton-text"></div>
+
+</div>
+
+```
+
+
+
+Speed variants:
+
+
+
+```html
+
+<div class="skeleton skeleton-image skeleton-fast"></div>
+
+<div class="skeleton skeleton-image skeleton-slow"></div>
+
+```
+
+
+
+Light theme variant:
+
+
+
+```html
+
+<div class="skeleton skeleton-light skeleton-text"></div>
+
+```
+
+
+
+Customize with CSS variables:
+
+
+
+```css
+
+.my-skeleton {
+
+&#x20; --skeleton-base: #2a2a3a;
+
+&#x20; --skeleton-highlight: #3d3d52;
+
+&#x20; --skeleton-speed: 1.5s;
+
+&#x20; --skeleton-radius: 6px;
+
+}
+
+```
+
+
+
+\*\*Why is it useful?\*\*
+
+Loading skeletons are one of the most widely used UI patterns on the
+
+web — used by LinkedIn, YouTube, and Facebook to reduce perceived load
+
+time and prevent layout jank. EaseMotion CSS currently has no answer
+
+for loading states, so `skeleton` fills a high-utility gap that pairs
+
+naturally with the library's animation-first philosophy.
+
+
+
+The shimmer uses a moving `linear-gradient` positioned with `left`
+
+inside an `::after` pseudo-element, so it works on any shape without
+
+extra markup. Includes shape variants (text, avatar, image, card),
+
+speed variants, a light theme, and `prefers-reduced-motion` support
+
+(falls back to a static gray block).
+
+
+
+Perfect for:
+
+\- 📰 Feed and list loading states
+
+\- 👤 Profile and avatar placeholders
+
+\- 🖼️ Image gallery loading
+
+\- 💳 Card-based dashboards and content grids
+
