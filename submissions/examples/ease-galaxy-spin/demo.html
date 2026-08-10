@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galaxy Spin · spiral galaxy rotates with interaction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="galaxy-container">
+      <div class="galaxy-display" id="galaxyDisplay">
+        <!-- Canvas for galaxy -->
+        <canvas id="galaxyCanvas"></canvas>
+        
+        <!-- Galaxy Info -->
+        <div class="galaxy-info">
+          <span class="info-label">🌌 Stars</span>
+          <span class="info-value" id="starCount">0</span>
+        </div>
+
+        <!-- Galaxy Controls -->
+        <div class="galaxy-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Spin</label>
+            <input type="range" class="control-slider" id="spinSlider" min="0" max="100" value="50">
+            <span class="control-value" id="spinValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">⭐ Arms</label>
+            <input type="range" class="control-slider" id="armsSlider" min="2" max="6" value="4">
+            <span class="control-value" id="armsValue">4</span>
+          </div>
+        </div>
+
+        <!-- Galaxy Text -->
+        <div class="galaxy-text">
+          <span class="text-label">🌌 Spiral Galaxy</span>
+          <span class="text-message" id="galaxyMessage">Rotate the galaxy with your cursor</span>
+        </div>
+      </div>
+      
+      <div class="galaxy-status">
+        <span id="galaxyStatus">🌌 Move your cursor to spin the galaxy</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌌 spiral galaxy · 4 palettes · arm control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('galaxyCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('galaxyDisplay');
+      const starCount = document.getElementById('starCount');
+      const galaxyStatus = document.getElementById('galaxyStatus');
+      const galaxyMessage = document.getElementById('galaxyMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const spinSlider = document.getElementById('spinSlider');
+      const spinValue = document.getElementById('spinValue');
+      const armsSlider = document.getElementById('armsSlider');
+      const armsValue = document.getElementById('armsValue');
+
+      // State
+      let stars = [];
+      let animationId = null;
+      let time = 0;
+      let rotation = 0;
+      let targetRotation = 0;
+      let currentRotation = 0;
+      let paletteIndex = 0;
+
+      // Color palettes
+      const palettes = [
+        { name: 'Cosmic', colors: ['#818cf8', '#a78bfa', '#c4b5fd', '#f472b6', '#34d399'] },
+        { name: 'Sunset', colors: ['#ef4444', '#f97316', '#fbbf24', '#f472b6', '#8b5cf6'] },
+        { name: 'Aurora', colors: ['#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#fbbf24'] },
+        { name: 'Galaxy', colors: ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e'] }
+      ];
+
+      // Star class
+      class Star {
+        constructor() {
+          this.reset();
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+        }
+
+        reset() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          const maxRadius = Math.min(w, h) * 0.4;
+          
+          this.angle = Math.random() * Math.PI * 2;
+          this.radius = 10 + Math.random() * maxRadius;
+          this.size = 0.5 + Math.random() * 2.5;
+          this.brightness = 0.3 + Math.random() * 0.7;
+          this.colorIndex = Math.floor(Math.random() * 5);
+          this.armOffset = (Math.random() - 0.5) * 0.5;
+          this.armIndex = Math.floor(Math.random() * 6);
+          this.twinkleSpeed = 0.01 + Math.random() * 0.03;
+          this.twinklePhase = Math.random() * Math.PI * 2;
+          this.zOffset = (Math.random() - 0.5) * 0.3;
+        }
+
+        update(rotation, armCount, time) {
+          const armAngle = (this.armIndex / armCount) * Math.PI * 2;
+          const angle = this.angle + rotation + armAngle + this.armOffset * 0.5;
+          const radius = this.radius * (1 + Math.sin(rotation * 0.3 + this.armIndex) * 0.05);
+          
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          
+          this.x = cx + Math.cos(angle) * radius;
+          this.y = cy + Math.sin(angle) * radius * 0.85; // Slightly elliptical
+          
+          // Twinkle
+          this.twinklePhase += this.twinkleSpeed;
+          this.brightness = 0.3 + Math.sin(this.twinklePhase) * 0.3 + 0.4;
+        }
+
+        draw(ctx, colors) {
+          const color = colors[this.colorIndex % colors.length];
+          const size = this.size * (0.5 + this.brightness * 0.5);
+          
+          // Glow
+          ctx.save();
+          ctx.globalAlpha = this.brightness * 0.3;
+          const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 4);
+          glow.addColorStop(0, color);
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Star
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.6 + this.brightness * 0.4;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = this.brightness * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x - size * 0.2, this.y - size * 0.2, size * 0.25, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Generate stars
+      function generateStars() {
+        const count = 400 + Math.floor(Math.random() * 200);
+        stars = [];
+        for (let i = 0; i < count; i++) {
+          stars.push(new Star());
+        }
+        starCount.textContent = stars.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Deep space
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(5, 5, 20, 0.4)');
+        grad.addColorStop(0.3, 'rgba(10, 5, 25, 0.5)');
+        grad.addColorStop(0.7, 'rgba(5, 0, 15, 0.6)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Distant stars
+        for (let i = 0; i < 80; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.3 + Math.random() * 1;
+          const alpha = 0.1 + Math.random() * 0.2;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 1;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        
+        // Galaxy core glow
+        const cx = w / 2;
+        const cy = h / 2;
+        const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+        coreGrad.addColorStop(0, 'rgba(255, 230, 200, 0.08)');
+        coreGrad.addColorStop(0.5, 'rgba(200, 150, 255, 0.05)');
+        coreGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = coreGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 40, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateStars();
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const spin = spinSlider.value / 100;
+        const arms = parseInt(armsSlider.value);
+        const palette = palettes[paletteIndex % palettes.length];
+        
+        // Smooth rotation
+        targetRotation += spin * 0.005;
+        currentRotation += (targetRotation - currentRotation) * 0.05;
+        
+        // Clear and draw background
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw stars
+        stars.forEach(star => {
+          star.update(currentRotation, arms, time);
+          star.draw(ctx, palette.colors);
+        });
+        
+        // Draw galaxy core glow on top
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const coreGrad2 = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+        coreGrad2.addColorStop(0, 'rgba(255, 230, 200, 0.05)');
+        coreGrad2.addColorStop(0.5, 'rgba(200, 150, 255, 0.03)');
+        coreGrad2.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = coreGrad2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Update status
+        if (spin > 0.7) {
+          galaxyStatus.textContent = '🌌 Galaxy spinning rapidly through the cosmos! ✨';
+          galaxyStatus.style.color = '#fbbf24';
+        } else if (spin > 0.3) {
+          galaxyStatus.textContent = '🌌 Spiral galaxy rotating gracefully';
+          galaxyStatus.style.color = '#818cf8';
+        } else {
+          galaxyStatus.textContent = '🌌 Move your cursor to spin the galaxy';
+          galaxyStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset (cycle palette)
+      function resetGalaxy() {
+        paletteIndex = (paletteIndex + 1) % palettes.length;
+        generateStars();
+        galaxyStatus.textContent = `🎨 Palette: ${palettes[paletteIndex].name}`;
+        galaxyStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          galaxyStatus.textContent = '🌌 Move your cursor to spin the galaxy';
+          galaxyStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Event listeners
+      display.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        
+        // Calculate angle from center
+        const angle = Math.atan2(y - cy, x - cx);
+        const distance = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        const maxDist = Math.min(canvas.width, canvas.height) * 0.5;
+        const intensity = Math.min(distance / maxDist, 1);
+        
+        // Spin based on angle and distance
+        const spinSpeed = (angle / (Math.PI * 2)) * intensity * 0.02;
+        targetRotation += spinSpeed * 0.5;
+      });
+
+      display.addEventListener('mouseleave', function() {
+        // Continue spinning slowly
+      });
+
+      // Touch support
+      display.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        
+        const angle = Math.atan2(y - cy, x - cx);
+        const distance = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        const maxDist = Math.min(canvas.width, canvas.height) * 0.5;
+        const intensity = Math.min(distance / maxDist, 1);
+        
+        const spinSpeed = (angle / (Math.PI * 2)) * intensity * 0.02;
+        targetRotation += spinSpeed * 0.5;
+      }, { passive: false });
+
+      // Slider updates
+      spinSlider.addEventListener('input', function() {
+        spinValue.textContent = this.value + '%';
+      });
+
+      armsSlider.addEventListener('input', function() {
+        armsValue.textContent = this.value;
+        generateStars();
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetGalaxy();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetGalaxy();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌌 Galaxy Spin ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

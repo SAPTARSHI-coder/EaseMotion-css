@@ -1,0 +1,74 @@
+// ---------------------------------------------------------------------------
+// stagger-advk
+// Generates cascade delays for a group of children without writing one
+// :nth-child rule per item, and degrades correctly under reduced motion.
+// ---------------------------------------------------------------------------
+
+@use "sass:math";
+
+/// Emit staggered animation-delay rules for `$count` children.
+///
+/// @param {Number} $count      How many children to target.
+/// @param {Number} $step       Delay added per item.
+/// @param {Number} $start      Delay applied to the first item.
+/// @param {String} $child      Selector for the children.
+/// @param {Number} $reduced-step  Step used under prefers-reduced-motion.
+@mixin stagger(
+  $count: 8,
+  $step: 70ms,
+  $start: 0ms,
+  $child: "> *",
+  $reduced-step: 30ms
+) {
+  @for $i from 1 through $count {
+    #{$child}:nth-child(#{$i}) {
+      animation-delay: $start + ($step * ($i - 1));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @for $i from 1 through $count {
+      #{$child}:nth-child(#{$i}) {
+        // Keep the ordering cue, compress the total so the group settles fast.
+        animation-delay: $start + ($reduced-step * ($i - 1));
+      }
+    }
+  }
+}
+
+/// Variant that spreads a fixed total duration across the children, so the
+/// cascade takes the same wall-clock time regardless of item count.
+///
+/// @param {Number} $count  How many children to target.
+/// @param {Number} $total  Total time from first to last item starting.
+@mixin stagger-over($count: 8, $total: 500ms, $child: "> *") {
+  $step: 0ms;
+
+  @if $count > 1 {
+    $step: math.div($total, $count - 1);
+  }
+
+  @include stagger(
+    $count: $count,
+    $step: $step,
+    $child: $child,
+    $reduced-step: math.div($step, 2)
+  );
+}
+
+/// Reverse cascade: last child animates first.
+@mixin stagger-reverse($count: 8, $step: 70ms, $child: "> *") {
+  @for $i from 1 through $count {
+    #{$child}:nth-child(#{$i}) {
+      animation-delay: $step * ($count - $i);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @for $i from 1 through $count {
+      #{$child}:nth-child(#{$i}) {
+        animation-delay: math.div($step, 2) * ($count - $i);
+      }
+    }
+  }
+}

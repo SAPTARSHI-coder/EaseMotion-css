@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EaseMotion CSS — GitHub Actions Dependency Caching Proposal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>GitHub Actions Dependency Caching</h1>
+  <p class="subtitle">Proposal for issue #63638 — not a runtime HTML/CSS feature, no end-user markup involved.</p>
+
+  <div class="panel">
+    <h2>Confirmed gaps</h2>
+    <p>Found via <code>grep -l "actions/setup-node" .github/workflows/*.yml | xargs grep -L "cache:"</code> plus manual review of <code>ci.yml</code>:</p>
+    <table>
+      <thead>
+        <tr><th>Workflow</th><th>Job</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ci.yml</td><td>lint</td><td class="status missing">No cache (inconsistent with test job)</td></tr>
+        <tr><td>ci.yml</td><td>test</td><td class="status ok">Already cached</td></tr>
+        <tr><td>release-minified-css.yml</td><td>build</td><td class="status missing">No cache</td></tr>
+        <tr><td>honeypot-sandbox.yml</td><td>sandbox</td><td class="status missing">No cache</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Proposed diff — ci.yml (lint job)</h2>
+    <pre><code>       - name: Setup Node.js
+         if: steps.changed-files.outputs.any_changed == 'true'
+         uses: actions/setup-node@v4
+         with:
+           node-version: 20
+<span class="diff-add">+          cache: 'npm'</span></code></pre>
+    <p class="note">Same one-line addition applies to <code>release-minified-css.yml</code> and <code>honeypot-sandbox.yml</code>'s respective <code>setup-node</code> steps.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Mockup: workflow summary before/after</h2>
+    <div class="compare">
+      <div class="compare-col">
+        <h3>Before (no cache)</h3>
+        <div class="terminal">
+          <div class="term-line">Installing dependencies...</div>
+          <div class="term-line term-time">⏱ npm ci: 34.2s</div>
+        </div>
+      </div>
+      <div class="compare-col">
+        <h3>After (cached)</h3>
+        <div class="terminal">
+          <div class="term-line term-success">Cache restored from key: npm-Linux-abc123...</div>
+          <div class="term-line term-time">⏱ npm ci: 4.8s</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Why this matters</h2>
+    <p>Every workflow run currently installs dependencies from scratch, increasing build times and consuming unnecessary GitHub Actions minutes. Caching package manager dependencies can significantly speed up CI while reducing infrastructure usage — with a minimal, low-risk change.</p>
+  </div>
+</body>
+</html>
