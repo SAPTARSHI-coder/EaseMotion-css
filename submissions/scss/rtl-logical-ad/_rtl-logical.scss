@@ -1,0 +1,167 @@
+// ==========================================================================
+// EaseMotion CSS — RTL Logical mixin
+// Issue #63805
+// --------------------------------------------------------------------------
+// Logical properties with physical fallbacks, so layouts mirror in RTL
+// without a second stylesheet.
+//
+// The important part is knowing what should NOT be mirrored. The usual
+// RTL failure is not "nothing flipped" — it is "everything flipped",
+// including things that must not:
+//
+//   - Media controls. Play still points right in RTL; a mirrored play
+//     button reads as rewind.
+//   - Progress and timelines that represent time, which runs left-to-
+//     right regardless of script direction.
+//   - Numbers, code, and Latin-script content embedded in RTL text.
+//   - Logos and brand marks.
+//
+// Blanket `transform: scaleX(-1)` RTL hacks break all four. This module
+// provides logical properties for what should mirror and an explicit
+// `rtl-preserve` for what should not.
+// ==========================================================================
+
+@use "sass:map";
+
+// Physical → logical property equivalents.
+$rtl-logical-map: (
+    "margin-left": margin-inline-start,
+    "margin-right": margin-inline-end,
+    "padding-left": padding-inline-start,
+    "padding-right": padding-inline-end,
+    "border-left": border-inline-start,
+    "border-right": border-inline-end,
+    "left": inset-inline-start,
+    "right": inset-inline-end,
+);
+
+// --------------------------------------------------------------------------
+// logical
+//
+// Emit a logical property with a physical fallback for older engines.
+//
+// @param {String} $property  Physical property name.
+// @param {*}      $value
+// --------------------------------------------------------------------------
+@mixin logical($property, $value) {
+    @if not map.has-key($rtl-logical-map, $property) {
+        @error "logical(): no logical equivalent for `#{$property}`. "
+             + "Supported: margin-left/right, padding-left/right, "
+             + "border-left/right, left, right.";
+    }
+
+    $logical-name: map.get($rtl-logical-map, $property);
+
+    // Physical first, so engines without logical support still lay out —
+    // they simply do not mirror, which beats no layout at all.
+    #{$property}: $value;
+
+    @supports (#{$logical-name}: 0) {
+        #{$property}: revert;
+        #{$logical-name}: $value;
+    }
+}
+
+// --------------------------------------------------------------------------
+// rtl-preserve
+//
+// Marks an element as direction-neutral. Applied to media controls,
+// timelines, logos and code — anything whose meaning is tied to physical
+// direction rather than reading order.
+//
+// `direction: ltr` on the element keeps its internal layout unflipped
+// even inside an RTL document.
+// --------------------------------------------------------------------------
+@mixin rtl-preserve {
+    direction: ltr;
+
+    // `unicode-bidi: isolate` stops the element's LTR content from
+    // reordering the RTL text around it — without it, a code snippet or
+    // number in an Arabic sentence can drag neighbouring punctuation to
+    // the wrong side.
+    unicode-bidi: isolate;
+}
+
+// --------------------------------------------------------------------------
+// rtl-only / ltr-only
+//
+// Direction-scoped blocks, matched on the `dir` attribute rather than a
+// class, so they work with the document's real direction.
+// --------------------------------------------------------------------------
+@mixin rtl-only {
+    [dir="rtl"] & {
+        @content;
+    }
+}
+
+@mixin ltr-only {
+    [dir="ltr"] &,
+    :root:not([dir="rtl"]) & {
+        @content;
+    }
+}
+
+// --------------------------------------------------------------------------
+// rtl-flip-icon
+//
+// Mirrors a directional icon — an arrow, a chevron, a back button —
+// which SHOULD flip, unlike the cases `rtl-preserve` covers.
+// --------------------------------------------------------------------------
+@mixin rtl-flip-icon {
+    [dir="rtl"] & {
+        transform: scaleX(-1);
+    }
+}
+
+// --------------------------------------------------------------------------
+// logical-inset
+//
+// Shorthand for positioning an absolutely placed element on the inline
+// start or end edge.
+// --------------------------------------------------------------------------
+@mixin logical-inset($side, $value) {
+    @if $side != start and $side != end {
+        @error "logical-inset(): $side must be `start` or `end`, got `#{$side}`.";
+    }
+
+    @if $side == start {
+        left: $value;
+
+        @supports (inset-inline-start: 0) {
+            left: revert;
+            inset-inline-start: $value;
+        }
+    } @else {
+        right: $value;
+
+        @supports (inset-inline-end: 0) {
+            right: revert;
+            inset-inline-end: $value;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// logical-text-align
+//
+// `start` / `end` rather than `left` / `right`.
+// --------------------------------------------------------------------------
+@mixin logical-text-align($side: start) {
+    @if $side != start and $side != end {
+        @error "logical-text-align(): $side must be `start` or `end`.";
+    }
+
+    text-align: if-ltr-physical($side);
+
+    @supports (text-align: start) {
+        text-align: $side;
+    }
+}
+
+@function if-ltr-physical($side) {
+    @if $side == start {
+        @return left;
+    }
+
+    @return right;
+}

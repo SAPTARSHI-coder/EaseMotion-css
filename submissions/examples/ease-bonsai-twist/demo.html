@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonsai Twist · bonsai tree grows and twists</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="bonsai-container">
+      <div class="bonsai-display" id="bonsaiDisplay">
+        <!-- Canvas for bonsai tree -->
+        <canvas id="bonsaiCanvas"></canvas>
+        
+        <!-- Bonsai Info -->
+        <div class="bonsai-info">
+          <span class="info-label">🌳 Growth</span>
+          <span class="info-value" id="growthPercent">0%</span>
+        </div>
+
+        <!-- Bonsai Controls -->
+        <div class="bonsai-controls">
+          <div class="control-group">
+            <label class="control-label">🌱 Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="0">
+            <span class="control-value" id="growthValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌀 Twist</label>
+            <input type="range" class="control-slider" id="twistSlider" min="0" max="100" value="50">
+            <span class="control-value" id="twistValue">50%</span>
+          </div>
+        </div>
+
+        <!-- Bonsai Text -->
+        <div class="bonsai-text">
+          <span class="text-label">🌳 Bonsai</span>
+          <span class="text-message" id="bonsaiMessage">A bonsai tree grows and twists gracefully</span>
+        </div>
+      </div>
+      
+      <div class="bonsai-status">
+        <span id="bonsaiStatus">🌳 The bonsai tree grows and twists as you interact</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-grow" id="growBtn">🌱 Grow</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌳 bonsai grows · twists · 4 seasons</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('bonsaiCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('bonsaiDisplay');
+      const growthPercent = document.getElementById('growthPercent');
+      const growthValue = document.getElementById('growthValue');
+      const twistValue = document.getElementById('twistValue');
+      const bonsaiStatus = document.getElementById('bonsaiStatus');
+      const bonsaiMessage = document.getElementById('bonsaiMessage');
+      const growthSlider = document.getElementById('growthSlider');
+      const twistSlider = document.getElementById('twistSlider');
+      const growBtn = document.getElementById('growBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // State
+      let growth = 0; // 0-100
+      let twist = 50; // 0-100
+      let animationId = null;
+      let season = 0;
+      let branches = [];
+
+      // Seasons
+      const seasons = [
+        { name: 'Spring', color: '#4ade80', flower: '🌸', leafColor: '#22c55e' },
+        { name: 'Summer', color: '#22c55e', flower: '🌿', leafColor: '#16a34a' },
+        { name: 'Autumn', color: '#f97316', flower: '🍂', leafColor: '#ea580c' },
+        { name: 'Winter', color: '#94a3b8', flower: '❄️', leafColor: '#64748b' }
+      ];
+
+      // Branch class
+      class Branch {
+        constructor(x, y, angle, length, depth, maxDepth, parentTwist) {
+          this.x = x;
+          this.y = y;
+          this.angle = angle;
+          this.length = length;
+          this.depth = depth;
+          this.maxDepth = maxDepth;
+          this.parentTwist = parentTwist || 0;
+          this.children = [];
+          this.leaves = [];
+          this.growthProgress = 0;
+          this.twistAngle = 0;
+          this.growSpeed = 0.02 + Math.random() * 0.02;
+          
+          // Generate children
+          if (depth < maxDepth) {
+            const numChildren = 2 + Math.floor(Math.random() * 1);
+            for (let i = 0; i < numChildren; i++) {
+              const childAngle = (Math.random() - 0.5) * 1.2 + (i === 0 ? -0.6 : 0.6);
+              const childLength = length * (0.6 + Math.random() * 0.2);
+              const child = new Branch(
+                x, y,
+                angle + childAngle,
+                childLength,
+                depth + 1,
+                maxDepth,
+                this.parentTwist + (Math.random() - 0.5) * 0.2
+              );
+              this.children.push(child);
+            }
+          }
+          
+          // Generate leaves
+          if (depth >= maxDepth - 1) {
+            const numLeaves = 2 + Math.floor(Math.random() * 3);
+            for (let i = 0; i < numLeaves; i++) {
+              this.leaves.push({
+                angle: (Math.random() - 0.5) * 0.8,
+                size: 3 + Math.random() * 4,
+                phase: Math.random() * Math.PI * 2
+              });
+            }
+          }
+        }
+
+        update(growth, twist, time) {
+          this.growthProgress = Math.min(1, growth / 100);
+          this.twistAngle = (twist / 100) * 0.8 + this.parentTwist;
+          
+          // Update children
+          this.children.forEach(child => {
+            child.update(growth, twist, time);
+          });
+        }
+
+        draw(ctx, time) {
+          const progress = this.growthProgress;
+          const currentLength = this.length * progress;
+          const angle = this.angle + Math.sin(time * 0.5 + this.depth) * 0.05 * (this.twistAngle * 2);
+          
+          const endX = this.x + Math.cos(angle) * currentLength;
+          const endY = this.y + Math.sin(angle) * currentLength;
+          
+          // Draw branch
+          const seasonData = seasons[season % seasons.length];
+          const baseWidth = Math.max(0.5, 3 - this.depth * 0.3) * progress;
+          const color = this.depth < 2 ? '#5a3a2a' : seasonData.leafColor;
+          
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.05)';
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          
+          // Branch line with thickness
+          ctx.strokeStyle = color;
+          ctx.lineWidth = baseWidth;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          
+          // Slight curve for organic feel
+          const midX = (this.x + endX) / 2 + Math.sin(angle + 0.5) * 2 * progress;
+          const midY = (this.y + endY) / 2 + Math.cos(angle + 0.5) * 2 * progress;
+          ctx.quadraticCurveTo(midX, midY, endX, endY);
+          ctx.stroke();
+          
+          // Branch shadow
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+          ctx.lineWidth = baseWidth * 0.3;
+          ctx.beginPath();
+          ctx.moveTo(this.x + 1, this.y + 1);
+          ctx.quadraticCurveTo(midX + 1, midY + 1, endX + 1, endY + 1);
+          ctx.stroke();
+          
+          ctx.restore();
+          
+          // Draw leaves
+          if (progress > 0.3) {
+            const leafProgress = (progress - 0.3) / 0.7;
+            this.leaves.forEach(leaf => {
+              if (Math.random() > leafProgress * 0.5) return;
+              const leafX = endX + Math.cos(angle + leaf.angle) * 8 * leafProgress;
+              const leafY = endY + Math.sin(angle + leaf.angle) * 8 * leafProgress;
+              const leafSize = leaf.size * leafProgress * (0.8 + Math.sin(time + leaf.phase) * 0.2);
+              
+              ctx.save();
+              ctx.globalAlpha = 0.6 + Math.sin(time + leaf.phase) * 0.2;
+              ctx.shadowColor = 'rgba(0,0,0,0.05)';
+              ctx.shadowBlur = 5;
+              
+              // Leaf color with season
+              const seasonColor = seasonData.leafColor;
+              ctx.fillStyle = seasonColor;
+              
+              // Leaf shape
+              ctx.beginPath();
+              ctx.ellipse(leafX, leafY, leafSize, leafSize * 0.5, angle + leaf.angle, 0, Math.PI * 2);
+              ctx.fill();
+              
+              // Leaf vein
+              ctx.globalAlpha = 0.2;
+              ctx.strokeStyle = '#000000';
+              ctx.lineWidth = 0.3;
+              ctx.beginPath();
+              ctx.moveTo(leafX - leafSize * 0.3, leafY);
+              ctx.lineTo(leafX + leafSize * 0.3, leafY);
+              ctx.stroke();
+              
+              ctx.restore();
+            });
+          }
+          
+          // Draw children
+          this.children.forEach(child => {
+            child.draw(ctx, time);
+          });
+        }
+      }
+
+      // Generate bonsai tree
+      function generateBonsai() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.7;
+        
+        // Create trunk
+        const trunk = new Branch(cx, cy, -Math.PI / 2, 60, 0, 4, 0);
+        trunk.growthProgress = 0;
+        branches = [trunk];
+      }
+
+      // Draw pot
+      function drawPot() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.78;
+        
+        ctx.save();
+        
+        // Pot shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 5;
+        
+        // Pot body
+        const potGrad = ctx.createLinearGradient(cx - 60, cy, cx + 60, cy);
+        potGrad.addColorStop(0, '#6b4a3a');
+        potGrad.addColorStop(0.3, '#8b6a5a');
+        potGrad.addColorStop(0.7, '#8b6a5a');
+        potGrad.addColorStop(1, '#5a3a2a');
+        ctx.fillStyle = potGrad;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(0,0,0,0.15)';
+        
+        ctx.beginPath();
+        ctx.moveTo(cx - 70, cy);
+        ctx.quadraticCurveTo(cx - 75, cy + 5, cx - 65, cy + 30);
+        ctx.quadraticCurveTo(cx, cy + 35, cx + 65, cy + 30);
+        ctx.quadraticCurveTo(cx + 75, cy + 5, cx + 70, cy);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Pot rim
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        const rimGrad = ctx.createLinearGradient(cx - 80, cy - 2, cx + 80, cy - 2);
+        rimGrad.addColorStop(0, '#5a3a2a');
+        rimGrad.addColorStop(0.3, '#7a5a4a');
+        rimGrad.addColorStop(0.7, '#7a5a4a');
+        rimGrad.addColorStop(1, '#4a2a1a');
+        ctx.fillStyle = rimGrad;
+        ctx.beginPath();
+        ctx.moveTo(cx - 80, cy - 2);
+        ctx.quadraticCurveTo(cx, cy - 8, cx + 80, cy - 2);
+        ctx.quadraticCurveTo(cx, cy + 2, cx - 80, cy - 2);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Soil
+        ctx.shadowBlur = 0;
+        const soilGrad = ctx.createRadialGradient(cx, cy - 5, 0, cx, cy - 5, 50);
+        soilGrad.addColorStop(0, '#3a2a1a');
+        soilGrad.addColorStop(0.5, '#2a1a0a');
+        soilGrad.addColorStop(1, '#1a0a00');
+        ctx.fillStyle = soilGrad;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 2, 50, 8, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Small pebbles
+        ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+        for (let i = 0; i < 8; i++) {
+          const px = cx - 40 + Math.random() * 80;
+          const py = cy - 4 + Math.random() * 6;
+          const ps = 1 + Math.random() * 2;
+          ctx.beginPath();
+          ctx.arc(px, py, ps, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Background gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        const seasonData = seasons[season % seasons.length];
+        grad.addColorStop(0, seasonData.color + '22');
+        grad.addColorStop(0.5, 'rgba(30, 40, 50, 0.2)');
+        grad.addColorStop(1, 'rgba(10, 15, 25, 0.4)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Subtle light rays
+        for (let i = 0; i < 3; i++) {
+          const x = w * (0.2 + i * 0.3);
+          const grad2 = ctx.createLinearGradient(x, 0, x + 20, h * 0.5);
+          grad2.addColorStop(0, 'rgba(255, 255, 200, 0.02)');
+          grad2.addColorStop(1, 'rgba(255, 255, 200, 0)');
+          ctx.fillStyle = grad2;
+          ctx.fillRect(x, 0, 20, h * 0.5);
+        }
+        
+        // Season indicator
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`🍃 ${seasons[season % seasons.length].name}`, w - 15, 15);
+        ctx.restore();
+      }
+
+      // Update bonsai tree
+      function updateBonsai() {
+        const time = Date.now() / 1000;
+        
+        // Clear and draw
+        drawBackground();
+        
+        // Update branches
+        branches.forEach(branch => {
+          branch.update(growth, twist, time);
+        });
+        
+        // Draw branches
+        branches.forEach(branch => {
+          branch.draw(ctx, time);
+        });
+        
+        // Draw pot
+        drawPot();
+        
+        // Update status
+        if (growth > 90) {
+          bonsaiStatus.textContent = '🌳 The bonsai has fully grown!';
+          bonsaiStatus.style.color = '#4ade80';
+          bonsaiMessage.textContent = 'A fully grown bonsai tree';
+          bonsaiMessage.style.color = '#4ade80';
+        } else if (growth > 40) {
+          bonsaiStatus.textContent = '🌳 The bonsai is growing beautifully...';
+          bonsaiStatus.style.color = '#fbbf24';
+          bonsaiMessage.textContent = 'The bonsai grows and twists gracefully';
+          bonsaiMessage.style.color = '#fbbf24';
+        } else if (growth > 5) {
+          bonsaiStatus.textContent = '🌱 The bonsai is beginning to grow...';
+          bonsaiStatus.style.color = '#818cf8';
+          bonsaiMessage.textContent = 'A bonsai tree begins its journey';
+          bonsaiMessage.style.color = '#818cf8';
+        } else {
+          bonsaiStatus.textContent = '🌱 A bonsai seed waits to grow';
+          bonsaiStatus.style.color = '#94a3b8';
+          bonsaiMessage.textContent = 'A bonsai tree grows and twists gracefully';
+          bonsaiMessage.style.color = '#94a3b8';
+        }
+        
+        // Update growth button
+        if (growth > 90) {
+          growBtn.textContent = '🌳 Fully Grown';
+          growBtn.style.background = 'linear-gradient(135deg, #4ade80, #22c55e)';
+          growBtn.style.borderColor = '#4ade80';
+        } else if (growth > 5) {
+          growBtn.textContent = '🌱 Growing...';
+          growBtn.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+          growBtn.style.borderColor = '#fbbf24';
+        } else {
+          growBtn.textContent = '🌱 Grow';
+          growBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          growBtn.style.borderColor = '#818cf8';
+        }
+        
+        // Update season
+        const newSeason = Math.floor((growth / 100) * 4) % 4;
+        if (newSeason !== season) {
+          season = newSeason;
+        }
+        
+        animationId = requestAnimationFrame(updateBonsai);
+      }
+
+      // Set growth
+      function setGrowth(value) {
+        growth = Math.max(0, Math.min(100, parseInt(value)));
+        growthSlider.value = growth;
+        growthValue.textContent = growth + '%';
+        growthPercent.textContent = growth + '%';
+      }
+
+      // Set twist
+      function setTwist(value) {
+        twist = Math.max(0, Math.min(100, parseInt(value)));
+        twistSlider.value = twist;
+        twistValue.textContent = twist + '%';
+      }
+
+      // Toggle grow
+      function toggleGrow() {
+        if (growth > 90) {
+          setGrowth(0);
+          growBtn.textContent = '🌱 Grow';
+          growBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          growBtn.style.borderColor = '#818cf8';
+          bonsaiStatus.textContent = '🔄 Reset complete';
+          bonsaiStatus.style.color = '#94a3b8';
+          setTimeout(() => {
+            bonsaiStatus.textContent = '🌱 A bonsai seed waits to grow';
+            bonsaiStatus.style.color = '#94a3b8';
+          }, 1000);
+        } else {
+          setGrowth(100);
+        }
+      }
+
+      // Reset
+      function resetBonsai() {
+        setGrowth(0);
+        setTwist(50);
+        growBtn.textContent = '🌱 Grow';
+        growBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        growBtn.style.borderColor = '#818cf8';
+        bonsaiStatus.textContent = '🔄 Reset complete';
+        bonsaiStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          bonsaiStatus.textContent = '🌱 A bonsai seed waits to grow';
+          bonsaiStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateBonsai();
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        setGrowth(this.value);
+      });
+
+      twistSlider.addEventListener('input', function() {
+        setTwist(this.value);
+      });
+
+      if (growBtn) {
+        growBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleGrow();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetBonsai();
+        });
+      }
+
+      // Click on display to toggle grow
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          toggleGrow();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleGrow();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetBonsai();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      updateBonsai();
+      
+      console.log('🌳 Bonsai Twist ready · shortcuts: [Space] Grow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

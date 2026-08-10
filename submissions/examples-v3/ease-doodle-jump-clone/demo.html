@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doodle Jump Clone</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Doodle Jump</h1>
+        <p class="subtitle">Tap/Click to move, bounce on platforms!</p>
+
+        <div class="game-wrapper">
+            <canvas id="gameCanvas"></canvas>
+
+            <div class="controls">
+                <button id="restartBtn">🔄 Restart</button>
+            </div>
+
+            <div class="status">
+                <span>Score: <span id="scoreDisplay">0</span></span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+
+        <div class="keyboard-hint">← → or A D to move • SPACE or Click to jump</div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 380;
+            canvas.height = Math.min(500, wrapper.clientHeight || 600);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== GAME STATE =====
+        let player = {
+            x: 0,
+            y: 0,
+            width: 24,
+            height: 30,
+            vy: 0,
+            vx: 0,
+            jumpPower: -9,
+            gravity: 0.4,
+            speed: 4,
+            grounded: false,
+            rotation: 0,
+            color: '#ff6b6b',
+            trail: []
+        };
+
+        let platforms = [];
+        let score = 0;
+        let highScore = 0;
+        let gameOver = false;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let particles = [];
+        let camera = { y: 0 };
+        let isJumping = false;
+        let keys = { left: false, right: false };
+
+        // ===== PLATFORM COLORS =====
+        const platformColors = [
+            '#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6',
+            '#ff8a5c', '#a29bfe', '#fd79a8', '#00b894', '#fdcb6e'
+        ];
+
+        // ===== PARTICLES =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = -Math.random() * 3 - 1;
+                this.size = 2 + Math.random() * 4;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || '#ffffff';
+                this.gravity = 0.05 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx, camera) {
+                if (this.life <= 0) return;
+                const drawY = this.y - camera.y;
+                ctx.beginPath();
+                ctx.arc(this.x, drawY, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== PLATFORM =====
+        class Platform {
+            constructor(x, y, width) {
+                this.x = x;
+                this.y = y;
+                this.width = width || 40 + Math.random() * 40;
+                this.height = 12;
+                this.color = platformColors[Math.floor(Math.random() * platformColors.length)];
+                this.broken = false;
+                this.bounceTime = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.isMoving = Math.random() < 0.15;
+                this.moveSpeed = 0.5 + Math.random() * 0.5;
+                this.moveRange = 30 + Math.random() * 40;
+                this.startX = x;
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+            }
+
+            update(time) {
+                this.phase += 0.02;
+                if (this.isMoving) {
+                    this.x = this.startX + Math.sin(time * 0.02 + this.phase) * this.moveRange * 0.5;
+                }
+                if (this.broken) {
+                    this.bounceTime += 0.05;
+                }
+            }
+
+            draw(ctx, camera) {
+                const drawY = this.y - camera.y;
+                if (drawY < -50 || drawY > canvas.height + 50) return;
+
+                const glowSize = this.width * 0.8;
+
+                // Glow
+                const grad = ctx.createRadialGradient(
+                    this.x + this.width / 2,
+                    drawY + this.height / 2,
+                    0,
+                    this.x + this.width / 2,
+                    drawY + this.height / 2,
+                    glowSize
+                );
+                grad.addColorStop(0, this.color + '30');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, drawY + this.height / 2, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Platform body
+                const grad2 = ctx.createLinearGradient(0, drawY, 0, drawY + this.height);
+                grad2.addColorStop(0, this.color);
+                grad2.addColorStop(0.5, this.color);
+                grad2.addColorStop(1, this.color + '80');
+
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '40';
+
+                // Rounded rect
+                const r = 4;
+                ctx.beginPath();
+                ctx.moveTo(this.x + r, drawY);
+                ctx.lineTo(this.x + this.width - r, drawY);
+                ctx.quadraticCurveTo(this.x + this.width, drawY, this.x + this.width, drawY + r);
+                ctx.lineTo(this.x + this.width, drawY + this.height - r);
+                ctx.quadraticCurveTo(this.x + this.width, drawY + this.height, this.x + this.width - r, drawY + this.height);
+                ctx.lineTo(this.x + r, drawY + this.height);
+                ctx.quadraticCurveTo(this.x, drawY + this.height, this.x, drawY + this.height - r);
+                ctx.lineTo(this.x, drawY + r);
+                ctx.quadraticCurveTo(this.x, drawY, this.x + r, drawY);
+                ctx.closePath();
+
+                ctx.fillStyle = grad2;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.rect(this.x + 4, drawY + 2, this.width - 8, 3);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+
+                // Edge glow dots
+                for (let i = 0; i < 3; i++) {
+                    const dotX = this.x + 6 + i * (this.width - 12) / 2;
+                    const dotY = drawY + this.height / 2;
+                    const dotSize = 1 + Math.sin(time * 0.03 + i + this.phase) * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(dotX, dotY, dotSize, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.fill();
+                }
+            }
+
+            getBounds() {
+                return {
+                    x: this.x,
+                    y: this.y,
+                    width: this.width,
+                    height: this.height
+                };
+            }
+        }
+
+        // ===== INIT GAME =====
+        function initGame() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            player.x = w / 2 - 12;
+            player.y = h * 0.7;
+            player.vy = 0;
+            player.vx = 0;
+            player.rotation = 0;
+            player.trail = [];
+            player.grounded = false;
+
+            platforms = [];
+            particles = [];
+            score = 0;
+            gameOver = false;
+            camera.y = 0;
+            isJumping = false;
+            time = 0;
+
+            // Create initial platforms
+            const numPlatforms = 12;
+            for (let i = 0; i < numPlatforms; i++) {
+                const x = 20 + Math.random() * (w - 80);
+                const y = h * 0.2 + i * 55 + Math.random() * 20;
+                const width = 40 + Math.random() * 40;
+                platforms.push(new Platform(x, y, width));
+            }
+
+            // Ensure first platform is below player
+            platforms[0].x = w / 2 - 30;
+            platforms[0].y = h * 0.75;
+            platforms[0].width = 60;
+
+            scoreDisplay.textContent = '0';
+        }
+
+        // ===== GENERATE PLATFORMS =====
+        function generatePlatforms() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Remove platforms that are too far below
+            platforms = platforms.filter(p => p.y > camera.y - h * 0.5);
+
+            // Add new platforms above
+            const topY = platforms.length > 0 ? Math.min(...platforms.map(p => p.y)) : 0;
+            const targetTop = camera.y - h * 0.2;
+
+            while (platforms.length < 15) {
+                const lastPlatform = platforms[platforms.length - 1];
+                const x = 20 + Math.random() * (w - 80);
+                const y = (lastPlatform ? lastPlatform.y - 45 - Math.random() * 35 : targetTop - 50);
+                const width = 35 + Math.random() * 45;
+                const platform = new Platform(x, y, width);
+                platform.isMoving = Math.random() < 0.15;
+                platforms.push(platform);
+            }
+
+            // Sort platforms by y position (top to bottom)
+            platforms.sort((a, b) => a.y - b.y);
+        }
+
+        // ===== PLAYER UPDATE =====
+        function updatePlayer() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Movement
+            if (keys.left) {
+                player.vx = -player.speed;
+            } else if (keys.right) {
+                player.vx = player.speed;
+            } else {
+                player.vx *= 0.9;
+            }
+
+            // Gravity
+            player.vy += player.gravity;
+
+            // Apply velocity
+            player.x += player.vx;
+            player.y += player.vy;
+
+            // Rotation based on movement
+            player.rotation += player.vx * 0.02;
+
+            // Boundaries
+            if (player.x < 0) { player.x = 0; player.vx *= -0.5; }
+            if (player.x > w - player.width) { player.x = w - player.width; player.vx *= -0.5; }
+
+            // Platform collision
+            player.grounded = false;
+            for (const platform of platforms) {
+                const bounds = platform.getBounds();
+                const px = player.x + player.width / 2;
+                const py = player.y + player.height;
+
+                if (px > bounds.x && px < bounds.x + bounds.width &&
+                    py >= bounds.y && py <= bounds.y + bounds.height + player.vy) {
+                    if (player.vy > 0) {
+                        player.y = bounds.y - player.height;
+                        player.vy = player.jumpPower;
+                        player.grounded = true;
+                        isJumping = true;
+
+                        // Bounce particles
+                        for (let i = 0; i < 10; i++) {
+                            const p = new Particle(
+                                px + (Math.random() - 0.5) * 20,
+                                bounds.y,
+                                platform.color
+                            );
+                            p.vx = (Math.random() - 0.5) * 4;
+                            p.vy = -Math.random() * 3 - 1;
+                            p.size = 2 + Math.random() * 4;
+                            particles.push(p);
+                        }
+
+                        // Score for landing on platform
+                        if (platform.y < camera.y + 100) {
+                            score += Math.max(1, Math.floor((camera.y - platform.y) / 50));
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            // If falling off screen
+            if (player.y > camera.y + h + 50) {
+                gameOver = true;
+            }
+
+            // Update camera
+            if (player.y < camera.y + h * 0.35) {
+                camera.y = player.y - h * 0.35;
+                if (camera.y < 0) camera.y = 0;
+            }
+
+            // Trail
+            if (Math.abs(player.vy) > 1) {
+                player.trail.push({ x: player.x + player.width / 2, y: player.y + player.height / 2, alpha: 0.5 });
+                if (player.trail.length > 12) {
+                    player.trail.shift();
+                }
+                for (const t of player.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            // Update score display
+            scoreDisplay.textContent = Math.floor(score);
+        }
+
+        // ===== DRAW PLAYER =====
+        function drawPlayer(ctx, camera) {
+            const drawX = player.x;
+            const drawY = player.y - camera.y;
+
+            // Trail
+            for (let i = 0; i < player.trail.length; i++) {
+                const t = player.trail[i];
+                const alpha = (i / player.trail.length) * 0.15;
+                const size = 4 + (i / player.trail.length) * 4;
+                ctx.beginPath();
+                ctx.arc(t.x, t.y - camera.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = player.color;
+                ctx.globalAlpha = alpha;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = player.color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.save();
+            ctx.translate(drawX + player.width / 2, drawY + player.height / 2);
+            ctx.rotate(player.rotation * 0.5);
+
+            // Glow
+            const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
+            grad.addColorStop(0, player.color + '40');
+            grad.addColorStop(1, player.color + '00');
+            ctx.beginPath();
+            ctx.arc(0, 0, 30, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Body
+            const grad2 = ctx.createRadialGradient(-4, -6, 0, 0, 0, player.width / 2);
+            grad2.addColorStop(0, '#ff8a8a');
+            grad2.addColorStop(0.5, player.color);
+            grad2.addColorStop(1, player.color + '80');
+
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = player.color + '60';
+
+            // Rounded body
+            const r = 6;
+            const w = player.width;
+            const h = player.height;
+            ctx.beginPath();
+            ctx.moveTo(-w/2 + r, -h/2);
+            ctx.lineTo(w/2 - r, -h/2);
+            ctx.quadraticCurveTo(w/2, -h/2, w/2, -h/2 + r);
+            ctx.lineTo(w/2, h/2 - r);
+            ctx.quadraticCurveTo(w/2, h/2, w/2 - r, h/2);
+            ctx.lineTo(-w/2 + r, h/2);
+            ctx.quadraticCurveTo(-w/2, h/2, -w/2, h/2 - r);
+            ctx.lineTo(-w/2, -h/2 + r);
+            ctx.quadraticCurveTo(-w/2, -h/2, -w/2 + r, -h/2);
+            ctx.closePath();
+            ctx.fillStyle = grad2;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes
+            const eyeY = -4;
+            const eyeSize = 5;
+            // Left eye
+            ctx.beginPath();
+            ctx.arc(-6, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-4, eyeY + 1, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-3, eyeY, 1, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Right eye
+            ctx.beginPath();
+            ctx.arc(6, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(8, eyeY + 1, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(9, eyeY, 1, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Mouth (smile)
+            ctx.beginPath();
+            ctx.arc(0, 4, 6, 0.1, Math.PI - 0.1);
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Blush
+            ctx.globalAlpha = 0.15;
+            ctx.beginPath();
+            ctx.arc(-8, 2, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ff6b6b';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(8, 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx) {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#0f1a2e');
+            grad.addColorStop(1, '#1a0a1a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Parallax stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Score glow
+            if (score > 0) {
+                const scoreText = Math.floor(score);
+                ctx.fillStyle = 'rgba(255,255,255,0.02)';
+                ctx.font = 'bold 80px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(scoreText, w/2, h/2 + 20);
+            }
+        }
+
+        // ===== DRAW UI =====
+        function drawUI(ctx) {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Game over overlay
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 48px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💥', w/2, h/2 - 80);
+
+                ctx.font = 'bold 36px sans-serif';
+                ctx.fillText('Game Over', w/2, h/2);
+
+                ctx.font = '20px sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.fillText(`Score: ${Math.floor(score)}`, w/2, h/2 + 50);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.font = '16px sans-serif';
+                ctx.fillText('Click or press SPACE to restart', w/2, h/2 + 100);
+
+                // Restart glow
+                const glowSize = 80 + Math.sin(time * 0.05) * 10;
+                const grad = ctx.createRadialGradient(w/2, h/2 + 80, 0, w/2, h/2 + 80, glowSize);
+                grad.addColorStop(0, 'rgba(255,255,255,0.05)');
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.beginPath();
+                ctx.arc(w/2, h/2 + 80, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+        }
+
+        // ===== GAME LOOP =====
+        function gameLoop(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            if (!gameOver) {
+                // Update
+                updatePlayer();
+                generatePlatforms();
+
+                // Update platforms
+                for (const platform of platforms) {
+                    platform.update(time);
+                }
+
+                // Update particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    if (p.isDead()) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+
+            // Draw
+            drawBackground(ctx);
+
+            // Draw platforms
+            for (const platform of platforms) {
+                platform.draw(ctx, camera);
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx, camera);
+            }
+
+            // Draw player
+            if (!gameOver) {
+                drawPlayer(ctx, camera);
+            }
+
+            // Draw UI
+            drawUI(ctx);
+
+            // Update status
+            if (!gameOver) {
+                const scoreText = Math.floor(score);
+                scoreDisplay.textContent = scoreText;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                keys.left = true;
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                keys.right = true;
+                e.preventDefault();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                if (gameOver) {
+                    initGame();
+                } else if (player.grounded) {
+                    player.vy = player.jumpPower;
+                    player.grounded = false;
+                    isJumping = true;
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                keys.left = false;
+                e.preventDefault();
+            }
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                keys.right = false;
+                e.preventDefault();
+            }
+        });
+
+        // Mouse/Touch
+        canvas.addEventListener('click', () => {
+            if (gameOver) {
+                initGame();
+            } else if (player.grounded) {
+                player.vy = player.jumpPower;
+                player.grounded = false;
+                isJumping = true;
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameOver) {
+                initGame();
+            } else if (player.grounded) {
+                player.vy = player.jumpPower;
+                player.grounded = false;
+                isJumping = true;
+            }
+        }, { passive: false });
+
+        // Touch movement
+        let touchX = 0;
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = (touch.clientX - rect.left) / rect.width * canvas.width;
+            if (x < canvas.width / 2 - 20) {
+                keys.left = true;
+                keys.right = false;
+            } else if (x > canvas.width / 2 + 20) {
+                keys.right = true;
+                keys.left = false;
+            } else {
+                keys.left = false;
+                keys.right = false;
+            }
+            touchX = x;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            keys.left = false;
+            keys.right = false;
+        });
+
+        // Restart button
+        restartBtn.addEventListener('click', initGame);
+
+        // ===== INIT =====
+        initGame();
+        lastFpsUpdate = performance.now();
+        gameLoop(lastFpsUpdate);
+
+        console.log('🎮 Doodle Jump loaded!');
+        console.log('💡 ← → or A D to move');
+        console.log('💡 SPACE or Click to jump');
+        console.log('💡 Restart button to reset');
+    </script>
+</body>
+</html>

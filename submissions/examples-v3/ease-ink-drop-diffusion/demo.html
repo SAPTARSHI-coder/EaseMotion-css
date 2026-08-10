@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ink Drop Diffusion</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Ink Drop Diffusion</h1>
+        <p class="subtitle">Watch ink spread through water with fractal-like patterns</p>
+
+        <div class="ink-wrapper">
+            <canvas id="inkCanvas"></canvas>
+
+            <div class="controls">
+                <button id="dropBtn">💧 Drop Ink</button>
+                <button id="colorBtn">Color: Blue</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="clearBtn">Clear</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Ready for ink</span>
+                <span id="particleCount">Particles: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('inkCanvas');
+        const ctx = canvas.getContext('2d');
+        const dropBtn = document.getElementById('dropBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusText = document.getElementById('statusText');
+        const particleCount = document.getElementById('particleCount');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let particles = [];
+        let inkColor = '#1a73e8'; // Blue
+        let diffusionSpeed = 0.5;
+        let isAnimating = false;
+        let colorIndex = 0;
+        let speedIndex = 0;
+        let dropCount = 0;
+
+        // ===== COLOR OPTIONS =====
+        const colors = [
+            { name: 'Blue', value: '#1a73e8' },
+            { name: 'Black', value: '#1a1a1a' },
+            { name: 'Red', value: '#d32f2f' },
+            { name: 'Green', value: '#2e7d32' },
+            { name: 'Purple', value: '#7b1fa2' },
+            { name: 'Orange', value: '#e65100' },
+            { name: 'Cyan', value: '#00838f' },
+            { name: 'Magenta', value: '#c2185b' },
+        ];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.3 },
+            { name: 'Normal', value: 0.5 },
+            { name: 'Fast', value: 0.8 },
+            { name: 'Very Fast', value: 1.2 },
+        ];
+
+        // ===== INK PARTICLE CLASS =====
+        class InkParticle {
+            constructor(x, y, color, size) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = size || 2 + Math.random() * 3;
+                this.alpha = 1.0;
+                this.maxAlpha = 0.6 + Math.random() * 0.4;
+                this.vx = (Math.random() - 0.5) * 0.8;
+                this.vy = (Math.random() - 0.5) * 0.8;
+                this.trail = [];
+                this.maxTrail = 15 + Math.floor(Math.random() * 20);
+                this.age = 0;
+                this.maxAge = 300 + Math.random() * 400;
+                this.isMain = false;
+                this.branching = false;
+                this.branchAngle = Math.random() * Math.PI * 2;
+                this.turbulence = 0.1 + Math.random() * 0.2;
+                this.density = 0.5 + Math.random() * 0.5;
+            }
+
+            update() {
+                this.age++;
+                this.alpha = Math.min(this.maxAlpha, this.alpha + 0.005);
+                
+                // Random walk with turbulence
+                const angle = Math.atan2(this.vy, this.vx);
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                
+                // Add turbulence
+                this.vx += (Math.random() - 0.5) * this.turbulence * diffusionSpeed;
+                this.vy += (Math.random() - 0.5) * this.turbulence * diffusionSpeed;
+                
+                // Damping
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+                
+                // Cap speed
+                const maxSpeed = 2.5 * diffusionSpeed;
+                const currentSpeed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (currentSpeed > maxSpeed) {
+                    this.vx = (this.vx / currentSpeed) * maxSpeed;
+                    this.vy = (this.vy / currentSpeed) * maxSpeed;
+                }
+                
+                this.x += this.vx * diffusionSpeed;
+                this.y += this.vy * diffusionSpeed;
+                
+                // Boundary reflection with damping
+                const margin = 20;
+                if (this.x < margin) { this.x = margin; this.vx *= -0.5; }
+                if (this.x > canvas.width - margin) { this.x = canvas.width - margin; this.vx *= -0.5; }
+                if (this.y < margin) { this.y = margin; this.vy *= -0.5; }
+                if (this.y > canvas.height - margin) { this.y = canvas.height - margin; this.vy *= -0.5; }
+                
+                // Add to trail
+                this.trail.push({ x: this.x, y: this.y, alpha: this.alpha });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                
+                // Branching - create smaller particles
+                if (this.age > 20 && this.age < 200 && Math.random() < 0.01 * diffusionSpeed) {
+                    this.createBranch();
+                }
+            }
+
+            createBranch() {
+                const branch = new InkParticle(
+                    this.x + (Math.random() - 0.5) * 5,
+                    this.y + (Math.random() - 0.5) * 5,
+                    this.color,
+                    this.size * 0.6 + Math.random() * 0.5
+                );
+                branch.alpha = this.alpha * 0.5;
+                branch.maxAlpha = this.maxAlpha * 0.5;
+                branch.vx = this.vx * 0.5 + (Math.random() - 0.5) * 1.5;
+                branch.vy = this.vy * 0.5 + (Math.random() - 0.5) * 1.5;
+                branch.maxTrail = this.maxTrail * 0.6;
+                branch.maxAge = this.maxAge * 0.5;
+                branch.branching = true;
+                particles.push(branch);
+            }
+
+            draw(ctx) {
+                if (this.alpha < 0.01) return;
+                
+                const ageRatio = this.age / this.maxAge;
+                const sizeMod = 1 - ageRatio * 0.5;
+                
+                // Draw trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * this.alpha * 0.3;
+                    const trailSize = this.size * sizeMod * (0.3 + (i / this.trail.length) * 0.7);
+                    
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = trailAlpha * 0.5;
+                    ctx.fill();
+                }
+                
+                // Main particle with glow
+                const glowSize = this.size * sizeMod * 4;
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(0.3, this.color + '99');
+                gradient.addColorStop(0.7, this.color + '44');
+                gradient.addColorStop(1, this.color + '00');
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.globalAlpha = this.alpha * 0.4;
+                ctx.fill();
+                
+                // Core particle
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * sizeMod * 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fill();
+                
+                // Inner bright core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * sizeMod * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = this.alpha * 0.3;
+                ctx.fill();
+                
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.age > this.maxAge || this.alpha < 0.01 || this.size < 0.1;
+            }
+        }
+
+        // ===== INK DROP FUNCTION =====
+        function dropInk(x, y) {
+            const numParticles = 50 + Math.floor(Math.random() * 80);
+            const centerX = x || canvas.width / 2 + (Math.random() - 0.5) * 40;
+            const centerY = y || canvas.height / 2 + (Math.random() - 0.5) * 40;
+            
+            for (let i = 0; i < numParticles; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 15;
+                const particle = new InkParticle(
+                    centerX + Math.cos(angle) * distance,
+                    centerY + Math.sin(angle) * distance,
+                    inkColor,
+                    1.5 + Math.random() * 3
+                );
+                particle.vx = Math.cos(angle) * (0.5 + Math.random() * 1.5);
+                particle.vy = Math.sin(angle) * (0.5 + Math.random() * 1.5);
+                particle.maxAlpha = 0.5 + Math.random() * 0.5;
+                particle.isMain = i < numParticles * 0.3;
+                particles.push(particle);
+            }
+            
+            dropCount++;
+            statusText.textContent = `💧 Drop ${dropCount}`;
+            statusText.style.color = inkColor;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spreading...';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        }
+
+        // ===== RENDER LOOP =====
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw subtle water background
+            const waterGrad = ctx.createRadialGradient(
+                canvas.width/2, canvas.height/2, 0,
+                canvas.width/2, canvas.height/2, canvas.width * 0.7
+            );
+            waterGrad.addColorStop(0, 'rgba(20, 30, 60, 0.1)');
+            waterGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = waterGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw(ctx);
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+            
+            // Update particle count
+            particleCount.textContent = `Particles: ${particles.length}`;
+            
+            // Auto-spawn occasional drops
+            if (particles.length < 50 && Math.random() < 0.001) {
+                dropInk();
+            }
+            
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Drop ink on canvas click
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            dropInk(x, y);
+        });
+
+        // Drop button
+        dropBtn.addEventListener('click', () => {
+            dropInk();
+        });
+
+        // Color button
+        colorBtn.addEventListener('click', () => {
+            colorIndex = (colorIndex + 1) % colors.length;
+            inkColor = colors[colorIndex].value;
+            colorBtn.textContent = `Color: ${colors[colorIndex].name}`;
+            statusText.textContent = `🎨 ${colors[colorIndex].name}`;
+            statusText.style.color = inkColor;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spreading...';
+                statusText.style.color = 'rgba(255, 255, 255, 0.6)';
+            }, 1000);
+        });
+
+        // Speed button
+        speedBtn.addEventListener('click', () => {
+            speedIndex = (speedIndex + 1) % speeds.length;
+            diffusionSpeed = speeds[speedIndex].value;
+            speedBtn.textContent = `Speed: ${speeds[speedIndex].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedIndex].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Spreading...';
+            }, 1000);
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            particles = [];
+            dropCount = 0;
+            statusText.textContent = '🧹 Cleared!';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Ready for ink';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                dropInk();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'x' || e.key === 'X') {
+                clearBtn.click();
+            }
+        });
+
+        // ===== INIT =====
+        // Set initial button text
+        colorBtn.textContent = `Color: ${colors[0].name}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        
+        // Create initial ink drop
+        setTimeout(() => {
+            dropInk();
+        }, 500);
+
+        // Start render loop
+        render();
+
+        console.log('💧 Ink Drop Diffusion loaded!');
+        console.log('💡 Click canvas to drop ink');
+        console.log('💡 SPACE - Drop ink');
+        console.log('💡 C - Change color');
+        console.log('💡 S - Change speed');
+        console.log('💡 X - Clear');
+    </script>
+</body>
+</html>
