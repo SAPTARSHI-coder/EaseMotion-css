@@ -1,23 +1,16 @@
-# Ease Fishing Float Bobber
+# Fishing Float Bobber
 
-A CSS-only animated fishing float bobber component created for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-fishing-float-bobber` demo: Fishing bobber dipping then springing on a bite.
 
-## Overview
-
-`ease-fishing-float-bobber` simulates a fishing bobber dipping underwater and springing back when a fish bite is detected.
-
-## Features
-
-- Pure CSS animation
-- No JavaScript dependency
-- Fishing themed UI control
-- Bobber dipping motion
-- Water wave animation
-- Responsive design
-- Reduced motion support
-
-## Usage
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-fishing-float-bobber`. No build step or JavaScript is required for the effect.
 
 ```html
-<div class="ease-fishing-float-bobber">
-</div>
+<section class="ease-fishing-float-bobber">
+  <div class="ease-fishing-float-bobber__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
