@@ -1,0 +1,92 @@
+$plt-logical-properties: (
+  margin-left: margin-inline-start,
+  margin-right: margin-inline-end,
+  padding-left: padding-inline-start,
+  padding-right: padding-inline-end,
+  left: inset-inline-start,
+  right: inset-inline-end,
+  border-left: border-inline-start,
+  border-right: border-inline-end,
+) !default;
+
+@function plt-check-mapping($mapping) {
+  @if type-of($mapping) != "map" {
+    @error "logical-property: $mapping must be a map.";
+  }
+
+  @if length($mapping) == 0 {
+    @warn "logical-property: mapping is empty, no properties will be transpiled.";
+  }
+
+  $seen: ();
+
+  @each $physical, $logical in $mapping {
+    @if type-of($logical) != "string" {
+      @error "logical-property: invalid mapping value for `#{$physical}` - expected a string, got `#{type-of($logical)}`.";
+    }
+
+    @if index($seen, $logical) {
+      @warn "logical-property: duplicate logical property target `#{$logical}` mapped from multiple physical properties.";
+    }
+
+    $seen: append($seen, $logical);
+  }
+
+  @return $mapping;
+}
+
+@function logical-property($property, $mapping: $plt-logical-properties) {
+  $mapping: plt-check-mapping($mapping);
+  $logical: map-get($mapping, $property);
+
+  @return if($logical, $logical, $property);
+}
+
+@function transpile-logical-properties(
+  $declarations,
+  $mapping: $plt-logical-properties
+) {
+  @if type-of($declarations) != "map" {
+    @error "transpile-logical-properties: $declarations must be a map.";
+  }
+
+  @if length($declarations) == 0 {
+    @warn "transpile-logical-properties: $declarations map is empty.";
+  }
+
+  $mapping: plt-check-mapping($mapping);
+  $result: ();
+
+  @each $property, $value in $declarations {
+    $target: map-get($mapping, $property);
+    $key: if($target, $target, $property);
+    $result: map-merge(
+      $result,
+      (
+        $key: $value,
+      )
+    );
+  }
+
+  @return $result;
+}
+
+@mixin emit-logical-properties(
+  $declarations,
+  $mapping: $plt-logical-properties,
+  $selector: null
+) {
+  $transpiled: transpile-logical-properties($declarations, $mapping);
+
+  @if $selector {
+    #{$selector} {
+      @each $property, $value in $transpiled {
+        #{$property}: #{$value};
+      }
+    }
+  } @else {
+    @each $property, $value in $transpiled {
+      #{$property}: #{$value};
+    }
+  }
+}

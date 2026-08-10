@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Picker Wheel Selector Demo</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useMemo } = React;
+
+      const validateMinuteStep = (step) => {
+        const parsed = parseInt(step, 10);
+        if (Number.isNaN(parsed) || parsed <= 0 || 60 % parsed !== 0) {
+          return 1;
+        }
+        return parsed;
+      };
+
+      const generateHours = (format) => {
+        if (format === "24") {
+          return Array.from({ length: 24 }, (_, index) => index);
+        }
+        return Array.from({ length: 12 }, (_, index) => index + 1);
+      };
+
+      const generateMinutes = (step) => {
+        const validatedStep = validateMinuteStep(step);
+        const length = Math.floor(60 / validatedStep);
+        return Array.from({ length }, (_, index) => index * validatedStep);
+      };
+
+      const alignMinuteToStep = (minute, step) => {
+        const validatedStep = validateMinuteStep(step);
+        const index = Math.round(minute / validatedStep);
+        const aligned = index * validatedStep;
+        return aligned >= 60 ? 0 : aligned;
+      };
+
+      const parseTimeString = (timeStr, hourFormat) => {
+        const now = new Date();
+        const fallback = {
+          hour: now.getHours(),
+          minute: now.getMinutes(),
+          ampm: now.getHours() >= 12 ? "PM" : "AM",
+        };
+
+        if (!timeStr || typeof timeStr !== "string") {
+          return fallback;
+        }
+
+        try {
+          const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
+          if (!match) {
+            return fallback;
+          }
+
+          const h = parseInt(match[1], 10);
+          const m = parseInt(match[2], 10);
+          const period = match[3] ? match[3].toUpperCase() : null;
+
+          if (Number.isNaN(h) || Number.isNaN(m) || h < 0 || m < 0 || m >= 60) {
+            return fallback;
+          }
+
+          let hour24 = h;
+          if (period) {
+            if (h < 1 || h > 12) return fallback;
+            if (period === "PM" && h !== 12) {
+              hour24 = h + 12;
+            } else if (period === "AM" && h === 12) {
+              hour24 = 0;
+            }
+          } else {
+            if (h >= 24) return fallback;
+          }
+
+          return { hour: hour24, minute: m, ampm: period || (hour24 >= 12 ? "PM" : "AM") };
+        } catch (error) {
+          return fallback;
+        }
+      };
+
+      const formatTimeString = (hour, minute, format) => {
+        const mm = minute.toString().padStart(2, "0");
+        if (format === "24") {
+          const hh = hour.toString().padStart(2, "0");
+          return `${hh}:${mm}`;
+        }
+
+        let h12 = hour % 12;
+        if (h12 === 0) h12 = 12;
+        const hh = h12.toString().padStart(2, "0");
+        const period = hour >= 12 ? "PM" : "AM";
+        return `${hh}:${mm} ${period}`;
+      };
+
+      const Wheel = ({ data, selectedValue, onSelect, format, ariaLabel, itemHeight }) => {
+        const selectedIndex = data.indexOf(selectedValue);
+
+        return (
+          <div className="demo-wheel" role="listbox" aria-label={ariaLabel}>
+            {data.map((item, index) => {
+              const isCenter = index === selectedIndex;
+              const itemStyle = {
+                opacity: isCenter ? 1 : 0.48,
+                transform: `scale(${isCenter ? 1 : 0.86})`,
+              };
+
+              return (
+                <button
+                  key={item}
+                  type="button"
+                  className={`demo-wheel-item ${isCenter ? "is-selected" : ""}`}
+                  style={itemStyle}
+                  onClick={() => onSelect(item)}
+                >
+                  {format(item)}
+                </button>
+              );
+            })}
+          </div>
+        );
+      };
+
+      const DemoTimePicker = () => {
+        const [time, setTime] = useState("09:30 AM");
+        const [hourFormat, setHourFormat] = useState("12");
+        const [minuteStep, setMinuteStep] = useState(5);
+
+        const parsed = useMemo(() => parseTimeString(time, hourFormat), [time, hourFormat]);
+        const hours = useMemo(() => generateHours(hourFormat), [hourFormat]);
+        const minutes = useMemo(() => generateMinutes(minuteStep), [minuteStep]);
+        const periods = ["AM", "PM"];
+
+        const handleHourSelect = (hour) => {
+          const hour24 = hourFormat === "12"
+            ? (parsed.ampm === "PM" ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour))
+            : hour;
+          setTime(formatTimeString(hour24, parsed.minute, hourFormat));
+        };
+
+        const handleMinuteSelect = (minute) => {
+          const alignedMinute = alignMinuteToStep(minute, minuteStep);
+          setTime(formatTimeString(parsed.hour, alignedMinute, hourFormat));
+        };
+
+        const handlePeriodSelect = (period) => {
+          const hour12 = parsed.hour % 12 === 0 ? 12 : parsed.hour % 12;
+          const nextHour24 = period === "PM"
+            ? (hour12 === 12 ? 12 : hour12 + 12)
+            : (hour12 === 12 ? 0 : hour12);
+          setTime(formatTimeString(nextHour24, parsed.minute, hourFormat));
+        };
+
+        const displayHour = hourFormat === "24" ? parsed.hour : (parsed.hour % 12 === 0 ? 12 : parsed.hour % 12);
+        const selectedMinute = alignMinuteToStep(parsed.minute, minuteStep);
+
+        return (
+          <div className="demo-shell">
+            <section className="demo-card">
+              <div className="demo-header">
+                <p className="demo-eyebrow">React submission</p>
+                <h1>Wheel Selector with Smooth Momentum</h1>
+                <p>Try the time picker in 12-hour or 24-hour mode and adjust the minute interval.</p>
+              </div>
+
+              <div className="demo-controls">
+                <label className="demo-select">
+                  <span>Hour format</span>
+                  <select value={hourFormat} onChange={(event) => setHourFormat(event.target.value)}>
+                    <option value="12">12-hour</option>
+                    <option value="24">24-hour</option>
+                  </select>
+                </label>
+                <label className="demo-select">
+                  <span>Minute step</span>
+                  <select value={minuteStep} onChange={(event) => setMinuteStep(Number(event.target.value))}>
+                    <option value="1">1 minute</option>
+                    <option value="5">5 minutes</option>
+                    <option value="15">15 minutes</option>
+                    <option value="30">30 minutes</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="demo-picker">
+                <div className="demo-wheel-group">
+                  <Wheel
+                    data={hours}
+                    selectedValue={displayHour}
+                    onSelect={handleHourSelect}
+                    format={(value) => value.toString().padStart(2, "0")}
+                    ariaLabel="Hours"
+                    itemHeight={44}
+                  />
+                  <div className="demo-colon">:</div>
+                  <Wheel
+                    data={minutes}
+                    selectedValue={selectedMinute}
+                    onSelect={handleMinuteSelect}
+                    format={(value) => value.toString().padStart(2, "0")}
+                    ariaLabel="Minutes"
+                    itemHeight={44}
+                  />
+                  {hourFormat === "12" && (
+                    <>
+                      <div className="demo-spacer" />
+                      <Wheel
+                        data={periods}
+                        selectedValue={parsed.ampm}
+                        onSelect={handlePeriodSelect}
+                        format={(value) => value}
+                        ariaLabel="Meridiem"
+                        itemHeight={44}
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="demo-output">
+                <strong>Selected value:</strong> {time}
+              </div>
+            </section>
+          </div>
+        );
+      };
+
+      ReactDOM.render(<DemoTimePicker />, document.getElementById("root"));
+    </script>
+  </body>
+</html>

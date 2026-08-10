@@ -1,0 +1,158 @@
+// ==========================================================================
+// EaseMotion CSS — Spacing Scale function
+// Issue #63803
+// --------------------------------------------------------------------------
+// Named spacing steps instead of scattered magic rem values.
+//
+// The failure mode is drift rather than error. Nothing breaks when someone
+// writes `padding: 0.9rem` next to a component using `1rem` — it just
+// looks very slightly off, nobody can say why, and over a few hundred
+// commits the codebase accumulates a dozen near-identical values that no
+// longer form a system.
+//
+// Naming the steps makes an off-scale value a deliberate act rather than
+// an accident, and `@error` on an unknown name means a typo fails the
+// build instead of silently emitting an invalid length that the browser
+// discards.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:math";
+@use "sass:meta";
+@use "sass:list";
+
+// A 4px base on a 16px root: 0.25rem increments, growing non-linearly at
+// the top because large spacings need bigger jumps to read as distinct.
+$spacing-scale: (
+    "0": 0,
+    "3xs": 0.125rem,
+    "2xs": 0.25rem,
+    "xs": 0.5rem,
+    "sm": 0.75rem,
+    "md": 1rem,
+    "lg": 1.5rem,
+    "xl": 2rem,
+    "2xl": 3rem,
+    "3xl": 4rem,
+    "4xl": 6rem,
+    "5xl": 8rem,
+) !default;
+
+// --------------------------------------------------------------------------
+// space($step)
+//
+// @param {String|Number} $step  Key from $spacing-scale.
+// @return {Number}
+// --------------------------------------------------------------------------
+@function space($step) {
+    $key: "#{$step}";
+
+    @if not map.has-key($spacing-scale, $key) {
+        @error "space(): unknown step `#{$key}`. Available: "
+             + "#{list.join((), map.keys($spacing-scale), $separator: comma)}.";
+    }
+
+    @return map.get($spacing-scale, $key);
+}
+
+// --------------------------------------------------------------------------
+// space-pair($block, $inline)
+//
+// Shorthand for the common two-value case, so a caller does not write
+// `space(sm) space(md)` and risk transposing them.
+// --------------------------------------------------------------------------
+@function space-pair($block, $inline) {
+    @return space($block) space($inline);
+}
+
+// --------------------------------------------------------------------------
+// has-space($step) — non-throwing membership test.
+// --------------------------------------------------------------------------
+@function has-space($step) {
+    @return map.has-key($spacing-scale, "#{$step}");
+}
+
+// --------------------------------------------------------------------------
+// space-between($from, $to)
+//
+// The gap between two steps. Useful for negative margins that must
+// exactly cancel a known padding — computing it keeps the two in sync
+// when the scale changes.
+// --------------------------------------------------------------------------
+@function space-between($from, $to) {
+    @return space($to) - space($from);
+}
+
+// --------------------------------------------------------------------------
+// space-vars
+//
+// Emit the scale as custom properties, so runtime code and inline styles
+// use the same values as the stylesheets.
+// --------------------------------------------------------------------------
+@mixin space-vars($prefix: "space", $selector: ":root") {
+    #{$selector} {
+        @each $name, $value in $spacing-scale {
+            --#{$prefix}-#{$name}: #{$value};
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// space-utilities
+//
+// Emit padding/margin/gap utilities across the scale, using logical
+// properties so they mirror correctly in RTL.
+// --------------------------------------------------------------------------
+@mixin space-utilities($prefix: "u", $props: (p: padding, m: margin, g: gap)) {
+    @each $short, $prop in $props {
+        @each $name, $value in $spacing-scale {
+            .#{$prefix}-#{$short}-#{$name} {
+                #{$prop}: $value;
+            }
+        }
+
+        @if $prop != gap {
+            @each $name, $value in $spacing-scale {
+                .#{$prefix}-#{$short}i-#{$name} {
+                    #{$prop}-inline: $value;
+                }
+
+                .#{$prefix}-#{$short}b-#{$name} {
+                    #{$prop}-block: $value;
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// flow-space
+//
+// Vertical rhythm via the owl selector. `> * + *` rather than a margin on
+// every child means the first child never carries a stray top margin that
+// has to be reset — the reset is the bug this avoids.
+// --------------------------------------------------------------------------
+@mixin flow-space($step: "md") {
+    > * + * {
+        margin-block-start: space($step);
+    }
+}
+
+// --------------------------------------------------------------------------
+// register-space
+//
+// Add a project-specific step. Refuses to redefine an existing one, since
+// that would silently change every call site using it.
+// --------------------------------------------------------------------------
+@mixin register-space($name, $value) {
+    @if map.has-key($spacing-scale, "#{$name}") {
+        @error "register-space(): `#{$name}` already exists as "
+             + "#{map.get($spacing-scale, "#{$name}")}. Pick a different name.";
+    }
+
+    @if meta.type-of($value) != "number" {
+        @error "register-space(): $value must be a number, got `#{$value}`.";
+    }
+
+    $spacing-scale: map.set($spacing-scale, "#{$name}", $value) !global;
+}

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blinking Eye</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>👁️ Blinking Eye</h1>
+        <p class="subtitle">Realistic eye with blink and pupil tracking</p>
+
+        <div class="eye-wrapper">
+            <canvas id="eyeCanvas"></canvas>
+
+            <div class="controls">
+                <button id="blinkBtn">👁️ Blink</button>
+                <button id="colorBtn">Color: Brown</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">👁️ Tracking</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('eyeCanvas');
+        const ctx = canvas.getContext('2d');
+        const blinkBtn = document.getElementById('blinkBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            const size = Math.min(wrapper.clientWidth, 400);
+            canvas.width = size;
+            canvas.height = size * 0.7;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let isBlinking = false;
+        let blinkProgress = 0;
+        let blinkTimer = 0;
+        let pupilX = 0;
+        let pupilY = 0;
+        let targetPupilX = 0;
+        let targetPupilY = 0;
+        let irisRotation = 0;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHovering = false;
+        let eyeOpen = 1;
+        let targetEyeOpen = 1;
+        let pupilSize = 1;
+        let targetPupilSize = 1;
+        let irisPulse = 0;
+        let highlightPhase = 0;
+
+        // ===== COLOR OPTIONS =====
+        const eyeColors = [
+            {
+                name: 'Brown',
+                iris: ['#3d1f00', '#5a2d00', '#7a3d10', '#9a5d30', '#6a3d20'],
+                pupil: '#1a0a00',
+                sclera: '#f5f0eb',
+                highlight: '#ffffff'
+            },
+            {
+                name: 'Blue',
+                iris: ['#1a3a6a', '#2a5a8a', '#4a7aaa', '#6a9aca', '#3a6a9a'],
+                pupil: '#0a1a2a',
+                sclera: '#f5f5f0',
+                highlight: '#ffffff'
+            },
+            {
+                name: 'Green',
+                iris: ['#1a3a2a', '#2a5a3a', '#4a7a5a', '#6a9a7a', '#3a6a4a'],
+                pupil: '#0a1a0a',
+                sclera: '#f5f5f0',
+                highlight: '#ffffff'
+            },
+            {
+                name: 'Hazel',
+                iris: ['#3a2a1a', '#5a3a2a', '#7a5a3a', '#9a7a5a', '#6a4a3a'],
+                pupil: '#1a0a0a',
+                sclera: '#f5f0eb',
+                highlight: '#ffffff'
+            },
+            {
+                name: 'Gray',
+                iris: ['#3a3a4a', '#5a5a6a', '#7a7a8a', '#9a9aaa', '#6a6a7a'],
+                pupil: '#1a1a2a',
+                sclera: '#f0f0f5',
+                highlight: '#ffffff'
+            },
+            {
+                name: 'Amber',
+                iris: ['#5a2a00', '#8a4a10', '#aa6a20', '#ca8a30', '#9a5a1a'],
+                pupil: '#1a0a00',
+                sclera: '#f5f0eb',
+                highlight: '#ffffff'
+            },
+        ];
+
+        // ===== DRAW EYE =====
+        function drawEye() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const eyeRadius = Math.min(w, h) * 0.35;
+            const pupilRadius = eyeRadius * 0.25;
+            const irisRadius = eyeRadius * 0.65;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background
+            const bgGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, eyeRadius * 2);
+            bgGrad.addColorStop(0, '#1a1a2e');
+            bgGrad.addColorStop(1, '#0a0a1a');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Eye shadow
+            ctx.save();
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+            // Sclera (white of eye)
+            const scleraColor = eyeColors[colorMode].sclera;
+            const eyeOpenScale = eyeOpen;
+
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, eyeRadius, eyeRadius * eyeOpenScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = scleraColor;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyelid shadow
+            const lidGrad = ctx.createRadialGradient(cx, cy - eyeRadius * 0.3, 0, cx, cy, eyeRadius);
+            lidGrad.addColorStop(0, 'rgba(0,0,0,0)');
+            lidGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
+            lidGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, eyeRadius, eyeRadius * eyeOpenScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = lidGrad;
+            ctx.fill();
+
+            // Iris
+            const irisColor = eyeColors[colorMode].iris;
+            const irisGrad = ctx.createRadialGradient(
+                cx + pupilX * 0.3,
+                cy + pupilY * 0.3,
+                0,
+                cx + pupilX * 0.2,
+                cy + pupilY * 0.2,
+                irisRadius
+            );
+            
+            const numStops = irisColor.length;
+            for (let i = 0; i < numStops; i++) {
+                const t = i / (numStops - 1);
+                irisGrad.addColorStop(t, irisColor[i]);
+            }
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + pupilX * 0.3,
+                cy + pupilY * 0.3,
+                irisRadius * (0.9 + 0.1 * irisPulse),
+                irisRadius * (0.9 + 0.1 * irisPulse) * eyeOpenScale,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = irisGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Iris texture (radial lines)
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + pupilX * 0.3,
+                cy + pupilY * 0.3,
+                irisRadius * 0.9,
+                irisRadius * 0.9 * eyeOpenScale,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.clip();
+
+            for (let i = 0; i < 60; i++) {
+                const angle = (i / 60) * Math.PI * 2 + irisRotation;
+                const r1 = irisRadius * 0.2;
+                const r2 = irisRadius * 0.8 + Math.sin(angle * 3 + time) * 5;
+                const x1 = cx + pupilX * 0.3 + Math.cos(angle) * r1;
+                const y1 = cy + pupilY * 0.3 + Math.sin(angle) * r1;
+                const x2 = cx + pupilX * 0.3 + Math.cos(angle + 0.02) * r2;
+                const y2 = cy + pupilY * 0.3 + Math.sin(angle + 0.02) * r2;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgba(0,0,0,0.05)`;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+
+            // Iris ring
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + pupilX * 0.3,
+                cy + pupilY * 0.3,
+                irisRadius * 0.7,
+                irisRadius * 0.7 * eyeOpenScale,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.strokeStyle = `rgba(0,0,0,0.1)`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.restore();
+            ctx.restore();
+
+            // Pupil
+            const pupilColor = eyeColors[colorMode].pupil;
+            const pupilSizeScale = pupilSize * (0.8 + 0.2 * irisPulse);
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + pupilX,
+                cy + pupilY,
+                pupilRadius * pupilSizeScale,
+                pupilRadius * pupilSizeScale * eyeOpenScale,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = pupilColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Pupil glow
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + pupilX - pupilRadius * 0.1,
+                cy + pupilY - pupilRadius * 0.1,
+                pupilRadius * 0.2 * pupilSizeScale,
+                pupilRadius * 0.2 * pupilSizeScale * eyeOpenScale,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = `rgba(255,255,255,0.1)`;
+            ctx.fill();
+
+            ctx.restore();
+
+            // Eye highlight (main)
+            const hlColor = eyeColors[colorMode].highlight;
+            highlightPhase += 0.01;
+            const hlX = cx - eyeRadius * 0.25 + pupilX * 0.1 + Math.sin(highlightPhase * 0.5) * 2;
+            const hlY = cy - eyeRadius * 0.3 + pupilY * 0.1 + Math.cos(highlightPhase * 0.5) * 2;
+            
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(
+                hlX,
+                hlY,
+                eyeRadius * 0.15,
+                eyeRadius * 0.12 * eyeOpenScale,
+                -0.5,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = hlColor;
+            ctx.globalAlpha = 0.7;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(255,255,255,0.1)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+
+            // Secondary highlight
+            ctx.beginPath();
+            ctx.ellipse(
+                cx - eyeRadius * 0.15 + pupilX * 0.05,
+                cy - eyeRadius * 0.4 + pupilY * 0.05,
+                eyeRadius * 0.08,
+                eyeRadius * 0.06 * eyeOpenScale,
+                -0.3,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = hlColor;
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.restore();
+
+            // Eyelids
+            ctx.save();
+            
+            // Upper eyelid
+            const lidGrad2 = ctx.createLinearGradient(0, cy - eyeRadius, 0, cy);
+            lidGrad2.addColorStop(0, 'rgba(30,25,20,0)');
+            lidGrad2.addColorStop(0.3, 'rgba(30,25,20,0.05)');
+            lidGrad2.addColorStop(0.7, 'rgba(30,25,20,0.1)');
+            lidGrad2.addColorStop(1, 'rgba(30,25,20,0.15)');
+            
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, eyeRadius, eyeRadius * eyeOpenScale, 0, 0, Math.PI * 2);
+            ctx.fillStyle = lidGrad2;
+            ctx.fill();
+
+            // Eyelash lines
+            for (let i = -6; i <= 6; i++) {
+                const angle = (i / 12) * Math.PI * 0.5 - Math.PI * 0.25;
+                const x1 = cx + Math.cos(angle) * eyeRadius * 0.7;
+                const y1 = cy + Math.sin(angle) * eyeRadius * 0.7 * eyeOpenScale;
+                const x2 = cx + Math.cos(angle + 0.1) * eyeRadius * 0.9;
+                const y2 = cy + Math.sin(angle + 0.1) * eyeRadius * 0.9 * eyeOpenScale;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = `rgba(20,15,10,${0.1 + Math.random() * 0.1})`;
+                ctx.lineWidth = 1 + Math.random();
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // Eye corners (inner/outer)
+            const cornerColor = 'rgba(20,15,10,0.1)';
+            ctx.fillStyle = cornerColor;
+            
+            // Inner corner
+            ctx.beginPath();
+            ctx.ellipse(
+                cx - eyeRadius * 0.85,
+                cy + 5,
+                8,
+                6,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            // Outer corner
+            ctx.beginPath();
+            ctx.ellipse(
+                cx + eyeRadius * 0.85,
+                cy + 5,
+                6,
+                5,
+                0,
+                0,
+                Math.PI * 2
+            );
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // ===== UPDATE EYE =====
+        function updateEye() {
+            // Blink timer
+            blinkTimer += 0.01;
+            
+            // Auto-blink every 3-5 seconds
+            if (!isBlinking && blinkTimer > 3 + Math.random() * 2) {
+                startBlink();
+                blinkTimer = 0;
+            }
+
+            // Blink animation
+            if (isBlinking) {
+                blinkProgress += 0.05;
+                if (blinkProgress < 0.5) {
+                    eyeOpen = 1 - blinkProgress * 2;
+                } else if (blinkProgress < 1) {
+                    eyeOpen = (blinkProgress - 0.5) * 2;
+                } else {
+                    eyeOpen = 1;
+                    isBlinking = false;
+                    blinkProgress = 0;
+                }
+            }
+
+            // Smooth pupil tracking
+            pupilX += (targetPupilX - pupilX) * 0.08;
+            pupilY += (targetPupilY - pupilY) * 0.08;
+
+            // Iris rotation
+            irisRotation += 0.001;
+
+            // Iris pulse
+            irisPulse = 0.8 + 0.2 * Math.sin(time * 0.02);
+
+            // Pupil size
+            pupilSize = 0.7 + 0.3 * (1 - Math.abs(pupilX) / 30);
+        }
+
+        // ===== START BLINK =====
+        function startBlink() {
+            if (!isBlinking) {
+                isBlinking = true;
+                blinkProgress = 0;
+                statusText.textContent = '👁️ Blink!';
+                setTimeout(() => {
+                    statusText.textContent = '👁️ Tracking';
+                }, 300);
+            }
+        }
+
+        // ===== RESET =====
+        function resetEye() {
+            pupilX = 0;
+            pupilY = 0;
+            targetPupilX = 0;
+            targetPupilY = 0;
+            eyeOpen = 1;
+            isBlinking = false;
+            blinkProgress = 0;
+            blinkTimer = 0;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '👁️ Tracking';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            // Update eye
+            updateEye();
+
+            // Draw eye
+            drawEye();
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isBlinking ? 'Blinking' : 'Tracking';
+                statusText.textContent = `👁️ ${state} • ${eyeColors[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse move
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const maxDist = Math.min(canvas.width, canvas.height) * 0.3;
+            
+            targetPupilX = (mouseX - cx) / maxDist * 20;
+            targetPupilY = (mouseY - cy) / maxDist * 15;
+            
+            targetPupilX = Math.max(-20, Math.min(20, targetPupilX));
+            targetPupilY = Math.max(-15, Math.min(15, targetPupilY));
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            targetPupilX = 0;
+            targetPupilY = 0;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const maxDist = Math.min(canvas.width, canvas.height) * 0.3;
+            
+            targetPupilX = (x - cx) / maxDist * 20;
+            targetPupilY = (y - cy) / maxDist * 15;
+            
+            targetPupilX = Math.max(-20, Math.min(20, targetPupilX));
+            targetPupilY = Math.max(-15, Math.min(15, targetPupilY));
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const maxDist = Math.min(canvas.width, canvas.height) * 0.3;
+            
+            targetPupilX = (x - cx) / maxDist * 20;
+            targetPupilY = (y - cy) / maxDist * 15;
+            
+            targetPupilX = Math.max(-20, Math.min(20, targetPupilX));
+            targetPupilY = Math.max(-15, Math.min(15, targetPupilY));
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            targetPupilX = 0;
+            targetPupilY = 0;
+        });
+
+        // Click to blink
+        canvas.addEventListener('click', startBlink);
+
+        // ===== CONTROLS =====
+
+        // Blink
+        blinkBtn.addEventListener('click', startBlink);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % eyeColors.length;
+            colorBtn.textContent = `Color: ${eyeColors[colorMode].name}`;
+            statusText.textContent = `🎨 ${eyeColors[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '👁️ Tracking';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetEye);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') {
+                blinkBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                blinkBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${eyeColors[0].name}`;
+        statusText.textContent = '👁️ Tracking';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('👁️ Blinking Eye loaded!');
+        console.log('💡 Move mouse to track pupil');
+        console.log('💡 B - Blink');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Blink');
+        console.log('💡 Click eye - Blink');
+    </script>
+</body>
+</html>

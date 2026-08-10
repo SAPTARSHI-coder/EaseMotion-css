@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Firefly Particles – Fireflies Float and Cluster</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>✨ Firefly Particles</h1>
+    <p class="subtitle">Fireflies float and cluster in the night</p>
+
+    <div class="firefly-container">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Overlay info -->
+      <div class="info-overlay">
+        <span class="firefly-count" id="fireflyCount">✨ 0 fireflies</span>
+        <span class="cluster-status" id="clusterStatus">🌙 Floating</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn add" id="addBtn">➕ Add</button>
+      <button class="ctrl-btn cluster" id="clusterBtn">🌀 Cluster</button>
+      <button class="ctrl-btn scatter" id="scatterBtn">💨 Scatter</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+    </div>
+
+    <!-- Options -->
+    <div class="options">
+      <div class="option-group">
+        <label for="countSlider">Count: <span id="countDisplay">30</span></label>
+        <input type="range" id="countSlider" min="5" max="80" value="30" />
+      </div>
+      <div class="option-group">
+        <label for="speedSlider">Speed: <span id="speedDisplay">Medium</span></label>
+        <input type="range" id="speedSlider" min="0" max="100" value="50" />
+      </div>
+      <div class="option-group">
+        <label for="glowSlider">Glow: <span id="glowDisplay">Bright</span></label>
+        <input type="range" id="glowSlider" min="0" max="100" value="70" />
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">✨ Fireflies floating in the night</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>A</kbd> Add · <kbd>C</kbd> Cluster · <kbd>S</kbd> Scatter · <kbd>X</kbd> Clear
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const fireflyCount = document.getElementById('fireflyCount');
+      const clusterStatus = document.getElementById('clusterStatus');
+      const addBtn = document.getElementById('addBtn');
+      const clusterBtn = document.getElementById('clusterBtn');
+      const scatterBtn = document.getElementById('scatterBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countDisplay = document.getElementById('countDisplay');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedDisplay = document.getElementById('speedDisplay');
+      const glowSlider = document.getElementById('glowSlider');
+      const glowDisplay = document.getElementById('glowDisplay');
+
+      // State
+      let fireflies = [];
+      let animationId = null;
+      let isClustering = false;
+      let clusterTarget = null;
+      let time = 0;
+
+      // Constants
+      const MAX_FIREFLIES = 80;
+      const MIN_FIREFLIES = 5;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Firefly class -----
+      class Firefly {
+        constructor(x, y) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.targetX = this.x;
+          this.targetY = this.y;
+          this.size = 2 + Math.random() * 4;
+          this.speed = 0.2 + Math.random() * 0.5;
+          this.angle = Math.random() * Math.PI * 2;
+          this.wobbleSpeed = 0.02 + Math.random() * 0.04;
+          this.wobbleAmount = 0.5 + Math.random() * 1.5;
+          this.brightness = 0.3 + Math.random() * 0.7;
+          this.glowSize = this.size * (4 + Math.random() * 6);
+          this.pulseSpeed = 0.02 + Math.random() * 0.03;
+          this.pulseOffset = Math.random() * Math.PI * 2;
+          this.tail = [];
+          this.tailLength = 5 + Math.floor(Math.random() * 10);
+          this.hue = 40 + Math.random() * 30; // 40-70 (yellow-green range)
+          this.mood = 'wander'; // 'wander', 'cluster', 'scatter'
+        }
+
+        update(targetX, targetY, speedMultiplier = 1, isClustering = false) {
+          // Update target based on mode
+          if (isClustering && targetX !== undefined && targetY !== undefined) {
+            this.targetX = targetX + (Math.random() - 0.5) * 40;
+            this.targetY = targetY + (Math.random() - 0.5) * 40;
+          } else if (!isClustering) {
+            // Wander behavior
+            this.angle += (Math.random() - 0.5) * 0.3;
+            const wanderRadius = 30 + Math.random() * 50;
+            this.targetX = this.x + Math.cos(this.angle) * wanderRadius;
+            this.targetY = this.y + Math.sin(this.angle) * wanderRadius;
+          }
+
+          // Move toward target with smooth interpolation
+          const speed = this.speed * speedMultiplier;
+          const dx = this.targetX - this.x;
+          const dy = this.targetY - this.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist > 1) {
+            const moveSpeed = Math.min(speed, dist);
+            this.x += (dx / dist) * moveSpeed;
+            this.y += (dy / dist) * moveSpeed;
+          }
+
+          // Add wobble
+          this.x += Math.sin(this.angle + time * this.wobbleSpeed) * this.wobbleAmount * 0.1;
+          this.y += Math.cos(this.angle + time * this.wobbleSpeed * 0.7) * this.wobbleAmount * 0.1;
+
+          // Keep within bounds with soft boundary
+          const padding = 20;
+          if (this.x < padding) this.x = padding + Math.random() * 10;
+          if (this.x > canvas.width - padding) this.x = canvas.width - padding - Math.random() * 10;
+          if (this.y < padding) this.y = padding + Math.random() * 10;
+          if (this.y > canvas.height - padding) this.y = canvas.height - padding - Math.random() * 10;
+
+          // Update tail
+          this.tail.push({ x: this.x, y: this.y });
+          if (this.tail.length > this.tailLength) {
+            this.tail.shift();
+          }
+
+          // Update glow pulse
+          this.brightness = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(time * this.pulseSpeed + this.pulseOffset));
+        }
+
+        draw(ctx, glowIntensity = 1) {
+          // Draw tail
+          if (this.tail.length > 1) {
+            for (let i = 0; i < this.tail.length - 1; i++) {
+              const alpha = (i / this.tail.length) * 0.3 * this.brightness;
+              const size = this.size * (i / this.tail.length) * 0.5;
+              ctx.beginPath();
+              ctx.arc(this.tail[i].x, this.tail[i].y, size, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(255, 230, 150, ${alpha * glowIntensity})`;
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const glowSize = this.glowSize * glowIntensity;
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          const alpha = 0.3 * this.brightness * glowIntensity;
+          gradient.addColorStop(0, `rgba(255, 255, 200, ${alpha})`);
+          gradient.addColorStop(0.3, `rgba(255, 220, 150, ${alpha * 0.6})`);
+          gradient.addColorStop(1, `rgba(255, 200, 100, 0)`);
+          
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          const coreSize = this.size * (0.8 + 0.4 * this.brightness);
+          const coreGradient = ctx.createRadialGradient(
+            this.x - coreSize * 0.2, this.y - coreSize * 0.2, 0,
+            this.x, this.y, coreSize
+          );
+          coreGradient.addColorStop(0, `rgba(255, 255, 255, ${0.9 * this.brightness * glowIntensity})`);
+          coreGradient.addColorStop(0.5, `rgba(255, 240, 180, ${0.6 * this.brightness * glowIntensity})`);
+          coreGradient.addColorStop(1, `rgba(255, 200, 100, ${0.2 * this.brightness * glowIntensity})`);
+          
+          ctx.fillStyle = coreGradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, coreSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Subtle inner spark
+          if (this.brightness > 0.6) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 * this.brightness * glowIntensity})`;
+            ctx.beginPath();
+            ctx.arc(this.x - coreSize * 0.2, this.y - coreSize * 0.3, coreSize * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // ----- Initialize fireflies -----
+      function initFireflies(count) {
+        fireflies = [];
+        for (let i = 0; i < count; i++) {
+          const firefly = new Firefly();
+          firefly.mood = 'wander';
+          fireflies.push(firefly);
+        }
+        updateUI();
+        status.textContent = `✨ ${count} fireflies floating in the night`;
+      }
+
+      // ----- Add fireflies -----
+      function addFireflies(count = 1) {
+        const currentCount = fireflies.length;
+        const newCount = Math.min(currentCount + count, MAX_FIREFLIES);
+        for (let i = currentCount; i < newCount; i++) {
+          const firefly = new Firefly();
+          firefly.mood = 'wander';
+          fireflies.push(firefly);
+        }
+        updateUI();
+        status.textContent = `✨ Added ${newCount - currentCount} fireflies (${newCount} total)`;
+        countSlider.value = newCount;
+        countDisplay.textContent = newCount;
+      }
+
+      // ----- Clear fireflies -----
+      function clearFireflies() {
+        fireflies = [];
+        updateUI();
+        status.textContent = '🗑️ All fireflies cleared';
+        clusterStatus.textContent = '🌙 No fireflies';
+      }
+
+      // ----- Cluster fireflies -----
+      function clusterFireflies() {
+        if (fireflies.length === 0) {
+          status.textContent = '⚠️ No fireflies to cluster!';
+          return;
+        }
+
+        isClustering = true;
+        
+        // Find center of mass
+        let cx = 0, cy = 0;
+        fireflies.forEach(f => {
+          cx += f.x;
+          cy += f.y;
+        });
+        cx /= fireflies.length;
+        cy /= fireflies.length;
+
+        // If fireflies are already clustered, scatter instead
+        const avgDist = fireflies.reduce((sum, f) => {
+          const dx = f.x - cx;
+          const dy = f.y - cy;
+          return sum + Math.sqrt(dx*dx + dy*dy);
+        }, 0) / fireflies.length;
+
+        if (avgDist < 50) {
+          // Already clustered - scatter
+          scatterFireflies();
+          return;
+        }
+
+        clusterTarget = { x: cx, y: cy };
+        fireflies.forEach(f => {
+          f.mood = 'cluster';
+          f.targetX = cx + (Math.random() - 0.5) * 40;
+          f.targetY = cy + (Math.random() - 0.5) * 40;
+        });
+
+        clusterStatus.textContent = '🌀 Clustering...';
+        status.textContent = `🌀 ${fireflies.length} fireflies clustering`;
+      }
+
+      // ----- Scatter fireflies -----
+      function scatterFireflies() {
+        isClustering = false;
+        clusterTarget = null;
+        fireflies.forEach(f => {
+          f.mood = 'scatter';
+          f.targetX = Math.random() * canvas.width;
+          f.targetY = Math.random() * canvas.height;
+          f.angle = Math.random() * Math.PI * 2;
+        });
+        clusterStatus.textContent = '💨 Scattered';
+        status.textContent = `💨 ${fireflies.length} fireflies scattered`;
+        
+        // Reset mood after a moment
+        setTimeout(() => {
+          fireflies.forEach(f => {
+            f.mood = 'wander';
+          });
+          clusterStatus.textContent = '🌙 Floating';
+        }, 2000);
+      }
+
+      // ----- Update UI -----
+      function updateUI() {
+        fireflyCount.textContent = `✨ ${fireflies.length} fireflies`;
+        if (fireflies.length === 0) {
+          clusterStatus.textContent = '🌙 No fireflies';
+        } else if (isClustering) {
+          clusterStatus.textContent = '🌀 Clustering';
+        } else {
+          clusterStatus.textContent = '🌙 Floating';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016; // ~60fps
+
+        const speedMultiplier = 0.3 + (parseInt(speedSlider.value) / 100) * 2;
+        const glowMultiplier = 0.3 + (parseInt(glowSlider.value) / 100) * 0.7;
+
+        // Update fireflies
+        let clusterX = 0, clusterY = 0;
+        if (isClustering && fireflies.length > 0) {
+          // Dynamic cluster center (smoothly follows the group)
+          let cx = 0, cy = 0;
+          fireflies.forEach(f => {
+            cx += f.x;
+            cy += f.y;
+          });
+          cx /= fireflies.length;
+          cy /= fireflies.length;
+          clusterX = cx;
+          clusterY = cy;
+        }
+
+        fireflies.forEach(f => {
+          if (isClustering) {
+            f.update(clusterX, clusterY, speedMultiplier, true);
+          } else {
+            f.update(undefined, undefined, speedMultiplier, false);
+          }
+        });
+
+        // Draw
+        draw(glowMultiplier);
+
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Draw -----
+      function draw(glowMultiplier = 1) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Clear with subtle trails effect
+        ctx.clearRect(0, 0, w, h);
+        
+        // Background with vignette
+        const bgGradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
+        bgGradient.addColorStop(0, '#0a1628');
+        bgGradient.addColorStop(0.5, '#060e1a');
+        bgGradient.addColorStop(1, '#020408');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw subtle star field background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.02)';
+        for (let i = 0; i < 50; i++) {
+          const seed = i * 137.508;
+          const x = (seed * 0.6180339887) % w;
+          const y = (seed * 0.3819660113) % h;
+          const size = 0.5 + (seed % 3) * 0.5;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw fireflies sorted by size (smaller first for depth)
+        const sorted = [...fireflies].sort((a, b) => a.size - b.size);
+        sorted.forEach(f => {
+          f.draw(ctx, glowMultiplier);
+        });
+
+        // Draw subtle ground glow
+        const groundGradient = ctx.createRadialGradient(w/2, h, 0, w/2, h, h * 0.6);
+        groundGradient.addColorStop(0, 'rgba(40, 80, 40, 0.03)');
+        groundGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = groundGradient;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      addBtn.addEventListener('click', () => {
+        const count = parseInt(countSlider.value);
+        addFireflies(Math.max(1, Math.floor(count / 5)));
+      });
+
+      clusterBtn.addEventListener('click', clusterFireflies);
+
+      scatterBtn.addEventListener('click', scatterFireflies);
+
+      clearBtn.addEventListener('click', clearFireflies);
+
+      countSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        countDisplay.textContent = val;
+        // Reinitialize with new count
+        initFireflies(val);
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        let label = 'Slow';
+        if (val > 65) label = 'Fast';
+        else if (val > 35) label = 'Medium';
+        speedDisplay.textContent = label;
+      });
+
+      glowSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        let label = 'Dim';
+        if (val > 65) label = 'Bright';
+        else if (val > 35) label = 'Medium';
+        glowDisplay.textContent = label;
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'a' || e.key === 'A') {
+          e.preventDefault();
+          addBtn.click();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clusterBtn.click();
+        }
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          scatterBtn.click();
+        }
+        if (e.key === 'x' || e.key === 'X') {
+          e.preventDefault();
+          clearBtn.click();
+        }
+      });
+
+      // Click on canvas to add firefly
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        
+        if (fireflies.length < MAX_FIREFLIES) {
+          const firefly = new Firefly(x, y);
+          firefly.mood = 'wander';
+          fireflies.push(firefly);
+          updateUI();
+          status.textContent = `✨ Added a firefly at (${Math.round(x)}, ${Math.round(y)})`;
+          countSlider.value = fireflies.length;
+          countDisplay.textContent = fireflies.length;
+        } else {
+          status.textContent = '⚠️ Maximum fireflies reached!';
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          // Reposition fireflies within new bounds
+          fireflies.forEach(f => {
+            f.x = Math.min(f.x, canvas.width - 20);
+            f.y = Math.min(f.y, canvas.height - 20);
+          });
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        const initialCount = parseInt(countSlider.value);
+        initFireflies(initialCount);
+        startAnimation();
+        status.textContent = '✨ Fireflies floating in the night — click to add more!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

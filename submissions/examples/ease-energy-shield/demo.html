@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Energy Shield – Protective Energy Shield Shimmers</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🛡️ Energy Shield</h1>
+    <p class="subtitle">Protective energy shield shimmers with power</p>
+
+    <div class="shield-container">
+      <div class="shield-stage" id="shieldStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="shield-status" id="shieldStatus">🛡️ Active</span>
+          <span class="shield-strength" id="shieldStrength">Strength: 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">💡 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn pulse" id="pulseBtn">💫 Pulse</button>
+      <button class="ctrl-btn color" id="colorBtn">🎨 Color</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Shield Strength</span>
+      <input type="range" id="strengthSlider" min="0" max="100" value="80" />
+      <span class="slider-value" id="strengthValue">80%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Pulse Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Shimmer Intensity</span>
+      <input type="range" id="shimmerSlider" min="0" max="100" value="60" />
+      <span class="slider-value" id="shimmerValue">60%</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🛡️ Energy shield shimmering with protective power</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>T</kbd> Toggle · <kbd>R</kbd> Reset · <kbd>P</kbd> Pulse · <kbd>C</kbd> Color
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const shieldStatus = document.getElementById('shieldStatus');
+      const shieldStrength = document.getElementById('shieldStrength');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const pulseBtn = document.getElementById('pulseBtn');
+      const colorBtn = document.getElementById('colorBtn');
+      const status = document.getElementById('status');
+      const strengthSlider = document.getElementById('strengthSlider');
+      const strengthValue = document.getElementById('strengthValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const shimmerSlider = document.getElementById('shimmerSlider');
+      const shimmerValue = document.getElementById('shimmerValue');
+
+      // State
+      let isActive = true;
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let hue = 200; // Blue
+      let shieldParticles = [];
+      let isPulsing = false;
+      let pulseTimer = null;
+      let pulseIntensity = 1;
+
+      // Color schemes
+      const COLOR_SCHEMES = [
+        { name: 'Blue', hue: 200 },
+        { name: 'Green', hue: 140 },
+        { name: 'Purple', hue: 280 },
+        { name: 'Red', hue: 0 },
+        { name: 'Orange', hue: 30 },
+        { name: 'Cyan', hue: 180 },
+        { name: 'Pink', hue: 320 },
+        { name: 'Gold', hue: 50 }
+      ];
+      let colorSchemeIndex = 0;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Shield particle class -----
+      class ShieldParticle {
+        constructor() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          const radius = Math.min(w, h) * 0.38;
+          
+          this.angle = Math.random() * Math.PI * 2;
+          this.radius = radius * (0.3 + Math.random() * 0.7);
+          this.size = 1 + Math.random() * 3;
+          this.speed = 0.002 + Math.random() * 0.008;
+          this.phase = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.opacity = 0.3 + Math.random() * 0.5;
+          this.shimmerSpeed = 0.02 + Math.random() * 0.04;
+          this.shimmerPhase = Math.random() * Math.PI * 2;
+          this.hueOffset = (Math.random() - 0.5) * 30;
+          this.trail = [];
+          this.trailLength = 3 + Math.floor(Math.random() * 6);
+          this.alive = true;
+        }
+
+        update(speedMult, shimmerIntensity, strength) {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          const maxR = Math.min(w, h) * 0.4;
+          
+          // Orbit
+          this.angle += this.speed * speedMult * 0.5;
+          
+          // Radius oscillation (breathing)
+          const breathe = 1 + 0.05 * Math.sin(time * 0.3 + this.phase);
+          this.radius = maxR * (0.3 + 0.7 * breathe) * (0.5 + 0.5 * strength);
+          
+          // Shimmer
+          this.shimmerPhase += this.shimmerSpeed * speedMult;
+          const shimmer = 0.5 + 0.5 * Math.sin(this.shimmerPhase + time * 0.2);
+          
+          // Position
+          const wobble = Math.sin(this.angle * 3 + time * 0.1 + this.phase) * 5 * shimmerIntensity;
+          this.x = cx + Math.cos(this.angle) * this.radius + wobble * 0.5;
+          this.y = cy + Math.sin(this.angle) * this.radius * 0.8 + wobble * 0.3;
+          
+          // Size pulse
+          this.size = (1 + Math.random() * 3) * (0.5 + 0.5 * shimmer) * strength;
+          
+          // Opacity
+          this.opacity = (0.3 + 0.5 * shimmer) * strength;
+          
+          // Trail
+          this.trail.push({ x: this.x, y: this.y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+        }
+
+        draw(ctx, hue, strength) {
+          const alpha = this.opacity * strength;
+          const size = this.size * (0.5 + 0.5 * strength);
+          const colorHue = hue + this.hueOffset + Math.sin(time * 0.2 + this.phase) * 10;
+
+          // Trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.2;
+              const trailSize = size * t * 0.3;
+              ctx.fillStyle = `hsla(${colorHue + 20}, 100%, 80%, ${trailAlpha})`;
+              ctx.beginPath();
+              ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const glowSize = size * 4;
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          gradient.addColorStop(0, `hsla(${colorHue + 20}, 100%, 90%, ${alpha * 0.2})`);
+          gradient.addColorStop(0.5, `hsla(${colorHue + 10}, 100%, 70%, ${alpha * 0.1})`);
+          gradient.addColorStop(1, `hsla(${colorHue}, 100%, 50%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.shadowColor = `hsla(${colorHue + 20}, 100%, 70%, ${alpha * 0.2})`;
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = `hsla(${colorHue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // ----- Generate shield particles -----
+      function generateShieldParticles(count) {
+        shieldParticles = [];
+        for (let i = 0; i < count; i++) {
+          shieldParticles.push(new ShieldParticle());
+        }
+      }
+
+      // ----- Draw shield -----
+      function drawShield() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const strength = parseInt(strengthSlider.value) / 100;
+        const speedMult = parseInt(speedSlider.value) / 5;
+        const shimmerIntensity = parseInt(shimmerSlider.value) / 100;
+        const radius = Math.min(w, h) * 0.38;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        if (!isActive) {
+          shieldStatus.textContent = '🌑 Inactive';
+          shieldStrength.textContent = 'Strength: 0%';
+          return;
+        }
+
+        // Draw shield glow (background aura)
+        const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.2);
+        const auraAlpha = 0.02 + strength * 0.08;
+        auraGrad.addColorStop(0, `hsla(${hue + 20}, 100%, 60%, ${auraAlpha * 0.5})`);
+        auraGrad.addColorStop(0.5, `hsla(${hue}, 100%, 50%, ${auraAlpha * 0.3})`);
+        auraGrad.addColorStop(1, `hsla(${hue - 20}, 100%, 40%, 0)`);
+        ctx.fillStyle = auraGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Update and draw particles
+        if (!isPaused) {
+          shieldParticles.forEach(p => p.update(speedMult, shimmerIntensity, strength));
+        }
+        
+        // Sort by size for depth
+        const sortedParticles = [...shieldParticles].sort((a, b) => a.size - b.size);
+        sortedParticles.forEach(p => p.draw(ctx, hue, strength));
+
+        // Draw shield rings
+        const ringCount = 3;
+        for (let i = 0; i < ringCount; i++) {
+          const ringRadius = radius * (0.4 + i * 0.3) * (0.8 + 0.2 * strength);
+          const ringWidth = 1 + i * 1.5;
+          const ringAlpha = 0.05 + strength * 0.08 * (1 - i * 0.2);
+          const ringHue = hue + i * 20;
+          
+          // Glow
+          ctx.shadowColor = `hsla(${ringHue}, 100%, 60%, ${ringAlpha * 0.3})`;
+          ctx.shadowBlur = 20;
+          
+          ctx.strokeStyle = `hsla(${ringHue}, 100%, 70%, ${ringAlpha})`;
+          ctx.lineWidth = ringWidth;
+          ctx.setLineDash([10 + i * 5, 15 + i * 5]);
+          ctx.lineDashOffset = -time * (20 + i * 10) * speedMult;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.shadowBlur = 0;
+        }
+
+        // Draw inner glow
+        const innerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 0.3);
+        innerGlow.addColorStop(0, `hsla(${hue + 30}, 100%, 80%, ${0.02 + strength * 0.04})`);
+        innerGlow.addColorStop(1, `hsla(${hue}, 100%, 60%, 0)`);
+        ctx.fillStyle = innerGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pulse effect
+        if (isPulsing) {
+          const pulseRadius = radius * 0.1 * pulseIntensity;
+          const pulseGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseRadius);
+          pulseGrad.addColorStop(0, `hsla(${hue + 40}, 100%, 95%, ${0.2 * pulseIntensity})`);
+          pulseGrad.addColorStop(1, `hsla(${hue + 20}, 100%, 70%, 0)`);
+          ctx.fillStyle = pulseGrad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, pulseRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Update status
+        shieldStatus.textContent = isActive ? '🛡️ Active' : '🌑 Inactive';
+        shieldStrength.textContent = `Strength: ${Math.round(strength * 100)}%`;
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        drawShield();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle -----
+      function toggleShield() {
+        isActive = !isActive;
+        toggleBtn.textContent = isActive ? '💡 Toggle' : '💡 Off';
+        status.textContent = isActive ? '🛡️ Shield activated' : '🌑 Shield deactivated';
+        shieldStatus.textContent = isActive ? '🛡️ Active' : '🌑 Inactive';
+      }
+
+      // ----- Reset -----
+      function resetShield() {
+        isActive = true;
+        isPulsing = false;
+        toggleBtn.textContent = '💡 Toggle';
+        strengthSlider.value = 80;
+        strengthValue.textContent = '80%';
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        shimmerSlider.value = 60;
+        shimmerValue.textContent = '60%';
+        hue = COLOR_SCHEMES[0].hue;
+        colorSchemeIndex = 0;
+        status.textContent = '↺ Reset';
+        shieldStatus.textContent = '🛡️ Active';
+        setTimeout(() => {
+          status.textContent = '🛡️ Energy shield shimmering with protective power';
+        }, 500);
+      }
+
+      // ----- Pulse effect -----
+      function pulseShield() {
+        if (!isActive) return;
+        
+        isPulsing = true;
+        pulseIntensity = 2;
+        status.textContent = '💫 Shield pulse!';
+        
+        // Create pulse particles
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        for (let i = 0; i < 20; i++) {
+          const p = new ShieldParticle();
+          p.radius = Math.random() * 50;
+          p.size = 2 + Math.random() * 5;
+          p.life = 0.3 + Math.random() * 0.5;
+          p.opacity = 0.5 + Math.random() * 0.5;
+          shieldParticles.push(p);
+        }
+        
+        if (pulseTimer) clearTimeout(pulseTimer);
+        pulseTimer = setTimeout(() => {
+          isPulsing = false;
+          status.textContent = '🛡️ Energy shield shimmering with protective power';
+        }, 800);
+      }
+
+      // ----- Change color -----
+      function changeColor() {
+        colorSchemeIndex = (colorSchemeIndex + 1) % COLOR_SCHEMES.length;
+        hue = COLOR_SCHEMES[colorSchemeIndex].hue;
+        status.textContent = `🎨 Color: ${COLOR_SCHEMES[colorSchemeIndex].name}`;
+        setTimeout(() => {
+          status.textContent = '🛡️ Energy shield shimmering with protective power';
+        }, 1500);
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', toggleShield);
+      resetBtn.addEventListener('click', resetShield);
+      pulseBtn.addEventListener('click', pulseShield);
+      colorBtn.addEventListener('click', changeColor);
+
+      strengthSlider.addEventListener('input', (e) => {
+        strengthValue.textContent = e.target.value + '%';
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      shimmerSlider.addEventListener('input', (e) => {
+        shimmerValue.textContent = e.target.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleShield();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetShield();
+        }
+        if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          pulseShield();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          changeColor();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          toggleShield();
+        }
+      });
+
+      // Click canvas to pulse
+      canvas.addEventListener('click', pulseShield);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          generateShieldParticles(80);
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateShieldParticles(80);
+        startAnimation();
+        status.textContent = '🛡️ Energy shield shimmering with protective power!';
+        // Initial pulse
+        setTimeout(() => {
+          pulseShield();
+        }, 500);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

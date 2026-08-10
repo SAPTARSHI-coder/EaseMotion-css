@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fire Breathing Dragon</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🐉 Fire Breathing Dragon</h1>
+        <p class="subtitle">Dragon head with flame animation</p>
+
+        <div class="dragon-wrapper">
+            <canvas id="dragonCanvas"></canvas>
+
+            <div class="controls">
+                <button id="fireBtn">🔥 Breathe Fire</button>
+                <button id="colorBtn">Color: Red</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🐉 Dragon resting</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('dragonCanvas');
+        const ctx = canvas.getContext('2d');
+        const fireBtn = document.getElementById('fireBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let isBreathing = false;
+        let fireParticles = [];
+        let smokeParticles = [];
+        let glowParticles = [];
+        let fireIntensity = 0;
+        let fireDuration = 0;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let blinkTimer = 0;
+        let isBlinking = false;
+        let eyeOpen = 1;
+        let mouthOpen = 0;
+        let targetMouthOpen = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Red',
+                dragon: '#e8434a',
+                scale: '#c92a2a',
+                eye: '#ffd93d',
+                fire: ['#ff6b00', '#ff4500', '#ff0000', '#ff8c00', '#ffa500'],
+                smoke: ['#ff6b00', '#ff4500', '#ff0000'],
+                glow: '#ff4500'
+            },
+            {
+                name: 'Green',
+                dragon: '#2d7d46',
+                scale: '#1a5a30',
+                eye: '#ffd93d',
+                fire: ['#ff6b00', '#ff4500', '#ff0000', '#ff8c00', '#ffa500'],
+                smoke: ['#ff6b00', '#ff4500', '#ff0000'],
+                glow: '#ff4500'
+            },
+            {
+                name: 'Blue',
+                dragon: '#2a5a8a',
+                scale: '#1a3a6a',
+                eye: '#ffd93d',
+                fire: ['#00aaff', '#0088ff', '#0066ff', '#00ccff', '#44ddff'],
+                smoke: ['#00aaff', '#0088ff', '#0066ff'],
+                glow: '#0088ff'
+            },
+            {
+                name: 'Purple',
+                dragon: '#7c3aed',
+                scale: '#5a1aad',
+                eye: '#ffd93d',
+                fire: ['#ff6b00', '#ff4500', '#ff0000', '#ff8c00', '#ffa500'],
+                smoke: ['#ff6b00', '#ff4500', '#ff0000'],
+                glow: '#ff4500'
+            },
+            {
+                name: 'Gold',
+                dragon: '#d4a02a',
+                scale: '#b0801a',
+                eye: '#ffd93d',
+                fire: ['#ff6b00', '#ff4500', '#ff0000', '#ff8c00', '#ffa500'],
+                smoke: ['#ff6b00', '#ff4500', '#ff0000'],
+                glow: '#ff6b00'
+            },
+            {
+                name: 'Ice',
+                dragon: '#4a8aaa',
+                scale: '#2a6a8a',
+                eye: '#80d0ff',
+                fire: ['#80d0ff', '#60b0ff', '#4090ff', '#a0e0ff', '#c0f0ff'],
+                smoke: ['#80d0ff', '#60b0ff', '#4090ff'],
+                glow: '#60b0ff'
+            },
+        ];
+
+        // ===== PARTICLE CLASSES =====
+        class FireParticle {
+            constructor(x, y, angle, speed, size, color) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle + (Math.random() - 0.5) * 0.8;
+                this.speed = speed || 2 + Math.random() * 4;
+                this.size = size || 3 + Math.random() * 8;
+                this.color = color || '#ff6b00';
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = -0.02 - Math.random() * 0.03;
+                this.turbulence = 0.02 + Math.random() * 0.04;
+                this.phase = Math.random() * Math.PI * 2;
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.speed *= 0.99;
+                this.angle += (Math.random() - 0.5) * this.turbulence;
+                this.x += Math.cos(this.angle) * this.speed;
+                this.y += Math.sin(this.angle) * this.speed + this.gravity;
+                this.size *= 0.995;
+
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.2 * this.life;
+                    const trailSize = this.size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = this.size * 3 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '30');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        class SmokeParticle {
+            constructor(x, y, color) {
+                this.x = x + (Math.random() - 0.5) * 10;
+                this.y = y + (Math.random() - 0.5) * 10;
+                this.color = color || 'rgba(100,100,100,0.3)';
+                this.size = 5 + Math.random() * 15;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -0.2 - Math.random() * 0.3;
+                this.life = 1;
+                this.maxLife = 40 + Math.random() * 60;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.02 + Math.random() * 0.03;
+                this.glowIntensity = 0.2 + Math.random() * 0.3;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + Math.sin(this.phase) * 0.1;
+                this.y += this.vy;
+                this.vy -= 0.002;
+                this.phase += this.wobble;
+                this.size *= 1.01;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.3;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                grad.addColorStop(0, `rgba(200,200,200,${alpha * 0.3})`);
+                grad.addColorStop(0.5, `rgba(150,150,150,${alpha * 0.2})`);
+                grad.addColorStop(1, `rgba(100,100,100,0)`);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        class GlowParticle {
+            constructor(x, y, color) {
+                this.x = x + (Math.random() - 0.5) * 20;
+                this.y = y + (Math.random() - 0.5) * 20;
+                this.color = color || '#ff6b00';
+                this.size = 2 + Math.random() * 6;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5 - 0.2;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.size *= 0.99;
+                this.phase += 0.05;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 2);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW DRAGON =====
+        function drawDragon(ctx, cx, cy, scale) {
+            const palette = colorPalettes[colorMode];
+            const dragonColor = palette.dragon;
+            const scaleColor = palette.scale;
+            const eyeColor = palette.eye;
+
+            const s = scale || 1;
+            const headSize = 80 * s;
+            const eyeOpenScale = eyeOpen;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // Shadow
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+            // Neck
+            ctx.beginPath();
+            ctx.moveTo(-15 * s, 10 * s);
+            ctx.quadraticCurveTo(-25 * s, 30 * s, -10 * s, 50 * s);
+            ctx.quadraticCurveTo(10 * s, 30 * s, 15 * s, 10 * s);
+            ctx.closePath();
+            ctx.fillStyle = dragonColor;
+            ctx.fill();
+
+            // Head base
+            ctx.beginPath();
+            ctx.ellipse(0, -5 * s, headSize * 0.8, headSize * 0.7, 0, 0, Math.PI * 2);
+            ctx.fillStyle = dragonColor;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = dragonColor + '40';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Scales on head
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + 0.2;
+                const dist = headSize * 0.5;
+                const sx = Math.cos(angle) * dist * 0.7;
+                const sy = Math.sin(angle) * dist * 0.6 - 5 * s;
+                const scSize = 5 + Math.sin(i * 2) * 3;
+                ctx.beginPath();
+                ctx.ellipse(sx, sy, scSize * s, scSize * s * 0.6, angle, 0, Math.PI * 2);
+                ctx.fillStyle = scaleColor;
+                ctx.globalAlpha = 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // Horns
+            ctx.fillStyle = scaleColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+            // Left horn
+            ctx.beginPath();
+            ctx.moveTo(-25 * s, -45 * s);
+            ctx.quadraticCurveTo(-40 * s, -65 * s, -20 * s, -80 * s);
+            ctx.quadraticCurveTo(-10 * s, -60 * s, -15 * s, -45 * s);
+            ctx.closePath();
+            ctx.fill();
+
+            // Right horn
+            ctx.beginPath();
+            ctx.moveTo(25 * s, -45 * s);
+            ctx.quadraticCurveTo(40 * s, -65 * s, 20 * s, -80 * s);
+            ctx.quadraticCurveTo(10 * s, -60 * s, 15 * s, -45 * s);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Snout
+            ctx.beginPath();
+            ctx.ellipse(0, 15 * s, headSize * 0.35, headSize * 0.2, 0, 0, Math.PI * 2);
+            ctx.fillStyle = dragonColor;
+            ctx.fill();
+
+            // Mouth
+            const mouthOpenScale = 0.2 + 0.8 * mouthOpen;
+            const mouthY = 15 * s + 8 * s * mouthOpenScale;
+
+            ctx.beginPath();
+            ctx.moveTo(-20 * s, 15 * s);
+            ctx.quadraticCurveTo(0, mouthY, 20 * s, 15 * s);
+            ctx.strokeStyle = '#1a0a0a';
+            ctx.lineWidth = 2 * s;
+            ctx.stroke();
+
+            // Teeth (upper)
+            if (mouthOpen > 0.1) {
+                for (let i = -3; i <= 3; i++) {
+                    const tx = i * 8 * s;
+                    const ty = 15 * s + 5 * s * mouthOpenScale;
+                    ctx.beginPath();
+                    ctx.moveTo(tx - 3 * s, 15 * s);
+                    ctx.lineTo(tx, ty + 5 * s * mouthOpenScale);
+                    ctx.lineTo(tx + 3 * s, 15 * s);
+                    ctx.fillStyle = '#f5f5f5';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+
+                // Teeth (lower)
+                for (let i = -2; i <= 2; i++) {
+                    const tx = i * 10 * s + 5 * s;
+                    const ty = 15 * s + 5 * s * mouthOpenScale;
+                    ctx.beginPath();
+                    ctx.moveTo(tx - 3 * s, ty + 3 * s);
+                    ctx.lineTo(tx, 15 * s + 2 * s);
+                    ctx.lineTo(tx + 3 * s, ty + 3 * s);
+                    ctx.fillStyle = '#f5f5f5';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ddd';
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+                }
+            }
+
+            // Nostrils
+            ctx.fillStyle = '#1a0a0a';
+            ctx.beginPath();
+            ctx.ellipse(-8 * s, 12 * s, 2 * s, 1.5 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(8 * s, 12 * s, 2 * s, 1.5 * s, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eyes
+            const eyeY = -10 * s;
+            const eyeSize = 16 * s * eyeOpenScale;
+
+            // Left eye
+            ctx.beginPath();
+            ctx.ellipse(-20 * s, eyeY, eyeSize, eyeSize * 0.9, -0.1, 0, Math.PI * 2);
+            ctx.fillStyle = '#f5f5f5';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.arc(-18 * s, eyeY + 2 * s, eyeSize * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-16 * s, eyeY + 1 * s, eyeSize * 0.15, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // Right eye
+            ctx.beginPath();
+            ctx.ellipse(20 * s, eyeY, eyeSize, eyeSize * 0.9, 0.1, 0, Math.PI * 2);
+            ctx.fillStyle = '#f5f5f5';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.beginPath();
+            ctx.arc(22 * s, eyeY + 2 * s, eyeSize * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(24 * s, eyeY + 1 * s, eyeSize * 0.15, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+
+            // Eye glow
+            const eyeGlow = 0.3 + 0.2 * Math.sin(time * 2);
+            ctx.beginPath();
+            ctx.arc(-18 * s, eyeY + 2 * s, eyeSize * 0.6, 0, Math.PI * 2);
+            const glowGrad = ctx.createRadialGradient(
+                -18 * s, eyeY + 2 * s, 0,
+                -18 * s, eyeY + 2 * s, eyeSize * 0.6
+            );
+            glowGrad.addColorStop(0, eyeColor + `${Math.floor(30 + 30 * eyeGlow)}`);
+            glowGrad.addColorStop(1, eyeColor + '00');
+            ctx.fillStyle = glowGrad;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(22 * s, eyeY + 2 * s, eyeSize * 0.6, 0, Math.PI * 2);
+            const glowGrad2 = ctx.createRadialGradient(
+                22 * s, eyeY + 2 * s, 0,
+                22 * s, eyeY + 2 * s, eyeSize * 0.6
+            );
+            glowGrad2.addColorStop(0, eyeColor + `${Math.floor(30 + 30 * eyeGlow)}`);
+            glowGrad2.addColorStop(1, eyeColor + '00');
+            ctx.fillStyle = glowGrad2;
+            ctx.fill();
+
+            // Eyebrows
+            ctx.strokeStyle = scaleColor;
+            ctx.lineWidth = 3 * s;
+            ctx.beginPath();
+            ctx.moveTo(-30 * s, -25 * s);
+            ctx.quadraticCurveTo(-22 * s, -32 * s, -14 * s, -25 * s);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(30 * s, -25 * s);
+            ctx.quadraticCurveTo(22 * s, -32 * s, 14 * s, -25 * s);
+            ctx.stroke();
+
+            // Head ridges
+            for (let i = -3; i <= 3; i++) {
+                const rx = i * 12 * s;
+                const ry = -35 * s + Math.abs(i) * 5 * s;
+                ctx.beginPath();
+                ctx.moveTo(rx - 5 * s, ry);
+                ctx.quadraticCurveTo(rx, ry - 10 * s - Math.abs(i) * 3 * s, rx + 5 * s, ry);
+                ctx.closePath();
+                ctx.fillStyle = scaleColor;
+                ctx.globalAlpha = 0.4 + 0.1 * Math.abs(i);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // Inner mouth glow (when breathing fire)
+            if (isBreathing && fireIntensity > 0.1) {
+                const glowSize = 30 * s * fireIntensity;
+                const mouthGlow = ctx.createRadialGradient(0, 20 * s, 0, 0, 20 * s, glowSize);
+                const paletteColors = palette.fire;
+                const glowColor = paletteColors[1] || '#ff4500';
+                mouthGlow.addColorStop(0, glowColor + '80');
+                mouthGlow.addColorStop(0.3, glowColor + '40');
+                mouthGlow.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, 20 * s, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = mouthGlow;
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Fire particles
+            for (const p of fireParticles) {
+                p.draw(ctx);
+            }
+
+            // Smoke particles
+            for (const p of smokeParticles) {
+                p.draw(ctx);
+            }
+
+            // Glow particles
+            for (const p of glowParticles) {
+                p.draw(ctx);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const glowColor = palette.glow;
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2 + 40, 0, w/2, h/2 + 40, Math.max(w, h) * 0.2);
+            ambientGlow.addColorStop(0, glowColor + '08');
+            ambientGlow.addColorStop(1, glowColor + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Distant stars
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== BREATHE FIRE =====
+        function breatheFire() {
+            if (isBreathing) return;
+
+            isBreathing = true;
+            fireIntensity = 0;
+            fireDuration = 0;
+            fireBtn.textContent = '🔥 Breathing...';
+            statusText.textContent = '🔥 Breathing fire!';
+
+            // Start fire breathing
+            setTimeout(() => {
+                isBreathing = false;
+                fireBtn.textContent = '🔥 Breathe Fire';
+                statusText.textContent = '🐉 Dragon resting';
+                fireIntensity = 0;
+            }, 2000);
+        }
+
+        // ===== RESET =====
+        function resetDragon() {
+            isBreathing = false;
+            fireParticles = [];
+            smokeParticles = [];
+            glowParticles = [];
+            fireIntensity = 0;
+            fireDuration = 0;
+            mouthOpen = 0;
+            targetMouthOpen = 0;
+            fireBtn.textContent = '🔥 Breathe Fire';
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🐉 Dragon resting';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+            const scale = Math.min(w, h) / 400;
+            time += 0.01;
+
+            const palette = colorPalettes[colorMode];
+            const fireColors = palette.fire;
+
+            // Blink
+            blinkTimer += 0.01;
+            if (!isBlinking && blinkTimer > 3 + Math.random() * 2) {
+                isBlinking = true;
+                eyeOpen = 0;
+                setTimeout(() => {
+                    eyeOpen = 1;
+                    isBlinking = false;
+                    blinkTimer = 0;
+                }, 100);
+            }
+
+            // Mouth
+            if (isBreathing) {
+                targetMouthOpen = 0.7 + 0.3 * Math.sin(time * 8);
+                fireIntensity = Math.min(1, fireIntensity + 0.02);
+                fireDuration += 0.01;
+
+                // Spawn fire particles
+                const numParticles = Math.floor(5 + fireIntensity * 15);
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = -0.5 + Math.random() * 1.0;
+                    const speed = 2 + Math.random() * 5 + fireIntensity * 3;
+                    const size = 3 + Math.random() * 10 + fireIntensity * 5;
+                    const color = fireColors[Math.floor(Math.random() * fireColors.length)];
+                    const p = new FireParticle(
+                        cx + (Math.random() - 0.5) * 20,
+                        cy + 30 * scale + (Math.random() - 0.5) * 10,
+                        angle,
+                        speed,
+                        size,
+                        color
+                    );
+                    p.gravity = -0.05 - Math.random() * 0.05;
+                    fireParticles.push(p);
+                }
+
+                // Spawn smoke
+                if (Math.random() < 0.1) {
+                    const s = new SmokeParticle(
+                        cx + (Math.random() - 0.5) * 30,
+                        cy + 20 * scale + (Math.random() - 0.5) * 10,
+                        `rgba(100,100,100,${0.2 + Math.random() * 0.2})`
+                    );
+                    s.vy = -0.1 - Math.random() * 0.2;
+                    smokeParticles.push(s);
+                }
+
+                // Spawn glow particles
+                if (Math.random() < 0.05) {
+                    const g = new GlowParticle(
+                        cx + (Math.random() - 0.5) * 40,
+                        cy + 20 * scale + (Math.random() - 0.5) * 20,
+                        fireColors[Math.floor(Math.random() * fireColors.length)]
+                    );
+                    glowParticles.push(g);
+                }
+            } else {
+                targetMouthOpen = 0;
+                fireIntensity *= 0.98;
+            }
+
+            // Smooth mouth
+            mouthOpen += (targetMouthOpen - mouthOpen) * 0.1;
+
+            // Update fire particles
+            for (let i = fireParticles.length - 1; i >= 0; i--) {
+                const p = fireParticles[i];
+                p.update();
+                if (p.isDead()) {
+                    fireParticles.splice(i, 1);
+                }
+            }
+
+            // Update smoke particles
+            for (let i = smokeParticles.length - 1; i >= 0; i--) {
+                const p = smokeParticles[i];
+                p.update();
+                if (p.isDead()) {
+                    smokeParticles.splice(i, 1);
+                }
+            }
+
+            // Update glow particles
+            for (let i = glowParticles.length - 1; i >= 0; i--) {
+                const p = glowParticles[i];
+                p.update();
+                if (p.isDead()) {
+                    glowParticles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawDragon(ctx, cx, cy, scale);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isBreathing ? '🔥 Breathing fire!' : '🐉 Resting';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Fire
+        fireBtn.addEventListener('click', breatheFire);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = isBreathing ? '🔥 Breathing fire!' : '🐉 Dragon resting';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetDragon);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                fireBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                fireBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🐉 Dragon resting';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🐉 Fire Breathing Dragon loaded!');
+        console.log('💡 F - Breathe fire');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Breathe fire');
+    </script>
+</body>
+</html>

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elastic Slingshot</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Elastic Slingshot</h1>
+        <p class="subtitle">Object that stretches and launches when released</p>
+
+        <div class="slingshot-wrapper">
+            <canvas id="slingshotCanvas"></canvas>
+
+            <div class="controls">
+                <button id="launchBtn">🎯 Launch</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click and drag to aim</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('slingshotCanvas');
+        const ctx = canvas.getContext('2d');
+        const launchBtn = document.getElementById('launchBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let slingshot = {
+            x: 0,
+            y: 0,
+            projectile: null,
+            isDragging: false,
+            dragStartX: 0,
+            dragStartY: 0,
+            dragEndX: 0,
+            dragEndY: 0,
+            stretch: 0,
+            maxStretch: 100,
+            angle: 0,
+            power: 0,
+            isLaunching: false,
+            launchVelocity: 0,
+        };
+        let projectiles = [];
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isHovering = false;
+        let particles = [];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== PROJECTILE CLASS =====
+        class Projectile {
+            constructor(x, y, vx, vy, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.radius = 12;
+                this.color = color || colorPalettes[colorMode].fn(0.5);
+                this.trail = [];
+                this.maxTrail = 20;
+                this.gravity = 0.15;
+                this.damping = 0.99;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 300;
+                this.bounced = false;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.rotation = 0;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxAge;
+
+                // Physics
+                this.vx *= this.damping;
+                this.vy += this.gravity;
+                this.vx *= 0.999;
+                this.vy *= 0.999;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.rotation += this.rotSpeed;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.96;
+                }
+
+                // Ground collision
+                const groundY = canvas.height * 0.8;
+                if (this.y > groundY - this.radius) {
+                    this.y = groundY - this.radius;
+                    this.vy *= -0.3;
+                    this.vx *= 0.9;
+                    if (Math.abs(this.vy) < 0.5) {
+                        this.vy = 0;
+                        this.bounced = true;
+                    }
+                    // Create bounce particles
+                    if (Math.abs(this.vy) > 1) {
+                        this.createBounceParticles();
+                    }
+                }
+
+                // Wall collisions
+                if (this.x < this.radius) {
+                    this.x = this.radius;
+                    this.vx *= -0.5;
+                }
+                if (this.x > canvas.width - this.radius) {
+                    this.x = canvas.width - this.radius;
+                    this.vx *= -0.5;
+                }
+                if (this.y < this.radius) {
+                    this.y = this.radius;
+                    this.vy *= -0.5;
+                }
+
+                // Fade when slow
+                if (Math.abs(this.vx) < 0.05 && Math.abs(this.vy) < 0.05 && this.bounced) {
+                    this.life *= 0.99;
+                }
+            }
+
+            createBounceParticles() {
+                const numP = 5 + Math.floor(Math.random() * 8);
+                for (let i = 0; i < numP; i++) {
+                    const p = new Particle(
+                        this.x + (Math.random() - 0.5) * 10,
+                        this.y + (Math.random() - 0.5) * 5,
+                        this.color
+                    );
+                    p.vx = (Math.random() - 0.5) * 4;
+                    p.vy = -Math.random() * 3 - 1;
+                    p.size = 1 + Math.random() * 3;
+                    p.maxLife = 20 + Math.random() * 30;
+                    particles.push(p);
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.2 * this.life;
+                    const size = this.radius * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = this.radius * 3 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(0.5, this.color + '20');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Main ball
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const grad2 = ctx.createRadialGradient(
+                    -this.radius * 0.2,
+                    -this.radius * 0.3,
+                    0,
+                    0,
+                    0,
+                    this.radius
+                );
+                grad2.addColorStop(0, this.color);
+                grad2.addColorStop(0.5, this.color);
+                grad2.addColorStop(1, this.color + '80');
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.2, -this.radius * 0.3, this.radius * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // Secondary highlight
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.15, -this.radius * 0.45, this.radius * 0.12, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxAge;
+            }
+        }
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6 - 3;
+                this.size = 1 + Math.random() * 3;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${Math.random() * 360}, 80%, 60%)`;
+                this.gravity = 0.05 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+                this.phase += 0.05;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SLINGSHOT =====
+        function initSlingshot() {
+            const w = canvas.width;
+            const h = canvas.height;
+            slingshot.x = w / 2;
+            slingshot.y = h * 0.65;
+            slingshot.projectile = new Projectile(
+                slingshot.x,
+                slingshot.y - 30,
+                0,
+                0,
+                colorPalettes[colorMode].fn(0.5)
+            );
+            slingshot.projectile.radius = 14;
+            slingshot.isDragging = false;
+            slingshot.isLaunching = false;
+            slingshot.stretch = 0;
+            slingshot.power = 0;
+            projectiles = [];
+            particles = [];
+        }
+        initSlingshot();
+
+        // ===== DRAW SLINGSHOT =====
+        function drawSlingshot() {
+            const cx = slingshot.x;
+            const cy = slingshot.y;
+            const colorFn = colorPalettes[colorMode].fn;
+            const color = colorFn(0.5);
+
+            // Slingshot fork
+            ctx.save();
+
+            // Left arm
+            ctx.beginPath();
+            ctx.moveTo(cx - 15, cy + 10);
+            ctx.lineTo(cx - 8, cy - 30);
+            ctx.lineTo(cx - 12, cy - 28);
+            ctx.fillStyle = 'rgba(80, 60, 40, 0.6)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(80, 60, 40, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Right arm
+            ctx.beginPath();
+            ctx.moveTo(cx + 15, cy + 10);
+            ctx.lineTo(cx + 8, cy - 30);
+            ctx.lineTo(cx + 12, cy - 28);
+            ctx.fillStyle = 'rgba(80, 60, 40, 0.6)';
+            ctx.fill();
+            ctx.stroke();
+
+            // Fork tips
+            ctx.beginPath();
+            ctx.arc(cx - 10, cy - 30, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(80, 60, 40, 0.6)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(cx + 10, cy - 30, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Elastic band
+            if (slingshot.isDragging) {
+                const dx = slingshot.dragEndX - slingshot.x;
+                const dy = slingshot.dragEndY - slingshot.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+
+                const stretch = Math.min(dist / slingshot.maxStretch, 1);
+                const pullX = slingshot.x + dx * 0.3;
+                const pullY = slingshot.y + dy * 0.3;
+
+                // Left band
+                ctx.beginPath();
+                ctx.moveTo(cx - 10, cy - 30);
+                ctx.quadraticCurveTo(
+                    cx - 10 + (pullX - cx + 10) * 0.5,
+                    cy - 30 + (pullY - cy + 30) * 0.5 - 5,
+                    pullX,
+                    pullY
+                );
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = 0.6;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Right band
+                ctx.beginPath();
+                ctx.moveTo(cx + 10, cy - 30);
+                ctx.quadraticCurveTo(
+                    cx + 10 + (pullX - cx - 10) * 0.5,
+                    cy - 30 + (pullY - cy + 30) * 0.5 - 5,
+                    pullX,
+                    pullY
+                );
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = 0.6;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Power indicator
+                const power = Math.min(dist / slingshot.maxStretch, 1);
+                const powerColor = `hsl(${120 - power * 120}, 100%, 50%)`;
+                ctx.fillStyle = powerColor;
+                ctx.globalAlpha = 0.2 + power * 0.3;
+                ctx.beginPath();
+                ctx.arc(pullX, pullY, 10 + power * 15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Draw projectile at pull position
+                if (slingshot.projectile) {
+                    const p = slingshot.projectile;
+                    p.x = pullX;
+                    p.y = pullY;
+                    p.draw(ctx);
+                }
+            } else {
+                // Draw projectile at rest
+                if (slingshot.projectile && !slingshot.isLaunching) {
+                    slingshot.projectile.x = slingshot.x;
+                    slingshot.projectile.y = slingshot.y - 30;
+                    slingshot.projectile.draw(ctx);
+                }
+            }
+
+            ctx.restore();
+
+            // Handle
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(cx - 15, cy + 10);
+            ctx.lineTo(cx - 20, cy + 20);
+            ctx.lineTo(cx + 20, cy + 20);
+            ctx.lineTo(cx + 15, cy + 10);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(80, 60, 40, 0.4)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(80, 60, 40, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground
+            const groundY = h * 0.8;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 60, 40, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 60, 40, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 60, 40, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 60, 40, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Grass
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5 + time * 0.01) * 5;
+                const y = groundY + Math.sin(i * 1.3 + time * 0.02) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.01) * 3,
+                    y - 6 - Math.sin(i * 0.7 + time * 0.015) * 4,
+                    x + Math.sin(i * 1.5 + time * 0.012) * 5,
+                    y - 10 - Math.sin(i * 1.1 + time * 0.02) * 5
+                );
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.1 + Math.sin(i + time * 0.01) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Target area indicator
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(w * 0.8, h * 0.3, 40, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // ===== LAUNCH PROJECTILE =====
+        function launchProjectile() {
+            if (slingshot.isLaunching || !slingshot.projectile) return;
+            if (!slingshot.isDragging) return;
+
+            const dx = slingshot.dragStartX - slingshot.dragEndX;
+            const dy = slingshot.dragStartY - slingshot.dragEndY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const power = Math.min(dist / slingshot.maxStretch, 1);
+
+            if (power < 0.05) {
+                slingshot.isDragging = false;
+                return;
+            }
+
+            const angle = Math.atan2(dy, dx);
+            const speed = power * 15;
+
+            const projectile = slingshot.projectile;
+            projectile.vx = Math.cos(angle) * speed;
+            projectile.vy = Math.sin(angle) * speed;
+            projectile.x = slingshot.dragEndX;
+            projectile.y = slingshot.dragEndY;
+
+            projectiles.push(projectile);
+
+            // Create launch particles
+            const colorFn = colorPalettes[colorMode].fn;
+            for (let i = 0; i < 20; i++) {
+                const p = new Particle(
+                    projectile.x + (Math.random() - 0.5) * 10,
+                    projectile.y + (Math.random() - 0.5) * 10,
+                    colorFn(Math.random())
+                );
+                p.vx += (Math.random() - 0.5) * 6;
+                p.vy += (Math.random() - 0.5) * 6 - 2;
+                p.size = 1 + Math.random() * 4;
+                particles.push(p);
+            }
+
+            slingshot.isLaunching = true;
+            slingshot.isDragging = false;
+            slingshot.projectile = null;
+            statusText.textContent = '🚀 Launched!';
+
+            setTimeout(() => {
+                slingshot.isLaunching = false;
+                // Create new projectile
+                slingshot.projectile = new Projectile(
+                    slingshot.x,
+                    slingshot.y - 30,
+                    0,
+                    0,
+                    colorPalettes[colorMode].fn(0.5)
+                );
+                slingshot.projectile.radius = 14;
+                statusText.textContent = '🌀 Click and drag to aim';
+            }, 500);
+        }
+
+        // ===== RESET =====
+        function resetSlingshot() {
+            projectiles = [];
+            particles = [];
+            slingshot.isDragging = false;
+            slingshot.isLaunching = false;
+            if (!slingshot.projectile) {
+                slingshot.projectile = new Projectile(
+                    slingshot.x,
+                    slingshot.y - 30,
+                    0,
+                    0,
+                    colorPalettes[colorMode].fn(0.5)
+                );
+                slingshot.projectile.radius = 14;
+            }
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click and drag to aim';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update projectiles
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i];
+                p.update();
+                if (p.isDead()) {
+                    projectiles.splice(i, 1);
+                }
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw projectiles
+            for (const p of projectiles) {
+                p.draw(ctx);
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw slingshot
+            drawSlingshot();
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const projectileCount = projectiles.length;
+                if (slingshot.isDragging) {
+                    const dx = slingshot.dragStartX - slingshot.dragEndX;
+                    const dy = slingshot.dragStartY - slingshot.dragEndY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const power = Math.min(dist / slingshot.maxStretch, 1);
+                    statusText.textContent = `🎯 Power: ${Math.round(power * 100)}%`;
+                } else if (projectileCount > 0) {
+                    statusText.textContent = `🚀 ${projectileCount} projectiles flying`;
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse
+        canvas.addEventListener('mousedown', (e) => {
+            if (slingshot.isLaunching) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            // Check if click is near projectile
+            if (slingshot.projectile) {
+                const dx = x - slingshot.projectile.x;
+                const dy = y - slingshot.projectile.y;
+                if (dx * dx + dy * dy < 900) {
+                    slingshot.isDragging = true;
+                    slingshot.dragStartX = x;
+                    slingshot.dragStartY = y;
+                    slingshot.dragEndX = x;
+                    slingshot.dragEndY = y;
+                    canvas.style.cursor = 'grabbing';
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+
+            if (slingshot.isDragging) {
+                const dx = mouseX - slingshot.x;
+                const dy = mouseY - slingshot.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = slingshot.maxStretch;
+                
+                if (dist < maxDist) {
+                    slingshot.dragEndX = mouseX;
+                    slingshot.dragEndY = mouseY;
+                } else {
+                    slingshot.dragEndX = slingshot.x + (dx / dist) * maxDist;
+                    slingshot.dragEndY = slingshot.y + (dy / dist) * maxDist;
+                }
+            } else {
+                // Check hover
+                if (slingshot.projectile) {
+                    const dx = mouseX - slingshot.projectile.x;
+                    const dy = mouseY - slingshot.projectile.y;
+                    if (dx * dx + dy * dy < 900) {
+                        canvas.style.cursor = 'grab';
+                        isHovering = true;
+                    } else {
+                        canvas.style.cursor = 'default';
+                        isHovering = false;
+                    }
+                }
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (slingshot.isDragging) {
+                launchProjectile();
+                canvas.style.cursor = 'default';
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (slingshot.isDragging) {
+                launchProjectile();
+                canvas.style.cursor = 'default';
+            }
+            isHovering = false;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (slingshot.isLaunching) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            if (slingshot.projectile) {
+                const dx = x - slingshot.projectile.x;
+                const dy = y - slingshot.projectile.y;
+                if (dx * dx + dy * dy < 900) {
+                    slingshot.isDragging = true;
+                    slingshot.dragStartX = x;
+                    slingshot.dragStartY = y;
+                    slingshot.dragEndX = x;
+                    slingshot.dragEndY = y;
+                }
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!slingshot.isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+
+            const dx = x - slingshot.x;
+            const dy = y - slingshot.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const maxDist = slingshot.maxStretch;
+            
+            if (dist < maxDist) {
+                slingshot.dragEndX = x;
+                slingshot.dragEndY = y;
+            } else {
+                slingshot.dragEndX = slingshot.x + (dx / dist) * maxDist;
+                slingshot.dragEndY = slingshot.y + (dy / dist) * maxDist;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (slingshot.isDragging) {
+                launchProjectile();
+            }
+        });
+
+        // ===== CONTROLS =====
+
+        // Launch
+        launchBtn.addEventListener('click', () => {
+            if (slingshot.isDragging) {
+                launchProjectile();
+            } else if (!slingshot.isLaunching) {
+                // Auto-launch with random power
+                const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+                const power = 0.3 + Math.random() * 0.7;
+                const speed = power * 15;
+                
+                if (slingshot.projectile) {
+                    const p = slingshot.projectile;
+                    p.vx = Math.cos(angle) * speed;
+                    p.vy = Math.sin(angle) * speed;
+                    p.x = slingshot.x + Math.cos(angle) * 30;
+                    p.y = slingshot.y - 30 + Math.sin(angle) * 30;
+                    projectiles.push(p);
+                    slingshot.projectile = null;
+                    slingshot.isLaunching = true;
+                    
+                    setTimeout(() => {
+                        slingshot.isLaunching = false;
+                        slingshot.projectile = new Projectile(
+                            slingshot.x,
+                            slingshot.y - 30,
+                            0,
+                            0,
+                            colorPalettes[colorMode].fn(0.5)
+                        );
+                        slingshot.projectile.radius = 14;
+                        statusText.textContent = '🌀 Click and drag to aim';
+                    }, 500);
+                }
+            }
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            if (slingshot.projectile) {
+                slingshot.projectile.color = colorPalettes[colorMode].fn(0.5);
+            }
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click and drag to aim';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetSlingshot);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'l' || e.key === 'L') {
+                launchBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                if (slingshot.isDragging) {
+                    launchProjectile();
+                } else {
+                    launchBtn.click();
+                }
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initSlingshot();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Click and drag to aim';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Elastic Slingshot loaded!');
+        console.log('💡 Click and drag projectile to aim');
+        console.log('💡 L - Launch');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Launch');
+    </script>
+</body>
+</html>

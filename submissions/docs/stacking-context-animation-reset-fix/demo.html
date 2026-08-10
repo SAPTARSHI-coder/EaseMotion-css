@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix: Animation Reset on New Stacking Context — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Animation Reset on New Stacking Context — Fix Demo</h1>
+    <p>When a parent dynamically receives <code>transform</code>, <code>filter</code>, <code>will-change</code>, or <code>perspective</code>, child animations flicker or restart. This demo shows the bug and two proven fixes.</p>
+  </header>
+
+  <!-- ── SECTION 1: THE BUG ───────────────────────────────── -->
+  <section class="demo-section">
+    <h2>❌ The Bug — Toggle parent transform → child animation restarts</h2>
+    <p class="demo-desc">
+      The inner box animates with a continuous float. When you click the button,
+      the wrapper receives <code>transform: translateZ(0)</code>, which creates a
+      <strong>new stacking context</strong>. The browser re-promotes the child to a
+      new compositor layer, causing the animation to restart from <code>0%</code>.
+    </p>
+
+    <div class="controls">
+      <button id="bug-btn" onclick="toggleBug()">Toggle Parent <code>transform: translateZ(0)</code></button>
+      <span id="bug-status" class="status-badge off">Off</span>
+    </div>
+
+    <div id="bug-wrapper" class="buggy-wrapper">
+      <div class="demo-box floating-box">
+        <span>🐛 Buggy Box</span>
+        <small>Watch me restart when you toggle above!</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: FIX 1 — Pre-promote the child ──────────── -->
+  <section class="demo-section">
+    <h2>✅ Fix 1 — Pre-promote child with <code>will-change: transform</code></h2>
+    <p class="demo-desc">
+      By adding <code>will-change: transform</code> to the <strong>animated element itself</strong>
+      <em>before</em> the parent changes, the browser already has it on its own compositor
+      layer. When the parent creates a new stacking context, the child's layer is
+      unaffected — the animation continues uninterrupted.
+    </p>
+
+    <div class="controls">
+      <button id="fix1-btn" onclick="toggleFix1()">Toggle Parent <code>transform: translateZ(0)</code></button>
+      <span id="fix1-status" class="status-badge off">Off</span>
+    </div>
+
+    <div id="fix1-wrapper" class="fix1-wrapper">
+      <!--
+        will-change: transform is set on this element in CSS from the start.
+        This pre-promotes it to its own GPU layer so the parent's
+        stacking context change doesn't affect it.
+      -->
+      <div class="demo-box fix1-box">
+        <span>✅ Fix 1 Box</span>
+        <small><code>will-change: transform</code> keeps the animation steady!</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 3: FIX 2 — Pre-establish stacking context ─── -->
+  <section class="demo-section">
+    <h2>✅ Fix 2 — Pre-establish stacking context on the wrapper</h2>
+    <p class="demo-desc">
+      If the parent <em>will always</em> create a stacking context eventually (e.g.
+      a modal overlay), apply <code>transform: translateZ(0)</code> or
+      <code>isolation: isolate</code> to the wrapper <strong>from the start</strong>.
+      The child is already inside that layer — no transition happens, no restart.
+    </p>
+
+    <div class="controls">
+      <button id="fix2-btn" onclick="toggleFix2()">Toggle an <em>additional</em> class (harmless)</button>
+      <span id="fix2-status" class="status-badge off">Off</span>
+    </div>
+
+    <div id="fix2-wrapper" class="fix2-wrapper">
+      <!-- The wrapper already has transform: translateZ(0) from the start in CSS.
+           No new stacking context is ever created, so no restart occurs. -->
+      <div class="demo-box fix2-box">
+        <span>✅ Fix 2 Box</span>
+        <small>Wrapper already has <code>translateZ(0)</code> — animation never restarts!</small>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 4: HOW IT WORKS ──────────────────────────── -->
+  <section class="demo-section info-section">
+    <h2>🔧 Root Cause &amp; Fix Summary</h2>
+
+    <div class="explanation">
+      <p>
+        <strong>Root cause:</strong> CSS properties like <code>transform</code>,
+        <code>filter</code>, <code>perspective</code>, <code>contain: layout</code>,
+        and <code>will-change: transform</code> create a new <em>stacking context</em>
+        and force the browser to promote descendants to a new GPU compositor layer.
+        When this happens to a running animation, the browser re-initialises the
+        animation timeline from <code>0%</code>, causing a visible restart or flicker.
+      </p>
+
+      <div class="fix-table">
+        <div class="fix-row header-row">
+          <span>Fix</span>
+          <span>How</span>
+          <span>Best for</span>
+        </div>
+        <div class="fix-row">
+          <span>1. Pre-promote child</span>
+          <span>Add <code>will-change: transform</code> to the animated element</span>
+          <span>When you don't control the parent's styling</span>
+        </div>
+        <div class="fix-row">
+          <span>2. Pre-establish context</span>
+          <span>Apply <code>transform: translateZ(0)</code> or <code>isolation: isolate</code> to the wrapper from the start</span>
+          <span>When you control the parent and know it will receive a stacking context</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function toggleBug() {
+      const wrapper = document.getElementById('bug-wrapper');
+      const status = document.getElementById('bug-status');
+      const isActive = wrapper.classList.toggle('active');
+      status.textContent = isActive ? 'On' : 'Off';
+      status.className = 'status-badge ' + (isActive ? 'on' : 'off');
+    }
+
+    function toggleFix1() {
+      const wrapper = document.getElementById('fix1-wrapper');
+      const status = document.getElementById('fix1-status');
+      const isActive = wrapper.classList.toggle('active');
+      status.textContent = isActive ? 'On' : 'Off';
+      status.className = 'status-badge ' + (isActive ? 'on' : 'off');
+    }
+
+    function toggleFix2() {
+      const wrapper = document.getElementById('fix2-wrapper');
+      const status = document.getElementById('fix2-status');
+      const isActive = wrapper.classList.toggle('extra');
+      status.textContent = isActive ? 'On' : 'Off';
+      status.className = 'status-badge ' + (isActive ? 'on' : 'off');
+    }
+  </script>
+
+</body>
+</html>

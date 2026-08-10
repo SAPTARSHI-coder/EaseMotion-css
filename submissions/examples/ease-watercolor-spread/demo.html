@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watercolor Spread · colors bleed like watercolor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="watercolor-container">
+      <div class="watercolor-display" id="watercolorDisplay">
+        <!-- Canvas for watercolor effect -->
+        <canvas id="watercolorCanvas"></canvas>
+        
+        <!-- Watercolor blobs -->
+        <div class="blob-container" id="blobContainer">
+          <div class="blob blob-1" style="--color: #818cf8; --x: 20%; --y: 25%; --size: 80px;"></div>
+          <div class="blob blob-2" style="--color: #a78bfa; --x: 60%; --y: 30%; --size: 100px;"></div>
+          <div class="blob blob-3" style="--color: #f472b6; --x: 40%; --y: 60%; --size: 70px;"></div>
+          <div class="blob blob-4" style="--color: #34d399; --x: 75%; --y: 65%; --size: 60px;"></div>
+          <div class="blob blob-5" style="--color: #fbbf24; --x: 15%; --y: 70%; --size: 50px;"></div>
+          <div class="blob blob-6" style="--color: #60a5fa; --x: 85%; --y: 20%; --size: 65px;"></div>
+          <div class="blob blob-7" style="--color: #f472b6; --x: 50%; --y: 15%; --size: 55px;"></div>
+          <div class="blob blob-8" style="--color: #34d399; --x: 30%; --y: 80%; --size: 45px;"></div>
+        </div>
+
+        <!-- Watercolor Text -->
+        <div class="watercolor-text">
+          <span class="text-label">🎨 Watercolor</span>
+          <span class="text-message" id="watercolorMessage">Click to spread colors</span>
+        </div>
+
+        <!-- Spread Counter -->
+        <div class="spread-counter">
+          <span class="counter-label">🎨 Spreads</span>
+          <span class="counter-value" id="spreadCount">0</span>
+        </div>
+      </div>
+      
+      <div class="watercolor-status">
+        <span id="watercolorStatus">🎨 Click to spread watercolor</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-spread" id="spreadBtn">🎨 Spread Color</button>
+      <button class="btn btn-mode" id="modeBtn">🌀 Toggle Style</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🎨 watercolor bleed · organic spreading · fluid colors</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('watercolorCanvas');
+      const ctx = canvas.getContext('2d');
+      const blobContainer = document.getElementById('blobContainer');
+      const watercolorMessage = document.getElementById('watercolorMessage');
+      const spreadCount = document.getElementById('spreadCount');
+      const watercolorStatus = document.getElementById('watercolorStatus');
+      const spreadBtn = document.getElementById('spreadBtn');
+      const modeBtn = document.getElementById('modeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const display = document.getElementById('watercolorDisplay');
+
+      // State
+      let count = 0;
+      let isSpreading = false;
+      let styleIndex = 0;
+      let blobs = [];
+      let animationId = null;
+      let spreadParticles = [];
+
+      // Styles
+      const styles = [
+        { name: 'Dreamy', colors: ['#818cf8', '#a78bfa', '#f472b6', '#34d399', '#fbbf24'] },
+        { name: 'Ocean', colors: ['#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe'] },
+        { name: 'Sunset', colors: ['#ef4444', '#f97316', '#fb923c', '#fca5a5', '#fcd34d'] },
+        { name: 'Forest', colors: ['#22c55e', '#4ade80', '#86efac', '#bbf7d0', '#dcfce7'] },
+        { name: 'Galaxy', colors: ['#6366f1', '#8b5cf6', '#a78bfa', '#ec4899', '#f472b6'] }
+      ];
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Draw watercolor background
+      function drawWatercolorBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Clear with subtle gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(30, 30, 50, 0.3)');
+        grad.addColorStop(1, 'rgba(10, 10, 26, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Create watercolor blob
+      function createBlob(x, y, color, size) {
+        return {
+          x: x || Math.random() * 100,
+          y: y || Math.random() * 100,
+          color: color || styles[styleIndex].colors[Math.floor(Math.random() * styles[styleIndex].colors.length)],
+          size: size || 40 + Math.random() * 80,
+          opacity: 0.3 + Math.random() * 0.4,
+          spread: 0,
+          targetSpread: 1,
+          speed: 0.02 + Math.random() * 0.02,
+          phase: Math.random() * Math.PI * 2
+        };
+      }
+
+      // Render watercolor on canvas
+      function renderWatercolor() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        drawWatercolorBackground();
+        
+        // Draw each blob with watercolor effect
+        blobs.forEach((blob, index) => {
+          const x = (blob.x / 100) * w;
+          const y = (blob.y / 100) * h;
+          const size = (blob.size / 100) * Math.min(w, h) * 0.5;
+          const spread = blob.spread;
+          
+          // Create watercolor bleed effect with multiple layers
+          for (let i = 0; i < 5; i++) {
+            const layerSize = size * (0.5 + i * 0.15) * (1 + spread * 0.5);
+            const opacity = blob.opacity * (0.2 + (1 - i / 5) * 0.6) * (0.6 + spread * 0.4);
+            const offsetX = (Math.random() - 0.5) * size * 0.3 * spread;
+            const offsetY = (Math.random() - 0.5) * size * 0.3 * spread;
+            
+            ctx.beginPath();
+            ctx.ellipse(x + offsetX, y + offsetY, layerSize, layerSize * (0.7 + Math.random() * 0.3), Math.random() * Math.PI, 0, Math.PI * 2);
+            
+            const color = blob.color;
+            const alpha = opacity * (0.3 + Math.random() * 0.2);
+            ctx.fillStyle = color.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+            ctx.fill();
+          }
+          
+          // Add watercolor edge bleed
+          for (let i = 0; i < 3; i++) {
+            const edgeSize = size * (1.2 + spread * 0.6) * (0.8 + Math.random() * 0.4);
+            const edgeOpacity = blob.opacity * 0.15 * (0.5 + spread * 0.5);
+            const angle = Math.random() * Math.PI * 2;
+            const dist = size * 0.3 * spread;
+            
+            ctx.beginPath();
+            ctx.ellipse(
+              x + Math.cos(angle) * dist,
+              y + Math.sin(angle) * dist,
+              edgeSize * 0.4,
+              edgeSize * 0.3,
+              Math.random() * Math.PI,
+              0,
+              Math.PI * 2
+            );
+            ctx.fillStyle = blob.color.replace(')', `, ${edgeOpacity})`).replace('rgb', 'rgba');
+            ctx.fill();
+          }
+        });
+      }
+
+      // Animate spread
+      function animateSpread() {
+        let allComplete = true;
+        
+        blobs.forEach(blob => {
+          if (blob.spread < blob.targetSpread) {
+            blob.spread += blob.speed;
+            if (blob.spread > blob.targetSpread) blob.spread = blob.targetSpread;
+            allComplete = false;
+          }
+        });
+        
+        renderWatercolor();
+        
+        if (!allComplete) {
+          animationId = requestAnimationFrame(animateSpread);
+        } else {
+          isSpreading = false;
+          animationId = null;
+        }
+      }
+
+      // Start spread
+      function startSpread() {
+        if (isSpreading) return;
+        
+        const style = styles[styleIndex];
+        const numBlobs = 5 + Math.floor(Math.random() * 5);
+        
+        for (let i = 0; i < numBlobs; i++) {
+          const color = style.colors[Math.floor(Math.random() * style.colors.length)];
+          const x = 10 + Math.random() * 80;
+          const y = 10 + Math.random() * 80;
+          const size = 30 + Math.random() * 70;
+          const blob = createBlob(x, y, color, size);
+          blob.targetSpread = 0.5 + Math.random() * 0.5;
+          blob.speed = 0.01 + Math.random() * 0.02;
+          blobs.push(blob);
+        }
+        
+        isSpreading = true;
+        count++;
+        spreadCount.textContent = count;
+        
+        watercolorMessage.textContent = '🎨 Colors spreading...';
+        watercolorMessage.style.color = '#fbbf24';
+        watercolorStatus.textContent = `🎨 Watercolor spreading! ✨ (${count})`;
+        watercolorStatus.style.color = '#fbbf24';
+        spreadBtn.textContent = '🎨 Spreading...';
+        spreadBtn.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+        spreadBtn.style.borderColor = '#fcd34d';
+        
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animateSpread();
+        
+        setTimeout(() => {
+          watercolorMessage.textContent = 'Click to spread more color';
+          watercolorMessage.style.color = '#94a3b8';
+          watercolorStatus.textContent = '🎨 Click to spread watercolor';
+          watercolorStatus.style.color = '#94a3b8';
+          spreadBtn.textContent = '🎨 Spread Color';
+          spreadBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          spreadBtn.style.borderColor = '#818cf8';
+        }, 3000);
+      }
+
+      // Toggle style
+      function toggleStyle() {
+        styleIndex = (styleIndex + 1) % styles.length;
+        const style = styles[styleIndex];
+        modeBtn.textContent = `🌀 ${style.name}`;
+        
+        // Update blob colors
+        blobs.forEach(blob => {
+          blob.color = style.colors[Math.floor(Math.random() * style.colors.length)];
+        });
+        
+        renderWatercolor();
+        
+        watercolorStatus.textContent = `🎨 Style: ${style.name}`;
+        watercolorStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          if (!isSpreading) {
+            watercolorStatus.textContent = '🎨 Click to spread watercolor';
+            watercolorStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetWatercolor() {
+        if (isSpreading) {
+          isSpreading = false;
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+        }
+        
+        blobs = [];
+        count = 0;
+        spreadCount.textContent = '0';
+        watercolorMessage.textContent = 'Click to spread colors';
+        watercolorMessage.style.color = '#94a3b8';
+        spreadBtn.textContent = '🎨 Spread Color';
+        spreadBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        spreadBtn.style.borderColor = '#818cf8';
+        
+        drawWatercolorBackground();
+        
+        watercolorStatus.textContent = '🔄 Reset complete';
+        watercolorStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          watercolorStatus.textContent = '🎨 Click to spread watercolor';
+        }, 1000);
+      }
+
+      // Event listeners
+      if (spreadBtn) {
+        spreadBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          startSpread();
+        });
+      }
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleStyle();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetWatercolor();
+        });
+      }
+
+      // Click on display to spread
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas || e.target.closest('.blob-container')) {
+          startSpread();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          startSpread();
+        } else if (key === 's' || key === 'S') {
+          e.preventDefault();
+          startSpread();
+        } else if (key === 't' || key === 'T') {
+          e.preventDefault();
+          toggleStyle();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetWatercolor();
+        }
+      });
+
+      // Initialize
+      resizeCanvas();
+      drawWatercolorBackground();
+      
+      // Add some initial blobs
+      const initialStyle = styles[styleIndex];
+      for (let i = 0; i < 4; i++) {
+        const color = initialStyle.colors[i % initialStyle.colors.length];
+        const blob = createBlob(
+          15 + Math.random() * 70,
+          15 + Math.random() * 70,
+          color,
+          40 + Math.random() * 60
+        );
+        blob.spread = 0.3 + Math.random() * 0.3;
+        blobs.push(blob);
+      }
+      renderWatercolor();
+      
+      console.log('🎨 Watercolor Spread ready · shortcuts: [Space/S] Spread, [T] Style, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

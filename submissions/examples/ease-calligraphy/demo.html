@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calligraphy · elegant script writes itself</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="calligraphy-container">
+      <div class="calligraphy-display" id="calligraphyDisplay">
+        <!-- Canvas for calligraphy -->
+        <canvas id="calligraphyCanvas"></canvas>
+        
+        <!-- Calligraphy Info -->
+        <div class="calligraphy-info">
+          <span class="info-label">🖋️ Characters</span>
+          <span class="info-value" id="charCount">0</span>
+        </div>
+
+        <!-- Calligraphy Controls -->
+        <div class="calligraphy-controls">
+          <div class="control-group">
+            <label class="control-label">✒️ Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="elegant" title="Elegant">✒️</button>
+              <button class="style-btn" data-style="flourish" title="Flourish">🌿</button>
+              <button class="style-btn" data-style="bold" title="Bold">💪</button>
+              <button class="style-btn" data-style="italic" title="Italic">📐</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">⏱️ Speed</label>
+            <input type="range" class="control-slider" id="speedSlider" min="1" max="10" value="5">
+            <span class="control-value" id="speedValue">5</span>
+          </div>
+        </div>
+
+        <!-- Calligraphy Text -->
+        <div class="calligraphy-text">
+          <span class="text-label">🖋️ Calligraphy</span>
+          <span class="text-message" id="calligraphyMessage">Click to write with elegance</span>
+        </div>
+      </div>
+      
+      <div class="calligraphy-status">
+        <span id="calligraphyStatus">🖋️ Click to see elegant calligraphy write itself</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-write" id="writeBtn">🖋️ Write</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>🖋️ elegant script · self-writing · 4 styles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('calligraphyCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('calligraphyDisplay');
+      const charCount = document.getElementById('charCount');
+      const calligraphyStatus = document.getElementById('calligraphyStatus');
+      const calligraphyMessage = document.getElementById('calligraphyMessage');
+      const writeBtn = document.getElementById('writeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let isWriting = false;
+      let charCountNum = 0;
+      let currentStyle = 'elegant';
+      let currentSpeed = 5;
+      let points = [];
+      let strokeQueue = [];
+      let isAnimating = false;
+      let animationId = null;
+      let currentPointIndex = 0;
+
+      // Sample text
+      const sampleTexts = [
+        "Elegance is an art",
+        "Beauty in every stroke",
+        "The art of calligraphy",
+        "Write with grace",
+        "Ink flows like poetry",
+        "Timeless elegance",
+        "The written word",
+        "Artistry in motion",
+        "Graceful expressions",
+        "Calligraphy is magic",
+        "Every stroke tells a story",
+        "Where words become art"
+      ];
+
+      // Get a random text
+      function getRandomText() {
+        return sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(35, 35, 45, 0.15)');
+        grad.addColorStop(0.5, 'rgba(25, 25, 35, 0.25)');
+        grad.addColorStop(1, 'rgba(15, 15, 25, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Paper texture
+        for (let i = 0; i < 300; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.2 + 0.3;
+          const alpha = Math.random() * 0.012;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+
+      // Generate calligraphy stroke points
+      function generateStrokePoints(text, style, width, height) {
+        const points = [];
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const fontSize = Math.min(width, height) * 0.12;
+        const charSpacing = fontSize * 0.7;
+        const totalWidth = text.length * charSpacing;
+        const startX = centerX - totalWidth / 2;
+        const startY = centerY + fontSize * 0.3;
+
+        let x = startX;
+        let y = startY;
+
+        for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const charPoints = generateCharPoints(char, x, y, fontSize, style);
+          points.push(...charPoints);
+          x += charSpacing;
+        }
+
+        return points;
+      }
+
+      // Generate character points (simplified calligraphy)
+      function generateCharPoints(char, x, y, size, style) {
+        const pts = [];
+        const s = size * 0.6;
+        
+        // Simple letter shapes
+        const letterShapes = {
+          'A': [[0,-1], [0.5,1], [0,0.5], [-0.5,1], [0,-1]],
+          'B': [[-0.5,-1], [-0.5,1], [0.3,1], [0.3,0], [-0.5,0], [0.3,0], [0.3,-1], [-0.5,-1]],
+          'C': [[0.5,-1], [-0.5,-0.8], [-0.5,0.8], [0.5,1]],
+          'D': [[-0.5,-1], [-0.5,1], [0.4,0.8], [0.4,-0.8], [-0.5,-1]],
+          'E': [[0.5,-1], [-0.5,-1], [-0.5,1], [0.5,1], [-0.5,0], [0.3,0]],
+          'F': [[0.5,-1], [-0.5,-1], [-0.5,1], [-0.5,0], [0.3,0]],
+          'G': [[0.5,-1], [-0.5,-0.8], [-0.5,0.8], [0.3,0.8], [0.3,0], [-0.2,0]],
+          'H': [[-0.5,-1], [-0.5,1], [-0.5,0], [0.5,0], [0.5,-1], [0.5,1]],
+          'I': [[0,-1], [0,1]],
+          'J': [[0,-1], [0,0.8], [-0.3,1]],
+          'K': [[-0.5,-1], [-0.5,1], [-0.5,0], [0.5,-1], [0.5,1]],
+          'L': [[-0.5,-1], [-0.5,1], [0.5,1]],
+          'M': [[-0.5,-1], [-0.5,1], [0,0], [0.5,1], [0.5,-1]],
+          'N': [[-0.5,-1], [-0.5,1], [0.5,-1], [0.5,1]],
+          'O': [[0,-1], [0.7,-0.5], [0.7,0.5], [0,1], [-0.7,0.5], [-0.7,-0.5], [0,-1]],
+          'P': [[-0.5,-1], [-0.5,1], [0.4,0.5], [-0.5,0]],
+          'Q': [[0,-1], [0.7,-0.5], [0.7,0.5], [0,1], [-0.7,0.5], [-0.7,-0.5], [0.5,0.5], [0.7,1]],
+          'R': [[-0.5,-1], [-0.5,1], [0.4,0.5], [-0.5,0], [0.4,-1]],
+          'S': [[0.5,-1], [-0.5,-0.8], [-0.5,-0.2], [0.5,0.2], [0.5,0.8], [-0.5,1]],
+          'T': [[-0.5,-1], [0.5,-1], [0,-1], [0,1]],
+          'U': [[-0.5,-1], [-0.5,0.8], [0,1], [0.5,0.8], [0.5,-1]],
+          'V': [[-0.5,-1], [0,1], [0.5,-1]],
+          'W': [[-0.5,-1], [-0.3,1], [0,0], [0.3,1], [0.5,-1]],
+          'X': [[-0.5,-1], [0.5,1], [0,-0.3], [-0.5,1], [0.5,-1]],
+          'Y': [[-0.5,-1], [0,0], [0.5,-1], [0,0], [0,1]],
+          'Z': [[-0.5,-1], [0.5,-1], [-0.5,1], [0.5,1]],
+          ' ': [],
+          'a': [[-0.3,-0.5], [-0.3,0.5], [0.3,0.5], [0.3,-0.2], [0,0]],
+          'b': [[-0.4,-1], [-0.4,0.5], [0.3,0.5], [0.3,-0.2], [-0.4,-0.2]],
+          'c': [[0.3,-0.5], [-0.3,-0.3], [-0.3,0.3], [0.3,0.5]],
+          'd': [[0.4,-1], [0.4,0.5], [-0.3,0.5], [-0.3,-0.2], [0.4,-0.2]],
+          'e': [[-0.3,-0.5], [0.3,-0.5], [0.3,0.3], [-0.3,0.3], [-0.3,-0.2]],
+          'f': [[-0.2,-1], [-0.2,0.5], [-0.5,-0.5], [0.2,-0.5]],
+          'g': [[-0.3,-0.5], [-0.3,0.3], [0.3,0.3], [0.3,-0.5], [0,0.5], [-0.3,0.8]],
+          'h': [[-0.4,-1], [-0.4,0.5], [0.3,0], [0.3,0.5]],
+          'i': [[0,-0.8], [0,-0.2], [0,0.5]],
+          'j': [[0,-0.8], [0,0.5], [-0.2,0.8]],
+          'k': [[-0.4,-1], [-0.4,0.5], [-0.2,0.2], [0.3,-0.3], [0.3,0.5]],
+          'l': [[-0.2,-1], [-0.2,0.5]],
+          'm': [[-0.5,-0.5], [-0.5,0.5], [-0.2,0], [0.1,0.5], [0.1,-0.5]],
+          'n': [[-0.4,-0.5], [-0.4,0.5], [-0.1,0], [0.2,0.5]],
+          'o': [[0,-0.5], [0.4,-0.2], [0.4,0.2], [0,0.5], [-0.4,0.2], [-0.4,-0.2], [0,-0.5]],
+          'p': [[-0.4,-0.5], [-0.4,0.8], [0.3,0.5], [0.3,-0.2], [-0.4,-0.2]],
+          'q': [[0.4,-0.5], [0.4,0.8], [-0.3,0.5], [-0.3,-0.2], [0.4,-0.2]],
+          'r': [[-0.3,-0.5], [-0.3,0.5], [0.2,0.2]],
+          's': [[0.3,-0.5], [-0.3,-0.3], [-0.3,0.1], [0.3,0.3], [0.3,0.5]],
+          't': [[-0.4,-0.5], [0.4,-0.5], [0,-0.5], [0,0.5]],
+          'u': [[-0.3,-0.5], [-0.3,0.3], [0,0.5], [0.3,0.3], [0.3,-0.5]],
+          'v': [[-0.3,-0.5], [0,0.5], [0.3,-0.5]],
+          'w': [[-0.4,-0.5], [-0.2,0.5], [0,0], [0.2,0.5], [0.4,-0.5]],
+          'x': [[-0.3,-0.5], [0.3,0.5], [0,0], [-0.3,0.5], [0.3,-0.5]],
+          'y': [[-0.3,-0.5], [0,0.3], [0.3,-0.5], [0,0.3], [0,0.8]],
+          'z': [[-0.3,-0.5], [0.3,-0.5], [-0.3,0.5], [0.3,0.5]],
+          '.': [[0,0.5], [0,0.55]],
+          ',': [[0,0.5], [-0.1,0.6]],
+          '!': [[0,-0.5], [0,0.3]],
+          '?': [[-0.2,-0.5], [0.2,-0.3], [0.2,0], [-0.1,0.2], [-0.1,0.4]],
+          "'": [[0,-0.3], [0.1,-0.5]],
+          '"': [[-0.2,-0.3], [-0.15,-0.5], [0.2,-0.3], [0.25,-0.5]]
+        };
+
+        const shape = letterShapes[char] || [[0,0]];
+        const styleMods = {
+          elegant: { spread: 0.3, curve: 0.15 },
+          flourish: { spread: 0.5, curve: 0.3 },
+          bold: { spread: 0.2, curve: 0.1 },
+          italic: { spread: 0.3, curve: 0.2 }
+        };
+        const mod = styleMods[style] || styleMods.elegant;
+
+        // Generate points along the shape
+        const numPoints = Math.max(shape.length * 5, 20);
+        for (let i = 0; i < numPoints; i++) {
+          const t = i / numPoints;
+          const idx = Math.floor(t * (shape.length - 1));
+          const nextIdx = Math.min(idx + 1, shape.length - 1);
+          const frac = (t * (shape.length - 1)) - idx;
+          
+          const p1 = shape[idx] || [0,0];
+          const p2 = shape[nextIdx] || [0,0];
+          
+          const px = x + (p1[0] + (p2[0] - p1[0]) * frac) * s;
+          const py = y + (p1[1] + (p2[1] - p1[1]) * frac) * s;
+          
+          // Add some style variation
+          const offsetX = (Math.random() - 0.5) * mod.spread * 0.5;
+          const offsetY = (Math.random() - 0.5) * mod.spread * 0.5;
+          
+          pts.push({
+            x: px + offsetX,
+            y: py + offsetY,
+            size: 1 + Math.random() * (style === 'bold' ? 2 : 1.2),
+            pressure: 0.5 + Math.random() * 0.5
+          });
+        }
+
+        return pts;
+      }
+
+      // Draw calligraphy stroke
+      function drawCalligraphyStroke(points, progress) {
+        const totalPoints = points.length;
+        const drawCount = Math.floor(totalPoints * progress);
+        
+        if (drawCount === 0) return;
+        
+        ctx.save();
+        
+        // Draw the stroke with varying thickness
+        for (let i = 0; i < drawCount - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          
+          const progress2 = i / drawCount;
+          const size = p1.size * (0.5 + progress2 * 0.5);
+          const alpha = 0.3 + progress2 * 0.5;
+          
+          ctx.globalAlpha = alpha;
+          ctx.lineWidth = size * 2;
+          ctx.strokeStyle = '#1a1a2e';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          // Calligraphy stroke with variation
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          
+          // Add slight curve between points
+          const midX = (p1.x + p2.x) / 2 + (Math.random() - 0.5) * 0.5;
+          const midY = (p1.y + p2.y) / 2 + (Math.random() - 0.5) * 0.5;
+          ctx.quadraticCurveTo(midX, midY, p2.x, p2.y);
+          ctx.stroke();
+          
+          // Shadow layer for depth
+          if (i % 2 === 0) {
+            ctx.globalAlpha = alpha * 0.1;
+            ctx.lineWidth = size * 1.5;
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.beginPath();
+            ctx.moveTo(p1.x + 1, p1.y + 1);
+            ctx.quadraticCurveTo(midX + 1, midY + 1, p2.x + 1, p2.y + 1);
+            ctx.stroke();
+          }
+        }
+        
+        ctx.restore();
+      }
+
+      // Write text
+      function writeText() {
+        if (isWriting) return;
+        isWriting = true;
+        
+        const text = getRandomText();
+        const style = currentStyle;
+        const speed = currentSpeed;
+        
+        // Generate points
+        const pts = generateStrokePoints(text, style, canvas.width, canvas.height);
+        
+        // Update char count
+        charCountNum += text.length;
+        charCount.textContent = charCountNum;
+        
+        // Clear any existing animation
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        
+        // Reset state
+        currentPointIndex = 0;
+        const totalPoints = pts.length;
+        const steps = Math.max(Math.floor(100 / (speed * 0.8)), 10);
+        const pointsPerStep = Math.max(Math.ceil(totalPoints / steps), 1);
+        
+        calligraphyStatus.textContent = '🖋️ Writing...';
+        calligraphyStatus.style.color = '#fbbf24';
+        calligraphyMessage.textContent = '🖋️ Elegant script in progress...';
+        calligraphyMessage.style.color = '#fbbf24';
+        writeBtn.textContent = '✒️ Writing...';
+        writeBtn.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+        writeBtn.style.borderColor = '#fcd34d';
+        
+        let progress = 0;
+        
+        function animateWrite() {
+          progress += 0.008 * speed * 0.2;
+          if (progress > 1) progress = 1;
+          
+          drawBackground();
+          drawCalligraphyStroke(pts, progress);
+          
+          if (progress < 1) {
+            animationId = requestAnimationFrame(animateWrite);
+          } else {
+            // Complete
+            isWriting = false;
+            calligraphyStatus.textContent = '✨ Calligraphy complete!';
+            calligraphyStatus.style.color = '#4ade80';
+            calligraphyMessage.textContent = 'Click to write again';
+            calligraphyMessage.style.color = '#94a3b8';
+            writeBtn.textContent = '🖋️ Write';
+            writeBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+            writeBtn.style.borderColor = '#818cf8';
+            
+            // Store points for redraw
+            points = pts;
+            animationId = null;
+            
+            setTimeout(() => {
+              calligraphyStatus.textContent = '🖋️ Click to see elegant calligraphy write itself';
+              calligraphyStatus.style.color = '#94a3b8';
+            }, 1500);
+          }
+        }
+        
+        animateWrite();
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleNames = {
+          elegant: 'Elegant',
+          flourish: 'Flourish',
+          bold: 'Bold',
+          italic: 'Italic'
+        };
+        calligraphyStatus.textContent = `✒️ Style: ${styleNames[style]}`;
+        calligraphyStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          calligraphyStatus.textContent = '🖋️ Click to see elegant calligraphy write itself';
+          calligraphyStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Set speed
+      function setSpeed(value) {
+        currentSpeed = parseInt(value);
+        speedValue.textContent = currentSpeed;
+        calligraphyStatus.textContent = `⏱️ Speed: ${currentSpeed}/10`;
+        calligraphyStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          calligraphyStatus.textContent = '🖋️ Click to see elegant calligraphy write itself';
+          calligraphyStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+          isWriting = false;
+        }
+        points = [];
+        charCountNum = 0;
+        charCount.textContent = '0';
+        drawBackground();
+        calligraphyStatus.textContent = '🧹 Canvas cleared';
+        calligraphyStatus.style.color = '#94a3b8';
+        calligraphyMessage.textContent = 'Click to write with elegance';
+        calligraphyMessage.style.color = '#94a3b8';
+        writeBtn.textContent = '🖋️ Write';
+        writeBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        writeBtn.style.borderColor = '#818cf8';
+        setTimeout(() => {
+          calligraphyStatus.textContent = '🖋️ Click to see elegant calligraphy write itself';
+          calligraphyStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      if (writeBtn) {
+        writeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (isWriting) return;
+          writeText();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Style buttons
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      // Speed slider
+      speedSlider.addEventListener('input', function() {
+        setSpeed(this.value);
+      });
+
+      // Click on display to write
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          if (!isWriting) writeText();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          if (!isWriting) writeText();
+        } else if (key === 'w' || key === 'W') {
+          e.preventDefault();
+          if (!isWriting) writeText();
+        } else if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('🖋️ Calligraphy ready · shortcuts: [Space/W] Write, [C] Clear');
+    })();
+  </script>
+</body>
+</html>

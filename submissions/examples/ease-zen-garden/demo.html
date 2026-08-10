@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zen Garden · draws raked patterns in sand</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="zen-container">
+      <div class="zen-display" id="zenDisplay">
+        <!-- Canvas for zen garden -->
+        <canvas id="zenCanvas"></canvas>
+        
+        <!-- Zen Info -->
+        <div class="zen-info">
+          <span class="info-label">🌊 Rakes</span>
+          <span class="info-value" id="rakeCount">0</span>
+        </div>
+
+        <!-- Zen Controls -->
+        <div class="zen-controls">
+          <div class="control-group">
+            <label class="control-label">🌊 Pattern</label>
+            <div class="pattern-options">
+              <button class="pattern-btn active" data-pattern="wave" title="Wave">🌊</button>
+              <button class="pattern-btn" data-pattern="circle" title="Circle">⭕</button>
+              <button class="pattern-btn" data-pattern="spiral" title="Spiral">🌀</button>
+              <button class="pattern-btn" data-pattern="zigzag" title="Zigzag">⚡</button>
+              <button class="pattern-btn" data-pattern="free" title="Free Draw">✏️</button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">📏 Size</label>
+            <input type="range" class="control-slider" id="sizeSlider" min="1" max="10" value="5">
+            <span class="control-value" id="sizeValue">5</span>
+          </div>
+        </div>
+
+        <!-- Zen Text -->
+        <div class="zen-text">
+          <span class="text-label">🌊 Zen Garden</span>
+          <span class="text-message" id="zenMessage">Click and drag to rake patterns in the sand</span>
+        </div>
+      </div>
+      
+      <div class="zen-status">
+        <span id="zenStatus">🌊 Click and drag to create zen garden patterns</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>🌊 zen garden · rake patterns · 5 styles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('zenCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('zenDisplay');
+      const rakeCount = document.getElementById('rakeCount');
+      const zenStatus = document.getElementById('zenStatus');
+      const zenMessage = document.getElementById('zenMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const patternBtns = document.querySelectorAll('.pattern-btn');
+
+      // State
+      let isDrawing = false;
+      let rakeCountNum = 0;
+      let currentPattern = 'wave';
+      let currentSize = 5;
+      let lastX = 0;
+      let lastY = 0;
+      let drawPoints = [];
+      let isFreeDraw = false;
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawSand();
+        if (drawPoints.length > 0) {
+          redrawAll();
+        }
+      }
+
+      // Draw sand background
+      function drawSand() {
+        // Sand base
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, '#d4b896');
+        grad.addColorStop(0.3, '#c9a87c');
+        grad.addColorStop(0.7, '#b8956a');
+        grad.addColorStop(1, '#a8845a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Sand texture
+        for (let i = 0; i < 800; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.5 + 0.5;
+          const alpha = Math.random() * 0.08 + 0.02;
+          ctx.fillStyle = `rgba(180, 150, 110, ${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+        
+        // Sand grains
+        for (let i = 0; i < 400; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1 + 0.3;
+          const alpha = Math.random() * 0.06 + 0.01;
+          ctx.fillStyle = `rgba(220, 200, 170, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw rake pattern
+      function drawRakePattern(x1, y1, x2, y2, pattern, size) {
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 2) return;
+
+        const baseSize = 3 + size * 0.8;
+        const steps = Math.max(Math.floor(dist / 3), 8);
+
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t;
+          const y = y1 + (y2 - y1) * t;
+          
+          if (pattern === 'wave') {
+            drawWavePattern(x, y, t, baseSize);
+          } else if (pattern === 'circle') {
+            drawCirclePattern(x, y, t, baseSize);
+          } else if (pattern === 'spiral') {
+            drawSpiralPattern(x, y, t, baseSize);
+          } else if (pattern === 'zigzag') {
+            drawZigzagPattern(x, y, t, baseSize);
+          } else if (pattern === 'free') {
+            drawFreePattern(x, y, baseSize);
+          }
+        }
+      }
+
+      // Wave pattern
+      function drawWavePattern(x, y, t, size) {
+        const angle = t * Math.PI * 4;
+        const offset = Math.sin(angle) * size * 0.8;
+        
+        ctx.save();
+        ctx.globalAlpha = 0.3 + Math.random() * 0.2;
+        ctx.strokeStyle = 'rgba(140, 110, 80, 0.4)';
+        ctx.lineWidth = size * 0.3;
+        ctx.lineCap = 'round';
+        
+        for (let i = -1; i <= 1; i++) {
+          const px = x + i * size * 0.5;
+          const py = y + offset + i * size * 0.2;
+          ctx.beginPath();
+          ctx.arc(px, py, size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Circle pattern
+      function drawCirclePattern(x, y, t, size) {
+        const radius = size * (0.3 + t * 0.2);
+        const angle = t * Math.PI * 6;
+        
+        ctx.save();
+        ctx.globalAlpha = 0.25 + Math.random() * 0.15;
+        ctx.strokeStyle = 'rgba(140, 110, 80, 0.4)';
+        ctx.lineWidth = size * 0.2;
+        
+        for (let i = 0; i < 3; i++) {
+          const a = angle + i * 2.1;
+          const cx = x + Math.cos(a) * radius;
+          const cy = y + Math.sin(a) * radius;
+          ctx.beginPath();
+          ctx.arc(cx, cy, size * 0.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Spiral pattern
+      function drawSpiralPattern(x, y, t, size) {
+        const radius = size * (0.2 + t * 0.6);
+        const angle = t * Math.PI * 8;
+        
+        ctx.save();
+        ctx.globalAlpha = 0.3 + Math.random() * 0.2;
+        ctx.strokeStyle = 'rgba(140, 110, 80, 0.35)';
+        ctx.lineWidth = size * 0.2;
+        
+        const cx = x + Math.cos(angle) * radius;
+        const cy = y + Math.sin(angle) * radius;
+        ctx.beginPath();
+        ctx.arc(cx, cy, size * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      }
+
+      // Zigzag pattern
+      function drawZigzagPattern(x, y, t, size) {
+        const amplitude = size * (0.3 + Math.sin(t * 10) * 0.2);
+        const offset = Math.sin(t * 12) * amplitude;
+        
+        ctx.save();
+        ctx.globalAlpha = 0.3 + Math.random() * 0.2;
+        ctx.strokeStyle = 'rgba(140, 110, 80, 0.4)';
+        ctx.lineWidth = size * 0.15;
+        
+        for (let i = -2; i <= 2; i++) {
+          const px = x + i * size * 0.4;
+          const py = y + offset + i * size * 0.15;
+          ctx.beginPath();
+          ctx.arc(px, py, size * 0.15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Free draw pattern
+      function drawFreePattern(x, y, size) {
+        ctx.save();
+        ctx.globalAlpha = 0.3 + Math.random() * 0.25;
+        ctx.strokeStyle = 'rgba(140, 110, 80, 0.35)';
+        ctx.lineWidth = size * 0.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        // Draw rake marks
+        for (let i = -2; i <= 2; i++) {
+          const px = x + i * size * 0.3 + (Math.random() - 0.5) * size * 0.2;
+          const py = y + i * size * 0.1 + (Math.random() - 0.5) * size * 0.2;
+          ctx.beginPath();
+          ctx.arc(px, py, size * 0.15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Redraw all points
+      function redrawAll() {
+        drawSand();
+        for (let i = 0; i < drawPoints.length - 1; i++) {
+          const p1 = drawPoints[i];
+          const p2 = drawPoints[i + 1];
+          drawRakePattern(p1.x, p1.y, p2.x, p2.y, p1.pattern, p1.size);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        isFreeDraw = currentPattern === 'free';
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        drawPoints.push({
+          x: lastX,
+          y: lastY,
+          pattern: currentPattern,
+          size: currentSize
+        });
+        
+        rakeCountNum++;
+        rakeCount.textContent = rakeCountNum;
+        
+        const patternNames = {
+          wave: 'Wave',
+          circle: 'Circle',
+          spiral: 'Spiral',
+          zigzag: 'Zigzag',
+          free: 'Free Draw'
+        };
+        zenStatus.textContent = `🌊 Raking ${patternNames[currentPattern]}...`;
+        zenStatus.style.color = '#b8956a';
+        zenMessage.textContent = `🌊 Raking...`;
+        zenMessage.style.color = '#b8956a';
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        drawRakePattern(lastX, lastY, x, y, currentPattern, currentSize);
+        
+        drawPoints.push({
+          x: x,
+          y: y,
+          pattern: currentPattern,
+          size: currentSize
+        });
+        
+        lastX = x;
+        lastY = y;
+        rakeCountNum++;
+        rakeCount.textContent = rakeCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          zenStatus.textContent = '🌊 Pattern complete!';
+          zenStatus.style.color = '#4ade80';
+          zenMessage.textContent = 'Click and drag to rake patterns in the sand';
+          zenMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            zenStatus.textContent = '🌊 Click and drag to create zen garden patterns';
+            zenStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set pattern
+      function setPattern(pattern) {
+        currentPattern = pattern;
+        patternBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.pattern === pattern);
+        });
+        const patternNames = {
+          wave: 'Wave',
+          circle: 'Circle',
+          spiral: 'Spiral',
+          zigzag: 'Zigzag',
+          free: 'Free Draw'
+        };
+        zenStatus.textContent = `🌊 Pattern: ${patternNames[pattern]}`;
+        zenStatus.style.color = '#b8956a';
+        setTimeout(() => {
+          zenStatus.textContent = '🌊 Click and drag to create zen garden patterns';
+          zenStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Set size
+      function setSize(value) {
+        currentSize = parseInt(value);
+        sizeValue.textContent = currentSize;
+        zenStatus.textContent = `📏 Size: ${currentSize}/10`;
+        zenStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          zenStatus.textContent = '🌊 Click and drag to create zen garden patterns';
+          zenStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        drawPoints = [];
+        rakeCountNum = 0;
+        rakeCount.textContent = '0';
+        drawSand();
+        zenStatus.textContent = '🧹 Garden raked smooth';
+        zenStatus.style.color = '#94a3b8';
+        zenMessage.textContent = 'Click and drag to rake patterns in the sand';
+        zenMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          zenStatus.textContent = '🌊 Click and drag to create zen garden patterns';
+          zenStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Pattern buttons
+      patternBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setPattern(this.dataset.pattern);
+        });
+      });
+
+      // Size slider
+      sizeSlider.addEventListener('input', function() {
+        setSize(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('🌊 Zen Garden ready · shortcuts: [C] Clear');
+    })();
+  </script>
+</body>
+</html>
