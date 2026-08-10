@@ -1,0 +1,167 @@
+// ==========================================================================
+// EaseMotion CSS — Print Safe mixin
+// Issue #63562
+// --------------------------------------------------------------------------
+// Makes dark, animated, truncated UI printable.
+//
+// Printing a modern dark-theme app produces a page of dark rectangles with
+// clipped text, and it is nobody's job to notice until a user tries it.
+// The specific problems:
+//
+//   - Dark surfaces print as solid ink. Most browsers strip backgrounds by
+//     default, but foreground colours are kept — so light-grey body text
+//     on a now-white page becomes nearly invisible.
+//   - Animations may be captured mid-frame, so an element with an entrance
+//     animation can print at opacity 0.
+//   - Clamped text keeps its clamp, so paragraphs print truncated with an
+//     ellipsis and the rest of the content is simply lost.
+//   - Link destinations vanish entirely — a printed page of "click here"
+//     with no URLs.
+// ==========================================================================
+
+@use "sass:meta";
+
+$print-safe-ink: #000 !default;
+$print-safe-paper: #fff !default;
+
+// --------------------------------------------------------------------------
+// print-safe
+//
+// Applies to the current selector and its descendants.
+//
+// @param {Bool} $expand-text  Release line clamps and max-heights.
+// @param {Bool} $show-urls    Print link hrefs after the link text.
+// --------------------------------------------------------------------------
+@mixin print-safe($expand-text: true, $show-urls: false) {
+    @media print {
+        background: $print-safe-paper !important;
+        box-shadow: none !important;
+        color: $print-safe-ink !important;
+
+        // `both` fill can hold an element at opacity 0, so animations are
+        // neutralised AND opacity is forced — cancelling the animation
+        // alone would leave the fill applied.
+        *,
+        *::before,
+        *::after {
+            animation: none !important;
+            box-shadow: none !important;
+            opacity: 1 !important;
+            text-shadow: none !important;
+            transition: none !important;
+        }
+
+        @if $expand-text {
+            * {
+                -webkit-line-clamp: unset !important;
+                max-height: none !important;
+                overflow: visible !important;
+                white-space: normal !important;
+            }
+        }
+
+        @if $show-urls {
+            a[href^="http"]::after {
+                content: " (" attr(href) ")";
+                font-size: 0.85em;
+                font-weight: normal;
+                word-break: break-all;
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// print-hide / print-only
+// --------------------------------------------------------------------------
+@mixin print-hide {
+    @media print {
+        display: none !important;
+    }
+}
+
+@mixin print-only {
+    display: none;
+
+    @media print {
+        display: block;
+    }
+}
+
+// --------------------------------------------------------------------------
+// print-break
+//
+// Page-break control. Emits both the legacy `page-break-*` properties and
+// the modern `break-*` ones, because print engine support is genuinely
+// split and neither alone covers the field.
+//
+// @param {String} $where  before | after | avoid | inside-avoid
+// --------------------------------------------------------------------------
+@mixin print-break($where: avoid) {
+    @media print {
+        @if $where == before {
+            page-break-before: always;
+            break-before: page;
+        } @else if $where == after {
+            page-break-after: always;
+            break-after: page;
+        } @else if $where == avoid {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        } @else if $where == inside-avoid {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        } @else {
+            @error "print-break(): unknown $where `#{$where}`. "
+                 + "Expected before, after, avoid or inside-avoid.";
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// print-table
+//
+// Repeat table headers across pages and keep rows intact. `display: table-
+// header-group` is what makes a `<thead>` repeat — without it a long table
+// prints its header once and the following pages are unlabelled columns.
+// --------------------------------------------------------------------------
+@mixin print-table {
+    @media print {
+        border-collapse: collapse;
+        width: 100%;
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        th,
+        td {
+            border: 1px solid #999;
+            color: $print-safe-ink;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// print-page
+//
+// Page margins via the @page at-rule. Emitted at root, so this must be
+// called from the top level rather than inside a selector.
+// --------------------------------------------------------------------------
+@mixin print-page($margin: 1.5cm, $size: auto) {
+    @at-root {
+        @page {
+            margin: $margin;
+            size: $size;
+        }
+    }
+}

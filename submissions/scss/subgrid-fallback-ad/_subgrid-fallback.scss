@@ -1,0 +1,121 @@
+// ==========================================================================
+// EaseMotion CSS — Subgrid Fallback mixin
+// Issue #63810
+// --------------------------------------------------------------------------
+// Aligns card internals across a grid row, with a flex fallback.
+//
+// The problem: a row of cards with headings of different lengths ends up
+// with the body copy starting at a different height in each card, and the
+// footers ragged. Every card is internally correct; the row looks broken.
+//
+// `subgrid` solves it properly — the card's internal rows participate in
+// the parent grid, so heading, body and footer align across every card in
+// the row automatically, whatever their content.
+//
+// The fallback is NOT equivalent, and pretending otherwise is the usual
+// mistake. Flex with `margin-block-start: auto` pins the footer to the
+// bottom, which fixes footer alignment only. Headings and body still
+// start at different heights. That is a genuine improvement over nothing
+// and is worth shipping, but the difference is documented rather than
+// glossed over.
+// ==========================================================================
+
+@use "sass:meta";
+
+// --------------------------------------------------------------------------
+// subgrid-rows
+//
+// Applied to the CARD. The parent grid must define the row track count.
+//
+// @param {Number} $rows  Number of internal rows the card spans.
+// --------------------------------------------------------------------------
+@mixin subgrid-rows($rows: 3) {
+    @if meta.type-of($rows) != "number" or $rows < 1 {
+        @error "subgrid-rows(): $rows must be a positive number, got `#{$rows}`.";
+    }
+
+    // Fallback: a flex column. Aligns footers only.
+    display: flex;
+    flex-direction: column;
+
+    @supports (grid-template-rows: subgrid) {
+        display: grid;
+        // Spanning the parent's rows is what lets the card's internals
+        // participate in the shared row tracks.
+        grid-row: span $rows;
+        grid-template-rows: subgrid;
+    }
+}
+
+// --------------------------------------------------------------------------
+// subgrid-parent
+//
+// Applied to the GRID. Declares enough row tracks for the cards to span.
+// Without `grid-auto-rows: auto` a card spanning 3 rows in an implicit
+// grid collapses its extra rows to zero height.
+// --------------------------------------------------------------------------
+@mixin subgrid-parent($min: 260px, $gap: 1rem, $rows: 3) {
+    display: grid;
+    gap: $gap;
+    grid-template-columns: repeat(auto-fit, minmax(min(#{$min}, 100%), 1fr));
+
+    @supports (grid-template-rows: subgrid) {
+        // Row tracks sized to content, shared across the row.
+        grid-auto-rows: auto;
+        grid-template-rows: repeat($rows, auto);
+    }
+}
+
+// --------------------------------------------------------------------------
+// subgrid-footer
+//
+// The fallback half. On the flex path this pins the element to the bottom
+// of the card; under subgrid it is a no-op, because the shared row track
+// already places it.
+// --------------------------------------------------------------------------
+@mixin subgrid-footer {
+    margin-block-start: auto;
+
+    @supports (grid-template-rows: subgrid) {
+        // Releasing the auto margin matters: with subgrid the footer is
+        // already in its own row, and an auto margin on top of that
+        // pushes it to the bottom of that row, opening a gap.
+        margin-block-start: 0;
+    }
+}
+
+// --------------------------------------------------------------------------
+// subgrid-columns
+//
+// Column alignment across rows — for definition lists and label/value
+// pairs, where each row should share a common label column width without
+// hardcoding it.
+// --------------------------------------------------------------------------
+@mixin subgrid-columns($columns: 2) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+
+    @supports (grid-template-columns: subgrid) {
+        grid-column: span $columns;
+        grid-template-columns: subgrid;
+    }
+}
+
+// --------------------------------------------------------------------------
+// subgrid-supported
+//
+// Style hook for the difference. Since the fallback is not equivalent,
+// a consumer may want to hide a decorative divider that only looks right
+// when rows genuinely align.
+// --------------------------------------------------------------------------
+@mixin subgrid-supported {
+    @supports (grid-template-rows: subgrid) {
+        @content;
+    }
+}
+
+@mixin subgrid-unsupported {
+    @supports not (grid-template-rows: subgrid) {
+        @content;
+    }
+}

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laser Beam Show</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🔦 Laser Beam Show</h1>
+        <p class="subtitle">Moving laser beams with reflections</p>
+
+        <div class="laser-wrapper">
+            <canvas id="laserCanvas"></canvas>
+
+            <div class="controls">
+                <button id="beamBtn">🔦 Add Beam</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🔦 Laser show</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('laserCanvas');
+        const ctx = canvas.getContext('2d');
+        const beamBtn = document.getElementById('beamBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let beams = [];
+        let particles = [];
+        let colorMode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                glow: '#ffffff'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#00ffff', '#ff0080', '#00ff80', '#ff00aa', '#00ffaa'],
+                glow: '#ffffff'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e', '#ffe4b5'],
+                glow: '#ffd700'
+            },
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef', '#caf0f8'],
+                glow: '#00b4d8'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa', '#e0a0ff'],
+                glow: '#e0a0ff'
+            },
+            {
+                name: 'Disco',
+                colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'],
+                glow: '#ffffff'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffffff';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== BEAM CLASS =====
+        class LaserBeam {
+            constructor(x, y, angle, color) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 80;
+                this.angle = angle || Math.random() * Math.PI * 2;
+                this.speed = 0.005 + Math.random() * 0.015;
+                this.length = 200 + Math.random() * 200;
+                this.color = color || colorPalettes[colorMode].colors[Math.floor(Math.random() * 6)];
+                this.width = 2 + Math.random() * 3;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.3;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.endX = 0;
+                this.endY = 0;
+                this.reflections = [];
+                this.maxReflections = 3;
+            }
+
+            update(time, speed) {
+                this.phase += this.wobbleSpeed * speed * 10;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+                this.angle += this.speed * speed * 20 * (0.5 + 0.5 * Math.sin(this.phase * 0.5));
+
+                const angle = this.angle + Math.sin(this.phase) * this.wobble * 0.05;
+                this.endX = this.x + Math.cos(angle) * this.length;
+                this.endY = this.y + Math.sin(angle) * this.length;
+
+                // Spawn particles
+                if (Math.random() < 0.03 * speed * 10) {
+                    const t = Math.random();
+                    const px = this.x + Math.cos(angle) * t * this.length;
+                    const py = this.y + Math.sin(angle) * t * this.length;
+                    const p = new Particle(px, py, this.color);
+                    p.vx = (Math.random() - 0.5) * 2;
+                    p.vy = (Math.random() - 0.5) * 2;
+                    p.size = 1 + Math.random() * 2;
+                    particles.push(p);
+                }
+
+                // Simple reflections (bounce off walls)
+                this.reflections = [];
+                let rx = this.x;
+                let ry = this.y;
+                let ra = angle;
+
+                for (let i = 0; i < this.maxReflections; i++) {
+                    const w = canvas.width;
+                    const h = canvas.height;
+                    const nextX = rx + Math.cos(ra) * 50;
+                    const nextY = ry + Math.sin(ra) * 50;
+
+                    if (nextX < 0 || nextX > w || nextY < 0 || nextY > h) {
+                        // Reflect off wall
+                        if (nextX < 0) ra = Math.PI - ra;
+                        else if (nextX > w) ra = Math.PI - ra;
+                        if (nextY < 0) ra = -ra;
+                        else if (nextY > h) ra = -ra;
+                        
+                        const refX = Math.max(0, Math.min(w, rx + Math.cos(ra) * 20));
+                        const refY = Math.max(0, Math.min(h, ry + Math.sin(ra) * 20));
+                        this.reflections.push({ x: refX, y: refY });
+                        rx = refX;
+                        ry = refY;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            draw(ctx, time) {
+                const pulse = this.pulse;
+
+                // Draw main beam
+                const grad = ctx.createLinearGradient(this.x, this.y, this.endX, this.endY);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.3, this.color);
+                grad.addColorStop(0.7, this.color);
+                grad.addColorStop(1, this.color + '40');
+
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.endX, this.endY);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = this.width * (0.5 + 0.5 * pulse);
+                ctx.shadowBlur = 30 * this.glowIntensity * pulse;
+                ctx.shadowColor = this.color + '80';
+                ctx.globalAlpha = 0.8 + 0.2 * pulse;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Inner bright core
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.endX, this.endY);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = this.width * 0.2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = this.color;
+                ctx.globalAlpha = 0.6 + 0.4 * pulse;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Draw reflections
+                for (const ref of this.reflections) {
+                    const rGrad = ctx.createRadialGradient(ref.x, ref.y, 0, ref.x, ref.y, 20);
+                    rGrad.addColorStop(0, this.color + '60');
+                    rGrad.addColorStop(0.5, this.color + '30');
+                    rGrad.addColorStop(1, this.color + '00');
+                    ctx.beginPath();
+                    ctx.arc(ref.x, ref.y, 20, 0, Math.PI * 2);
+                    ctx.fillStyle = rGrad;
+                    ctx.fill();
+                }
+
+                // Origin glow
+                const oGrad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 25);
+                oGrad.addColorStop(0, this.color + '60');
+                oGrad.addColorStop(0.5, this.color + '30');
+                oGrad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 25, 0, Math.PI * 2);
+                ctx.fillStyle = oGrad;
+                ctx.fill();
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const ambientGlow = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.3);
+            ambientGlow.addColorStop(0, palette.glow + '08');
+            ambientGlow.addColorStop(1, palette.glow + '00');
+            ctx.fillStyle = ambientGlow;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // ===== ADD BEAM =====
+        function addBeam() {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const beam = new LaserBeam(
+                canvas.width / 2 + (Math.random() - 0.5) * 100,
+                canvas.height / 2 + (Math.random() - 0.5) * 80,
+                Math.random() * Math.PI * 2,
+                colors[Math.floor(Math.random() * colors.length)]
+            );
+            beams.push(beam);
+            
+            for (let i = 0; i < 10; i++) {
+                const p = new Particle(beam.x, beam.y, beam.color);
+                p.vx = (Math.random() - 0.5) * 4;
+                p.vy = (Math.random() - 0.5) * 4 - 2;
+                particles.push(p);
+            }
+        }
+
+        // ===== RESET =====
+        function resetLaser() {
+            beams = [];
+            particles = [];
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🔦 Laser show';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update beams
+            for (const beam of beams) {
+                beam.update(time, speed);
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw beams
+            for (const beam of beams) {
+                beam.draw(ctx, time);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🔦 ${beams.length} beams • ${particles.length} particles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        beamBtn.addEventListener('click', addBeam);
+
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔦 Laser show';
+            }, 1000);
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            const colors = colorPalettes[colorMode].colors;
+            for (const beam of beams) {
+                beam.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🔦 Laser show';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetLaser);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') beamBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                beamBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const beam = new LaserBeam(
+                x, y,
+                Math.random() * Math.PI * 2,
+                colors[Math.floor(Math.random() * colors.length)]
+            );
+            beams.push(beam);
+            
+            for (let i = 0; i < 10; i++) {
+                const p = new Particle(x, y, beam.color);
+                p.vx = (Math.random() - 0.5) * 4;
+                p.vy = (Math.random() - 0.5) * 4 - 2;
+                particles.push(p);
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const beam = new LaserBeam(
+                x, y,
+                Math.random() * Math.PI * 2,
+                colors[Math.floor(Math.random() * colors.length)]
+            );
+            beams.push(beam);
+            
+            for (let i = 0; i < 10; i++) {
+                const p = new Particle(x, y, beam.color);
+                p.vx = (Math.random() - 0.5) * 4;
+                p.vy = (Math.random() - 0.5) * 4 - 2;
+                particles.push(p);
+            }
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🔦 Laser show';
+
+        // Create initial beams
+        setTimeout(() => {
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    addBeam();
+                }, i * 500);
+            }
+        }, 500);
+
+        lastFpsUpdate = performance.now();
+        render(lastFpsUpdate);
+
+        console.log('🔦 Laser Beam Show loaded!');
+        console.log('💡 B - Add beam');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Add beam');
+        console.log('💡 Click canvas - Add beam');
+    </script>
+</body>
+</html>

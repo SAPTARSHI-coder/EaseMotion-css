@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Interactive Heatmap Grid Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+    }
+
+    .demo-container {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .demo-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+    }
+
+    .demo-desc {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin: 0 0 32px 0;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .theme-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #f1f5f9;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #334155;
+    }
+    
+    .theme-btn.active {
+      border-color: currentColor;
+      background: currentColor;
+      color: white;
+    }
+
+    /* Override text color inside active btn for specific themes */
+    .theme-btn.active.blue { background: #3b82f6; border-color: #3b82f6; }
+    .theme-btn.active.green { background: #10b981; border-color: #10b981; }
+    .theme-btn.active.purple { background: #8b5cf6; border-color: #8b5cf6; }
+    .theme-btn.active.orange { background: #f59e0b; border-color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useMemo } = React;
+
+    /* ── Heatmap Component ── */
+    const HeatmapCell = ({ value, maxValue, colorScheme, tooltipData, onHover, onLeave }) => {
+      const intensity = maxValue > 0 ? value / maxValue : 0;
+      return (
+        <div
+          className="ease-heatmap-cell"
+          style={{ '--cell-intensity': intensity, '--cell-base-color': colorScheme }}
+          onMouseEnter={(e) => onHover(e, tooltipData)}
+          onMouseLeave={onLeave}
+        />
+      );
+    };
+
+    const Tooltip = ({ data, position, visible }) => {
+      if (!data) return null;
+      return (
+        <div className={`ease-heatmap-tooltip ${visible ? 'is-visible' : ''}`} style={{ left: position.x, top: position.y }}>
+          <div className="ease-heatmap-tooltip-title">{data.label}</div>
+          <div className="ease-heatmap-tooltip-value">
+            <span className="ease-heatmap-tooltip-dot" style={{ background: data.colorScheme }} />
+            {data.value} commits
+          </div>
+        </div>
+      );
+    };
+
+    const InteractiveHeatmapGrid = ({ data, xLabels, yLabels, colorScheme }) => {
+      const [tooltip, setTooltip] = useState({ visible: false, data: null, pos: { x: 0, y: 0 } });
+      const gridRef = useRef(null);
+
+      const maxValue = useMemo(() => {
+        let max = 0;
+        data.forEach(row => row.forEach(val => { if (val > max) max = val; }));
+        return max;
+      }, [data]);
+
+      const handleHover = (e, cellData) => {
+        if (!gridRef.current) return;
+        const rect = e.currentTarget.getBoundingClientRect();
+        const gridRect = gridRef.current.getBoundingClientRect();
+        const x = rect.left - gridRect.left + (rect.width / 2);
+        const y = rect.top - gridRect.top - 8;
+        setTooltip({ visible: true, data: cellData, pos: { x, y } });
+      };
+
+      const handleLeave = () => setTooltip(prev => ({ ...prev, visible: false }));
+
+      return (
+        <div className="ease-heatmap-root" ref={gridRef}>
+          <div className="ease-heatmap-header">
+            <div className="ease-heatmap-corner" />
+            <div className="ease-heatmap-x-labels">
+              {xLabels.map((label, i) => <div key={`x-${i}`} className="ease-heatmap-label-x">{label}</div>)}
+            </div>
+          </div>
+          <div className="ease-heatmap-body">
+            <div className="ease-heatmap-y-labels">
+              {yLabels.map((label, i) => <div key={`y-${i}`} className="ease-heatmap-label-y">{label}</div>)}
+            </div>
+            <div className="ease-heatmap-grid" style={{ gridTemplateColumns: `repeat(${xLabels.length}, 1fr)` }}>
+              {data.map((row, r) => row.map((val, c) => (
+                <HeatmapCell key={`c-${r}-${c}`} value={val} maxValue={maxValue} colorScheme={colorScheme}
+                  tooltipData={{ label: `${yLabels[r]}, Week ${xLabels[c]}`, value: val, colorScheme }}
+                  onHover={handleHover} onLeave={handleLeave} />
+              )))}
+            </div>
+          </div>
+          <Tooltip visible={tooltip.visible} data={tooltip.data} position={tooltip.pos} />
+        </div>
+      );
+    };
+
+    /* ── App Demo ── */
+    // Generate mock GitHub-style contribution data (7 days x 20 weeks)
+    const yLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const xLabels = Array.from({length: 20}, (_, i) => i + 1);
+    const mockData = Array.from({length: 7}, () => 
+      Array.from({length: 20}, () => Math.floor(Math.random() * (Math.random() > 0.6 ? 20 : 5)))
+    );
+
+    const THEMES = [
+      { id: 'blue', color: '#3b82f6', label: 'Blue' },
+      { id: 'green', color: '#10b981', label: 'GitHub Green' },
+      { id: 'purple', color: '#8b5cf6', label: 'Purple' },
+      { id: 'orange', color: '#f59e0b', label: 'Fire' }
+    ];
+
+    const App = () => {
+      const [theme, setTheme] = useState(THEMES[1]);
+
+      return (
+        <div className="demo-container">
+          <h1 className="demo-title">Activity Heatmap</h1>
+          <p className="demo-desc">Hover over the cells to see the physics-based lift animation and tooltip.</p>
+          
+          <div className="controls">
+            {THEMES.map(t => (
+              <button 
+                key={t.id} 
+                className={`theme-btn ${t.id} ${theme.id === t.id ? 'active' : ''}`}
+                onClick={() => setTheme(t)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          <InteractiveHeatmapGrid 
+            data={mockData} 
+            xLabels={xLabels} 
+            yLabels={yLabels} 
+            colorScheme={theme.color} 
+          />
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

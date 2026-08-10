@@ -1,0 +1,352 @@
+/* ==========================================================================
+   Blur-Entrance Modal — E-Commerce Checkout
+   --------------------------------------------------------------------------
+   Pure CSS order-review modal for checkout flows, driven entirely by the
+   :target selector — the trigger is a real link to #ck-order-modal, the
+   close controls are links back to the checkout section. Zero JavaScript.
+
+   The entrance is a "focus pull": the dialog starts soft (filter: blur),
+   slightly small and low, then sharpens into place while the page behind
+   it falls out of focus (backdrop-filter on the overlay). Dismissal is
+   faster than entry so the flow feels snappy.
+
+   Issue: #33971
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens — motion first, then the checkout skin
+   -------------------------------------------------------------------------- */
+:root {
+  /* Blur entrance */
+  --ck-blur-from: 14px;                            /* dialog starting blur   */
+  --ck-scale-from: 0.94;                           /* dialog starting scale  */
+  --ck-rise: 12px;                                 /* dialog starting offset */
+  --ck-duration: 340ms;                            /* entrance time          */
+  --ck-ease: cubic-bezier(0.18, 0.9, 0.32, 1);     /* settle curve           */
+  --ck-exit-duration: 170ms;                       /* dismissal time         */
+  --ck-overlay-blur: 5px;                          /* page defocus behind    */
+
+  /* Checkout skin */
+  --ck-canvas: #f5f4f1;
+  --ck-card: #ffffff;
+  --ck-border: #e6e3dc;
+  --ck-heading: #262019;
+  --ck-body: #6f675c;
+  --ck-accent: #b3552e;
+  --ck-accent-deep: #96431f;
+  --ck-accent-soft: #f9ece5;
+  --ck-ok: #22754a;
+  --ck-overlay-tint: rgba(38, 32, 25, 0.42);
+
+  --ck-card-shadow: 0 1px 3px rgba(38, 32, 25, 0.07);
+  --ck-modal-shadow: 0 24px 60px rgba(38, 32, 25, 0.3), 0 4px 14px rgba(38, 32, 25, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   2. Demo stage — a slice of a checkout page
+   -------------------------------------------------------------------------- */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 34px 16px;
+  box-sizing: border-box;
+  background: var(--ck-canvas);
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  color: var(--ck-body);
+}
+
+.ck-page {
+  width: 100%;
+  max-width: 460px;
+}
+
+.ck-page-title {
+  margin: 0 0 3px;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--ck-heading);
+}
+
+.ck-page-sub {
+  margin: 0 0 18px;
+  font-size: 0.78rem;
+}
+
+/* Order summary card */
+.ck-summary {
+  background: var(--ck-card);
+  border: 1px solid var(--ck-border);
+  border-radius: 12px;
+  box-shadow: var(--ck-card-shadow);
+  padding: 18px 18px 16px;
+}
+
+.ck-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.82rem;
+}
+
+.ck-line + .ck-line {
+  border-top: 1px dashed var(--ck-border);
+}
+
+.ck-line-name {
+  color: var(--ck-heading);
+  font-weight: 600;
+}
+
+.ck-line-qty {
+  font-size: 0.72rem;
+}
+
+.ck-line-price {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.ck-line.is-total {
+  border-top: 2px solid var(--ck-border);
+  font-size: 0.9rem;
+}
+
+.ck-line.is-total .ck-line-price {
+  font-weight: 700;
+  color: var(--ck-heading);
+}
+
+.ck-free {
+  color: var(--ck-ok);
+  font-weight: 600;
+}
+
+/* Primary CTA — a real link, so it is keyboard operable by default */
+.ck-cta {
+  display: block;
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 9px;
+  background: var(--ck-accent);
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.ck-cta:hover {
+  background: var(--ck-accent-deep);
+  transform: translateY(-1px);
+}
+
+.ck-cta:focus-visible {
+  outline: 3px solid var(--ck-accent);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Overlay — the page behind falls out of focus
+   -------------------------------------------------------------------------- */
+.ck-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+
+  background: var(--ck-overlay-tint);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--ck-exit-duration) ease,
+    backdrop-filter var(--ck-exit-duration) ease,
+    -webkit-backdrop-filter var(--ck-exit-duration) ease,
+    visibility 0s linear var(--ck-exit-duration);
+}
+
+.ck-modal:target {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  -webkit-backdrop-filter: blur(var(--ck-overlay-blur));
+  backdrop-filter: blur(var(--ck-overlay-blur));
+  transition:
+    opacity var(--ck-duration) var(--ck-ease),
+    backdrop-filter var(--ck-duration) var(--ck-ease),
+    -webkit-backdrop-filter var(--ck-duration) var(--ck-ease);
+}
+
+/* Click-away: an invisible link covering the backdrop closes the dialog */
+.ck-scrim {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   4. Dialog — soft and low, then sharpens into place
+   -------------------------------------------------------------------------- */
+.ck-dialog {
+  position: relative;
+  width: min(430px, 100%);
+  background: var(--ck-card);
+  border-radius: 14px;
+  box-shadow: var(--ck-modal-shadow);
+  padding: 20px 20px 18px;
+  box-sizing: border-box;
+
+  filter: blur(var(--ck-blur-from));
+  transform: translateY(var(--ck-rise)) scale(var(--ck-scale-from));
+  transition:
+    filter var(--ck-exit-duration) ease,
+    transform var(--ck-exit-duration) ease;
+}
+
+.ck-modal:target .ck-dialog {
+  filter: blur(0);
+  transform: translateY(0) scale(1);
+  transition:
+    filter var(--ck-duration) var(--ck-ease),
+    transform var(--ck-duration) var(--ck-ease);
+}
+
+.ck-dialog-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 650;
+  color: var(--ck-heading);
+}
+
+.ck-dialog-sub {
+  margin: 0 0 14px;
+  font-size: 0.78rem;
+}
+
+/* Close (✕) — a link back to the page anchor */
+.ck-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--ck-body);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.ck-close:hover {
+  background: var(--ck-accent-soft);
+  color: var(--ck-heading);
+}
+
+.ck-close:focus-visible {
+  outline: 2px solid var(--ck-accent);
+  outline-offset: 1px;
+}
+
+/* Order recap inside the dialog */
+.ck-recap {
+  border: 1px solid var(--ck-border);
+  border-radius: 10px;
+  padding: 4px 14px;
+  margin-bottom: 12px;
+}
+
+.ck-recap .ck-line {
+  font-size: 0.8rem;
+}
+
+/* Shipping / payment meta strip */
+.ck-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 0.74rem;
+}
+
+.ck-meta strong {
+  color: var(--ck-heading);
+  font-weight: 600;
+}
+
+/* Dialog actions */
+.ck-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ck-btn {
+  flex: 1 1 140px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-size: 0.84rem;
+  font-weight: 650;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.ck-btn.is-primary {
+  background: var(--ck-accent);
+  color: #fff;
+}
+
+.ck-btn.is-primary:hover { background: var(--ck-accent-deep); }
+
+.ck-btn.is-ghost {
+  border: 1px solid var(--ck-border);
+  color: var(--ck-heading);
+}
+
+.ck-btn.is-ghost:hover { background: var(--ck-accent-soft); }
+
+.ck-btn:focus-visible {
+  outline: 3px solid var(--ck-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Small screens — the dialog hugs the viewport, actions stack
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .ck-modal { padding: 14px; }
+  .ck-dialog { padding: 16px 14px 14px; }
+  .ck-actions .ck-btn { flex-basis: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Reduced motion — instant show/hide, no blur choreography
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .ck-modal,
+  .ck-modal:target,
+  .ck-dialog,
+  .ck-modal:target .ck-dialog,
+  .ck-cta {
+    transition: none;
+  }
+
+  .ck-dialog {
+    filter: none;
+    transform: none;
+  }
+}

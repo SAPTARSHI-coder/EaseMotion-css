@@ -1,0 +1,117 @@
+$td-property-prefix: "--" !default;
+$td-key-separator: "-" !default;
+
+@function td-is-map($value) {
+  @return type-of($value) == "map";
+}
+
+@function td-flatten($map, $prefix: null, $separator: $td-key-separator) {
+  $flat: ();
+
+  @each $key, $value in $map {
+    $current-key: if($prefix, "#{$prefix}#{$separator}#{$key}", "#{$key}");
+
+    @if td-is-map($value) {
+      $flat: map-merge($flat, td-flatten($value, $current-key, $separator));
+    } @else {
+      $flat: map-merge(
+        $flat,
+        (
+          $current-key: $value,
+        )
+      );
+    }
+  }
+
+  @return $flat;
+}
+
+@function token-delta($base, $theme) {
+  @if not td-is-map($base) or not td-is-map($theme) {
+    @error "token-delta: both $base and $theme arguments must be maps.";
+  }
+
+  @if length($base) == 0 {
+    @warn "token-delta: $base token map is empty.";
+  }
+
+  @if length($theme) == 0 {
+    @warn "token-delta: $theme token map is empty.";
+  }
+
+  $delta: ();
+
+  @each $key, $theme-value in $theme {
+    $base-value: map-get($base, $key);
+
+    @if td-is-map($theme-value) {
+      @if td-is-map($base-value) {
+        $nested-delta: token-delta($base-value, $theme-value);
+
+        @if length($nested-delta) > 0 {
+          $delta: map-merge(
+            $delta,
+            (
+              $key: $nested-delta,
+            )
+          );
+        }
+      } @else {
+        @if $base-value != null {
+          @warn "token-delta: type mismatch for `#{$key}` - base value is a scalar, theme value is a map.";
+        }
+        $delta: map-merge(
+          $delta,
+          (
+            $key: $theme-value,
+          )
+        );
+      }
+    } @else if td-is-map($base-value) {
+      @warn "token-delta: type mismatch for `#{$key}` - base value is a map, theme value is a scalar.";
+      $delta: map-merge(
+        $delta,
+        (
+          $key: $theme-value,
+        )
+      );
+    } @else if $base-value != $theme-value {
+      $delta: map-merge(
+        $delta,
+        (
+          $key: $theme-value,
+        )
+      );
+    }
+  }
+
+  @return $delta;
+}
+
+@mixin emit-token-delta(
+  $base,
+  $theme,
+  $selector: null,
+  $prefix: $td-property-prefix,
+  $separator: $td-key-separator
+) {
+  $delta: token-delta($base, $theme);
+
+  @if length($delta) == 0 {
+    @warn "emit-token-delta: no differing tokens found between $base and $theme.";
+  } @else {
+    $flat: td-flatten($delta, null, $separator);
+
+    @if $selector {
+      #{$selector} {
+        @each $key, $value in $flat {
+          #{$prefix}#{$key}: #{$value};
+        }
+      }
+    } @else {
+      @each $key, $value in $flat {
+        #{$prefix}#{$key}: #{$value};
+      }
+    }
+  }
+}

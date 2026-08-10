@@ -1,26 +1,12 @@
-# Glitch Text Effect
+# Cyberpunk Text Glitch Animation Utility
 
-A cyberpunk-style text glitch animation with RGB split, horizontal displacement, and clip-path slicing for tech/retro-themed headers.
+### 1. What does this do?
+This utility creates a pure CSS cyberpunk-style text glitch effect by using `::before` and `::after` pseudo-elements duplicated with `attr(data-text)` and horizontal `clip-path` keyframe slicing with chromatic RGB displacement.
 
-## Demo
-
-Open `demo.html` in your browser to see:
-- Default glitch with magenta/cyan split
-- Cyan color variant
-- Slow glitch speed variant
-- Hover-triggered glitch
-
-## Usage
-
+### 2. How is it used?
 ```html
-&lt;!-- Basic glitch --&gt;
-&lt;h1 class="glitch-text" data-text="YOUR TEXT"&gt;YOUR TEXT&lt;/h1&gt;
+<h1 class="ease-glitch" data-text="CYBERPUNK GLITCH">CYBERPUNK GLITCH</h1>
+```
 
-&lt;!-- Cyan variant --&gt;
-&lt;h1 class="glitch-text glitch-cyan" data-text="NEON"&gt;NEON&lt;/h1&gt;
-
-&lt;!-- Slow glitch --&gt;
-&lt;h1 class="glitch-text glitch-slow" data-text="SLOW"&gt;SLOW&lt;/h1&gt;
-
-&lt;!-- Hover only --&gt;
-&lt;h1 class="glitch-hover" data-text="HOVER ME"&gt;HOVER ME&lt;/h1&gt;
+### 3. Why is it useful?
+It fits the EaseMotion philosophy of zero-dependency, high-impact CSS animations by delivering a lightweight, highly performant glitch effect entirely driven by standard CSS pseudo-elements and keyframe animations without requiring any JavaScript or external libraries.
