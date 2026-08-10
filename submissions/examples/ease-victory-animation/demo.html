@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Victory Animation · confetti burst</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="victory-container">
+      <!-- Victory Display -->
+      <div class="victory-display" id="victoryDisplay">
+        <div class="victory-content">
+          <div class="victory-icon" id="victoryIcon">🏆</div>
+          <div class="victory-title" id="victoryTitle">Victory!</div>
+          <div class="victory-subtitle" id="victorySubtitle">You have emerged victorious!</div>
+          <div class="victory-stats">
+            <div class="victory-stat">
+              <span class="stat-label">⭐ Score</span>
+              <span class="stat-value" id="scoreStat">0</span>
+            </div>
+            <div class="victory-stat">
+              <span class="stat-label">⚡ Time</span>
+              <span class="stat-value" id="timeStat">0s</span>
+            </div>
+            <div class="victory-stat">
+              <span class="stat-label">🏅 Rank</span>
+              <span class="stat-value" id="rankStat">-</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Confetti Canvas -->
+      <canvas id="confettiCanvas"></canvas>
+      
+      <div class="victory-status">
+        <span id="victoryStatus">🎉 Click to celebrate victory!</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-victory" id="victoryBtn">🎉 Celebrate Victory!</button>
+      <button class="btn btn-mode" id="modeBtn">🎨 Change Theme</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🎊 confetti burst · 5 themes · victory celebration</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const victoryDisplay = document.getElementById('victoryDisplay');
+      const victoryIcon = document.getElementById('victoryIcon');
+      const victoryTitle = document.getElementById('victoryTitle');
+      const victorySubtitle = document.getElementById('victorySubtitle');
+      const victoryStatus = document.getElementById('victoryStatus');
+      const scoreStat = document.getElementById('scoreStat');
+      const timeStat = document.getElementById('timeStat');
+      const rankStat = document.getElementById('rankStat');
+      const victoryBtn = document.getElementById('victoryBtn');
+      const modeBtn = document.getElementById('modeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // State
+      let isCelebrating = false;
+      let themeIndex = 0;
+      let score = 0;
+      let time = 0;
+      let confettiPieces = [];
+      let animationId = null;
+      let rank = '';
+
+      // Themes
+      const themes = [
+        {
+          name: 'Gold',
+          icon: '🏆',
+          colors: ['#fbbf24', '#f59e0b', '#fcd34d', '#fde68a', '#ffd700', '#fef3c7'],
+          titleColor: '#fbbf24',
+          subtitle: 'You have emerged victorious!',
+          rank: 'Champion'
+        },
+        {
+          name: 'Rainbow',
+          icon: '🌈',
+          colors: ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
+          titleColor: '#ec4899',
+          subtitle: 'A colorful victory!',
+          rank: 'Legend'
+        },
+        {
+          name: 'Candy',
+          icon: '🍬',
+          colors: ['#ec4899', '#f472b6', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'],
+          titleColor: '#ec4899',
+          subtitle: 'Sweet success!',
+          rank: 'Sugar Rush'
+        },
+        {
+          name: 'Galaxy',
+          icon: '🌌',
+          colors: ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#60a5fa', '#34d399'],
+          titleColor: '#a78bfa',
+          subtitle: 'Victory among the stars!',
+          rank: 'Stellar'
+        },
+        {
+          name: 'Fire',
+          icon: '🔥',
+          colors: ['#ef4444', '#f97316', '#fb923c', '#fca5a5', '#fcd34d', '#f59e0b'],
+          titleColor: '#f97316',
+          subtitle: 'Burning with victory!',
+          rank: 'Inferno'
+        }
+      ];
+
+      // Confetti class
+      class Confetti {
+        constructor(x, y, colors) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height - canvas.height;
+          this.width = Math.random() * 10 + 5;
+          this.height = Math.random() * 6 + 3;
+          this.color = colors[Math.floor(Math.random() * colors.length)];
+          this.rotation = Math.random() * 360;
+          this.rotationSpeed = (Math.random() - 0.5) * 10;
+          this.velocityX = (Math.random() - 0.5) * 8;
+          this.velocityY = Math.random() * 6 + 4;
+          this.gravity = 0.15;
+          this.opacity = 1;
+          this.fadeSpeed = 0.002 + Math.random() * 0.003;
+          this.shape = Math.random() > 0.5 ? 'rect' : 'circle';
+        }
+
+        update() {
+          this.x += this.velocityX;
+          this.velocityY += this.gravity;
+          this.y += this.velocityY;
+          this.rotation += this.rotationSpeed;
+          this.opacity -= this.fadeSpeed;
+
+          // Bounce off walls
+          if (this.x > canvas.width || this.x < 0) {
+            this.velocityX *= -0.5;
+          }
+        }
+
+        draw(ctx) {
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate((this.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, this.opacity);
+          ctx.fillStyle = this.color;
+
+          if (this.shape === 'rect') {
+            ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
+          } else {
+            ctx.beginPath();
+            ctx.arc(0, 0, this.width / 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+
+        isDead() {
+          return this.opacity <= 0 || this.y > canvas.height + 50;
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = victoryDisplay.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Create confetti burst
+      function createConfettiBurst(x, y, count = 200) {
+        const theme = themes[themeIndex];
+        const colors = theme.colors;
+        
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = Math.random() * 100 + 50;
+          const cx = x || canvas.width / 2;
+          const cy = y || canvas.height / 2;
+          
+          const confetti = new Confetti(
+            cx + Math.cos(angle) * 10,
+            cy + Math.sin(angle) * 10,
+            colors
+          );
+          
+          // Spread out
+          confetti.velocityX = Math.cos(angle) * (Math.random() * 8 + 2);
+          confetti.velocityY = Math.sin(angle) * (Math.random() * 8 + 2) - 4;
+          confetti.gravity = 0.1 + Math.random() * 0.1;
+          
+          confettiPieces.push(confetti);
+        }
+      }
+
+      // Animate confetti
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let alive = false;
+        for (let i = confettiPieces.length - 1; i >= 0; i--) {
+          const piece = confettiPieces[i];
+          piece.update();
+          piece.draw(ctx);
+          
+          if (!piece.isDead()) {
+            alive = true;
+          } else {
+            confettiPieces.splice(i, 1);
+          }
+        }
+        
+        if (alive || confettiPieces.length > 0) {
+          animationId = requestAnimationFrame(animateConfetti);
+        } else {
+          animationId = null;
+          confettiPieces = [];
+        }
+      }
+
+      // Celebrate victory
+      function celebrateVictory() {
+        if (isCelebrating) return;
+        isCelebrating = true;
+
+        const theme = themes[themeIndex];
+        
+        // Update stats with random values
+        score = Math.floor(Math.random() * 9000 + 1000);
+        time = Math.floor(Math.random() * 300 + 30);
+        rank = theme.rank;
+        
+        // Animate stats
+        animateStat(scoreStat, 0, score);
+        animateStat(timeStat, 0, time, true);
+        rankStat.textContent = rank;
+        rankStat.style.color = theme.titleColor;
+
+        // Update victory display
+        victoryIcon.textContent = theme.icon;
+        victoryTitle.textContent = 'Victory!';
+        victoryTitle.style.color = theme.titleColor;
+        victorySubtitle.textContent = theme.subtitle;
+        victorySubtitle.style.color = theme.titleColor;
+        
+        // Update status
+        victoryStatus.textContent = '🎊 Victory! Confetti bursting!';
+        victoryStatus.style.color = theme.titleColor;
+
+        // Trigger display animation
+        victoryDisplay.classList.add('victory-active');
+        
+        // Create confetti burst
+        resizeCanvas();
+        createConfettiBurst(canvas.width / 2, canvas.height / 2, 250);
+        animateConfetti();
+
+        // Update button
+        victoryBtn.textContent = '🎊 Celebrating!';
+        victoryBtn.style.background = `linear-gradient(135deg, ${theme.titleColor}, ${theme.colors[1]})`;
+        victoryBtn.style.borderColor = theme.titleColor;
+
+        // Auto-reset after 5 seconds
+        setTimeout(() => {
+          resetVictory();
+        }, 5000);
+      }
+
+      // Animate stat
+      function animateStat(element, from, to, isTime = false) {
+        const duration = 1000;
+        const startTime = Date.now();
+        
+        function update() {
+          const elapsed = Date.now() - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = Math.round(from + (to - from) * eased);
+          
+          if (isTime) {
+            element.textContent = current + 's';
+          } else {
+            element.textContent = current;
+          }
+          
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          } else {
+            if (isTime) {
+              element.textContent = to + 's';
+            } else {
+              element.textContent = to;
+            }
+          }
+        }
+        
+        update();
+      }
+
+      // Reset victory
+      function resetVictory() {
+        isCelebrating = false;
+        
+        // Stop confetti
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        confettiPieces = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Reset display
+        victoryDisplay.classList.remove('victory-active');
+        victoryIcon.textContent = '🏆';
+        victoryTitle.textContent = 'Ready for Victory';
+        victoryTitle.style.color = '#94a3b8';
+        victorySubtitle.textContent = 'Click to celebrate!';
+        victorySubtitle.style.color = '#94a3b8';
+        scoreStat.textContent = '0';
+        timeStat.textContent = '0s';
+        rankStat.textContent = '-';
+        rankStat.style.color = '#94a3b8';
+        
+        // Reset status
+        victoryStatus.textContent = '🎉 Click to celebrate victory!';
+        victoryStatus.style.color = '#94a3b8';
+        
+        // Reset button
+        const theme = themes[themeIndex];
+        victoryBtn.textContent = '🎉 Celebrate Victory!';
+        victoryBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        victoryBtn.style.borderColor = '#818cf8';
+      }
+
+      // Change theme
+      function changeTheme() {
+        themeIndex = (themeIndex + 1) % themes.length;
+        const theme = themes[themeIndex];
+        
+        modeBtn.textContent = `🎨 ${theme.name}`;
+        victoryStatus.textContent = `🎨 Theme: ${theme.name}`;
+        victoryStatus.style.color = theme.titleColor;
+        
+        setTimeout(() => {
+          if (!isCelebrating) {
+            victoryStatus.textContent = '🎉 Click to celebrate victory!';
+            victoryStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+        
+        // Update victory title color if not celebrating
+        if (!isCelebrating) {
+          victoryTitle.style.color = theme.titleColor;
+        }
+      }
+
+      // Event listeners
+      if (victoryBtn) {
+        victoryBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (isCelebrating) {
+            resetVictory();
+          } else {
+            celebrateVictory();
+          }
+        });
+      }
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          changeTheme();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetVictory();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'v' || key === 'V') {
+          e.preventDefault();
+          victoryBtn.click();
+        } else if (key === 't' || key === 'T') {
+          e.preventDefault();
+          changeTheme();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetVictory();
+        }
+      });
+
+      // Resize canvas on window resize
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+      });
+
+      // Initialize
+      resizeCanvas();
+      victoryDisplay.style.position = 'relative';
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '10';
+      
+      console.log('🎊 Victory Animation ready · shortcuts: [V]ictory, [T]heme, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

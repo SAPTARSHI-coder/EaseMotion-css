@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Volume Slider – Volume Level Visualizes with Animations</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🔊 Volume Slider</h1>
+    <p class="subtitle">Volume level visualizes with dynamic animations</p>
+
+    <div class="volume-container">
+      <div class="volume-stage" id="volumeStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Volume display -->
+        <div class="volume-display" id="volumeDisplay">
+          <span class="volume-percent" id="volumePercent">50%</span>
+          <div class="volume-bar-bg">
+            <div class="volume-bar" id="volumeBar" style="width: 50%"></div>
+          </div>
+          <span class="volume-label">VOLUME</span>
+        </div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="volume-status" id="volumeStatus">🔊 Playing</span>
+          <span class="volume-level" id="volumeLevel">Level: 50%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn mute" id="muteBtn">🔇 Mute</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+    </div>
+
+    <!-- Slider -->
+    <div class="slider-container main-slider">
+      <span class="slider-label">Volume</span>
+      <input type="range" id="volumeSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="volumeSliderValue">50%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Animation Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Visualizer Style</span>
+      <input type="range" id="styleSlider" min="0" max="3" value="0" step="1" />
+      <span class="slider-value" id="styleValue">Bars</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🔊 Adjust the volume to see visual feedback</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>↑</kbd> Volume Up · <kbd>↓</kbd> Volume Down · <kbd>M</kbd> Mute · <kbd>Space</kbd> Pause
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const volumePercent = document.getElementById('volumePercent');
+      const volumeBar = document.getElementById('volumeBar');
+      const volumeLevel = document.getElementById('volumeLevel');
+      const volumeStatus = document.getElementById('volumeStatus');
+      const muteBtn = document.getElementById('muteBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const status = document.getElementById('status');
+      const volumeSlider = document.getElementById('volumeSlider');
+      const volumeSliderValue = document.getElementById('volumeSliderValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const styleSlider = document.getElementById('styleSlider');
+      const styleValue = document.getElementById('styleValue');
+
+      // State
+      let volume = 50;
+      let targetVolume = 50;
+      let isMuted = false;
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let visualizerBars = [];
+
+      // Visualizer styles
+      const STYLES = ['Bars', 'Wave', 'Pulse', 'Spectrum'];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Generate visualizer bars -----
+      function generateBars() {
+        const count = 30;
+        visualizerBars = [];
+        for (let i = 0; i < count; i++) {
+          visualizerBars.push({
+            height: 0,
+            targetHeight: 0,
+            speed: 0.05 + Math.random() * 0.05,
+            phase: Math.random() * Math.PI * 2
+          });
+        }
+      }
+
+      // ----- Update volume -----
+      function updateVolume(value) {
+        const clamped = Math.max(0, Math.min(100, value));
+        targetVolume = clamped;
+        if (!isMuted) {
+          volume = clamped;
+        }
+        volumeSlider.value = clamped;
+        volumeSliderValue.textContent = Math.round(clamped) + '%';
+        volumePercent.textContent = Math.round(clamped) + '%';
+        volumeBar.style.width = clamped + '%';
+        volumeLevel.textContent = `Level: ${Math.round(clamped)}%`;
+        
+        // Update volume bar color
+        const hue = 120 - (clamped / 100) * 120;
+        volumeBar.style.background = `linear-gradient(90deg, 
+          hsl(${hue + 20}, 80%, 50%), 
+          hsl(${hue}, 80%, 45%), 
+          hsl(${hue - 20}, 80%, 40%)
+        )`;
+      }
+
+      // ----- Mute toggle -----
+      function toggleMute() {
+        isMuted = !isMuted;
+        muteBtn.textContent = isMuted ? '🔊 Unmute' : '🔇 Mute';
+        status.textContent = isMuted ? '🔇 Muted' : '🔊 Unmuted';
+        volumeStatus.textContent = isMuted ? '🔇 Muted' : '🔊 Playing';
+        if (isMuted) {
+          volume = 0;
+          volumeBar.style.width = '0%';
+          volumePercent.textContent = '0%';
+          volumeLevel.textContent = 'Level: 0%';
+          volumeSlider.value = 0;
+          volumeSliderValue.textContent = '0%';
+        } else {
+          updateVolume(targetVolume);
+        }
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        volumeStatus.textContent = isPaused ? '⏸ Paused' : (isMuted ? '🔇 Muted' : '🔊 Playing');
+      }
+
+      // ----- Reset -----
+      function resetVolume() {
+        isPaused = false;
+        isMuted = false;
+        toggleBtn.textContent = '⏸ Pause';
+        muteBtn.textContent = '🔇 Mute';
+        volumeSlider.value = 50;
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        styleSlider.value = 0;
+        styleValue.textContent = 'Bars';
+        updateVolume(50);
+        status.textContent = '↺ Reset';
+        volumeStatus.textContent = '🔊 Playing';
+        setTimeout(() => {
+          status.textContent = '🔊 Adjust the volume to see visual feedback';
+        }, 500);
+      }
+
+      // ----- Draw visualizer -----
+      function drawVisualizer() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const vol = isMuted ? 0 : volume / 100;
+        const speed = parseInt(speedSlider.value) / 5;
+        const style = parseInt(styleSlider.value);
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Update visualizer bars
+        const count = visualizerBars.length;
+        for (let i = 0; i < count; i++) {
+          const bar = visualizerBars[i];
+          const freq = (i / count) * Math.PI * 2;
+          const target = vol * (0.2 + 0.8 * (0.5 + 0.5 * Math.sin(freq + time * 0.5 * speed)));
+          bar.targetHeight = target;
+          bar.height += (bar.targetHeight - bar.height) * 0.05;
+        }
+
+        // Draw based on style
+        const hue = 220 - vol * 120;
+
+        switch(style) {
+          case 0: // Bars
+            drawBars(ctx, w, h, cx, cy, vol, speed, hue);
+            break;
+          case 1: // Wave
+            drawWave(ctx, w, h, cx, cy, vol, speed, hue);
+            break;
+          case 2: // Pulse
+            drawPulse(ctx, w, h, cx, cy, vol, speed, hue);
+            break;
+          case 3: // Spectrum
+            drawSpectrum(ctx, w, h, cx, cy, vol, speed, hue);
+            break;
+        }
+
+        // Center glow
+        if (vol > 0.05) {
+          const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30 + vol * 40);
+          glowGrad.addColorStop(0, `hsla(${hue + 30}, 100%, 90%, ${0.05 * vol})`);
+          glowGrad.addColorStop(1, `hsla(${hue + 30}, 100%, 60%, 0)`);
+          ctx.fillStyle = glowGrad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 30 + vol * 40, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Draw bars style -----
+      function drawBars(ctx, w, h, cx, cy, vol, speed, hue) {
+        const barWidth = w / visualizerBars.length * 0.8;
+        const spacing = w / visualizerBars.length;
+        const maxHeight = h * 0.5;
+
+        for (let i = 0; i < visualizerBars.length; i++) {
+          const bar = visualizerBars[i];
+          const height = bar.height * maxHeight;
+          const x = i * spacing + (spacing - barWidth) / 2;
+          const y = cy + height / 2;
+
+          const alpha = 0.3 + 0.7 * (height / maxHeight);
+          const lightness = 50 + 30 * (height / maxHeight);
+          
+          const grad = ctx.createLinearGradient(x, cy - height, x, cy + height);
+          grad.addColorStop(0, `hsla(${hue + 20}, 100%, ${lightness + 10}%, ${alpha * 0.8})`);
+          grad.addColorStop(0.5, `hsla(${hue}, 100%, ${lightness}%, ${alpha * 0.9})`);
+          grad.addColorStop(1, `hsla(${hue - 20}, 100%, ${lightness - 10}%, ${alpha * 0.6})`);
+
+          ctx.shadowColor = `hsla(${hue}, 100%, 60%, ${alpha * 0.05})`;
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, cy - height, barWidth, height * 2);
+          ctx.shadowBlur = 0;
+
+          // Glow at top
+          if (height > 5) {
+            const glowGrad = ctx.createRadialGradient(x + barWidth/2, cy - height, 0, x + barWidth/2, cy - height, barWidth * 0.5);
+            glowGrad.addColorStop(0, `hsla(${hue + 30}, 100%, 90%, ${alpha * 0.1})`);
+            glowGrad.addColorStop(1, `hsla(${hue + 30}, 100%, 60%, 0)`);
+            ctx.fillStyle = glowGrad;
+            ctx.beginPath();
+            ctx.arc(x + barWidth/2, cy - height, barWidth * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // ----- Draw wave style -----
+      function drawWave(ctx, w, h, cx, cy, vol, speed, hue) {
+        const amplitude = 30 + vol * 80;
+        const frequency = 3 + vol * 5;
+
+        ctx.beginPath();
+        for (let i = 0; i <= w; i++) {
+          const x = i;
+          const t = i / w;
+          const wave = Math.sin(t * Math.PI * 2 * frequency + time * 0.5 * speed) * amplitude * (0.5 + 0.5 * vol);
+          const wave2 = Math.sin(t * Math.PI * 4 * frequency * 0.5 + time * 0.3 * speed + 1) * amplitude * 0.3 * vol;
+          const y = cy + wave + wave2;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+
+        const grad = ctx.createLinearGradient(0, cy - amplitude - 20, 0, cy + amplitude + 20);
+        grad.addColorStop(0, `hsla(${hue + 20}, 100%, 80%, ${0.1 * vol})`);
+        grad.addColorStop(0.3, `hsla(${hue}, 100%, 60%, ${0.3 * vol})`);
+        grad.addColorStop(0.7, `hsla(${hue}, 100%, 60%, ${0.3 * vol})`);
+        grad.addColorStop(1, `hsla(${hue - 20}, 100%, 40%, ${0.1 * vol})`);
+
+        ctx.shadowColor = `hsla(${hue}, 100%, 60%, ${0.05 * vol})`;
+        ctx.shadowBlur = 15;
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2 + vol * 3;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Fill under wave
+        ctx.lineTo(w, cy + amplitude + 20);
+        ctx.lineTo(0, cy + amplitude + 20);
+        ctx.closePath();
+        const fillGrad = ctx.createLinearGradient(0, cy - amplitude - 20, 0, cy + amplitude + 20);
+        fillGrad.addColorStop(0, `hsla(${hue + 20}, 100%, 80%, ${0.03 * vol})`);
+        fillGrad.addColorStop(0.5, `hsla(${hue}, 100%, 60%, ${0.05 * vol})`);
+        fillGrad.addColorStop(1, `hsla(${hue - 20}, 100%, 40%, 0)`);
+        ctx.fillStyle = fillGrad;
+        ctx.fill();
+      }
+
+      // ----- Draw pulse style -----
+      function drawPulse(ctx, w, h, cx, cy, vol, speed, hue) {
+        const maxRadius = Math.min(w, h) * 0.4;
+        const pulse = 0.5 + 0.5 * Math.sin(time * 0.5 * speed);
+        const radius = 20 + vol * maxRadius * (0.3 + 0.7 * pulse);
+
+        // Outer glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 1.2);
+        grad.addColorStop(0, `hsla(${hue + 20}, 100%, 80%, ${0.05 * vol})`);
+        grad.addColorStop(0.5, `hsla(${hue}, 100%, 60%, ${0.03 * vol})`);
+        grad.addColorStop(1, `hsla(${hue - 20}, 100%, 40%, 0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Pulse rings
+        for (let i = 0; i < 3; i++) {
+          const ringRadius = radius * (0.3 + i * 0.3);
+          const ringAlpha = 0.1 + 0.2 * vol * (1 - i * 0.3);
+          const ringHue = hue + i * 20;
+
+          ctx.shadowColor = `hsla(${ringHue}, 100%, 60%, ${ringAlpha * 0.1})`;
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `hsla(${ringHue + 20}, 100%, 70%, ${ringAlpha * 0.6})`;
+          ctx.lineWidth = 1 + (1 - i * 0.3) * 2 * vol;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+        }
+
+        // Center dot
+        const dotSize = 5 + vol * 10;
+        ctx.fillStyle = `hsla(${hue + 30}, 100%, 95%, ${0.3 + 0.5 * vol})`;
+        ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${0.1 * vol})`;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(cx, cy, dotSize, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // ----- Draw spectrum style -----
+      function drawSpectrum(ctx, w, h, cx, cy, vol, speed, hue) {
+        const barCount = 40;
+        const barWidth = w / barCount * 0.7;
+        const spacing = w / barCount;
+        const maxHeight = h * 0.35;
+
+        for (let i = 0; i < barCount; i++) {
+          const freq = (i / barCount) * Math.PI * 2;
+          const bar = visualizerBars[i % visualizerBars.length] || { height: 0 };
+          const height = bar.height * maxHeight * (0.3 + 0.7 * vol);
+          const x = i * spacing + (spacing - barWidth) / 2;
+          const y = cy + height;
+
+          const alpha = 0.3 + 0.7 * (height / maxHeight);
+          const lightness = 50 + 30 * (height / maxHeight);
+          const hueShift = (i / barCount) * 60;
+
+          const grad = ctx.createLinearGradient(x, cy - height, x, cy + height);
+          grad.addColorStop(0, `hsla(${hue + hueShift + 20}, 100%, ${lightness + 10}%, ${alpha * 0.8})`);
+          grad.addColorStop(0.5, `hsla(${hue + hueShift}, 100%, ${lightness}%, ${alpha * 0.9})`);
+          grad.addColorStop(1, `hsla(${hue + hueShift - 20}, 100%, ${lightness - 10}%, ${alpha * 0.6})`);
+
+          ctx.shadowColor = `hsla(${hue + hueShift}, 100%, 60%, ${alpha * 0.03})`;
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = grad;
+          ctx.fillRect(x, cy - height, barWidth, height * 2);
+          ctx.shadowBlur = 0;
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        
+        if (!isPaused) {
+          // Smooth volume transition
+          const diff = targetVolume - volume;
+          if (!isMuted && Math.abs(diff) > 0.1) {
+            volume += diff * 0.05;
+          } else if (!isMuted) {
+            volume = targetVolume;
+          }
+        }
+
+        drawVisualizer();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      muteBtn.addEventListener('click', toggleMute);
+      resetBtn.addEventListener('click', resetVolume);
+      toggleBtn.addEventListener('click', togglePause);
+
+      volumeSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        if (isMuted) {
+          isMuted = false;
+          muteBtn.textContent = '🔇 Mute';
+          volumeStatus.textContent = '🔊 Playing';
+          status.textContent = '🔊 Unmuted';
+        }
+        updateVolume(val);
+        status.textContent = `🔊 Volume: ${Math.round(val)}%`;
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      styleSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        styleValue.textContent = STYLES[val];
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          const val = Math.min(100, volume + 5);
+          if (isMuted) {
+            isMuted = false;
+            muteBtn.textContent = '🔇 Mute';
+            volumeStatus.textContent = '🔊 Playing';
+          }
+          updateVolume(val);
+          status.textContent = `🔊 Volume: ${Math.round(val)}%`;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const val = Math.max(0, volume - 5);
+          updateVolume(val);
+          status.textContent = `🔊 Volume: ${Math.round(val)}%`;
+        }
+        if (e.key === 'm' || e.key === 'M') {
+          e.preventDefault();
+          toggleMute();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetVolume();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateBars();
+        updateVolume(50);
+        startAnimation();
+        status.textContent = '🔊 Adjust the volume to see visual feedback!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

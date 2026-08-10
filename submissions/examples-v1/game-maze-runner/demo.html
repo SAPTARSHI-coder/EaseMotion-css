@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧩 Maze Runner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🧩 Maze Runner</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">⏱️ Time</span>
+        <span class="stat-value" id="timeDisplay">0</span>
+        <span class="stat-unit">s</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">👣 Moves</span>
+        <span class="stat-value" id="movesDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">—</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📐 Size</span>
+        <span class="stat-value" id="sizeDisplay">15</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <button class="control-btn" id="solveBtn">✨ Solve</button>
+      <button class="control-btn" id="sizeBtn">📐 Size</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>🖱️ Click cells to move or use arrow keys</span>
+      <span>·</span>
+      <span>🟢 Start → 🏁 Finish</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">🧩 Click Start to generate a maze!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const movesDisplay = document.getElementById('movesDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const sizeDisplay = document.getElementById('sizeDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const solveBtn = document.getElementById('solveBtn');
+      const sizeBtn = document.getElementById('sizeBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const MIN_SIZE = 5;
+      const MAX_SIZE = 31;
+      const DEFAULT_SIZE = 15;
+      const CELL_TYPES = {
+        WALL: 0,
+        PATH: 1,
+        START: 2,
+        FINISH: 3,
+        VISITED: 4,
+        SOLUTION: 5
+      };
+
+      // ---------- Game State ----------
+      let maze = [];
+      let rows = DEFAULT_SIZE;
+      let cols = DEFAULT_SIZE;
+      let cellSize = 0;
+      let player = { row: 0, col: 0 };
+      let start = { row: 0, col: 0 };
+      let finish = { row: 0, col: 0 };
+      let moves = 0;
+      let timer = 0;
+      let timerInterval = null;
+      let gameActive = false;
+      let gameComplete = false;
+      let bestTime = parseInt(localStorage.getItem('mazeBestTime')) || null;
+      let solving = false;
+      let solutionPath = [];
+
+      // ---------- Best Time ----------
+      if (bestTime !== null) {
+        bestDisplay.textContent = bestTime + 's';
+      }
+
+      // ---------- Canvas Setup ----------
+      function setupCanvas() {
+        const wrapper = canvas.parentElement;
+        const maxWidth = wrapper.clientWidth || 500;
+        const size = Math.min(maxWidth - 16, 600);
+        canvas.width = size;
+        canvas.height = size;
+        cellSize = size / Math.max(rows, cols);
+        draw();
+      }
+
+      // ---------- Maze Generation (DFS) ----------
+      function generateMaze() {
+        // Initialize grid with walls
+        maze = [];
+        for (let r = 0; r < rows; r++) {
+          maze[r] = [];
+          for (let c = 0; c < cols; c++) {
+            maze[r][c] = CELL_TYPES.WALL;
+          }
+        }
+
+        // Carve paths using DFS
+        const stack = [];
+        const startRow = 0;
+        const startCol = 0;
+        maze[startRow][startCol] = CELL_TYPES.PATH;
+        stack.push({ row: startRow, col: startCol });
+
+        const directions = [
+          { dr: -2, dc: 0 },
+          { dr: 2, dc: 0 },
+          { dr: 0, dc: -2 },
+          { dr: 0, dc: 2 }
+        ];
+
+        while (stack.length > 0) {
+          const current = stack[stack.length - 1];
+          const neighbors = [];
+
+          for (const dir of directions) {
+            const nr = current.row + dir.dr;
+            const nc = current.col + dir.dc;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze[nr][nc] === CELL_TYPES.WALL) {
+              neighbors.push({ row: nr, col: nc, dr: dir.dr / 2, dc: dir.dc / 2 });
+            }
+          }
+
+          if (neighbors.length > 0) {
+            const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+            // Carve wall between
+            maze[current.row + next.dr][current.col + next.dc] = CELL_TYPES.PATH;
+            maze[next.row][next.col] = CELL_TYPES.PATH;
+            stack.push({ row: next.row, col: next.col });
+          } else {
+            stack.pop();
+          }
+        }
+
+        // Set start and finish
+        start = { row: 0, col: 0 };
+        finish = { row: rows - 1, col: cols - 1 };
+        maze[start.row][start.col] = CELL_TYPES.START;
+        maze[finish.row][finish.col] = CELL_TYPES.FINISH;
+
+        // Ensure path to finish (if not connected, carve a path)
+        if (!findPath(start.row, start.col, finish.row, finish.col)) {
+          // Simple fix: carve a direct path with some randomness
+          let r = 0, c = 0;
+          while (r < rows - 1 || c < cols - 1) {
+            if (r < rows - 1 && Math.random() < 0.5) {
+              r++;
+              if (maze[r][c] === CELL_TYPES.WALL) maze[r][c] = CELL_TYPES.PATH;
+            } else if (c < cols - 1) {
+              c++;
+              if (maze[r][c] === CELL_TYPES.WALL) maze[r][c] = CELL_TYPES.PATH;
+            }
+          }
+        }
+
+        // Reset player
+        player.row = start.row;
+        player.col = start.col;
+        moves = 0;
+        timer = 0;
+        gameComplete = false;
+        gameActive = true;
+        solutionPath = [];
+        updateUI();
+        setupCanvas();
+        draw();
+      }
+
+      // ---------- Pathfinding (BFS) ----------
+      function findPath(sr, sc, tr, tc) {
+        const visited = new Set();
+        const queue = [{ row: sr, col: sc, path: [{ row: sr, col: sc }] }];
+        visited.add(`${sr},${sc}`);
+
+        while (queue.length > 0) {
+          const current = queue.shift();
+          if (current.row === tr && current.col === tc) {
+            solutionPath = current.path;
+            return true;
+          }
+
+          const directions = [
+            { dr: -1, dc: 0 },
+            { dr: 1, dc: 0 },
+            { dr: 0, dc: -1 },
+            { dr: 0, dc: 1 }
+          ];
+
+          for (const dir of directions) {
+            const nr = current.row + dir.dr;
+            const nc = current.col + dir.dc;
+            const key = `${nr},${nc}`;
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && 
+                maze[nr][nc] !== CELL_TYPES.WALL &&
+                !visited.has(key)) {
+              visited.add(key);
+              const newPath = [...current.path, { row: nr, col: nc }];
+              queue.push({ row: nr, col: nc, path: newPath });
+            }
+          }
+        }
+        return false;
+      }
+
+      // ---------- Solve Maze ----------
+      function solveMaze() {
+        if (!gameActive || gameComplete) return;
+        if (solving) return;
+        
+        solving = true;
+        solutionPath = [];
+        
+        if (findPath(player.row, player.col, finish.row, finish.col)) {
+          setGameStatus('✨ Solution found!', true);
+          // Animate solution
+          let step = 0;
+          const interval = setInterval(() => {
+            if (step >= solutionPath.length) {
+              clearInterval(interval);
+              solving = false;
+              draw();
+              return;
+            }
+            const pos = solutionPath[step];
+            // Temporarily mark solution on maze
+            if (maze[pos.row][pos.col] !== CELL_TYPES.START && 
+                maze[pos.row][pos.col] !== CELL_TYPES.FINISH) {
+              maze[pos.row][pos.col] = CELL_TYPES.SOLUTION;
+            }
+            draw();
+            step++;
+          }, 50);
+        } else {
+          setGameStatus('❌ No solution found!', false);
+          solving = false;
+        }
+      }
+
+      // ---------- Player Movement ----------
+      function movePlayer(dr, dc) {
+        if (!gameActive || gameComplete || solving) return;
+        
+        const nr = player.row + dr;
+        const nc = player.col + dc;
+        
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
+        if (maze[nr][nc] === CELL_TYPES.WALL) return;
+
+        // Start timer on first move
+        if (moves === 0 && !gameComplete) {
+          startTimer();
+        }
+
+        // Clear previous solution marks
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (maze[r][c] === CELL_TYPES.SOLUTION) {
+              maze[r][c] = CELL_TYPES.PATH;
+            }
+          }
+        }
+
+        player.row = nr;
+        player.col = nc;
+        moves++;
+        updateUI();
+        draw();
+
+        // Check if reached finish
+        if (nr === finish.row && nc === finish.col) {
+          gameComplete = true;
+          gameActive = false;
+          stopTimer();
+          if (bestTime === null || timer < bestTime) {
+            bestTime = timer;
+            localStorage.setItem('mazeBestTime', bestTime.toString());
+            bestDisplay.textContent = bestTime + 's';
+          }
+          setGameStatus(`🎉 Maze Complete! ${moves} moves, ${timer}s 🏆`, true);
+        }
+      }
+
+      // ---------- Timer ----------
+      function startTimer() {
+        if (timerInterval) return;
+        timer = 0;
+        timerInterval = setInterval(() => {
+          timer++;
+          timeDisplay.textContent = timer;
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Background
+        ctx.fillStyle = '#0a0e1a';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw maze
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = c * cellSize;
+            const y = r * cellSize;
+            const val = maze[r][c];
+
+            if (val === CELL_TYPES.WALL) {
+              ctx.fillStyle = '#1a2a3a';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            } else if (val === CELL_TYPES.START) {
+              ctx.fillStyle = '#4caf50';
+              ctx.fillRect(x, y, cellSize, cellSize);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = `${cellSize * 0.5}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('▶', x + cellSize/2, y + cellSize/2 + 1);
+            } else if (val === CELL_TYPES.FINISH) {
+              ctx.fillStyle = '#f44336';
+              ctx.fillRect(x, y, cellSize, cellSize);
+              ctx.fillStyle = '#ffffff';
+              ctx.font = `${cellSize * 0.5}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText('🏁', x + cellSize/2, y + cellSize/2 + 1);
+            } else if (val === CELL_TYPES.SOLUTION) {
+              ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            } else {
+              // Path
+              ctx.fillStyle = '#0a151c';
+              ctx.fillRect(x, y, cellSize, cellSize);
+            }
+
+            // Grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(x, y, cellSize, cellSize);
+          }
+        }
+
+        // Draw player
+        const px = player.col * cellSize + cellSize/2;
+        const py = player.row * cellSize + cellSize/2;
+        const radius = cellSize * 0.35;
+        
+        ctx.shadowColor = '#4fc3f7';
+        ctx.shadowBlur = 15;
+        const grad = ctx.createRadialGradient(px - 3, py - 3, 2, px, py, radius);
+        grad.addColorStop(0, '#4fc3f7');
+        grad.addColorStop(0.7, '#29b6f6');
+        grad.addColorStop(1, '#0288d1');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(px, py, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        
+        // Player eyes
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(px - 4, py - 3, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + 4, py - 3, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.arc(px - 3, py - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(px + 5, py - 2, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Overlay messages
+        if (gameComplete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 32px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#81c784';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🎉', canvas.width/2, canvas.height/2 - 10);
+          ctx.font = '20px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Complete! ${moves} moves, ${timer}s`, canvas.width/2, canvas.height/2 + 40);
+        }
+
+        if (!gameActive && !gameComplete) {
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = '24px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🧩 Click Start to generate a maze', canvas.width/2, canvas.height/2);
+        }
+      }
+
+      // ---------- UI Updates ----------
+      function updateUI() {
+        timeDisplay.textContent = timer;
+        movesDisplay.textContent = moves;
+        sizeDisplay.textContent = rows;
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        stopTimer();
+        gameActive = false;
+        gameComplete = false;
+        moves = 0;
+        timer = 0;
+        updateUI();
+        generateMaze();
+        setGameStatus('🧩 Navigate to the finish! (🏁)', true);
+        startBtn.textContent = '🔄 New Maze';
+        draw();
+      }
+
+      function resetGame() {
+        stopTimer();
+        gameActive = false;
+        gameComplete = false;
+        moves = 0;
+        timer = 0;
+        updateUI();
+        startBtn.textContent = '▶ Start';
+        setGameStatus('🔄 Game reset. Click Start to generate a maze!', true);
+        draw();
+        // Reset solution marks
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            if (maze[r][c] === CELL_TYPES.SOLUTION) {
+              maze[r][c] = CELL_TYPES.PATH;
+            }
+          }
+        }
+        draw();
+      }
+
+      function changeSize() {
+        if (gameActive && !gameComplete) {
+          if (!confirm('Change size will reset the game. Continue?')) return;
+        }
+        const sizes = [5, 7, 9, 11, 13, 15, 21, 25, 31];
+        let idx = sizes.indexOf(rows);
+        idx = (idx + 1) % sizes.length;
+        rows = sizes[idx];
+        cols = rows;
+        sizeDisplay.textContent = rows;
+        resetGame();
+        setGameStatus(`📐 Maze size set to ${rows}x${rows}`, true);
+        generateMaze();
+        setupCanvas();
+      }
+
+      // ---------- Event Handlers ----------
+      canvas.addEventListener('click', (e) => {
+        if (!gameActive || gameComplete || solving) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const col = Math.floor(x / cellSize);
+        const row = Math.floor(y / cellSize);
+        
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+        if (maze[row][col] === CELL_TYPES.WALL) return;
+        
+        // Move towards clicked cell
+        const dr = Math.sign(row - player.row);
+        const dc = Math.sign(col - player.col);
+        if (dr !== 0 && dc !== 0) {
+          // Try vertical first, then horizontal
+          if (maze[player.row + dr][player.col] !== CELL_TYPES.WALL) {
+            movePlayer(dr, 0);
+          } else if (maze[player.row][player.col + dc] !== CELL_TYPES.WALL) {
+            movePlayer(0, dc);
+          }
+        } else {
+          movePlayer(dr, dc);
+        }
+      });
+
+      // Touch support
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+        const col = Math.floor(x / cellSize);
+        const row = Math.floor(y / cellSize);
+        
+        if (!gameActive || gameComplete || solving) return;
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+        if (maze[row][col] === CELL_TYPES.WALL) return;
+        
+        const dr = Math.sign(row - player.row);
+        const dc = Math.sign(col - player.col);
+        if (dr !== 0 && dc !== 0) {
+          if (maze[player.row + dr][player.col] !== CELL_TYPES.WALL) {
+            movePlayer(dr, 0);
+          } else if (maze[player.row][player.col + dc] !== CELL_TYPES.WALL) {
+            movePlayer(0, dc);
+          }
+        } else {
+          movePlayer(dr, dc);
+        }
+      }, { passive: false });
+
+      // Keyboard
+      document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+          e.preventDefault();
+          switch(key) {
+            case 'ArrowUp': movePlayer(-1, 0); break;
+            case 'ArrowDown': movePlayer(1, 0); break;
+            case 'ArrowLeft': movePlayer(0, -1); break;
+            case 'ArrowRight': movePlayer(0, 1); break;
+          }
+        }
+        if (key === 'r' || key === 'R') resetGame();
+        if (key === 's' || key === 'S') solveMaze();
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          if (!gameActive || gameComplete) {
+            startGame();
+          }
+        }
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      solveBtn.addEventListener('click', solveMaze);
+      sizeBtn.addEventListener('click', changeSize);
+
+      // ---------- Window Resize ----------
+      window.addEventListener('resize', () => {
+        setupCanvas();
+      });
+
+      // ---------- Init ----------
+      function init() {
+        rows = DEFAULT_SIZE;
+        cols = DEFAULT_SIZE;
+        sizeDisplay.textContent = rows;
+        generateMaze();
+        setupCanvas();
+        setGameStatus('🧩 Click Start to generate a maze!', true);
+        if (bestTime !== null) {
+          bestDisplay.textContent = bestTime + 's';
+        }
+        draw();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

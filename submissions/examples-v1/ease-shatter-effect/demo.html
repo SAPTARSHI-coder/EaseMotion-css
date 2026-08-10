@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shatter Effect Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Shatter Effect</h1>
+        <p class="subtitle">Element shatters into pieces</p>
+
+        <!-- SHATTER EFFECT COMPONENT -->
+        <div class="shatter-container">
+            <div class="shatter-wrapper">
+                <div class="shatter-display" id="shatterDisplay">
+                    <div class="shatter-target" id="shatterTarget">
+                        <div class="shatter-content">
+                            <span class="target-icon">💎</span>
+                            <h2 class="target-title">Shatter</h2>
+                            <p class="target-desc">Click the button to shatter this element</p>
+                        </div>
+                    </div>
+                    <div class="shatter-canvas-wrapper">
+                        <canvas id="shatterCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="shatter-controls">
+                    <div class="control-group">
+                        <label for="piecesSlider">Pieces:</label>
+                        <input type="range" id="piecesSlider" min="8" max="40" step="2" value="20" />
+                        <span id="piecesValue">20</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="forceSlider">Force:</label>
+                        <input type="range" id="forceSlider" min="0.5" max="3" step="0.1" value="1.5" />
+                        <span id="forceValue">1.5</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="durationSlider">Duration:</label>
+                        <input type="range" id="durationSlider" min="1" max="4" step="0.5" value="2" />
+                        <span id="durationValue">2s</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="shatter-actions">
+                    <button class="shatter-ctrl-btn" id="shatterBtn">💥 Shatter!</button>
+                    <button class="shatter-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="shatter-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="shatter-ctrl-btn" id="toggleGravityBtn">🌍 Gravity</button>
+                </div>
+
+                <div class="shatter-status">
+                    <span class="status-label">State:</span>
+                    <span class="status-value" id="stateDisplay">Ready</span>
+                    <span class="status-label">Pieces:</span>
+                    <span class="status-value" id="piecesDisplay">0</span>
+                    <span class="status-label">Force:</span>
+                    <span class="status-value" id="forceDisplay">1.5</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #00d2d3);">
+                        <span>💥</span>
+                    </div>
+                    <span class="variant-label">Ocean</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>💥</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>💥</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>💥</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('shatterCanvas');
+            const ctx = canvas.getContext('2d');
+            const target = document.getElementById('shatterTarget');
+            const stateDisplay = document.getElementById('stateDisplay');
+            const piecesDisplay = document.getElementById('piecesDisplay');
+            const forceDisplay = document.getElementById('forceDisplay');
+            const piecesSlider = document.getElementById('piecesSlider');
+            const forceSlider = document.getElementById('forceSlider');
+            const durationSlider = document.getElementById('durationSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const piecesValue = document.getElementById('piecesValue');
+            const forceValue = document.getElementById('forceValue');
+            const durationValue = document.getElementById('durationValue');
+            const shatterBtn = document.getElementById('shatterBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const toggleGravityBtn = document.getElementById('toggleGravityBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                pieces: 20,
+                force: 1.5,
+                duration: 2,
+                color: '#4facfe',
+                gravity: true,
+                onShatter: function() {
+                    console.log('💥 Element shattered!');
+                },
+                onReset: function() {
+                    console.log('⟳ Element restored');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let isShattered = false;
+            let isAnimating = false;
+            let shards = [];
+            let animationId = null;
+            let startTime = 0;
+            let isGravityEnabled = CONFIG.gravity;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // SHARD CLASS
+            // ============================================
+            class Shard {
+                constructor(x, y, width, height, color, angle) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                    this.color = color || CONFIG.color;
+                    this.angle = angle || 0;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.2;
+                    
+                    // Velocity
+                    const force = CONFIG.force * (0.5 + Math.random() * 0.5);
+                    const dir = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(dir) * force * (1 + Math.random() * 0.5);
+                    this.vy = Math.sin(dir) * force * (1 + Math.random() * 0.5) - 1;
+                    
+                    this.gravity = 0.3 + Math.random() * 0.1;
+                    this.friction = 0.98;
+                    this.opacity = 1;
+                    this.decay = 0.003 + Math.random() * 0.005;
+                    this.scale = 0.8 + Math.random() * 0.4;
+                    this.initialX = x;
+                    this.initialY = y;
+                    this.initialWidth = width;
+                    this.initialHeight = height;
+                }
+
+                update() {
+                    // Apply gravity
+                    if (isGravityEnabled) {
+                        this.vy += this.gravity;
+                    }
+                    
+                    // Apply friction
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    
+                    // Update position
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // Update rotation
+                    this.angle += this.rotationSpeed;
+                    
+                    // Fade out
+                    this.opacity -= this.decay;
+                    
+                    // Scale down slightly
+                    this.scale *= 0.998;
+                    
+                    return this.opacity > 0.01;
+                }
+
+                draw(ctx) {
+                    ctx.save();
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+                    ctx.scale(this.scale, this.scale);
+                    ctx.globalAlpha = Math.max(this.opacity, 0);
+                    
+                    // Draw shard with glow
+                    const w = this.width;
+                    const h = this.height;
+                    
+                    // Shadow/glow
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 10;
+                    
+                    // Random polygon shape (triangular/quadrilateral)
+                    ctx.beginPath();
+                    const points = 3 + Math.floor(Math.random() * 2);
+                    for (let i = 0; i < points; i++) {
+                        const angle = (i / points) * Math.PI * 2 - Math.PI / 2;
+                        const radius = Math.min(w, h) * 0.6 * (0.7 + Math.random() * 0.3);
+                        const x = Math.cos(angle) * radius;
+                        const y = Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = Math.max(this.opacity * 0.3, 0);
+                    ctx.beginPath();
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+                        const radius = Math.min(w, h) * 0.3;
+                        const x = Math.cos(angle) * radius;
+                        const y = Math.sin(angle) * radius;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ============================================
+            // SHATTER FUNCTION
+            // ============================================
+            function shatterElement() {
+                if (isShattered || isAnimating) return;
+                
+                const w = canvas.width;
+                const h = canvas.height;
+                const color = colorPicker.value;
+                const pieces = parseInt(piecesSlider.value);
+                
+                // Hide original element
+                target.style.opacity = '0';
+                target.style.transform = 'scale(0.8)';
+                
+                // Create shards
+                shards = [];
+                const centerX = w / 2;
+                const centerY = h / 2;
+                const size = Math.min(w, h) * 0.3;
+                
+                for (let i = 0; i < pieces; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * size * 0.5;
+                    const x = centerX + Math.cos(angle) * distance;
+                    const y = centerY + Math.sin(angle) * distance;
+                    const shardSize = size * (0.05 + Math.random() * 0.15);
+                    
+                    const shard = new Shard(
+                        x, y,
+                        shardSize, shardSize * (0.5 + Math.random()),
+                        color,
+                        Math.random() * Math.PI * 2
+                    );
+                    shards.push(shard);
+                }
+                
+                isShattered = true;
+                isAnimating = true;
+                startTime = performance.now();
+                stateDisplay.textContent = 'Shattering...';
+                stateDisplay.style.color = '#f59e0b';
+                piecesDisplay.textContent = shards.length;
+                CONFIG.onShatter();
+                
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                animateShards();
+            }
+
+            // ============================================
+            // SHARD ANIMATION
+            // ============================================
+            function animateShards() {
+                const w = canvas.width;
+                const h = canvas.height;
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, w, h);
+                
+                // Update and draw shards
+                let alive = 0;
+                shards.forEach(shard => {
+                    const isAlive = shard.update();
+                    if (isAlive) {
+                        shard.draw(ctx);
+                        alive++;
+                    }
+                });
+                
+                // Update status
+                if (alive === 0 && shards.length > 0) {
+                    isAnimating = false;
+                    stateDisplay.textContent = 'Shattered';
+                    stateDisplay.style.color = '#ff3b30';
+                    piecesDisplay.textContent = '0';
+                    return;
+                }
+                
+                // Continue animation
+                animationId = requestAnimationFrame(animateShards);
+            }
+
+            // ============================================
+            // RESET FUNCTION
+            // ============================================
+            function resetElement() {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+                
+                shards = [];
+                isShattered = false;
+                isAnimating = false;
+                
+                // Show original element
+                target.style.opacity = '1';
+                target.style.transform = 'scale(1)';
+                
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                stateDisplay.textContent = 'Ready';
+                stateDisplay.style.color = '#34c759';
+                piecesDisplay.textContent = '0';
+                CONFIG.onReset();
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function randomizeColor() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+            }
+
+            function toggleGravity() {
+                isGravityEnabled = !isGravityEnabled;
+                toggleGravityBtn.textContent = isGravityEnabled ? '🌍 Gravity' : '🌍 No Gravity';
+                CONFIG.gravity = isGravityEnabled;
+            }
+
+            function updateConfig() {
+                CONFIG.pieces = parseInt(piecesSlider.value);
+                CONFIG.force = parseFloat(forceSlider.value);
+                CONFIG.duration = parseFloat(durationSlider.value);
+                CONFIG.color = colorPicker.value;
+                piecesValue.textContent = CONFIG.pieces;
+                forceValue.textContent = CONFIG.force.toFixed(1);
+                durationValue.textContent = CONFIG.duration.toFixed(1) + 's';
+                forceDisplay.textContent = CONFIG.force.toFixed(1);
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            piecesSlider.addEventListener('input', updateConfig);
+            forceSlider.addEventListener('input', updateConfig);
+            durationSlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+
+            shatterBtn.addEventListener('click', shatterElement);
+            resetBtn.addEventListener('click', resetElement);
+            randomColorBtn.addEventListener('click', randomizeColor);
+            toggleGravityBtn.addEventListener('click', toggleGravity);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (isShattered) {
+                        resetElement();
+                    } else {
+                        shatterElement();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetElement();
+                }
+                if (e.key === 'g' || e.key === 'G') {
+                    toggleGravity();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Ocean': ['#4facfe', '#00d2d3'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#00d2d3'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    stateDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        stateDisplay.textContent = isShattered ? 'Shattered' : 'Ready';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.ShatterEffect = {
+                shatter: shatterElement,
+                reset: resetElement,
+                randomize: randomizeColor,
+                toggleGravity: toggleGravity,
+                setPieces: (pieces) => {
+                    piecesSlider.value = pieces;
+                    updateConfig();
+                },
+                setForce: (force) => {
+                    forceSlider.value = force;
+                    updateConfig();
+                },
+                setDuration: (duration) => {
+                    durationSlider.value = duration;
+                    updateConfig();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                },
+                isShattered: () => isShattered,
+                isAnimating: () => isAnimating,
+                getState: () => ({
+                    shattered: isShattered,
+                    animating: isAnimating,
+                    pieces: CONFIG.pieces,
+                    force: CONFIG.force,
+                    duration: CONFIG.duration,
+                    color: CONFIG.color,
+                    gravity: isGravityEnabled
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.pieces) {
+                        piecesSlider.value = config.pieces;
+                    }
+                    if (config.force) {
+                        forceSlider.value = config.force;
+                    }
+                    if (config.duration) {
+                        durationSlider.value = config.duration;
+                    }
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.gravity !== undefined) {
+                        isGravityEnabled = config.gravity;
+                        toggleGravityBtn.textContent = isGravityEnabled ? '🌍 Gravity' : '🌍 No Gravity';
+                    }
+                    updateConfig();
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            updateConfig();
+            stateDisplay.textContent = 'Ready';
+            stateDisplay.style.color = '#34c759';
+            piecesDisplay.textContent = '0';
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                    if (!isShattered) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    }
+                }, 200);
+            });
+
+            console.log('💥 Shatter Effect initialized!');
+            console.log('📖 API: window.ShatterEffect');
+            console.log('📖 Usage:');
+            console.log('  - Click "Shatter!" to break the element');
+            console.log('  - Keyboard shortcuts: Space (shatter/reset), R (reset), G (toggle gravity)');
+            console.log('  - Adjust pieces, force, and duration');
+
+        })();
+    </script>
+</body>
+</html>
