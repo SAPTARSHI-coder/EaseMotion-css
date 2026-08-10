@@ -1,0 +1,424 @@
+/* =================================================================
+   Auto-Scroll Log Viewer
+   A terminal-style log viewer that auto-follows new output
+   but pauses the moment the user scrolls up — then shows
+   a "Jump to latest" pill to resume.
+   ================================================================= */
+
+/* ── Custom properties (component-scoped) ──────────────────────── */
+:root {
+  --log-bg:           #0b1121;
+  --log-surface:      #141e33;
+  --log-text:         #e2e8f0;
+  --log-muted:        #94a3b8;
+  --log-accent:       #6c63ff;
+  --log-accent-glow:  rgba(108, 99, 255, 0.45);
+  --log-success:      #22c55e;
+  --log-warning:      #f59e0b;
+  --log-danger:       #ef4444;
+  --log-info:         #3b82f6;
+  --log-radius:       0.5rem;
+  --log-font-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --log-font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --log-speed-fast:   150ms;
+  --log-speed-medium: 300ms;
+}
+
+/* ── Page reset ────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--log-font-sans);
+  background: var(--log-bg);
+  color: var(--log-text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ── Component shell ───────────────────────────────────────────── */
+.log-viewer {
+  position: relative;
+  width: min(100%, 760px);
+  height: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--log-surface);
+  border-radius: var(--log-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45),
+              0 10px 10px -5px rgba(0, 0, 0, 0.30);
+  overflow: hidden;
+}
+
+/* ── Toolbar (glassmorphism header) ────────────────────────────── */
+.log-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: rgba(15, 23, 42, 0.60);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.log-toolbar-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.log-toolbar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.log-toolbar-dot--close   { background: var(--log-danger); }
+.log-toolbar-dot--min     { background: var(--log-warning); }
+.log-toolbar-dot--max     { background: var(--log-success); }
+
+.log-toolbar-title {
+  font-family: var(--log-font-mono);
+  font-size: 0.75rem;
+  color: var(--log-muted);
+  letter-spacing: 0.04em;
+  margin-left: auto;
+}
+
+/* ── Status indicator ──────────────────────────────────────────── */
+.log-status {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--log-font-mono);
+  font-size: 0.6875rem;
+  color: var(--log-muted);
+  margin-left: auto;
+}
+
+.log-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--log-success);
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+.log-status[data-paused="true"] .log-status-dot {
+  background: var(--log-warning);
+  animation: none;
+}
+
+.log-status[data-paused="true"] .log-status-label::after {
+  content: 'paused';
+}
+
+.log-status:not([data-paused="true"]) .log-status-label::after {
+  content: 'streaming';
+}
+
+/* ── Scrollable log pane ───────────────────────────────────────── */
+.log-pane {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.75rem 0;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108, 99, 255, 0.35) transparent;
+}
+
+.log-pane::-webkit-scrollbar {
+  width: 6px;
+}
+
+.log-pane::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.log-pane::-webkit-scrollbar-thumb {
+  background: rgba(108, 99, 255, 0.35);
+  border-radius: 3px;
+}
+
+/* ── Individual log line ───────────────────────────────────────── */
+.log-line {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.1875rem 1rem;
+  font-family: var(--log-font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.65;
+  transition: background var(--log-speed-fast) ease;
+  animation: lineEnter var(--log-speed-medium) cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.log-line:hover {
+  background: rgba(108, 99, 255, 0.06);
+}
+
+/* Line number gutter */
+.log-line-number {
+  flex-shrink: 0;
+  min-width: 2.5ch;
+  text-align: right;
+  color: rgba(148, 163, 184, 0.40);
+  font-size: 0.6875rem;
+  user-select: none;
+}
+
+/* Timestamp */
+.log-line-ts {
+  flex-shrink: 0;
+  color: var(--log-muted);
+  font-size: 0.6875rem;
+  opacity: 0.7;
+}
+
+/* Level badge */
+.log-line-level {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.0625rem 0.375rem;
+  border-radius: 3px;
+  min-width: 3.5ch;
+  text-align: center;
+}
+
+.log-line-level--info {
+  color: var(--log-info);
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.log-line-level--warn {
+  color: var(--log-warning);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.log-line-level--error {
+  color: var(--log-danger);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.log-line-level--debug {
+  color: var(--log-muted);
+  background: rgba(148, 163, 184, 0.10);
+}
+
+.log-line-level--ok {
+  color: var(--log-success);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+/* Message text */
+.log-line-msg {
+  flex: 1 1 0%;
+  word-break: break-word;
+  color: var(--log-text);
+}
+
+/* ── "Jump to latest" floating pill ────────────────────────────── */
+.log-jump {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  display: none;             /* toggled by JS */
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4375rem 1rem;
+  font-family: var(--log-font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--log-accent);
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 0 16px var(--log-accent-glow),
+              0 4px 12px rgba(0, 0, 0, 0.40);
+  z-index: 5;
+  animation: pillBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transition: transform var(--log-speed-fast) ease,
+              box-shadow var(--log-speed-fast) ease;
+}
+
+.log-jump:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 0 24px var(--log-accent-glow),
+              0 8px 16px rgba(0, 0, 0, 0.40);
+}
+
+.log-jump:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.log-jump.is-visible {
+  display: inline-flex;
+}
+
+.log-jump-arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* New-line counter badge on the pill */
+.log-jump-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3125rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--log-accent);
+  background: #fff;
+  border-radius: 9999px;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────── */
+@keyframes lineEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pillBounce {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+/* ── prefers-reduced-motion ────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .log-line {
+    animation: none;
+  }
+
+  .log-jump {
+    animation: none;
+  }
+
+  .log-status-dot {
+    animation: none;
+  }
+
+  .log-pane {
+    scroll-behavior: auto;
+  }
+}
+
+/* ── Demo chrome ───────────────────────────────────────────────── */
+.demo-heading {
+  font-family: var(--log-font-sans);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--log-text);
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.demo-subheading {
+  font-family: var(--log-font-sans);
+  font-size: 0.875rem;
+  color: var(--log-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.demo-controls {
+  display: flex;
+  gap: 0.625rem;
+  justify-content: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.demo-btn {
+  font-family: var(--log-font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: var(--log-surface);
+  color: var(--log-text);
+  cursor: pointer;
+  transition: background var(--log-speed-fast) ease,
+              border-color var(--log-speed-fast) ease,
+              transform var(--log-speed-fast) ease;
+}
+
+.demo-btn:hover {
+  background: rgba(108, 99, 255, 0.15);
+  border-color: var(--log-accent);
+  transform: translateY(-1px);
+}
+
+.demo-btn:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.demo-btn--danger {
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
+.demo-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--log-danger);
+}
+
+/* ── Keyboard hint ─────────────────────────────────────────────── */
+.demo-kbd-hint {
+  font-family: var(--log-font-mono);
+  font-size: 0.6875rem;
+  color: var(--log-muted);
+  text-align: center;
+  margin-top: 0.75rem;
+  opacity: 0.7;
+}
+
+kbd {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  font-family: var(--log-font-mono);
+  font-size: 0.625rem;
+  color: var(--log-text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Splash – Color Explodes Outward Like Paint Splash</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🎨 Color Splash</h1>
+    <p class="subtitle">Color explodes outward like a paint splash</p>
+
+    <div class="splash-container">
+      <div class="splash-stage" id="splashStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="splash-status" id="splashStatus">🎨 Active</span>
+          <span class="particle-count" id="particleCount">✦ 0 particles</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn splash" id="splashBtn">💥 Splash</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">💡 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Particle Count</span>
+      <input type="range" id="countSlider" min="50" max="500" value="150" step="10" />
+      <span class="slider-value" id="countValue">150</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Explosion Force</span>
+      <input type="range" id="forceSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="forceValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Particle Size</span>
+      <input type="range" id="sizeSlider" min="1" max="10" value="4" />
+      <span class="slider-value" id="sizeValue">4×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Vibrancy</span>
+      <input type="range" id="vibrancySlider" min="0" max="100" value="80" />
+      <span class="slider-value" id="vibrancyValue">80%</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🎨 Click Splash or the canvas to explode color!</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Click</kbd> Splash · <kbd>S</kbd> Splash · <kbd>C</kbd> Clear · <kbd>T</kbd> Toggle
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const splashStatus = document.getElementById('splashStatus');
+      const particleCount = document.getElementById('particleCount');
+      const splashBtn = document.getElementById('splashBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const forceSlider = document.getElementById('forceSlider');
+      const forceValue = document.getElementById('forceValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const vibrancySlider = document.getElementById('vibrancySlider');
+      const vibrancyValue = document.getElementById('vibrancyValue');
+
+      // State
+      let particles = [];
+      let isActive = true;
+      let animationId = null;
+      let time = 0;
+
+      // Colors
+      const COLORS = [
+        '#ff6b6b', '#ff4757', '#ff6348', '#ff9f43', '#feca57',
+        '#ffd93d', '#ff6b81', '#e056a0', '#a29bfe', '#6c5ce7',
+        '#00cec9', '#00b894', '#55efc4', '#81ecec', '#74b9ff',
+        '#0984e3', '#fd79a8', '#e17055', '#fdcb6e', '#d63031'
+      ];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Particle class -----
+      class Particle {
+        constructor(x, y, color, force, sizeMult, vibrancy) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = (0.5 + Math.random() * 1.5) * force;
+          
+          this.x = x;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.size = (1 + Math.random() * 3) * sizeMult;
+          this.originalSize = this.size;
+          this.color = color || COLORS[Math.floor(Math.random() * COLORS.length)];
+          this.opacity = 0.6 + Math.random() * 0.4;
+          this.life = 1;
+          this.decay = 0.003 + Math.random() * 0.008;
+          this.gravity = 0.02 + Math.random() * 0.04;
+          this.friction = 0.98 + Math.random() * 0.015;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+          this.trail = [];
+          this.trailLength = 3 + Math.floor(Math.random() * 6);
+          this.wobble = 0;
+          this.wobbleSpeed = 0.02 + Math.random() * 0.04;
+          this.wobbleAmount = 0.2 + Math.random() * 0.5;
+          this.vibrancy = vibrancy;
+          
+          // Color variation
+          this.hueShift = (Math.random() - 0.5) * 40;
+        }
+
+        update() {
+          // Apply gravity
+          this.vy += this.gravity;
+          
+          // Apply friction
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          
+          // Wobble
+          this.wobble += this.wobbleSpeed;
+          this.x += Math.sin(this.wobble) * this.wobbleAmount;
+          
+          // Update position
+          this.x += this.vx;
+          this.y += this.vy;
+          
+          // Rotation
+          this.rotation += this.rotationSpeed;
+          
+          // Life decay
+          this.life -= this.decay;
+          
+          // Size decay
+          this.size *= 0.998;
+          
+          // Update trail
+          this.trail.push({ x: this.x, y: this.y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+          
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity;
+          const size = this.size * (0.3 + 0.7 * this.life);
+          
+          // Draw trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.2;
+              const trailSize = size * t * 0.3;
+              if (trailSize > 0.1) {
+                ctx.fillStyle = this.color + Math.round(trailAlpha * 255).toString(16).padStart(2, '0');
+                ctx.beginPath();
+                ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+                ctx.fill();
+              }
+            }
+          }
+          
+          // Glow
+          const glowSize = size * 4;
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          const glowAlpha = alpha * 0.15 * this.vibrancy;
+          gradient.addColorStop(0, this.color + Math.round(glowAlpha * 255).toString(16).padStart(2, '0'));
+          gradient.addColorStop(1, this.color + '00');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          
+          const coreAlpha = alpha * (0.5 + 0.5 * this.life);
+          ctx.fillStyle = this.color + Math.round(coreAlpha * 255).toString(16).padStart(2, '0');
+          ctx.shadowColor = this.color + Math.round(coreAlpha * 100).toString(16).padStart(2, '0');
+          ctx.shadowBlur = 10;
+          
+          // Slightly irregular shape for paint-like effect
+          const shape = Math.random() > 0.7 ? 4 : 0;
+          if (shape === 0) {
+            ctx.beginPath();
+            ctx.arc(0, 0, size, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Random polygon for organic feel
+            const sides = 3 + Math.floor(Math.random() * 5);
+            ctx.beginPath();
+            for (let i = 0; i < sides; i++) {
+              const angle = (i / sides) * Math.PI * 2 + this.rotation;
+              const r = size * (0.7 + 0.3 * Math.sin(i * 1.5 + time));
+              const px = Math.cos(angle) * r;
+              const py = Math.sin(angle) * r;
+              if (i === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.closePath();
+            ctx.fill();
+          }
+          
+          ctx.shadowBlur = 0;
+          ctx.restore();
+          
+          // Highlight
+          if (this.life > 0.5 && size > 1) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.1 * this.life})`;
+            ctx.beginPath();
+            ctx.arc(this.x - size * 0.2, this.y - size * 0.3, size * 0.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      // ----- Create splash -----
+      function createSplash(x, y) {
+        if (!isActive) return;
+        
+        const count = parseInt(countSlider.value);
+        const force = parseInt(forceSlider.value) / 2;
+        const sizeMult = parseInt(sizeSlider.value) / 2;
+        const vibrancy = parseInt(vibrancySlider.value) / 100;
+        
+        const cx = x || canvas.width / 2;
+        const cy = y || canvas.height / 2;
+        
+        // Get random colors for splash
+        const numColors = 3 + Math.floor(Math.random() * 4);
+        const splashColors = [];
+        for (let i = 0; i < numColors; i++) {
+          splashColors.push(COLORS[Math.floor(Math.random() * COLORS.length)]);
+        }
+        
+        for (let i = 0; i < count; i++) {
+          const color = splashColors[Math.floor(Math.random() * splashColors.length)];
+          const particle = new Particle(cx, cy, color, force, sizeMult, vibrancy);
+          particles.push(particle);
+        }
+        
+        // Limit particles
+        if (particles.length > 1000) {
+          particles = particles.slice(-800);
+        }
+        
+        particleCount.textContent = `✦ ${particles.length} particles`;
+        status.textContent = `💥 Splash! ${count} particles`;
+        setTimeout(() => {
+          status.textContent = '🎨 Click Splash or the canvas to explode color!';
+        }, 1500);
+      }
+
+      // ----- Clear particles -----
+      function clearParticles() {
+        particles = [];
+        particleCount.textContent = '✦ 0 particles';
+        status.textContent = '🗑️ Cleared';
+        setTimeout(() => {
+          status.textContent = '🎨 Click Splash or the canvas to explode color!';
+        }, 1000);
+      }
+
+      // ----- Toggle -----
+      function toggleSplash() {
+        isActive = !isActive;
+        toggleBtn.textContent = isActive ? '💡 Toggle' : '💡 Off';
+        splashStatus.textContent = isActive ? '🎨 Active' : '🌑 Inactive';
+        status.textContent = isActive ? '🎨 Splash active' : '🌑 Splash paused';
+      }
+
+      // ----- Reset -----
+      function resetSplash() {
+        particles = [];
+        isActive = true;
+        toggleBtn.textContent = '💡 Toggle';
+        splashStatus.textContent = '🎨 Active';
+        particleCount.textContent = '✦ 0 particles';
+        countSlider.value = 150;
+        countValue.textContent = '150';
+        forceSlider.value = 5;
+        forceValue.textContent = '5×';
+        sizeSlider.value = 4;
+        sizeValue.textContent = '4×';
+        vibrancySlider.value = 80;
+        vibrancyValue.textContent = '80%';
+        status.textContent = '↺ Reset';
+        setTimeout(() => {
+          status.textContent = '🎨 Click Splash or the canvas to explode color!';
+        }, 500);
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Update and draw particles
+        if (isActive) {
+          particles = particles.filter(p => p.update());
+        }
+        particles.forEach(p => p.draw(ctx));
+
+        // Update count
+        particleCount.textContent = `✦ ${particles.length} particles`;
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      // Mouse clicks
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        createSplash(x, y);
+      });
+
+      // Touch support
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left) * scaleX;
+        const y = (touch.clientY - rect.top) * scaleY;
+        createSplash(x, y);
+      });
+
+      // Buttons
+      splashBtn.addEventListener('click', () => createSplash());
+      clearBtn.addEventListener('click', clearParticles);
+      toggleBtn.addEventListener('click', toggleSplash);
+      resetBtn.addEventListener('click', resetSplash);
+
+      // Sliders
+      countSlider.addEventListener('input', (e) => {
+        countValue.textContent = e.target.value;
+      });
+
+      forceSlider.addEventListener('input', (e) => {
+        forceValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + '×';
+      });
+
+      vibrancySlider.addEventListener('input', (e) => {
+        vibrancyValue.textContent = e.target.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          createSplash();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearParticles();
+        }
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleSplash();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetSplash();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          createSplash();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '🎨 Click Splash or the canvas to explode color!';
+        // Create initial splash
+        setTimeout(() => {
+          const w = canvas.width;
+          const h = canvas.height;
+          createSplash(w / 2, h / 2);
+        }, 300);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

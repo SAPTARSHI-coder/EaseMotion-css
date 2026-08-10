@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warp Speed Tunnel</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Warp Speed Tunnel</h1>
+        <p class="subtitle">Zooming through star tunnel like warp drive</p>
+
+        <div class="tunnel-wrapper">
+            <canvas id="tunnelCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🚀 Warping through space</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('tunnelCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let stars = [];
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let numStars = 300;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 70%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== STAR CLASS =====
+        class Star {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const maxDim = Math.max(w, h);
+                
+                this.x = (Math.random() - 0.5) * w * 2;
+                this.y = (Math.random() - 0.5) * h * 2;
+                this.z = Math.random() * maxDim;
+                this.maxZ = maxDim;
+                this.size = 1 + Math.random() * 2;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.angle = Math.random() * Math.PI * 2;
+                this.offsetX = (Math.random() - 0.5) * 100;
+                this.offsetY = (Math.random() - 0.5) * 100;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.colorOffset = Math.random();
+                this.trail = [];
+                this.maxTrail = 3 + Math.floor(Math.random() * 5);
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+            }
+
+            update(speed) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const maxDim = Math.max(w, h);
+                
+                // Move star toward viewer
+                this.z -= this.speed * speed * 20;
+                this.pulsePhase += this.pulseSpeed * speed * 5;
+                this.rotation += this.rotSpeed * speed * 5;
+
+                // Wobble
+                this.x += Math.sin(this.pulsePhase * 0.5) * 0.02 * speed * 10;
+                this.y += Math.cos(this.pulsePhase * 0.7) * 0.02 * speed * 10;
+
+                // Reset if behind viewer
+                if (this.z < 0) {
+                    this.z = maxDim + Math.random() * maxDim;
+                    this.x = (Math.random() - 0.5) * w * 2;
+                    this.y = (Math.random() - 0.5) * h * 2;
+                    this.size = 1 + Math.random() * 2;
+                }
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, z: this.z });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx, time) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const maxDim = Math.max(w, h);
+
+                // Perspective projection
+                const perspective = 500;
+                const scale = perspective / (perspective + this.z);
+                const x = cx + this.x * scale;
+                const y = cy + this.y * scale;
+                const size = this.size * scale * (0.5 + 0.5 * Math.sin(this.pulsePhase));
+
+                // Color
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.colorOffset);
+
+                // Glow
+                const glowSize = size * 3 * (0.5 + 0.5 * Math.sin(this.pulsePhase * 0.5));
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                grad.addColorStop(0, color + '60');
+                grad.addColorStop(0.5, color + '30');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.6;
+                ctx.fill();
+
+                // Star shape
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(this.rotation);
+                ctx.scale(scale, scale);
+
+                const starSize = size * 0.8;
+                const spikes = 4 + Math.floor(Math.random() * 2);
+                
+                // Draw star or circle
+                if (spikes > 4) {
+                    ctx.beginPath();
+                    for (let i = 0; i < spikes * 2; i++) {
+                        const angle = (i / (spikes * 2)) * Math.PI * 2;
+                        const r = i % 2 === 0 ? starSize : starSize * 0.4;
+                        const px = Math.cos(angle) * r;
+                        const py = Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = color;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = color + '80';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, starSize, 0, Math.PI * 2);
+                    const grad2 = ctx.createRadialGradient(
+                        -starSize * 0.2, -starSize * 0.2, 0,
+                        0, 0, starSize
+                    );
+                    grad2.addColorStop(0, '#ffffff');
+                    grad2.addColorStop(0.3, color);
+                    grad2.addColorStop(1, color + '80');
+                    ctx.fillStyle = grad2;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = color + '60';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.restore();
+                ctx.globalAlpha = 1;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailScale = perspective / (perspective + t.z);
+                    const tx = cx + t.x * trailScale;
+                    const ty = cy + t.y * trailScale;
+                    const trailAlpha = (i / this.trail.length) * 0.15;
+                    const trailSize = this.size * trailScale * (0.1 + (i / this.trail.length) * 0.3);
+                    
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+            }
+        }
+
+        // ===== INIT STARS =====
+        function initStars(count) {
+            stars = [];
+            numStars = count || 300;
+            for (let i = 0; i < numStars; i++) {
+                stars.push(new Star());
+            }
+        }
+        initStars(300);
+
+        // ===== DRAW TUNNEL =====
+        function drawTunnel(ctx, w, h) {
+            // Center glow
+            const cx = w / 2;
+            const cy = h / 2;
+            const maxDim = Math.max(w, h);
+            
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxDim * 0.6);
+            grad.addColorStop(0, 'rgba(100, 150, 255, 0.02)');
+            grad.addColorStop(0.3, 'rgba(50, 100, 255, 0.01)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Tunnel rings
+            const numRings = 12;
+            for (let i = 0; i < numRings; i++) {
+                const t = i / numRings;
+                const radius = maxDim * (0.1 + t * 0.5);
+                const alpha = 0.02 + t * 0.01;
+                const zOffset = time * speed * 20 * 0.5;
+                const ringPhase = (i / numRings) * Math.PI * 2 + zOffset;
+                
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.02) {
+                    const wave = Math.sin(a * 6 + ringPhase) * 5;
+                    const r = radius + wave;
+                    const x = cx + Math.cos(a) * r;
+                    const y = cy + Math.sin(a) * r;
+                    if (a === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(0.5);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '30';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Speed lines
+            for (let i = 0; i < 20; i++) {
+                const angle = (i / 20) * Math.PI * 2 + time * 0.005 * speed * 20;
+                const dist = maxDim * 0.1 + Math.sin(time * 0.01 + i) * maxDim * 0.05;
+                const length = maxDim * (0.1 + Math.sin(time * 0.02 + i * 0.5) * 0.05);
+                const x1 = cx + Math.cos(angle) * dist;
+                const y1 = cy + Math.sin(angle) * dist;
+                const x2 = cx + Math.cos(angle) * (dist + length);
+                const y2 = cy + Math.sin(angle) * (dist + length);
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                const colorFn2 = colorModes[colorMode].fn;
+                const color2 = colorFn2((i / 20 + time * 0.01) % 1);
+                ctx.strokeStyle = color2;
+                ctx.globalAlpha = 0.05 + 0.05 * Math.sin(time * 0.02 + i);
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color2 + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Clear
+            ctx.clearRect(0, 0, w, h);
+
+            // Background
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Update and draw stars
+            for (const star of stars) {
+                star.update(speed);
+                star.draw(ctx, time);
+            }
+
+            // Draw tunnel
+            drawTunnel(ctx, w, h);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🚀 ${colorModes[colorMode].name} • ${speeds[speedLevel].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🚀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🚀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initStars(300);
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🚀 ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle pause (optional)
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initStars(numStars);
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🚀 ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🚀 Warp Speed Tunnel loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>

@@ -496,7 +496,7 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 ### ✅ কন্ট্রিবিউটররা যা করেন
 
 ```
-✅ সঠিক ট্র্যাক ফোল্ডারে অবদান জমা দিন (submissions/examples/, submissions/react/, বা submissions/scss/)
+✅ সঠিক ট্র্যাক ফোল্ডারে অবদান জমা দিন (submissions/examples/, submissions/react/, submissions/scss/, বা submissions/docs/)
 ✅ ট্র্যাক অনুযায়ী প্রয়োজনীয় ফাইল রাখুন (যেমন React-এর জন্য JSX + README, SCSS-এর জন্য SCSS + README, অথবা Standard-এর জন্য HTML + CSS + README)
 ✅ নামকরণের সংঘাত এড়াতে নামের শেষে ছোট ইউনিক সাফিক্স যুক্ত করুন (যেমন: ease-component-yourid)
 ✅ কমিট স্কোয়াশ (Squash) করে গিট হিস্ট্রি পরিষ্কার রাখুন

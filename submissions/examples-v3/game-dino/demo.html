@@ -1,0 +1,336 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dino Game · bro</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="300"></canvas>
+    <div id="uiOverlay">
+      <div id="scoreBoard">🏆 <span id="scoreDisplay">0</span></div>
+      <div id="gameOverlay">
+        <div id="startMessage">🐾 PRESS SPACE / TAP TO START</div>
+        <div id="gameOverMessage" style="display: none;">💀 GAME OVER<br /><span id="finalScore">0</span><br />🔄 PRESS SPACE</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== DINO GAME – all JavaScript embedded ==========
+    (function() {
+      "use strict";
+
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreSpan = document.getElementById('scoreDisplay');
+      const startMsg = document.getElementById('startMessage');
+      const gameOverMsg = document.getElementById('gameOverMessage');
+      const finalScoreSpan = document.getElementById('finalScore');
+
+      const GROUND_Y = 260;
+      const DINO_W = 28;
+      const DINO_H = 38;
+      const DINO_X = 60;
+
+      let gameActive = false;
+      let gameOver = false;
+      let score = 0;
+      let frame = 0;
+
+      const dino = {
+        x: DINO_X,
+        y: GROUND_Y - DINO_H,
+        w: DINO_W,
+        h: DINO_H,
+        vy: 0,
+        gravity: 0.6,
+        jumpPower: -10,
+        grounded: true
+      };
+
+      let obstacles = [];
+      const OBSTACLE_SPEED = 5.5;
+      const MIN_OBS_H = 22;
+      const MAX_OBS_H = 44;
+      const OBS_WIDTH = 18;
+
+      let clouds = [];
+
+      function resetGame() {
+        dino.y = GROUND_Y - DINO_H;
+        dino.vy = 0;
+        dino.grounded = true;
+        obstacles = [];
+        score = 0;
+        frame = 0;
+        gameOver = false;
+        gameActive = true;
+        gameOverMsg.style.display = 'none';
+        startMsg.style.display = 'none';
+        scoreSpan.textContent = '0';
+        clouds = [];
+        for (let i = 0; i < 5; i++) {
+          clouds.push({
+            x: Math.random() * 800,
+            y: 20 + Math.random() * 70,
+            size: 20 + Math.random() * 30,
+            speed: 0.3 + Math.random() * 0.4
+          });
+        }
+      }
+
+      function spawnObstacle() {
+        const height = MIN_OBS_H + Math.floor(Math.random() * (MAX_OBS_H - MIN_OBS_H + 1));
+        obstacles.push({
+          x: 820,
+          y: GROUND_Y - height,
+          w: OBS_WIDTH,
+          h: height,
+          type: 'cactus'
+        });
+      }
+
+      function checkCollision(rect1, rect2) {
+        return rect1.x < rect2.x + rect2.w &&
+               rect1.x + rect1.w > rect2.x &&
+               rect1.y < rect2.y + rect2.h &&
+               rect1.y + rect1.h > rect2.y;
+      }
+
+      function update() {
+        if (!gameActive || gameOver) return;
+
+        dino.vy += dino.gravity;
+        dino.y += dino.vy;
+
+        if (dino.y >= GROUND_Y - dino.h) {
+          dino.y = GROUND_Y - dino.h;
+          dino.vy = 0;
+          dino.grounded = true;
+        } else {
+          dino.grounded = false;
+        }
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const obs = obstacles[i];
+          obs.x -= OBSTACLE_SPEED;
+
+          if (obs.x + obs.w < 0) {
+            obstacles.splice(i, 1);
+            continue;
+          }
+
+          if (!gameOver && gameActive) {
+            const dinoRect = { x: dino.x + 4, y: dino.y + 4, w: dino.w - 8, h: dino.h - 6 };
+            const obsRect = { x: obs.x + 2, y: obs.y + 2, w: obs.w - 4, h: obs.h - 4 };
+            if (checkCollision(dinoRect, obsRect)) {
+              gameOver = true;
+              gameActive = false;
+              finalScoreSpan.textContent = score;
+              gameOverMsg.style.display = 'block';
+              return;
+            }
+          }
+        }
+
+        score++;
+        scoreSpan.textContent = Math.floor(score / 8);
+
+        if (frame % 70 === 0 && obstacles.length < 4) {
+          if (Math.random() < 0.6) {
+            spawnObstacle();
+          }
+        }
+
+        for (let c of clouds) {
+          c.x -= c.speed * 0.6;
+          if (c.x + c.size < 0) {
+            c.x = 820 + Math.random() * 100;
+            c.y = 20 + Math.random() * 70;
+            c.size = 20 + Math.random() * 30;
+          }
+        }
+
+        frame++;
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, 800, 300);
+
+        const grad = ctx.createLinearGradient(0, 0, 0, 300);
+        grad.addColorStop(0, '#d4e6fa');
+        grad.addColorStop(0.7, '#ebf3fc');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 800, 300);
+
+        ctx.fillStyle = 'rgba(255,255,245,0.7)';
+        for (let c of clouds) {
+          ctx.beginPath();
+          ctx.ellipse(c.x, c.y, c.size * 0.7, c.size * 0.3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(c.x - c.size * 0.4, c.y - 4, c.size * 0.5, c.size * 0.25, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(c.x + c.size * 0.4, c.y - 2, c.size * 0.4, c.size * 0.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.fillStyle = '#8baa7a';
+        ctx.fillRect(0, GROUND_Y, 800, 6);
+        ctx.fillStyle = '#6d8f5a';
+        ctx.fillRect(0, GROUND_Y + 4, 800, 20);
+        ctx.fillStyle = '#5d7e4a';
+        for (let i = 0; i < 800; i += 25) {
+          const xOff = (i + frame * 0.5) % 800;
+          ctx.fillRect(xOff, GROUND_Y - 3, 3, 6);
+          ctx.fillRect(xOff + 7, GROUND_Y - 5, 2, 8);
+        }
+
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 4;
+        for (let obs of obstacles) {
+          ctx.fillStyle = '#2b5e2b';
+          ctx.shadowOffsetY = 2;
+          ctx.beginPath();
+          ctx.roundRect(obs.x, obs.y, obs.w, obs.h, 4);
+          ctx.fill();
+          ctx.fillStyle = '#3f7a3f';
+          for (let s = 0; s < obs.h - 6; s += 10) {
+            ctx.fillRect(obs.x - 2, obs.y + 4 + s, 3, 4);
+            ctx.fillRect(obs.x + obs.w - 1, obs.y + 6 + s, 3, 4);
+          }
+          ctx.fillStyle = '#c7d66b';
+          ctx.beginPath();
+          ctx.arc(obs.x + obs.w/2, obs.y + 4, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+
+        ctx.fillStyle = '#3e3e3e';
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetY = 2;
+        ctx.beginPath();
+        ctx.roundRect(dino.x, dino.y, dino.w, dino.h, 6);
+        ctx.fill();
+        ctx.fillStyle = '#6d6d6d';
+        ctx.beginPath();
+        ctx.roundRect(dino.x + 4, dino.y + 6, dino.w - 8, dino.h - 12, 4);
+        ctx.fill();
+        ctx.fillStyle = '#f5f9ff';
+        ctx.beginPath();
+        ctx.arc(dino.x + dino.w - 8, dino.y + 10, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#111';
+        ctx.beginPath();
+        ctx.arc(dino.x + dino.w - 6, dino.y + 9, 2.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(dino.x + dino.w - 4, dino.y + 7, 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#222';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(dino.x + dino.w - 5, dino.y + 18, 4, 0.1, Math.PI - 0.1);
+        ctx.stroke();
+        ctx.fillStyle = '#2c2c2c';
+        const legOff = (dino.grounded && gameActive) ? Math.sin(frame * 0.2) * 2 : 0;
+        ctx.fillRect(dino.x + 4, dino.y + dino.h - 4, 6, 6 + legOff);
+        ctx.fillRect(dino.x + dino.w - 10, dino.y + dino.h - 4, 6, 6 - legOff);
+        ctx.fillStyle = '#3e3e3e';
+        ctx.beginPath();
+        ctx.moveTo(dino.x - 2, dino.y + 14);
+        ctx.lineTo(dino.x - 10, dino.y + 6);
+        ctx.lineTo(dino.x - 6, dino.y + 20);
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+
+        if (gameOver) {
+          ctx.fillStyle = 'rgba(30,20,20,0.2)';
+          ctx.fillRect(0, 0, 800, 300);
+        }
+      }
+
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        return this;
+      };
+
+      function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+      }
+
+      function handleJump(e) {
+        if (e.type === 'keydown') {
+          if (e.key !== ' ' && e.key !== 'Space') return;
+          e.preventDefault();
+        } else {
+          e.preventDefault();
+        }
+
+        if (!gameActive && !gameOver) {
+          resetGame();
+          return;
+        }
+
+        if (gameOver) {
+          resetGame();
+          return;
+        }
+
+        if (dino.grounded && gameActive) {
+          dino.vy = dino.jumpPower;
+          dino.grounded = false;
+        }
+      }
+
+      window.addEventListener('keydown', handleJump);
+      canvas.addEventListener('click', handleJump);
+      canvas.addEventListener('touchstart', handleJump, { passive: false });
+
+      window.addEventListener('keyup', (e) => {
+        if (e.key === ' ' || e.key === 'Space') e.preventDefault();
+      });
+
+      gameActive = false;
+      gameOver = false;
+      dino.y = GROUND_Y - DINO_H;
+      startMsg.style.display = 'block';
+      gameOverMsg.style.display = 'none';
+      scoreSpan.textContent = '0';
+      for (let i = 0; i < 5; i++) {
+        clouds.push({
+          x: Math.random() * 800,
+          y: 20 + Math.random() * 70,
+          size: 20 + Math.random() * 30,
+          speed: 0.3 + Math.random() * 0.4
+        });
+      }
+
+      gameLoop();
+    })();
+  </script>
+</body>
+</html>

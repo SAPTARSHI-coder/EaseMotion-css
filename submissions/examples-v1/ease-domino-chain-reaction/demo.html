@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Domino Chain Reaction</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Domino Chain Reaction</h1>
+        <p class="subtitle">Dominos falling in sequence when first is clicked</p>
+
+        <div class="domino-wrapper">
+            <canvas id="dominoCanvas"></canvas>
+
+            <div class="controls">
+                <button id="triggerBtn">🎯 Trigger</button>
+                <button id="countBtn">Count: 20</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click to start chain reaction</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('dominoCanvas');
+        const ctx = canvas.getContext('2d');
+        const triggerBtn = document.getElementById('triggerBtn');
+        const countBtn = document.getElementById('countBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let dominos = [];
+        let numDominos = 20;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isChainReaction = false;
+        let chainProgress = 0;
+        let particles = [];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (i, total, time) => {
+                    const hue = 200 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (i, total, time) => {
+                    const hue = 20 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (i, total, time) => {
+                    const hue = 250 + (i / total) * 50 + Math.sin(time * 0.02 + i * 0.1) * 15;
+                    return `hsl(${hue}, 80%, ${40 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (i, total, time) => {
+                    const val = 40 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [8, 12, 16, 20, 25, 30, 40];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 8;
+                this.vy = (Math.random() - 0.5) * 8 - 3;
+                this.size = 1 + Math.random() * 3;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${Math.random() * 360}, 80%, 60%)`;
+                this.gravity = 0.1 + Math.random() * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DOMINO CLASS =====
+        class Domino {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.x = 0;
+                this.y = 0;
+                this.width = 12;
+                this.height = 30;
+                this.angle = 0;
+                this.targetAngle = 0;
+                this.velocity = 0;
+                this.falling = false;
+                this.fallen = false;
+                this.phase = 0;
+                this.color = '';
+                this.shadowOffset = 0;
+                this.hitTime = 0;
+                this.bounceVelocity = 0;
+                
+                // Position
+                const spacing = 18;
+                const totalWidth = (total - 1) * spacing;
+                const startX = (canvas.width - totalWidth) / 2;
+                this.x = startX + index * spacing;
+                this.y = canvas.height * 0.5 + 10;
+                
+                // Height variation for wave effect
+                this.heightOffset = Math.sin(index * 0.5) * 5;
+                
+                // Color
+                this.updateColor();
+                
+                // Random phase for idle animation
+                this.idlePhase = Math.random() * Math.PI * 2;
+                this.idleSpeed = 0.005 + Math.random() * 0.01;
+            }
+
+            updateColor() {
+                const colorFn = colorModes[colorMode].fn;
+                this.color = colorFn(this.index, this.total, time);
+            }
+
+            update(time) {
+                // Idle sway
+                if (!this.falling && !this.fallen) {
+                    this.idlePhase += this.idleSpeed;
+                    this.angle = Math.sin(this.idlePhase) * 0.005;
+                    return;
+                }
+
+                if (this.falling) {
+                    // Physics
+                    const gravity = 0.04;
+                    const damping = 0.95;
+                    
+                    this.velocity += gravity;
+                    this.velocity *= damping;
+                    this.angle += this.velocity;
+                    
+                    // Speed up if hit
+                    if (this.hitTime > 0) {
+                        this.hitTime -= 0.02;
+                        this.velocity += 0.02;
+                    }
+                    
+                    // Check if fallen
+                    if (this.angle >= Math.PI / 2) {
+                        this.angle = Math.PI / 2;
+                        this.falling = false;
+                        this.fallen = true;
+                        this.velocity = 0;
+                        // Create particles
+                        this.createParticles();
+                    }
+                }
+            }
+
+            createParticles() {
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.index, this.total, time);
+                const numParticles = 5 + Math.floor(Math.random() * 8);
+                const x = this.x + Math.cos(this.angle) * this.height * 0.3;
+                const y = this.y + Math.sin(this.angle) * this.height * 0.3;
+                for (let i = 0; i < numParticles; i++) {
+                    const p = new Particle(x, y, color);
+                    p.vx += (Math.random() - 0.5) * 2;
+                    p.vy += (Math.random() - 0.5) * 2 - 2;
+                    particles.push(p);
+                }
+            }
+
+            draw(ctx) {
+                const x = this.x;
+                const y = this.y + this.heightOffset;
+                const angle = this.angle;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+
+                // Shadow
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+
+                // Domino body
+                const w = this.width;
+                const h = this.height;
+
+                // Main body
+                const grad = ctx.createLinearGradient(-w/2, -h/2, w/2, h/2);
+                grad.addColorStop(0, this.color);
+                grad.addColorStop(0.5, this.color);
+                grad.addColorStop(1, this.color + '80');
+                
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                
+                // Rounded rect
+                const r = 2;
+                ctx.beginPath();
+                ctx.moveTo(-w/2 + r, -h/2);
+                ctx.lineTo(w/2 - r, -h/2);
+                ctx.quadraticCurveTo(w/2, -h/2, w/2, -h/2 + r);
+                ctx.lineTo(w/2, h/2 - r);
+                ctx.quadraticCurveTo(w/2, h/2, w/2 - r, h/2);
+                ctx.lineTo(-w/2 + r, h/2);
+                ctx.quadraticCurveTo(-w/2, h/2, -w/2, h/2 - r);
+                ctx.lineTo(-w/2, -h/2 + r);
+                ctx.quadraticCurveTo(-w/2, -h/2, -w/2 + r, -h/2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Border
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = this.color + '60';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+
+                // Dots (like real domino)
+                const dotColor = 'rgba(255,255,255,0.3)';
+                const dotSize = 3;
+                
+                // Center dot
+                ctx.beginPath();
+                ctx.arc(0, 0, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = dotColor;
+                ctx.fill();
+
+                // Top dots
+                for (let i = -1; i <= 1; i += 2) {
+                    ctx.beginPath();
+                    ctx.arc(i * 4, -8, dotSize * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Bottom dots
+                for (let i = -1; i <= 1; i += 2) {
+                    ctx.beginPath();
+                    ctx.arc(i * 4, 8, dotSize * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Index number
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.index + 1, 0, 0);
+
+                // Top highlight
+                if (!this.fallen) {
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.moveTo(-w/2 + 2, -h/2 + 2);
+                    ctx.lineTo(w/2 - 2, -h/2 + 2);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.restore();
+
+                // Glow on fall
+                if (this.falling && this.angle > 0.3) {
+                    const glowSize = 30 + this.angle * 20;
+                    const grad2 = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                    grad2.addColorStop(0, this.color + '30');
+                    grad2.addColorStop(1, this.color + '00');
+                    ctx.beginPath();
+                    ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                    ctx.fillStyle = grad2;
+                    ctx.fill();
+                }
+            }
+
+            isFallen() {
+                return this.fallen;
+            }
+
+            isFalling() {
+                return this.falling;
+            }
+
+            startFalling() {
+                if (!this.falling && !this.fallen) {
+                    this.falling = true;
+                    this.velocity = 0.05;
+                    this.hitTime = 0.5;
+                }
+            }
+        }
+
+        // ===== INIT DOMINOS =====
+        function initDominos(count) {
+            numDominos = count;
+            dominos = [];
+            for (let i = 0; i < count; i++) {
+                const d = new Domino(i, count);
+                dominos.push(d);
+            }
+            isChainReaction = false;
+            chainProgress = 0;
+            particles = [];
+        }
+        initDominos(numDominos);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground surface
+            const groundY = h * 0.5 + 50;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 60, 40, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 60, 40, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 60, 40, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 60, 40, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+        }
+
+        // ===== TRIGGER CHAIN REACTION =====
+        function triggerChain() {
+            if (isChainReaction) return;
+            
+            // Reset if all fallen
+            if (dominos.every(d => d.isFallen())) {
+                resetDominos();
+                setTimeout(() => triggerChain(), 300);
+                return;
+            }
+
+            isChainReaction = true;
+            chainProgress = 0;
+            statusText.textContent = '🌀 Chain reaction!';
+            
+            // Find first standing domino
+            let firstIndex = -1;
+            for (let i = 0; i < dominos.length; i++) {
+                if (!dominos[i].isFallen() && !dominos[i].isFalling()) {
+                    firstIndex = i;
+                    break;
+                }
+            }
+            
+            if (firstIndex === -1) {
+                isChainReaction = false;
+                statusText.textContent = '🎯 All fallen! Click reset';
+                return;
+            }
+            
+            // Start chain
+            startChain(firstIndex);
+        }
+
+        function startChain(startIndex) {
+            let currentIndex = startIndex;
+            
+            function fallNext() {
+                if (currentIndex >= dominos.length) {
+                    isChainReaction = false;
+                    statusText.textContent = '🎯 Chain complete!';
+                    return;
+                }
+                
+                const domino = dominos[currentIndex];
+                if (!domino.isFallen() && !domino.isFalling()) {
+                    domino.startFalling();
+                    
+                    // Create impact particles
+                    const colorFn = colorModes[colorMode].fn;
+                    const color = colorFn(currentIndex, dominos.length, time);
+                    for (let i = 0; i < 5; i++) {
+                        const p = new Particle(
+                            domino.x + (Math.random() - 0.5) * 10,
+                            domino.y + (Math.random() - 0.5) * 10,
+                            color
+                        );
+                        p.vx += (Math.random() - 0.5) * 3;
+                        p.vy += (Math.random() - 0.5) * 3 - 2;
+                        particles.push(p);
+                    }
+                    
+                    // Check if next domino should fall
+                    const delay = 150 + Math.random() * 50;
+                    setTimeout(() => {
+                        currentIndex++;
+                        fallNext();
+                    }, delay);
+                } else {
+                    currentIndex++;
+                    fallNext();
+                }
+            }
+            
+            fallNext();
+        }
+
+        // ===== RESET DOMINOS =====
+        function resetDominos() {
+            initDominos(numDominos);
+            isChainReaction = false;
+            chainProgress = 0;
+            particles = [];
+            statusText.textContent = '🌀 Click to start chain reaction';
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update dominos
+            for (const d of dominos) {
+                d.update(time);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw dominos
+            for (const d of dominos) {
+                d.draw(ctx);
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const standing = dominos.filter(d => !d.isFallen() && !d.isFalling()).length;
+                const falling = dominos.filter(d => d.isFalling()).length;
+                const fallen = dominos.filter(d => d.isFallen()).length;
+                if (isChainReaction) {
+                    statusText.textContent = `🌀 ${standing} standing • ${falling} falling • ${fallen} fallen`;
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Canvas click
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            // Check if click is on first standing domino
+            for (let i = 0; i < dominos.length; i++) {
+                const d = dominos[i];
+                if (!d.isFallen() && !d.isFalling()) {
+                    const dx = x - d.x;
+                    const dy = y - d.y;
+                    if (Math.abs(dx) < d.width && Math.abs(dy) < d.height) {
+                        triggerChain();
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            
+            for (let i = 0; i < dominos.length; i++) {
+                const d = dominos[i];
+                if (!d.isFallen() && !d.isFalling()) {
+                    const dx = x - d.x;
+                    const dy = y - d.y;
+                    if (Math.abs(dx) < d.width && Math.abs(dy) < d.height) {
+                        triggerChain();
+                        break;
+                    }
+                }
+            }
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Trigger
+        triggerBtn.addEventListener('click', triggerChain);
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numDominos);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Count: ${newCount}`;
+            initDominos(newCount);
+            statusText.textContent = `📐 ${newCount} dominos`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to start chain reaction';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            for (const d of dominos) {
+                d.updateColor();
+            }
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to start chain reaction';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetDominos);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                triggerBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                triggerBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initDominos(numDominos);
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Count: ${numDominos}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = '🌀 Click to start chain reaction';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Domino Chain Reaction loaded!');
+        console.log('💡 T - Trigger chain');
+        console.log('💡 C - Change count');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Trigger');
+        console.log('💡 Click first domino to start');
+    </script>
+</body>
+</html>

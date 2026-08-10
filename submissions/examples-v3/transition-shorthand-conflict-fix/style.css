@@ -1,0 +1,153 @@
+/* ==========================================================================
+   EaseMotion CSS — ease-transition Shorthand Conflict Fix
+   Issue #30485
+
+   THE PROBLEM:
+   The .ease-transition utility set the `transition` SHORTHAND property
+   (e.g. transition: all 300ms ease;). Some components separately
+   declared individual LONGHAND transition properties (transition-property,
+   transition-duration, transition-timing-function) on the same element.
+   CSS shorthand properties reset ALL of their longhand sub-properties to
+   their initial value when applied — so whichever rule (shorthand or
+   longhand) came later in the cascade silently wiped out the other's
+   intent. A component's custom cubic-bezier easing could vanish entirely
+   if a shorthand utility was applied after it, or a utility's intended
+   duration could be reverted by a component's own shorthand.
+
+   THE FIX:
+   1. NEVER use the `transition` shorthand in either utilities or
+      component defaults. Every transition-related declaration uses the
+      LONGHAND properties exclusively: transition-property,
+      transition-duration, transition-timing-function, transition-delay.
+   2. Because longhand properties only ever affect their own single
+      sub-property, a utility setting transition-duration and a
+      component setting transition-property no longer collide at all —
+      they're entirely orthogonal and compose freely regardless of
+      cascade order.
+   3. Cascade layers (components < utilities) are still used for the
+      cases where TWO rules genuinely target the SAME longhand property
+      (e.g. two different duration utilities), consistent with the
+      pattern from the #30483 and #30484 fixes.
+   ========================================================================== */
+
+@layer base, components, utilities;
+
+@layer base {
+  :root {
+    --ease-duration-base: 350ms;
+    --ease-duration-fast: 150ms;
+    --ease-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-ease-custom: cubic-bezier(0.34, 1.56, 0.64, 1); /* bouncy overshoot */
+
+    --ease-bg: #0f0f17;
+    --ease-surface: #1a1a26;
+    --ease-border: #2a2a3a;
+    --ease-text: #e8e8f0;
+    --ease-text-dim: #9a9ab0;
+    --ease-accent: #7c5cff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--ease-bg);
+    color: var(--ease-text);
+  }
+
+  .demo-header { padding: 60px 32px 20px; max-width: 800px; }
+  .demo-header h1 { margin: 0 0 12px; font-size: 1.55rem; }
+  .demo-header p, .demo-content p { color: var(--ease-text-dim); line-height: 1.7; }
+  .demo-header code {
+    background: var(--ease-surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    border: 1px solid var(--ease-border);
+  }
+  .demo-content { padding: 0 32px 60px; max-width: 800px; }
+  .demo-block {
+    margin-bottom: 28px;
+    padding: 20px;
+    background: var(--ease-surface);
+    border: 1px solid var(--ease-border);
+    border-radius: 12px;
+  }
+  .demo-block h2 { margin: 0 0 8px; font-size: 1.05rem; }
+  .prop-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    font-family: monospace;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .prop-list strong { color: var(--ease-accent); }
+}
+
+@layer components {
+  .ease-card {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ease-bg);
+    border: 1px solid var(--ease-border);
+    border-radius: 10px;
+    padding: 24px 32px;
+    color: var(--ease-text);
+    font-size: 0.9rem;
+    cursor: default;
+  }
+
+  /* ---- OLD / BROKEN approach, recreated only to show the bug ----
+     Card uses the transition SHORTHAND for color, then a component
+     rule tries to add a longhand transform transition — but because
+     the shorthand was declared, it already reset transition-property
+     to a single value ('background-color'), so the transform change
+     below jumps instantly with no easing. This block exists purely
+     for side-by-side comparison; it is NOT the recommended pattern. */
+  .conflict-demo-old {
+    transition: background-color 300ms ease; /* shorthand: resets ALL sub-properties */
+    transition-property: transform; /* attempt to add transform — gets overwritten below by source order, this is the bug */
+  }
+
+  .conflict-demo-old:hover {
+    background-color: #2a2a3a;
+    transform: scale(1.05);
+  }
+
+  /* ---- FIXED approach: longhand only, fully composable ---- */
+  .ease-transition {
+    transition-property: background-color, transform;
+    transition-duration: var(--ease-duration-base);
+    transition-timing-function: var(--ease-ease-standard);
+  }
+
+  .ease-transition--custom-easing {
+    /* a component can override JUST the easing curve, without
+       touching transition-property or transition-duration at all,
+       because shorthand is never used anywhere */
+    transition-timing-function: var(--ease-ease-custom);
+  }
+
+  .ease-transition:hover {
+    background-color: #2a2a3a;
+    transform: scale(1.05);
+  }
+}
+
+@layer utilities {
+  /* Example duration utility — only touches transition-duration,
+     never the shorthand, so it composes cleanly with any component's
+     transition-property / transition-timing-function declarations */
+  .ease-speed-fast {
+    transition-duration: var(--ease-duration-fast);
+  }
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content { padding-left: 20px; padding-right: 20px; }
+}

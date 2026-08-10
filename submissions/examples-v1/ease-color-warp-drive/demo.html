@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Warp Drive</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Color Warp Drive</h1>
+        <p class="subtitle">Rainbow spectrum that bends and twists like spacetime</p>
+
+        <div class="warp-wrapper">
+            <canvas id="warpCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="twistBtn">Twist: Medium</button>
+                <button id="modeBtn">Mode: Tunnel</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Warping spacetime</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('warpCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const twistBtn = document.getElementById('twistBtn');
+        const modeBtn = document.getElementById('modeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let time = 0;
+        let speed = 0.02;
+        let twist = 3;
+        let mode = 0; // 0: tunnel, 1: spiral, 2: wave, 3: vortex
+        let speedLevel = 1;
+        let twistLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let particles = [];
+        let numParticles = 200;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== TWIST OPTIONS =====
+        const twists = [
+            { name: 'Light', value: 1.5 },
+            { name: 'Medium', value: 3 },
+            { name: 'Heavy', value: 5 },
+            { name: 'Extreme', value: 8 },
+        ];
+
+        // ===== MODE OPTIONS =====
+        const modes = ['Tunnel', 'Spiral', 'Wave', 'Vortex'];
+
+        // ===== PARTICLE CLASS =====
+        class WarpParticle {
+            constructor() {
+                this.reset(true);
+            }
+
+            reset(initial = false) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const maxDim = Math.max(w, h);
+                
+                this.distance = initial ? Math.random() * maxDim * 0.8 : 0;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 0.5 + Math.random() * 1.5;
+                this.size = 1 + Math.random() * 3;
+                this.offset = Math.random() * Math.PI * 2;
+                this.z = Math.random() * 100;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.hueOffset = Math.random() * 360;
+                this.alpha = 0.3 + Math.random() * 0.7;
+            }
+
+            update(time, speed, twist, mode) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const maxDim = Math.max(w, h);
+                const cx = w / 2;
+                const cy = h / 2;
+
+                this.distance += this.speed * speed * 2;
+                this.angle += 0.01 * speed * 10;
+                this.pulse = 0.5 + 0.5 * Math.sin(time * 0.02 + this.offset);
+
+                // Mode-specific behavior
+                switch(mode) {
+                    case 0: // Tunnel
+                        this.angle += (this.distance / maxDim) * twist * 0.02;
+                        break;
+                    case 1: // Spiral
+                        this.angle += twist * 0.015;
+                        this.distance += Math.sin(time * 0.01 + this.offset) * 0.5;
+                        break;
+                    case 2: // Wave
+                        this.angle += 0.005;
+                        const waveOffset = Math.sin(this.distance * 0.02 + time * 0.02 + this.offset) * twist * 0.3;
+                        this.angle += waveOffset * 0.01;
+                        break;
+                    case 3: // Vortex
+                        this.angle += (1 / (this.distance + 10)) * twist * 0.5;
+                        this.distance += Math.sin(time * 0.01 + this.offset) * 0.3;
+                        break;
+                }
+
+                // Reset if too far
+                if (this.distance > maxDim * 0.8) {
+                    this.distance = 2;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.hueOffset = Math.random() * 360;
+                }
+            }
+
+            draw(ctx, time, mode) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+
+                const x = cx + Math.cos(this.angle) * this.distance;
+                const y = cy + Math.sin(this.angle) * this.distance;
+
+                // Color based on distance and angle
+                const hue = (this.angle / Math.PI * 180 + this.distance * 0.5 + this.hueOffset + time * 10) % 360;
+                const sat = 80 + 20 * this.pulse;
+                const light = 50 + 30 * this.pulse;
+                const alpha = this.alpha * (0.5 + 0.5 * (1 - this.distance / Math.max(w, h) * 0.8));
+
+                // Size variation
+                const size = this.size * (0.5 + 0.5 * (1 - this.distance / Math.max(w, h) * 0.8));
+
+                // Glow effect
+                ctx.beginPath();
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
+                grad.addColorStop(0, `hsla(${hue}, 100%, 70%, ${alpha * 0.8})`);
+                grad.addColorStop(0.3, `hsla(${hue + 20}, 100%, 60%, ${alpha * 0.4})`);
+                grad.addColorStop(1, `hsla(${hue + 40}, 100%, 50%, 0)`);
+                ctx.fillStyle = grad;
+                ctx.arc(x, y, size * 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Core particle
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${alpha})`;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = `hsla(${hue}, 100%, 70%, ${alpha * 0.5})`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Trail
+                if (mode !== 2) {
+                    const trailLen = 3 + Math.floor(this.pulse * 3);
+                    for (let i = 1; i < trailLen; i++) {
+                        const trailDist = this.distance - i * 3;
+                        if (trailDist > 0) {
+                            const tx = cx + Math.cos(this.angle - i * 0.05) * trailDist;
+                            const ty = cy + Math.sin(this.angle - i * 0.05) * trailDist;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, size * (1 - i / trailLen) * 0.5, 0, Math.PI * 2);
+                            ctx.fillStyle = `hsla(${hue + i * 5}, 100%, 60%, ${alpha * 0.2 * (1 - i / trailLen)})`;
+                            ctx.fill();
+                        }
+                    }
+                }
+            }
+        }
+
+        // ===== INIT PARTICLES =====
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new WarpParticle());
+            }
+        }
+        initParticles();
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h, time) {
+            // Dark gradient background
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a2e');
+            grad.addColorStop(0.5, '#060618');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid lines for depth
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 20; i++) {
+                const dist = (i / 20) * Math.max(w, h) * 0.4;
+                const angleOffset = time * 0.01 * (1 + i * 0.05);
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.05) {
+                    const r = dist + Math.sin(a * 3 + time * 0.02 + i) * 10;
+                    const x = w/2 + Math.cos(a + angleOffset) * r;
+                    const y = h/2 + Math.sin(a + angleOffset) * r;
+                    if (a === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+        }
+
+        // ===== RENDER LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Draw background
+            drawBackground(ctx, w, h, time);
+
+            // Update and draw particles
+            for (const p of particles) {
+                p.update(time, speed, twist, mode);
+                p.draw(ctx, time, mode);
+            }
+
+            // Center glow
+            const centerGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, 50);
+            centerGrad.addColorStop(0, 'rgba(255,255,255,0.1)');
+            centerGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = centerGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Warp speed lines (center to edges)
+            for (let i = 0; i < 30; i++) {
+                const angle = (i / 30) * Math.PI * 2 + time * 0.005;
+                const startDist = 10 + Math.sin(time * 0.02 + i) * 5;
+                const endDist = 50 + Math.sin(time * 0.03 + i * 2) * 20;
+                const hue = (angle / Math.PI * 180 + time * 20) % 360;
+                
+                ctx.beginPath();
+                ctx.moveTo(w/2 + Math.cos(angle) * startDist, h/2 + Math.sin(angle) * startDist);
+                ctx.lineTo(w/2 + Math.cos(angle) * endDist, h/2 + Math.sin(angle) * endDist);
+                ctx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.05)`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Update time
+            time += speed;
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${modes[mode]} mode • ${twists[twistLevel].name} twist`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${modes[mode]} mode`;
+            }, 1000);
+        });
+
+        // Twist
+        twistBtn.addEventListener('click', () => {
+            twistLevel = (twistLevel + 1) % twists.length;
+            twist = twists[twistLevel].value;
+            twistBtn.textContent = `Twist: ${twists[twistLevel].name}`;
+            statusText.textContent = `🌀 ${twists[twistLevel].name} twist`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${modes[mode]} mode`;
+            }, 1000);
+        });
+
+        // Mode
+        modeBtn.addEventListener('click', () => {
+            mode = (mode + 1) % modes.length;
+            modeBtn.textContent = `Mode: ${modes[mode]}`;
+            // Reset particles for new mode
+            initParticles();
+            statusText.textContent = `🌀 ${modes[mode]} mode`;
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            twistLevel = 1;
+            twist = twists[1].value;
+            mode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            twistBtn.textContent = `Twist: ${twists[1].name}`;
+            modeBtn.textContent = `Mode: ${modes[0]}`;
+            initParticles();
+            statusText.textContent = '↩️ Reset';
+            
+            setTimeout(() => {
+                statusText.textContent = '🌀 Tunnel mode';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 't' || e.key === 'T') {
+                twistBtn.click();
+            }
+            if (e.key === 'm' || e.key === 'M') {
+                modeBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                modeBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initParticles();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        twistBtn.textContent = `Twist: ${twists[1].name}`;
+        modeBtn.textContent = `Mode: ${modes[0]}`;
+        statusText.textContent = '🌀 Tunnel mode';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Color Warp Drive loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 T - Change twist');
+        console.log('💡 M - Change mode');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Cycle modes');
+    </script>
+</body>
+</html>

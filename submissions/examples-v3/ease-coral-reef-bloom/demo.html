@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Coral Reef Bloom</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Coral Reef Bloom</h1>
+        <p class="subtitle">Coral branches that pulse and extend with glowing polyps</p>
+
+        <div class="coral-wrapper">
+            <canvas id="coralCanvas"></canvas>
+
+            <div class="controls">
+                <button id="growBtn">🌊 Grow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🪸 Ready to bloom</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('coralCanvas');
+        const ctx = canvas.getContext('2d');
+        const growBtn = document.getElementById('growBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let coralBranches = [];
+        let polyps = [];
+        let particles = [];
+        let isGrowing = false;
+        let growthProgress = 0;
+        let speed = 0.005;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.002 },
+            { name: 'Normal', value: 0.005 },
+            { name: 'Fast', value: 0.01 },
+            { name: 'Very Fast', value: 0.02 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 80%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t, time) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 70%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t, time) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02 + t * 2) * 10;
+                    return `hsl(${hue}, 80%, ${50 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t, time) => {
+                    const hue = (t * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t, time) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02 + t * 2) * 15;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+        ];
+
+        // ===== CORAL BRANCH CLASS =====
+        class CoralBranch {
+            constructor(x, y, parent, angle, length, thickness, depth) {
+                this.x = x;
+                this.y = y;
+                this.parent = parent;
+                this.angle = angle || -Math.PI / 2 + (Math.random() - 0.5) * 0.5;
+                this.length = length || 8 + Math.random() * 12;
+                this.thickness = thickness || 3 + Math.random() * 3;
+                this.depth = depth || 0;
+                this.children = [];
+                this.grown = 0;
+                this.targetGrown = 1;
+                this.isTip = true;
+                this.endX = x;
+                this.endY = y;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.branchChance = 0.15 + Math.random() * 0.1;
+                this.hasPolyp = false;
+                this.polypSize = 3 + Math.random() * 5;
+                this.polypColor = Math.random();
+                this.age = 0;
+                this.maxAge = 200 + Math.random() * 300;
+                this.curlAmount = 0.2 + Math.random() * 0.3;
+                this.curlSpeed = 0.01 + Math.random() * 0.02;
+                this.hasBranched = false;
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                this.pulsePhase += this.pulseSpeed * speed * 5;
+
+                // Growth
+                if (this.grown < this.targetGrown) {
+                    this.grown += speed * 1.5;
+                    if (this.grown > this.targetGrown) this.grown = this.targetGrown;
+                }
+
+                // Curling
+                const curl = Math.sin(time * this.curlSpeed + this.age * 0.01) * this.curlAmount * 0.02;
+                this.angle += curl;
+
+                // Calculate end position
+                const grownLength = this.length * this.grown;
+                this.endX = this.x + Math.cos(this.angle) * grownLength;
+                this.endY = this.y + Math.sin(this.angle) * grownLength;
+
+                // Boundary
+                const margin = 20;
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.endX < margin) this.angle += 0.05;
+                if (this.endX > w - margin) this.angle -= 0.05;
+                if (this.endY < margin) this.angle += 0.05;
+                if (this.endY > h - margin) this.angle -= 0.05;
+
+                // Update children
+                for (const child of this.children) {
+                    child.update(time, speed);
+                }
+
+                // Branching
+                if (!this.hasBranched && this.grown > 0.4 && this.age > 30 && this.depth < 5) {
+                    if (Math.random() < this.branchChance * speed * 30) {
+                        this.branch();
+                    }
+                }
+
+                // Polyp generation
+                if (!this.hasPolyp && this.grown > 0.6 && Math.random() < 0.005 * speed * 20) {
+                    this.hasPolyp = true;
+                    const polyp = new Polyp(
+                        this.endX,
+                        this.endY,
+                        this.polypSize,
+                        this.polypColor,
+                        this.angle + Math.PI / 2
+                    );
+                    polyps.push(polyp);
+                }
+
+                // Spawn particles
+                if (this.grown > 0.8 && Math.random() < 0.002 * speed * 20) {
+                    particles.push(new Particle(
+                        this.endX + (Math.random() - 0.5) * 5,
+                        this.endY + (Math.random() - 0.5) * 5,
+                        this.polypColor
+                    ));
+                }
+            }
+
+            branch() {
+                this.hasBranched = true;
+                const numBranches = 1 + Math.floor(Math.random() * 2);
+                
+                for (let i = 0; i < numBranches; i++) {
+                    const branchAngle = this.angle + (Math.random() - 0.5) * 1.2;
+                    const branchLength = this.length * (0.6 + Math.random() * 0.4);
+                    const branchThickness = this.thickness * (0.5 + Math.random() * 0.3);
+                    const child = new CoralBranch(
+                        this.endX,
+                        this.endY,
+                        this,
+                        branchAngle,
+                        branchLength,
+                        branchThickness,
+                        this.depth + 1
+                    );
+                    child.branchChance = 0.2 + Math.random() * 0.1;
+                    child.curlAmount = 0.2 + Math.random() * 0.4;
+                    child.curlSpeed = 0.01 + Math.random() * 0.02;
+                    child.polypSize = this.polypSize * (0.7 + Math.random() * 0.3);
+                    child.polypColor = (this.polypColor + (Math.random() - 0.5) * 0.3) % 1;
+                    this.children.push(child);
+                }
+            }
+
+            draw(ctx, time) {
+                if (this.grown <= 0) return;
+
+                const pulse = 0.7 + 0.3 * Math.sin(this.pulsePhase);
+                const currentThickness = this.thickness * (0.3 + 0.7 * this.grown) * pulse;
+
+                // Draw branch
+                const grad = ctx.createLinearGradient(this.x, this.y, this.endX, this.endY);
+                const colorFn = colorModes[colorMode].fn;
+                const color1 = colorFn(this.polypColor, time);
+                const color2 = colorFn((this.polypColor + 0.3) % 1, time);
+                grad.addColorStop(0, color1);
+                grad.addColorStop(1, color2);
+
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.endX, this.endY);
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = currentThickness;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color1 + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Glow at tip
+                if (this.grown > 0.9) {
+                    const glowSize = currentThickness * 3 * pulse;
+                    const glowGrad = ctx.createRadialGradient(
+                        this.endX, this.endY, 0,
+                        this.endX, this.endY, glowSize
+                    );
+                    glowGrad.addColorStop(0, color2 + '60');
+                    glowGrad.addColorStop(1, color2 + '00');
+                    ctx.beginPath();
+                    ctx.arc(this.endX, this.endY, glowSize, 0, Math.PI * 2);
+                    ctx.fillStyle = glowGrad;
+                    ctx.fill();
+                }
+
+                // Draw children
+                for (const child of this.children) {
+                    child.draw(ctx, time);
+                }
+            }
+
+            getEndPosition() {
+                return { x: this.endX, y: this.endY };
+            }
+        }
+
+        // ===== POLYP CLASS =====
+        class Polyp {
+            constructor(x, y, size, colorOffset, angle) {
+                this.x = x;
+                this.y = y;
+                this.size = size || 3 + Math.random() * 5;
+                this.colorOffset = colorOffset || Math.random();
+                this.angle = angle || Math.random() * Math.PI * 2;
+                this.growth = 0;
+                this.targetGrowth = 1;
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.03 + Math.random() * 0.04;
+                this.life = 1;
+                this.age = 0;
+                this.maxAge = 400 + Math.random() * 600;
+                this.tentacles = 5 + Math.floor(Math.random() * 5);
+                this.tentacleLength = this.size * (0.8 + Math.random() * 0.6);
+            }
+
+            update(time, speed) {
+                this.age += speed * 2;
+                this.pulsePhase += this.pulseSpeed * speed * 5;
+
+                if (this.growth < this.targetGrowth) {
+                    this.growth += speed * 1.5;
+                    if (this.growth > this.targetGrowth) this.growth = this.targetGrowth;
+                }
+
+                this.life = Math.max(0, 1 - this.age / this.maxAge);
+            }
+
+            draw(ctx, time) {
+                if (this.life <= 0 || this.growth <= 0) return;
+
+                const pulse = 0.6 + 0.4 * Math.sin(this.pulsePhase);
+                const currentSize = this.size * this.growth * this.life * (0.8 + 0.2 * pulse);
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn((this.colorOffset + time * 0.01) % 1, time);
+
+                // Glow
+                const glowSize = currentSize * 4 * pulse;
+                const glowGrad = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                glowGrad.addColorStop(0, color + '80');
+                glowGrad.addColorStop(0.5, color + '30');
+                glowGrad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = glowGrad;
+                ctx.fill();
+
+                // Tentacles
+                for (let i = 0; i < this.tentacles; i++) {
+                    const tAngle = (i / this.tentacles) * Math.PI * 2 + this.pulsePhase * 0.5;
+                    const tLength = this.tentacleLength * this.growth * (0.7 + 0.3 * pulse);
+                    const wave = Math.sin(time * 0.03 + this.pulsePhase + i) * 2;
+
+                    const tx = this.x + Math.cos(tAngle) * tLength + Math.cos(tAngle + Math.PI / 2) * wave;
+                    const ty = this.y + Math.sin(tAngle) * tLength + Math.sin(tAngle + Math.PI / 2) * wave;
+
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y);
+                    const midX = this.x + Math.cos(tAngle) * tLength * 0.5 + Math.cos(tAngle + Math.PI / 2) * wave * 0.5;
+                    const midY = this.y + Math.sin(tAngle) * tLength * 0.5 + Math.sin(tAngle + Math.PI / 2) * wave * 0.5;
+                    ctx.quadraticCurveTo(midX, midY, tx, ty);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 0.5 + pulse * 0.5;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = color + '60';
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+
+                    // Tentacle tip glow
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, 1 + pulse * 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = color + '80';
+                    ctx.fill();
+                }
+
+                // Main body
+                const bodyGrad = ctx.createRadialGradient(
+                    this.x - currentSize * 0.2, this.y - currentSize * 0.2, 0,
+                    this.x, this.y, currentSize
+                );
+                bodyGrad.addColorStop(0, '#ffffff' + '60');
+                bodyGrad.addColorStop(0.3, color + '80');
+                bodyGrad.addColorStop(0.7, color + '60');
+                bodyGrad.addColorStop(1, color + '20');
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, currentSize, 0, Math.PI * 2);
+                ctx.fillStyle = bodyGrad;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Center bright spot
+                ctx.beginPath();
+                ctx.arc(this.x - currentSize * 0.2, this.y - currentSize * 0.2, currentSize * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+        }
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, colorOffset) {
+                this.x = x;
+                this.y = y;
+                this.colorOffset = colorOffset || Math.random();
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5 - 0.3;
+                this.size = 1 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 60 + Math.random() * 100;
+                this.age = 0;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.life = Math.max(0, 1 - this.age / this.maxLife);
+            }
+
+            draw(ctx, time) {
+                if (this.life <= 0) return;
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn((this.colorOffset + time * 0.01) % 1, time);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== INIT CORAL =====
+        function initCoral() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const startX = w * 0.5 + (Math.random() - 0.5) * 50;
+            const startY = h * 0.85;
+
+            coralBranches = [];
+            polyps = [];
+            particles = [];
+
+            const root = new CoralBranch(startX, startY, null, -Math.PI / 2, 15 + Math.random() * 10, 5 + Math.random() * 3, 0);
+            root.branchChance = 0.25;
+            root.targetGrown = 1;
+            coralBranches.push(root);
+
+            growthProgress = 0;
+            isGrowing = false;
+        }
+        initCoral();
+
+        // ===== GROW CORAL =====
+        function growCoral() {
+            if (isGrowing) return;
+            isGrowing = true;
+            statusText.textContent = '🌊 Growing...';
+
+            growBranches(coralBranches);
+
+            setTimeout(() => {
+                isGrowing = false;
+                statusText.textContent = '🪸 Blooming!';
+                setTimeout(() => {
+                    statusText.textContent = '🪸 Ready to bloom';
+                }, 1500);
+            }, 500);
+        }
+
+        function growBranches(branches) {
+            for (const branch of branches) {
+                if (branch.isTip && branch.grown >= branch.targetGrown && branch.depth < 6) {
+                    const numNew = 1 + Math.floor(Math.random() * 2);
+                    for (let i = 0; i < numNew; i++) {
+                        const newAngle = branch.angle + (Math.random() - 0.5) * 1.0;
+                        const newLength = branch.length * (0.7 + Math.random() * 0.4);
+                        const newThickness = branch.thickness * (0.6 + Math.random() * 0.3);
+                        const child = new CoralBranch(
+                            branch.endX,
+                            branch.endY,
+                            branch,
+                            newAngle,
+                            newLength,
+                            newThickness,
+                            branch.depth + 1
+                        );
+                        child.branchChance = 0.2 + Math.random() * 0.1;
+                        child.curlAmount = 0.2 + Math.random() * 0.4;
+                        child.curlSpeed = 0.01 + Math.random() * 0.02;
+                        child.polypSize = branch.polypSize * (0.7 + Math.random() * 0.3);
+                        child.polypColor = (branch.polypColor + (Math.random() - 0.5) * 0.3) % 1;
+                        branch.children.push(child);
+                        coralBranches.push(child);
+                        branch.isTip = false;
+                    }
+                }
+
+                if (branch.children.length > 0) {
+                    growBranches(branch.children);
+                }
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h * 0.7, 0, w/2, h * 0.7, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a2e');
+            grad.addColorStop(0.5, '#061020');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Sandy bottom
+            const sandGrad = ctx.createLinearGradient(0, h * 0.85, 0, h);
+            sandGrad.addColorStop(0, 'rgba(30, 50, 30, 0)');
+            sandGrad.addColorStop(0.5, 'rgba(40, 60, 40, 0.1)');
+            sandGrad.addColorStop(1, 'rgba(50, 70, 50, 0.2)');
+            ctx.fillStyle = sandGrad;
+            ctx.fillRect(0, h * 0.85, w, h * 0.15);
+
+            // Water particles
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(i * 0.5 + time * 0.01) * 10;
+                const y = h * 0.2 + Math.sin(i * 0.7 + time * 0.015) * 50;
+                const size = 1 + Math.sin(i * 0.3) * 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.03 + Math.sin(i + time * 0.02) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update and draw coral
+            for (const branch of coralBranches) {
+                branch.update(time, speed);
+                branch.draw(ctx, time);
+            }
+
+            // Update and draw polyps
+            for (let i = polyps.length - 1; i >= 0; i--) {
+                const polyp = polyps[i];
+                polyp.update(time, speed);
+                polyp.draw(ctx, time);
+                if (polyp.life <= 0) {
+                    polyps.splice(i, 1);
+                }
+            }
+
+            // Update and draw particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.update();
+                particle.draw(ctx, time);
+                if (particle.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const branchCount = coralBranches.length;
+                const polypCount = polyps.length;
+                const particleCount = particles.length;
+                statusText.textContent = `🪸 ${branchCount} branches • ${polypCount} polyps • ${particleCount} particles`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Grow
+        growBtn.addEventListener('click', growCoral);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🪸 Ready to bloom';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🪸 Ready to bloom';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initCoral();
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🪸 Ready to bloom';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                growBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                growBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initCoral();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = '🪸 Ready to bloom';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🪸 Coral Reef Bloom loaded!');
+        console.log('💡 G - Grow coral');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Quick grow');
+    </script>
+</body>
+</html>

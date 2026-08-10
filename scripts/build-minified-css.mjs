@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { watch } from "node:fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -174,7 +175,51 @@ async function build() {
   console.log(JSON.stringify(summary, null, 2));
 }
 
-build().catch((error) => {
-  console.error('Build failed:', error);
-  process.exitCode = 1;
-});
+const isWatch = process.argv.includes("--watch") || process.argv.includes("-w");
+
+if (isWatch) {
+  console.log("Watching for changes in CSS files...");
+  
+  // Initial build
+  try {
+    await build();
+  } catch (err) {
+    console.error("Initial build failed:", err.message);
+  }
+  
+  const watchDirs = [
+    path.join(rootDir, "core"),
+    path.join(rootDir, "components"),
+    path.join(rootDir, "easemotion"),
+    entryFile
+  ];
+  
+  let debounceTimeout;
+  const onChange = (eventType, filename) => {
+    if (filename && filename.endsWith(".css")) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(async () => {
+        console.log(`\n[watch] File change detected: ${filename}. Rebuilding...`);
+        try {
+          await build();
+        } catch (err) {
+          console.error("[watch] Rebuild failed:", err.message);
+        }
+      }, 100);
+    }
+  };
+
+  watchDirs.forEach(dir => {
+    try {
+      watch(dir, { recursive: true }, onChange);
+    } catch (err) {
+      // Fallback for single files or OS-specific limits
+      watch(dir, onChange);
+    }
+  });
+} else {
+  build().catch((error) => {
+    console.error('Build failed:', error);
+    process.exitCode = 1;
+  });
+}

@@ -70,10 +70,18 @@ This is what separates EaseMotion CSS from a collection of snippets. The curatio
 | Animation-first motion library | ✅ v1.0 |
 | Curated contribution pipeline | ✅ v1.0 |
 | Component library (buttons, cards) | ✅ v1.0 |
+| CDN distribution | ✅ v1.1 |
+| npm package | ✅ v1.1 |
+| Motion Engine (em= DSL, runtime, optimizer) | ✅ v1.2 |
+| Interactive animation playground | ✅ v1.2 |
+| Performance benchmarks & CI tracking | ✅ v1.2 |
+| ESM exports map + tree-shaking | ✅ v1.2 |
 | Form components | 🔜 Planned |
 | Dark mode tokens | 🔜 Planned |
-| CDN distribution | 🔜 Planned |
-| npm package | 🔜 Planned |
+| FPS benchmark (Puppeteer CI) | 🔜 v1.3 |
+| Contributor tier sections in README | 🔜 v1.3 |
+| SCSS plugin for motion engine | 🔜 Future |
+| Framework integrations (React, Vue, Astro) | 🔜 Future |
 
 ---
 
@@ -103,25 +111,24 @@ GitHub: [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)
 
 ## 🚀 Short-Term Roadmap (Next 3 Months)
 
-### v1.1 Goals
-- Form components (inputs, checkboxes, toggles)
-- Better responsive utilities
-- Additional hover animations
-- Improved accessibility defaults
-- Expanded documentation examples
+### v1.2 — ✅ Shipped (2026-07-08)
+- Motion Engine: `em=""` attribute DSL, parser/compiler/runtime/optimizer
+- Interactive animation playground (GitHub Pages, zero deps)
+- Bundle size benchmarks & CI integration
+- Full ESM `exports` map for tree-shaking bundlers
+- 61-test suite (up from 32)
 
-### v1.2 Goals
-- Modal and tooltip components
-- Navigation utilities
-- CSS-only accordion and tabs
-- More card variants
-- Animation performance optimizations
+### v1.3 Goals
+- FPS benchmark via Puppeteer in CI (headless Chrome)
+- Contributor tier sections in README (Engineering / Architecture / Community)
+- `prefers-reduced-motion` audit across all contributions
+- SCSS mixin layer for motion engine
+- Scroll-triggered animation plugin (`easemotion/plugins/scroll-trigger.js`)
 
 ### Developer Experience
-- Better onboarding documentation
-- More live demos and examples
-- Expanded contribution guides
-- CDN usage improvements
+- Public playground URL prominently linked from README
+- Migration guide: v1.1 → v1.2
+- Engine cookbook with real-world usage patterns
 
 ---
 
