@@ -1,30 +1,16 @@
-# Ease Drop Hammer Forge
+# Drop Hammer Forge
 
-A CSS-only animated industrial drop hammer forge component for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-drop-hammer-forge` demo: Industrial drop hammer falling onto hot metal.
 
-## Overview
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-drop-hammer-forge`. No build step or JavaScript is required for the effect.
 
-`ease-drop-hammer-forge` recreates an industrial forging machine where a heavy hammer drops onto heated metal using pure CSS animations.
+```html
+<section class="ease-drop-hammer-forge">
+  <div class="ease-drop-hammer-forge__housing">...</div>
+</section>
+```
 
-## Features
-
-- Pure CSS animation
-- No JavaScript dependency
-- Industrial forge themed UI
-- Animated hammer impact
-- Hot metal glow effect
-- Spark burst animation
-- Responsive layout
-- Reduced motion support
-
-
-## Animations
-
-Implemented animations:
-
-```css
-@keyframes drop_hammer_forge_motion
-
-@keyframes metal_heat_pulse
-
-@keyframes spark_burst
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
