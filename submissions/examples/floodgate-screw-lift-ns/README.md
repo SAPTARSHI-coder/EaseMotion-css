@@ -1,24 +1,16 @@
-# Ease Floodgate Screw Lift
+# Floodgate Screw Lift
 
-A CSS-only animated floodgate screw lifting mechanism created for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-floodgate-screw-lift` demo: Canal floodgate screw lifting the timber gate.
 
-## Overview
-
-`ease-floodgate-screw-lift` simulates a canal floodgate system where a rotating screw mechanism lifts a wooden gate using pure CSS animations.
-
-## Features
-
-- Pure CSS animation
-- No JavaScript dependency
-- Real-world engineering themed UI
-- Rotating screw mechanism
-- Animated gate lifting
-- Water movement effect
-- Responsive layout
-- Reduced motion support
-
-## Usage
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-floodgate-screw-lift`. No build step or JavaScript is required for the effect.
 
 ```html
-<div class="ease-floodgate-screw-lift">
-</div>
+<section class="ease-floodgate-screw-lift">
+  <div class="ease-floodgate-screw-lift__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
