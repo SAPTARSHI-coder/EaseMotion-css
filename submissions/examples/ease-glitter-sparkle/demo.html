@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glitter Sparkle · sparkles like glitter when touched</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="glitter-container">
+      <div class="glitter-display" id="glitterDisplay">
+        <!-- Canvas for glitter effect -->
+        <canvas id="glitterCanvas"></canvas>
+        
+        <!-- Glitter particles overlay -->
+        <div class="glitter-overlay" id="glitterOverlay"></div>
+        
+        <!-- Info -->
+        <div class="glitter-info">
+          <span class="info-label">✨ Sparkles</span>
+          <span class="info-value" id="sparkleCount">0</span>
+        </div>
+
+        <!-- Glitter Text -->
+        <div class="glitter-text">
+          <span class="text-label">✨ Glitter</span>
+          <span class="text-message" id="glitterMessage">Touch or click to sparkle</span>
+        </div>
+      </div>
+      
+      <div class="glitter-status">
+        <span id="glitterStatus">✨ Touch or click to make glitter sparkle</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-mode" id="modeBtn">🎨 Toggle Style</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>✨ glitter sparkles · 4 styles · shimmering particles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('glitterCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('glitterDisplay');
+      const overlay = document.getElementById('glitterOverlay');
+      const sparkleCount = document.getElementById('sparkleCount');
+      const glitterStatus = document.getElementById('glitterStatus');
+      const glitterMessage = document.getElementById('glitterMessage');
+      const modeBtn = document.getElementById('modeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+
+      // State
+      let sparkleCounter = 0;
+      let styleIndex = 0;
+      let particles = [];
+      let animationId = null;
+      let isActive = false;
+
+      // Styles
+      const styles = [
+        {
+          name: 'Rainbow',
+          colors: ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'],
+          shimmer: 'rgba(255,255,255,0.3)',
+          sizeRange: [2, 8]
+        },
+        {
+          name: 'Gold',
+          colors: ['#fbbf24', '#f59e0b', '#fcd34d', '#fde68a', '#ffd700'],
+          shimmer: 'rgba(255,215,0,0.3)',
+          sizeRange: [3, 10]
+        },
+        {
+          name: 'Silver',
+          colors: ['#cbd5e1', '#e2e8f0', '#f1f5f9', '#94a3b8', '#ffffff'],
+          shimmer: 'rgba(255,255,255,0.4)',
+          sizeRange: [2, 9]
+        },
+        {
+          name: 'Holographic',
+          colors: ['#818cf8', '#a78bfa', '#f472b6', '#34d399', '#fbbf24', '#60a5fa'],
+          shimmer: 'rgba(167,139,250,0.3)',
+          sizeRange: [3, 11]
+        }
+      ];
+
+      // Glitter particle class
+      class GlitterParticle {
+        constructor(x, y, style) {
+          const styleData = styles[styleIndex];
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.size = styleData.sizeRange[0] + Math.random() * (styleData.sizeRange[1] - styleData.sizeRange[0]);
+          this.color = styleData.colors[Math.floor(Math.random() * styleData.colors.length)];
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+          this.opacity = 0.5 + Math.random() * 0.5;
+          this.life = 1;
+          this.maxLife = 1 + Math.random() * 1.5;
+          this.velocityX = (Math.random() - 0.5) * 4;
+          this.velocityY = (Math.random() - 0.5) * 4 - 2;
+          this.gravity = 0.02 + Math.random() * 0.03;
+          this.friction = 0.98;
+          this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+          this.shimmer = 0.5 + Math.random() * 0.5;
+          this.shimmerSpeed = 0.02 + Math.random() * 0.03;
+          this.shimmerPhase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.x += this.velocityX;
+          this.velocityY += this.gravity;
+          this.y += this.velocityY;
+          this.velocityX *= this.friction;
+          this.velocityY *= this.friction;
+          this.rotation += this.rotationSpeed;
+          this.life -= 0.008;
+          this.shimmerPhase += this.shimmerSpeed;
+          this.shimmer = 0.5 + Math.sin(this.shimmerPhase) * 0.5;
+          return this.life > 0;
+        }
+
+        draw(ctx) {
+          const alpha = this.opacity * this.life * (0.5 + this.shimmer * 0.5);
+          const size = this.size * (0.8 + this.shimmer * 0.3);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          
+          // Glow effect
+          const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+          glow.addColorStop(0, this.color);
+          glow.addColorStop(0.3, this.color);
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Main shape
+          if (this.shape === 'star') {
+            // Star shape
+            const points = 5;
+            const outerRadius = size;
+            const innerRadius = size * 0.4;
+            ctx.beginPath();
+            for (let i = 0; i < points * 2; i++) {
+              const radius = i % 2 === 0 ? outerRadius : innerRadius;
+              const angle = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+              const x = Math.cos(angle) * radius;
+              const y = Math.sin(angle) * radius;
+              if (i === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = this.color;
+            ctx.fill();
+            
+            // Highlight
+            ctx.globalAlpha = alpha * 0.3;
+            ctx.beginPath();
+            ctx.arc(0, -size * 0.2, size * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+          } else {
+            // Circle with sparkle
+            const grad = ctx.createRadialGradient(-size*0.2, -size*0.2, 0, 0, 0, size);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.3, this.color);
+            grad.addColorStop(1, this.color);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(0, 0, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(30, 30, 50, 0.3)');
+        grad.addColorStop(1, 'rgba(10, 10, 26, 0.8)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Create sparkle burst
+      function createSparkleBurst(x, y, count = 40) {
+        const style = styles[styleIndex];
+        for (let i = 0; i < count; i++) {
+          const particle = new GlitterParticle(x, y, style);
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 1 + Math.random() * 4;
+          particle.velocityX = Math.cos(angle) * speed;
+          particle.velocityY = Math.sin(angle) * speed - 1;
+          particle.life = 0.5 + Math.random() * 0.5;
+          particles.push(particle);
+        }
+        
+        sparkleCounter += count;
+        sparkleCount.textContent = sparkleCounter;
+        
+        // Add some particles to overlay for extra sparkle
+        createOverlaySparkles(x, y, count / 2);
+      }
+
+      // Create overlay sparkles (CSS-based)
+      function createOverlaySparkles(x, y, count) {
+        const style = styles[styleIndex];
+        const rect = display.getBoundingClientRect();
+        
+        for (let i = 0; i < count; i++) {
+          const sparkle = document.createElement('div');
+          sparkle.className = 'overlay-sparkle';
+          
+          const size = 2 + Math.random() * 6;
+          const color = style.colors[Math.floor(Math.random() * style.colors.length)];
+          
+          sparkle.style.width = size + 'px';
+          sparkle.style.height = size + 'px';
+          sparkle.style.left = (x / canvas.width * 100) + '%';
+          sparkle.style.top = (y / canvas.height * 100) + '%';
+          sparkle.style.backgroundColor = color;
+          sparkle.style.boxShadow = `0 0 ${size * 2}px ${color}66, 0 0 ${size * 4}px ${color}33`;
+          
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 20 + Math.random() * 60;
+          sparkle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+          sparkle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+          
+          sparkle.style.animationDuration = (0.6 + Math.random() * 0.6) + 's';
+          sparkle.style.animationDelay = (Math.random() * 0.2) + 's';
+          
+          // Random shape
+          if (Math.random() > 0.5) {
+            sparkle.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
+            sparkle.style.borderRadius = '0';
+          } else {
+            sparkle.style.borderRadius = '50%';
+          }
+          
+          overlay.appendChild(sparkle);
+          
+          setTimeout(() => {
+            sparkle.remove();
+          }, 1500);
+        }
+      }
+
+      // Animate particles
+      function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        particles = particles.filter(p => p.update());
+        particles.forEach(p => p.draw(ctx));
+        
+        if (particles.length > 0 || isActive) {
+          animationId = requestAnimationFrame(animateParticles);
+        } else {
+          animationId = null;
+        }
+      }
+
+      // Trigger sparkle
+      function triggerSparkle(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const x = (clientX - rect.left) * (canvas.width / rect.width);
+        const y = (clientY - rect.top) * (canvas.height / rect.height);
+        
+        createSparkleBurst(x, y, 30 + Math.floor(Math.random() * 30));
+        
+        if (!animationId) {
+          animateParticles();
+        }
+        
+        glitterStatus.textContent = '✨ Sparkling!';
+        glitterStatus.style.color = '#fbbf24';
+        glitterMessage.textContent = '✨ Sparkling! ✨';
+        glitterMessage.style.color = '#fbbf24';
+        
+        setTimeout(() => {
+          glitterStatus.textContent = '✨ Touch or click to make glitter sparkle';
+          glitterStatus.style.color = '#94a3b8';
+          glitterMessage.textContent = 'Touch or click to sparkle';
+          glitterMessage.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Toggle style
+      function toggleStyle() {
+        styleIndex = (styleIndex + 1) % styles.length;
+        const style = styles[styleIndex];
+        modeBtn.textContent = `🎨 ${style.name}`;
+        
+        // Update existing particles
+        particles.forEach(p => {
+          p.color = style.colors[Math.floor(Math.random() * style.colors.length)];
+          const range = style.sizeRange;
+          p.size = range[0] + Math.random() * (range[1] - range[0]);
+        });
+        
+        glitterStatus.textContent = `✨ Style: ${style.name}`;
+        glitterStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          glitterStatus.textContent = '✨ Touch or click to make glitter sparkle';
+          glitterStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear
+      function clearSparkles() {
+        particles = [];
+        overlay.innerHTML = '';
+        sparkleCounter = 0;
+        sparkleCount.textContent = '0';
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        drawBackground();
+        glitterStatus.textContent = '🧹 Cleared';
+        glitterStatus.style.color = '#94a3b8';
+        glitterMessage.textContent = 'Touch or click to sparkle';
+        glitterMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          glitterStatus.textContent = '✨ Touch or click to make glitter sparkle';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('click', triggerSparkle);
+      canvas.addEventListener('touchstart', triggerSparkle, { passive: false });
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleStyle();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearSparkles();
+        });
+      }
+
+      // Click on display
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          triggerSparkle(e);
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const rect = canvas.getBoundingClientRect();
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          createSparkleBurst(x, y, 40);
+          if (!animationId) animateParticles();
+          glitterStatus.textContent = '✨ Sparkling!';
+          glitterStatus.style.color = '#fbbf24';
+          setTimeout(() => {
+            glitterStatus.textContent = '✨ Touch or click to make glitter sparkle';
+            glitterStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 's' || key === 'S') {
+          e.preventDefault();
+          toggleStyle();
+        } else if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearSparkles();
+        }
+      });
+
+      // Initialize
+      resizeCanvas();
+      // Add some initial sparkles
+      setTimeout(() => {
+        for (let i = 0; i < 5; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          createSparkleBurst(x, y, 5);
+        }
+        if (particles.length > 0 && !animationId) {
+          animateParticles();
+        }
+      }, 500);
+
+      console.log('✨ Glitter Sparkle ready · shortcuts: [Space] Sparkle, [S] Style, [C] Clear');
+    })();
+  </script>
+</body>
+</html>
