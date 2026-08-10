@@ -1,55 +1,68 @@
-# Blur Entrance Carousel — Fintech Dashboard Layouts
+# CSS Blur-Entrance Carousel — Fintech Dashboard
 
-A CSS carousel component for fintech dashboards that reveals portfolio cards with a blur-to-sharp entrance animation. Cards slide into view with a progressive deblur effect, creating a premium feel for financial data displays.
+A **Blur-Entrance Carousel** for fintech dashboard layouts, built with pure **HTML, CSS and minimal JS**. Slides fade in from a blurred state to deliver a premium feel when navigating investment cards.
 
-## Type of Change
+---
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [x] Enhancement (improvement to existing feature or new feature)
+## Features
 
-## Submission Checklist
+- Smooth blur-to-clear entrance on each slide transition
+- Responsive design — stacks gracefully on mobile
+- CSS custom properties for quick theming
+- `prefers-reduced-motion` support
+- Semantic HTML with ARIA roles for screen readers
+- Lightweight — no external libraries
 
-- [x] I have performed a self-review of my code
-- [x] I have tested this component on multiple browsers (Chrome, Firefox, Edge)
-- [x] My code follows the style guidelines of this project
-- [x] I have added comments in hard-to-understand areas
-- [x] My changes generate no new warnings
-- [x] I have added tests that prove my fix is effective or that my feature works
-- [x] New and existing unit tests pass locally with my changes
+---
 
-## Feature Description
+## Folder Structure
 
-### What
-A carousel built with pure CSS transitions that applies a blur entrance effect to fintech dashboard cards. Each card starts blurred and slightly scaled down, then animates to full clarity as it enters the viewport. The component displays portfolio data cards (total balance, stocks, crypto, fixed income) in a scrollable carousel with navigation controls.
+```
+blur-entrance-carousel-fintech/
+├── demo.html
+├── style.css
+└── README.md
+```
 
-### How
-- Uses CSS `filter: blur()` transitioning from `12px` to `0` combined with `opacity` and `scale` transforms
-- JavaScript manages slide visibility, tracking position, and triggering blur-active class
-- Progressive delay: each card animates with a staggered timing for a cascading reveal
-- Responsive layout: 2 cards visible on desktop, 1 on mobile
-- Navigation via arrow buttons and dot indicators
+---
 
-### Why
-Financial dashboards benefit from smooth, professional entrance animations that convey trust and polish. The blur-to-sharp effect mimics a camera focusing, drawing attention to newly revealed data. This approach is lightweight (no JS animation libraries) and performs well on mobile devices.
+## Usage
 
-## Demo
+1. Open `demo.html` in any modern browser.
+2. Use the **‹** / **›** buttons to navigate between slides.
+3. Adjust colours and timing via the CSS custom properties in `style.css`.
 
-![Blur Entrance Carousel Demo](demo.gif)
+---
 
-View the live demo: [Open demo.html](demo.html)
+## Custom Properties
 
-## Browser Testing
+```css
+--bg: #0a0e1a;
+--surface: #121829;
+--accent: #3b82f6;
+--positive: #22c55e;
+--negative: #ef4444;
+--radius: 20px;
+--speed: 0.55s;
+```
 
-- [x] Chrome (latest)
-- [x] Firefox (latest)
-- [x] Edge (latest)
-- [ ] Safari (not tested)
+---
 
-## Notes
+## Accessibility
 
-- No external dependencies — pure CSS + vanilla JS
-- All transitions use `cubic-bezier` easing for natural motion
-- Cards have hover states with subtle border and shadow feedback
-- The component respects `prefers-reduced-motion` by keeping elements visible
+- `prefers-reduced-motion` disables all animations
+- ARIA `role="region"`, `aria-roledescription="carousel"` and per-slide labels
+- Keyboard-focusable navigation buttons
+- `:focus-visible` outlines on interactive elements
+
+---
+
+## Browser Support
+
+Chrome · Firefox · Edge · Safari (latest two versions)
+
+---
+
+## Technologies
+
+HTML5 · CSS3 · CSS Variables · Keyframe Animations · Vanilla JS
