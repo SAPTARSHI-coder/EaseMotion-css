@@ -1,33 +1,28 @@
 # Animated Pricing Cards
 
-## What does it do?
-SaaS pricing cards with hover elevation, glow, scaling, and entrance animations — pure CSS, no JavaScript.
+A responsive CSS-only pricing card component featuring smooth hover elevation
+and scale animations.
 
 ## Features
-- Staggered entrance animation via `animation-delay` on cards
-- Hover elevation with `translateY(-6px)`
-- Subtle glow via `box-shadow` on hover
-- Featured card with highlighted border and badge
-- CTA button scales on hover
-- Pure CSS, no JavaScript
+
+- Smooth hover elevation
+- Subtle card scaling
+- Featured/popular plan styling
+- Responsive layout
+- Keyboard focus support
+- Reduced-motion support
+- CSS custom properties
+- No JavaScript required
+
+## Files
+
+- `demo.html` — Pricing card demonstration
+- `style.css` — Component styling and animations
+- `README.md` — Documentation
 
 ## Usage
+
+Include the stylesheet:
+
 ```html
-<div class="pricing-grid">
-  <div class="pricing-card">
-    <h3 class="plan-name">Starter</h3>
-    <p class="plan-price">$9<span>/mo</span></p>
-    <ul class="plan-features">...</ul>
-    <button class="plan-btn">Get Started</button>
-  </div>
-</div>
-```
-
-## Browser Support
-- Chrome 1+, Firefox 3.5+, Safari 3.1+
-
-## Tech Stack
-- HTML + CSS only, no JavaScript
-
-## Preview
-Open `demo.html` directly in browser.
+<link rel="stylesheet" href="style.css">

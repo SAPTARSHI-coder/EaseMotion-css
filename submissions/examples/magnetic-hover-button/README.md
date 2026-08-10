@@ -1,22 +1,55 @@
 # Magnetic Hover Button
 
-## What it does
-A CTA button that **magnetically pulls toward the cursor** when nearby, using smooth CSS `transform` transitions driven by minimal JavaScript for position calculation.
+A button with a magnetic hover effect that follows the cursor using pure CSS.
 
-## Animations & Techniques
-- **Spring transform**: `cubic-bezier(0.23, 1, 0.32, 1)` on `translate` for elastic return.
-- **Hover scale**: Inner `.btn-bg` scales up on hover independently.
-- **Distance falloff**: JS applies weaker pull when cursor is farther away.
+## Features
 
-## Folder structure
+- Pure HTML & CSS
+- Magnetic attraction effect on hover
+- Subtle glow animation
+- CSS Custom Properties for theming
+- Accessible - respects prefers-reduced-motion
+- No JavaScript required
+
+## Folder
+
 ```
-animations/magnetic-hover-button/
-├── demo.html
-├── style.css
-├── README.md
-├── pr.txt
-└── issue.txt
+submissions/examples/magnetic-hover-button/
 ```
 
-## Why it fits EaseMotion CSS
-Pairs EaseMotion-style spring easing with a tactile micro-interaction — JS only sets transform values; all motion is CSS-animated.
+## Files
+
+- demo.html
+- style.css
+- README.md
+
+## Usage
+
+```html
+<link rel="stylesheet" href="style.css">
+```
+
+Use the wrapper and button structure:
+
+```html
+<div class="magnetic-wrap">
+    <button class="magnetic-btn">Hover Me</button>
+</div>
+```
+
+## Custom Properties
+
+```css
+:root {
+    --btn-bg: #1a1a1a;
+    --btn-border: #333;
+    --text: #fff;
+    --glow: #00d4aa;
+    --strength: 24px;
+    --ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+```
+
+## Accessibility
+
+Supports `prefers-reduced-motion` - transitions are disabled for users who prefer minimal motion.
