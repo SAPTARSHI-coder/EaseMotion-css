@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sphere Roll · rolls across surface</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="sphere-container">
+      <div class="sphere-display" id="sphereDisplay">
+        <!-- Surface -->
+        <div class="surface"></div>
+        
+        <!-- 3D Sphere -->
+        <div class="sphere-scene">
+          <div class="sphere" id="sphere">
+            <!-- Sphere highlights -->
+            <div class="sphere-highlight highlight-1"></div>
+            <div class="sphere-highlight highlight-2"></div>
+            <div class="sphere-glow"></div>
+          </div>
+        </div>
+
+        <!-- Position Indicator -->
+        <div class="position-indicator">
+          <div class="position-track">
+            <div class="position-dot" id="positionDot"></div>
+          </div>
+          <span class="position-value" id="positionValue">Position: 0%</span>
+        </div>
+      </div>
+      
+      <div class="sphere-status">
+        <span id="sphereStatus">⚪ Click or drag to roll the sphere</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-roll" id="rollBtn">⚪ Roll!</button>
+      <button class="btn btn-direction" id="directionBtn">🔄 Toggle Direction</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset Position</button>
+    </div>
+    <div class="footer-note">
+      <span>⚪ 3D sphere rolls · 3 directions · smooth physics</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const sphere = document.getElementById('sphere');
+      const positionDot = document.getElementById('positionDot');
+      const positionValue = document.getElementById('positionValue');
+      const sphereStatus = document.getElementById('sphereStatus');
+      const rollBtn = document.getElementById('rollBtn');
+      const directionBtn = document.getElementById('directionBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const sphereDisplay = document.getElementById('sphereDisplay');
+
+      // State
+      let position = 0; // 0 to 100
+      let targetPosition = 0;
+      let direction = 'right'; // right, left, bounce
+      let isRolling = false;
+      let animationId = null;
+      let rotationX = 0;
+      let rotationZ = 0;
+
+      // Direction configurations
+      const directions = {
+        right: {
+          label: 'Right',
+          icon: '➡️',
+          direction: 1
+        },
+        left: {
+          label: 'Left',
+          icon: '⬅️',
+          direction: -1
+        },
+        bounce: {
+          label: 'Bounce',
+          icon: '↔️',
+          direction: 0
+        }
+      };
+
+      // Update sphere
+      function updateSphere() {
+        // Smooth interpolation
+        position += (targetPosition - position) * 0.06;
+        
+        // Clamp position
+        position = Math.max(0, Math.min(100, position));
+
+        // Calculate sphere position on track
+        const displayWidth = sphereDisplay.clientWidth || 400;
+        const sphereSize = 60;
+        const trackPadding = 40;
+        const trackWidth = displayWidth - trackPadding * 2 - sphereSize;
+        const xPos = trackPadding + (position / 100) * trackWidth;
+
+        // Update sphere position
+        sphere.style.left = xPos + 'px';
+        sphere.style.top = '50%';
+
+        // Update rotation based on movement
+        const movement = position - (position - 0.06 * (targetPosition - position));
+        rotationX += movement * 3;
+        rotationZ += movement * 0.5;
+        
+        // Apply rotation to sphere
+        sphere.style.transform = `translateY(-50%) rotateX(${rotationX}deg) rotateZ(${rotationZ}deg)`;
+
+        // Update position dot
+        positionDot.style.left = position + '%';
+
+        // Update position value
+        const percent = Math.round(position);
+        positionValue.textContent = `Position: ${percent}%`;
+
+        // Update status based on position
+        if (position > 95) {
+          sphereStatus.textContent = '⚪ At the edge!';
+          sphereStatus.style.color = '#fbbf24';
+        } else if (position < 5) {
+          sphereStatus.textContent = '⚪ At the start!';
+          sphereStatus.style.color = '#fbbf24';
+        } else if (isRolling) {
+          sphereStatus.textContent = `⚪ Rolling ${direction}...`;
+          sphereStatus.style.color = '#818cf8';
+        } else {
+          sphereStatus.textContent = '⚪ Click or drag to roll the sphere';
+          sphereStatus.style.color = '#94a3b8';
+        }
+
+        // Update sphere glow based on position
+        const glowIntensity = 0.3 + (position / 100) * 0.4;
+        sphere.style.boxShadow = `0 0 ${30 + position * 0.5}px rgba(99, 102, 241, ${glowIntensity})`;
+      }
+
+      // Animation loop
+      function animate() {
+        if (isRolling) {
+          updateSphere();
+          animationId = requestAnimationFrame(animate);
+        }
+      }
+
+      // Start rolling
+      function startRolling() {
+        if (!isRolling) {
+          isRolling = true;
+          animate();
+        }
+      }
+
+      // Stop rolling
+      function stopRolling() {
+        if (isRolling) {
+          isRolling = false;
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          updateSphere();
+        }
+      }
+
+      // Roll sphere
+      function rollSphere() {
+        const dir = directions[direction];
+        if (dir.direction === 0) {
+          // Bounce mode - go to opposite side
+          if (position > 50) {
+            targetPosition = 0;
+          } else {
+            targetPosition = 100;
+          }
+        } else if (dir.direction === 1) {
+          // Roll right
+          if (position >= 100) {
+            targetPosition = 0;
+          } else {
+            targetPosition = Math.min(100, position + 40);
+          }
+        } else {
+          // Roll left
+          if (position <= 0) {
+            targetPosition = 100;
+          } else {
+            targetPosition = Math.max(0, position - 40);
+          }
+        }
+        
+        startRolling();
+        rollBtn.textContent = '⚪ Rolling...';
+        rollBtn.style.background = 'linear-gradient(135deg, #fbbf24, #f59e0b)';
+        rollBtn.style.borderColor = '#fcd34d';
+        
+        // Auto-stop after reaching target
+        setTimeout(() => {
+          if (isRolling) {
+            // Check if close to target
+            if (Math.abs(position - targetPosition) < 1) {
+              stopRolling();
+              rollBtn.textContent = '⚪ Roll!';
+              rollBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+              rollBtn.style.borderColor = '#818cf8';
+            }
+          }
+        }, 2000);
+      }
+
+      // Change direction
+      function changeDirection() {
+        const dirKeys = Object.keys(directions);
+        const currentIndex = dirKeys.indexOf(direction);
+        const nextIndex = (currentIndex + 1) % dirKeys.length;
+        direction = dirKeys[nextIndex];
+        
+        const dir = directions[direction];
+        directionBtn.textContent = `🔄 ${dir.icon} ${dir.label}`;
+        
+        sphereStatus.textContent = `🎯 Direction: ${dir.label}`;
+        sphereStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          if (!isRolling) {
+            sphereStatus.textContent = '⚪ Click or drag to roll the sphere';
+            sphereStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset position
+      function resetPosition() {
+        stopRolling();
+        targetPosition = 50;
+        position = 50;
+        rotationX = 0;
+        rotationZ = 0;
+        updateSphere();
+        rollBtn.textContent = '⚪ Roll!';
+        rollBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+        rollBtn.style.borderColor = '#818cf8';
+        sphereStatus.textContent = '🔄 Reset complete';
+        sphereStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          sphereStatus.textContent = '⚪ Click or drag to roll the sphere';
+        }, 1000);
+      }
+
+      // Handle drag on sphere
+      let isDragging = false;
+      let dragStartX = 0;
+      let dragStartPos = 0;
+
+      sphere.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartPos = position;
+        sphere.style.cursor = 'grabbing';
+        stopRolling();
+      });
+
+      document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        const deltaX = e.clientX - dragStartX;
+        const displayWidth = sphereDisplay.clientWidth || 400;
+        const trackWidth = displayWidth - 100;
+        const deltaPercent = (deltaX / trackWidth) * 100;
+        targetPosition = Math.max(0, Math.min(100, dragStartPos + deltaPercent));
+        startRolling();
+      });
+
+      document.addEventListener('mouseup', function() {
+        if (isDragging) {
+          isDragging = false;
+          sphere.style.cursor = 'grab';
+          // Continue rolling to target
+          if (Math.abs(position - targetPosition) > 1) {
+            startRolling();
+          } else {
+            stopRolling();
+          }
+        }
+      });
+
+      // Touch support
+      let touchStartX = 0;
+      let touchStartPos = 0;
+
+      sphere.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        isDragging = true;
+        touchStartX = touch.clientX;
+        touchStartPos = position;
+        stopRolling();
+      });
+
+      sphere.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - touchStartX;
+        const displayWidth = sphereDisplay.clientWidth || 400;
+        const trackWidth = displayWidth - 100;
+        const deltaPercent = (deltaX / trackWidth) * 100;
+        targetPosition = Math.max(0, Math.min(100, touchStartPos + deltaPercent));
+        startRolling();
+      });
+
+      sphere.addEventListener('touchend', function() {
+        if (isDragging) {
+          isDragging = false;
+          if (Math.abs(position - targetPosition) > 1) {
+            startRolling();
+          } else {
+            stopRolling();
+          }
+        }
+      });
+
+      // Event listeners
+      if (rollBtn) {
+        rollBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          rollSphere();
+        });
+      }
+
+      if (directionBtn) {
+        directionBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          changeDirection();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetPosition();
+        });
+      }
+
+      // Click on display to roll
+      sphereDisplay.addEventListener('click', function(e) {
+        if (e.target === sphereDisplay || e.target.classList.contains('surface')) {
+          rollSphere();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          rollSphere();
+        } else if (key === 'd' || key === 'D') {
+          e.preventDefault();
+          changeDirection();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetPosition();
+        }
+      });
+
+      // Initialize
+      sphere.style.position = 'absolute';
+      sphere.style.width = '60px';
+      sphere.style.height = '60px';
+      sphere.style.borderRadius = '50%';
+      sphere.style.background = 'radial-gradient(circle at 35% 35%, #818cf8, #4f46e5, #3730a3)';
+      sphere.style.boxShadow = '0 0 30px rgba(99, 102, 241, 0.3)';
+      sphere.style.cursor = 'grab';
+      sphere.style.transition = 'none';
+      sphere.style.top = '50%';
+      sphere.style.left = '50%';
+      sphere.style.transform = 'translateY(-50%)';
+
+      // Add sphere highlights
+      const highlight1 = document.createElement('div');
+      highlight1.style.cssText = 'position:absolute;top:10%;left:20%;width:30%;height:20%;background:radial-gradient(ellipse,rgba(255,255,255,0.4),transparent);border-radius:50%;pointer-events:none;';
+      sphere.appendChild(highlight1);
+
+      const highlight2 = document.createElement('div');
+      highlight2.style.cssText = 'position:absolute;bottom:20%;right:15%;width:15%;height:10%;background:radial-gradient(ellipse,rgba(255,255,255,0.2),transparent);border-radius:50%;pointer-events:none;';
+      sphere.appendChild(highlight2);
+
+      const glow = document.createElement('div');
+      glow.style.cssText = 'position:absolute;top:-20%;left:-20%;width:140%;height:140%;background:radial-gradient(circle,rgba(99,102,241,0.2),transparent);border-radius:50%;pointer-events:none;z-index:-1;';
+      sphere.appendChild(glow);
+
+      // Initial update
+      targetPosition = 50;
+      position = 50;
+      updateSphere();
+      
+      console.log('⚪ Sphere Roll ready · shortcuts: [Space] Roll, [D] Direction, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

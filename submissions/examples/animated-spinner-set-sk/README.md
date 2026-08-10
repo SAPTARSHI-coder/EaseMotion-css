@@ -1,0 +1,1 @@
+A showcase of five distinct CSS loading spinners — circle pulse, dots wave, ring spin, hourglass, and bars — each inside a neat card. Only the selected spinner animates at a time, controlled by hidden radio inputs and the `:checked` pseudo-class. Fully respects `prefers-reduced-motion` and works offline with no JavaScript.

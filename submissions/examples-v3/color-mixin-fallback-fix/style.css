@@ -1,0 +1,162 @@
+/* ==========================================================================
+   EaseMotion CSS — Color Mixin vs Custom Property Fallback Conflict Fix
+   Issue #30479
+
+   THE PROBLEM:
+   The color-variant() SCSS mixin hardcoded its own color values directly
+   into the rules it generated. Separately, components referenced
+   var(--ease-color-primary, #someFallback) with a DIFFERENT hardcoded
+   fallback value than what the mixin actually produced. If a consuming
+   project forgot to define --ease-color-primary, the fallback shown did
+   not match the mixin's real color — two different "primary" colors
+   depending on whether the custom property happened to be set.
+
+   THE FIX:
+   1. Color values are now defined ONCE, as a SCSS map ($ease-colors),
+      which is also the source for the :root custom property
+      declarations below. The custom properties are not just a fallback
+      mechanism bolted on after the fact — they ARE the mixin's actual
+      values, declared at :root and then read by color-variant()
+      itself via var(--ease-color-#{$name}).
+   2. Because the mixin reads from the same custom property it defines,
+      its compiled output and the "fallback" path are structurally
+      identical — there's no way for them to diverge, because there's
+      only one number anywhere in the codebase per color.
+   3. Consumers can still override colors live by simply redefining the
+      custom property on :root or a scoped ancestor (demonstrated in
+      block 3) — the fix doesn't restrict theming, it just guarantees
+      the fallback always matches the framework default if no override
+      is present.
+
+   ---------------------------------------------------------------------
+   SCSS SOURCE (for reference):
+
+   $ease-colors: (
+     'primary': #7c5cff,
+     'success': #22c55e,
+     'danger':  #e5484d
+   );
+
+   :root {
+     @each $name, $value in $ease-colors {
+       --ease-color-#{$name}: #{$value};
+     }
+   }
+
+   @mixin color-variant($name) {
+     $fallback: map-get($ease-colors, $name);
+     @if $fallback == null {
+       @error "Unknown color variant `#{$name}`.";
+     }
+     // mixin reads the SAME custom property it just declared above,
+     // with the SAME value as its fallback — they can never diverge
+     background: var(--ease-color-#{$name}, $fallback);
+   }
+
+   .ease-badge--primary { @include color-variant('primary'); }
+   .ease-badge--success { @include color-variant('success'); }
+   .ease-badge--danger  { @include color-variant('danger'); }
+   ========================================================================== */
+
+:root {
+  /* Single source of truth — mirrors $ease-colors map exactly.
+     color-variant() reads these same values as both its custom
+     property AND its var() fallback, so they cannot drift apart. */
+  --ease-color-primary: #7c5cff;
+  --ease-color-success: #22c55e;
+  --ease-color-danger: #e5484d;
+
+  --ease-bg: #0f0f17;
+  --ease-surface: #1a1a26;
+  --ease-border: #2a2a3a;
+  --ease-text: #e8e8f0;
+  --ease-text-dim: #9a9ab0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--ease-bg);
+  color: var(--ease-text);
+}
+
+.demo-header { padding: 60px 32px 20px; max-width: 780px; }
+.demo-header h1 { margin: 0 0 12px; font-size: 1.6rem; }
+.demo-header p, .demo-content p { color: var(--ease-text-dim); line-height: 1.7; }
+.demo-header code {
+  background: var(--ease-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  border: 1px solid var(--ease-border);
+}
+
+.demo-content { padding: 0 32px 60px; max-width: 780px; }
+
+.demo-block {
+  margin-bottom: 28px;
+  padding: 20px;
+  background: var(--ease-surface);
+  border: 1px solid var(--ease-border);
+  border-radius: 12px;
+}
+.demo-block h2 { margin: 0 0 8px; font-size: 1.05rem; }
+
+/* ---------------------------------------------------------------------
+   ease-badge — compiled output of color-variant() mixin.
+   Each variant reads var(--ease-color-X, #fallback) where the fallback
+   is IDENTICAL to the custom property's :root value, by construction.
+   --------------------------------------------------------------------- */
+.ease-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: white;
+  margin-right: 8px;
+}
+
+.ease-badge--primary { background: var(--ease-color-primary, #7c5cff); }
+.ease-badge--success { background: var(--ease-color-success, #22c55e); }
+.ease-badge--danger  { background: var(--ease-color-danger, #e5484d); }
+
+/* Block 2: simulates the custom properties being completely absent by
+   re-declaring them to `initial` within this scope, forcing every
+   var() in this subtree to fall back to its second argument. Proves
+   the fallback values exactly match block 1's rendered colors. */
+.no-custom-props {
+  --ease-color-primary: initial;
+  --ease-color-success: initial;
+  --ease-color-danger: initial;
+}
+
+.swatch-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--ease-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.8rem;
+}
+
+.swatch:last-child {
+  background: var(--ease-surface);
+  color: var(--ease-text-dim);
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content { padding-left: 20px; padding-right: 20px; }
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurora Borealis · dancing aurora lights</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="aurora-container">
+      <div class="aurora-display" id="auroraDisplay">
+        <!-- Canvas for aurora borealis -->
+        <canvas id="auroraCanvas"></canvas>
+        
+        <!-- Aurora Info -->
+        <div class="aurora-info">
+          <span class="info-label">🌌 Waves</span>
+          <span class="info-value" id="waveCount">0</span>
+        </div>
+
+        <!-- Aurora Controls -->
+        <div class="aurora-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Intensity</label>
+            <input type="range" class="control-slider" id="intensitySlider" min="0" max="100" value="50">
+            <span class="control-value" id="intensityValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌈 Palette</label>
+            <div class="palette-options">
+              <button class="palette-btn active" data-palette="classic" title="Classic">🌿</button>
+              <button class="palette-btn" data-palette="fire" title="Fire">🔥</button>
+              <button class="palette-btn" data-palette="ice" title="Ice">❄️</button>
+              <button class="palette-btn" data-palette="rainbow" title="Rainbow">🌈</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aurora Text -->
+        <div class="aurora-text">
+          <span class="text-label">🌌 Aurora Borealis</span>
+          <span class="text-message" id="auroraMessage">Dancing lights ripple across the sky</span>
+        </div>
+      </div>
+      
+      <div class="aurora-status">
+        <span id="auroraStatus">🌌 Aurora borealis dances across the night sky</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌌 aurora borealis · 4 palettes · intensity control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('auroraCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('auroraDisplay');
+      const waveCount = document.getElementById('waveCount');
+      const auroraStatus = document.getElementById('auroraStatus');
+      const auroraMessage = document.getElementById('auroraMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const intensitySlider = document.getElementById('intensitySlider');
+      const intensityValue = document.getElementById('intensityValue');
+      const paletteBtns = document.querySelectorAll('.palette-btn');
+
+      // State
+      let time = 0;
+      let animationId = null;
+      let currentPalette = 'classic';
+      let waveCountNum = 0;
+
+      // Color palettes
+      const palettes = {
+        classic: {
+          name: 'Classic',
+          colors: ['#34d399', '#60a5fa', '#818cf8', '#a78bfa', '#f472b6'],
+          background: 'rgba(10, 15, 30, 0.3)'
+        },
+        fire: {
+          name: 'Fire',
+          colors: ['#ef4444', '#f97316', '#fb923c', '#fbbf24', '#fca5a5'],
+          background: 'rgba(20, 10, 10, 0.3)'
+        },
+        ice: {
+          name: 'Ice',
+          colors: ['#0ea5e9', '#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe'],
+          background: 'rgba(10, 20, 30, 0.3)'
+        },
+        rainbow: {
+          name: 'Rainbow',
+          colors: ['#ef4444', '#fbbf24', '#22c55e', '#3b82f6', '#8b5cf6'],
+          background: 'rgba(15, 10, 20, 0.3)'
+        }
+      };
+
+      // Aurora wave class
+      class AuroraWave {
+        constructor(width, height) {
+          this.width = width;
+          this.height = height;
+          this.points = [];
+          this.numPoints = 60 + Math.floor(Math.random() * 40);
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.3 + Math.random() * 0.5;
+          this.amplitude = 30 + Math.random() * 50;
+          this.offsetY = 20 + Math.random() * (height * 0.3);
+          this.alpha = 0.3 + Math.random() * 0.3;
+          this.colorIndex = Math.floor(Math.random() * 5);
+          this.widthFactor = 0.5 + Math.random() * 0.5;
+          this.frequency = 0.01 + Math.random() * 0.02;
+          this.glowSize = 20 + Math.random() * 30;
+          this.waveCount = waveCountNum++;
+          
+          // Generate points
+          for (let i = 0; i < this.numPoints; i++) {
+            const x = (i / this.numPoints) * this.width;
+            const y = this.height / 2 + Math.sin(i * 0.1 + this.phase) * this.amplitude * 0.3;
+            this.points.push({ x, y });
+          }
+        }
+
+        update(time, intensity) {
+          const intensityFactor = intensity / 100;
+          this.phase += this.speed * 0.01 * intensityFactor;
+          
+          for (let i = 0; i < this.points.length; i++) {
+            const p = this.points[i];
+            const t = i / this.points.length;
+            const wave1 = Math.sin(t * Math.PI * 4 + this.phase) * this.amplitude * 0.4 * intensityFactor;
+            const wave2 = Math.sin(t * Math.PI * 6 + this.phase * 0.7 + 1) * this.amplitude * 0.3 * intensityFactor;
+            const wave3 = Math.sin(t * Math.PI * 2 + this.phase * 1.3 + 2) * this.amplitude * 0.2 * intensityFactor;
+            p.y = this.offsetY + wave1 + wave2 + wave3;
+          }
+        }
+
+        draw(ctx, colors, intensity) {
+          const intensityFactor = intensity / 100;
+          const alpha = this.alpha * (0.5 + intensityFactor * 0.5);
+          
+          ctx.save();
+          
+          // Main aurora ribbon
+          const color1 = colors[this.colorIndex % colors.length];
+          const color2 = colors[(this.colorIndex + 1) % colors.length];
+          
+          // Glow
+          for (let g = 0; g < 3; g++) {
+            const glowAlpha = alpha * (0.1 - g * 0.03) * intensityFactor;
+            ctx.globalAlpha = glowAlpha;
+            ctx.shadowColor = color1;
+            ctx.shadowBlur = this.glowSize * (1 + g * 0.5) * intensityFactor;
+            
+            ctx.beginPath();
+            for (let i = 0; i < this.points.length; i++) {
+              const p = this.points[i];
+              const yOffset = (g - 1) * 8 * intensityFactor;
+              if (i === 0) ctx.moveTo(p.x, p.y + yOffset);
+              else ctx.lineTo(p.x, p.y + yOffset);
+            }
+            ctx.strokeStyle = color1;
+            ctx.lineWidth = 2 + g * 3 * intensityFactor;
+            ctx.stroke();
+          }
+          
+          // Main ribbon
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * intensityFactor;
+          
+          // Gradient along the ribbon
+          for (let i = 0; i < this.points.length - 1; i++) {
+            const p1 = this.points[i];
+            const p2 = this.points[i + 1];
+            const t = i / this.points.length;
+            
+            const grad = ctx.createLinearGradient(p1.x, p1.y - 20, p1.x, p1.y + 20);
+            const colorA = colors[(this.colorIndex + Math.floor(t * 3)) % colors.length];
+            const colorB = colors[(this.colorIndex + Math.floor(t * 3) + 1) % colors.length];
+            grad.addColorStop(0, colorA + '44');
+            grad.addColorStop(0.3, colorA + '88');
+            grad.addColorStop(0.5, colorB + 'aa');
+            grad.addColorStop(0.7, colorB + '88');
+            grad.addColorStop(1, colorA + '44');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y - 15 * intensityFactor);
+            ctx.quadraticCurveTo(
+              (p1.x + p2.x) / 2,
+              (p1.y + p2.y) / 2 - 20 * intensityFactor,
+              p2.x,
+              p2.y - 15 * intensityFactor
+            );
+            ctx.quadraticCurveTo(
+              (p1.x + p2.x) / 2,
+              (p1.y + p2.y) / 2 + 20 * intensityFactor,
+              p1.x,
+              p1.y + 15 * intensityFactor
+            );
+            ctx.closePath();
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate aurora waves
+      function generateAurora() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const count = 3 + Math.floor(Math.random() * 4);
+        const waves = [];
+        
+        for (let i = 0; i < count; i++) {
+          const wave = new AuroraWave(w, h);
+          wave.offsetY = h * (0.2 + (i / count) * 0.3) + Math.random() * 20;
+          wave.amplitude = 20 + Math.random() * 60;
+          wave.alpha = 0.3 + (i / count) * 0.3;
+          wave.colorIndex = i % 5;
+          wave.speed = 0.2 + Math.random() * 0.6;
+          waves.push(wave);
+        }
+        
+        waveCount.textContent = waves.length;
+        return waves;
+      }
+
+      let waves = [];
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const palette = palettes[currentPalette];
+        
+        // Night sky
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(5, 5, 20, 0.6)');
+        grad.addColorStop(0.3, 'rgba(10, 10, 30, 0.5)');
+        grad.addColorStop(0.6, 'rgba(15, 15, 35, 0.4)');
+        grad.addColorStop(1, 'rgba(20, 20, 40, 0.3)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Stars
+        for (let i = 0; i < 80; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h * 0.7;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.2 + Math.random() * 0.5;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        
+        // Star twinkles
+        for (let i = 0; i < 10; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h * 0.5;
+          const alpha = 0.1 + Math.random() * 0.2;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          const grad2 = ctx.createRadialGradient(x, y, 0, x, y, 10);
+          grad2.addColorStop(0, 'rgba(255,255,255,0.3)');
+          grad2.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(x, y, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        
+        // Mountain silhouette
+        ctx.fillStyle = 'rgba(10, 10, 20, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let i = 0; i <= w; i += 5) {
+          const x = i;
+          const y = h * 0.7 + Math.sin(i * 0.008) * 20 + Math.sin(i * 0.015 + 1) * 15 + 10;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Ground reflection
+        ctx.fillStyle = 'rgba(20, 30, 50, 0.05)';
+        ctx.fillRect(0, h * 0.85, w, h * 0.15);
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const intensity = parseInt(intensitySlider.value);
+        
+        // Clear and draw background
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw waves
+        const colors = palettes[currentPalette].colors;
+        waves.forEach(wave => {
+          wave.update(time, intensity);
+          wave.draw(ctx, colors, intensity);
+        });
+        
+        // Update status
+        if (intensity > 70) {
+          auroraStatus.textContent = '🌌 Aurora dances wildly across the sky! ✨';
+          auroraStatus.style.color = '#fbbf24';
+        } else if (intensity > 30) {
+          auroraStatus.textContent = '🌌 Aurora lights ripple gracefully in the night';
+          auroraStatus.style.color = '#818cf8';
+        } else {
+          auroraStatus.textContent = '🌌 Aurora borealis dances across the night sky';
+          auroraStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        waves = generateAurora();
+      }
+
+      // Set palette
+      function setPalette(palette) {
+        currentPalette = palette;
+        paletteBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.palette === palette);
+        });
+        const paletteData = palettes[palette];
+        auroraStatus.textContent = `🎨 Palette: ${paletteData.name}`;
+        auroraStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          auroraStatus.textContent = '🌌 Aurora borealis dances across the night sky';
+          auroraStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetAurora() {
+        waves = generateAurora();
+        auroraStatus.textContent = '🔄 Reset complete';
+        auroraStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          auroraStatus.textContent = '🌌 Aurora borealis dances across the night sky';
+          auroraStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      intensitySlider.addEventListener('input', function() {
+        intensityValue.textContent = this.value + '%';
+      });
+
+      paletteBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setPalette(this.dataset.palette);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetAurora();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetAurora();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌌 Aurora Borealis ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>
