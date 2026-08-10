@@ -1,16 +1,16 @@
 # ease-honeycomb-grid
 
-A CSS animation component.
+A CSS grid component that arranges items in a hexagonal honeycomb pattern.
 
 ## Usage
-Open demo.html in a browser. Click the button to toggle the animation.
+Open demo.html in a browser. Wrap your items in the `.ease-honeycomb-grid` container. Each item should have the `.ease-honeycomb-cell` class.
 
 ## Custom Properties
 | Property | Default | Description |
-|----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+|---|---|---|
+| --honeycomb-color | #f97316 | Hover state color |
+| --honeycomb-bg | #1e293b | Default cell background |
+| --honeycomb-gap | 4px | Spacing between cells |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS `clip-path` is used to create the hexagon shapes. Flexbox with alternating margins creates the interlocking grid layout.

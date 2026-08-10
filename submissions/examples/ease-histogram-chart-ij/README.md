@@ -1,16 +1,16 @@
 # ease-histogram-chart
 
-A CSS animation component.
+An animated CSS histogram (bar chart) component.
 
 ## Usage
-Open demo.html in a browser. Click the button to toggle the animation.
+Open demo.html in a browser. Use inline styles to set the `height` percentage of each `.ease-histogram-bar` relative to its container.
 
 ## Custom Properties
 | Property | Default | Description |
-|----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+|---|---|---|
+| --chart-primary | #6366f1 | Bar color |
+| --chart-hover | #4f46e5 | Hover state bar color |
+| --chart-bg | #f1f5f9 | Chart background color |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS handles the initial growth animation using `scaleY` and `transform-origin: bottom`, as well as a subtle lift effect on hover.

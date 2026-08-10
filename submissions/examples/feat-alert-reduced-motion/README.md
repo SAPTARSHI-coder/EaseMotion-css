@@ -23,4 +23,4 @@ compliance.
 2. Enable reduced motion via OS settings or browser DevTools > Rendering tab.
 3. Hover over the component and observe that no transform or transition occurs.
 
-Fixes #58669
+Fixes #43666
