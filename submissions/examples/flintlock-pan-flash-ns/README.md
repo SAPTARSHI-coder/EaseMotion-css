@@ -1,24 +1,16 @@
-# Ease Flintlock Pan Flash
+# Flintlock Pan Flash
 
-A CSS-only animated flintlock ignition component created for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-flintlock-pan-flash` demo: Flintlock hammer striking with pan flash.
 
-## Overview
-
-`ease-flintlock-pan-flash` represents a historical flintlock mechanism where the hammer strikes and creates a pan flash effect using pure CSS animations.
-
-## Features
-
-- Pure HTML and CSS
-- No JavaScript dependency
-- Flintlock themed interface
-- Animated hammer strike
-- Flash ignition effect
-- Spark movement animation
-- Responsive design
-- Reduced motion support
-
-## Usage
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-flintlock-pan-flash`. No build step or JavaScript is required for the effect.
 
 ```html
-<div class="ease-flintlock-pan-flash">
-</div>
+<section class="ease-flintlock-pan-flash">
+  <div class="ease-flintlock-pan-flash__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
