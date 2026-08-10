@@ -1,24 +1,16 @@
-# Ease Ferrofluid Spike Field
+# Ferrofluid Spike Field
 
-A CSS-only animated ferrofluid spike field component created for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-ferrofluid-spike-field` demo: Ferrofluid spikes rising under a magnetic field.
 
-## Overview
-
-`ease-ferrofluid-spike-field` simulates ferrofluid spikes rising and moving under the influence of a magnetic field.
-
-## Features
-
-- Pure CSS animation
-- No JavaScript dependency
-- Magnetic field visualization
-- Animated ferrofluid spikes
-- Real-world science inspired UI
-- Responsive layout
-- Reduced motion accessibility support
-
-
-## Usage
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-ferrofluid-spike-field`. No build step or JavaScript is required for the effect.
 
 ```html
-<div class="ease-ferrofluid-spike-field">
-</div>
+<section class="ease-ferrofluid-spike-field">
+  <div class="ease-ferrofluid-spike-field__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
