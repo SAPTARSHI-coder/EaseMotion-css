@@ -1,10 +1,11 @@
 # ease-slot-machine-reels
 
-A slot machine whose three symbol reels spin and stop one at a time while the win lamp blinks.
+A slot machine where the reels spin, the icons land, and the win line flashes.
 
 ## Run
-Open `demo.html` directly in a browser to watch the reels settle.
+Open `demo.html` directly in a browser to watch the machine.
 
 ## Notes
-- Each reel stops in turn.
-- The lever pulls after every round.
+- Three reels spin in turn.
+- Icons land in the window.
+- Win line flashes across.
