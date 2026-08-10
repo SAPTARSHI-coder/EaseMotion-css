@@ -1,1 +1,0 @@
-# Dual Thumb range
