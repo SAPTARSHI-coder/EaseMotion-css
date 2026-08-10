@@ -1,0 +1,9 @@
+﻿# minimalist-blog-post-template-ui-v4
+
+Clean clean panels emphasizing simple typographic blog templates.
+
+## Features
+- Pure CSS layout logic.
+- Light and dark theme adaptable.
+- Clean semantic HTML structure.
+- Over 1000+ lines of layout helpers, classes, and variables.
