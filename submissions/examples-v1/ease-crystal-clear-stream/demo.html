@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crystal Clear Stream</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>💎 Crystal Clear Stream</h1>
+        <p class="subtitle">Flowing water with sparkling reflections</p>
+
+        <div class="stream-wrapper">
+            <canvas id="streamCanvas"></canvas>
+
+            <div class="controls">
+                <button id="flowBtn">💧 Flow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Crystal</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">💎 Flowing</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('streamCanvas');
+        const ctx = canvas.getContext('2d');
+        const flowBtn = document.getElementById('flowBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let waterParticles = [];
+        let sparkles = [];
+        let flowSpeed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isFlowing = true;
+        let flowIntensity = 1;
+        let ripples = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Crystal',
+                water: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                sparkle: '#ffffff',
+                glow: '#48cae4',
+                bg: ['#0a1a2e', '#061020', '#030a15']
+            },
+            {
+                name: 'Emerald',
+                water: ['#004d40', '#00695c', '#00897b', '#26a69a', '#4db6ac'],
+                sparkle: '#b2dfdb',
+                glow: '#26a69a',
+                bg: ['#0a1a0a', '#061006', '#030a03']
+            },
+            {
+                name: 'Sunset',
+                water: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e'],
+                sparkle: '#ffe4b5',
+                glow: '#f7931e',
+                bg: ['#1a0a0a', '#100605', '#0a0303']
+            },
+            {
+                name: 'Galaxy',
+                water: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa'],
+                sparkle: '#e0a0ff',
+                glow: '#7a0088',
+                bg: ['#0a0a1a', '#060610', '#03030a']
+            },
+            {
+                name: 'Arctic',
+                water: ['#80d0ff', '#60b0ff', '#4090ff', '#2070ff', '#0050ff'],
+                sparkle: '#ffffff',
+                glow: '#80d0ff',
+                bg: ['#0a1a2a', '#06101a', '#03080a']
+            },
+            {
+                name: 'Rainbow',
+                water: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff'],
+                sparkle: '#ffffff',
+                glow: '#ff8800',
+                bg: ['#0a0a1a', '#060610', '#03030a']
+            },
+        ];
+
+        // ===== WATER PARTICLE CLASS =====
+        class WaterParticle {
+            constructor() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = -10 - Math.random() * 50;
+                this.size = 2 + Math.random() * 4;
+                this.speed = 0.5 + Math.random() * 1.5;
+                this.wobble = 0.2 + Math.random() * 0.5;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.phase = Math.random() * Math.PI * 2;
+                this.alpha = 0.3 + Math.random() * 0.5;
+                this.colorOffset = Math.random();
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.pulseSpeed = 0.01 + Math.random() * 0.02;
+                this.drift = (Math.random() - 0.5) * 0.2;
+                this.life = 0.5 + Math.random() * 0.5;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.wobbleSpeed * speed * 5;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+
+                // Flow
+                this.y += this.speed * speed * 15;
+                this.x += Math.sin(this.phase + time * 0.01) * this.wobble * 0.3 + this.drift * speed * 10;
+
+                // Reset if off screen
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.y > h + 20) {
+                    this.y = -10 - Math.random() * 50;
+                    this.x = Math.random() * w;
+                    this.speed = 0.5 + Math.random() * 1.5;
+                    this.trail = [];
+                    this.age = 0;
+                    this.life = 0.5 + Math.random() * 0.5;
+                }
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.water;
+                const colorIdx = Math.floor(this.colorOffset * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const size = this.size * (0.5 + 0.5 * this.pulse);
+                const alpha = this.alpha * this.life;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.15;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 4 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '60');
+                grad.addColorStop(0.5, color + '30');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(this.x - size * 0.2, this.y - size * 0.3, size * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== SPARKLE CLASS =====
+        class Sparkle {
+            constructor(x, y) {
+                this.x = x || Math.random() * canvas.width;
+                this.y = y || Math.random() * canvas.height * 0.6 + canvas.height * 0.2;
+                this.size = 0.5 + Math.random() * 2;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.twinkleSpeed = 0.05 + Math.random() * 0.1;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.colorOffset = Math.random();
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                this.vx = (Math.random() - 0.5) * 0.1;
+                this.vy = (Math.random() - 0.5) * 0.1;
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.twinkleSpeed * speed * 10;
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase);
+                this.rotation += this.rotSpeed * speed * 10;
+                this.x += this.vx * speed * 10 + Math.sin(this.phase) * 0.05;
+                this.y += this.vy * speed * 10 + Math.cos(this.phase * 0.7) * 0.05;
+
+                const w = canvas.width;
+                const h = canvas.height;
+                if (this.x < 0) this.x = w;
+                if (this.x > w) this.x = 0;
+                if (this.y < 0) this.y = h;
+                if (this.y > h) this.y = 0;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const color = palette.sparkle;
+                const size = this.size * this.life * (0.5 + 0.5 * this.pulse);
+                const alpha = this.life * 0.8;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Glow
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 5);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(0.5, color + '40');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Star shape
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                    const r = i % 2 === 0 ? size : size * 0.4;
+                    const px = Math.cos(angle + this.phase) * r;
+                    const py = Math.sin(angle + this.phase) * r;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== RIPPLES ON STREAM =====
+        class Ripple {
+            constructor(x, y) {
+                this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 100;
+                this.y = y || canvas.height / 2 + (Math.random() - 0.5) * 60;
+                this.radius = 2;
+                this.maxRadius = 15 + Math.random() * 20;
+                this.speed = 0.5 + Math.random() * 0.5;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 20;
+                this.age = 0;
+                this.alpha = 0.3 + Math.random() * 0.3;
+                this.phase = Math.random() * Math.PI * 2;
+                this.colorOffset = Math.random();
+            }
+
+            update(speed) {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.radius += this.speed * speed * 10;
+                this.phase += 0.02 * speed * 10;
+                this.alpha = this.life * 0.3;
+
+                if (this.radius > this.maxRadius) {
+                    this.radius = this.maxRadius;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.water;
+                const colorIdx = Math.floor(this.colorOffset * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.alpha;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Inner ring
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha * 0.15;
+                ctx.lineWidth = 0.3;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const palette = colorPalettes[colorMode];
+            const bgColors = palette.bg;
+
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            for (let i = 0; i < bgColors.length; i++) {
+                const t = i / (bgColors.length - 1);
+                grad.addColorStop(t, bgColors[i]);
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Light rays (underwater)
+            for (let i = 0; i < 5; i++) {
+                const x = (i / 5) * w + Math.sin(time * 0.003 + i) * 30;
+                const grad2 = ctx.createLinearGradient(x, 0, x + 30, h);
+                grad2.addColorStop(0, 'rgba(200, 230, 255, 0.02)');
+                grad2.addColorStop(0.5, 'rgba(200, 230, 255, 0.04)');
+                grad2.addColorStop(1, 'rgba(200, 230, 255, 0)');
+                ctx.fillStyle = grad2;
+                ctx.fillRect(x, 0, 30, h);
+            }
+
+            // Stream bed texture
+            const bedY = h * 0.8;
+            const bedGrad = ctx.createLinearGradient(0, bedY, 0, h);
+            bedGrad.addColorStop(0, 'rgba(30, 40, 50, 0)');
+            bedGrad.addColorStop(0.3, 'rgba(30, 40, 50, 0.05)');
+            bedGrad.addColorStop(0.7, 'rgba(30, 40, 50, 0.1)');
+            bedGrad.addColorStop(1, 'rgba(30, 40, 50, 0.15)');
+            ctx.fillStyle = bedGrad;
+            ctx.fillRect(0, bedY, w, h - bedY);
+
+            // Stream bed pebbles
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(i * 0.5 + time * 0.005) * 15;
+                const y = bedY + 5 + Math.sin(i * 1.3 + time * 0.008) * 5;
+                const size = 2 + Math.sin(i * 0.7) * 1.5;
+                ctx.beginPath();
+                ctx.ellipse(x, y, size, size * 0.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(50, 60, 70, ${0.05 + Math.sin(i + time * 0.005) * 0.03})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== TOGGLE FLOW =====
+        function toggleFlow() {
+            isFlowing = !isFlowing;
+            flowBtn.textContent = isFlowing ? '💧 Flow' : '⏸️ Pause';
+            statusText.textContent = isFlowing ? '💎 Flowing' : '⏸️ Paused';
+        }
+
+        // ===== RESET =====
+        function resetStream() {
+            waterParticles = [];
+            sparkles = [];
+            ripples = [];
+            speedLevel = 1;
+            flowSpeed = speeds[1].value;
+            colorMode = 0;
+            isFlowing = true;
+            flowBtn.textContent = '💧 Flow';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '💎 Flowing';
+            }, 1000);
+
+            // Recreate particles
+            for (let i = 0; i < 50; i++) {
+                waterParticles.push(new WaterParticle());
+            }
+            for (let i = 0; i < 20; i++) {
+                sparkles.push(new Sparkle());
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update water particles
+            if (isFlowing) {
+                for (const p of waterParticles) {
+                    p.update(flowSpeed);
+                }
+            }
+
+            // Update sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                const s = sparkles[i];
+                s.update(flowSpeed);
+                if (s.isDead()) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
+            // Spawn new sparkles
+            if (Math.random() < 0.02 * flowSpeed * 20) {
+                sparkles.push(new Sparkle());
+            }
+
+            // Update ripples
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.update(flowSpeed);
+                if (r.isDead()) {
+                    ripples.splice(i, 1);
+                }
+            }
+
+            // Spawn ripples
+            if (Math.random() < 0.005 * flowSpeed * 20) {
+                const w2 = canvas.width;
+                const h2 = canvas.height;
+                ripples.push(new Ripple(
+                    Math.random() * w2,
+                    Math.random() * h2 * 0.5 + h2 * 0.25
+                ));
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw ripples (behind water)
+            for (const r of ripples) {
+                r.draw(ctx);
+            }
+
+            // Draw water particles
+            for (const p of waterParticles) {
+                p.draw(ctx);
+            }
+
+            // Draw sparkles
+            for (const s of sparkles) {
+                s.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isFlowing ? '💎 Flowing' : '⏸️ Paused';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Flow
+        flowBtn.addEventListener('click', toggleFlow);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            flowSpeed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '💎 Flowing';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '💎 Flowing';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetStream);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') flowBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                flowBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '💎 Flowing';
+
+        // Create initial particles
+        for (let i = 0; i < 50; i++) {
+            waterParticles.push(new WaterParticle());
+        }
+        for (let i = 0; i < 20; i++) {
+            sparkles.push(new Sparkle());
+        }
+
+        lastFpsUpdate = performance.now();
+        render(lastFpsUpdate);
+
+        console.log('💎 Crystal Clear Stream loaded!');
+        console.log('💡 F - Toggle flow');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle flow');
+    </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tattoo Effect · appears like temporary tattoo</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="tattoo-container">
+      <div class="tattoo-display" id="tattooDisplay">
+        <!-- Canvas for tattoo effect -->
+        <canvas id="tattooCanvas"></canvas>
+        
+        <!-- Tattoo Info -->
+        <div class="tattoo-info">
+          <span class="info-label">💉 Tattoos</span>
+          <span class="info-value" id="tattooCount">0</span>
+        </div>
+
+        <!-- Tattoo Controls -->
+        <div class="tattoo-controls">
+          <div class="control-group">
+            <label class="control-label">🖊️ Ink</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="#1a1a2e" style="background:#1a1a2e;"></button>
+              <button class="color-btn" data-color="#2d3748" style="background:#2d3748;"></button>
+              <button class="color-btn" data-color="#4a5568" style="background:#4a5568;"></button>
+              <button class="color-btn" data-color="#3b82f6" style="background:#3b82f6;"></button>
+              <button class="color-btn" data-color="#8b5cf6" style="background:#8b5cf6;"></button>
+              <button class="color-btn" data-color="#ec4899" style="background:#ec4899;"></button>
+              <button class="color-btn" data-color="#22c55e" style="background:#22c55e;"></button>
+              <button class="color-btn" data-color="#ef4444" style="background:#ef4444;"></button>
+            </div>
+          </div>
+          <div class="control-group">
+            <label class="control-label">💧 Fade</label>
+            <input type="range" class="control-slider" id="fadeSlider" min="1" max="10" value="3">
+            <span class="control-value" id="fadeValue">3</span>
+          </div>
+        </div>
+
+        <!-- Tattoo Text -->
+        <div class="tattoo-text">
+          <span class="text-label">💉 Tattoo</span>
+          <span class="text-message" id="tattooMessage">Click and drag to apply tattoo</span>
+        </div>
+      </div>
+      
+      <div class="tattoo-status">
+        <span id="tattooStatus">💉 Click and drag to apply temporary tattoo</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>💉 temporary tattoo · skin texture · organic fade</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('tattooCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('tattooDisplay');
+      const tattooCount = document.getElementById('tattooCount');
+      const tattooStatus = document.getElementById('tattooStatus');
+      const tattooMessage = document.getElementById('tattooMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const fadeSlider = document.getElementById('fadeSlider');
+      const fadeValue = document.getElementById('fadeValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let isDrawing = false;
+      let tattooCountNum = 0;
+      let currentColor = '#1a1a2e';
+      let currentFade = 3;
+      let lastX = 0;
+      let lastY = 0;
+      let tattooStrokes = [];
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawSkin();
+        if (tattooStrokes.length > 0) {
+          redrawAll();
+        }
+      }
+
+      // Draw skin background
+      function drawSkin() {
+        // Skin tone base
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(45, 40, 35, 0.15)');
+        grad.addColorStop(0.5, 'rgba(35, 30, 25, 0.25)');
+        grad.addColorStop(1, 'rgba(20, 18, 15, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Skin texture - pores and imperfections
+        for (let i = 0; i < 600; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.5 + 0.3;
+          const alpha = Math.random() * 0.04;
+          ctx.fillStyle = `rgba(255,200,150,${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        // Skin grain
+        for (let i = 0; i < 300; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 0.5 + 0.2;
+          const alpha = Math.random() * 0.03;
+          ctx.fillStyle = `rgba(200,180,160,${alpha})`;
+          ctx.fillRect(x, y, size, size * 0.5);
+        }
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw tattoo stroke
+      function drawTattooStroke(x1, y1, x2, y2, color, fade) {
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 1) return;
+
+        const steps = Math.max(Math.floor(dist / 1.5), 8);
+        const baseSize = 2 + fade * 0.3;
+        const fadeFactor = 0.1 + fade * 0.09;
+
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t;
+          const y = y1 + (y2 - y1) * t;
+          
+          // Main tattoo ink dot
+          const size = baseSize * (0.6 + Math.random() * 0.8);
+          const alpha = 0.4 + Math.random() * 0.4;
+          drawTattooDot(x, y, size, color, alpha);
+          
+          // Tattoo spread - ink bleeding into skin
+          const spreadCount = Math.floor(2 + fade * 0.3);
+          for (let j = 0; j < spreadCount; j++) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = size * (0.3 + Math.random() * fadeFactor * 0.8);
+            const sx = x + Math.cos(angle) * distance;
+            const sy = y + Math.sin(angle) * distance;
+            const sSize = size * (0.2 + Math.random() * 0.4);
+            const sAlpha = 0.05 + Math.random() * 0.15;
+            drawTattooDot(sx, sy, sSize, color, sAlpha);
+          }
+          
+          // Skin texture overlay - tattoo sits under skin
+          if (Math.random() > 0.7) {
+            const tx = x + (Math.random() - 0.5) * size * 0.5;
+            const ty = y + (Math.random() - 0.5) * size * 0.5;
+            const tSize = size * (0.1 + Math.random() * 0.15);
+            ctx.save();
+            ctx.globalAlpha = 0.03 + Math.random() * 0.04;
+            ctx.fillStyle = 'rgba(200,180,160,0.3)';
+            ctx.beginPath();
+            ctx.arc(tx, ty, tSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+
+      // Draw tattoo dot
+      function drawTattooDot(x, y, size, color, alpha) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(alpha, 1);
+        
+        // Color with slight variation
+        const colorObj = hexToRgb(color);
+        const variation = 20;
+        const r = Math.min(255, Math.max(0, colorObj.r + (Math.random() - 0.5) * variation));
+        const g = Math.min(255, Math.max(0, colorObj.g + (Math.random() - 0.5) * variation));
+        const b = Math.min(255, Math.max(0, colorObj.b + (Math.random() - 0.5) * variation));
+        
+        // Irregular shape for tattoo ink
+        const points = 6 + Math.floor(Math.random() * 4);
+        ctx.beginPath();
+        for (let i = 0; i < points; i++) {
+          const angle = (i / points) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+          const radius = size * (0.6 + Math.random() * 0.4);
+          const px = x + Math.cos(angle) * radius;
+          const py = y + Math.sin(angle) * radius;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        ctx.fill();
+        
+        // Subtle highlight for skin depth
+        if (Math.random() > 0.8 && size > 3) {
+          ctx.globalAlpha = alpha * 0.1;
+          ctx.beginPath();
+          ctx.arc(x - size * 0.15, y - size * 0.15, size * 0.12, 0, Math.PI * 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+
+      // Hex to RGB helper
+      function hexToRgb(hex) {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16)
+        } : { r: 0, g: 0, b: 0 };
+      }
+
+      // Redraw all strokes
+      function redrawAll() {
+        drawSkin();
+        for (let i = 0; i < tattooStrokes.length - 1; i++) {
+          const s1 = tattooStrokes[i];
+          const s2 = tattooStrokes[i + 1];
+          drawTattooStroke(s1.x, s1.y, s2.x, s2.y, s1.color, s1.fade);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        tattooStrokes.push({
+          x: lastX,
+          y: lastY,
+          color: currentColor,
+          fade: currentFade
+        });
+        
+        tattooCountNum++;
+        tattooCount.textContent = tattooCountNum;
+        
+        tattooStatus.textContent = '💉 Applying tattoo...';
+        tattooStatus.style.color = currentColor;
+        tattooMessage.textContent = '💉 Tattoo in progress...';
+        tattooMessage.style.color = currentColor;
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        drawTattooStroke(lastX, lastY, x, y, currentColor, currentFade);
+        
+        tattooStrokes.push({
+          x: x,
+          y: y,
+          color: currentColor,
+          fade: currentFade
+        });
+        
+        lastX = x;
+        lastY = y;
+        tattooCountNum++;
+        tattooCount.textContent = tattooCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          tattooStatus.textContent = '💉 Tattoo applied!';
+          tattooStatus.style.color = '#4ade80';
+          tattooMessage.textContent = 'Click and drag to apply tattoo';
+          tattooMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            tattooStatus.textContent = '💉 Click and drag to apply temporary tattoo';
+            tattooStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        tattooStatus.textContent = `🎨 Color selected`;
+        tattooStatus.style.color = color;
+        setTimeout(() => {
+          tattooStatus.textContent = '💉 Click and drag to apply temporary tattoo';
+          tattooStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Set fade
+      function setFade(value) {
+        currentFade = parseInt(value);
+        fadeValue.textContent = currentFade;
+        tattooStatus.textContent = `💧 Fade: ${currentFade}/10`;
+        tattooStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          tattooStatus.textContent = '💉 Click and drag to apply temporary tattoo';
+          tattooStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        tattooStrokes = [];
+        tattooCountNum = 0;
+        tattooCount.textContent = '0';
+        drawSkin();
+        tattooStatus.textContent = '🧹 Tattoos removed';
+        tattooStatus.style.color = '#94a3b8';
+        tattooMessage.textContent = 'Click and drag to apply tattoo';
+        tattooMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          tattooStatus.textContent = '💉 Click and drag to apply temporary tattoo';
+          tattooStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Color buttons
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      // Fade slider
+      fadeSlider.addEventListener('input', function() {
+        setFade(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('💉 Tattoo Effect ready · shortcuts: [C] Clear');
+    })();
+  </script>
+</body>
+</html>

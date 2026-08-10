@@ -1,96 +1,100 @@
-# Nebula Swirl
+# 🌌 Nebula Swirl – Cosmic Nebula Swirls with Cursor Movement
 
-Colorful gas clouds rotating slowly with 2000+ particles, 7 color palettes, speed control, and mesmerizing swirl effects.
+> An interactive cosmic nebula component where vibrant particles swirl and dance with cursor movement, featuring 4 color palettes, swirl control (0-100%), and density control (1-10).
 
-## Features
+---
 
-- **Nebula Simulation** – 2000+ particles creating swirling gas clouds
-- **7 Color Palettes** – Galaxy, Aurora, Sunset, Ocean, Fire, Rainbow, Pastel
-- **4 Speed Settings** – Slow, Normal, Fast, Very Fast
-- **Particle Trails** – Smooth trailing effect
-- **Glow Effects** – Radiant glow on particles
-- **Slow Rotation** – Gentle swirling motion
-- **Dynamic Colors** – Particles shift colors based on palette
-- **Star Background** – Distant star field
-- **Keyboard Shortcuts** – S (speed), C (color), R (reset)
-- **FPS Counter** – Real-time frame rate display
-- **Responsive** – Adapts to all screen sizes
+## 📖 Description
 
-## Technologies Used
+The **Nebula Swirl** component creates a mesmerizing cosmic nebula experience where vibrant particles swirl and dance with cursor movement. Built with vanilla HTML, CSS, and JavaScript, it features 4 color palettes (Cosmic, Aurora, Galaxy, Sunset), swirl control (0-100%), density control (1-10), and particle physics for an immersive celestial experience.
 
-- HTML5
-- CSS3 (Animations, Gradients, Flexbox)
-- Canvas API (2D context with gradients and shadows)
-- Vanilla JavaScript (Particle system, Animation loop)
+### 🎯 Core Features
 
-## Installation
+- **Cosmic nebula** – vibrant particles swirl with cursor movement
+- **4 color palettes** – Cosmic (purple/blue/pink), Aurora (green/blue/purple), Galaxy (indigo/pink/gold), Sunset (red/orange/gold)
+- **Swirl control** – adjust swirl intensity from 0-100%
+- **Density control** – adjust particle density from 1-10 (60-420 particles)
+- **Particle physics** – orbit, twinkle, trails, and glow effects
+- **Particle counter** – tracks number of particles in real-time
+- **Interactive controls** – sliders, keyboard shortcuts
+- **Responsive design** – adapts to different screen sizes
 
-1. Clone the repository:
-   git clone https://github.com/yourusername/nebula-swirl.git
+### 🎨 Color Palettes
 
-2. Navigate to the project folder:
-   cd nebula-swirl
+| Palette | Colors | Description |
+|---------|--------|-------------|
+| **Cosmic** | Purple/Blue/Pink/Green | Classic cosmic nebula |
+| **Aurora** | Green/Blue/Purple/Pink/Gold | Dancing aurora borealis |
+| **Galaxy** | Indigo/Pink/Gold/Green | Deep galaxy colors |
+| **Sunset** | Red/Orange/Gold/Pink/Purple | Warm sunset nebula |
 
-3. Open demo.html in your browser
+### ⌨️ Interaction Options
 
-## File Structure
-
-nebula-swirl/
-├── index.html     # HTML structure with embedded JavaScript
-├── style.css      # All styles and animations
-└── README.md      # Documentation
-
-## Usage
-
-### Controls
-
-| Action | Result |
+| Method | Action |
 |--------|--------|
-| "Speed: Normal" | Cycle through 4 speeds |
-| "Color: Galaxy" | Cycle through 7 color palettes |
-| "Reset" | Reset to default |
-| S | Cycle speeds |
-| C | Cycle colors |
-| R | Reset |
+| **Mouse** | Move cursor over display to swirl nebula |
+| **Touch** | Drag on mobile to swirl nebula |
+| **Sliders** | Adjust Swirl (0-100%) and Density (1-10) |
+| **Button** | Reset (cycles palette) |
+| **Keyboard** | `R` – Reset (cycles palette) |
 
-### Color Palettes
+### ✨ Nebula Experience
 
-1. **Galaxy** – Purple/pink cosmic tones
-2. **Aurora** – Green/blue aurora tones
-3. **Sunset** – Warm sunset tones
-4. **Ocean** – Deep blue/teal tones
-5. **Fire** – Red/orange tones
-6. **Rainbow** – Full spectrum
-7. **Pastel** – Soft gentle colors
+When interacting:
+1. **Particles follow** – particles orbit and follow cursor
+2. **Swirl applies** – controls orbit radius and speed
+3. **Density applies** – controls particle count
+4. **Colors shift** – palette cycles on reset
+5. **Status updates** – shows interaction state
 
-### Speed Options
+### 💡 Why Use This Component?
 
-- **Slow** – 0.003 (gentle rotation)
-- **Normal** – 0.008 (balanced)
-- **Fast** – 0.02 (quick rotation)
-- **Very Fast** – 0.04 (rapid rotation)
+- Perfect for meditation apps, relaxation tools, or calming interfaces
+- Mesmerizing cosmic nebula with vibrant colors
+- Self-contained – no external dependencies or frameworks
+- Easy to customize (palettes, colors, physics)
+- 4 color palettes for variety
+- Swirl and density controls for customization
 
-## How It Works
+### 🛠️ Technologies Used
 
-| Feature | Implementation |
-|---------|---------------|
-| Particle system | 2000+ particles with orbit and wobble |
-| Color palettes | RGB color arrays with alpha |
-| Trails | Position history with alpha |
-| Glow effects | Radial gradients on particles |
-| Rotation | Angle-based particle movement |
+- **HTML5** – semantic structure with Canvas
+- **CSS3** – gradients, backdrop-filter, transforms
+- **JavaScript (ES6)** – Canvas API, requestAnimationFrame, particle system
 
-## Customization
+### 🎨 Design Philosophy
 
-### Adding Color Palettes
+This component embodies **EaseMotion CSS's animation-first philosophy** through:
 
-Add to `colorPalettes` array:
+- **Organic motion** – particles swirl with natural movement
+- **Particle effects** – glowing, twinkling particles with trails
+- **Visual feedback** – status updates, counter, controls
+- **Cosmic atmosphere** – space colors and starry background
+- **Human-readable classes** – `.nebula-controls`, `.nebula-text`
 
-```javascript
-{
-    name: 'MyPalette',
-    colors: [
-        { r: 255, g: 100, b: 50 },
-        // Add more colors
-    ]
-}
+### 🔧 Customization Options
+
+| Property | Location | Default |
+|----------|----------|---------|
+| Palettes | `nebulaPalettes` array | 4 palettes |
+| Swirl range | `swirlSlider` | 0-100% |
+| Density range | `densitySlider` | 1-10 |
+| Particle count | `densitySlider` | 60-420 |
+| Particle size | `size` | 1-4px |
+
+### 📸 Preview
+
+| State | Visual |
+|-------|--------|
+| **Idle** | Particles orbiting center |
+| **Moving** | Particles follow cursor |
+| **Swirling** | Enhanced orbit and flow |
+| **Palette Change** | Colors shift instantly |
+
+### 📝 License
+
+MIT License – free to use, modify, and distribute.
+
+### ✨ Credits
+
+Created as a lightweight UI component for meditation apps, relaxation tools, and cosmic experiences.
