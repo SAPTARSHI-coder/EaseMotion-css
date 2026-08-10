@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animation Compatibility Validator — EaseMotion CSS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="page-header">
+    <h1>Animation Compatibility Validator</h1>
+    <p>
+      A developer utility that analyzes EaseMotion utility class combinations,
+      detects conflicting animations (e.g., mutually exclusive transforms),
+      and suggests compatible alternatives.
+    </p>
+    <div class="badges">
+      <span class="badge">🛠️ Dev Tool</span>
+      <span class="badge">⚠️ Conflict Detection</span>
+      <span class="badge">💡 Smart Suggestions</span>
+    </div>
+  </header>
+
+  <main class="validator-container">
+
+    <!-- ── INPUT SECTION ──────────────────────────────────────── -->
+    <section class="input-section">
+      <label for="classInput" class="section-label">Enter EaseMotion Classes:</label>
+      <div class="input-wrapper">
+        <input
+          type="text"
+          id="classInput"
+          class="ease-input"
+          placeholder="e.g., ease-slide-left ease-slide-right ease-scale"
+          value="ease-slide-left ease-slide-right ease-scale"
+          autocomplete="off"
+        />
+        <button id="validateBtn" class="ease-btn">Validate</button>
+      </div>
+      <div class="quick-tests">
+        <span>Quick Tests:</span>
+        <button class="test-btn" data-classes="ease-fade-in ease-scale">Valid Combo ✅</button>
+        <button class="test-btn" data-classes="ease-slide-up ease-slide-down">Transform Conflict ❌</button>
+        <button class="test-btn" data-classes="ease-glow ease-pulse-shadow">Shadow Conflict ❌</button>
+      </div>
+    </section>
+
+    <!-- ── RESULTS SECTION ────────────────────────────────────── -->
+    <section class="results-section">
+      <div class="preview-panel">
+        <span class="section-label">Live Preview</span>
+        <div class="preview-box-wrapper">
+          <div id="previewBox" class="preview-box">EaseMotion</div>
+        </div>
+      </div>
+
+      <div class="console-panel">
+        <span class="section-label">Validation Output</span>
+        <div id="consoleOutput" class="console-output">
+          <!-- Output injected via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * Animation Compatibility Validator Logic
+     * Defines conflict groups. If multiple classes from the same group
+     * are present, it flags a conflict because they overwrite the same CSS property.
+     */
+    const CONFLICT_GROUPS = {
+      transform_x: {
+        prop: 'transform (X-axis)',
+        classes: ['ease-slide-left', 'ease-slide-right', 'ease-bounce-x']
+      },
+      transform_y: {
+        prop: 'transform (Y-axis)',
+        classes: ['ease-slide-up', 'ease-slide-down', 'ease-bounce-y']
+      },
+      opacity: {
+        prop: 'opacity',
+        classes: ['ease-fade-in', 'ease-fade-out', 'ease-flash']
+      },
+      shadow: {
+        prop: 'box-shadow',
+        classes: ['ease-glow', 'ease-shadow-drop', 'ease-pulse-shadow']
+      }
+    };
+
+    const classInput = document.getElementById('classInput');
+    const validateBtn = document.getElementById('validateBtn');
+    const consoleOutput = document.getElementById('consoleOutput');
+    const previewBox = document.getElementById('previewBox');
+    const testBtns = document.querySelectorAll('.test-btn');
+
+    // Handle Quick Test buttons
+    testBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        classInput.value = btn.getAttribute('data-classes');
+        validate();
+      });
+    });
+
+    // Handle Validate button & Enter key
+    validateBtn.addEventListener('click', validate);
+    classInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') validate();
+    });
+
+    function validate() {
+      const rawInput = classInput.value.trim();
+      if (!rawInput) {
+        renderOutput([{ type: 'info', msg: 'Please enter some utility classes to validate.' }]);
+        previewBox.className = 'preview-box'; // reset
+        return;
+      }
+
+      // Split by whitespace and remove duplicates
+      const classes = [...new Set(rawInput.split(/\s+/))];
+
+      // Update Preview Box
+      previewBox.className = 'preview-box';
+      // Force reflow to restart animations
+      void previewBox.offsetWidth;
+      previewBox.className = `preview-box ${classes.join(' ')}`;
+
+      const logs = [];
+      const safeClasses = [];
+      let hasConflict = false;
+
+      // Check for conflicts
+      for (const [groupName, groupData] of Object.entries(CONFLICT_GROUPS)) {
+        const foundInGroup = classes.filter(cls => groupData.classes.includes(cls));
+
+        if (foundInGroup.length > 1) {
+          hasConflict = true;
+          logs.push({
+            type: 'error',
+            msg: `Conflict detected on <strong>${groupData.prop}</strong>:<br>⚠️ <code>${foundInGroup.join('</code> conflicts with <code>')}</code>`
+          });
+          // For suggestions, pick the first one and discard the rest
+          safeClasses.push(foundInGroup[0]);
+        } else if (foundInGroup.length === 1) {
+          safeClasses.push(foundInGroup[0]);
+        }
+      }
+
+      // Add classes that don't belong to any known conflict group (assumed safe)
+      const knownClasses = Object.values(CONFLICT_GROUPS).flatMap(g => g.classes);
+      classes.forEach(cls => {
+        if (!knownClasses.includes(cls)) {
+          safeClasses.push(cls);
+        }
+      });
+
+      if (hasConflict) {
+        logs.push({
+          type: 'success',
+          msg: `Suggested compatible combination:<br>✅ <code>${safeClasses.join(' ')}</code>`
+        });
+      } else {
+        logs.push({
+          type: 'success',
+          msg: `✅ Valid combination! All animations are compatible.`
+        });
+      }
+
+      renderOutput(logs);
+    }
+
+    function renderOutput(logs) {
+      consoleOutput.innerHTML = logs.map(log => {
+        return `<div class="log-entry log-${log.type}">${log.msg}</div>`;
+      }).join('');
+    }
+
+    // Run initial validation on load
+    validate();
+  </script>
+
+</body>
+</html>

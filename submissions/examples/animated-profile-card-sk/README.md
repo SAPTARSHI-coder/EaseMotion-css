@@ -1,0 +1,1 @@
+A pure CSS animated profile card with a gradient-bordered circular avatar, name, title, three social stats, and initial-capped social icons. Hovering triggers a faster avatar border rotation while stats fade in via keyframe animation. Fully dark-themed, self-contained, and respectful of reduced-motion preferences.

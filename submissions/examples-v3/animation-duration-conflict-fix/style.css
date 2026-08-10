@@ -1,0 +1,137 @@
+/* ==========================================================================
+   EaseMotion CSS — Animation Duration Conflict Fix
+   Issue #30484
+
+   THE PROBLEM:
+   Components like ease-fade hardcoded their own transition-duration /
+   animation-duration values directly. Separately, .ease-speed-fast /
+   .ease-speed-slow utility classes used a DIFFERENT, independently
+   maintained set of duration numbers. Both rules had equal selector
+   specificity, so applying a speed utility on top of a component
+   sometimes silently did nothing — whichever rule appeared later in
+   the compiled stylesheet won, regardless of which one was "supposed"
+   to take precedence.
+
+   THE FIX:
+   1. A single shared duration scale, defined once as CSS custom
+      properties (--ease-duration-fast/base/slow), mirroring a SCSS map
+      ($ease-durations) so there is only one place duration numbers
+      exist in the codebase.
+   2. Component defaults (ease-fade, ease-slide, etc.) now set
+      transition-duration: var(--ease-duration-base) instead of a
+      hardcoded number — they read from the SAME scale the utilities
+      use, rather than maintaining a parallel value.
+   3. CSS Cascade Layers (components < utilities) guarantee speed
+      utilities always win when applied on top of a component,
+      regardless of source order — consistent with the same pattern
+      used in the !important fix (#30483), applied here to durations
+      instead of display/visibility.
+   ========================================================================== */
+
+@layer base, components, utilities;
+
+@layer base {
+  :root {
+    /* Single source of truth — mirrors $ease-durations SCSS map */
+    --ease-duration-fast: 150ms;
+    --ease-duration-base: 400ms;
+    --ease-duration-slow: 900ms;
+
+    --ease-bg: #0f0f17;
+    --ease-surface: #1a1a26;
+    --ease-border: #2a2a3a;
+    --ease-text: #e8e8f0;
+    --ease-text-dim: #9a9ab0;
+    --ease-accent: #7c5cff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--ease-bg);
+    color: var(--ease-text);
+  }
+
+  .demo-header { padding: 60px 32px 20px; max-width: 780px; }
+  .demo-header h1 { margin: 0 0 12px; font-size: 1.6rem; }
+  .demo-header p, .demo-content p { color: var(--ease-text-dim); line-height: 1.7; }
+  .demo-header code {
+    background: var(--ease-surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    border: 1px solid var(--ease-border);
+  }
+  .demo-content { padding: 0 32px 60px; max-width: 780px; }
+  .demo-block {
+    margin-bottom: 28px;
+    padding: 20px;
+    background: var(--ease-surface);
+    border: 1px solid var(--ease-border);
+    border-radius: 12px;
+  }
+  .demo-block h2 { margin: 0 0 8px; font-size: 1.05rem; }
+  .card-row { display: flex; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+  .duration-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 24px;
+  }
+  .duration-list strong { color: var(--ease-accent); }
+}
+
+/* ---------------------------------------------------------------------
+   COMPONENTS LAYER — ease-fade reads its duration from the shared
+   scale instead of a hardcoded number. No !important, no defensive
+   overrides; the layer order below already guarantees utilities win.
+   --------------------------------------------------------------------- */
+@layer components {
+  .ease-card {
+    background: var(--ease-bg);
+    border: 1px solid var(--ease-border);
+    border-radius: 10px;
+    padding: 18px 24px;
+    color: var(--ease-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .ease-fade {
+    opacity: 0.3;
+    transition-property: opacity, transform;
+    transition-duration: var(--ease-duration-base);
+    transition-timing-function: ease-out;
+    transform: translateY(6px);
+  }
+
+  .ease-fade.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   UTILITIES LAYER — declared LAST, so any duration utility applied on
+   top of a component always wins, deterministically, regardless of
+   source order. Reads from the SAME --ease-duration-* scale as the
+   component defaults, so "fast"/"slow" mean the same thing everywhere.
+   --------------------------------------------------------------------- */
+@layer utilities {
+  .ease-speed-fast {
+    transition-duration: var(--ease-duration-fast);
+  }
+
+  .ease-speed-slow {
+    transition-duration: var(--ease-duration-slow);
+  }
+}
+
+@media (max-width: 600px) {
+  .demo-header, .demo-content { padding-left: 20px; padding-right: 20px; }
+}

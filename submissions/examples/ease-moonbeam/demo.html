@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌙 Moonbeam – Moonbeam Follows Cursor</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌙 Moonbeam</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle beam">✨ Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset position">🔄 Reset</button>
+                <button class="control-btn" id="modeBtn" title="Change mode">🌀 Mode</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="moonbeamCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="beamStatus">🌙 Active</span>
+                <span id="modeDisplay">🌊 Soft</span>
+                <span id="intensityDisplay">💫 80%</span>
+            </div>
+            <div class="hint" id="hint">🌙 Move your cursor to guide the moonbeam</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>💫 Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="80" step="1" />
+                <span id="intensityLabel">80%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Beam Width</label>
+                <input type="range" id="widthSlider" min="20" max="200" value="100" step="5" />
+                <span id="widthLabel">100</span>
+            </div>
+            <div class="slider-group">
+                <label>✨ Glow</label>
+                <input type="range" id="glowSlider" min="0" max="100" value="60" step="1" />
+                <span id="glowLabel">60%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Moonbeam – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('moonbeamCanvas');
+            const ctx = canvas.getContext('2d');
+            const beamStatus = document.getElementById('beamStatus');
+            const modeDisplay = document.getElementById('modeDisplay');
+            const intensityDisplay = document.getElementById('intensityDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const modeBtn = document.getElementById('modeBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const widthSlider = document.getElementById('widthSlider');
+            const widthLabel = document.getElementById('widthLabel');
+            const glowSlider = document.getElementById('glowSlider');
+            const glowLabel = document.getElementById('glowLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isActive = true;
+            let time = 0;
+            let animationId = null;
+            let modeIndex = 0;
+            let targetX = W / 2;
+            let targetY = H / 2;
+            let currentX = W / 2;
+            let currentY = H / 2;
+
+            // --- Parameters ---
+            let intensity = 80; // 10-100
+            let beamWidth = 100; // 20-200
+            let glowAmount = 60; // 0-100
+
+            // --- Modes ---
+            const modes = [
+                { name: 'Soft', desc: '🌊 Soft', color: [180, 210, 255] },
+                { name: 'Lunar', desc: '🌙 Lunar', color: [200, 220, 255] },
+                { name: 'Silver', desc: '✨ Silver', color: [220, 230, 255] },
+                { name: 'Mystic', desc: '🌌 Mystic', color: [160, 180, 255] },
+                { name: 'Warm', desc: '🌅 Warm', color: [255, 220, 180] },
+                { name: 'Aurora', desc: '🌠 Aurora', color: [150, 200, 255] },
+                { name: 'Crystal', desc: '💎 Crystal', color: [200, 240, 255] },
+            ];
+
+            // --- Particles ---
+            let particles = [];
+            const MAX_PARTICLES = 80;
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 20 + Math.random() * 80;
+                    this.x = currentX + Math.cos(angle) * dist;
+                    this.y = currentY + Math.sin(angle) * dist;
+                    this.size = 1 + Math.random() * 3;
+                    this.speed = 0.2 + Math.random() * 0.5;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.opacity = 0.2 + Math.random() * 0.4;
+                    this.drift = (Math.random() - 0.5) * 0.02;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                }
+
+                update() {
+                    this.angle += this.drift;
+                    this.x += Math.cos(this.angle) * this.speed * 0.2 + this.vx * 0.1;
+                    this.y += Math.sin(this.angle) * this.speed * 0.2 + this.vy * 0.1;
+
+                    // Move toward beam center
+                    const dx = currentX - this.x;
+                    const dy = currentY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > 5) {
+                        this.x += dx * 0.005;
+                        this.y += dy * 0.005;
+                    }
+
+                    this.life -= 0.003;
+
+                    // Reset if dead or too far
+                    if (this.life <= 0 || dist > 200) {
+                        this.reset();
+                    }
+                }
+
+                draw(ctx, color, intensity) {
+                    const alpha = (this.life / this.maxLife) * this.opacity * (intensity / 100);
+                    if (alpha < 0.01) return;
+
+                    const [r, g, b] = color;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Glow
+                    const glowSize = this.size * (2 + (1 - this.life / this.maxLife) * 2);
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, glowSize
+                    );
+                    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha * 0.8})`);
+                    grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${alpha * 0.3})`);
+                    grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                    ctx.shadowBlur = glowSize * 2;
+                    ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${alpha * 0.2})`;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Create particles ---
+            function createParticles() {
+                particles = [];
+                for (let i = 0; i < MAX_PARTICLES; i++) {
+                    const p = new Particle();
+                    p.x = currentX + (Math.random() - 0.5) * 200;
+                    p.y = currentY + (Math.random() - 0.5) * 200;
+                    particles.push(p);
+                }
+            }
+
+            // --- Draw moon ---
+            function drawMoon(ctx) {
+                const moonX = W - 100;
+                const moonY = 80;
+
+                ctx.save();
+
+                // Moon glow
+                const glowGrad = ctx.createRadialGradient(
+                    moonX, moonY, 10,
+                    moonX, moonY, 120
+                );
+                glowGrad.addColorStop(0, 'rgba(200, 220, 255, 0.15)');
+                glowGrad.addColorStop(0.5, 'rgba(180, 200, 240, 0.05)');
+                glowGrad.addColorStop(1, 'rgba(160, 180, 220, 0)');
+                ctx.fillStyle = glowGrad;
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 120, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Moon body
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = 'rgba(200, 220, 255, 0.2)';
+
+                const moonGrad = ctx.createRadialGradient(
+                    moonX - 5, moonY - 5, 5,
+                    moonX, moonY, 35
+                );
+                moonGrad.addColorStop(0, 'rgba(255, 250, 240, 0.95)');
+                moonGrad.addColorStop(0.3, 'rgba(245, 240, 230, 0.9)');
+                moonGrad.addColorStop(0.7, 'rgba(230, 225, 215, 0.8)');
+                moonGrad.addColorStop(1, 'rgba(210, 205, 195, 0.6)');
+
+                ctx.fillStyle = moonGrad;
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 35, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Moon craters (subtle)
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 0.1;
+                ctx.fillStyle = 'rgba(180, 170, 160, 0.3)';
+                for (let i = 0; i < 6; i++) {
+                    const angle = i * 1.2 + 0.3;
+                    const dist = 10 + Math.sin(i * 2.3) * 8;
+                    const cx = moonX + Math.cos(angle) * dist;
+                    const cy = moonY + Math.sin(angle) * dist * 0.7;
+                    const size = 2 + Math.sin(i * 1.7) * 3 + 3;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Moon crescent shadow
+                ctx.fillStyle = 'rgba(20, 30, 50, 0.15)';
+                ctx.beginPath();
+                ctx.arc(moonX + 12, moonY - 5, 28, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // --- Draw background ---
+            function renderBackground(ctx) {
+                // Night sky gradient
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a1220');
+                grad.addColorStop(0.3, '#080e18');
+                grad.addColorStop(0.6, '#060a12');
+                grad.addColorStop(0.8, '#04080e');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Stars ---
+                ctx.save();
+                const starCount = 120;
+                for (let i = 0; i < starCount; i++) {
+                    const x = (i * 137.508 + 30) % W;
+                    const y = (i * 97.309 + 20) % H;
+                    const size = 0.3 + Math.sin(i * 3.7) * 0.4 + 0.4;
+                    const twinkle = 0.5 + 0.5 * Math.sin(time * 0.01 + i * 2.3);
+                    ctx.globalAlpha = 0.1 + 0.3 * twinkle;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Occasional brighter star with glow
+                    if (i % 5 === 0) {
+                        ctx.globalAlpha = 0.05 + 0.1 * twinkle;
+                        ctx.shadowBlur = 8;
+                        ctx.shadowColor = 'rgba(200, 220, 255, 0.1)';
+                        ctx.beginPath();
+                        ctx.arc(x, y, size * 1.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.restore();
+
+                // --- Moon ---
+                drawMoon(ctx);
+            }
+
+            // --- Draw moonbeam ---
+            function drawMoonbeam(ctx) {
+                if (!isActive) return;
+
+                const mode = modes[modeIndex];
+                const color = mode.color;
+                const [r, g, b] = color;
+                const intensityFactor = intensity / 100;
+                const glowFactor = glowAmount / 100;
+                const width = beamWidth;
+
+                // --- Main beam cone ---
+                ctx.save();
+
+                // Beam glow
+                const beamLength = 300 + intensityFactor * 150;
+                const beamAlpha = 0.08 * intensityFactor;
+
+                // Create beam gradient
+                const grad = ctx.createRadialGradient(
+                    currentX, currentY, 0,
+                    currentX, currentY, width * 0.8
+                );
+
+                grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${beamAlpha * 0.6})`);
+                grad.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${beamAlpha * 0.3})`);
+                grad.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${beamAlpha * 0.1})`);
+                grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                // Beam cone shape
+                const coneWidth = width * (0.5 + intensityFactor * 0.5);
+                ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                ctx.moveTo(currentX, currentY);
+                ctx.quadraticCurveTo(
+                    currentX + coneWidth * 0.5,
+                    currentY + beamLength * 0.4,
+                    currentX + coneWidth * 0.3,
+                    currentY + beamLength
+                );
+                ctx.quadraticCurveTo(
+                    currentX,
+                    currentY + beamLength * 0.8,
+                    currentX - coneWidth * 0.3,
+                    currentY + beamLength
+                );
+                ctx.quadraticCurveTo(
+                    currentX - coneWidth * 0.5,
+                    currentY + beamLength * 0.4,
+                    currentX,
+                    currentY
+                );
+                ctx.closePath();
+
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // --- Secondary glow (outer) ---
+                const outerGrad = ctx.createRadialGradient(
+                    currentX, currentY, 10,
+                    currentX, currentY, width * 1.5
+                );
+
+                const outerAlpha = 0.03 * intensityFactor * glowFactor;
+                outerGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${outerAlpha * 0.5})`);
+                outerGrad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${outerAlpha * 0.2})`);
+                outerGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = outerGrad;
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, width * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- Beam core (bright center) ---
+                const coreGrad = ctx.createRadialGradient(
+                    currentX - 5, currentY - 5, 2,
+                    currentX, currentY, width * 0.2
+                );
+
+                const coreAlpha = 0.2 * intensityFactor * glowFactor;
+                coreGrad.addColorStop(0, `rgba(255, 255, 255, ${coreAlpha * 0.8})`);
+                coreGrad.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, ${coreAlpha * 0.5})`);
+                coreGrad.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${coreAlpha * 0.2})`);
+                coreGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${coreAlpha * 0.2})`;
+                ctx.fillStyle = coreGrad;
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, width * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // --- Light rays ---
+                if (intensity > 30) {
+                    const rayCount = 12;
+                    const rayAlpha = 0.02 * intensityFactor * glowFactor;
+                    for (let i = 0; i < rayCount; i++) {
+                        const angle = (i / rayCount) * Math.PI * 2 + time * 0.0005;
+                        const len = width * (0.5 + Math.sin(time * 0.001 + i) * 0.3);
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${rayAlpha * 0.1})`;
+                        ctx.globalAlpha = rayAlpha * (0.5 + 0.5 * Math.sin(time * 0.001 + i * 1.5));
+                        ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.5)`;
+                        ctx.lineWidth = 1 + Math.sin(time * 0.002 + i * 2) * 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(currentX, currentY);
+                        ctx.lineTo(
+                            currentX + Math.cos(angle) * len,
+                            currentY + Math.sin(angle) * len
+                        );
+                        ctx.stroke();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.restore();
+
+                // --- Light beam on ground (bottom glow) ---
+                ctx.save();
+                const groundY = H - 30;
+                const groundGrad = ctx.createRadialGradient(
+                    currentX, groundY, 5,
+                    currentX, groundY, width * 0.8
+                );
+                const groundAlpha = 0.05 * intensityFactor * glowFactor;
+                groundGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${groundAlpha})`);
+                groundGrad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${groundAlpha * 0.3})`);
+                groundGrad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = groundGrad;
+                ctx.beginPath();
+                ctx.ellipse(currentX, groundY, width * 0.8, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // --- Particles ---
+                const colorArray = [r, g, b];
+                for (const p of particles) {
+                    p.update();
+                    p.draw(ctx, colorArray, intensity);
+                }
+
+                // --- Beam follow indicator (subtle crosshair) ---
+                ctx.save();
+                const indicatorAlpha = 0.1 * intensityFactor * glowFactor;
+                ctx.globalAlpha = indicatorAlpha;
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 5]);
+                const size = 15;
+                ctx.beginPath();
+                ctx.moveTo(currentX - size, currentY);
+                ctx.lineTo(currentX + size, currentY);
+                ctx.moveTo(currentX, currentY - size);
+                ctx.lineTo(currentX, currentY + size);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Small circle
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, 3, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.2)`;
+                ctx.stroke();
+                ctx.restore();
+
+                // Update displays
+                beamStatus.textContent = '🌙 Active';
+                modeDisplay.textContent = modes[modeIndex].desc;
+                intensityDisplay.textContent = `💫 ${Math.round(intensity)}%`;
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Smooth follow
+                currentX += (targetX - currentX) * 0.08;
+                currentY += (targetY - currentY) * 0.08;
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+                drawMoonbeam(ctx);
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleBeam() {
+                isActive = !isActive;
+                toggleBtn.textContent = isActive ? '✨ Toggle' : '✨ Off';
+                beamStatus.textContent = isActive ? '🌙 Active' : '🌙 Inactive';
+                hint.textContent = isActive ? '🌙 Moonbeam active!' : '🌙 Moonbeam off';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function resetPosition() {
+                targetX = W / 2;
+                targetY = H / 2;
+                currentX = W / 2;
+                currentY = H / 2;
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function nextMode() {
+                modeIndex = (modeIndex + 1) % modes.length;
+                hint.textContent = `🌀 ${modes[modeIndex].name}`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                targetX = Math.max(20, Math.min(W - 20, pos.x));
+                targetY = Math.max(20, Math.min(H - 20, pos.y));
+                hint.classList.add('hidden');
+            }
+
+            function onLeave(e) {
+                // Don't reset position, just stop tracking
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+            });
+
+            widthSlider.addEventListener('input', function() {
+                beamWidth = parseFloat(this.value);
+                widthLabel.textContent = Math.round(beamWidth);
+            });
+
+            glowSlider.addEventListener('input', function() {
+                glowAmount = parseFloat(this.value);
+                glowLabel.textContent = `${Math.round(glowAmount)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleBeam);
+            resetBtn.addEventListener('click', resetPosition);
+            modeBtn.addEventListener('click', nextMode);
+
+            // --- Mouse events ---
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseleave', onLeave);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchstart', onMove, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleBeam();
+                }
+                if (e.key === 'r' || e.key === 'R') resetPosition();
+                if (e.key === 'm' || e.key === 'M') nextMode();
+
+                // Intensity adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    intensity = Math.min(100, intensity + 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    intensity = Math.max(10, intensity - 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            createParticles();
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌙 Moonbeam ready!');
+            console.log('Controls: Space (toggle), R (reset), M (mode)');
+            console.log('          ↑/↓ (intensity), Move cursor to guide the beam!');
+
+        })();
+    </script>
+</body>
+</html>
