@@ -1,174 +1,23 @@
-# Animated PIN / OTP Input Collection
+# Animated OTP Input / Verification Code
 
-## Overview
+A clean, modern, and fully responsive **OTP Input Component** perfect for two-factor authentication, phone verification, and secure logins. This example demonstrates how to combine **EaseMotion CSS** for staggered input box entrances, smooth focus transitions, and a bouncy success animation to create a polished, user-friendly verification experience.
 
-A production-quality collection of animated PIN and OTP input interactions built with pure CSS micro-animations and minimal JavaScript for focus management.
+## 🚀 Features
 
-The component recreates the segmented verification code pattern commonly used for:
+- **Staggered Input Entrances**: Each input box fades in sequentially using `ease-fade-in-up` and `ease-delay-*` for a smooth cascading load effect.
+- **Smooth Focus Transitions**: Inputs feature a glowing border and subtle lift effect when focused using CSS transitions.
+- **Auto-Advance Focus**: JavaScript automatically moves focus to the next input when a digit is entered.
+- **Backspace Navigation**: Pressing backspace on an empty input moves focus to the previous input.
+- **Paste Support**: Pasting a full code automatically fills all input boxes.
+- **Error Shake Animation**: Incorrect verification triggers a shake animation on all inputs.
+- **Countdown Timer**: A 30-second countdown timer with a pulsing "Resend Code" link when expired.
+- **Bouncy Success State**: A success overlay with a bouncy checkmark using `ease-bounce-in` appears upon successful verification.
+- **Fully Responsive**: Adapts gracefully to mobile screens with adjusted input sizing.
 
-- Two-factor authentication (2FA)
-- One-time passwords (OTP)
-- Verification codes
-- Coupon redemption codes
-- Secure PIN entry
-
-Each interaction is enhanced with motion to provide clear visual feedback during typing, validation, and completion.
-
----
-
-## Features
-
-### ✨ Animated States
-
-- **ease-otp-box**
-  - Idle, focused, and filled states
-
-- **ease-otp-fill-pop**
-  - Scale-pop animation when a digit is entered
-
-- **ease-otp-caret-blink**
-  - Animated blinking caret for the active input
-
-- **ease-otp-error-shake**
-  - Entire input row shakes and flashes red on invalid state
-
-- **ease-otp-success-glow**
-  - Success glow animation when verification completes
-
----
-
-## UX Features
-
-- Auto-advance to the next input
-- Auto-backspace navigation
-- Full OTP paste support
-- Numeric-only input
-- Arrow key navigation
-- Mobile-friendly numeric keyboard
-- Responsive layout
-- Accessible labels
-- Keyboard-first experience
-
----
-
-## Usage
-
-### HTML
-
-```html
-<div class="ease-otp-row">
-  <input class="ease-otp-box" maxlength="1" inputmode="numeric" />
-  <input class="ease-otp-box" maxlength="1" inputmode="numeric" />
-  <input class="ease-otp-box" maxlength="1" inputmode="numeric" />
-  <input class="ease-otp-box" maxlength="1" inputmode="numeric" />
-</div>
-```
-
----
-
-### Success State
-
-```html
-<div class="ease-otp-row is-complete">
-  ...
-</div>
-```
-
----
-
-### Error State
-
-```html
-<div class="ease-otp-row is-invalid">
-  ...
-</div>
-```
-
----
-
-## JavaScript Example
-
-```js
-inputs.forEach((input, i) => {
-  input.addEventListener("input", () => {
-    if (input.value && inputs[i + 1]) {
-      inputs[i + 1].focus();
-    }
-  });
-
-  input.addEventListener("keydown", (e) => {
-    if (
-      e.key === "Backspace" &&
-      !input.value &&
-      inputs[i - 1]
-    ) {
-      inputs[i - 1].focus();
-    }
-  });
-});
-```
-
----
-
-## CSS Classes
-
-| Class | Description |
-|-------|-------------|
-| `.ease-otp-row` | OTP container |
-| `.ease-otp-box` | Single digit cell |
-| `.ease-otp-fill-pop` | Pop animation on entry |
-| `.ease-otp-caret-blink` | Blinking caret animation |
-| `.ease-otp-error-shake` | Error state animation |
-| `.ease-otp-success-glow` | Success state animation |
-| `.is-invalid` | Invalid verification state |
-| `.is-complete` | Successful verification state |
-
----
-
-## Why It Fits EaseMotion CSS
-
-- Animation-first interaction design
-- Pure CSS micro-animations
-- Lightweight and dependency-free
-- Production-ready OTP pattern
-- Highly reusable in forms and authentication flows
-- Demonstrates both utility and animation techniques
-
----
-
-## Demo
-
-Open:
+## 📂 File Structure
 
 ```text
-demo.html
-```
-
-directly in your browser.
-
-Demo code:
-
-```text
-123456
-```
-
----
-
-## Browser Support
-
-- ✅ Chrome
-- ✅ Firefox
-- ✅ Edge
-
----
-
-## Future Enhancements
-
-Possible additions:
-
-- Masked PIN mode
-- Alphanumeric OTP support
-- Countdown timer integration
-- Resend code pattern
-- Loading verification state
-- Variable OTP length examples
+submissions/examples/animated-otp-input/
+├── demo.html    # HTML structure, EaseMotion utility classes, and JavaScript
+├── style.css    # Custom CSS for input styling, focus states, and responsive behavior
+└── README.md    # Documentation

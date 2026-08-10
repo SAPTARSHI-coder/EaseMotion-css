@@ -1,0 +1,142 @@
+// ==========================================================================
+// EaseMotion CSS — Theme Contrast function
+// Issue #63558
+// --------------------------------------------------------------------------
+// Computes WCAG 2.1 contrast ratios at build time and warns when a token
+// pair falls below the required threshold.
+//
+// The value here is timing. Contrast problems are normally found during a
+// manual audit, long after the tokens have spread through a codebase — at
+// which point fixing one muted-grey value means re-checking every surface
+// it appears on. Computing the ratio where the token is defined moves the
+// finding to the moment the mistake is made.
+//
+// The relative-luminance formula is from WCAG 2.1 §Relative luminance, and
+// the sRGB linearisation threshold (0.03928) is the specified constant —
+// it is not an approximation and should not be rounded.
+// ==========================================================================
+
+@use "sass:color";
+@use "sass:math";
+@use "sass:meta";
+
+$theme-contrast-aa: 4.5 !default;
+$theme-contrast-aa-large: 3 !default;
+$theme-contrast-aaa: 7 !default;
+
+// --------------------------------------------------------------------------
+// channel-luminance — linearise one sRGB channel (0-255).
+// --------------------------------------------------------------------------
+@function channel-luminance($channel) {
+    $c: math.div($channel, 255);
+
+    @if $c <= 0.03928 {
+        @return math.div($c, 12.92);
+    }
+
+    // WCAG uses ((c + 0.055) / 1.055) ^ 2.4. Sass has no arbitrary power
+    // operator, so this uses math.pow, available since Dart Sass 1.25.
+    @return math.pow(math.div($c + 0.055, 1.055), 2.4);
+}
+
+// --------------------------------------------------------------------------
+// relative-luminance — WCAG relative luminance of a colour.
+// --------------------------------------------------------------------------
+@function relative-luminance($col) {
+    @if meta.type-of($col) != "color" {
+        @error "relative-luminance(): expected a color, got `#{$col}`.";
+    }
+
+    @return 0.2126 * channel-luminance(color.channel($col, "red", $space: rgb))
+        + 0.7152 * channel-luminance(color.channel($col, "green", $space: rgb))
+        + 0.0722 * channel-luminance(color.channel($col, "blue", $space: rgb));
+}
+
+// --------------------------------------------------------------------------
+// contrast-ratio — WCAG contrast ratio between two colours. 1 to 21.
+// --------------------------------------------------------------------------
+@function contrast-ratio($fg, $bg) {
+    $l1: relative-luminance($fg);
+    $l2: relative-luminance($bg);
+
+    $lighter: math.max($l1, $l2);
+    $darker: math.min($l1, $l2);
+
+    @return math.div($lighter + 0.05, $darker + 0.05);
+}
+
+// --------------------------------------------------------------------------
+// meets-contrast — boolean threshold test.
+//
+// @param {String} $level  "AA", "AA-large" or "AAA".
+// --------------------------------------------------------------------------
+@function meets-contrast($fg, $bg, $level: "AA") {
+    $required: $theme-contrast-aa;
+
+    @if $level == "AA-large" {
+        $required: $theme-contrast-aa-large;
+    } @else if $level == "AAA" {
+        $required: $theme-contrast-aaa;
+    } @else if $level != "AA" {
+        @error "meets-contrast(): unknown $level `#{$level}`. "
+             + "Expected AA, AA-large or AAA.";
+    }
+
+    @return contrast-ratio($fg, $bg) >= $required;
+}
+
+// --------------------------------------------------------------------------
+// contrast-safe
+//
+// Returns the colour unchanged, but emits a build WARNING if it fails the
+// threshold against $on.
+//
+// Deliberately @warn rather than @error: contrast is a judgement call at
+// the margins (disabled text, decorative dividers), and failing the build
+// on those would push people to stop using the function entirely. A
+// warning is visible in CI without being a hard block.
+// --------------------------------------------------------------------------
+@function contrast-safe($col, $on, $level: "AA", $label: null) {
+    @if not meets-contrast($col, $on, $level) {
+        $ratio: contrast-ratio($col, $on);
+        $name: $label;
+
+        @if not $name {
+            $name: "#{$col} on #{$on}";
+        }
+
+        @warn "Contrast #{$level} FAIL — #{$name}: ratio "
+            + "#{math.div(math.round($ratio * 100), 100)}:1.";
+    }
+
+    @return $col;
+}
+
+// --------------------------------------------------------------------------
+// pick-contrast
+//
+// Choose whichever of two candidates contrasts better with $bg. Useful for
+// text on a dynamic accent colour, where neither light nor dark is always
+// correct.
+// --------------------------------------------------------------------------
+@function pick-contrast($bg, $light: #ffffff, $dark: #000000) {
+    @if contrast-ratio($light, $bg) >= contrast-ratio($dark, $bg) {
+        @return $light;
+    }
+
+    @return $dark;
+}
+
+// --------------------------------------------------------------------------
+// contrast-audit
+//
+// Audit a whole token map against one background in a single pass, so a
+// theme can be checked as a unit rather than token by token.
+//
+// @param {Map} $tokens  name => color
+// --------------------------------------------------------------------------
+@mixin contrast-audit($tokens, $on, $level: "AA") {
+    @each $name, $col in $tokens {
+        $ignored: contrast-safe($col, $on, $level, $name);
+    }
+}

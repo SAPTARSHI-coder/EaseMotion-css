@@ -1,0 +1,137 @@
+// ==========================================================================
+// EaseMotion CSS — Overscroll mixin
+// Issue #63809
+// --------------------------------------------------------------------------
+// Stops scroll chaining out of nested scroll areas.
+//
+// Scroll chaining is the behaviour where reaching the end of a scrollable
+// child hands the remaining scroll to its parent. In a dropdown, a drawer
+// or a chat panel this is almost always wrong: the user flicks to the
+// bottom of the list and the page behind it lurches. On iOS it is worse —
+// the page scrolls *under* an open modal, and closing it leaves the user
+// somewhere they never navigated to.
+//
+// `overscroll-behavior: contain` fixes it in one declaration. The reason
+// this is a mixin is the surrounding detail: `contain` still permits the
+// rubber-band bounce, `none` suppresses it too, and which you want
+// differs between a modal (none) and a list (contain). Getting that
+// backwards makes a modal feel broken on iOS.
+// ==========================================================================
+
+@use "sass:meta";
+
+// --------------------------------------------------------------------------
+// overscroll-contain
+//
+// For scrollable regions inside a scrollable page — dropdowns, list
+// panels, chat logs. Keeps the bounce, which users read as "this is the
+// end of the list".
+//
+// @param {String} $axis  `both`, `y` or `x`.
+// --------------------------------------------------------------------------
+@mixin overscroll-contain($axis: both) {
+    @if $axis == both {
+        overscroll-behavior: contain;
+    } @else if $axis == y {
+        overscroll-behavior-y: contain;
+    } @else if $axis == x {
+        overscroll-behavior-x: contain;
+    } @else {
+        @error "overscroll-contain(): $axis must be `both`, `y` or `x`, got `#{$axis}`.";
+    }
+
+    // Momentum scrolling on older iOS, which otherwise scrolls in a
+    // single stiff step inside a nested region.
+    -webkit-overflow-scrolling: touch;
+}
+
+// --------------------------------------------------------------------------
+// overscroll-lock
+//
+// For modal surfaces. `none` also suppresses the bounce — appropriate
+// here, because a bounce on a dialog surface reveals the page behind it
+// and breaks the illusion that the dialog is a separate layer.
+// --------------------------------------------------------------------------
+@mixin overscroll-lock($axis: both) {
+    @if $axis == both {
+        overscroll-behavior: none;
+    } @else if $axis == y {
+        overscroll-behavior-y: none;
+    } @else if $axis == x {
+        overscroll-behavior-x: none;
+    } @else {
+        @error "overscroll-lock(): $axis must be `both`, `y` or `x`, got `#{$axis}`.";
+    }
+}
+
+// --------------------------------------------------------------------------
+// scroll-region
+//
+// A complete scrollable region: containment, a max height, and a
+// scrollbar that does not shift layout when content grows past the
+// threshold.
+//
+// `scrollbar-gutter: stable` is the part worth having — without it, a
+// list that grows from 9 to 10 items gains a scrollbar and every row
+// shifts left by its width, which reads as a layout jump on what should
+// be an unrelated change.
+// --------------------------------------------------------------------------
+@mixin scroll-region($max-height: 320px, $axis: y, $contain: true) {
+    max-height: $max-height;
+    scrollbar-gutter: stable;
+
+    @if $axis == y {
+        overflow-x: hidden;
+        overflow-y: auto;
+    } @else if $axis == x {
+        overflow-x: auto;
+        overflow-y: hidden;
+    } @else {
+        overflow: auto;
+    }
+
+    @if $contain {
+        @include overscroll-contain($axis);
+    }
+}
+
+// --------------------------------------------------------------------------
+// body-scroll-lock
+//
+// Applied to the document while a modal is open.
+//
+// `position: fixed` is deliberately NOT used. The common lock sets
+// `position: fixed` on the body, which collapses the scroll position to
+// zero — so closing the modal returns the user to the top of the page
+// rather than where they were. Combining `overflow: hidden` with
+// `overscroll-behavior: none` locks scrolling while preserving position.
+// --------------------------------------------------------------------------
+@mixin body-scroll-lock($selector: "[data-scroll-locked]") {
+    #{$selector} {
+        overflow: hidden;
+        overscroll-behavior: none;
+        // Reserving the gutter prevents the page reflowing sideways as
+        // the scrollbar disappears — the classic modal-open content shift.
+        scrollbar-gutter: stable;
+    }
+}
+
+// --------------------------------------------------------------------------
+// overscroll-snap-region
+//
+// Carousels and chip rows: containment plus snapping, so a flick reaches
+// the end of the track without scrolling the page.
+// --------------------------------------------------------------------------
+@mixin overscroll-snap-region($align: start, $padding: 0) {
+    display: flex;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: $padding;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+
+    > * {
+        flex: 0 0 auto;
+        scroll-snap-align: $align;
+    }
+}

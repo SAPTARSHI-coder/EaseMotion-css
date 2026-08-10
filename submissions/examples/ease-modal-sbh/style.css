@@ -1,0 +1,188 @@
+/* ease-modal — a centered modal dialog on the native <dialog> element.
+   ::backdrop is blurred + dimmed; the content scales+fades in on open.
+   Closes via backdrop click, Escape, or close button — all native <dialog>.
+   Pure CSS (the only JS is the .showModal()/.close() wiring from the page). */
+
+:root {
+  --md-maxw: 30rem;
+  --md-radius: 1rem;
+  --md-bg: #ffffff;
+  --bd-dim: rgba(15, 23, 42, 0.55);
+  --bd-blur: 8px;
+  --md-shadow: 0 24px 60px -20px rgba(15, 23, 42, 0.45);
+  --md-accent: #4f46e5;
+  --md-accent-soft: rgba(79, 70, 229, 0.12);
+  --md-dur: 0.26s;
+  --md-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --md-from-scale: 0.94;
+  --md-from-y: 0.4rem;
+}
+
+/* ---------- Page (demo only) ---------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
+  background:
+    radial-gradient(1000px 560px at 85% -8%, #eef2ff, transparent 60%),
+    radial-gradient(760px 460px at 0% 0%, #faf5ff, transparent 55%),
+    #fff;
+  line-height: 1.6;
+}
+.page { max-width: 44rem; margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem); }
+.page__eyebrow {
+  margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 0.18em;
+  font-size: 0.78rem; font-weight: 700; color: var(--md-accent);
+}
+.page__head h1 { margin: 0 0 0.8rem; font-size: clamp(1.6rem, 4.5vw, 2.4rem); letter-spacing: -0.02em; }
+.page__lede { margin: 0 0 2rem; color: #64748b; max-width: 38rem; }
+.page__lede code { background: var(--md-accent-soft); color: var(--md-accent); padding: 0.12rem 0.4rem; border-radius: 0.4rem; font-size: 0.9em; }
+
+.panel {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(15,23,42,0.06);
+  border-radius: 1rem;
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  margin-bottom: 1.4rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.panel__title { margin: 0 0 1rem; font-size: 1.1rem; letter-spacing: -0.01em; }
+.panel__hint { margin: 1rem 0 0; color: #94a3b8; font-size: 0.85rem; }
+.panel__hint kbd {
+  background: #f1f5f9; border: 1px solid #e2e8f0; border-bottom-width: 2px;
+  border-radius: 0.35rem; padding: 0.05rem 0.4rem; font: 0.8em monospace;
+}
+.triggers { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+
+/* Buttons (demo only) */
+.btn {
+  font: inherit; font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid #e2e8f0;
+  background: #fff; color: #0f172a;
+  cursor: pointer;
+  transition: background-color var(--md-dur) var(--md-ease), border-color var(--md-dur) var(--md-ease), transform var(--md-dur) var(--md-ease);
+}
+.btn:hover { background: #f8fafc; }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 0.25rem var(--md-accent-soft); }
+.btn--primary { background: var(--md-accent); border-color: var(--md-accent); color: #fff; }
+.btn--primary:hover { background: #4338ca; }
+.btn--ghost { background: transparent; border-color: transparent; color: var(--md-accent); }
+.btn--ghost:hover { background: var(--md-accent-soft); }
+.btn--danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+.btn--danger:hover { background: #b91c1c; }
+
+/* ---------- The modal ---------- */
+.modal {
+  /* <dialog> is position: fixed by default when open via .showModal() */
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  max-width: min(92vw, var(--md-maxw));
+  max-height: 85vh;
+  /* entrance: start scaled down + faded + nudged down */
+  opacity: 0;
+  transform: translateY(var(--md-from-y)) scale(var(--md-from-scale));
+  transition: opacity var(--md-dur) var(--md-ease), transform var(--md-dur) var(--md-ease),
+              overlay var(--md-dur) allow-discrete, display var(--md-dur) allow-discrete;
+}
+/* <dialog>[open] is the "settled" state — animate to full visibility */
+.modal[open] {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+/* Animate the closing transition too (modern browsers). Without @starting-style,
+   exit transitions wouldn't run because display:none skips them. */
+@starting-style {
+  .modal[open] {
+    opacity: 0;
+    transform: translateY(var(--md-from-y)) scale(var(--md-from-scale));
+  }
+}
+
+/* Backdrop: dim + blur the rest of the page. Animates in/out with the dialog. */
+.modal::backdrop {
+  background: var(--bd-dim);
+  backdrop-filter: blur(var(--bd-blur));
+  -webkit-backdrop-filter: blur(var(--bd-blur));
+  opacity: 0;
+  transition: opacity var(--md-dur) var(--md-ease),
+              overlay var(--md-dur) allow-discrete, display var(--md-dur) allow-discrete;
+}
+.modal[open]::backdrop { opacity: 1; }
+@starting-style {
+  .modal[open]::backdrop { opacity: 0; }
+}
+
+/* Inner card */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  background: var(--md-bg);
+  border-radius: var(--md-radius);
+  box-shadow: var(--md-shadow);
+  overflow: hidden;
+  max-height: 85vh;
+}
+.modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.3rem;
+  border-bottom: 1px solid rgba(15,23,42,0.06);
+}
+.modal-title { margin: 0; font-size: 1.15rem; letter-spacing: -0.01em; }
+.modal-close {
+  display: inline-grid; place-items: center;
+  width: 2rem; height: 2rem;
+  border: 0; background: transparent;
+  font-size: 1.4rem; line-height: 1; color: #94a3b8;
+  border-radius: 0.45rem; cursor: pointer;
+  transition: background-color var(--md-dur) var(--md-ease), color var(--md-dur) var(--md-ease);
+}
+.modal-close:hover { background: #f1f5f9; color: #0f172a; }
+.modal-close:focus-visible { outline: none; box-shadow: 0 0 0 0.2rem var(--md-accent-soft); }
+
+.modal-body {
+  padding: 1.3rem;
+  overflow: auto;
+}
+.modal-body p { margin: 0 0 0.6rem; color: #475569; }
+.modal-body p:last-child { margin-bottom: 0; }
+.changelog { margin: 0; padding-left: 1.2rem; color: #475569; }
+.changelog li { margin-bottom: 0.4rem; }
+
+.modal-foot {
+  display: flex; justify-content: flex-end; gap: 0.6rem;
+  padding: 1rem 1.3rem;
+  border-top: 1px solid rgba(15,23,42,0.06);
+  background: #fbfcfe;
+}
+
+/* Form fields (demo only) */
+.field { display: block; margin-bottom: 0.9rem; }
+.field:last-child { margin-bottom: 0; }
+.field__label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.3rem; color: #475569; }
+.field__input {
+  width: 100%;
+  font: inherit;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.55rem;
+  background: #fff;
+  transition: border-color var(--md-dur) var(--md-ease), box-shadow var(--md-dur) var(--md-ease);
+}
+.field__input:focus { outline: none; border-color: var(--md-accent); box-shadow: 0 0 0 0.2rem var(--md-accent-soft); }
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal::backdrop,
+  .btn,
+  .field__input,
+  .modal-close { transition: none; }
+}

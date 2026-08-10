@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dancing Robot</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Dancing Robot</h1>
+        <p class="subtitle">Robot with dancing limbs to the beat</p>
+
+        <div class="robot-wrapper">
+            <canvas id="robotCanvas"></canvas>
+
+            <div class="controls">
+                <button id="danceBtn">💃 Dance</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🤖 Ready to dance</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('robotCanvas');
+        const ctx = canvas.getContext('2d');
+        const danceBtn = document.getElementById('danceBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let isDancing = false;
+        let danceTime = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let beat = 0;
+        let particles = [];
+        let joints = {
+            headAngle: 0,
+            leftArmAngle: 0,
+            rightArmAngle: 0,
+            leftLegAngle: 0,
+            rightLegAngle: 0,
+            bodyBob: 0,
+            headBob: 0,
+        };
+        let targetJoints = {
+            headAngle: 0,
+            leftArmAngle: 0,
+            rightArmAngle: 0,
+            leftLegAngle: 0,
+            rightLegAngle: 0,
+            bodyBob: 0,
+            headBob: 0,
+        };
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                body: '#4d96ff',
+                accent: '#ff6b6b',
+                highlight: '#ffd93d',
+                glow: '#4d96ff'
+            },
+            {
+                name: 'Metallic',
+                body: '#c0c0c0',
+                accent: '#ff6b35',
+                highlight: '#e8e8e8',
+                glow: '#c0c0c0'
+            },
+            {
+                name: 'Neon',
+                body: '#ff00ff',
+                accent: '#00ffff',
+                highlight: '#ff0080',
+                glow: '#ff00ff'
+            },
+            {
+                name: 'Retro',
+                body: '#ff6b6b',
+                accent: '#ffd93d',
+                highlight: '#6bcb77',
+                glow: '#ff6b6b'
+            },
+            {
+                name: 'Ocean',
+                body: '#006994',
+                accent: '#00b4d8',
+                highlight: '#90e0ef',
+                glow: '#006994'
+            },
+            {
+                name: 'Galaxy',
+                body: '#7c3aed',
+                accent: '#a78bfa',
+                highlight: '#c084fc',
+                glow: '#7c3aed'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 2 + Math.random() * 4;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.life = 1;
+                this.maxLife = 30 + Math.random() * 40;
+                this.age = 0;
+                this.gravity = 0.05 + Math.random() * 0.05;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DANCE MOVES =====
+        function generateDanceMove() {
+            const moves = [
+                // Wave
+                () => {
+                    targetJoints.leftArmAngle = Math.sin(danceTime * 3) * 1.2;
+                    targetJoints.rightArmAngle = Math.sin(danceTime * 3 + 0.5) * 1.2;
+                    targetJoints.leftLegAngle = Math.sin(danceTime * 2) * 0.3;
+                    targetJoints.rightLegAngle = Math.sin(danceTime * 2 + 0.3) * 0.3;
+                },
+                // Robot
+                () => {
+                    targetJoints.leftArmAngle = 1.2 + Math.sin(danceTime * 2) * 0.3;
+                    targetJoints.rightArmAngle = -1.2 + Math.sin(danceTime * 2 + 1) * 0.3;
+                    targetJoints.leftLegAngle = Math.sin(danceTime * 1.5) * 0.5;
+                    targetJoints.rightLegAngle = Math.sin(danceTime * 1.5 + 0.5) * 0.5;
+                },
+                // Flail
+                () => {
+                    targetJoints.leftArmAngle = Math.sin(danceTime * 4) * 1.5;
+                    targetJoints.rightArmAngle = Math.sin(danceTime * 4 + 1) * 1.5;
+                    targetJoints.leftLegAngle = Math.sin(danceTime * 3) * 0.6;
+                    targetJoints.rightLegAngle = Math.sin(danceTime * 3 + 0.4) * 0.6;
+                },
+                // Bounce
+                () => {
+                    const bounce = Math.sin(danceTime * 2.5) * 0.3;
+                    targetJoints.bodyBob = bounce;
+                    targetJoints.headBob = -bounce * 0.5;
+                    targetJoints.leftArmAngle = Math.sin(danceTime * 2.5) * 0.8;
+                    targetJoints.rightArmAngle = Math.sin(danceTime * 2.5 + 0.5) * 0.8;
+                    targetJoints.leftLegAngle = Math.sin(danceTime * 2) * 0.2;
+                    targetJoints.rightLegAngle = Math.sin(danceTime * 2 + 0.3) * 0.2;
+                },
+                // Spinning
+                () => {
+                    targetJoints.leftArmAngle = Math.sin(danceTime * 1.5) * 1.0;
+                    targetJoints.rightArmAngle = Math.cos(danceTime * 1.5) * 1.0;
+                    targetJoints.leftLegAngle = Math.sin(danceTime * 1.2) * 0.4;
+                    targetJoints.rightLegAngle = Math.cos(danceTime * 1.2) * 0.4;
+                },
+            ];
+            return moves[Math.floor(Math.random() * moves.length)];
+        }
+
+        let currentMove = generateDanceMove();
+        let moveTimer = 0;
+
+        // ===== DRAW ROBOT =====
+        function drawRobot(ctx, cx, cy, scale) {
+            const palette = colorPalettes[colorMode];
+            const bodyColor = palette.body;
+            const accentColor = palette.accent;
+            const highlightColor = palette.highlight;
+            const glowColor = palette.glow;
+
+            const s = scale || 1;
+            const headSize = 30 * s;
+            const bodyWidth = 40 * s;
+            const bodyHeight = 50 * s;
+            const armLength = 35 * s;
+            const legLength = 40 * s;
+            const eyeSize = 6 * s;
+
+            // Body bob
+            const bodyY = joints.bodyBob * 10 * s;
+            const headY = joints.headBob * 8 * s;
+
+            ctx.save();
+            ctx.translate(cx, cy + bodyY);
+
+            // Shadow
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+            // Body
+            const bodyGrad = ctx.createLinearGradient(-bodyWidth/2, 0, bodyWidth/2, 0);
+            bodyGrad.addColorStop(0, bodyColor);
+            bodyGrad.addColorStop(0.5, bodyColor);
+            bodyGrad.addColorStop(1, bodyColor + '80');
+
+            ctx.fillStyle = bodyGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = glowColor + '40';
+
+            // Body shape (rounded rect)
+            const r = 8 * s;
+            ctx.beginPath();
+            ctx.moveTo(-bodyWidth/2 + r, 0);
+            ctx.lineTo(bodyWidth/2 - r, 0);
+            ctx.quadraticCurveTo(bodyWidth/2, 0, bodyWidth/2, r);
+            ctx.lineTo(bodyWidth/2, bodyHeight - r);
+            ctx.quadraticCurveTo(bodyWidth/2, bodyHeight, bodyWidth/2 - r, bodyHeight);
+            ctx.lineTo(-bodyWidth/2 + r, bodyHeight);
+            ctx.quadraticCurveTo(-bodyWidth/2, bodyHeight, -bodyWidth/2, bodyHeight - r);
+            ctx.lineTo(-bodyWidth/2, r);
+            ctx.quadraticCurveTo(-bodyWidth/2, 0, -bodyWidth/2 + r, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Body details
+            ctx.fillStyle = accentColor + '30';
+            ctx.fillRect(-bodyWidth/2 + 4 * s, 10 * s, bodyWidth - 8 * s, 4 * s);
+            ctx.fillRect(-bodyWidth/2 + 4 * s, 20 * s, bodyWidth - 8 * s, 4 * s);
+            ctx.fillRect(-bodyWidth/2 + 4 * s, 30 * s, bodyWidth - 8 * s, 4 * s);
+
+            // Chest light
+            const chestGlow = 0.5 + 0.5 * Math.sin(time * 2);
+            const chestGrad = ctx.createRadialGradient(0, 18 * s, 0, 0, 18 * s, 8 * s);
+            chestGrad.addColorStop(0, accentColor + `${Math.floor(80 + 80 * chestGlow)}`);
+            chestGrad.addColorStop(0.5, accentColor + '40');
+            chestGrad.addColorStop(1, accentColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, 18 * s, 8 * s, 0, Math.PI * 2);
+            ctx.fillStyle = chestGrad;
+            ctx.fill();
+
+            // Neck
+            ctx.fillStyle = bodyColor + '80';
+            ctx.fillRect(-6 * s, -10 * s, 12 * s, 10 * s);
+
+            // Head
+            ctx.save();
+            ctx.translate(0, -10 * s + headY);
+
+            // Head glow
+            const headGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, headSize * 1.2);
+            headGlow.addColorStop(0, bodyColor + '20');
+            headGlow.addColorStop(1, bodyColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, 0, headSize * 1.2, 0, Math.PI * 2);
+            ctx.fillStyle = headGlow;
+            ctx.fill();
+
+            // Head shape
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = glowColor + '30';
+            ctx.beginPath();
+            ctx.arc(0, 0, headSize, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Head antenna
+            ctx.beginPath();
+            ctx.moveTo(0, -headSize);
+            ctx.lineTo(0, -headSize - 15 * s);
+            ctx.strokeStyle = bodyColor;
+            ctx.lineWidth = 2 * s;
+            ctx.stroke();
+
+            // Antenna ball
+            const antGlow = 0.5 + 0.5 * Math.sin(time * 1.5);
+            ctx.beginPath();
+            ctx.arc(0, -headSize - 15 * s, 4 * s, 0, Math.PI * 2);
+            const antColor = accentColor;
+            ctx.fillStyle = antColor;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = antColor + '60';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes
+            const eyeY = -4 * s;
+            // Left eye
+            ctx.beginPath();
+            ctx.arc(-10 * s, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-8 * s, eyeY + 1 * s, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-7 * s, eyeY, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Right eye
+            ctx.beginPath();
+            ctx.arc(10 * s, eyeY, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(12 * s, eyeY + 1 * s, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#222';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(13 * s, eyeY, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Mouth (LED smile)
+            const mouthOpen = 0.5 + 0.5 * Math.sin(time * 2);
+            ctx.beginPath();
+            ctx.arc(0, 6 * s, 8 * s, 0.1, Math.PI - 0.1);
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 2 * s;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = accentColor + '40';
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Head details (bolts)
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2 + 0.3;
+                const bx = Math.cos(angle) * (headSize - 4 * s);
+                const by = Math.sin(angle) * (headSize - 4 * s);
+                ctx.beginPath();
+                ctx.arc(bx, by, 2 * s, 0, Math.PI * 2);
+                ctx.fillStyle = bodyColor + '80';
+                ctx.fill();
+            }
+
+            ctx.restore(); // Head
+
+            // Arms
+            const armY = 10 * s;
+
+            // Left arm
+            ctx.save();
+            ctx.translate(-bodyWidth/2 - 2 * s, armY);
+            ctx.rotate(-0.2 + joints.leftArmAngle);
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            // Upper arm
+            ctx.fillRect(-3 * s, 0, 6 * s, armLength * 0.6);
+            // Lower arm
+            ctx.fillRect(-3 * s, armLength * 0.6 - 2 * s, 6 * s, armLength * 0.4);
+            // Hand (circle)
+            ctx.beginPath();
+            ctx.arc(0, armLength, 5 * s, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // Right arm
+            ctx.save();
+            ctx.translate(bodyWidth/2 + 2 * s, armY);
+            ctx.rotate(0.2 + joints.rightArmAngle);
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            ctx.fillRect(-3 * s, 0, 6 * s, armLength * 0.6);
+            ctx.fillRect(-3 * s, armLength * 0.6 - 2 * s, 6 * s, armLength * 0.4);
+            ctx.beginPath();
+            ctx.arc(0, armLength, 5 * s, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // Legs
+            const legY = bodyHeight;
+
+            // Left leg
+            ctx.save();
+            ctx.translate(-10 * s, legY);
+            ctx.rotate(joints.leftLegAngle);
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            ctx.fillRect(-4 * s, 0, 8 * s, legLength * 0.6);
+            ctx.fillRect(-4 * s, legLength * 0.6, 8 * s, legLength * 0.4);
+            // Foot
+            ctx.fillRect(-6 * s, legLength, 12 * s, 4 * s);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            // Right leg
+            ctx.save();
+            ctx.translate(10 * s, legY);
+            ctx.rotate(joints.rightLegAngle);
+            ctx.fillStyle = bodyColor;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = glowColor + '30';
+            ctx.fillRect(-4 * s, 0, 8 * s, legLength * 0.6);
+            ctx.fillRect(-4 * s, legLength * 0.6, 8 * s, legLength * 0.4);
+            ctx.fillRect(-6 * s, legLength, 12 * s, 4 * s);
+            ctx.shadowBlur = 0;
+            ctx.restore();
+
+            ctx.restore(); // Body
+
+            // Dance particles
+            if (isDancing && Math.random() < 0.05) {
+                const px = cx + (Math.random() - 0.5) * 60;
+                const py = cy + (Math.random() - 0.5) * 80;
+                const p = new Particle(px, py, accentColor);
+                p.vx = (Math.random() - 0.5) * 4;
+                p.vy = -Math.random() * 3 - 1;
+                particles.push(p);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Dance floor
+            const floorY = h * 0.8;
+            const floorGrad = ctx.createLinearGradient(0, floorY, 0, h);
+            floorGrad.addColorStop(0, 'rgba(30, 60, 40, 0)');
+            floorGrad.addColorStop(0.3, 'rgba(30, 60, 40, 0.05)');
+            floorGrad.addColorStop(0.7, 'rgba(30, 60, 40, 0.1)');
+            floorGrad.addColorStop(1, 'rgba(30, 60, 40, 0.15)');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, floorY, w, h - floorY);
+
+            // Floor line
+            ctx.beginPath();
+            ctx.moveTo(0, floorY);
+            ctx.lineTo(w, floorY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Beat lines (when dancing)
+            if (isDancing) {
+                const beatAlpha = 0.1 + 0.1 * Math.sin(beat * 2);
+                for (let i = 0; i < 5; i++) {
+                    const x = (i / 5) * w + Math.sin(time * 2 + i) * 10;
+                    const y = h * 0.2 + Math.sin(time * 3 + i * 1.5) * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 20, y);
+                    ctx.lineTo(x + 20, y);
+                    ctx.strokeStyle = `rgba(255, 215, 0, ${beatAlpha * 0.1})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+            const scale = Math.min(w, h) / 400;
+            time += speed;
+
+            // Dance
+            if (isDancing) {
+                danceTime += speed * 2;
+                beat += speed * 4;
+
+                // Change move every few beats
+                moveTimer += speed;
+                if (moveTimer > 0.5 + Math.random() * 0.5) {
+                    moveTimer = 0;
+                    currentMove = generateDanceMove();
+                }
+
+                currentMove();
+
+                // Smooth joint interpolation
+                joints.headAngle += (targetJoints.headAngle - joints.headAngle) * 0.08;
+                joints.leftArmAngle += (targetJoints.leftArmAngle - joints.leftArmAngle) * 0.08;
+                joints.rightArmAngle += (targetJoints.rightArmAngle - joints.rightArmAngle) * 0.08;
+                joints.leftLegAngle += (targetJoints.leftLegAngle - joints.leftLegAngle) * 0.08;
+                joints.rightLegAngle += (targetJoints.rightLegAngle - joints.rightLegAngle) * 0.08;
+                joints.bodyBob += (targetJoints.bodyBob - joints.bodyBob) * 0.08;
+                joints.headBob += (targetJoints.headBob - joints.headBob) * 0.08;
+
+                // Spawn glow particles
+                if (Math.random() < 0.03) {
+                    const palette = colorPalettes[colorMode];
+                    const p = new Particle(
+                        cx + (Math.random() - 0.5) * 80,
+                        cy + (Math.random() - 0.5) * 100,
+                        palette.accent
+                    );
+                    p.vx = (Math.random() - 0.5) * 3;
+                    p.vy = -Math.random() * 2 - 1;
+                    particles.push(p);
+                }
+            } else {
+                // Idle animation - slight sway
+                joints.leftArmAngle = Math.sin(time * 0.3) * 0.05;
+                joints.rightArmAngle = Math.sin(time * 0.3 + 0.5) * 0.05;
+                joints.leftLegAngle = Math.sin(time * 0.2) * 0.02;
+                joints.rightLegAngle = Math.sin(time * 0.2 + 0.3) * 0.02;
+                joints.bodyBob = Math.sin(time * 0.2) * 0.5;
+                joints.headBob = Math.sin(time * 0.2 + 0.5) * 0.3;
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw robot
+            drawRobot(ctx, cx, cy, scale);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isDancing ? '🎵 Dancing!' : '🤖 Idle';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Dance
+        danceBtn.addEventListener('click', () => {
+            isDancing = !isDancing;
+            danceBtn.textContent = isDancing ? '🔄 Stop' : '💃 Dance';
+            if (isDancing) {
+                danceTime = 0;
+                statusText.textContent = '🎵 Dancing!';
+                // Spawn celebration particles
+                const palette = colorPalettes[colorMode];
+                for (let i = 0; i < 20; i++) {
+                    const p = new Particle(
+                        canvas.width / 2 + (Math.random() - 0.5) * 100,
+                        canvas.height / 2 + (Math.random() - 0.5) * 100,
+                        palette.accent
+                    );
+                    p.vx = (Math.random() - 0.5) * 6;
+                    p.vy = -Math.random() * 4 - 2;
+                    particles.push(p);
+                }
+            } else {
+                statusText.textContent = '🤖 Idle';
+                // Reset joints
+                targetJoints.headAngle = 0;
+                targetJoints.leftArmAngle = 0;
+                targetJoints.rightArmAngle = 0;
+                targetJoints.leftLegAngle = 0;
+                targetJoints.rightLegAngle = 0;
+                targetJoints.bodyBob = 0;
+                targetJoints.headBob = 0;
+            }
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = isDancing ? '🎵 Dancing!' : '🤖 Idle';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = isDancing ? '🎵 Dancing!' : '🤖 Idle';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            isDancing = false;
+            danceBtn.textContent = '💃 Dance';
+            danceTime = 0;
+            beat = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            particles = [];
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🤖 Ready to dance';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                danceBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                danceBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🤖 Ready to dance';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🤖 Dancing Robot loaded!');
+        console.log('💡 D - Toggle dance');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle dance');
+    </script>
+</body>
+</html>
