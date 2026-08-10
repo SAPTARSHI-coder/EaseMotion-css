@@ -1,27 +1,16 @@
-# Ease Fresnel Lens Sweep
+# Fresnel Lens Sweep
 
-A CSS-only animated Fresnel lens lighthouse beam component built for EaseMotion CSS.
+## What does this do?
+Renders a self-contained CSS-only `ease-fresnel-lens-sweep` demo: Lighthouse Fresnel lens panels sweeping a beam.
 
-## Overview
-
-`ease-fresnel-lens-sweep` simulates a lighthouse Fresnel optical system where rotating lens panels create a sweeping light beam effect using only HTML and CSS.
-
-## Features
-
-- Pure CSS animation
-- No JavaScript dependency
-- Lighthouse themed UI component
-- Rotating Fresnel lens effect
-- Animated light beam sweep
-- Control panel styling
-- Responsive design
-- Reduced motion accessibility support
-
-## Usage
-
-Add the component HTML:
+## How is it used?
+Open `demo.html` in a browser. Motion uses classes under `ease-fresnel-lens-sweep`. No build step or JavaScript is required for the effect.
 
 ```html
-<div class="ease-fresnel-lens-sweep">
-  <!-- Fresnel lens sweep component -->
-</div>
+<section class="ease-fresnel-lens-sweep">
+  <div class="ease-fresnel-lens-sweep__housing">...</div>
+</section>
+```
+
+## Why is it useful?
+It packs a recognizable real-world motion metaphor into three submission files, fitting EaseMotion's curated CSS-first model and giving maintainers a concrete effect to standardize into `ease-*` utilities.
