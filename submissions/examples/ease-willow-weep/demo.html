@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Willow Weep · willow branches droop and sway</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="willow-container">
+      <div class="willow-display" id="willowDisplay">
+        <!-- Canvas for willow tree -->
+        <canvas id="willowCanvas"></canvas>
+        
+        <!-- Willow Info -->
+        <div class="willow-info">
+          <span class="info-label">🌿 Branches</span>
+          <span class="info-value" id="branchCount">0</span>
+        </div>
+
+        <!-- Willow Controls -->
+        <div class="willow-controls">
+          <div class="control-group">
+            <label class="control-label">🌬️ Wind</label>
+            <input type="range" class="control-slider" id="windSlider" min="0" max="100" value="50">
+            <span class="control-value" id="windValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌿 Season</label>
+            <div class="season-options">
+              <button class="season-btn active" data-season="spring" title="Spring">🌸</button>
+              <button class="season-btn" data-season="summer" title="Summer">🌿</button>
+              <button class="season-btn" data-season="autumn" title="Autumn">🍂</button>
+              <button class="season-btn" data-season="winter" title="Winter">❄️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Willow Text -->
+        <div class="willow-text">
+          <span class="text-label">🌿 Weeping Willow</span>
+          <span class="text-message" id="willowMessage">Willow branches droop and sway in the breeze</span>
+        </div>
+      </div>
+      
+      <div class="willow-status">
+        <span id="willowStatus">🌿 Willow branches swaying gently</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌿 willow weep · 4 seasons · wind control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('willowCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('willowDisplay');
+      const branchCount = document.getElementById('branchCount');
+      const willowStatus = document.getElementById('willowStatus');
+      const willowMessage = document.getElementById('willowMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const windSlider = document.getElementById('windSlider');
+      const windValue = document.getElementById('windValue');
+      const seasonBtns = document.querySelectorAll('.season-btn');
+
+      // State
+      let branches = [];
+      let leaves = [];
+      let animationId = null;
+      let time = 0;
+      let currentSeason = 'spring';
+
+      // Season configurations
+      const seasons = {
+        spring: {
+          name: 'Spring',
+          trunk: '#4a3a2a',
+          branch: '#5a4a3a',
+          leaf: '#4ade80',
+          leafLight: '#86efac',
+          leafDark: '#22c55e',
+          accent: '#fbbf24'
+        },
+        summer: {
+          name: 'Summer',
+          trunk: '#3a2a1a',
+          branch: '#4a3a2a',
+          leaf: '#22c55e',
+          leafLight: '#4ade80',
+          leafDark: '#16a34a',
+          accent: '#34d399'
+        },
+        autumn: {
+          name: 'Autumn',
+          trunk: '#4a3a2a',
+          branch: '#5a4a3a',
+          leaf: '#f97316',
+          leafLight: '#fb923c',
+          leafDark: '#ea580c',
+          accent: '#fbbf24'
+        },
+        winter: {
+          name: 'Winter',
+          trunk: '#4a4a5a',
+          branch: '#5a5a6a',
+          leaf: '#94a3b8',
+          leafLight: '#cbd5e1',
+          leafDark: '#64748b',
+          accent: '#e2e8f0'
+        }
+      };
+
+      // Branch class
+      class Branch {
+        constructor(x, y, angle, length, depth, maxDepth, parent) {
+          this.x = x;
+          this.y = y;
+          this.angle = angle;
+          this.length = length;
+          this.depth = depth;
+          this.maxDepth = maxDepth;
+          this.parent = parent;
+          this.children = [];
+          this.leaves = [];
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.3 + Math.random() * 0.5;
+          this.windResponse = 0.5 + Math.random() * 0.5;
+          this.droop = 0.3 + Math.random() * 0.3;
+          this.growProgress = 0;
+          
+          // Generate children
+          if (depth < maxDepth) {
+            const numChildren = 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < numChildren; i++) {
+              const childAngle = (Math.random() - 0.5) * 1.2 + (i === 0 ? -0.4 : 0.4);
+              const childLength = length * (0.7 + Math.random() * 0.2);
+              const child = new Branch(
+                x, y,
+                angle + childAngle,
+                childLength,
+                depth + 1,
+                maxDepth,
+                this
+              );
+              this.children.push(child);
+            }
+          }
+          
+          // Generate leaves on terminal branches
+          if (depth >= maxDepth - 1) {
+            const numLeaves = 3 + Math.floor(Math.random() * 4);
+            for (let i = 0; i < numLeaves; i++) {
+              this.leaves.push({
+                offset: 0.3 + Math.random() * 0.5,
+                side: Math.random() > 0.5 ? 1 : -1,
+                size: 3 + Math.random() * 4,
+                phase: Math.random() * Math.PI * 2,
+                angle: (Math.random() - 0.5) * 0.5
+              });
+            }
+          }
+        }
+
+        update(wind, time) {
+          const windForce = (wind / 100) * 0.6;
+          const sway = Math.sin(time * this.speed + this.phase) * this.windResponse * 0.2;
+          const windSway = windForce * this.windResponse * 0.4;
+          
+          // Calculate end position with droop
+          const droopAngle = this.droop * 0.3;
+          const totalAngle = this.angle + sway + windSway - droopAngle;
+          
+          const endX = this.x + Math.cos(totalAngle) * this.length;
+          const endY = this.y + Math.sin(totalAngle) * this.length;
+          
+          // Update children
+          this.children.forEach(child => {
+            child.x = endX;
+            child.y = endY;
+            child.update(wind, time);
+          });
+          
+          return { x: endX, y: endY };
+        }
+
+        draw(ctx, season, wind) {
+          const seasonData = seasons[season];
+          const windForce = (wind / 100) * 0.6;
+          
+          // Draw branch
+          const width = Math.max(0.5, 3 - this.depth * 0.4);
+          const color = this.depth < 2 ? seasonData.trunk : seasonData.branch;
+          
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.05)';
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+          
+          ctx.strokeStyle = color;
+          ctx.lineWidth = width;
+          ctx.lineCap = 'round';
+          
+          // Draw branch with slight curve
+          const sway = Math.sin(time * this.speed + this.phase) * this.windResponse * 0.2;
+          const windSway = windForce * this.windResponse * 0.4;
+          const droopAngle = this.droop * 0.3;
+          const totalAngle = this.angle + sway + windSway - droopAngle;
+          
+          const endX = this.x + Math.cos(totalAngle) * this.length;
+          const endY = this.y + Math.sin(totalAngle) * this.length;
+          
+          ctx.beginPath();
+          ctx.moveTo(this.x, this.y);
+          
+          // Add organic curve
+          const midX = (this.x + endX) / 2 + Math.sin(totalAngle + 0.5) * 3;
+          const midY = (this.y + endY) / 2 + Math.cos(totalAngle + 0.5) * 3 + this.length * 0.05;
+          ctx.quadraticCurveTo(midX, midY, endX, endY);
+          ctx.stroke();
+          
+          ctx.restore();
+          
+          // Draw leaves
+          const leafColor = seasonData.leaf;
+          const leafLight = seasonData.leafLight;
+          const leafDark = seasonData.leafDark;
+          
+          this.leaves.forEach(leaf => {
+            const pos = leaf.offset;
+            const lx = this.x + (endX - this.x) * pos;
+            const ly = this.y + (endY - this.y) * pos;
+            const leafSway = Math.sin(time * this.speed * 0.8 + leaf.phase) * 2 * windForce;
+            
+            ctx.save();
+            ctx.translate(lx, ly);
+            ctx.rotate(totalAngle + leaf.angle + leafSway * 0.05);
+            
+            const size = leaf.size * (0.7 + windForce * 0.3);
+            
+            // Leaf glow
+            ctx.shadowColor = leafColor;
+            ctx.shadowBlur = 5;
+            
+            // Leaf shape
+            const grad = ctx.createRadialGradient(
+              -size * 0.1, -size * 0.1, 0,
+              0, 0, size
+            );
+            grad.addColorStop(0, leafLight);
+            grad.addColorStop(0.5, leafColor);
+            grad.addColorStop(1, leafDark);
+            ctx.fillStyle = grad;
+            ctx.shadowBlur = 3;
+            
+            ctx.beginPath();
+            ctx.ellipse(
+              leaf.side * size * 0.3,
+              -size * 0.2,
+              size * 0.5,
+              size * 0.35,
+              leaf.side * 0.2,
+              0,
+              Math.PI * 2
+            );
+            ctx.fill();
+            
+            // Leaf vein
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 0.2;
+            ctx.strokeStyle = leafDark;
+            ctx.lineWidth = 0.3;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(leaf.side * size * 0.3, -size * 0.1);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            
+            ctx.restore();
+          });
+          
+          // Draw children
+          this.children.forEach(child => {
+            child.draw(ctx, season, wind);
+          });
+        }
+      }
+
+      // Generate willow tree
+      function generateWillow() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.15;
+        
+        // Create trunk
+        const trunk = new Branch(cx, cy, Math.PI / 2, 60, 0, 5, null);
+        branches = [trunk];
+        branchCount.textContent = countBranches(branches);
+      }
+
+      // Count branches
+      function countBranches(branchList) {
+        let count = 0;
+        branchList.forEach(b => {
+          count++;
+          if (b.children.length > 0) {
+            count += countBranches(b.children);
+          }
+        });
+        return count;
+      }
+
+      // Draw trunk base
+      function drawTrunkBase() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.15;
+        const seasonData = seasons[currentSeason];
+        
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+        
+        // Trunk base
+        const grad = ctx.createLinearGradient(cx - 15, cy + 20, cx + 15, cy + 20);
+        grad.addColorStop(0, seasonData.trunk);
+        grad.addColorStop(0.5, seasonData.branch);
+        grad.addColorStop(1, seasonData.trunk);
+        ctx.fillStyle = grad;
+        ctx.shadowBlur = 5;
+        
+        ctx.beginPath();
+        ctx.moveTo(cx - 12, cy + 15);
+        ctx.quadraticCurveTo(cx - 15, cy + 25, cx - 10, cy + 35);
+        ctx.quadraticCurveTo(cx, cy + 40, cx + 10, cy + 35);
+        ctx.quadraticCurveTo(cx + 15, cy + 25, cx + 12, cy + 15);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Ground shadow
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+        ctx.fillStyle = 'rgba(0,0,0,0.02)';
+        ctx.beginPath();
+        ctx.ellipse(cx, cy + 40, 30, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.restore();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const seasonData = seasons[currentSeason];
+        
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+        grad.addColorStop(0, 'rgba(20, 30, 50, 0.2)');
+        grad.addColorStop(0.3, 'rgba(30, 50, 70, 0.25)');
+        grad.addColorStop(0.7, 'rgba(40, 60, 80, 0.3)');
+        grad.addColorStop(1, seasonData.leaf + '11');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h * 0.7);
+        
+        // Ground
+        const groundY = h * 0.82;
+        const grad2 = ctx.createLinearGradient(0, groundY, 0, h);
+        grad2.addColorStop(0, seasonData.leafDark + '33');
+        grad2.addColorStop(0.3, seasonData.trunk + '22');
+        grad2.addColorStop(1, '#1a1a2a');
+        ctx.fillStyle = grad2;
+        ctx.fillRect(0, groundY, w, h - groundY);
+        
+        // Grass texture
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * w;
+          const y = groundY + Math.random() * 15;
+          const width = 1 + Math.random() * 2;
+          const height = 3 + Math.random() * 5;
+          ctx.fillStyle = `rgba(0,0,0,${0.05 + Math.random() * 0.05})`;
+          ctx.fillRect(x, y, width, height);
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateWillow();
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const wind = parseInt(windSlider.value);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawTrunkBase();
+        
+        // Update and draw branches
+        branches.forEach(branch => {
+          branch.update(wind, time);
+          branch.draw(ctx, currentSeason, wind);
+        });
+        
+        // Update status based on wind
+        if (wind > 70) {
+          willowStatus.textContent = '🌿 Willow branches swaying in strong wind!';
+          willowStatus.style.color = '#fbbf24';
+        } else if (wind > 30) {
+          willowStatus.textContent = '🌿 Willow branches drooping and swaying';
+          willowStatus.style.color = '#818cf8';
+        } else {
+          willowStatus.textContent = '🌿 Willow branches swaying gently';
+          willowStatus.style.color = '#94a3b8';
+        }
+        
+        // Update season message
+        const seasonData = seasons[currentSeason];
+        willowMessage.textContent = `${seasonData.name} willow droops and sways`;
+        willowMessage.style.color = seasonData.leaf;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set season
+      function setSeason(season) {
+        currentSeason = season;
+        seasonBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.season === season);
+        });
+        const seasonData = seasons[season];
+        willowStatus.textContent = `🌿 Season: ${seasonData.name}`;
+        willowStatus.style.color = seasonData.leaf;
+        generateWillow();
+        setTimeout(() => {
+          willowStatus.textContent = '🌿 Willow branches swaying gently';
+          willowStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetWillow() {
+        generateWillow();
+        willowStatus.textContent = '🔄 Reset complete';
+        willowStatus.style.color = '#94a3b8';
+        willowMessage.textContent = 'Willow branches droop and sway in the breeze';
+        willowMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          willowStatus.textContent = '🌿 Willow branches swaying gently';
+          willowStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      windSlider.addEventListener('input', function() {
+        windValue.textContent = this.value + '%';
+      });
+
+      seasonBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setSeason(this.dataset.season);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetWillow();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetWillow();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌿 Willow Weep ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

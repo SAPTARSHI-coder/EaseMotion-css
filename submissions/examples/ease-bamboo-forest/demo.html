@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bamboo Forest · bamboo sways and rustles</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="bamboo-container">
+      <div class="bamboo-display" id="bambooDisplay">
+        <!-- Canvas for bamboo forest -->
+        <canvas id="bambooCanvas"></canvas>
+        
+        <!-- Bamboo Info -->
+        <div class="bamboo-info">
+          <span class="info-label">🎋 Stalks</span>
+          <span class="info-value" id="stalkCount">0</span>
+        </div>
+
+        <!-- Bamboo Controls -->
+        <div class="bamboo-controls">
+          <div class="control-group">
+            <label class="control-label">🌬️ Wind</label>
+            <input type="range" class="control-slider" id="windSlider" min="0" max="10" value="5">
+            <span class="control-value" id="windValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌿 Density</label>
+            <input type="range" class="control-slider" id="densitySlider" min="1" max="10" value="5">
+            <span class="control-value" id="densityValue">5</span>
+          </div>
+        </div>
+
+        <!-- Bamboo Text -->
+        <div class="bamboo-text">
+          <span class="text-label">🎋 Bamboo Forest</span>
+          <span class="text-message" id="bambooMessage">A peaceful bamboo grove swaying in the wind</span>
+        </div>
+      </div>
+      
+      <div class="bamboo-status">
+        <span id="bambooStatus">🎋 Bamboo forest sways gently in the breeze</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🎋 bamboo sways · wind control · 6 bamboo styles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('bambooCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('bambooDisplay');
+      const stalkCount = document.getElementById('stalkCount');
+      const bambooStatus = document.getElementById('bambooStatus');
+      const bambooMessage = document.getElementById('bambooMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const windSlider = document.getElementById('windSlider');
+      const windValue = document.getElementById('windValue');
+      const densitySlider = document.getElementById('densitySlider');
+      const densityValue = document.getElementById('densityValue');
+
+      // State
+      let bambooStalks = [];
+      let leaves = [];
+      let animationId = null;
+      let time = 0;
+
+      // Bamboo styles
+      const bambooStyles = [
+        { name: 'Green', color: '#2d7d3a', light: '#4a9e5a', dark: '#1a5a2a', leafColor: '#3a8a4a' },
+        { name: 'Golden', color: '#c4a35a', light: '#d4b86a', dark: '#a8883a', leafColor: '#b8984a' },
+        { name: 'Black', color: '#2a2a2a', light: '#4a4a4a', dark: '#1a1a1a', leafColor: '#3a3a3a' },
+        { name: 'Tiger', color: '#c4a35a', light: '#d4b86a', dark: '#a8883a', leafColor: '#3a8a4a', stripe: true },
+        { name: 'Dragon', color: '#2d5a3a', light: '#4a7a5a', dark: '#1a3a2a', leafColor: '#5a8a5a' },
+        { name: 'Moonlight', color: '#5a7a8a', light: '#7a9aaa', dark: '#3a5a6a', leafColor: '#6a8a9a' }
+      ];
+
+      let currentStyleIndex = 0;
+
+      // Bamboo stalk class
+      class BambooStalk {
+        constructor(x, width, height, styleIndex) {
+          this.x = x;
+          this.width = width || 4 + Math.random() * 6;
+          this.height = height || 100 + Math.random() * 150;
+          this.styleIndex = styleIndex || Math.floor(Math.random() * bambooStyles.length);
+          this.segments = 4 + Math.floor(Math.random() * 4);
+          this.segmentHeight = this.height / this.segments;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 0.5;
+          this.amplitude = 0.3 + Math.random() * 0.5;
+          this.swayOffset = (Math.random() - 0.5) * 0.5;
+          this.leafCount = 2 + Math.floor(Math.random() * 4);
+          this.leaves = [];
+          
+          // Generate leaves
+          for (let i = 0; i < this.leafCount; i++) {
+            const pos = 0.2 + Math.random() * 0.6;
+            const side = Math.random() > 0.5 ? 1 : -1;
+            this.leaves.push({
+              pos: pos,
+              side: side,
+              size: 8 + Math.random() * 12,
+              angle: (Math.random() - 0.5) * 0.8,
+              phase: Math.random() * Math.PI * 2
+            });
+          }
+        }
+
+        update(time) {
+          const wind = windSlider.value / 10;
+          const sway = Math.sin(time * this.speed + this.phase) * this.amplitude * wind * 0.8;
+          return sway + this.swayOffset * wind * 0.3;
+        }
+
+        draw(ctx, time, wind) {
+          const sway = this.update(time);
+          const style = bambooStyles[this.styleIndex % bambooStyles.length];
+          
+          ctx.save();
+          
+          // Draw stalk segments
+          for (let i = 0; i < this.segments; i++) {
+            const y = this.height - i * this.segmentHeight;
+            const segSway = sway * (1 - i / this.segments * 0.3);
+            const x = this.x + segSway * (this.height - y) * 0.3;
+            const width = this.width * (1 - i / this.segments * 0.15);
+            
+            // Segment color
+            const gradient = ctx.createLinearGradient(x - width/2, y, x + width/2, y);
+            gradient.addColorStop(0, style.dark);
+            gradient.addColorStop(0.3, style.light);
+            gradient.addColorStop(0.7, style.color);
+            gradient.addColorStop(1, style.dark);
+            
+            ctx.fillStyle = gradient;
+            ctx.strokeStyle = style.dark;
+            ctx.lineWidth = 0.5;
+            
+            // Segment shape with slight curve
+            ctx.beginPath();
+            const topY = y - this.segmentHeight;
+            const topSway = sway * (1 - (i + 1) / this.segments * 0.3);
+            const topX = this.x + topSway * (this.height - topY) * 0.3;
+            
+            ctx.moveTo(x - width/2, y);
+            ctx.quadraticCurveTo(
+              x - width/2 + segSway * 0.5,
+              y - this.segmentHeight/2,
+              topX - width/2 * (1 - i / this.segments * 0.15),
+              topY
+            );
+            ctx.quadraticCurveTo(
+              topX + width/2 * (1 - i / this.segments * 0.15) + topSway * 0.5,
+              y - this.segmentHeight/2,
+              x + width/2,
+              y
+            );
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Segment ring (node)
+            if (i < this.segments - 1) {
+              const ringY = y - this.segmentHeight;
+              const ringSway = sway * (1 - (i + 1) / this.segments * 0.3);
+              const ringX = this.x + ringSway * (this.height - ringY) * 0.3;
+              ctx.beginPath();
+              ctx.ellipse(ringX, ringY, width/2 * 1.1, width/6, 0, 0, Math.PI * 2);
+              ctx.fillStyle = style.dark;
+              ctx.fill();
+            }
+          }
+          
+          // Draw leaves
+          this.leaves.forEach(leaf => {
+            const y = this.height * leaf.pos;
+            const leafSway = sway * (1 - leaf.pos * 0.3);
+            const x = this.x + leafSway * (this.height - y) * 0.3;
+            const side = leaf.side;
+            const size = leaf.size * (0.7 + wind * 0.3);
+            
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(leaf.angle * side + sway * 0.1 * side);
+            
+            // Leaf shape
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(
+              side * size * 0.6,
+              -size * 0.4,
+              side * size,
+              -size * 0.1
+            );
+            ctx.quadraticCurveTo(
+              side * size * 0.7,
+              size * 0.3,
+              0,
+              size * 0.1
+            );
+            ctx.closePath();
+            
+            const leafGrad = ctx.createLinearGradient(0, 0, side * size, 0);
+            leafGrad.addColorStop(0, style.leafColor);
+            leafGrad.addColorStop(0.5, style.light);
+            leafGrad.addColorStop(1, style.dark);
+            ctx.fillStyle = leafGrad;
+            ctx.fill();
+            
+            // Leaf vein
+            ctx.strokeStyle = style.dark;
+            ctx.lineWidth = 0.5;
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.quadraticCurveTo(
+              side * size * 0.3,
+              -size * 0.15,
+              side * size * 0.6,
+              0
+            );
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+            
+            ctx.restore();
+          });
+          
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateForest();
+      }
+
+      // Generate forest
+      function generateForest() {
+        const density = densitySlider.value / 10;
+        const count = Math.floor(8 + density * 22);
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        bambooStalks = [];
+        
+        for (let i = 0; i < count; i++) {
+          const x = 20 + Math.random() * (width - 40);
+          const stalkHeight = 80 + Math.random() * (height * 0.6);
+          const widthVar = 3 + Math.random() * 8;
+          const styleIdx = Math.floor(Math.random() * bambooStyles.length);
+          
+          // Avoid overlapping too much
+          let overlap = false;
+          for (let j = 0; j < bambooStalks.length; j++) {
+            if (Math.abs(bambooStalks[j].x - x) < widthVar + bambooStalks[j].width) {
+              overlap = true;
+              break;
+            }
+          }
+          
+          if (!overlap) {
+            bambooStalks.push(new BambooStalk(x, widthVar, stalkHeight, styleIdx));
+          }
+        }
+        
+        stalkCount.textContent = bambooStalks.length;
+        
+        // Update message based on density
+        const densityNames = ['sparse', 'scattered', 'moderate', 'dense', 'very dense'];
+        const idx = Math.min(Math.floor(density * 4), 4);
+        bambooMessage.textContent = `A ${densityNames[idx]} bamboo grove swaying in the wind`;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        grad.addColorStop(0, 'rgba(30, 50, 30, 0.4)');
+        grad.addColorStop(0.3, 'rgba(40, 60, 35, 0.3)');
+        grad.addColorStop(0.7, 'rgba(35, 55, 30, 0.25)');
+        grad.addColorStop(1, 'rgba(20, 35, 20, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Mist
+        for (let i = 0; i < 8; i++) {
+          const x = Math.random() * canvas.width;
+          const y = canvas.height * (0.2 + Math.random() * 0.6);
+          const radius = 60 + Math.random() * 120;
+          const grad2 = ctx.createRadialGradient(x, y, 0, x, y, radius);
+          grad2.addColorStop(0, `rgba(200, 220, 200, ${0.02 + Math.random() * 0.02})`);
+          grad2.addColorStop(1, 'rgba(200, 220, 200, 0)');
+          ctx.fillStyle = grad2;
+          ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+        }
+        
+        // Ground
+        ctx.fillStyle = 'rgba(20, 35, 20, 0.6)';
+        ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+        
+        // Ground texture
+        for (let i = 0; i < 50; i++) {
+          const x = Math.random() * canvas.width;
+          const y = canvas.height - 15 + Math.random() * 15;
+          const w = 2 + Math.random() * 6;
+          const h = 1 + Math.random() * 2;
+          ctx.fillStyle = `rgba(30, 50, 30, ${0.1 + Math.random() * 0.2})`;
+          ctx.fillRect(x, y, w, h);
+        }
+      }
+
+      // Animate forest
+      function animateForest() {
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        const wind = windSlider.value / 10;
+        
+        // Sort stalks by x position (back to front)
+        const sorted = [...bambooStalks].sort((a, b) => a.x - b.x);
+        
+        // Draw each stalk
+        sorted.forEach((stalk, index) => {
+          // Slight depth effect - farther stalks are smaller
+          const depth = 0.7 + (index / sorted.length) * 0.3;
+          ctx.save();
+          ctx.globalAlpha = 0.6 + (index / sorted.length) * 0.4;
+          stalk.draw(ctx, time, wind);
+          ctx.restore();
+        });
+        
+        // Update status based on wind
+        if (wind > 0.7) {
+          bambooStatus.textContent = '🌬️ Strong wind rustles the bamboo!';
+          bambooStatus.style.color = '#94a3b8';
+        } else if (wind > 0.4) {
+          bambooStatus.textContent = '🌿 Bamboo sways in the gentle breeze';
+          bambooStatus.style.color = '#818cf8';
+        } else {
+          bambooStatus.textContent = '🎋 Bamboo forest sways gently in the breeze';
+          bambooStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animateForest);
+      }
+
+      // Reset
+      function resetForest() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        time = 0;
+        generateForest();
+        animateForest();
+        bambooStatus.textContent = '🔄 Forest refreshed';
+        bambooStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          bambooStatus.textContent = '🎋 Bamboo forest sways gently in the breeze';
+        }, 1000);
+      }
+
+      // Event listeners
+      windSlider.addEventListener('input', function() {
+        windValue.textContent = this.value;
+      });
+
+      densitySlider.addEventListener('input', function() {
+        densityValue.textContent = this.value;
+        generateForest();
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetForest();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetForest();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', () => {
+        resizeCanvas();
+      });
+
+      // Initialize
+      resizeCanvas();
+      animateForest();
+      
+      console.log('🎋 Bamboo Forest ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

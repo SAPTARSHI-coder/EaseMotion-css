@@ -1,0 +1,166 @@
+// ==========================================================================
+// EaseMotion CSS — Focus Ring mixin
+// Issue #63801
+// --------------------------------------------------------------------------
+// Focus rings that stay visible on any background.
+//
+// The recurring failure: a single-colour ring picked to look good on the
+// page background disappears entirely on a surface of similar tone. A
+// blue ring on a blue-tinted card, a white ring on a light modal — the
+// focus indicator is technically present and practically invisible,
+// which is a WCAG 2.4.7 failure that no automated checker catches.
+//
+// A dual ring solves it without per-context overrides: an inner dark
+// stroke and an outer light one, so whichever background is behind it,
+// one of the two contrasts. This is the same approach used by the
+// browser's own default focus ring in recent Chromium.
+//
+// `:focus-visible` is used, not `:focus` — a ring appearing on every
+// mouse click is the reason people disable focus styles in the first
+// place, which is how sites end up with no indicator at all.
+// ==========================================================================
+
+@use "sass:meta";
+
+$focus-ring-inner: #0b1120 !default;
+$focus-ring-outer: #ffffff !default;
+$focus-ring-width: 2px !default;
+$focus-ring-offset: 2px !default;
+
+// --------------------------------------------------------------------------
+// focus-ring
+//
+// Dual-stroke ring via box-shadow, so it follows border-radius exactly —
+// `outline` does not on every engine, and a square ring around a pill
+// button reads as a rendering bug.
+//
+// @param {Color}  $inner
+// @param {Color}  $outer
+// @param {Number} $width
+// @param {Number} $offset
+// --------------------------------------------------------------------------
+@mixin focus-ring(
+    $inner: $focus-ring-inner,
+    $outer: $focus-ring-outer,
+    $width: $focus-ring-width,
+    $offset: $focus-ring-offset
+) {
+    @if meta.type-of($width) != "number" {
+        @error "focus-ring(): $width must be a number, got `#{$width}`.";
+    }
+
+    &:focus-visible {
+        // Remove the UA outline only inside :focus-visible, so the
+        // element is never left with no indicator at all.
+        outline: none;
+        box-shadow:
+            0 0 0 $offset $outer,
+            0 0 0 ($offset + $width) $inner;
+    }
+
+    // Forced colors discards box-shadow entirely, so the UA outline has
+    // to come back or the indicator vanishes for high-contrast users.
+    @media (forced-colors: active) {
+        &:focus-visible {
+            outline: $width solid Highlight;
+            outline-offset: $offset;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// focus-ring-outline
+//
+// Outline-based variant. Preferred where the element may be clipped by an
+// ancestor's `overflow: hidden` — outline is not clipped, box-shadow is.
+// --------------------------------------------------------------------------
+@mixin focus-ring-outline(
+    $color: null,
+    $width: $focus-ring-width,
+    $offset: $focus-ring-offset
+) {
+    $ring: $color;
+
+    @if not $ring {
+        $ring: $focus-ring-inner;
+    }
+
+    &:focus-visible {
+        outline: $width solid $ring;
+        outline-offset: $offset;
+    }
+
+    @media (forced-colors: active) {
+        &:focus-visible {
+            outline-color: Highlight;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// focus-ring-inset
+//
+// For elements flush against a container edge, where an outset ring would
+// be clipped or overlap a neighbour — table rows, list items, tabs.
+// --------------------------------------------------------------------------
+@mixin focus-ring-inset(
+    $inner: $focus-ring-inner,
+    $outer: $focus-ring-outer,
+    $width: $focus-ring-width
+) {
+    &:focus-visible {
+        outline: none;
+        box-shadow:
+            inset 0 0 0 $width $outer,
+            inset 0 0 0 ($width * 2) $inner;
+    }
+
+    @media (forced-colors: active) {
+        &:focus-visible {
+            outline: $width solid Highlight;
+            outline-offset: -#{$width * 2};
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// focus-within-ring
+//
+// Ring on a container when focus lands anywhere inside it — for composite
+// widgets where the focusable child is visually inside a bordered shell,
+// such as an input group with a leading icon.
+// --------------------------------------------------------------------------
+@mixin focus-within-ring(
+    $inner: $focus-ring-inner,
+    $outer: $focus-ring-outer,
+    $width: $focus-ring-width,
+    $offset: $focus-ring-offset
+) {
+    &:focus-within {
+        box-shadow:
+            0 0 0 $offset $outer,
+            0 0 0 ($offset + $width) $inner;
+    }
+
+    // The inner control's own ring would double up with the container's.
+    &:focus-within :focus-visible {
+        outline: none;
+    }
+}
+
+// --------------------------------------------------------------------------
+// focus-ring-utilities
+// --------------------------------------------------------------------------
+@mixin focus-ring-utilities($prefix: "focus-ad") {
+    .#{$prefix} {
+        @include focus-ring;
+    }
+
+    .#{$prefix}-inset {
+        @include focus-ring-inset;
+    }
+
+    .#{$prefix}-outline {
+        @include focus-ring-outline;
+    }
+}
