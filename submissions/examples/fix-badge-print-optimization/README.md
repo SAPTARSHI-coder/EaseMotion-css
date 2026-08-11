@@ -1,11 +1,13 @@
-# Fix ease-badge Print Optimization
+# Fix ease-badge Print Media Query Optimization
 
 ## Description
-Applies a `@media print` query block to the `badge` component. This removes ink-heavy features such as linear-gradients, background-colors, and box-shadows, replacing them with standard high-contrast black borders for readable physical prints.
+Adds a `@media print` query to the `badge` component that removes ink-heavy features
+such as gradients, box-shadows, and background colors, replacing them with high-contrast
+black borders for readable and efficient printing.
 
 ## Usage
-Include the component as usual. When the document is printed, the browser automatically applies the media query overrides.
+Include the component as usual. The browser automatically applies print overrides when printing.
 
-## Performance & Accessibility Compliance
-Prevents ink waste and guarantees maximum contrast on physical paper.
-Fixes: #57138
+## Accessibility
+Ensures WCAG compliance on physical paper by guaranteeing maximum contrast.
+Fixes: #39256

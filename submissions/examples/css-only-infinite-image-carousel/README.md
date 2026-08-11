@@ -1,7 +1,8 @@
-# CSS-Only Infinite Image Carousel
+# CSS-only Infinite Image Carousel
 
-This is the implementation for `CSS-Only Infinite Image Carousel`.
-Closes #17813.
+A smoothly scrolling image carousel powered entirely by CSS keyframe animations.
 
-## Usage
-Include the CSS and use the `.ease-infinite-image-carousel` class to see the animation effect.
+## Technical Details
+- Uses a `transform: translateX` animation on a flex container.
+- Track width is set to 200% to seamlessly loop the content.
+- Pauses smoothly on hover using `animation-play-state`.

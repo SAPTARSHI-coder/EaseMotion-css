@@ -1,52 +1,32 @@
-# Animated Notification Toast
+# Toast Notification Component
 
-CSS-only animated toast notification component for EaseMotion-css.
-
-## Classes
-
-### Variants
-| Class | Effect |
-|-------|--------|
-| `ease-toast-success` | Green theme for success messages |
-| `ease-toast-error` | Red theme for error messages |
-| `ease-toast-warning` | Yellow theme for warnings |
-| `ease-toast-info` | Blue theme for information |
-
-### Positions
-| Class | Position |
-|-------|----------|
-| `ease-toast-top-right` | Top right (default) |
-| `ease-toast-top-left` | Top left |
-| `ease-toast-bottom-right` | Bottom right |
-| `ease-toast-bottom-left` | Bottom left |
-| `ease-toast-top-center` | Top center |
-| `ease-toast-bottom-center` | Bottom center |
+## What does this do?
+A fully animated toast notification system with stacking, 5 position
+variants, 4 type variants (success, error, warning, info), auto-dismiss,
+and manual close — pure CSS + minimal JS.
 
 ## Usage
 
 ```html
-<div class="ease-toast-container ease-toast-top-right">
-  <div class="ease-toast ease-toast-success">
-    ✓ Changes saved successfully!
-    <button class="ease-toast-close">✕</button>
-  </div>
-</div>
+<link rel="stylesheet" href="style.css">
+
+<script>
+  showToast('File saved!', 'success', 3000, 'top-right');
+</script>
 ```
 
-## Features
-- Slide-in from screen edge
-- Fade-out on dismiss
-- Auto-dismiss after 3s
-- Progress bar indicator
-- 4 variants, 6 positions
-- Minimal JS for auto-dismiss only
+## Position variants
+| Class modifier         | Position       |
+|------------------------|----------------|
+| `--top-right`          | Top right      |
+| `--top-left`           | Top left       |
+| `--top-center`         | Top center     |
+| `--bottom-right`       | Bottom right   |
+| `--bottom-left`        | Bottom left    |
 
-## Customization
-```css
-:root {
-  --ease-toast-duration: 3s;
-  --ease-toast-bg: #1a202c;
-  --ease-toast-text: #ffffff;
-  --ease-toast-radius: 0.75rem;
-}
-```
+## Type variants
+`success` · `error` · `warning` · `info`
+
+## Why it fits EaseMotion CSS
+Fills a gap in the submissions directory. Uses CSS animations, respects
+`prefers-reduced-motion`, and follows the framework's dark-first design.

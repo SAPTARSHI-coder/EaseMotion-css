@@ -1,9 +1,16 @@
-# Ease Stock Ticker Tape
+# ease-stock-ticker-tape
 
-A scrolling stock ticker tape with colored change chips.
+A CSS animation component.
 
-## Run
-Open `demo.html` in any browser.
+## Usage
+Open demo.html in a browser. Click the button to toggle the animation.
+
+## Custom Properties
+| Property | Default | Description |
+|----------|---------|-------------|
+| --primary | #4f46e5 | Primary color |
+| --bg | #f8fafc | Background |
+| --duration | 0.5s | Animation speed |
 
 ## Notes
-- The tape scrolls while the change chips flash.
+CSS handles visual transitions. JavaScript toggles state.

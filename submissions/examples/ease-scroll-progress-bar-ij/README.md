@@ -1,21 +1,14 @@
 # Scroll Progress Bar
 
-Closes #13662
+Progress bar at top of page that fills as user scrolls. Width corresponds to scroll progress via --spb-pct.
 
-A fixed progress bar at the top of the viewport that fills from left to right as the user scrolls. Uses `animation-timeline: scroll(root)` for the primary implementation with a scroll-event JS fallback for browsers that don't yet support CSS scroll-driven animations.
+## Features
+
+- Progress bar at top of page
+- Width fills based on scroll progress
+- Gradient fill
+- JS sets progress via scroll event
 
 ## Usage
 
-```html
-<div class="ease-progress-bar">
-  <div class="bar-track">
-    <div class="bar-fill js-fallback" id="progressFill"></div>
-  </div>
-</div>
-```
-
-## CSS Custom Properties
-
-| Variable | Default | Description |
-|---|---|---|
-| `--ease-progress-height` | `4px` | Height of the progress bar |
+Set `--spb-pct` (0-100) on `.spb-bar`. CSS handles width transition. JS updates on scroll.

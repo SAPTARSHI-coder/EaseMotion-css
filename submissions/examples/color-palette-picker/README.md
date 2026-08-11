@@ -1,16 +1,28 @@
-# Color Palette / Swatch Picker
+# 🎨 Color Palette Picker
 
-A grid of 8 color swatches with hover tooltips showing hex codes. Clicking a swatch updates a preview bar below with the selected color and code. Includes a subtle scale hover effect on each swatch.
+A beautiful color palette generator that creates harmonious color combinations with one click.
 
-## EaseMotion CSS classes used
+## 🚀 Features
 
-- `ease-flex` — page-level centering
-- `ease-center` — vertical and horizontal centering
+- **Generate Palettes**: One-click generation of 5-color palettes
+- **Color Selection**: Click any swatch to view detailed color info
+- **Color Formats**: See HEX, RGB, and HSL values
+- **Copy All Colors**: Copy all hex codes with one click
+- **Color History**: Track last 10 selected colors
+- **Smooth Animations**: Hover effects and transitions
+- **Responsive**: Works on all devices
 
-## How to run
+## 🎯 Color Generation Algorithm
 
-Open `demo.html` in a browser. Hover over swatches to see hex codes. Click a swatch to preview the color.
+### How Colors Are Generated
 
-## Accessibility notes
+The algorithm works in two steps:
 
-Color is not the only means of identification — hex codes are displayed on hover and on click. Reduced motion disables the hover transition.
+#### Step 1: Generate Base Color
+```javascript
+function generateRandomColor() {
+    const r = Math.floor(Math.random() * 256);
+    const g = Math.floor(Math.random() * 256);
+    const b = Math.floor(Math.random() * 256);
+    return { r, g, b };
+}

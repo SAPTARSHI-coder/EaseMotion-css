@@ -1,23 +1,20 @@
-# CSS Animated Bar Chart
+# Animated Bar Chart
 
-A responsive, CSS-only animated bar chart where each vertical bar grows upward from the bottom when the page loads.
+A clean, modern, and fully responsive **Vertical Bar Chart** that visualizes data with growing bars and staggered entrances. This example demonstrates how to combine **EaseMotion CSS** for label and grid animations with custom CSS keyframes to create smooth, dynamic data visualization on page load.
 
-## Features
+## 🚀 Features
 
-- Pure HTML and CSS
-- No JavaScript required
-- Bars animate from bottom to their target height
-- Staggered animation timing
-- Hover interaction
-- Responsive layout
-- CSS custom properties for theming
-- Light and dark mode support
-- `prefers-reduced-motion` support
-- Accessible chart description
+- **Growing Bar Animation**: Bars use `transform: scaleY()` with `transform-origin: bottom` to grow smoothly from the baseline up.
+- **Staggered Delays**: Each bar grows sequentially with increasing delays, creating a wave-like effect across the chart.
+- **Staggered Label Entrances**: Y-axis and X-axis labels fade in using `ease-fade-in-left` and `ease-fade-in-up` with synchronized delays.
+- **Interactive Tooltips**: Hovering over a bar reveals the exact value in a smooth tooltip using pure CSS.
+- **Hover Highlighting**: Bars brighten and change gradient color on hover for tactile feedback.
+- **Responsive Layout**: The chart adapts to smaller screens by adjusting font sizes and bar widths.
 
-## Usage
+## 📂 File Structure
 
-Include the stylesheet:
-
-```html
-<link rel="stylesheet" href="style.css">
+```text
+submissions/examples/animated-bar-chart/
+├── demo.html    # HTML structure and EaseMotion utility classes
+├── style.css    # Custom CSS for layout, bar growth keyframes, and tooltips
+└── README.md    # Documentation

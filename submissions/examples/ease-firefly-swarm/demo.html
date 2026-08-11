@@ -1,401 +1,468 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firefly Swarm · fireflies gather and scatter</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Firefly Swarm</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="card">
-    <div class="firefly-container">
-      <div class="firefly-display" id="fireflyDisplay">
-        <!-- Canvas for fireflies -->
-        <canvas id="fireflyCanvas"></canvas>
-        
-        <!-- Firefly Info -->
-        <div class="firefly-info">
-          <span class="info-label">✨ Fireflies</span>
-          <span class="info-value" id="fireflyCount">0</span>
-        </div>
+    <div class="container">
+        <h1>Firefly Swarm</h1>
+        <p class="subtitle">Bioluminescent particles that follow random paths with glowing trails</p>
 
-        <!-- Firefly Controls -->
-        <div class="firefly-controls">
-          <div class="control-group">
-            <label class="control-label">🌟 Swarm</label>
-            <input type="range" class="control-slider" id="swarmSlider" min="0" max="100" value="50">
-            <span class="control-value" id="swarmValue">50%</span>
-          </div>
-          <div class="control-group">
-            <label class="control-label">💡 Glow</label>
-            <input type="range" class="control-slider" id="glowSlider" min="0" max="100" value="50">
-            <span class="control-value" id="glowValue">50%</span>
-          </div>
-        </div>
+        <div class="firefly-wrapper">
+            <canvas id="fireflyCanvas"></canvas>
 
-        <!-- Firefly Text -->
-        <div class="firefly-text">
-          <span class="text-label">✨ Firefly Swarm</span>
-          <span class="text-message" id="fireflyMessage">Watch fireflies gather and scatter</span>
+            <div class="controls">
+                <button id="countBtn">Count: 50</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Warm</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">✨ Fireflies dancing</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
         </div>
-      </div>
-      
-      <div class="firefly-status">
-        <span id="fireflyStatus">✨ Fireflies dance in the night</span>
-      </div>
     </div>
 
-    <div class="controls">
-      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
-    </div>
-    <div class="footer-note">
-      <span>✨ firefly swarm · 4 colors · glow control</span>
-    </div>
-  </div>
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('fireflyCanvas');
+        const ctx = canvas.getContext('2d');
+        const countBtn = document.getElementById('countBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
 
-  <script>
-    (function() {
-      "use strict";
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(450, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-      // DOM refs
-      const canvas = document.getElementById('fireflyCanvas');
-      const ctx = canvas.getContext('2d');
-      const display = document.getElementById('fireflyDisplay');
-      const fireflyCount = document.getElementById('fireflyCount');
-      const fireflyStatus = document.getElementById('fireflyStatus');
-      const fireflyMessage = document.getElementById('fireflyMessage');
-      const resetBtn = document.getElementById('resetBtn');
-      const swarmSlider = document.getElementById('swarmSlider');
-      const swarmValue = document.getElementById('swarmValue');
-      const glowSlider = document.getElementById('glowSlider');
-      const glowValue = document.getElementById('glowValue');
+        // ===== STATE =====
+        let fireflies = [];
+        let numFireflies = 50;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
 
-      // State
-      let fireflies = [];
-      let animationId = null;
-      let time = 0;
-      let swarmCenter = { x: 0, y: 0 };
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.035 },
+            { name: 'Very Fast', value: 0.055 },
+        ];
 
-      // Firefly colors
-      const fireflyColors = [
-        { body: '#fbbf24', glow: 'rgba(251, 191, 36, 0.3)', bright: '#fcd34d' },
-        { body: '#34d399', glow: 'rgba(52, 211, 153, 0.3)', bright: '#6ee7b7' },
-        { body: '#60a5fa', glow: 'rgba(96, 165, 250, 0.3)', bright: '#93c5fd' },
-        { body: '#f472b6', glow: 'rgba(244, 114, 182, 0.3)', bright: '#f9a8d4' }
-      ];
+        // ===== COLOR OPTIONS =====
+        const colorPalettes = [
+            { 
+                name: 'Warm', 
+                colors: ['#ff6b35', '#ffa500', '#ffd700', '#ffec8b', '#ffeeaa'],
+                glow: '#ffa500'
+            },
+            { 
+                name: 'Cool', 
+                colors: ['#00d4ff', '#00bfff', '#4fc3f7', '#81d4fa', '#b3e5fc'],
+                glow: '#00d4ff'
+            },
+            { 
+                name: 'Green', 
+                colors: ['#39ff14', '#7fff00', '#adff2f', '#bfff00', '#ccff33'],
+                glow: '#39ff14'
+            },
+            { 
+                name: 'Purple', 
+                colors: ['#b026ff', '#c084fc', '#a78bfa', '#8b5cf6', '#7c3aed'],
+                glow: '#b026ff'
+            },
+            { 
+                name: 'Pink', 
+                colors: ['#ff1493', '#ff69b4', '#ff85c1', '#ffb6c1', '#ffc0cb'],
+                glow: '#ff1493'
+            },
+            { 
+                name: 'Rainbow', 
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                glow: '#ff8800'
+            },
+        ];
 
-      // Firefly class
-      class Firefly {
-        constructor() {
-          this.x = Math.random() * canvas.width;
-          this.y = Math.random() * canvas.height;
-          this.size = 2 + Math.random() * 3;
-          this.speed = 0.3 + Math.random() * 0.5;
-          this.angle = Math.random() * Math.PI * 2;
-          this.phase = Math.random() * Math.PI * 2;
-          this.color = fireflyColors[Math.floor(Math.random() * fireflyColors.length)];
-          this.wobble = 0.5 + Math.random() * 1;
-          this.flashSpeed = 0.02 + Math.random() * 0.03;
-          this.flashPhase = Math.random() * Math.PI * 2;
-          this.targetX = this.x;
-          this.targetY = this.y;
-          this.returnTimer = 0;
-          this.scatterTimer = 0;
+        // ===== FIREFLY CLASS =====
+        class Firefly {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                this.x = Math.random() * w;
+                this.y = Math.random() * h;
+                this.size = 1.5 + Math.random() * 2.5;
+                this.angle = Math.random() * Math.PI * 2;
+                this.speed = 0.2 + Math.random() * 0.4;
+                this.wobble = 0.5 + Math.random() * 1.5;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glowIntensity = 0.3 + Math.random() * 0.7;
+                this.glowPhase = Math.random() * Math.PI * 2;
+                this.glowSpeed = 0.02 + Math.random() * 0.03;
+                this.trail = [];
+                this.maxTrail = 20 + Math.floor(Math.random() * 30);
+                this.colorIndex = Math.floor(Math.random() * 6);
+                this.alpha = 0.6 + Math.random() * 0.4;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.changeTargetTimer = 0;
+                this.changeTargetInterval = 100 + Math.random() * 200;
+            }
+
+            update() {
+                const w = canvas.width;
+                const h = canvas.height;
+
+                // Update target periodically
+                this.changeTargetTimer++;
+                if (this.changeTargetTimer > this.changeTargetInterval) {
+                    this.changeTargetTimer = 0;
+                    this.changeTargetInterval = 100 + Math.random() * 200;
+                    this.targetX = Math.random() * w;
+                    this.targetY = Math.random() * h;
+                }
+
+                // Move toward target with random wander
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > 1) {
+                    const moveSpeed = this.speed * speed * 10;
+                    this.x += (dx / dist) * moveSpeed + Math.sin(this.phase) * this.wobble * 0.3;
+                    this.y += (dy / dist) * moveSpeed + Math.cos(this.phase * 0.7) * this.wobble * 0.3;
+                }
+
+                // Add wobble
+                this.phase += this.wobbleSpeed;
+                this.x += Math.sin(this.phase) * 0.2;
+                this.y += Math.cos(this.phase * 0.8) * 0.2;
+
+                // Boundary check with gentle bounce
+                if (this.x < 5) { this.x = 5; this.targetX = 10 + Math.random() * 20; }
+                if (this.x > w - 5) { this.x = w - 5; this.targetX = w - 10 - Math.random() * 20; }
+                if (this.y < 5) { this.y = 5; this.targetY = 10 + Math.random() * 20; }
+                if (this.y > h - 5) { this.y = h - 5; this.targetY = h - 10 - Math.random() * 20; }
+
+                // Update glow
+                this.glowPhase += this.glowSpeed;
+                this.glowIntensity = 0.5 + 0.5 * Math.sin(this.glowPhase);
+
+                // Add to trail
+                this.trail.push({ x: this.x, y: this.y, alpha: this.alpha });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx) {
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const color = colors[this.colorIndex % colors.length];
+                const glowColor = palette.glow;
+
+                // Draw trail
+                for (let i = 0; i < this.trail.length - 1; i++) {
+                    const t = this.trail[i];
+                    const progress = i / this.trail.length;
+                    const trailAlpha = progress * this.alpha * 0.3;
+                    
+                    if (trailAlpha > 0.01) {
+                        const trailSize = this.size * (0.1 + progress * 0.9);
+                        ctx.beginPath();
+                        ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                        
+                        const trailColor = colors[(this.colorIndex + Math.floor(i / 5)) % colors.length];
+                        ctx.fillStyle = trailColor;
+                        ctx.globalAlpha = trailAlpha * this.glowIntensity;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = trailColor;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Glow ring
+                const glowSize = this.size * 8 * (0.5 + 0.5 * this.glowIntensity);
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                
+                gradient.addColorStop(0, glowColor + 'cc');
+                gradient.addColorStop(0.3, glowColor + '66');
+                gradient.addColorStop(0.7, glowColor + '22');
+                gradient.addColorStop(1, glowColor + '00');
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.globalAlpha = this.alpha * 0.6 * this.glowIntensity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Inner glow
+                const innerGlow = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, this.size * 3
+                );
+                innerGlow.addColorStop(0, '#ffffff' + 'aa');
+                innerGlow.addColorStop(0.5, color + '88');
+                innerGlow.addColorStop(1, color + '00');
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = innerGlow;
+                ctx.globalAlpha = this.alpha * this.glowIntensity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Core body
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = this.alpha;
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = glowColor;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Bright center
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = this.alpha * 0.8 * this.glowIntensity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                // Wing effect (subtle)
+                for (let i = -1; i <= 1; i += 2) {
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        this.x + i * this.size * 0.5,
+                        this.y - this.size * 0.5,
+                        this.size * 0.4,
+                        this.size * 0.2,
+                        this.phase * i * 0.5 + i * 0.3,
+                        0, Math.PI * 2
+                    );
+                    ctx.fillStyle = color + '30';
+                    ctx.globalAlpha = 0.2 * this.glowIntensity;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+            }
         }
 
-        update(swarm, glow, time) {
-          const swarmFactor = swarm / 100;
-          const w = canvas.width;
-          const h = canvas.height;
-          
-          // Update flash
-          this.flashPhase += this.flashSpeed;
-          const flash = 0.3 + Math.sin(this.flashPhase) * 0.3 + 0.4;
-          
-          // Swarm behavior
-          if (swarmFactor > 0.1) {
-            // Gather toward center
-            const cx = w / 2;
-            const cy = h / 2;
-            const dx = cx - this.x;
-            const dy = cy - this.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+        // ===== INIT FIREFLIES =====
+        function initFireflies(count) {
+            fireflies = [];
+            for (let i = 0; i < count; i++) {
+                fireflies.push(new Firefly());
+            }
+        }
+        initFireflies(numFireflies);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            // Dark forest-like background
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1a');
+            grad.addColorStop(0.5, '#060610');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle ground glow
+            const groundGrad = ctx.createRadialGradient(w/2, h * 0.85, 0, w/2, h * 0.85, w * 0.6);
+            groundGrad.addColorStop(0, 'rgba(20, 40, 20, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Grass hints
+            for (let i = 0; i < 30; i++) {
+                const x = (i / 30) * w + Math.sin(i * 0.5) * 5;
+                const y = h * 0.85 + Math.sin(i * 2) * 10;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.sin(i + 0.5) * 3, y - 10 - Math.sin(i * 1.3) * 8);
+                ctx.strokeStyle = `rgba(30, 60, 30, ${0.1 + Math.sin(i) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // ===== RENDER LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Update and draw fireflies
+            for (const firefly of fireflies) {
+                firefly.update();
+                firefly.draw(ctx);
+            }
+
+            // Connect nearby fireflies with subtle lines
+            ctx.globalAlpha = 0.05;
+            for (let i = 0; i < fireflies.length; i++) {
+                for (let j = i + 1; j < fireflies.length; j++) {
+                    const dx = fireflies[i].x - fireflies[j].x;
+                    const dy = fireflies[i].y - fireflies[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        const alpha = 1 - dist / 100;
+                        ctx.beginPath();
+                        ctx.moveTo(fireflies[i].x, fireflies[i].y);
+                        ctx.lineTo(fireflies[j].x, fireflies[j].y);
+                        const color = colorPalettes[colorMode].glow;
+                        ctx.strokeStyle = color;
+                        ctx.globalAlpha = alpha * 0.1;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `✨ ${fireflies.length} fireflies dancing`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const counts = [20, 35, 50, 75, 100, 150];
+            const currentIndex = counts.indexOf(numFireflies);
+            const nextIndex = (currentIndex + 1) % counts.length;
+            numFireflies = counts[nextIndex];
+            countBtn.textContent = `Count: ${numFireflies}`;
+            initFireflies(numFireflies);
+            statusText.textContent = `🔄 ${numFireflies} fireflies`;
+            setTimeout(() => {
+                statusText.textContent = `✨ ${numFireflies} fireflies dancing`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `✨ ${numFireflies} fireflies dancing`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `✨ ${numFireflies} fireflies dancing`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            numFireflies = 50;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
             
-            if (dist > 5) {
-              const moveSpeed = swarmFactor * 0.02;
-              this.x += dx * moveSpeed;
-              this.y += dy * moveSpeed;
-            }
-            
-            // Scatter occasionally
-            this.scatterTimer += 0.01;
-            if (this.scatterTimer > 2 + Math.random()) {
-              this.scatterTimer = 0;
-              this.targetX = this.x + (Math.random() - 0.5) * 100 * swarmFactor;
-              this.targetY = this.y + (Math.random() - 0.5) * 100 * swarmFactor;
-            }
-          } else {
-            // Free roam when no swarm
-            this.angle += (Math.random() - 0.5) * 0.1;
-            this.x += Math.cos(this.angle) * this.speed * 0.3;
-            this.y += Math.sin(this.angle) * this.speed * 0.3;
-          }
-          
-          // Wobble
-          this.phase += 0.02;
-          this.x += Math.sin(this.phase) * this.wobble * 0.05;
-          this.y += Math.cos(this.phase * 0.7) * this.wobble * 0.05;
-          
-          // Keep within bounds
-          if (this.x < 10) this.x = 10;
-          if (this.x > w - 10) this.x = w - 10;
-          if (this.y < 10) this.y = 10;
-          if (this.y > h - 10) this.y = h - 10;
-          
-          // Return if too far from center when swarming
-          if (swarmFactor > 0.3) {
-            const cx = w / 2;
-            const cy = h / 2;
-            const dx = this.x - cx;
-            const dy = this.y - cy;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            const maxDist = Math.min(w, h) * 0.4;
-            if (dist > maxDist) {
-              this.x = cx + dx * 0.95;
-              this.y = cy + dy * 0.95;
-            }
-          }
-          
-          return flash;
-        }
-
-        draw(ctx, glow) {
-          const glowFactor = glow / 100;
-          const flash = 0.3 + Math.sin(this.flashPhase) * 0.3 + 0.4;
-          const alpha = flash * (0.5 + glowFactor * 0.5);
-          const size = this.size * (0.5 + flash * 0.5) * (0.5 + glowFactor * 0.5);
-          
-          // Glow
-          ctx.save();
-          const glowSize = size * (4 + glowFactor * 6);
-          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
-          grad.addColorStop(0, this.color.body + '88');
-          grad.addColorStop(0.2, this.color.body + '44');
-          grad.addColorStop(0.5, this.color.glow);
-          grad.addColorStop(1, 'rgba(0,0,0,0)');
-          ctx.fillStyle = grad;
-          ctx.shadowColor = this.color.body;
-          ctx.shadowBlur = 20 * (0.3 + glowFactor * 0.7);
-          ctx.globalAlpha = alpha * 0.6;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Core body
-          ctx.shadowBlur = 10 * (0.3 + glowFactor * 0.7);
-          ctx.fillStyle = this.color.bright;
-          ctx.globalAlpha = alpha * 0.9;
-          ctx.beginPath();
-          ctx.arc(this.x, this.y, size * 0.6, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Inner glow
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = '#ffffff';
-          ctx.globalAlpha = alpha * 0.2;
-          ctx.beginPath();
-          ctx.arc(this.x - size * 0.15, this.y - size * 0.15, size * 0.25, 0, Math.PI * 2);
-          ctx.fill();
-          
-          // Wings (small transparent arcs)
-          ctx.globalAlpha = alpha * 0.15;
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 0.5;
-          for (let i = -1; i <= 1; i+=2) {
-            ctx.beginPath();
-            ctx.arc(this.x + i * size * 0.5, this.y - size * 0.2, size * 0.5, 0, Math.PI * 0.6);
-            ctx.stroke();
-          }
-          
-          ctx.restore();
-        }
-      }
-
-      // Generate fireflies
-      function generateFireflies() {
-        const count = 40 + Math.floor(Math.random() * 20);
-        fireflies = [];
-        for (let i = 0; i < count; i++) {
-          fireflies.push(new Firefly());
-        }
-        fireflyCount.textContent = fireflies.length;
-      }
-
-      // Draw background
-      function drawBackground(time) {
-        const w = canvas.width;
-        const h = canvas.height;
-        
-        // Night sky
-        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
-        grad.addColorStop(0, 'rgba(5, 10, 25, 0.4)');
-        grad.addColorStop(0.5, 'rgba(10, 15, 30, 0.5)');
-        grad.addColorStop(1, 'rgba(0, 0, 10, 0.7)');
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-        
-        // Stars
-        for (let i = 0; i < 60; i++) {
-          const x = Math.random() * w;
-          const y = Math.random() * h;
-          const size = 0.3 + Math.random() * 0.8;
-          const alpha = 0.1 + Math.random() * 0.2;
-          ctx.save();
-          ctx.globalAlpha = alpha;
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = '#ffffff';
-          ctx.shadowBlur = 1;
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-        
-        // Ground silhouette
-        ctx.fillStyle = 'rgba(10, 15, 20, 0.15)';
-        ctx.beginPath();
-        ctx.moveTo(0, h);
-        for (let i = 0; i <= w; i += 5) {
-          const x = i;
-          const y = h * 0.7 + Math.sin(i * 0.01 + 1) * 15 + Math.sin(i * 0.02 + 0.5) * 10 + 5;
-          ctx.lineTo(x, y);
-        }
-        ctx.lineTo(w, h);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Grass silhouettes
-        ctx.fillStyle = 'rgba(10, 20, 15, 0.1)';
-        for (let i = 0; i < 20; i++) {
-          const x = Math.random() * w;
-          const y = h * 0.75 + Math.sin(x * 0.02) * 10;
-          const height = 5 + Math.random() * 10;
-          const width = 1 + Math.random() * 2;
-          ctx.fillRect(x, y - height, width, height);
-        }
-      }
-
-      // Resize canvas
-      function resizeCanvas() {
-        const rect = display.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        generateFireflies();
-        
-        // Update firefly positions
-        fireflies.forEach(f => {
-          f.x = Math.min(f.x, canvas.width - 10);
-          f.y = Math.min(f.y, canvas.height - 10);
+            countBtn.textContent = `Count: ${numFireflies}`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            initFireflies(numFireflies);
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `✨ ${numFireflies} fireflies dancing`;
+            }, 1000);
         });
-      }
 
-      // Animation loop
-      function animate() {
-        time += 0.02;
-        const swarm = parseInt(swarmSlider.value);
-        const glow = parseInt(glowSlider.value);
-        
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground(time);
-        
-        // Update and draw fireflies
-        fireflies.forEach(f => {
-          const flash = f.update(swarm, glow, time);
-          f.draw(ctx, glow);
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                countBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle pause not implemented, but could be added
+            }
         });
-        
-        // Update status
-        if (swarm > 70) {
-          fireflyStatus.textContent = '✨ Fireflies gathered together!';
-          fireflyStatus.style.color = '#fbbf24';
-        } else if (swarm > 30) {
-          fireflyStatus.textContent = '✨ Fireflies dancing in the night';
-          fireflyStatus.style.color = '#818cf8';
-        } else {
-          fireflyStatus.textContent = '✨ Fireflies scattered across the meadow';
-          fireflyStatus.style.color = '#94a3b8';
-        }
-        
-        // Update message based on glow
-        if (glow > 70) {
-          fireflyMessage.textContent = '✨ Fireflies glowing brightly!';
-          fireflyMessage.style.color = '#fbbf24';
-        } else if (glow > 30) {
-          fireflyMessage.textContent = '✨ Fireflies shimmering softly';
-          fireflyMessage.style.color = '#818cf8';
-        } else {
-          fireflyMessage.textContent = 'Watch fireflies gather and scatter';
-          fireflyMessage.style.color = '#94a3b8';
-        }
-        
-        animationId = requestAnimationFrame(animate);
-      }
 
-      // Reset
-      function resetFireflies() {
-        generateFireflies();
-        swarmSlider.value = 50;
-        swarmValue.textContent = '50%';
-        glowSlider.value = 50;
-        glowValue.textContent = '50%';
-        fireflyStatus.textContent = '🔄 Reset complete';
-        fireflyStatus.style.color = '#94a3b8';
-        fireflyMessage.textContent = 'Watch fireflies gather and scatter';
-        fireflyMessage.style.color = '#94a3b8';
-        setTimeout(() => {
-          fireflyStatus.textContent = '✨ Fireflies dance in the night';
-          fireflyStatus.style.color = '#94a3b8';
-        }, 1000);
-      }
-
-      // Event listeners
-      swarmSlider.addEventListener('input', function() {
-        swarmValue.textContent = this.value + '%';
-      });
-
-      glowSlider.addEventListener('input', function() {
-        glowValue.textContent = this.value + '%';
-      });
-
-      if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          resetFireflies();
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initFireflies(numFireflies);
         });
-      }
 
-      // Keyboard shortcuts
-      document.addEventListener('keydown', function(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        // ===== INIT =====
+        countBtn.textContent = `Count: ${numFireflies}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = `✨ ${numFireflies} fireflies dancing`;
+        lastFpsUpdate = performance.now();
 
-        const key = e.key;
-        if (key === 'r' || key === 'R') {
-          e.preventDefault();
-          resetFireflies();
-        }
-      });
+        // Start animation
+        render(lastFpsUpdate);
 
-      // Resize
-      window.addEventListener('resize', resizeCanvas);
-
-      // Initialize
-      resizeCanvas();
-      animate();
-      
-      console.log('✨ Firefly Swarm ready · shortcuts: [R] Reset');
-    })();
-  </script>
+        console.log('✨ Firefly Swarm loaded!');
+        console.log('💡 F - Change count');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Pause (coming soon)');
+    </script>
 </body>
 </html>
