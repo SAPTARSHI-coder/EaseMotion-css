@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravity Glass</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="gravity-app">
+
+    <section class="gravity-display" id="gravityDisplay">
+      <canvas id="gravityCanvas"></canvas>
+
+      <div class="gravity-overlay">
+        <div class="gravity-header">
+          <div>
+            <span class="eyebrow">INTERACTIVE FIELD</span>
+            <h1>Gravity Glass</h1>
+          </div>
+
+          <div class="status-pill" id="statusPill">
+            <span class="status-dot"></span>
+            <span id="statusText">Stable Orbit</span>
+          </div>
+        </div>
+
+        <div class="gravity-info">
+          <div class="info-card">
+            <span class="info-label">Particles</span>
+            <span class="info-value" id="particleCount">28</span>
+          </div>
+
+          <div class="info-card">
+            <span class="info-label">Gravity</span>
+            <span class="info-value" id="gravityValue">0%</span>
+          </div>
+
+          <div class="info-card">
+            <span class="info-label">Pulses</span>
+            <span class="info-value" id="pulseCount">0</span>
+          </div>
+        </div>
+
+        <div class="gravity-core">
+          <div class="core-glow"></div>
+          <div class="core-ring ring-one"></div>
+          <div class="core-ring ring-two"></div>
+
+          <div class="core-content">
+            <span class="core-symbol">✦</span>
+            <span class="core-label">GRAVITY</span>
+            <span class="core-value" id="coreGravity">1.00</span>
+          </div>
+        </div>
+
+        <div class="instruction">
+          <span>Move your pointer through the field</span>
+          <span class="instruction-divider">•</span>
+          <span>Click to create a gravity pulse</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls-panel">
+
+      <div class="control-group">
+        <div class="control-heading">
+          <label for="gravitySlider">Gravity Strength</label>
+          <span id="gravitySliderValue">80%</span>
+        </div>
+
+        <input
+          type="range"
+          id="gravitySlider"
+          min="20"
+          max="150"
+          value="80"
+        >
+      </div>
+
+      <div class="control-group">
+        <div class="control-heading">
+          <label for="speedSlider">Orbit Speed</label>
+          <span id="speedSliderValue">100%</span>
+        </div>
+
+        <input
+          type="range"
+          id="speedSlider"
+          min="30"
+          max="200"
+          value="100"
+        >
+      </div>
+
+      <div class="button-row">
+        <button class="control-button pulse-button" id="pulseButton">
+          ✦ Gravity Pulse
+        </button>
+
+        <button class="control-button reset-button" id="resetButton">
+          ↻ Reset Field
+        </button>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("gravityCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const display = document.getElementById("gravityDisplay");
+
+    const gravitySlider = document.getElementById("gravitySlider");
+    const speedSlider = document.getElementById("speedSlider");
+
+    const gravitySliderValue = document.getElementById("gravitySliderValue");
+    const speedSliderValue = document.getElementById("speedSliderValue");
+
+    const particleCountElement = document.getElementById("particleCount");
+    const gravityValueElement = document.getElementById("gravityValue");
+    const pulseCountElement = document.getElementById("pulseCount");
+
+    const statusText = document.getElementById("statusText");
+    const coreGravity = document.getElementById("coreGravity");
+
+    const pulseButton = document.getElementById("pulseButton");
+    const resetButton = document.getElementById("resetButton");
+
+    let width = 0;
+    let height = 0;
+    let centerX = 0;
+    let centerY = 0;
+
+    let gravityStrength = 0.8;
+    let orbitMultiplier = 1;
+    let pulseCount = 0;
+
+    let pointer = {
+      x: 0,
+      y: 0,
+      active: false
+    };
+
+    let pulse = {
+      active: false,
+      radius: 0,
+      strength: 0
+    };
+
+    const particles = [];
+
+    const orbitConfig = [
+      {
+        radius: 100,
+        speed: 0.008,
+        count: 8
+      },
+      {
+        radius: 160,
+        speed: 0.0055,
+        count: 10
+      },
+      {
+        radius: 220,
+        speed: 0.0038,
+        count: 10
+      }
+    ];
+
+    function resizeCanvas() {
+      const rect = display.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      centerX = width / 2;
+      centerY = height / 2;
+    }
+
+    class Particle {
+      constructor(radius, speed, index, total) {
+        this.baseRadius = radius;
+        this.radius = radius;
+
+        this.angle =
+          (Math.PI * 2 * index) / total +
+          Math.random() * 0.4;
+
+        this.baseSpeed = speed * (0.85 + Math.random() * 0.3);
+
+        this.size = 1.5 + Math.random() * 2.4;
+
+        this.x = centerX;
+        this.y = centerY;
+
+        this.vx = 0;
+        this.vy = 0;
+
+        this.opacity = 0.35 + Math.random() * 0.6;
+
+        this.phase = Math.random() * Math.PI * 2;
+
+        this.trail = [];
+      }
+
+      update() {
+        const orbitSpeed =
+          this.baseSpeed *
+          orbitMultiplier;
+
+        this.angle += orbitSpeed;
+
+        const targetX =
+          centerX +
+          Math.cos(this.angle) * this.baseRadius;
+
+        const targetY =
+          centerY +
+          Math.sin(this.angle) * this.baseRadius;
+
+        this.x += (targetX - this.x) * 0.035;
+        this.y += (targetY - this.y) * 0.035;
+
+        if (pointer.active) {
+          const dx = pointer.x - this.x;
+          const dy = pointer.y - this.y;
+
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          const influenceRadius = 180;
+
+          if (distance < influenceRadius && distance > 1) {
+            const influence =
+              (1 - distance / influenceRadius) *
+              gravityStrength;
+
+            const forceX = (dx / distance) * influence;
+            const forceY = (dy / distance) * influence;
+
+            this.vx += forceX * 0.55;
+            this.vy += forceY * 0.55;
+          }
+        }
+
+        if (pulse.active) {
+          const dx = this.x - centerX;
+          const dy = this.y - centerY;
+
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (
+            distance < pulse.radius + 40 &&
+            distance > pulse.radius - 40
+          ) {
+            const normalizedX = dx / Math.max(distance, 1);
+            const normalizedY = dy / Math.max(distance, 1);
+
+            this.vx +=
+              normalizedX *
+              pulse.strength *
+              0.8;
+
+            this.vy +=
+              normalizedY *
+              pulse.strength *
+              0.8;
+          }
+        }
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.vx *= 0.92;
+        this.vy *= 0.92;
+
+        this.trail.push({
+          x: this.x,
+          y: this.y
+        });
+
+        if (this.trail.length > 7) {
+          this.trail.shift();
+        }
+
+        this.phase += 0.025;
+      }
+
+      draw() {
+        if (this.trail.length > 1) {
+          ctx.beginPath();
+
+          this.trail.forEach((point, index) => {
+            if (index === 0) {
+              ctx.moveTo(point.x, point.y);
+            } else {
+              ctx.lineTo(point.x, point.y);
+            }
+          });
+
+          ctx.strokeStyle =
+            `rgba(190, 225, 255, ${this.opacity * 0.12})`;
+
+          ctx.lineWidth = 1;
+
+          ctx.stroke();
+        }
+
+        const pulseGlow =
+          1 + Math.sin(this.phase) * 0.25;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.size * pulseGlow,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle =
+          `rgba(225, 242, 255, ${this.opacity})`;
+
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "rgba(170, 220, 255, 0.8)";
+
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function createParticles() {
+      particles.length = 0;
+
+      orbitConfig.forEach(orbit => {
+        for (let i = 0; i < orbit.count; i++) {
+          particles.push(
+            new Particle(
+              orbit.radius,
+              orbit.speed,
+              i,
+              orbit.count
+            )
+          );
+        }
+      });
+
+      particleCountElement.textContent =
+        particles.length;
+    }
+
+    function drawOrbitRings() {
+      orbitConfig.forEach((orbit, index) => {
+        ctx.beginPath();
+
+        ctx.arc(
+          centerX,
+          centerY,
+          orbit.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle =
+          index === 1
+            ? "rgba(180, 220, 255, 0.11)"
+            : "rgba(180, 220, 255, 0.07)";
+
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    }
+
+    function drawPointerField() {
+      if (!pointer.active) {
+        return;
+      }
+
+      const gradient =
+        ctx.createRadialGradient(
+          pointer.x,
+          pointer.y,
+          0,
+          pointer.x,
+          pointer.y,
+          180
+        );
+
+      gradient.addColorStop(
+        0,
+        "rgba(190, 230, 255, 0.12)"
+      );
+
+      gradient.addColorStop(
+        0.5,
+        "rgba(160, 210, 255, 0.05)"
+      );
+
+      gradient.addColorStop(
+        1,
+        "rgba(160, 210, 255, 0)"
+      );
+
+      ctx.beginPath();
+
+      ctx.arc(
+        pointer.x,
+        pointer.y,
+        180,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      ctx.beginPath();
+
+      ctx.arc(
+        pointer.x,
+        pointer.y,
+        5,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.fillStyle =
+        "rgba(220, 245, 255, 0.9)";
+
+      ctx.shadowBlur = 18;
+      ctx.shadowColor =
+        "rgba(150, 220, 255, 0.9)";
+
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+    }
+
+    function drawPulse() {
+      if (!pulse.active) {
+        return;
+      }
+
+      ctx.beginPath();
+
+      ctx.arc(
+        centerX,
+        centerY,
+        pulse.radius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.strokeStyle =
+        `rgba(190, 230, 255, ${pulse.strength * 0.5})`;
+
+      ctx.lineWidth = 2;
+
+      ctx.shadowBlur = 16;
+      ctx.shadowColor =
+        "rgba(150, 220, 255, 0.7)";
+
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
+    }
+
+    function updateStatus() {
+      if (pulse.active) {
+        statusText.textContent = "Gravity Pulse";
+        return;
+      }
+
+      if (pointer.active) {
+        statusText.textContent = "Field Disturbed";
+        return;
+      }
+
+      statusText.textContent = "Stable Orbit";
+    }
+
+    function updateGravityDisplay() {
+      let strength = gravityStrength;
+
+      if (pointer.active) {
+        strength += 0.2;
+      }
+
+      if (pulse.active) {
+        strength += pulse.strength * 0.3;
+      }
+
+      const percentage =
+        Math.min(
+          Math.round(strength * 100),
+          150
+        );
+
+      gravityValueElement.textContent =
+        percentage + "%";
+
+      coreGravity.textContent =
+        Math.min(strength, 1.5).toFixed(2);
+    }
+
+    function createPulse() {
+      pulseCount++;
+
+      pulseCountElement.textContent =
+        pulseCount;
+
+      pulse.active = true;
+      pulse.radius = 20;
+      pulse.strength = 0.8;
+
+      updateStatus();
+    }
+
+    function animate() {
+      ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+      drawOrbitRings();
+
+      particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+
+      drawPointerField();
+      drawPulse();
+
+      if (pulse.active) {
+        pulse.radius += 5;
+        pulse.strength *= 0.965;
+
+        if (
+          pulse.radius > 320 ||
+          pulse.strength < 0.03
+        ) {
+          pulse.active = false;
+          pulse.radius = 0;
+          pulse.strength = 0;
+
+          updateStatus();
+        }
+      }
+
+      updateGravityDisplay();
+
+      requestAnimationFrame(animate);
+    }
+
+    function resetField() {
+      pointer.active = false;
+
+      pulse.active = false;
+      pulse.radius = 0;
+      pulse.strength = 0;
+
+      pulseCount = 0;
+
+      pulseCountElement.textContent = "0";
+
+      createParticles();
+
+      updateStatus();
+      updateGravityDisplay();
+    }
+
+    display.addEventListener("pointermove", event => {
+      const rect =
+        display.getBoundingClientRect();
+
+      pointer.x =
+        event.clientX - rect.left;
+
+      pointer.y =
+        event.clientY - rect.top;
+
+      pointer.active = true;
+    });
+
+    display.addEventListener("pointerleave", () => {
+      pointer.active = false;
+      updateStatus();
+    });
+
+    display.addEventListener("click", event => {
+      if (
+        event.target.closest("button") ||
+        event.target.closest("input")
+      ) {
+        return;
+      }
+
+      createPulse();
+    });
+
+    pulseButton.addEventListener(
+      "click",
+      createPulse
+    );
+
+    resetButton.addEventListener(
+      "click",
+      resetField
+    );
+
+    gravitySlider.addEventListener(
+      "input",
+      event => {
+        gravityStrength =
+          Number(event.target.value) / 100;
+
+        gravitySliderValue.textContent =
+          event.target.value + "%";
+      }
+    );
+
+    speedSlider.addEventListener(
+      "input",
+      event => {
+        orbitMultiplier =
+          Number(event.target.value) / 100;
+
+        speedSliderValue.textContent =
+          event.target.value + "%";
+      }
+    );
+
+    window.addEventListener(
+      "keydown",
+      event => {
+        if (
+          event.code === "Space" &&
+          !event.repeat
+        ) {
+          event.preventDefault();
+          createPulse();
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+          resetField();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+    createParticles();
+    updateStatus();
+    updateGravityDisplay();
+    animate();
+  </script>
+
+</body>
+</html>

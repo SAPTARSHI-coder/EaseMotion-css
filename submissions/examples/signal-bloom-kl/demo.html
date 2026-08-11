@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signal Bloom</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>Signal Bloom</h1>
+      <p class="subtitle">A Communication Signal That Grows Into Light</p>
+    </header>
+
+    <main class="visualization-grid">
+      <!-- Visual Panel -->
+      <section class="visual-panel" aria-label="Signal Visualization">
+        <div class="cosmos-container" aria-hidden="true">
+          <!-- Background Grid / Atmosphere -->
+          <div class="bg-atmosphere"></div>
+          
+          <!-- Dynamic Transmissions Container -->
+          <div id="transmissions-layer"></div>
+
+          <!-- Central Transmitter -->
+          <button id="transmitter-btn" class="transmitter" aria-label="Send Transmission">
+            <div class="transmitter-core"></div>
+            <div class="transmitter-pulse"></div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Controls Panel -->
+      <section class="controls-panel" aria-label="Signal Controls">
+        <div class="telemetry-display">
+          <h2>Transmissions</h2>
+          <div class="counter-display" id="transmission-counter" aria-live="polite">000</div>
+        </div>
+
+        <div class="control-group">
+          <div class="control-header">
+            <label for="signal-strength">Signal Strength</label>
+            <span id="strength-value" class="control-value">75%</span>
+          </div>
+          <input type="range" id="signal-strength" name="signal-strength" min="10" max="100" value="75">
+        </div>
+
+        <div class="control-group">
+          <span class="control-label" id="frequency-label">Frequency</span>
+          <div class="radio-group" role="radiogroup" aria-labelledby="frequency-label">
+            <label class="radio-option">
+              <input type="radio" name="frequency" value="low">
+              <span class="radio-btn">Low</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="frequency" value="medium" checked>
+              <span class="radio-btn">Medium</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="frequency" value="high">
+              <span class="radio-btn">High</span>
+            </label>
+          </div>
+        </div>
+
+        <footer class="telemetry-footer">
+          <p class="help-text"><strong>Keyboard:</strong> Use <kbd>Tab</kbd> to navigate and <kbd>Space</kbd>/<kbd>Enter</kbd> to transmit.</p>
+          <div id="status-live" class="sr-only" aria-live="polite"></div>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const transmitterBtn = document.getElementById('transmitter-btn');
+      const transmissionsLayer = document.getElementById('transmissions-layer');
+      const strengthInput = document.getElementById('signal-strength');
+      const strengthValue = document.getElementById('strength-value');
+      const frequencyInputs = document.querySelectorAll('input[name="frequency"]');
+      const counterDisplay = document.getElementById('transmission-counter');
+      const statusLive = document.getElementById('status-live');
+
+      let transmissionCount = 0;
+      let activeTransmissions = 0;
+      const MAX_ACTIVE = 15; // Safeguard against DOM explosion
+
+      // Update strength UI
+      strengthInput.addEventListener('input', (e) => {
+        strengthValue.textContent = `${e.target.value}%`;
+      });
+
+      function padCounter(num) {
+        return num.toString().padStart(3, '0');
+      }
+
+      function getFrequencyConfig() {
+        let freq = 'medium';
+        frequencyInputs.forEach(input => {
+          if (input.checked) freq = input.value;
+        });
+
+        // Map frequency to animation duration scales
+        switch(freq) {
+          case 'low': return { durScale: 1.5, name: 'Low' };
+          case 'high': return { durScale: 0.6, name: 'High' };
+          default: return { durScale: 1.0, name: 'Medium' };
+        }
+      }
+
+      function generateTransmission() {
+        if (activeTransmissions >= MAX_ACTIVE) return;
+
+        // Check reduced motion
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        
+        // Calculate parameters
+        const strength = parseInt(strengthInput.value, 10);
+        const { durScale, name: freqName } = getFrequencyConfig();
+        
+        // Increment Counter
+        transmissionCount++;
+        counterDisplay.textContent = padCounter(transmissionCount);
+        statusLive.textContent = `Signal transmitted. Strength ${strength}%. Frequency: ${freqName}.`;
+
+        activeTransmissions++;
+
+        // Visual flash on transmitter
+        transmitterBtn.classList.remove('firing');
+        void transmitterBtn.offsetWidth; // trigger reflow
+        transmitterBtn.classList.add('firing');
+
+        // Create transmission container
+        const transmissionNode = document.createElement('div');
+        transmissionNode.classList.add('transmission-event');
+        
+        // Apply scales based on strength and frequency
+        const scaleMax = 1 + (strength / 100) * 3; // 1 to 4 max scale
+        const baseRingDur = 2 * durScale;
+        
+        transmissionNode.style.setProperty('--tx-scale', scaleMax);
+        transmissionNode.style.setProperty('--tx-dur', `${baseRingDur}s`);
+        
+        // Create Ring
+        const ring = document.createElement('div');
+        ring.classList.add('signal-ring');
+        
+        // Handle cleanup
+        ring.addEventListener('animationend', () => {
+          if (transmissionNode.parentNode) {
+            transmissionNode.parentNode.removeChild(transmissionNode);
+            activeTransmissions--;
+          }
+        }, { once: true });
+
+        transmissionNode.appendChild(ring);
+
+        // Particle Bloom Generation
+        // Do not generate heavy particles if reduced motion is on
+        const particleCount = prefersReducedMotion ? 0 : Math.floor((strength / 100) * 24);
+        
+        for (let i = 0; i < particleCount; i++) {
+          const particle = document.createElement('div');
+          particle.classList.add('bloom-particle');
+          
+          // Randomize particle vectors
+          const angle = Math.random() * Math.PI * 2;
+          const distOffset = Math.random() * 50 + 20; // 20px to 70px beyond the ring edge
+          const radius = (150 * scaleMax) + distOffset; 
+          
+          const tx = Math.cos(angle) * radius;
+          const ty = Math.sin(angle) * radius;
+          
+          // Slight randomization in particle scale and timing
+          const pScale = Math.random() * 1.5 + 0.5;
+          const delay = Math.random() * (baseRingDur * 0.4); // spawn particles as ring expands
+          const pDur = baseRingDur * (Math.random() * 0.5 + 0.7);
+
+          particle.style.setProperty('--p-tx', `${tx}px`);
+          particle.style.setProperty('--p-ty', `${ty}px`);
+          particle.style.setProperty('--p-scale', pScale);
+          particle.style.setProperty('--p-delay', `${delay}s`);
+          particle.style.setProperty('--p-dur', `${pDur}s`);
+
+          transmissionNode.appendChild(particle);
+        }
+
+        transmissionsLayer.appendChild(transmissionNode);
+      }
+
+      // Event Listeners
+      transmitterBtn.addEventListener('click', generateTransmission);
+
+      transmitterBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          generateTransmission();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
