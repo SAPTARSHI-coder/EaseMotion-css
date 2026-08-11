@@ -1,98 +1,332 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ============================================================
+   CSS-ONLY RADIAL SPOTLIGHT HOVER CARD
+   Issue #74673 — ease-spotlight-card
+   Technique: @property + radial-gradient + mix-blend-mode
+   No JavaScript required.
+   ============================================================
+
+   HOW IT WORKS:
+   We register --x and --y as animatable <percentage> custom
+   properties via @property. The card's ::before pseudo-element
+   carries a radial-gradient centered on var(--x) var(--y).
+   On :hover, a keyframe animation sweeps these values from the
+   card center to edge positions, creating a convincing spotlight
+   sweep. mix-blend-mode: overlay softly reveals underlying
+   card content through the highlight layer.
+
+   BROWSER SUPPORT:
+   @property → Chrome 85+, Edge 85+, Firefox 128+, Safari 16.4+
+   Falls back gracefully: spotlight simply appears at center.
+   ============================================================ */
+
+/* ── Registered animatable custom properties ── */
+@property --x {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 50%;
 }
 
+@property --y {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 50%;
+}
+
+@property --spotlight-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+
+/* ── Spotlight sweep keyframe (top-left → bottom-right orbit) ── */
+@keyframes spotlight-sweep {
+  0%   { --x: 50%; --y: 50%; }
+  25%  { --x: 80%; --y: 20%; }
+  50%  { --x: 20%; --y: 60%; }
+  75%  { --x: 75%; --y: 80%; }
+  100% { --x: 50%; --y: 50%; }
+}
+
+@keyframes spotlight-fade-in {
+  from { --spotlight-opacity: 0; }
+  to   { --spotlight-opacity: 1; }
+}
+
+/* ── Design tokens ── */
+:root {
+  --bg-page:     hsl(222, 47%, 6%);
+  --bg-card:     hsl(222, 35%, 10%);
+  --border-idle: hsla(215, 30%, 60%, 0.10);
+  --border-glow: hsla(215, 90%, 70%, 0.28);
+  --text-primary:   hsl(215, 25%, 92%);
+  --text-muted:     hsl(215, 20%, 60%);
+  --text-accent:    hsl(200, 90%, 72%);
+  --spotlight-color: hsla(210, 100%, 85%, 0.22);
+  --font-sans: 'Inter', sans-serif;
+  --radius-card: 20px;
+  --transition-card: 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Page ── */
 body {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #0f172a;
-    font-family: Arial, Helvetica, sans-serif;
-    padding: 2rem;
+  min-height: 100vh;
+  background: var(--bg-page);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%, hsla(215, 80%, 25%, 0.25) 0%, transparent 70%);
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  gap: 3rem;
 }
 
-.container {
-    max-width: 1100px;
-    text-align: center;
+/* ── Page header ── */
+.page-header {
+  text-align: center;
+  max-width: 640px;
 }
 
-h1 {
-    color: #ffffff;
-    margin-bottom: 0.75rem;
+.page-header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, hsl(200, 90%, 82%), hsl(255, 80%, 75%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.75rem;
 }
 
-.subtitle {
-    color: #cbd5e1;
-    margin-bottom: 2.5rem;
+.page-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
+.badge {
+  display: inline-block;
+  background: hsla(215, 60%, 55%, 0.15);
+  border: 1px solid hsla(215, 60%, 55%, 0.25);
+  color: var(--text-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.3em 0.85em;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Card grid ── */
 .card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1060px;
 }
 
-.spotlight-card {
-    position: relative;
-    overflow: hidden;
-    padding: 2rem;
-    border-radius: 18px;
-    background: #1e293b;
-    color: white;
-    border: 1px solid rgba(255,255,255,0.08);
-    transition: transform 0.35s ease,
-                box-shadow 0.35s ease,
-                border-color 0.35s ease;
+/* ==============================================================
+   .ease-spotlight-card  —  THE CORE COMPONENT CLASS
+   ============================================================== */
+.ease-spotlight-card {
+  --x: 50%;
+  --y: 50%;
+  --spotlight-opacity: 0;
+
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--bg-card);
+  border: 1px solid var(--border-idle);
+  padding: 2rem 1.75rem 1.75rem;
+  cursor: default;
+  isolation: isolate;
+
+  /* Lift transition */
+  transition:
+    transform       var(--transition-card),
+    box-shadow      var(--transition-card),
+    border-color    var(--transition-card);
 }
 
-.spotlight-card::before {
-    content: "";
-    position: absolute;
-    inset: -50%;
-    background: radial-gradient(
-        circle,
-        rgba(255,255,255,0.22),
-        transparent 60%
-    );
-    opacity: 0;
-    transition: opacity 0.35s ease;
-    pointer-events: none;
+/* ── Spotlight pseudo-layer ── */
+.ease-spotlight-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+
+  background: radial-gradient(
+    circle 180px at var(--x) var(--y),
+    var(--spotlight-color, hsla(210, 100%, 85%, 0.22)),
+    transparent 70%
+  );
+
+  mix-blend-mode: overlay;
+  opacity: var(--spotlight-opacity);
+
+  /* Transition so spotlight fades out when cursor leaves */
+  transition:
+    --x              0.05s linear,
+    --y              0.05s linear,
+    --spotlight-opacity 0.55s ease;
 }
 
-.spotlight-card:hover::before {
-    opacity: 1;
+/* ── On hover: animate the spotlight sweep + fade in ── */
+.ease-spotlight-card:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 0  0  1px var(--border-glow),
+    0 24px 48px -12px hsla(215, 50%, 10%, 0.7),
+    0  4px 16px -4px  hsla(200, 80%, 60%, 0.12);
+  border-color: var(--border-glow);
 }
 
-.spotlight-card:hover {
-    transform: translateY(-10px);
-    border-color: rgba(255,255,255,0.25);
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.4),
-        0 0 30px rgba(255,255,255,0.08);
+.ease-spotlight-card:hover::before {
+  animation:
+    spotlight-sweep  5s  linear infinite,
+    spotlight-fade-in 0.45s ease forwards;
 }
 
-.spotlight-card h2 {
-    margin-bottom: 1rem;
-    position: relative;
-    z-index: 1;
+/* ── Content inside cards sits above spotlight layer ── */
+.ease-spotlight-card > * {
+  position: relative;
+  z-index: 1;
 }
 
-.spotlight-card p {
-    color: #d1d5db;
-    line-height: 1.6;
-    position: relative;
-    z-index: 1;
+/* ── Card icon ── */
+.card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: hsla(215, 80%, 60%, 0.12);
+  border: 1px solid hsla(215, 80%, 60%, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 1.25rem;
+  transition: background var(--transition-card), border-color var(--transition-card);
 }
 
-@media (max-width: 768px) {
-    body {
-        padding: 1rem;
-    }
+.ease-spotlight-card:hover .card-icon {
+  background: hsla(200, 90%, 65%, 0.18);
+  border-color: hsla(200, 90%, 65%, 0.3);
+}
 
-    .card-grid {
-        grid-template-columns: 1fr;
-    }
+/* ── Card text ── */
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 0.55rem;
+}
+
+.card-body {
+  font-size: 0.88rem;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+/* ── Card tag ── */
+.card-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-top: 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-accent);
+  opacity: 0.75;
+  transition: opacity var(--transition-card);
+}
+
+.ease-spotlight-card:hover .card-tag {
+  opacity: 1;
+}
+
+.card-tag::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: currentColor;
+}
+
+/* ── Bordered card variant ── */
+.ease-spotlight-card.variant-purple {
+  --spotlight-color: hsla(265, 100%, 80%, 0.22);
+}
+.ease-spotlight-card.variant-rose {
+  --spotlight-color: hsla(340, 100%, 80%, 0.22);
+}
+.ease-spotlight-card.variant-amber {
+  --spotlight-color: hsla(42, 100%, 75%, 0.22);
+}
+
+/* ── Horizontal divider ── */
+.ease-spotlight-card .card-divider {
+  margin: 1.25rem 0;
+  border: none;
+  border-top: 1px solid var(--border-idle);
+  transition: border-color var(--transition-card);
+}
+.ease-spotlight-card:hover .card-divider {
+  border-color: var(--border-glow);
+}
+
+/* ── Browser support note section ── */
+.browser-note {
+  width: 100%;
+  max-width: 1060px;
+  background: hsla(215, 40%, 12%, 0.7);
+  border: 1px solid hsla(215, 30%, 40%, 0.15);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.browser-note strong {
+  color: var(--text-accent);
+}
+
+/* ── Reduced-motion override ── */
+@media (prefers-reduced-motion: reduce) {
+  .ease-spotlight-card,
+  .ease-spotlight-card::before,
+  .ease-spotlight-card * {
+    transition: none !important;
+    animation: none !important;
+  }
+  .ease-spotlight-card:hover {
+    transform: none;
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  body {
+    padding: 2rem 1rem;
+  }
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
 }
