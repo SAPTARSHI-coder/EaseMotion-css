@@ -1,9 +1,9 @@
 ---
-name: "✨ Feature Request"
+name: Feature Request
 about: Propose a new utility, animation, or component for EaseMotion CSS
 title: "[FEATURE] Your feature name here"
-labels: 'GSSoC-26, good first issue, help wanted, level:beginner'
-assignees: 'SAPTARSHI-coder'
+labels: ''
+assignees: ''
 
 ---
 
@@ -55,8 +55,4 @@ assignees: 'SAPTARSHI-coder'
 
 - [ ] This feature does not duplicate an existing EaseMotion CSS class
 - [ ] I understand my naming will be standardized by the maintainer
-- [ ] I will submit code inside `submissions/` only — not in `core/` or `components/`
-
----
-
-> **Tip:** You can discuss your feature ideas and get feedback from other developers on our official [Discord Server](https://discord.gg/hWSdGrccBU) before submitting an issue.
+- [ ] I will submit code inside `submissions/examples/` only — not in `core/` or `components/`

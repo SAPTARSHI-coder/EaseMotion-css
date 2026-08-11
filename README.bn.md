@@ -1,33 +1,26 @@
 <div align="center">
 
-<img src="./docs/assets/logo.svg" alt="EaseMotion CSS" width="570" />
-
-<br/>
+<img src="https://raw.githubusercontent.com/SAPTARSHI-coder/EaseMotion-css/main/docs/assets/banner.svg" alt="EaseMotion CSS" width="100%" />
 
 # ⚡ EaseMotion CSS
 
-**এক্সপ্রেসিভ UI মোশনের জন্য আধুনিক অ্যানিমেশন ফ্রেমওয়ার্ক।**
+**মানুষের ভাষায় লেখা। অ্যানিমেশন-প্রথম। শূন্য নির্ভরতা।**
 
 UI লেখো যেভাবে ইংরেজিতে বলো। কোনো বিল্ড স্টেপ নেই। শর্টহ্যান্ড মুখস্থ করতে হবে না। শুধু একটা ফাইল লিঙ্ক করো আর শিপ করো।
 
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
-[![committers.top public badge](https://user-badge.committers.top/india_public/SAPTARSHI-coder.svg)](https://committers.top/india_public)
-[![committers.top private badge](https://user-badge.committers.top/india_private/SAPTARSHI-coder.svg)](https://committers.top/india_private)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hWSdGrccBU)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
-[![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
-[![GitHub Forks](https://flat.badgen.net/github/forks/SAPTARSHI-coder/EaseMotion-css?color=22c55e&icon=github&label=forks)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
-[![GitHub Contributors](https://img.shields.io/badge/contributors-420+-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
-[![Merged PRs](https://img.shields.io/badge/merged%20PRs-12078-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
-[![Closed Issues](https://img.shields.io/badge/closed%20issues-10211-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
-[![Open PRs](https://flat.badgen.net/github/open-prs/SAPTARSHI-coder/EaseMotion-css?color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
-[![Open Issues](https://flat.badgen.net/github/open-issues/SAPTARSHI-coder/EaseMotion-css?color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=6c63ff)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=22c55e)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
+[![GitHub Contributors](https://img.shields.io/github/contributors/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=f59e0b)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![Open PRs](https://img.shields.io/github/issues-pr/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
+[![Open Issues](https://img.shields.io/github/issues/SAPTARSHI-coder/EaseMotion-css?style=flat-square&color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
-[![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu%20%28Rank%20%232%20Public%20%7C%20%235%20All%20Time%20Private%20🇮🇳%29-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
+[![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
 
 <br/>
 
@@ -36,10 +29,7 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 ### 🚀 মাত্র একটি লাইন। এটুকুই দরকার।
 
 ```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
 ```
 
 **[📖 ডকুমেন্টেশন](https://saptarshi-coder.github.io/EaseMotion-css/) · [🎮 লাইভ ডেমো](https://github.com/SAPTARSHI-coder/EaseMotion-css/blob/main/examples/demo.html) · [📦 npm](https://www.npmjs.com/package/easemotion-css) · [🤝 অবদান রাখুন](./CONTRIBUTING.md)**
@@ -56,12 +46,12 @@ EaseMotion CSS যদি তোমার সময় বাঁচায় ব�
 
 <div align="center">
 
-| কাজ                                                                                                                  | কেন গুরুত্বপূর্ণ                                         |
-| -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [⭐ **রেপো স্টার করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)                                | আরও ডেভেলপারদের কাছে প্রজেক্টটি পৌঁছাতে সাহায্য করে      |
-| [🍴 **ফর্ক করো ও অবদান রাখো**](./CONTRIBUTING.md)                                                                    | তোমার আইডিয়া একটা আসল ফ্রেমওয়ার্ক ক্লাস হয়ে উঠতে পারে |
-| [🐞 **ইস্যু রিপোর্ট করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)      | তুমি যে বাগ ধরো সেটা সবার জন্য উপকারী                    |
-| [💡 **ফিচার সাজেস্ট করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) | ভালো আইডিয়া ভাবার চেয়ে দ্রুত শিপ হয়                   |
+| কাজ | কেন গুরুত্বপূর্ণ |
+|--------|----------------|
+| [⭐ **রেপো স্টার করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers) | আরও ডেভেলপারদের কাছে প্রজেক্টটি পৌঁছাতে সাহায্য করে |
+| [🍴 **ফর্ক করো ও অবদান রাখো**](./CONTRIBUTING.md) | তোমার আইডিয়া একটা আসল ফ্রেমওয়ার্ক ক্লাস হয়ে উঠতে পারে |
+| [🐞 **ইস্যু রিপোর্ট করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) | তুমি যে বাগ ধরো সেটা সবার জন্য উপকারী |
+| [💡 **ফিচার সাজেস্ট করো**](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) | ভালো আইডিয়া ভাবার চেয়ে দ্রুত শিপ হয় |
 
 </div>
 
@@ -73,17 +63,17 @@ EaseMotion CSS যদি তোমার সময় বাঁচায় ব�
 
 <div align="center">
 
-| মেট্রিক             | মান                                                                                                           |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| 📦 **npm প্যাকেজ**  | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css)                                              |
-| 🌐 **CDN**          | [cdn.jsdelivr.net/gh/...](https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css) |
-| ⚡ **ক্লাস**        | ৮০+ ইউটিলিটি ক্লাস, ২০+ অ্যানিমেশন ক্লাস                                                                      |
-| 🎨 **কম্পোনেন্ট**   | বাটন (৬ ভেরিয়েন্ট), কার্ড (১২ ভেরিয়েন্ট)                                                                    |
-| 🔑 **ডিজাইন টোকেন** | ৬০+ CSS কাস্টম প্রপার্টি                                                                                      |
-| ⚖️ **বান্ডেল সাইজ** | ~১৫ kB (আনপ্যাকড: ~৬২ kB)                                                                                     |
-| 📜 **লাইসেন্স**     | MIT                                                                                                           |
-| 🔧 **বিল্ড স্টেপ**  | ❌ প্রয়োজন নেই                                                                                               |
-| 🏗️ **নির্ভরতা**     | ❌ শূন্য                                                                                                      |
+| মেট্রিক | মান |
+|--------|-------|
+| 📦 **npm প্যাকেজ** | [`easemotion-css`](https://www.npmjs.com/package/easemotion-css) |
+| 🌐 **CDN** | [cdn.jsdelivr.net/npm/easemotion-css](https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css) |
+| ⚡ **ক্লাস** | ৮০+ ইউটিলিটি ক্লাস, ২০+ অ্যানিমেশন ক্লাস |
+| 🎨 **কম্পোনেন্ট** | বাটন (৬ ভেরিয়েন্ট), কার্ড (১২ ভেরিয়েন্ট) |
+| 🔑 **ডিজাইন টোকেন** | ৬০+ CSS কাস্টম প্রপার্টি |
+| ⚖️ **বান্ডেল সাইজ** | ~১৫ kB (আনপ্যাকড: ~৬২ kB) |
+| 📜 **লাইসেন্স** | MIT |
+| 🔧 **বিল্ড স্টেপ** | ❌ প্রয়োজন নেই |
+| 🏗️ **নির্ভরতা** | ❌ শূন্য |
 
 </div>
 
@@ -98,9 +88,7 @@ EaseMotion CSS হলো একটি কিউরেটেড, অ্যান�
 <div class="ease-center ease-fade-in">
   <h1 class="ease-slide-up ease-delay-100">দ্রুত তৈরি করো।</h1>
   <p class="ease-slide-up ease-delay-200">মানুষের জন্য অ্যানিমেশন-প্রথম CSS।</p>
-  <button
-    class="ease-btn ease-btn-primary ease-btn-pill ease-hover-grow ease-delay-300"
-  >
+  <button class="ease-btn ease-btn-primary ease-btn-pill ease-hover-grow ease-delay-300">
     শুরু করো →
   </button>
 </div>
@@ -112,36 +100,33 @@ EaseMotion CSS হলো একটি কিউরেটেড, অ্যান�
 
 ## 🆚 কেন EaseMotion CSS?
 
-|                    |     Vanilla CSS     |        Tailwind CSS         |     **EaseMotion CSS**      |
-| ------------------ | :-----------------: | :-------------------------: | :-------------------------: |
-| সেটআপ              | স্ক্র্যাচ থেকে লেখো |     বিল্ড স্টেপ + কনফিগ     |   **একটি ফাইল লিঙ্ক করো**   |
-| পাঠযোগ্যতা         |       ✅ বেশি       | ❌ কম (`px-4 flex gap-x-2`) | ✅ **বেশি** (`ease-center`) |
-| অ্যানিমেশন         |    ⚙️ ম্যানুয়াল    |          🔸 সীমিত           |    ✅ **ফার্স্ট-ক্লাস**     |
-| জিরো কনফিগ         |         ✅          |             ❌              |             ✅              |
-| কোয়ালিটি কন্ট্রোল |        তুমি         |            তুমি             | ✅ **মেইনটেইনার কিউরেটেড**  |
-| CDN রেডি           |         N/A         |             ❌              |        ✅ **হ্যাঁ**         |
-| শেখার বাধা         |        বেশি         |           মাঝারি            |     ✅ **প্রায় শূন্য**     |
+| | Vanilla CSS | Tailwind CSS | **EaseMotion CSS** |
+|---|:---:|:---:|:---:|
+| সেটআপ | স্ক্র্যাচ থেকে লেখো | বিল্ড স্টেপ + কনফিগ | **একটি ফাইল লিঙ্ক করো** |
+| পাঠযোগ্যতা | ✅ বেশি | ❌ কম (`px-4 flex gap-x-2`) | ✅ **বেশি** (`ease-center`) |
+| অ্যানিমেশন | ⚙️ ম্যানুয়াল | 🔸 সীমিত | ✅ **ফার্স্ট-ক্লাস** |
+| জিরো কনফিগ | ✅ | ❌ | ✅ |
+| কোয়ালিটি কন্ট্রোল | তুমি | তুমি | ✅ **মেইনটেইনার কিউরেটেড** |
+| CDN রেডি | N/A | ❌ | ✅ **হ্যাঁ** |
+| শেখার বাধা | বেশি | মাঝারি | ✅ **প্রায় শূন্য** |
 
 ---
 
 ## ⚡ দ্রুত শুরু
 
-### অপশন ১ — CDN _(সবচেয়ে দ্রুত, জিরো সেটআপ, প্রস্তাবিত)_
+### অপশন ১ — CDN *(সবচেয়ে দ্রুত, জিরো সেটআপ, প্রস্তাবিত)*
 
 ```html
 <!DOCTYPE html>
 <html>
-  <head>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
-    />
-  </head>
-  <body>
-    <div class="ease-center ease-fade-in">
-      <h1>হ্যালো, EaseMotion!</h1>
-    </div>
-  </body>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion.css" />
+</head>
+<body>
+  <div class="ease-center ease-fade-in">
+    <h1>হ্যালো, EaseMotion!</h1>
+  </div>
+</body>
 </html>
 ```
 
@@ -156,75 +141,30 @@ npm install easemotion-css
 তারপর HTML-এ:
 
 ```html
-<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.min.css" />
+<link rel="stylesheet" href="node_modules/easemotion-css/easemotion.css" />
 ```
 
 অথবা CSS / PostCSS / Sass-এ:
 
 ```css
-@import "easemotion-css/easemotion.min.css";
+@import "easemotion-css/easemotion.css";
 ```
 
-### অপশন ৩ — গ্রানুলার ইম্পোর্ট _(শুধু যা দরকার তা নাও)_
+### অপশন ৩ — গ্রানুলার ইম্পোর্ট *(শুধু যা দরকার তা নাও)*
 
 ```html
 <!-- Core (সবসময় প্রয়োজন — এই নির্দিষ্ট ক্রমে লোড করো) -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/variables.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/base.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/animations.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/core/utilities.css" />
 
 <!-- কম্পোনেন্ট — শুধু যা ব্যবহার করো তা যোগ করো -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/components/buttons.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css"
-/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/buttons.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easemotion-css/components/cards.css" />
 ```
 
-### অপশন ৪ — মডুলার অ্যানিমেশন ইম্পোর্ট _(শুধু যা দরকার তা লোড করো)_
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/variables.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/fade.css"
-/>
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/slide.css"
-/>
-<!-- শুধু আপনার প্রয়োজনীয় অ্যানিমেশন ক্যাটাগরিগুলো যুক্ত করুন -->
-```
-
-### সম্পূর্ণ বান্ডেল (Full bundle)
-
-```html
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/easemotion-css/easemotion/all.css"
-/>
-```
-
-> ⚠️ **`easemotion/variables.css` অবশ্যই মডুলার অ্যানিমেশন ফাইলের আগে লোড করতে হবে।** এটি সমস্ত অ্যানিমেশন ক্যাটাগরি দ্বারা ব্যবহৃত শেয়ার্ড কাস্টম প্রপার্টি প্রদান করে।
+> ⚠️ **`variables.css` সবসময় আগে লোড করতে হবে।** অন্য সব মডিউল এর CSS কাস্টম প্রপার্টির উপর নির্ভরশীল।
 
 ---
 
@@ -232,32 +172,25 @@ npm install easemotion-css
 
 EaseMotion CSS শুধু একটি CSS লাইব্রেরি নয় — এটি একটি ডিজাইন ভাষা।
 
-> _"যদি ইংরেজিতে বলতে পারো, তাহলে ক্লাস হিসেবেও লিখতে পারা উচিত।"_
+> *"যদি ইংরেজিতে বলতে পারো, তাহলে ক্লাস হিসেবেও লিখতে পারা উচিত।"*
 
 ```html
-<!-- এটাকে কেন্দ্র করো -->
-<div class="ease-center">
-  <!-- এটাকে ফেড ইন করো -->
-  <h1 class="ease-fade-in">
-    <!-- হোভারে বড় করো -->
-    <button class="ease-hover-grow">
-      <!-- দেরিতে স্লাইড আপ করো -->
-      <p class="ease-slide-up ease-delay-200"></p>
-    </button>
-  </h1>
-</div>
+<!-- এটাকে কেন্দ্র করো -->      <div class="ease-center">
+<!-- এটাকে ফেড ইন করো -->       <h1 class="ease-fade-in">
+<!-- হোভারে বড় করো -->         <button class="ease-hover-grow">
+<!-- দেরিতে স্লাইড আপ করো --> <p class="ease-slide-up ease-delay-200">
 ```
 
 ডকুমেন্টেশন দেখার দরকার নেই। ক্লাসের নামই **হলো** ডকুমেন্টেশন।
 
 ### চারটি নীতি যা কখনো ভাঙা হয় না
 
-| নীতি                 | অর্থ                                                               |
-| -------------------- | ------------------------------------------------------------------ |
-| **মানুষের ভাষায়**   | ক্লাসের নামগুলো সহজ ইংরেজিতে আচরণ বর্ণনা করে                       |
-| **অ্যানিমেশন-প্রথম** | মোশন একটি ফার্স্ট-ক্লাস নাগরিক, পরের চিন্তা নয়                    |
-| **কম্পোজেবল**        | যেকোনো ক্লাস স্বাধীনভাবে স্ট্যাক করো — কোনো স্পেসিফিসিটি যুদ্ধ নেই |
-| **কিউরেটেড**         | প্রতিটি ক্লাস রিলিজের আগে মেইনটেইনার রিভিউ করেন                    |
+| নীতি | অর্থ |
+|-----------|---------------|
+| **মানুষের ভাষায়** | ক্লাসের নামগুলো সহজ ইংরেজিতে আচরণ বর্ণনা করে |
+| **অ্যানিমেশন-প্রথম** | মোশন একটি ফার্স্ট-ক্লাস নাগরিক, পরের চিন্তা নয় |
+| **কম্পোজেবল** | যেকোনো ক্লাস স্বাধীনভাবে স্ট্যাক করো — কোনো স্পেসিফিসিটি যুদ্ধ নেই |
+| **কিউরেটেড** | প্রতিটি ক্লাস রিলিজের আগে মেইনটেইনার রিভিউ করেন |
 
 ### কিউরেশন পাইপলাইন কীভাবে কাজ করে
 
@@ -309,12 +242,12 @@ EaseMotion CSS শুধু একটি CSS লাইব্রেরি নয�
 
 ```html
 <button class="ease-hover-grow">হোভারে বড় হয়</button>
-<div class="ease-hover-morph-card">মর্ফ</div>
-<div class="ease-hover-glow">প্রাইমারি কালার গ্লো</div>
-<div class="ease-hover-lift">শ্যাডোসহ উপরে ওঠে</div>
-<div class="ease-hover-shimmer">শিমার সুইপ ইফেক্ট</div>
-<a class="ease-hover-underline">অ্যানিমেটেড আন্ডারলাইন</a>
-<span class="ease-hover-bounce-text">বাউন্স!</span>
+<div    class="ease-hover-morph-card">মর্ফ</div>
+<div    class="ease-hover-glow">প্রাইমারি কালার গ্লো</div>
+<div    class="ease-hover-lift">শ্যাডোসহ উপরে ওঠে</div>
+<div    class="ease-hover-shimmer">শিমার সুইপ ইফেক্ট</div>
+<a      class="ease-hover-underline">অ্যানিমেটেড আন্ডারলাইন</a>
+<span   class="ease-hover-bounce-text">বাউন্স!</span>
 ```
 
 ### লেআউট ইউটিলিটি
@@ -355,9 +288,7 @@ EaseMotion CSS শুধু একটি CSS লাইব্রেরি নয�
 
 <!-- সাইজ + আকৃতি -->
 <button class="ease-btn ease-btn-primary ease-btn-sm">ছোট</button>
-<button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill">
-  বড় পিল
-</button>
+<button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill">বড় পিল</button>
 ```
 
 ### কার্ড
@@ -387,9 +318,7 @@ EaseMotion CSS শুধু একটি CSS লাইব্রেরি নয�
 <section class="ease-center ease-padding-16">
   <h1 class="ease-fade-in">দ্রুত তৈরি করো।</h1>
   <p class="ease-slide-up ease-delay-200">মানুষের জন্য অ্যানিমেশন-প্রথম CSS।</p>
-  <button
-    class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-hover-grow ease-delay-300"
-  >
+  <button class="ease-btn ease-btn-primary ease-btn-lg ease-btn-pill ease-hover-grow ease-delay-300">
     শুরু করো →
   </button>
 </section>
@@ -404,20 +333,20 @@ EaseMotion CSS শুধু একটি CSS লাইব্রেরি নয�
 ```css
 :root {
   /* রঙ */
-  --ease-color-primary: #f97316; /* কমলায় পরিবর্তন */
-  --ease-color-success: #10b981; /* টিল গ্রিন */
+  --ease-color-primary:   #f97316;   /* কমলায় পরিবর্তন */
+  --ease-color-success:   #10b981;   /* টিল গ্রিন */
 
   /* মোশন */
-  --ease-speed-fast: 100ms; /* আরও দ্রুত */
-  --ease-speed-medium: 400ms; /* একটু ধীর */
-  --ease-ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-speed-fast:      100ms;     /* আরও দ্রুত */
+  --ease-speed-medium:    400ms;     /* একটু ধীর */
+  --ease-ease-bounce:     cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* আকৃতি */
-  --ease-radius-md: 1rem; /* গোলাকার কোণ */
-  --ease-radius-full: 9999px;
+  --ease-radius-md:       1rem;      /* গোলাকার কোণ */
+  --ease-radius-full:     9999px;
 
   /* শ্যাডো */
-  --ease-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --ease-shadow-md:       0 4px 20px rgba(0,0,0,0.15);
 }
 ```
 
@@ -470,22 +399,22 @@ easemotion-css/
 
 > [GitHub Issues](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)-এর মাধ্যমে অগ্রগতি ট্র্যাক করো ও ফিচারে ভোট দাও।
 
-| ফিচার                                    | স্ট্যাটাস            |
-| ---------------------------------------- | -------------------- |
-| ✅ মানুষের ভাষায় কোর ইউটিলিটি (৮০+)     | **শিপড — v1.0**      |
-| ✅ অ্যানিমেশন-প্রথম মোশন লাইব্রেরি (২০+) | **শিপড — v1.0**      |
-| ✅ কিউরেটেড কন্ট্রিবিউশন পাইপলাইন        | **শিপড — v1.0**      |
-| ✅ কম্পোনেন্ট লাইব্রেরি (বাটন, কার্ড)    | **শিপড — v1.0**      |
-| ✅ npm প্যাকেজ + jsDelivr CDN            | **শিপড — v1.0**      |
-| ✅ সম্পূর্ণ ডকুমেন্টেশন সাইট             | **শিপড — v1.0**      |
+| ফিচার | স্ট্যাটাস |
+|---------|--------|
+| ✅ মানুষের ভাষায় কোর ইউটিলিটি (৮০+) | **শিপড — v1.0** |
+| ✅ অ্যানিমেশন-প্রথম মোশন লাইব্রেরি (২০+) | **শিপড — v1.0** |
+| ✅ কিউরেটেড কন্ট্রিবিউশন পাইপলাইন | **শিপড — v1.0** |
+| ✅ কম্পোনেন্ট লাইব্রেরি (বাটন, কার্ড) | **শিপড — v1.0** |
+| ✅ npm প্যাকেজ + jsDelivr CDN | **শিপড — v1.0** |
+| ✅ সম্পূর্ণ ডকুমেন্টেশন সাইট | **শিপড — v1.0** |
 | 🔜 ফর্ম কম্পোনেন্ট (ইনপুট, চেকবক্স, টগল) | **পরিকল্পিত — v1.1** |
-| 🔜 ডার্ক মোড টোকেন লেয়ার                | **পরিকল্পিত — v1.1** |
-| 🔜 মোডাল ও টুলটিপ কম্পোনেন্ট             | **পরিকল্পিত — v1.2** |
-| 🔜 স্ক্রোল-ট্রিগারড অ্যানিমেশন           | **পরিকল্পিত — v1.2** |
+| 🔜 ডার্ক মোড টোকেন লেয়ার | **পরিকল্পিত — v1.1** |
+| 🔜 মোডাল ও টুলটিপ কম্পোনেন্ট | **পরিকল্পিত — v1.2** |
+| 🔜 স্ক্রোল-ট্রিগারড অ্যানিমেশন | **পরিকল্পিত — v1.2** |
 | 🔜 নেভিগেশন কম্পোনেন্ট (নেভবার, সাইডবার) | **পরিকল্পিত — v1.3** |
-| 🔜 CSS-অনলি অ্যাকর্ডিয়ন ও ট্যাব         | **পরিকল্পিত — v1.3** |
+| 🔜 CSS-অনলি অ্যাকর্ডিয়ন ও ট্যাব | **পরিকল্পিত — v1.3** |
 | 🔜 ব্যাজ, ট্যাগ, অ্যাভাটার, প্রগ্রেস বার | **পরিকল্পিত — v1.3** |
-| 🔜 থিমিং CLI                             | **অন্বেষণাধীন**      |
+| 🔜 থিমিং CLI | **অন্বেষণাধীন** |
 
 ---
 
@@ -496,11 +425,10 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 ### ✅ কন্ট্রিবিউটররা যা করেন
 
 ```
-✅ সঠিক ট্র্যাক ফোল্ডারে অবদান জমা দিন (submissions/examples/, submissions/react/, submissions/scss/, বা submissions/docs/)
-✅ ট্র্যাক অনুযায়ী প্রয়োজনীয় ফাইল রাখুন (যেমন React-এর জন্য JSX + README, SCSS-এর জন্য SCSS + README, অথবা Standard-এর জন্য HTML + CSS + README)
-✅ নামকরণের সংঘাত এড়াতে নামের শেষে ছোট ইউনিক সাফিক্স যুক্ত করুন (যেমন: ease-component-yourid)
-✅ কমিট স্কোয়াশ (Squash) করে গিট হিস্ট্রি পরিষ্কার রাখুন
-✅ প্রতি PR-এ একটি ফিচার বা কম্পোনেন্ট বা মিক্সিন
+✅ submissions/examples/your-feature/ ফোল্ডারে যোগ করো
+✅ অন্তর্ভুক্ত করো: demo.html + style.css + README.md
+✅ যেকোনো ক্লাস নামকরণ ব্যবহার করো — ease- প্রিফিক্স দরকার নেই
+✅ প্রতি PR-এ একটি ফিচার
 ```
 
 ### ❌ কন্ট্রিবিউটররা যা করেন না
@@ -529,52 +457,23 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 
 📖 সম্পূর্ণ গাইড পড়ো → [CONTRIBUTING.md](./CONTRIBUTING.md)
 
-### 📢 অবদানের হার সীমা আপডেট (Contribution Rate Limit Update)
-
-রেপো স্ট্যাবিলিটি, রিভিউ কোয়ালিটি এবং কন্ট্রিবিউশনের ন্যায্য বণ্টন বজায় রাখতে, EaseMotion CSS একটি নরম অবদানের সীমা (soft contribution limit) প্রবর্তন করছে:
-
-- কন্ট্রিবিউটররা প্রতিদিন সর্বোচ্চ **২৫টি পিআর (PR) জমা দিতে পারবেন**
-- গুণগত মান, মৌলিকত্ব, অ্যাক্সেসিবিলিটি এবং সঠিক টেস্টিং-এর ওপর মনোযোগ দিন
-- কম পরিশ্রমে তৈরি, পুনরাবৃত্তিমূলক বা স্বয়ংক্রিয়ভাবে তৈরি পিআর (PR) কোনো রিভিউ ছাড়াই বন্ধ করা হতে পারে
-
-#### এই পরিবর্তনের কারণ কী?
-
-EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হাজার হাজার মার্জড পিআর নিয়ে দ্রুত বৃদ্ধি পেয়েছে। এই আপডেটটি সাহায্য করবে:
-
-- মার্জ দ্বন্দ্ব (merge conflicts) কমাতে
-- রিভিউ-এর মান বাড়াতে
-- ফ্রেমওয়ার্কের সামঞ্জস্য বজায় রাখতে
-- পরিমাণের চেয়ে অর্থপূর্ণ অবদানের মান বৃদ্ধি করতে
-
-### 🧹 পরিষ্কার কমিট ইতিহাস এবং স্কোয়াশ (Clean Commit History & Squashing)
-
-রেপোজিটরির গিট (git) ইতিহাস পরিষ্কার এবং পাঠযোগ্য রাখতে, কন্ট্রিবিউটরদের অবশ্যই নিম্নলিখিত নিয়মগুলো অনুসরণ করতে হবে:
-
-- **কমিট স্কোয়াশ (Squash) করুন:** রিভিউয়ের জন্য জমা দেওয়ার আগে আপনার পুল রিকোয়েস্টের (PR) সমস্ত কমিট একটি একক অর্থপূর্ণ কমিটে (বা কয়েকটি যৌক্তিক কমিটে) স্কোয়াশ করা নিশ্চিত করুন। একটি মাত্র পরিবর্তনের জন্য ডজন ডজন মাইক্রো-কমিট (যেমন: "fix", "typo", "update style.css" ইত্যাদি) পুশ করবেন না।
-- **ইতিহাস পরিষ্কার রাখুন:** কোলাহলপূর্ণ, পুনরাবৃত্তিমূলক বা অতিরিক্ত কমিট ইতিহাস (যেমন ডজন ডজন মাইক্রো-কমিট) থাকা পিআর (PR) কোনো রিভিউ ছাড়াই বন্ধ করা হতে পারে বা মার্জ করা থেকে ব্লক করা হতে পারে।
-- **স্পষ্ট কমিট বার্তা লিখুন:** কনভেনশনাল কমিটস (Conventional Commits) ফরম্যাট অনুসরণ করে বর্ণনামূলক কমিট বার্তা লিখুন (যেমন: `feat: add card component` বা `fix: resolve hover animation issue`)।
-
----
-
 ### 📢 অবদান পলিসি আপডেট
 
-রেপো স্ট্রাকচার এবং গাইডলাইন অনুসরণ করে `submissions/` ডিরেক্টরির নিচে সঠিক ট্র্যাক ফোল্ডারে জমা দেওয়া প্রতিটি অবদানকে স্বাগত জানানো হবে এবং তা মার্জ করার জন্য যোগ্য বলে বিবেচিত হবে।
+রেপো স্ট্রাকচার এবং গাইডলাইন অনুসরণ করে `submissions/examples/` ফোল্ডারের ভেতরে জমা দেওয়া প্রতিটি অবদানকে স্বাগত জানানো হবে এবং তা মার্জ করার জন্য যোগ্য বলে বিবেচিত হবে।
 
-নামকরণের সংঘাত (naming conflicts) এবং একে অপরের উপর ওভারল্যাপ করা এড়াতে, কন্ট্রিবিউটরদের অবশ্যই তাদের ফিচার, কম্পোনেন্ট বা মিক্সিনের নামের শেষে একটি ছোট ইউনিক আইডেন্টিফায়ার বা সংক্ষিপ্ত রূপ যুক্ত করতে হবে।
+নামকরণের সংঘাত (naming conflicts) এবং একে অপরের উপর ওভারল্যাপ করা এড়াতে, কন্ট্রিবিউটরদের অবশ্যই তাদের ফিচার বা কম্পোনেন্টের নামের শেষে একটি ছোট ইউনিক আইডেন্টিফায়ার বা সংক্ষিপ্ত রূপ যুক্ত করতে হবে।
 
 **উদাহরণ:**
-
-- `ease-hover-sap`
-- `ease-tabs-ak`
-- `ease-card-pr`
+*   `ease-hover-sap`
+*   `ease-tabs-ak`
+*   `ease-card-pr`
 
 এটি নিশ্চিত করে:
-
-- দ্ব্যর্থহীন কম্পোনেন্ট নামকরণ,
-- প্রতিটি কন্ট্রিবিউটরের কাজের সংরক্ষণ,
-- সংঘাতহীন মার্জ (conflict-free merges),
-- সহজ রক্ষণাবেক্ষণ এবং রিভিউ করার কাজের গতিধারা (review workflow),
-- একই আইডিয়ার একাধিক বা সমান্তরাল বাস্তবায়ন সমর্থন করা।
+*   দ্ব্যর্থহীন কম্পোনেন্ট নামকরণ,
+*   প্রতিটি কন্ট্রিবিউটরের কাজের সংরক্ষণ,
+*   সংঘাতহীন মার্জ (conflict-free merges),
+*   সহজ রক্ষণাবেক্ষণ এবং রিভিউ করার কাজের গতিধারা (review workflow),
+*   একই আইডিয়ার একাধিক বা সমান্তরাল বাস্তবায়ন সমর্থন করা।
 
 এই প্রজেক্টটি বিদ্যমান কন্ট্রিবিউটরদের কাজ ওভাররাইট করার পরিবর্তে সৃজনশীল বৈচিত্র্য এবং সমান্তরাল বাস্তবায়নকে উৎসাহিত করে।
 
@@ -582,18 +481,18 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 
 ## 🏷️ ইস্যু লেবেল
 
-| লেবেল                 | ব্যবহার                                                  |
-| --------------------- | -------------------------------------------------------- |
-| `good first issue`    | সহজ এন্ট্রি পয়েন্ট, প্রথমবার কন্ট্রিবিউটরদের জন্য আদর্শ |
-| `animation`           | হোভার ইফেক্ট, প্রবেশ অ্যানিমেশন, কীফ্রেম আইডিয়া         |
-| `component`           | নতুন UI কম্পোনেন্ট (মোডাল, টুলটিপ, ব্যাজ ইত্যাদি)        |
-| `enhancement`         | বিদ্যমান ক্লাসের উন্নতি                                  |
-| `documentation`       | README, ডকস সাইট, সাবমিশন গাইড                           |
-| `curated`             | ফ্রেমওয়ার্কে গৃহীত                                      |
-| `maintainer-approved` | রিভিউড, ইন্টিগ্রেশন মুলতবি                               |
-| `featured`            | অসাধারণ সাবমিশন — শোকেস করা হবে                          |
+| লেবেল | ব্যবহার |
+|-------|----------|
+| `good first issue` | সহজ এন্ট্রি পয়েন্ট, প্রথমবার কন্ট্রিবিউটরদের জন্য আদর্শ |
+| `animation` | হোভার ইফেক্ট, প্রবেশ অ্যানিমেশন, কীফ্রেম আইডিয়া |
+| `component` | নতুন UI কম্পোনেন্ট (মোডাল, টুলটিপ, ব্যাজ ইত্যাদি) |
+| `enhancement` | বিদ্যমান ক্লাসের উন্নতি |
+| `documentation` | README, ডকস সাইট, সাবমিশন গাইড |
+| `curated` | ফ্রেমওয়ার্কে গৃহীত |
+| `maintainer-approved` | রিভিউড, ইন্টিগ্রেশন মুলতবি |
+| `featured` | অসাধারণ সাবমিশন — শোকেস করা হবে |
 
-> **ইস্যু কুলডাউন নিয়ম:** প্রতি কন্ট্রিবিউটরের সর্বোচ্চ **২টি সক্রিয় অ্যাসাইনড ইস্যু**। ১ দিন (২৪ ঘণ্টা) অগ্রগতি না হলে ইস্যু আনঅ্যাসাইন ও পুনরায় খোলা হয়।
+> **ইস্যু কুলডাউন নিয়ম:** প্রতি কন্ট্রিবিউটরের সর্বোচ্চ **২টি সক্রিয় অ্যাসাইনড ইস্যু**। ৫ দিন অগ্রগতি না হলে ইস্যু আনঅ্যাসাইন ও পুনরায় খোলা হয়।
 
 ---
 
@@ -601,16 +500,15 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 
 <div align="center">
 
-| প্ল্যাটফর্ম             | লিঙ্ক                                                                                                                 |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| 🐛 **বাগ রিপোর্ট**      | [একটি ইস্যু খোলো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md)                |
+| প্ল্যাটফর্ম | লিঙ্ক |
+|----------|------|
+| 🐛 **বাগ রিপোর্ট** | [একটি ইস্যু খোলো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=bug_report.md) |
 | 💡 **ফিচার রিকোয়েস্ট** | [একটি ফিচার রিকোয়েস্ট করো](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/new?template=feature_request.md) |
-| 🔀 **পুল রিকোয়েস্ট**   | [একটি অবদান জমা দাও](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)                                         |
-| 📖 **ডকুমেন্টেশন**      | [সম্পূর্ণ ডকস সাইট](https://saptarshi-coder.github.io/EaseMotion-css/)                                                |
-| 📦 **npm প্যাকেজ**      | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css)                                                  |
-| 🌐 **CDN**              | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css)                                                       |
-| 🏆 **GSSoC 2026**       | [GirlScript Summer of Code](https://gssoc.girlscript.tech/)                                                           |
-| 💬 **ডিসকর্ড সার্ভার (ঐচ্ছিক)**  | [ডিসকর্ড-এ জয়েন করো (ঐচ্ছিক)](https://discord.gg/hWSdGrccBU)                                                                   |
+| 🔀 **পুল রিকোয়েস্ট** | [একটি অবদান জমা দাও](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls) |
+| 📖 **ডকুমেন্টেশন** | [সম্পূর্ণ ডকস সাইট](https://saptarshi-coder.github.io/EaseMotion-css/) |
+| 📦 **npm প্যাকেজ** | [npm-এ easemotion-css](https://www.npmjs.com/package/easemotion-css) |
+| 🌐 **CDN** | [jsDelivr](https://www.jsdelivr.com/package/npm/easemotion-css) |
+| 🏆 **GSSoC 2026** | [GirlScript Summer of Code](https://gssoc.girlscript.tech/) |
 
 </div>
 
@@ -628,7 +526,7 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
   <img src="https://contrib.rocks/image?repo=SAPTARSHI-coder/EaseMotion-css&max=96&columns=12" alt="EaseMotion CSS Contributors" />
 </a>
 
-_[contrib.rocks](https://contrib.rocks) দ্বারা স্বয়ংক্রিয়ভাবে তৈরি · প্রতি রাতে GitHub থেকে আপডেট হয়_
+*[contrib.rocks](https://contrib.rocks) দ্বারা স্বয়ংক্রিয়ভাবে তৈরি · প্রতি রাতে GitHub থেকে আপডেট হয়*
 
 </div>
 
@@ -672,7 +570,7 @@ EaseMotion CSS ডিজাইন, কিউরেট এবং সক্রি�
 
 প্রতিটি স্টার, প্রতিটি PR, প্রতিটি ইস্যু — সবকিছুই গুরুত্বপূর্ণ।
 
-_— Saptarshi Sadhu · [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)_
+*— Saptarshi Sadhu · [@SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)*
 
 <br/>
 

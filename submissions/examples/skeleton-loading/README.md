@@ -1,14 +1,39 @@
-# Skeleton Loading Component
+# Skeleton Loading
 
-**What does this do?**
-Provides a pure-CSS implementation of a Skeleton Loading UI pattern, featuring a continuous, smooth shimmering linear-gradient animation.
+## What does this do?
 
-**How is it used?**
-Apply the base `.skeleton-ag` class to placeholder elements. You can combine it with shape modifiers like `.skeleton-circle-ag` or `.skeleton-rounded-ag`, and control the dimensions via inline styles or dedicated layout classes.
+Displays animated placeholder blocks while content is loading — two variants: a moving shimmer highlight (`skeleton-shimmer`) and a gentle opacity pulse (`skeleton-pulse`).
+
+---
+
+## How is it used?
+
+Add `.skeleton` to any block element to give it the base placeholder style, then add a variant class:
+
 ```html
-<div class="skeleton-ag skeleton-circle-ag" style="width: 50px; height: 50px;"></div>
-<div class="skeleton-ag" style="width: 100%; height: 20px;"></div>
+<!-- Shimmer variant -->
+<div class="skeleton skeleton-image skeleton-shimmer"></div>
+<div class="skeleton skeleton-line skeleton-line--wide skeleton-shimmer"></div>
+
+<!-- Pulse variant -->
+<div class="skeleton skeleton-avatar skeleton-pulse"></div>
+<div class="skeleton skeleton-line skeleton-line--medium skeleton-pulse"></div>
 ```
 
-**Why is it useful?**
-Skeleton screens significantly improve perceived performance compared to blank screens or traditional loading spinners by giving the user an immediate preview of the layout structure before the data finishes fetching.
+Available shape helpers:
+
+| Class | Description |
+|---|---|
+| `skeleton-image` | Full-width 160px image band |
+| `skeleton-avatar` | 40px circular avatar |
+| `skeleton-line` | Short text-line bar |
+| `skeleton-line--full` | 100% width |
+| `skeleton-line--wide` | 75% width |
+| `skeleton-line--medium` | 55% width |
+| `skeleton-line--narrow` | 35% width |
+
+---
+
+## Why is it useful?
+
+Skeleton screens reduce perceived load time by showing the shape of content before data arrives. This implementation is pure CSS — no JavaScript, no dependencies. It fits EaseMotion CSS's animation-first philosophy: a keyframe animation (`skeleton-shimmer` or `skeleton-pulse`) does all the work, and the effect is composable on any element.

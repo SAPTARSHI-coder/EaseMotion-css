@@ -1,36 +1,52 @@
-\# Animated Progress Bar with Percentage Counter
+# Animated Progress Bar
 
+## What does it do?
+Animates a progress bar from 0 to a target width on page load using CSS transitions.
+No JavaScript required for the animation — only a small script to trigger the loaded class.
 
-
-\## What does this add?
-
-A pure CSS animated progress bar that fills smoothly and displays a live-counting percentage number, without any JavaScript.
-
-
-
-\## How does a developer use it?
+## How is it used?
+Add the class to any HTML element:
 
 ```html
-
-<div class="ease-progress ease-progress-counter">
-
-&#x20; <div class="ease-progress-bar" style="--ease-progress-value:75; width:75%;">
-
-&#x20;   <span class="ease-progress-label ease-progress-value"></span>
-
-&#x20; </div>
-
+<!-- Basic -->
+<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 60%;">
+  <div class="ease-progress-bar"></div>
 </div>
 
+<!-- Gradient -->
+<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 80%;">
+  <div class="ease-progress-bar ease-progress-gradient"></div>
+</div>
+
+<!-- Striped + Animated -->
+<div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 45%;">
+  <div class="ease-progress-bar ease-progress-striped ease-progress-animated"></div>
+</div>
+
+<!-- With percentage label -->
+<div class="ease-progress-labeled">
+  <div class="ease-progress ease-progress-loaded" style="--ease-progress-value: 75%;">
+    <div class="ease-progress-bar ease-progress-gradient"></div>
+  </div>
+  <span class="ease-progress-label">75%</span>
+</div>
 ```
 
+## Variants
+- Default — solid primary color
+- Gradient — two-color gradient fill
+- Striped — diagonal stripe pattern
+- Striped + Animated — moving stripes
+- Labeled — with percentage text
 
+## Tech Stack
+- HTML
+- CSS (no frameworks, no JavaScript for animation)
 
-Add `ease-progress-lg` for a larger bar, or `ease-progress-success` / `ease-progress-danger` for color variants.
+## Preview
+Open `demo.html` directly in your browser to see the effect.
 
-
-
-\## Why does it fit EaseMotion CSS?
-
-It follows the animation-first, zero-dependency philosophy of EaseMotion CSS — using only CSS `@keyframes` and the CSS `@property` + `counter()` trick to animate both the fill width and the percentage number, with no JavaScript required.
-
+## Contribution Notes
+- Uses CSS custom property `--ease-progress-value` for target width
+- Follows EaseMotion CSS naming conventions
+- Respects `prefers-reduced-motion`
