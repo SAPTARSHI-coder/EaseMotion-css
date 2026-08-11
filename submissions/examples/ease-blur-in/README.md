@@ -1,17 +1,13 @@
-# Ease Blur In
+# Blur In & Out Animations
 
-An entrance animation that smoothly brings an element into focus by transitioning from a heavily blurred state to a sharp state, while slightly scaling it up to its natural size.
+### What does this do?
+* **`ease-blur-in`**: Smoothly fades an element into view from a blurred, transparent state to sharp visibility on entry.
+* **`ease-blur-out`**: Smoothly fades an element out of view by blurring and reducing opacity on exit.
 
-## Usage
-
-Simply add the `.ease-blur-in` class to any element.
-
+### How is it used?
 ```html
-<div class="ease-blur-in">
-    I am fading into focus!
-</div>
-```
+<!-- Entrance -->
+<div class="ease-blur-in">Hello World</div>
 
-## Files
-- `demo.html`: Interactive preview of the animation.
-- `style.css`: The CSS implementation with keyframes for `blurIn`.
+<!-- Exit -->
+<div class="ease-blur-out">Goodbye World</div>

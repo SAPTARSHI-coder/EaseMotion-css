@@ -1,15 +1,21 @@
-# Copy-to-Clipboard Component with Morphing Check Pulse
+# Copy-to-Clipboard Button for Code Blocks
 
-An intuitive micro-interaction utility built for **EaseMotion CSS** that visually morphs an active utility element upon successful completion of clipboard data copies.
+## Feature Overview
+This feature adds a **“Copy” button** to every code block in the EaseMotion CSS documentation. The button appears on hover (or remains visible depending on styling). When clicked, it copies the snippet to the clipboard and briefly shows a **“Copied!”** confirmation state before resetting.
 
-## 🚀 Component Advantages
-- **Fluid Morph States:** Uses CSS scaling keyframes to transition the standard action sheets icon cleanly into a success confirmation checkmark.
-- **Micro-Impact Physics:** Includes an implicit elastic overshoot timing curve (`cubic-bezier(0.34, 1.56, 0.64, 1)`) to make the success trigger look snappy and premium.
-- **Minimal Main Thread Scripting:** Uses only JavaScript to access native browser background processes (`navigator.clipboard`), keeping layout alterations pure CSS.
+## Why This Matters
+EaseMotion CSS is developer-facing documentation. Developers often copy class names, HTML snippets, and CSS variables directly from the docs. Currently, they must manually select and copy text — a friction point that slows adoption. A one-click copy button:
+- Improves developer experience.
+- Aligns with EaseMotion’s philosophy of clean, minimal, dependency-free design.
+- Matches standard UX patterns seen in GitHub, MDN, and Tailwind docs.
 
-## 📂 Submission Directory Layout
-```text
-submissions/examples/copy-to-clipboard-btn/
-├── demo.html   # Sandbox code frame workspace with sample copy target text
-├── style.css   # Implementation of transition logic, structural button tokens, and pulse mechanics
-└── README.md   # Setup documentation and guidance manually
+## Demo Snippets
+
+### HTML
+```html
+<div class="code-block-wrapper">
+  <pre><code class="language-html">
+    &lt;button class="ease-btn ease-btn-primary"&gt;Primary&lt;/button&gt;
+  </code></pre>
+  <button class="copy-btn" aria-label="Copy code">Copy</button>
+</div>

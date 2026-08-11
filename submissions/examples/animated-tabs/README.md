@@ -1,21 +1,107 @@
 # Animated Tabs Component
 
-A clean, modern, and fully responsive **Tabs Component** with a sliding indicator and smooth content transitions. This example demonstrates how to combine **EaseMotion CSS** for page-load entrances with a modern CSS Grid trick for buttery-smooth height animations without JavaScript calculations.
+## Description
 
-## 🚀 Features
+This contribution introduces an **Animated Tabs Component** for EaseMotion CSS following the project's `ease-` naming convention.
 
-- **Sliding Indicator**: A smooth, animated underline that slides to the active tab using CSS transitions and minimal JavaScript positioning.
-- **Smooth Height Transitions**: Uses the CSS Grid `grid-template-rows: 0fr` to `1fr` trick for perfectly smooth content height animations without needing JavaScript to calculate heights.
-- **Fade & Slide Content**: Inactive panels fade out and slide down slightly, while active panels fade in and slide up for a polished feel.
-- **Staggered Page Load**: Uses `ease-fade-in-down` and `ease-fade-in-up` with delays for a cascading entrance effect.
-- **Interactive Hover States**: Tab buttons and feature items have smooth hover transitions.
-- **Responsive Design**: The tabs scroll horizontally on small screens, and the content grid adapts to single-column layouts.
-- **Accessible Markup**: Uses semantic `<button>` elements for tab triggers.
+The component provides multiple visual styles and smooth animated transitions for switching between content panels.
 
-## 📂 File Structure
+---
+
+## Features
+
+### Core Classes
+
+* `ease-tabs`
+* `ease-tab-list`
+* `ease-tab`
+* `ease-tab-panel`
+
+### Style Variants
+
+* `ease-tabs-underline`
+* `ease-tabs-pill`
+* `ease-tabs-bordered`
+* `ease-tabs-vertical`
+
+### Animation Variants
+
+* `ease-tabs-fade`
+* `ease-tabs-slide`
+* `ease-tabs-zoom`
+
+---
+
+## Why This Component?
+
+Tabs are one of the most common UI patterns used for:
+
+* Dashboards
+* Settings pages
+* Documentation sites
+* Profile sections
+* Admin panels
+
+This component helps developers organize content into clean switchable views while maintaining a modern animated experience.
+
+---
+
+## Example Usage
+
+```html
+<div class="ease-tabs ease-tabs-underline ease-tabs-fade">
+  <div class="ease-tab-list">
+    <button class="ease-tab ease-tab-active" data-target="home">
+      Home
+    </button>
+
+    <button class="ease-tab" data-target="profile">
+      Profile
+    </button>
+  </div>
+
+  <div class="ease-tab-panel ease-tab-active" id="home">
+    Home Content
+  </div>
+
+  <div class="ease-tab-panel" id="profile">
+    Profile Content
+  </div>
+</div>
+```
+
+---
+
+## Files Included
 
 ```text
-submissions/examples/animated-tabs/
-├── demo.html    # HTML structure, EaseMotion utility classes, and JavaScript
-├── style.css    # Custom CSS for layout, sliding indicator, and grid trick
-└── README.md    # Documentation
+animated-tabs/
+├── demo.html
+├── style.css
+└── README.md
+```
+
+---
+
+## Accessibility Considerations
+
+* Keyboard-friendly structure
+* Semantic button elements
+* Clear active state indication
+* Responsive layout support
+
+---
+
+## Contribution Summary
+
+Implemented:
+
+* 4 tab style variants
+* 3 animation variants
+* Responsive design
+* Minimal JavaScript interaction
+* Documentation and demo examples
+
+---
+
+Closes #5735

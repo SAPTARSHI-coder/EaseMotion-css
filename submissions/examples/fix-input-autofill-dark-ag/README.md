@@ -13,4 +13,4 @@ in dark mode using `-webkit-autofill` + `box-shadow: inset 0 0 0 1000px` trick.
 Browsers inject their own background for autofilled fields that cannot
 be overridden with `background-color`. The only reliable cross-browser fix
 is the inset box-shadow trick combined with `-webkit-text-fill-color`.
-Without this, dark mode UIs break visually on autofill. Fixes: #35781
+Without this, dark mode UIs break visually on autofill. Fixes: #59815

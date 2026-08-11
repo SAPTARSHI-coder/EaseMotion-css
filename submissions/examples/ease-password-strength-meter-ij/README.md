@@ -1,12 +1,9 @@
-# ease-password-strength-meter
+# Ease Password Strength Meter
 
-A password input with a live strength indicator bar. The bar width and color transition smoothly based on the calculated strength level.
+A signup password field with a four-segment strength meter and live validation hints for length, case, digits and symbols.
 
-## Features
-- Password input with strength bar below
-- Bar width and color change dynamically (green = strong)
-- Smooth width and color transitions
-- Dark theme with focused input state
+## Run
+Open `demo.html` in any browser.
 
-## Usage
-Set `--strength` (0-100) on the `.psm-container` element via `style.setProperty()` to update the strength bar. The bar color transitions from red to green as strength increases.
+## Interaction
+- Type a password to fill the meter and satisfy the rule list.

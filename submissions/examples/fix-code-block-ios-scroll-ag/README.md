@@ -12,4 +12,4 @@ to `.ease-code-block` to enable momentum horizontal scrolling on iOS Safari.
 ## Why is it useful?
 Without `-webkit-overflow-scrolling: touch`, iOS Safari effectively ignores
 `overflow-x: auto` and clips the content without any scroll affordance.
-Fixes: #35828
+Fixes: #59815

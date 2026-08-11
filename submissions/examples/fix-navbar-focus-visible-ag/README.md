@@ -16,4 +16,4 @@ so keyboard users can navigate the mobile menu with clear visual feedback.
 
 ## Why is it useful?
 Keyboard users rely on focus indicators to navigate. Without them the
-navbar is inaccessible. Fixes: #35817
+navbar is inaccessible. Fixes: #59815

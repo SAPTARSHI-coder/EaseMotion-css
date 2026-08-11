@@ -15,4 +15,4 @@ in both LTR and RTL text directions.
 ## Why is it useful?
 Physical position properties do not flip in RTL. Logical properties adapt
 automatically to the text direction, making the component work in Arabic,
-Hebrew, Farsi, and other RTL languages. Fixes: #35831
+Hebrew, Farsi, and other RTL languages. Fixes: #59815

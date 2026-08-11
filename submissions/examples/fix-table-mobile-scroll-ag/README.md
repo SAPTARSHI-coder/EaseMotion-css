@@ -17,4 +17,4 @@ to enable horizontal scrolling on mobile without breaking the page layout.
 Wide tables on mobile cause the entire page to scroll horizontally.
 `overflow-x: auto` on a wrapper constrains the overflow to the table only.
 `tabindex="0"` makes the scrollable region keyboard-focusable per WCAG.
-Fixes: #35805
+Fixes: #59815

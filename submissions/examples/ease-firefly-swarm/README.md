@@ -1,108 +1,97 @@
-# Firefly Swarm
+# ✨ Firefly Swarm – Fireflies Gather and Scatter
 
-Bioluminescent particles that follow random paths with glowing trails, creating a magical firefly swarm effect with customizable count, speed, and colors.
+> A magical firefly swarm component where fireflies gather and scatter with 4 colors (Gold, Green, Blue, Pink), swarm control (0-100%), and glow control (0-100%).
 
-## Features
+---
 
-- **Swarm Behavior** – Fireflies follow random paths with organic movement
-- **Glowing Trails** – Each firefly leaves a luminous trail behind
-- **6 Color Palettes** – Warm, Cool, Green, Purple, Pink, Rainbow
-- **6 Count Options** – 20, 35, 50, 75, 100, 150 fireflies
-- **4 Speeds** – Slow, Normal, Fast, Very Fast
-- **Connecting Lines** – Subtle lines between nearby fireflies
-- **Glow Intensity** – Individual fireflies pulse with different brightness
-- **Wing Effect** – Subtle wing animation on each firefly
-- **Forest Background** – Dark forest environment with grass hints
-- **Keyboard Shortcuts** – F (count), S (speed), C (color), R (reset)
-- **FPS Counter** – Real-time frame rate display
-- **Responsive** – Adapts to all screen sizes
+## 📖 Description
 
-## Technologies Used
+The **Firefly Swarm** component creates a magical firefly experience where fireflies gather and scatter with glowing effects. Built with vanilla HTML, CSS, and JavaScript, it features 4 colors (Gold, Green, Blue, Pink), swarm control (0-100%), and glow control (0-100%) for an enchanting nighttime experience.
 
-- HTML5
-- CSS3 (Animations, Gradients, Flexbox)
-- Canvas API (2D context with gradients and shadows)
-- Vanilla JavaScript (Particle system, Animation loop)
+### 🎯 Core Features
 
-## Installation
+- **Firefly swarm** – fireflies gather and scatter with organic motion
+- **4 colors** – Gold, Green, Blue, Pink
+- **Swarm control** – adjust swarm intensity from 0-100%
+- **Glow control** – adjust glow intensity from 0-100%
+- **Firefly physics** – wobble, flash, and organic movement
+- **Firefly counter** – tracks number of fireflies
+- **Interactive controls** – sliders, keyboard shortcuts
+- **Responsive design** – adapts to different screen sizes
 
-1. Clone the repository:
-   git clone https://github.com/yourusername/firefly-swarm.git
+### ✨ Firefly Colors
 
-2. Navigate to the project folder:
-   cd firefly-swarm
+| Color | Icon | Description |
+|-------|------|-------------|
+| **Gold** | 💛 | Golden fireflies |
+| **Green** | 💚 | Green fireflies |
+| **Blue** | 💙 | Blue fireflies |
+| **Pink** | 💗 | Pink fireflies |
 
-3. Open demo.html in your browser
+### ⌨️ Interaction Options
 
-## File Structure
-
-firefly-swarm/
-├── demo.html     # HTML structure with embedded JavaScript
-├── style.css     # All styles and animations
-└── README.md     # Documentation
-
-## Usage
-
-### Controls
-
-| Action | Result |
+| Method | Action |
 |--------|--------|
-| "Count: 50" | Cycle through 20, 35, 50, 75, 100, 150 fireflies |
-| "Speed: Normal" | Cycle through 4 speeds |
-| "Color: Warm" | Cycle through 6 color palettes |
-| "Reset" | Reset to default |
-| F | Cycle counts |
-| S | Cycle speeds |
-| C | Cycle colors |
-| R | Reset |
+| **Sliders** | Adjust Swarm (0-100%) and Glow (0-100%) |
+| **Keyboard** | `R` – Reset |
 
-### Color Palettes
+### ✨ Firefly Experience
 
-1. **Warm** – Orange/Yellow/Gold (firefly-like)
-2. **Cool** – Blue/Cyan (mystical)
-3. **Green** – Neon Green (bioluminescent)
-4. **Purple** – Violet/Purple (magical)
-5. **Pink** – Pink/Rose (romantic)
-6. **Rainbow** – Full spectrum (colorful)
+When interacting:
+1. **Fireflies gather** – fireflies move toward center
+2. **Swarm applies** – controls gathering intensity
+3. **Glow applies** – controls brightness and glow size
+4. **Fireflies scatter** – fireflies spread out when swarm is low
+5. **Status updates** – shows current state
 
-### Speed Options
+### 💡 Why Use This Component?
 
-- **Slow** – 0.008 (gentle, meditative)
-- **Normal** – 0.02 (balanced)
-- **Fast** – 0.035 (energetic)
-- **Very Fast** – 0.055 (rapid movement)
+- Perfect for magical interfaces, nighttime themes, or enchanting experiences
+- Beautiful firefly swarm with glowing effects
+- Self-contained – no external dependencies or frameworks
+- Easy to customize (colors, swarm behavior, glow intensity)
+- 4 colors for variety
+- Swarm and glow controls for customization
 
-### Count Options
+### 🛠️ Technologies Used
 
-- **20** – Sparse, intimate
-- **35** – Light swarm
-- **50** – Balanced swarm (default)
-- **75** – Dense swarm
-- **100** – Heavy swarm
-- **150** – Maximum density
+- **HTML5** – semantic structure with Canvas
+- **CSS3** – gradients, backdrop-filter, transforms
+- **JavaScript (ES6)** – Canvas API, requestAnimationFrame, particle system
 
-## How It Works
+### 🎨 Design Philosophy
 
-| Feature | Implementation |
-|---------|---------------|
-| Swarm behavior | Random target points with smooth pursuit |
-| Glowing trails | Trail array with decreasing alpha |
-| Color palettes | Array of color sets with glow color |
-| Pulse animation | Sine wave on glow intensity |
-| Wing effect | Ellipses with phase-based rotation |
-| Connecting lines | Distance-based line drawing |
+This component embodies **EaseMotion CSS's animation-first philosophy** through:
 
-## Customization
+- **Organic motion** – fireflies move naturally
+- **Particle effects** – glowing fireflies with flash
+- **Visual feedback** – status updates, counter, controls
+- **Magical atmosphere** – warm glowing colors
+- **Human-readable classes** – `.firefly-controls`, `.firefly-text`
 
-### Adding Color Palettes
+### 🔧 Customization Options
 
-Add to `colorPalettes` array:
+| Property | Location | Default |
+|----------|----------|---------|
+| Colors | `fireflyColors` array | 4 colors |
+| Swarm range | `swarmSlider` | 0-100% |
+| Glow range | `glowSlider` | 0-100% |
+| Firefly count | `generateFireflies()` | 40-60 |
+| Firefly size | `size` | 2-5px |
 
-```javascript
-const colorPalettes = [
-    { 
-        name: 'MyPalette', 
-        colors: ['#color1', '#color2', '#color3', '#color4', '#color5'],
-        glow: '#glowColor'
-    },
-];
+### 📸 Preview
+
+| State | Visual |
+|-------|--------|
+| **Scattered** | Fireflies spread out |
+| **Gathering** | Fireflies move together |
+| **Swarming** | Fireflies clustered |
+| **Glowing** | Bright, vibrant glow |
+
+### 📝 License
+
+MIT License – free to use, modify, and distribute.
+
+### ✨ Credits
+
+Created as a lightweight UI component for magical interfaces, nighttime themes, and enchanting experiences.
