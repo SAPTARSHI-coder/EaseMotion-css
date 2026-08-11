@@ -1,0 +1,158 @@
+// ==========================================================================
+// EaseMotion CSS — Clip Reveal mixin
+// Issue #63807
+// --------------------------------------------------------------------------
+// Directional wipe entrances that reveal content without moving it.
+//
+// Why this exists alongside translate-based entrances: a `translateY`
+// entrance moves the element, which means it visually overlaps whatever
+// is above or below it during the animation. In a dense grid or a list
+// with tight gaps that overlap reads as a glitch, and adding margin to
+// avoid it changes the resting layout.
+//
+// A `clip-path` wipe animates only the visible region. The element never
+// leaves its box, so nothing can overlap and the resting layout is
+// untouched. It is also compositor-friendly on modern engines.
+//
+// The one real constraint: `clip-path` clips descendants absolutely,
+// including anything intentionally overflowing — a tooltip or dropdown
+// inside a clipped element will be cut off even after the animation
+// finishes, because the property remains applied. `both` fill is
+// therefore deliberately NOT used here; the animation ends on a
+// full-inset frame and the property is left at its unclipped default.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:list";
+@use "sass:meta";
+
+// Inset origins: which edge the wipe starts from.
+$clip-reveal-directions: (
+    "up": (100% 0 0 0),
+    "down": (0 0 100% 0),
+    "left": (0 100% 0 0),
+    "right": (0 0 0 100%),
+    "center-x": (0 50% 0 50%),
+    "center-y": (50% 0 50% 0),
+) !default;
+
+$clip-reveal-duration: 620ms !default;
+$clip-reveal-easing: cubic-bezier(0.16, 1, 0.3, 1) !default;
+
+// --------------------------------------------------------------------------
+// clip-reveal-keyframes
+//
+// Emit keyframes for the requested directions. Call once at top level.
+// --------------------------------------------------------------------------
+@mixin clip-reveal-keyframes($directions: ("up", "down", "left", "right"), $prefix: "clip-reveal-ad") {
+    @each $direction in $directions {
+        @if not map.has-key($clip-reveal-directions, $direction) {
+            @error "clip-reveal-keyframes(): unknown direction `#{$direction}`. "
+                 + "Known: #{list.join((), map.keys($clip-reveal-directions), $separator: comma)}.";
+        }
+
+        $from: map.get($clip-reveal-directions, $direction);
+
+        @keyframes #{$prefix}-#{$direction} {
+            from {
+                clip-path: inset(#{$from});
+            }
+
+            to {
+                clip-path: inset(0 0 0 0);
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// clip-reveal
+//
+// @param {String} $direction
+// @param {Number} $duration
+// @param {Number} $delay
+// @param {String} $easing
+// --------------------------------------------------------------------------
+@mixin clip-reveal(
+    $direction: "up",
+    $duration: $clip-reveal-duration,
+    $delay: 0s,
+    $easing: $clip-reveal-easing,
+    $prefix: "clip-reveal-ad"
+) {
+    @if not map.has-key($clip-reveal-directions, $direction) {
+        @error "clip-reveal(): unknown direction `#{$direction}`.";
+    }
+
+    // `backwards` rather than `both`: the opening frame is held through
+    // the delay, but the ENDING frame is not retained — so `clip-path`
+    // reverts to its default afterwards and cannot clip a tooltip or
+    // dropdown that later overflows this element.
+    animation: #{$prefix}-#{$direction} $duration $easing $delay backwards;
+
+    @supports not (clip-path: inset(0)) {
+        // Without clip-path the animation never runs, and `backwards`
+        // fill would leave nothing applied — so the element is simply
+        // visible, which is the correct degradation.
+        animation: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation-delay: 0s;
+        animation-duration: 1ms;
+    }
+}
+
+// --------------------------------------------------------------------------
+// clip-reveal-stagger
+//
+// Per-child delays for a wipe cascade.
+// --------------------------------------------------------------------------
+@mixin clip-reveal-stagger($count, $step: 80ms, $direction: "up", $duration: $clip-reveal-duration) {
+    @if meta.type-of($count) != "number" or $count < 1 {
+        @error "clip-reveal-stagger(): $count must be a positive number.";
+    }
+
+    @for $i from 1 through $count {
+        > *:nth-child(#{$i}) {
+            @include clip-reveal($direction, $duration, $step * $i);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        > * {
+            animation-delay: 0s;
+            animation-duration: 1ms;
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// clip-reveal-hover
+//
+// A wipe on hover/focus rather than on load — for image overlays and
+// caption bars. Transitioned rather than animated, so it reverses
+// cleanly on hover-out.
+// --------------------------------------------------------------------------
+@mixin clip-reveal-hover($direction: "up", $duration: 320ms, $easing: $clip-reveal-easing) {
+    $from: map.get($clip-reveal-directions, $direction);
+
+    clip-path: inset(#{$from});
+    transition: clip-path $duration $easing;
+
+    &:hover,
+    &:focus-visible,
+    &:focus-within {
+        clip-path: inset(0 0 0 0);
+    }
+
+    @media (hover: none) {
+        // No hover-out on touch, so the overlay would latch open. Show it
+        // unconditionally instead.
+        clip-path: inset(0 0 0 0);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition-duration: 1ms;
+    }
+}

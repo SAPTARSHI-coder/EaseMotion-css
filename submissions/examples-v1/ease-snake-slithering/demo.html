@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snake Slithering</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🐍 Snake Slithering</h1>
+        <p class="subtitle">Snake moving in S-pattern with tongue flick</p>
+
+        <div class="snake-wrapper">
+            <canvas id="snakeCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Green</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🐍 Slithering</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let snake = [];
+        let segments = 30;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let tongueOut = false;
+        let tongueTimer = 0;
+        let tonguePhase = 0;
+        let particles = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Green',
+                body: ['#2d7d46', '#3a8a55', '#4a9a65', '#5aaa75', '#3a8a55'],
+                belly: '#6aba8a',
+                eye: '#ffd93d',
+                tongue: '#ff6b6b',
+                pattern: '#1a5a30'
+            },
+            {
+                name: 'Python',
+                body: ['#8B7355', '#9a8365', '#aa9375', '#baa385', '#9a8365'],
+                belly: '#d4c4a0',
+                eye: '#ffd93d',
+                tongue: '#ff6b6b',
+                pattern: '#6B5335'
+            },
+            {
+                name: 'Coral',
+                body: ['#e8434a', '#d63333', '#c92a2a', '#bb2020', '#d63333'],
+                belly: '#ff8a8a',
+                eye: '#ffd93d',
+                tongue: '#ff6b6b',
+                pattern: '#ad1a1a'
+            },
+            {
+                name: 'Blue',
+                body: ['#2a5a8a', '#3a6a9a', '#4a7aaa', '#5a8aba', '#3a6a9a'],
+                belly: '#8abada',
+                eye: '#ffd93d',
+                tongue: '#ff6b6b',
+                pattern: '#1a3a6a'
+            },
+            {
+                name: 'Gold',
+                body: ['#d4a02a', '#c4901a', '#b4800a', '#a4700a', '#c4901a'],
+                belly: '#e4c04a',
+                eye: '#ffd93d',
+                tongue: '#ff6b6b',
+                pattern: '#a0700a'
+            },
+            {
+                name: 'Rainbow',
+                body: ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#9b59b6'],
+                belly: '#ffd93d',
+                eye: '#ffffff',
+                tongue: '#ff6b6b',
+                pattern: '#ff6b6b'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2 - 0.5;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW SNAKE =====
+        function drawSnake(ctx, points) {
+            const palette = colorPalettes[colorMode];
+            const bodyColors = palette.body;
+            const bellyColor = palette.belly;
+            const eyeColor = palette.eye;
+            const tongueColor = palette.tongue;
+            const patternColor = palette.pattern;
+
+            if (points.length < 2) return;
+
+            // Draw body segments
+            for (let i = 1; i < points.length; i++) {
+                const p1 = points[i - 1];
+                const p2 = points[i];
+                const t = i / points.length;
+                const width = 8 + (1 - t) * 12;
+                
+                // Body color gradient
+                const colorIdx = Math.floor(t * (bodyColors.length - 1));
+                const nextIdx = Math.min(colorIdx + 1, bodyColors.length - 1);
+                const frac = (t * (bodyColors.length - 1)) % 1;
+                const color = bodyColors[colorIdx];
+                const nextColor = bodyColors[nextIdx];
+
+                // Draw segment
+                ctx.beginPath();
+                ctx.moveTo(p1.x - Math.sin(p1.angle) * width * 0.5, p1.y + Math.cos(p1.angle) * width * 0.5);
+                ctx.lineTo(p2.x - Math.sin(p2.angle) * width * 0.5, p2.y + Math.cos(p2.angle) * width * 0.5);
+                ctx.lineTo(p2.x + Math.sin(p2.angle) * width * 0.5, p2.y - Math.cos(p2.angle) * width * 0.5);
+                ctx.lineTo(p1.x + Math.sin(p1.angle) * width * 0.5, p1.y - Math.cos(p1.angle) * width * 0.5);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+                grad.addColorStop(0, color);
+                grad.addColorStop(0.5, nextColor);
+                grad.addColorStop(1, nextColor);
+                ctx.fillStyle = grad;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Belly
+                if (i % 2 === 0) {
+                    const bellyWidth = width * 0.3;
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x - Math.sin(p1.angle) * bellyWidth * 0.5, p1.y + Math.cos(p1.angle) * bellyWidth * 0.5);
+                    ctx.lineTo(p2.x - Math.sin(p2.angle) * bellyWidth * 0.5, p2.y + Math.cos(p2.angle) * bellyWidth * 0.5);
+                    ctx.lineTo(p2.x + Math.sin(p2.angle) * bellyWidth * 0.5, p2.y - Math.cos(p2.angle) * bellyWidth * 0.5);
+                    ctx.lineTo(p1.x + Math.sin(p1.angle) * bellyWidth * 0.5, p1.y - Math.cos(p1.angle) * bellyWidth * 0.5);
+                    ctx.closePath();
+                    ctx.fillStyle = bellyColor;
+                    ctx.globalAlpha = 0.2;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                }
+
+                // Pattern (diamonds/scales)
+                if (i % 3 === 0 && i < points.length - 2) {
+                    const midX = (p1.x + p2.x) / 2;
+                    const midY = (p1.y + p2.y) / 2;
+                    const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                    const size = width * 0.3;
+                    ctx.save();
+                    ctx.translate(midX, midY);
+                    ctx.rotate(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size);
+                    ctx.lineTo(size * 0.5, 0);
+                    ctx.lineTo(0, size);
+                    ctx.lineTo(-size * 0.5, 0);
+                    ctx.closePath();
+                    ctx.fillStyle = patternColor;
+                    ctx.globalAlpha = 0.15;
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
+                }
+            }
+
+            // Head (last segment)
+            const head = points[points.length - 1];
+            const prev = points[points.length - 2];
+            const headAngle = Math.atan2(head.y - prev.y, head.x - prev.x);
+            const headSize = 10;
+
+            // Head shape
+            ctx.save();
+            ctx.translate(head.x, head.y);
+            ctx.rotate(headAngle);
+
+            // Head glow
+            const headGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, headSize * 2);
+            const headColor = bodyColors[bodyColors.length - 1];
+            headGlow.addColorStop(0, headColor + '30');
+            headGlow.addColorStop(1, headColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, 0, headSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = headGlow;
+            ctx.fill();
+
+            // Head body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, headSize, headSize * 0.8, 0, 0, Math.PI * 2);
+            ctx.fillStyle = headColor;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = headColor + '60';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes
+            const eyeSize = 3;
+            // Left eye
+            ctx.beginPath();
+            ctx.arc(-4, -3, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-3, -3, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(-2.5, -3.5, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Right eye
+            ctx.beginPath();
+            ctx.arc(4, -3, eyeSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(5, -3, eyeSize * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(5.5, -3.5, eyeSize * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+
+            // Eye glow
+            const eyeGlow = ctx.createRadialGradient(-4, -3, 0, -4, -3, eyeSize * 2);
+            eyeGlow.addColorStop(0, eyeColor + '40');
+            eyeGlow.addColorStop(1, eyeColor + '00');
+            ctx.beginPath();
+            ctx.arc(-4, -3, eyeSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = eyeGlow;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(4, -3, eyeSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = eyeGlow;
+            ctx.fill();
+
+            // Nostrils
+            ctx.fillStyle = '#1a1a1a';
+            ctx.globalAlpha = 0.3;
+            ctx.beginPath();
+            ctx.arc(-2, 2, 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(2, 2, 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Tongue
+            if (tongueOut) {
+                const tongueLen = 10 + 5 * Math.sin(tonguePhase * 2);
+                ctx.strokeStyle = tongueColor;
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = tongueColor + '60';
+                
+                // Left fork
+                ctx.beginPath();
+                ctx.moveTo(0, 2);
+                ctx.lineTo(-tongueLen * 0.6, 2 + Math.sin(tonguePhase) * 2);
+                ctx.stroke();
+                
+                // Right fork
+                ctx.beginPath();
+                ctx.moveTo(0, 2);
+                ctx.lineTo(tongueLen * 0.6, 2 + Math.cos(tonguePhase) * 2);
+                ctx.stroke();
+                
+                // Main tongue
+                ctx.beginPath();
+                ctx.moveTo(0, 2);
+                ctx.lineTo(0, -2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Tongue tip glow
+                const tipGrad = ctx.createRadialGradient(0, -2, 0, 0, -2, 3);
+                tipGrad.addColorStop(0, tongueColor + '60');
+                tipGrad.addColorStop(1, tongueColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, -2, 3, 0, Math.PI * 2);
+                ctx.fillStyle = tipGrad;
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Body glow
+            const bodyGlow = ctx.createRadialGradient(
+                points[0].x, points[0].y, 0,
+                points[0].x, points[0].y, 100
+            );
+            const glowColor = bodyColors[0];
+            bodyGlow.addColorStop(0, glowColor + '10');
+            bodyGlow.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(points[0].x, points[0].y, 100, 0, Math.PI * 2);
+            ctx.fillStyle = bodyGlow;
+            ctx.fill();
+        }
+
+        // ===== UPDATE SNAKE =====
+        function updateSnake() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 10;
+
+            // Generate S-pattern path
+            const numPoints = 60;
+            const amplitude = 60 + 10 * Math.sin(time * 0.3);
+            const wavelength = 0.02;
+            const speedX = 1.2 + 0.2 * Math.sin(time * 0.1);
+
+            for (let i = 0; i < numPoints; i++) {
+                const t = i / numPoints;
+                const x = -w * 0.2 + t * w * 1.4 + Math.sin(time * 0.02) * 20;
+                const y = cy + Math.sin(t * Math.PI * 2 * 3 + time * 0.5 * speedX) * amplitude * (0.5 + 0.5 * t);
+                
+                // Add slight random wobble for organic feel
+                const wobble = Math.sin(t * 5 + time * 0.3 + i) * 2;
+                
+                if (i < snake.length) {
+                    snake[i].x = x + wobble;
+                    snake[i].y = y + wobble * 0.3;
+                } else {
+                    snake.push({
+                        x: x + wobble,
+                        y: y + wobble * 0.3,
+                        angle: 0
+                    });
+                }
+            }
+
+            // Trim excess points
+            while (snake.length > numPoints) {
+                snake.pop();
+            }
+
+            // Calculate angles
+            for (let i = 1; i < snake.length; i++) {
+                const dx = snake[i].x - snake[i - 1].x;
+                const dy = snake[i].y - snake[i - 1].y;
+                snake[i].angle = Math.atan2(dy, dx);
+            }
+            if (snake.length > 1) {
+                snake[0].angle = snake[1].angle;
+            }
+
+            // Tongue
+            tongueTimer += speed;
+            if (tongueTimer > 0.5 + Math.random() * 0.5) {
+                tongueOut = true;
+                tonguePhase = 0;
+                tongueTimer = 0;
+            }
+            if (tongueOut) {
+                tonguePhase += speed * 8;
+                if (tonguePhase > Math.PI * 2) {
+                    tongueOut = false;
+                }
+            }
+
+            // Spawn particles occasionally
+            if (Math.random() < 0.005) {
+                const idx = Math.floor(Math.random() * snake.length);
+                const p = snake[idx];
+                const palette = colorPalettes[colorMode];
+                const color = palette.body[Math.floor(Math.random() * palette.body.length)];
+                const particle = new Particle(p.x, p.y, color);
+                particle.vx = (Math.random() - 0.5) * 2;
+                particle.vy = (Math.random() - 0.5) * 2 - 1;
+                particles.push(particle);
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a1a0e');
+            grad.addColorStop(0.5, '#060f06');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground texture
+            const groundY = h * 0.7;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 50, 30, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 50, 30, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 50, 30, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 50, 30, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Grass blades
+            for (let i = 0; i < 25; i++) {
+                const x = (i / 25) * w + Math.sin(i * 0.5 + time * 0.005) * 5;
+                const y = groundY + Math.sin(i * 1.3 + time * 0.008) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.005) * 4,
+                    y - 8 - Math.sin(i * 0.7 + time * 0.01) * 4,
+                    x + Math.sin(i * 1.5 + time * 0.006) * 6,
+                    y - 12 - Math.sin(i * 1.1 + time * 0.01) * 5
+                );
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.1 + Math.sin(i + time * 0.005) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Distant particles
+            for (let i = 0; i < 20; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3 + time * 0.002) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5 + time * 0.003) * 15) % (h * 0.6);
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 255, 200, ${0.02 + Math.sin(i + time * 0.005) * 0.02})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Update snake
+            updateSnake();
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw snake
+            if (snake.length > 1) {
+                drawSnake(ctx, snake);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🐍 Slithering • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🐍 Slithering';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🐍 Slithering';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            snake = [];
+            particles = [];
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            tongueOut = false;
+            tongueTimer = 0;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🐍 Slithering';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle tongue manually
+                tongueOut = !tongueOut;
+                if (tongueOut) tonguePhase = 0;
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🐍 Slithering';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🐍 Snake Slithering loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Toggle tongue');
+    </script>
+</body>
+</html>

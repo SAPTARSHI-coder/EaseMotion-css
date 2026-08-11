@@ -1,0 +1,473 @@
+<!-- demo.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aim Assist – EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="demo-wrapper">
+    <h1>🎯 Aim Assist</h1>
+    <p class="subtitle">Target reticle with tracking animation</p>
+
+    <div class="aa-container">
+      <div class="aa-scene">
+        <!-- Background grid -->
+        <div class="bg-grid"></div>
+
+        <!-- Aim Assist Reticle -->
+        <div class="reticle">
+          <!-- Outer ring -->
+          <div class="outer-ring"></div>
+
+          <!-- Inner ring -->
+          <div class="inner-ring"></div>
+
+          <!-- Crosshairs -->
+          <div class="crosshair crosshair-top"></div>
+          <div class="crosshair crosshair-bottom"></div>
+          <div class="crosshair crosshair-left"></div>
+          <div class="crosshair crosshair-right"></div>
+
+          <!-- Center dot -->
+          <div class="center-dot">
+            <div class="dot-pulse"></div>
+          </div>
+
+          <!-- Corner brackets -->
+          <div class="corner corner-tl"></div>
+          <div class="corner corner-tr"></div>
+          <div class="corner corner-bl"></div>
+          <div class="corner corner-br"></div>
+
+          <!-- Tracking indicators -->
+          <div class="tracking-indicator ti-1"></div>
+          <div class="tracking-indicator ti-2"></div>
+          <div class="tracking-indicator ti-3"></div>
+          <div class="tracking-indicator ti-4"></div>
+          <div class="tracking-indicator ti-5"></div>
+          <div class="tracking-indicator ti-6"></div>
+          <div class="tracking-indicator ti-7"></div>
+          <div class="tracking-indicator ti-8"></div>
+
+          <!-- Lock-on ring -->
+          <div class="lock-ring"></div>
+
+          <!-- Reticle glow -->
+          <div class="reticle-glow"></div>
+
+          <!-- Target (moving) -->
+          <div class="target">
+            <div class="target-body"></div>
+            <div class="target-inner"></div>
+            <div class="target-pulse"></div>
+          </div>
+
+          <!-- Tracking lines -->
+          <div class="track-line tl-1"></div>
+          <div class="track-line tl-2"></div>
+          <div class="track-line tl-3"></div>
+          <div class="track-line tl-4"></div>
+        </div>
+
+        <!-- HUD info -->
+        <div class="hud-info">
+          <div class="hud-status">⚡ Acquiring Target...</div>
+          <div class="hud-lock">🔒 Lock: <span id="lockStatus">0%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="trackBtn">🎯 Track Target</button>
+      <button id="lockBtn">🔒 Lock On</button>
+      <label>
+        Tracking Speed
+        <input type="range" id="speedControl" min="0.3" max="3" step="0.1" value="1" />
+      </label>
+      <label>
+        Reticle Intensity
+        <input type="range" id="intensityControl" min="0.3" max="2" step="0.05" value="1" />
+      </label>
+      <button id="resetBtn">⟳ Reset</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const reticle = document.querySelector('.reticle');
+      const target = document.querySelector('.target');
+      const lockRing = document.querySelector('.lock-ring');
+      const reticleGlow = document.querySelector('.reticle-glow');
+      const trackingIndicators = document.querySelectorAll('.tracking-indicator');
+      const trackLines = document.querySelectorAll('.track-line');
+      const centerDot = document.querySelector('.center-dot');
+      const dotPulse = document.querySelector('.dot-pulse');
+      const outerRing = document.querySelector('.outer-ring');
+      const innerRing = document.querySelector('.inner-ring');
+      const crosshairs = document.querySelectorAll('.crosshair');
+      const corners = document.querySelectorAll('.corner');
+      const hudStatus = document.querySelector('.hud-status');
+      const lockStatus = document.getElementById('lockStatus');
+
+      const trackBtn = document.getElementById('trackBtn');
+      const lockBtn = document.getElementById('lockBtn');
+      const speedInput = document.getElementById('speedControl');
+      const intensityInput = document.getElementById('intensityControl');
+      const resetBtn = document.getElementById('resetBtn');
+
+      let speedMultiplier = 1;
+      let intensityMultiplier = 1;
+      let isTracking = false;
+      let isLocked = false;
+      let lockProgress = 0;
+      let animationFrame = null;
+      let lastTimestamp = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let targetPhase = 0;
+
+      // ----- Apply speed -----
+      function applySpeed() {
+        // Target movement
+        target.style.setProperty('--target-duration', (4 / speedMultiplier) + 's');
+
+        // Lock ring
+        lockRing.style.setProperty('--lock-duration', (1.5 / speedMultiplier) + 's');
+
+        // Reticle glow
+        reticleGlow.style.setProperty('--glow-duration', (2 / speedMultiplier) + 's');
+
+        // Tracking indicators
+        trackingIndicators.forEach((ind, i) => {
+          const duration = (0.8 + i * 0.05) / speedMultiplier;
+          ind.style.setProperty('--indicator-duration', duration + 's');
+          ind.style.setProperty('--indicator-delay', ((i * 0.03) / speedMultiplier) + 's');
+        });
+
+        // Track lines
+        trackLines.forEach((line, i) => {
+          const duration = (0.6 + i * 0.04) / speedMultiplier;
+          line.style.setProperty('--line-duration', duration + 's');
+          line.style.setProperty('--line-delay', ((i * 0.02) / speedMultiplier) + 's');
+        });
+
+        // Dot pulse
+        dotPulse.style.setProperty('--pulse-duration', (1.5 / speedMultiplier) + 's');
+
+        // Outer ring pulse
+        outerRing.style.setProperty('--ring-duration', (2 / speedMultiplier) + 's');
+
+        // Crosshairs
+        crosshairs.forEach((ch) => {
+          ch.style.setProperty('--crosshair-duration', (1.2 / speedMultiplier) + 's');
+        });
+
+        // Corners
+        corners.forEach((corner) => {
+          corner.style.setProperty('--corner-duration', (1.8 / speedMultiplier) + 's');
+        });
+      }
+
+      // ----- Apply intensity -----
+      function applyIntensity() {
+        // Reticle glow
+        const glowOpacity = Math.min(0.15 * intensityMultiplier, 0.3);
+        reticleGlow.style.setProperty('--glow-intensity', glowOpacity);
+        const glowSize = 200 * intensityMultiplier;
+        reticleGlow.style.setProperty('--glow-size', glowSize + 'px');
+
+        // Center dot
+        const dotSize = 4 * intensityMultiplier;
+        centerDot.style.setProperty('--dot-size', dotSize + 'px');
+
+        // Crosshairs
+        crosshairs.forEach((ch) => {
+          const opacity = Math.min(0.4 * intensityMultiplier, 0.8);
+          ch.style.setProperty('--crosshair-intensity', opacity);
+        });
+
+        // Corners
+        corners.forEach((corner) => {
+          const opacity = Math.min(0.3 * intensityMultiplier, 0.6);
+          corner.style.setProperty('--corner-intensity', opacity);
+        });
+
+        // Outer ring
+        const ringOpacity = Math.min(0.2 * intensityMultiplier, 0.4);
+        outerRing.style.setProperty('--ring-intensity', ringOpacity);
+
+        // Inner ring
+        const innerOpacity = Math.min(0.15 * intensityMultiplier, 0.3);
+        innerRing.style.setProperty('--inner-intensity', innerOpacity);
+
+        // Tracking indicators
+        trackingIndicators.forEach((ind) => {
+          const opacity = Math.min(0.3 * intensityMultiplier, 0.6);
+          ind.style.setProperty('--indicator-intensity', opacity);
+        });
+
+        // Track lines
+        trackLines.forEach((line) => {
+          const opacity = Math.min(0.1 * intensityMultiplier, 0.2);
+          line.style.setProperty('--line-intensity', opacity);
+        });
+      }
+
+      // ----- Track target -----
+      function trackTarget() {
+        if (isTracking) return;
+        isTracking = true;
+        isLocked = false;
+        lockProgress = 0;
+
+        // Reset target position
+        targetX = 0;
+        targetY = 0;
+        targetPhase = 0;
+
+        // Start target movement
+        target.classList.add('moving');
+        target.style.opacity = '1';
+
+        // Show tracking indicators
+        trackingIndicators.forEach(ind => {
+          ind.classList.add('active');
+        });
+
+        // Show track lines
+        trackLines.forEach(line => {
+          line.classList.add('active');
+        });
+
+        // Update HUD
+        hudStatus.textContent = '🎯 Tracking Target...';
+        lockStatus.textContent = '0%';
+
+        trackBtn.textContent = '🎯 Tracking...';
+        setTimeout(() => {
+          trackBtn.textContent = '🎯 Track Target';
+        }, 500 / speedMultiplier);
+
+        // Auto-lock after 3 seconds
+        setTimeout(() => {
+          if (isTracking) {
+            lockOn();
+          }
+        }, 3000 / speedMultiplier);
+      }
+
+      // ----- Lock on -----
+      function lockOn() {
+        if (isLocked || !isTracking) {
+          if (!isTracking) trackTarget();
+          setTimeout(() => lockOn(), 500 / speedMultiplier);
+          return;
+        }
+
+        isLocked = true;
+        lockProgress = 1;
+
+        // Lock ring animation
+        lockRing.classList.add('active');
+
+        // Target glows
+        target.classList.add('locked');
+        document.querySelector('.target-pulse').classList.add('active');
+
+        // Reticle glow intensifies
+        reticleGlow.classList.add('locked');
+
+        // Update HUD
+        hudStatus.textContent = '🔒 Target Locked!';
+        lockStatus.textContent = '100%';
+
+        // Update indicators
+        trackingIndicators.forEach(ind => {
+          ind.classList.add('locked');
+        });
+
+        lockBtn.textContent = '🔒 Locked!';
+        setTimeout(() => {
+          lockBtn.textContent = '🔒 Lock On';
+        }, 800 / speedMultiplier);
+
+        // Auto-unlock after 5 seconds
+        setTimeout(() => {
+          if (isLocked) {
+            unlockTarget();
+          }
+        }, 5000 / speedMultiplier);
+      }
+
+      // ----- Unlock -----
+      function unlockTarget() {
+        isLocked = false;
+        lockProgress = 0;
+
+        lockRing.classList.remove('active');
+        target.classList.remove('locked');
+        document.querySelector('.target-pulse').classList.remove('active');
+        reticleGlow.classList.remove('locked');
+        trackingIndicators.forEach(ind => {
+          ind.classList.remove('locked');
+        });
+
+        hudStatus.textContent = '⚡ Acquiring Target...';
+        lockStatus.textContent = '0%';
+
+        // Stop tracking after a moment
+        setTimeout(() => {
+          isTracking = false;
+          target.classList.remove('moving');
+          target.style.opacity = '0';
+          trackingIndicators.forEach(ind => {
+            ind.classList.remove('active');
+          });
+          trackLines.forEach(line => {
+            line.classList.remove('active');
+          });
+          hudStatus.textContent = '⏸️ Idle';
+        }, 1500 / speedMultiplier);
+      }
+
+      // ----- Reset -----
+      function resetAim() {
+        isTracking = false;
+        isLocked = false;
+        lockProgress = 0;
+
+        target.classList.remove('moving', 'locked');
+        target.style.opacity = '0';
+        document.querySelector('.target-pulse').classList.remove('active');
+
+        lockRing.classList.remove('active');
+        reticleGlow.classList.remove('locked');
+
+        trackingIndicators.forEach(ind => {
+          ind.classList.remove('active', 'locked');
+        });
+
+        trackLines.forEach(line => {
+          line.classList.remove('active');
+        });
+
+        hudStatus.textContent = '⏸️ Idle';
+        lockStatus.textContent = '0%';
+        trackBtn.textContent = '🎯 Track Target';
+        lockBtn.textContent = '🔒 Lock On';
+
+        targetX = 0;
+        targetY = 0;
+        targetPhase = 0;
+        lastTimestamp = 0;
+      }
+
+      // ----- Update target -----
+      function updateTarget(timestamp) {
+        if (!isTracking) return;
+
+        const speed = 0.002 * speedMultiplier;
+        targetPhase += speed;
+
+        if (targetPhase > 1) targetPhase = 0;
+
+        // Target moves in a figure-8 pattern
+        const x = 45 + 35 * Math.sin(targetPhase * Math.PI * 2);
+        const y = 45 + 25 * Math.sin(targetPhase * Math.PI * 4);
+
+        target.style.left = x + '%';
+        target.style.top = y + '%';
+
+        // Update lock progress if tracking but not locked
+        if (!isLocked && isTracking) {
+          lockProgress = Math.min(lockProgress + 0.005 * speedMultiplier, 1);
+          const percent = Math.round(lockProgress * 100);
+          lockStatus.textContent = percent + '%';
+
+          if (lockProgress >= 1) {
+            lockOn();
+          }
+        }
+
+        // Update reticle target tracking (slight reticle movement toward target)
+        const reticleX = 50 + (x - 50) * 0.05;
+        const reticleY = 50 + (y - 50) * 0.05;
+        reticle.style.setProperty('--reticle-x', reticleX + '%');
+        reticle.style.setProperty('--reticle-y', reticleY + '%');
+
+        // Update lock ring position to follow target
+        if (isLocked) {
+          lockRing.style.left = x + '%';
+          lockRing.style.top = y + '%';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const deltaTime = Math.min((timestamp - lastTimestamp) / 16.67, 3);
+        lastTimestamp = timestamp;
+
+        updateTarget(timestamp);
+
+        animationFrame = requestAnimationFrame(animate);
+      }
+
+      // ----- Update speed -----
+      function updateSpeed(value) {
+        speedMultiplier = parseFloat(value);
+        applySpeed();
+      }
+
+      // ----- Update intensity -----
+      function updateIntensity(value) {
+        intensityMultiplier = parseFloat(value);
+        applyIntensity();
+      }
+
+      // ----- Init -----
+      function init() {
+        // Set initial state
+        target.style.opacity = '0';
+        lockStatus.textContent = '0%';
+        hudStatus.textContent = '⏸️ Idle';
+
+        applySpeed();
+        applyIntensity();
+
+        // Start animation
+        lastTimestamp = 0;
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(animate);
+
+        // Auto-track after 1.5 seconds
+        setTimeout(() => {
+          trackTarget();
+        }, 1500);
+      }
+
+      // ----- Event listeners -----
+      trackBtn.addEventListener('click', trackTarget);
+      lockBtn.addEventListener('click', lockOn);
+      speedInput.addEventListener('input', function() {
+        updateSpeed(this.value);
+      });
+      intensityInput.addEventListener('input', function() {
+        updateIntensity(this.value);
+      });
+      resetBtn.addEventListener('click', resetAim);
+
+      window.addEventListener('beforeunload', function() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+      });
+
+      init();
+    })();
+  </script>
+
+</body>
+</html>

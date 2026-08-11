@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pencil Sketch · reveals sketchy line drawing</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="sketch-container">
+      <div class="sketch-display" id="sketchDisplay">
+        <!-- Canvas for pencil sketch -->
+        <canvas id="sketchCanvas"></canvas>
+        
+        <!-- Sketch Info -->
+        <div class="sketch-info">
+          <span class="info-label">✏️ Lines</span>
+          <span class="info-value" id="lineCount">0</span>
+        </div>
+
+        <!-- Sketch Controls -->
+        <div class="sketch-controls">
+          <div class="control-group">
+            <label class="control-label">✏️ Darkness</label>
+            <input type="range" class="control-slider" id="darknessSlider" min="1" max="10" value="5">
+            <span class="control-value" id="darknessValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">📐 Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="sketch" title="Sketch">✏️</button>
+              <button class="style-btn" data-style="crosshatch" title="Crosshatch">🔲</button>
+              <button class="style-btn" data-style="scribble" title="Scribble">🌀</button>
+              <button class="style-btn" data-style="dotted" title="Dotted">⏺️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sketch Text -->
+        <div class="sketch-text">
+          <span class="text-label">✏️ Pencil Sketch</span>
+          <span class="text-message" id="sketchMessage">Click and drag to sketch</span>
+        </div>
+      </div>
+      
+      <div class="sketch-status">
+        <span id="sketchStatus">✏️ Click and drag to create pencil sketch</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Clear</button>
+    </div>
+    <div class="footer-note">
+      <span>✏️ pencil sketch · sketchy lines · 4 styles</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('sketchCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('sketchDisplay');
+      const lineCount = document.getElementById('lineCount');
+      const sketchStatus = document.getElementById('sketchStatus');
+      const sketchMessage = document.getElementById('sketchMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const darknessSlider = document.getElementById('darknessSlider');
+      const darknessValue = document.getElementById('darknessValue');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let isDrawing = false;
+      let lineCountNum = 0;
+      let currentDarkness = 5;
+      let currentStyle = 'sketch';
+      let lastX = 0;
+      let lastY = 0;
+      let sketchLines = [];
+      let currentPoints = [];
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+        if (sketchLines.length > 0) {
+          redrawAll();
+        }
+      }
+
+      // Draw background
+      function drawBackground() {
+        const grad = ctx.createRadialGradient(
+          canvas.width/2, canvas.height/2, 0,
+          canvas.width/2, canvas.height/2, canvas.width * 0.7
+        );
+        grad.addColorStop(0, 'rgba(35, 35, 50, 0.15)');
+        grad.addColorStop(0.5, 'rgba(25, 25, 40, 0.25)');
+        grad.addColorStop(1, 'rgba(15, 15, 25, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Paper texture
+        for (let i = 0; i < 500; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = Math.random() * 1.2 + 0.3;
+          const alpha = Math.random() * 0.015;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+
+      // Get canvas coordinates
+      function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
+        };
+      }
+
+      // Draw pencil line
+      function drawPencilLine(x1, y1, x2, y2, darkness, style) {
+        const dist = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        if (dist < 1) return;
+
+        const baseAlpha = 0.2 + darkness * 0.06;
+        const lineWidth = 0.5 + darkness * 0.2;
+
+        // Number of sketchy passes
+        const passes = style === 'crosshatch' ? 2 : 1;
+        const passes2 = style === 'scribble' ? 3 : 1;
+
+        for (let p = 0; p < Math.max(passes, passes2); p++) {
+          const offset = (p - 0.5) * 2;
+          
+          if (style === 'sketch') {
+            drawSketchLine(x1, y1, x2, y2, baseAlpha, lineWidth, p);
+          } else if (style === 'crosshatch') {
+            drawCrosshatchLine(x1, y1, x2, y2, baseAlpha, lineWidth, p);
+          } else if (style === 'scribble') {
+            drawScribbleLine(x1, y1, x2, y2, baseAlpha, lineWidth, p);
+          } else if (style === 'dotted') {
+            drawDottedLine(x1, y1, x2, y2, baseAlpha, lineWidth);
+          }
+        }
+      }
+
+      // Sketch style
+      function drawSketchLine(x1, y1, x2, y2, alpha, width, pass) {
+        const steps = Math.max(Math.floor(Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2)) / 2), 10);
+        ctx.save();
+        ctx.globalAlpha = alpha * (0.7 + Math.random() * 0.3);
+        ctx.lineWidth = width * (0.5 + Math.random() * 0.5);
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t + (Math.random() - 0.5) * (1 + pass * 0.5);
+          const y = y1 + (y2 - y1) * t + (Math.random() - 0.5) * (1 + pass * 0.5);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Crosshatch style
+      function drawCrosshatchLine(x1, y1, x2, y2, alpha, width, pass) {
+        const angle = pass * 0.8;
+        const steps = Math.max(Math.floor(Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2)) / 3), 8);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.lineWidth = width * 0.3;
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineCap = 'round';
+        
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 3;
+          const y = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 3;
+          const length = 4 + Math.random() * 6;
+          const dx = Math.cos(angle) * length;
+          const dy = Math.sin(angle) * length;
+          
+          ctx.beginPath();
+          ctx.moveTo(x - dx, y - dy);
+          ctx.lineTo(x + dx, y + dy);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // Scribble style
+      function drawScribbleLine(x1, y1, x2, y2, alpha, width, pass) {
+        const steps = Math.max(Math.floor(Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2)) / 1.5), 15);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.4;
+        ctx.lineWidth = width * 0.2;
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineCap = 'round';
+        
+        for (let i = 0; i < steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 8;
+          const y = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 8;
+          const size = 2 + Math.random() * 4;
+          
+          ctx.beginPath();
+          ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = '#2a2a3a';
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Dotted style
+      function drawDottedLine(x1, y1, x2, y2, alpha, width) {
+        const dist = Math.sqrt(Math.pow(x2-x1,2) + Math.pow(y2-y1,2));
+        const steps = Math.max(Math.floor(dist / 4), 5);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.7;
+        
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const x = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 2;
+          const y = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 2;
+          const size = width * (0.5 + Math.random() * 0.8);
+          
+          ctx.beginPath();
+          ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
+          ctx.fillStyle = '#2a2a3a';
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // Redraw all lines
+      function redrawAll() {
+        drawBackground();
+        for (let i = 0; i < sketchLines.length - 1; i++) {
+          const l1 = sketchLines[i];
+          const l2 = sketchLines[i + 1];
+          drawPencilLine(l1.x, l1.y, l2.x, l2.y, l1.darkness, l1.style);
+        }
+      }
+
+      // Start drawing
+      function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const coords = getCoords(e);
+        lastX = coords.x;
+        lastY = coords.y;
+        
+        sketchLines.push({
+          x: lastX,
+          y: lastY,
+          darkness: currentDarkness,
+          style: currentStyle
+        });
+        
+        lineCountNum++;
+        lineCount.textContent = lineCountNum;
+        
+        sketchStatus.textContent = '✏️ Sketching...';
+        sketchStatus.style.color = '#94a3b8';
+        sketchMessage.textContent = '✏️ Sketching...';
+        sketchMessage.style.color = '#94a3b8';
+      }
+
+      // Draw
+      function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+        
+        drawPencilLine(lastX, lastY, x, y, currentDarkness, currentStyle);
+        
+        sketchLines.push({
+          x: x,
+          y: y,
+          darkness: currentDarkness,
+          style: currentStyle
+        });
+        
+        lastX = x;
+        lastY = y;
+        lineCountNum++;
+        lineCount.textContent = lineCountNum;
+      }
+
+      // Stop drawing
+      function stopDrawing(e) {
+        if (isDrawing) {
+          isDrawing = false;
+          sketchStatus.textContent = '✏️ Sketch complete!';
+          sketchStatus.style.color = '#4ade80';
+          sketchMessage.textContent = 'Click and drag to sketch';
+          sketchMessage.style.color = '#94a3b8';
+          setTimeout(() => {
+            sketchStatus.textContent = '✏️ Click and drag to create pencil sketch';
+            sketchStatus.style.color = '#94a3b8';
+          }, 1500);
+        }
+      }
+
+      // Set darkness
+      function setDarkness(value) {
+        currentDarkness = parseInt(value);
+        darknessValue.textContent = currentDarkness;
+        sketchStatus.textContent = `✏️ Darkness: ${currentDarkness}/10`;
+        sketchStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          sketchStatus.textContent = '✏️ Click and drag to create pencil sketch';
+          sketchStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleNames = {
+          sketch: 'Sketch',
+          crosshatch: 'Crosshatch',
+          scribble: 'Scribble',
+          dotted: 'Dotted'
+        };
+        sketchStatus.textContent = `📐 Style: ${styleNames[style]}`;
+        sketchStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          sketchStatus.textContent = '✏️ Click and drag to create pencil sketch';
+          sketchStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Clear canvas
+      function clearCanvas() {
+        sketchLines = [];
+        lineCountNum = 0;
+        lineCount.textContent = '0';
+        drawBackground();
+        sketchStatus.textContent = '🧹 Canvas cleared';
+        sketchStatus.style.color = '#94a3b8';
+        sketchMessage.textContent = 'Click and drag to sketch';
+        sketchMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          sketchStatus.textContent = '✏️ Click and drag to create pencil sketch';
+          sketchStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseleave', stopDrawing);
+
+      // Touch events
+      canvas.addEventListener('touchstart', startDrawing, { passive: false });
+      canvas.addEventListener('touchmove', draw, { passive: false });
+      canvas.addEventListener('touchend', stopDrawing, { passive: false });
+
+      // Style buttons
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      // Darkness slider
+      darknessSlider.addEventListener('input', function() {
+        setDarkness(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          clearCanvas();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          clearCanvas();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      
+      console.log('✏️ Pencil Sketch ready · shortcuts: [C] Clear');
+    })();
+  </script>
+</body>
+</html>

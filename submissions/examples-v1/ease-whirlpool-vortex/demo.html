@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Whirlpool Vortex</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Whirlpool Vortex</h1>
+        <p class="subtitle">Spinning water vortex pulling particles down</p>
+
+        <div class="vortex-wrapper">
+            <canvas id="vortexCanvas"></canvas>
+
+            <div class="controls">
+                <button id="spinBtn">🌀 Spin</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Ocean</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Ready</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('vortexCanvas');
+        const ctx = canvas.getContext('2d');
+        const spinBtn = document.getElementById('spinBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let particles = [];
+        let vortex = {
+            x: 0,
+            y: 0,
+            radius: 0,
+            power: 0,
+            angle: 0,
+            isSpinning: false,
+            progress: 0,
+        };
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let numParticles = 200;
+        let ripples = [];
+        let trailParticles = [];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                glow: '#00b4d8'
+            },
+            {
+                name: 'Galaxy',
+                colors: ['#1a0033', '#2d004d', '#4a0066', '#7a0088', '#aa00aa'],
+                glow: '#7a0088'
+            },
+            {
+                name: 'Fire',
+                colors: ['#ff6b00', '#ff4500', '#ff8c00', '#ffa500', '#ffcc00'],
+                glow: '#ff6b00'
+            },
+            {
+                name: 'Emerald',
+                colors: ['#004d40', '#00695c', '#00897b', '#26a69a', '#4db6ac'],
+                glow: '#00897b'
+            },
+            {
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#f7c948', '#f5d76e'],
+                glow: '#f7931e'
+            },
+            {
+                name: 'Neon',
+                colors: ['#ff00ff', '#ff0080', '#ff00ff', '#00ffff', '#ff00aa'],
+                glow: '#ff00ff'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const maxDim = Math.max(w, h);
+                
+                this.x = cx + (Math.random() - 0.5) * maxDim * 0.8;
+                this.y = cy + (Math.random() - 0.5) * maxDim * 0.8;
+                this.radius = 1 + Math.random() * 3;
+                this.angle = Math.atan2(this.y - cy, this.x - cx);
+                this.distance = Math.sqrt((this.x - cx) ** 2 + (this.y - cy) ** 2);
+                this.speed = 0.002 + Math.random() * 0.005;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.1 + Math.random() * 0.2;
+                this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                this.colorOffset = Math.random();
+                this.alpha = 0.3 + Math.random() * 0.5;
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.pulse = 0.5 + Math.random() * 0.5;
+                this.pulseSpeed = 0.01 + Math.random() * 0.02;
+                this.depth = 0.5 + Math.random() * 0.5;
+                this.verticalOffset = (Math.random() - 0.5) * 20;
+                this.size = 1 + Math.random() * 2;
+                this.isPulled = false;
+            }
+
+            update(time, speed) {
+                const w = canvas.width;
+                const h = canvas.height;
+                const cx = w / 2;
+                const cy = h / 2;
+                const maxDim = Math.max(w, h);
+
+                // Vortex pull
+                if (vortex.isSpinning) {
+                    const vortexRadius = vortex.radius * (0.2 + 0.8 * vortex.progress);
+                    const pullStrength = vortex.power * 0.02 * speed * 10;
+                    
+                    // Rotate around center
+                    this.angle += this.speed * speed * 20 + pullStrength * 0.5;
+                    
+                    // Pull inward
+                    if (this.distance > vortexRadius * 0.3) {
+                        this.distance -= pullStrength * 0.3;
+                    }
+                    
+                    // Vertical pull (down)
+                    this.verticalOffset += pullStrength * 0.5 * this.depth;
+                    
+                    // Create trail particles
+                    if (Math.random() < 0.05 * speed * 10) {
+                        const tp = {
+                            x: this.x,
+                            y: this.y,
+                            size: this.radius * 0.5,
+                            life: 1,
+                            maxLife: 20 + Math.random() * 30,
+                            age: 0,
+                            color: this.getColor(),
+                            vx: (Math.random() - 0.5) * 0.5,
+                            vy: -Math.random() * 0.5 - 0.2,
+                        };
+                        trailParticles.push(tp);
+                    }
+                }
+
+                // Wobble
+                this.phase += this.wobbleSpeed * speed * 5;
+                const wobbleX = Math.sin(this.phase + time * 0.01) * this.wobble;
+                const wobbleY = Math.cos(this.phase * 0.7 + time * 0.01) * this.wobble;
+
+                // Calculate position
+                this.x = cx + Math.cos(this.angle) * this.distance + wobbleX;
+                this.y = cy + Math.sin(this.angle) * this.distance * 0.6 + wobbleY + this.verticalOffset * 0.1;
+
+                // Pulse
+                this.pulse = 0.5 + 0.5 * Math.sin(this.phase + time * 0.01);
+                this.alpha = 0.3 + 0.4 * this.pulse;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+
+                // Boundary
+                const margin = 10;
+                if (this.x < margin) this.x = margin;
+                if (this.x > w - margin) this.x = w - margin;
+                if (this.y < margin) this.y = margin;
+                if (this.y > h - margin) this.y = h - margin;
+
+                // Reset if too far
+                if (this.distance > maxDim * 0.9) {
+                    this.distance = maxDim * 0.1;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.verticalOffset = (Math.random() - 0.5) * 20;
+                }
+            }
+
+            getColor() {
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const idx = Math.floor(this.colorOffset * colors.length);
+                return colors[idx % colors.length];
+            }
+
+            draw(ctx) {
+                if (this.alpha <= 0) return;
+                const color = this.getColor();
+                const size = this.radius * (0.5 + 0.5 * this.pulse);
+                const alpha = this.alpha * 0.8;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.15;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 4 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '60');
+                grad.addColorStop(0.5, color + '30');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(this.x - size * 0.2, this.y - size * 0.3, size * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.fill();
+
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // ===== DRAW VORTEX =====
+        function drawVortex(ctx, cx, cy, radius) {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+            const glowColor = palette.glow;
+
+            const progress = vortex.progress;
+            const currentRadius = radius * (0.1 + 0.9 * progress);
+            const power = vortex.power;
+
+            // Draw vortex rings
+            const numRings = 8;
+            for (let i = 0; i < numRings; i++) {
+                const t = i / numRings;
+                const ringRadius = currentRadius * (0.2 + 0.8 * t);
+                const alpha = (1 - t) * 0.2 * progress;
+                const colorIdx = Math.floor(t * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+
+                ctx.beginPath();
+                for (let a = 0; a < Math.PI * 2; a += 0.03) {
+                    const wave = Math.sin(a * 3 + vortex.angle + time * 0.02 + i) * 2 * progress;
+                    const r = ringRadius + wave;
+                    const px = cx + Math.cos(a + vortex.angle * 0.1 * t) * r;
+                    const py = cy + Math.sin(a + vortex.angle * 0.1 * t) * r * 0.6;
+                    if (a === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.closePath();
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha * 0.5;
+                ctx.lineWidth = 0.5 + t * 1.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Center glow
+            const centerGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, currentRadius * 0.2);
+            centerGrad.addColorStop(0, glowColor + '60');
+            centerGrad.addColorStop(0.5, glowColor + '30');
+            centerGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(cx, cy, currentRadius * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = centerGrad;
+            ctx.globalAlpha = 0.5 * progress;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Vortex funnel lines
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 + vortex.angle;
+                const r1 = currentRadius * 0.1;
+                const r2 = currentRadius * (0.3 + 0.7 * progress);
+                const x1 = cx + Math.cos(angle) * r1;
+                const y1 = cy + Math.sin(angle) * r1;
+                const x2 = cx + Math.cos(angle + 0.1 * progress) * r2;
+                const y2 = cy + Math.sin(angle + 0.1 * progress) * r2 * 0.6;
+                
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.strokeStyle = glowColor;
+                ctx.globalAlpha = 0.05 + 0.05 * progress;
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = glowColor + '20';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Update vortex angle
+            vortex.angle += 0.01 * speed * 10 * power;
+
+            // Spawn ripples
+            if (vortex.isSpinning && Math.random() < 0.02 * speed * 10) {
+                const ripple = {
+                    x: cx + (Math.random() - 0.5) * currentRadius * 0.5,
+                    y: cy + (Math.random() - 0.5) * currentRadius * 0.5,
+                    radius: 2,
+                    maxRadius: currentRadius * 0.3,
+                    life: 1,
+                    maxLife: 30 + Math.random() * 30,
+                    age: 0,
+                    speed: 0.5 + Math.random() * 0.5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                };
+                ripples.push(ripple);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Water surface reflection
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w + Math.sin(time * 0.005 + i) * 20;
+                const y = 20 + Math.sin(time * 0.01 + i * 0.5) * 10;
+                const size = 0.5 + Math.sin(time * 0.01 + i) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.02 + Math.sin(time * 0.01 + i) * 0.02})`;
+                ctx.fill();
+            }
+
+            // Subtle grid lines (water surface)
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== DRAW RIPPLES =====
+        function drawRipples(ctx) {
+            for (let i = ripples.length - 1; i >= 0; i--) {
+                const r = ripples[i];
+                r.age++;
+                r.life = 1 - r.age / r.maxLife;
+                r.radius += r.speed * speed * 10;
+
+                ctx.beginPath();
+                ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = r.color;
+                ctx.globalAlpha = r.life * 0.3;
+                ctx.lineWidth = 0.5;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = r.color + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                if (r.radius > r.maxRadius || r.life <= 0) {
+                    ripples.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== DRAW TRAIL PARTICLES =====
+        function drawTrailParticles(ctx) {
+            for (let i = trailParticles.length - 1; i >= 0; i--) {
+                const p = trailParticles[i];
+                p.age++;
+                p.life = 1 - p.age / p.maxLife;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.01;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life * 0.3;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = p.color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                if (p.life <= 0) {
+                    trailParticles.splice(i, 1);
+                }
+            }
+        }
+
+        // ===== SPIN VORTEX =====
+        function spinVortex() {
+            if (vortex.isSpinning) return;
+
+            vortex.isSpinning = true;
+            vortex.progress = 0;
+            vortex.power = 0;
+            statusText.textContent = '🌀 Spinning up...';
+            spinBtn.textContent = '🌀 Spinning...';
+
+            const interval = setInterval(() => {
+                vortex.progress += 0.015;
+                vortex.power = Math.sin(vortex.progress * Math.PI * 0.8) * 2;
+
+                // Spawn new particles during spin
+                if (Math.random() < 0.1) {
+                    const w = canvas.width;
+                    const h = canvas.height;
+                    const cx = w / 2;
+                    const cy = h / 2;
+                    const maxDim = Math.max(w, h);
+                    const p = new Particle();
+                    p.x = cx + (Math.random() - 0.5) * maxDim * 0.6;
+                    p.y = cy + (Math.random() - 0.5) * maxDim * 0.6;
+                    p.distance = Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2);
+                    p.angle = Math.atan2(p.y - cy, p.x - cx);
+                    particles.push(p);
+                }
+
+                if (vortex.progress >= 1) {
+                    clearInterval(interval);
+                    vortex.isSpinning = false;
+                    vortex.power = 0;
+                    spinBtn.textContent = '🌀 Spin';
+                    statusText.textContent = '🌀 Vortex complete!';
+                    setTimeout(() => {
+                        statusText.textContent = '🌀 Ready';
+                    }, 1500);
+                }
+            }, 50);
+        }
+
+        // ===== RESET =====
+        function resetVortex() {
+            particles = [];
+            ripples = [];
+            trailParticles = [];
+            vortex.isSpinning = false;
+            vortex.progress = 0;
+            vortex.power = 0;
+            vortex.angle = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            spinBtn.textContent = '🌀 Spin';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Ready';
+            }, 1000);
+
+            // Recreate particles
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.3;
+            time += 0.01;
+
+            // Update particles
+            for (const p of particles) {
+                p.update(time, speed);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+            drawVortex(ctx, cx, cy, radius);
+            drawRipples(ctx);
+            drawTrailParticles(ctx);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = vortex.isSpinning ? '🌀 Spinning' : '🌀 Ready';
+                statusText.textContent = `${state} • ${particles.length} particles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Spin
+        spinBtn.addEventListener('click', spinVortex);
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Ready';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Ready';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetVortex);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                if (e.shiftKey) spinBtn.click();
+                else speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                spinBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', spinVortex);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            spinVortex();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Ready';
+
+        // Create initial particles
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new Particle());
+        }
+
+        lastFpsUpdate = performance.now();
+        render(lastFpsUpdate);
+
+        console.log('🌀 Whirlpool Vortex loaded!');
+        console.log('💡 S - Spin vortex');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Spin vortex');
+        console.log('💡 Click canvas - Spin vortex');
+    </script>
+</body>
+</html>

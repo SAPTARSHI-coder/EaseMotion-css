@@ -1,62 +1,23 @@
-```md
-# Animated Timeline
+# Animated Timeline/Roadmap Component
 
-A responsive CSS-only animated timeline built with EaseMotion CSS utilities.
+A clean, modern, and fully responsive **Timeline/Roadmap Component** perfect for product roadmaps, company history, project tracking, and educational content. This example demonstrates how to combine **EaseMotion CSS** for staggered item entrances, smooth connecting line animations, and interactive milestone markers to create an engaging, chronological display.
 
-## Features
+## 🚀 Features
 
-- Vertical timeline layout
-- Responsive design
-- Smooth entrance animations
-- Hover lift effects
-- Modern glassmorphism-inspired cards
-- No JavaScript required
+- **Alternating Layout**: Timeline items alternate between left and right sides for visual balance.
+- **Staggered Entrances**: Each item fades in from its respective side using `ease-fade-in-left` and `ease-fade-in-right` with staggered delays.
+- **Bouncy Milestone Markers**: Markers pop into view using `ease-bounce-in` for a playful effect.
+- **Pulsing Current Milestone**: The active/current milestone uses `ease-pulse` to draw attention.
+- **Three Status States**: Completed (green), Current (purple with pulse), and Upcoming (gray) markers with distinct colors.
+- **Interactive Hover States**: Cards lift on hover with enhanced shadows and accent borders using `ease-hover-grow`.
+- **Gradient Connecting Line**: A vertical line with gradient coloring connects all milestones.
+- **Tag System**: Color-coded tags for categorizing each milestone.
+- **Fully Responsive**: On mobile, all items align to the left with the timeline line on the left edge.
 
-## Folder Structure
-```
+## 📂 File Structure
 
-animated-timeline/
-├── demo.html
-├── style.css
-└── README.md
-
-```
-
-## EaseMotion Classes Used
-
-- `ease-fade-in`
-- `ease-slide-left`
-- `ease-slide-right`
-- `ease-hover-lift`
-
-## Preview
-
-The timeline displays milestones in an alternating left-right layout on desktop and automatically stacks on mobile devices.
-
-## Use Cases
-
-- Project Roadmaps
-- Learning Journey
-- Work Experience Timeline
-- Product Release History
-- Event Timeline
-
-## Installation
-
-1. Add EaseMotion CSS to your project.
-2. Copy `demo.html` and `style.css`.
-3. Open `demo.html` in your browser.
-
-## Customization
-
-You can:
-
-- Change timeline colors
-- Add more milestones
-- Replace content with project or portfolio data
-- Apply additional EaseMotion animation classes
-
-## License
-
-MIT
-```
+```text
+submissions/examples/animated-timeline/
+├── demo.html    # HTML structure and EaseMotion utility classes
+├── style.css    # Custom CSS for timeline layout, markers, and responsive behavior
+└── README.md    # Documentation

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Micro-Interaction Button State Machine</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <p class="eyebrow">Button state machine</p>
+      <h1>Idle → success / error</h1>
+      <p class="lede">
+        Walk one button through idle, hover, focus, active, loading, success, and error —
+        each with a distinct micro-motion.
+      </p>
+    </header>
+
+    <section class="stage">
+      <button type="button" class="action-btn" id="action-btn" data-state="idle">
+        <span class="btn-label" data-label>Save draft</span>
+        <span class="btn-spinner" aria-hidden="true"></span>
+        <span class="btn-icon btn-icon--ok" aria-hidden="true">✓</span>
+        <span class="btn-icon btn-icon--err" aria-hidden="true">!</span>
+      </button>
+      <p class="live-state" id="live-state" role="status" aria-live="polite">State: idle</p>
+    </section>
+
+    <section class="controls" aria-label="Manual state controls">
+      <button type="button" data-set="idle">Idle</button>
+      <button type="button" data-set="hover">Hover</button>
+      <button type="button" data-set="focus">Focus</button>
+      <button type="button" data-set="active">Active</button>
+      <button type="button" data-set="loading">Loading</button>
+      <button type="button" data-set="success">Success</button>
+      <button type="button" data-set="error">Error</button>
+      <button type="button" class="run-flow" id="run-flow">Play full flow</button>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const btn = document.getElementById('action-btn');
+      const label = btn.querySelector('[data-label]');
+      const live = document.getElementById('live-state');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const labels = {
+        idle: 'Save draft',
+        hover: 'Ready to save',
+        focus: 'Keyboard focus',
+        active: 'Pressed',
+        loading: 'Saving…',
+        success: 'Saved',
+        error: 'Try again'
+      };
+
+      let flowTimer;
+
+      function setState(state) {
+        btn.dataset.state = state;
+        label.textContent = labels[state] || state;
+        live.textContent = 'State: ' + state;
+        btn.setAttribute('aria-busy', state === 'loading' ? 'true' : 'false');
+      }
+
+      document.querySelectorAll('[data-set]').forEach(function (control) {
+        control.addEventListener('click', function () {
+          clearTimeout(flowTimer);
+          setState(control.dataset.set);
+          if (control.dataset.set === 'focus') btn.focus();
+        });
+      });
+
+      btn.addEventListener('mouseenter', function () {
+        if (['idle', 'hover'].includes(btn.dataset.state)) setState('hover');
+      });
+      btn.addEventListener('mouseleave', function () {
+        if (btn.dataset.state === 'hover') setState('idle');
+      });
+      btn.addEventListener('focus', function () {
+        if (btn.dataset.state === 'idle' || btn.dataset.state === 'hover') setState('focus');
+      });
+      btn.addEventListener('blur', function () {
+        if (btn.dataset.state === 'focus') setState('idle');
+      });
+      btn.addEventListener('pointerdown', function () {
+        if (['idle', 'hover', 'focus'].includes(btn.dataset.state)) setState('active');
+      });
+      btn.addEventListener('pointerup', function () {
+        if (btn.dataset.state === 'active') setState('hover');
+      });
+
+      document.getElementById('run-flow').addEventListener('click', function () {
+        clearTimeout(flowTimer);
+        const steps = ['idle', 'hover', 'focus', 'active', 'loading', 'success'];
+        let i = 0;
+        const gap = reduced ? 80 : 700;
+
+        function tick() {
+          setState(steps[i]);
+          i += 1;
+          if (i < steps.length) {
+            flowTimer = window.setTimeout(tick, gap);
+          } else {
+            flowTimer = window.setTimeout(function () {
+              setState('error');
+              flowTimer = window.setTimeout(function () {
+                setState('idle');
+              }, gap);
+            }, gap);
+          }
+        }
+
+        tick();
+      });
+    })();
+  </script>
+</body>
+</html>

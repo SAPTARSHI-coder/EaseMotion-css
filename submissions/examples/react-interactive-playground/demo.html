@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EaseMotion React Interactive Playground</title>
+    <!-- EaseMotion Core -->
+    <link rel="stylesheet" href="../../../easemotion.css">
+    <link rel="stylesheet" href="../../../core/variables.css">
+    <!-- Demo Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- React & Babel for in-browser rendering (NO SERVER REQUIRED) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- React Wrapper Components ---
+        const Animate = ({ as: Component = 'div', type = 'fade-in', duration, delay, className = '', style = {}, children, ...rest }) => {
+            const classes = ['ease-' + type, className].filter(Boolean).join(' ');
+            const customStyles = { ...style };
+            
+            if (duration) {
+                if (typeof duration === 'number' || !isNaN(Number(duration))) {
+                    customStyles.animationDuration = `${duration}ms`;
+                } else {
+                    customStyles.animationDuration = `var(--ease-speed-${duration})`;
+                }
+            }
+            if (delay) customStyles.animationDelay = `${delay}ms`;
+
+            return <Component className={classes} style={customStyles} {...rest}>{children}</Component>;
+        };
+
+        const Hover = ({ as: Component = 'div', type = 'lift', className = '', children, onMouseEnter, onMouseLeave, ...rest }) => {
+            const [isHovering, setIsHovering] = useState(false);
+            const hoverMap = { lift: 'ease-hover-lift', scale: 'ease-hover-grow', glow: 'ease-hover-glow' };
+            const cssClass = hoverMap[type] || `ease-hover-${type}`;
+            
+            const classes = [
+                type !== 'shake' ? cssClass : '',
+                type === 'shake' && isHovering ? 'ease-shake' : '',
+                className
+            ].filter(Boolean).join(' ');
+
+            return (
+                <Component 
+                    className={classes} 
+                    onMouseEnter={(e) => { setIsHovering(true); if (onMouseEnter) onMouseEnter(e); }}
+                    onMouseLeave={(e) => { setIsHovering(false); if (onMouseLeave) onMouseLeave(e); }}
+                    {...rest}
+                >
+                    {children}
+                </Component>
+            );
+        };
+
+        // --- Playground Application ---
+        function App() {
+            const [config, setConfig] = useState({
+                type: 'fade-in',
+                duration: 500,
+                timingCurve: 'ease',
+                hoverLift: false,
+                hoverScale: false,
+                hoverGlow: false,
+            });
+
+            // Re-render preview animation on change
+            const previewKey = JSON.stringify(config);
+
+            const handleChange = (e) => {
+                const { name, value, type, checked } = e.target;
+                setConfig(prev => ({
+                    ...prev,
+                    [name]: type === 'checkbox' ? checked : (name === 'duration' ? parseInt(value, 10) : value)
+                }));
+            };
+
+            // Build style object for timing curve
+            const previewStyle = {};
+            if (config.timingCurve === 'linear') previewStyle['--ease-ease'] = 'linear';
+            if (config.timingCurve === 'elastic-bounce') previewStyle['--ease-ease'] = 'var(--ease-ease-bounce)';
+
+            // Build preview element
+            let previewElement = (
+                <div className="preview-element">
+                    <div className="element-icon">✨</div>
+                    <div className="element-text">EaseMotion</div>
+                </div>
+            );
+
+            if (config.hoverLift) previewElement = <Hover type="lift" className="hover-wrapper">{previewElement}</Hover>;
+            if (config.hoverScale) previewElement = <Hover type="scale" className="hover-wrapper">{previewElement}</Hover>;
+            if (config.hoverGlow) previewElement = <Hover type="glow" className="hover-wrapper">{previewElement}</Hover>;
+
+            // Build Code Generator Output
+            let styleString = '';
+            if (config.timingCurve === 'linear') {
+                styleString = ` style={{ '--ease-ease': 'linear' }}`;
+            } else if (config.timingCurve === 'elastic-bounce') {
+                styleString = ` style={{ '--ease-ease': 'var(--ease-ease-bounce)' }}`;
+            }
+
+            let innerJsx = `  <Animate type="${config.type}" duration={${config.duration}}${styleString}>\n    <div className="card">EaseMotion</div>\n  </Animate>`;
+            
+            if (config.hoverGlow) innerJsx = `  <Hover type="glow">\n  ${innerJsx.replace(/\n/g, '\n  ')}\n  </Hover>`;
+            if (config.hoverScale) innerJsx = `  <Hover type="scale">\n  ${innerJsx.replace(/\n/g, '\n  ')}\n  </Hover>`;
+            if (config.hoverLift) innerJsx = `  <Hover type="lift">\n  ${innerJsx.replace(/\n/g, '\n  ')}\n  </Hover>`;
+
+            const fullCode = `import { Animate, Hover } from './wrappers';
+
+export default function MyComponent() {
+  return (
+${innerJsx}
+  );
+}`;
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(fullCode);
+                alert("Code copied to clipboard!");
+            };
+
+            useEffect(() => {
+                // Initialize Lucide icons
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+
+            return (
+                <div className="playground-container">
+                    <header className="playground-header">
+                        <h1>EaseMotion <span className="text-gradient">Interactive Playground</span></h1>
+                        <p>Fine-tune your animations and copy the React JSX natively in the browser.</p>
+                    </header>
+
+                    <main className="playground-grid">
+                        {/* Left Column: Preview & Code */}
+                        <div className="main-panel">
+                            <section className="glass-panel preview-section">
+                                <h2><i data-lucide="eye"></i> Live Preview</h2>
+                                <div className="preview-canvas">
+                                    <Animate key={previewKey} type={config.type} duration={config.duration} style={previewStyle}>
+                                        {previewElement}
+                                    </Animate>
+                                </div>
+                            </section>
+
+                            <section className="glass-panel code-section">
+                                <h2><i data-lucide="code"></i> Generated JSX</h2>
+                                <div className="code-panel">
+                                    <button className="copy-btn" onClick={copyToClipboard}>
+                                        <i data-lucide="copy"></i> Copy
+                                    </button>
+                                    <pre className="code-block">
+                                        <code>{fullCode}</code>
+                                    </pre>
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* Right Column: Controls */}
+                        <aside className="glass-panel controls-section">
+                            <h2><i data-lucide="settings"></i> Configuration</h2>
+                            <div className="controls-panel">
+                                
+                                <div className="control-group">
+                                    <label className="control-label">Animation Type</label>
+                                    <select className="control-select" name="type" value={config.type} onChange={handleChange}>
+                                        <option value="fade-in">Fade In</option>
+                                        <option value="zoom-in">Zoom In</option>
+                                        <option value="slide-up">Slide Up</option>
+                                        <option value="slide-down">Slide Down</option>
+                                        <option value="shake">Shake</option>
+                                        <option value="bounce-in">Bounce In</option>
+                                    </select>
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">Duration ({config.duration}ms)</label>
+                                    <input type="range" name="duration" min="100" max="3000" step="100" value={config.duration} onChange={handleChange} className="control-slider" />
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">Timing Curve</label>
+                                    <select className="control-select" name="timingCurve" value={config.timingCurve} onChange={handleChange}>
+                                        <option value="ease">Ease (Smooth)</option>
+                                        <option value="linear">Linear (Constant)</option>
+                                        <option value="elastic-bounce">Elastic Bounce</option>
+                                    </select>
+                                </div>
+
+                                <div className="control-group">
+                                    <label className="control-label">Hover Triggers</label>
+                                    <div className="checkbox-group">
+                                        <label className="checkbox-label">
+                                            <input type="checkbox" name="hoverLift" checked={config.hoverLift} onChange={handleChange} /> Lift
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input type="checkbox" name="hoverScale" checked={config.hoverScale} onChange={handleChange} /> Scale
+                                        </label>
+                                        <label className="checkbox-label">
+                                            <input type="checkbox" name="hoverGlow" checked={config.hoverGlow} onChange={handleChange} /> Glow
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </aside>
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
