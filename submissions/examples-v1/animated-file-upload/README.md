@@ -1,49 +1,47 @@
-# Animated Drag and Drop File Upload Component
+# Ease Team Grid
 
-A modern drag and drop file upload component built using pure HTML and CSS.
+## What does this do?
+A responsive team member profile grid with a **3D card-flip reveal on
+hover** showing a bio on the back face, and a **magnetic social icon
+cluster** that fans out from a single trigger icon — instead of a flat
+hover-lift with always-visible social icons.
 
-## Features
+## How is it different from a typical team-grid utility?
+- Cards flip in 3D (`rotateY`) on hover to reveal a bio and social links on
+  the back, keeping the front face clean and uncluttered.
+- Social icons stay hidden inside a single circular trigger and fan out
+  with a staggered spring-like animation when hovered, rather than sitting
+  visible on the card at all times.
+- Featured/team-lead card uses a gradient background and badge to stand
+  out from the rest of the grid.
+- Fully responsive, collapsing to a single column on small viewports.
 
-- Drag and drop upload area
-- Animated hover effects
-- Upload progress indicators
-- Upload success state
-- File preview section
-- Responsive design
-- Modern UI styling
-- Pure HTML and CSS
+## How is it used?
+\`\`\`html
+<div class="ease-team-card">
+  <div class="ease-team-card__inner">
+    <div class="ease-team-card__front">
+      <img src="avatar.jpg" alt="Name" />
+      <h3>Name</h3>
+      <p class="role">Role</p>
+    </div>
+    <div class="ease-team-card__back">
+      <p class="bio">Short bio text.</p>
+      <div class="ease-team-card__socials">
+        <a href="#" class="social-trigger">🔗
+          <span class="social-fan">
+            <a href="#">𝕏</a>
+            <a href="#">in</a>
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+\`\`\`
 
-## Folder Structure
-
-```text
-animated-file-upload/
-├── demo.html
-├── style.css
-└── README.md
-```
-
-## Usage
-
-1. Open demo.html in a browser.
-2. Ensure style.css is in the same directory.
-3. Customize upload states and styles.
-
-## Components Included
-
-- Upload drop zone
-- Browse button
-- Progress bars
-- File preview cards
-- Success notification
-
-## Technologies
-
-- HTML5
-- CSS3
-- Flexbox
-- CSS Animations
-- Responsive Design
-
-## Author
-
-Created for EaseMotion CSS under GSSoC 2026.
+## Why is this useful?
+Team/about pages are a near-universal website section, and a flip-reveal
+with hidden-until-hover social links keeps the initial grid visually clean
+while still surfacing rich detail on interaction — a polished, reusable
+showcase for EaseMotion CSS.
