@@ -1,39 +1,174 @@
-# Animated Circular Progress Bar (`ease-progress-circle`)
+# Ease Progress Circle
 
-This proposal introduces a CSS-only animated circular progress indicator (SVG-based) targeted for `components/progress-circle.css`.
+A lightweight, responsive circular progress indicator built with **SVG** and **pure CSS**. The component uses CSS custom properties to control the progress value, color, size, and animation duration, making it easy to customize without JavaScript.
 
-## 📌 Feature Overview
+---
 
-Circular progress indicators are highly requested components for dashboards, profile completeness, and statistical metrics. This component builds a completely customizable, animated SVG ring powered entirely by CSS.
+## Features
 
-Features:
-- Pure CSS `stroke-dashoffset` keyframe animation for the progress fill.
-- Seamless control via CSS variables: `--ease-progress-value` (0-100), `--ease-progress-color`, and `--ease-progress-size`.
-- Includes centered text label for percentage values.
-- Dark mode compatible via CSS media queries.
+- 🎯 Pure CSS + SVG implementation
+- 🎨 Customizable using CSS variables
+- ⚡ Smooth progress animation on page load
+- 📊 Center percentage label
+- 🌙 Dark mode compatible
+- 📱 Responsive layout
+- 🚫 No JavaScript required
 
-Included classes:
-- `.ease-progress-circle`
-- `.ease-progress-circle__track`
-- `.ease-progress-circle__fill`
-- `.ease-progress-circle__text`
+---
 
-## ⚙️ How to Use
+## Demo
 
-To test this feature locally, simply open the `demo.html` file in your web browser. The styles are contained in `style.css`.
+Open **demo.html** in any modern browser.
 
-Structure your HTML as follows:
+The demo includes three examples:
 
-```html
-<!-- A 75% filled progress circle -->
-<svg class="ease-progress-circle" style="--ease-progress-value: 75; --ease-progress-color: #3b82f6;" viewBox="0 0 100 100">
-  <circle class="ease-progress-circle__track" cx="50" cy="50" r="40" />
-  <circle class="ease-progress-circle__fill" cx="50" cy="50" r="40" />
-  <text class="ease-progress-circle__text" x="50" y="50" alignment-baseline="middle" text-anchor="middle">75%</text>
-</svg>
+- Project Completion (75%)
+- CPU Usage (50%)
+- Storage Usage (92%)
+
+Each example demonstrates different colors, values, and animation durations.
+
+---
+
+## Folder Structure
+
+```
+submissions/
+└── examples/
+    └── ease-progress-circle/
+        ├── demo.html
+        ├── style.css
+        └── README.md
 ```
 
-*Note: As per the contributing guidelines, this proposal is implemented inside a unique `submissions/examples/ease-progress-circle/` directory to avoid directly modifying core files and causing zero deletions.*
+---
 
-## 🔗 Related Issue
-Closes Issue #13306
+## Usage
+
+```html
+<div
+    class="ease-progress-circle"
+    style="
+        --ease-progress-value:75;
+        --ease-progress-color:#3b82f6;
+        --ease-progress-size:180px;
+        --ease-progress-duration:2s;
+">
+
+    <svg viewBox="0 0 120 120">
+
+        <circle
+            class="track"
+            cx="60"
+            cy="60"
+            r="52">
+        </circle>
+
+        <circle
+            class="progress"
+            cx="60"
+            cy="60"
+            r="52">
+        </circle>
+
+    </svg>
+
+    <span class="label">75%</span>
+
+</div>
+```
+
+---
+
+## CSS Variables
+
+| Variable | Description | Default |
+|----------|-------------|----------|
+| `--ease-progress-value` | Progress percentage (0–100) | `75` |
+| `--ease-progress-color` | Progress stroke color | `#3b82f6` |
+| `--ease-progress-size` | Component width and height | `180px` |
+| `--ease-progress-duration` | Animation duration | `2s` |
+
+---
+
+## How It Works
+
+The component uses an SVG circle with a fixed circumference. The visible progress is created by animating the `stroke-dashoffset` property from the full circumference to the calculated progress value.
+
+```css
+stroke-dasharray: var(--circumference);
+
+stroke-dashoffset: calc(
+    var(--circumference) -
+    (var(--circumference) * var(--ease-progress-value) / 100)
+);
+```
+
+This produces a smooth filling animation without JavaScript.
+
+---
+
+## Customization
+
+Change the progress value:
+
+```css
+--ease-progress-value:90;
+```
+
+Change the color:
+
+```css
+--ease-progress-color:#10b981;
+```
+
+Change the size:
+
+```css
+--ease-progress-size:220px;
+```
+
+Change the animation speed:
+
+```css
+--ease-progress-duration:3s;
+```
+
+---
+
+## Accessibility
+
+- Semantic HTML structure
+- Percentage displayed in the center
+- High contrast colors
+- Responsive sizing
+- Motion limited to a single smooth animation
+
+---
+
+## Browser Support
+
+- ✅ Chrome
+- ✅ Firefox
+- ✅ Edge
+- ✅ Safari
+
+---
+
+## Why It Fits EaseMotion CSS
+
+This component follows the EaseMotion CSS philosophy by providing:
+
+- Human-readable class names
+- Lightweight animations
+- Utility-style customization with CSS variables
+- Smooth, reusable motion effects
+- Zero JavaScript dependency
+
+It can be used in dashboards, analytics panels, portfolio skill sections, profile pages, statistics cards, and reporting interfaces.
+
+---
+
+## License
+
+Created as an example contribution for the EaseMotion CSS examples library.

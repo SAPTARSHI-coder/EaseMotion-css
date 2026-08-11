@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>💡 Fog Lamp – Beam Cuts Through Fog</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>💡 Fog Lamp</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle lamp">💡 Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset position">🔄 Reset</button>
+                <button class="control-btn" id="fogBtn" title="Toggle fog">🌫️ Fog</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="fogCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="lampStatus">💡 On</span>
+                <span id="fogStatus">🌫️ Fog: 70%</span>
+                <span id="beamInfo">🔦 Beam: 120°</span>
+            </div>
+            <div class="hint" id="hint">💡 Drag to move lamp · ⚡ Scroll to adjust beam</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🌫️ Fog Density</label>
+                <input type="range" id="fogSlider" min="0" max="100" value="70" step="1" />
+                <span id="fogLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🔦 Beam Angle</label>
+                <input type="range" id="beamSlider" min="20" max="180" value="120" step="2" />
+                <span id="beamLabel">120°</span>
+            </div>
+            <div class="slider-group">
+                <label>💡 Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="80" step="1" />
+                <span id="intensityLabel">80%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Fog Lamp – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('fogCanvas');
+            const ctx = canvas.getContext('2d');
+            const lampStatus = document.getElementById('lampStatus');
+            const fogStatus = document.getElementById('fogStatus');
+            const beamInfo = document.getElementById('beamInfo');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const fogBtn = document.getElementById('fogBtn');
+            const fogSlider = document.getElementById('fogSlider');
+            const fogLabel = document.getElementById('fogLabel');
+            const beamSlider = document.getElementById('beamSlider');
+            const beamLabel = document.getElementById('beamLabel');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isOn = true;
+            let fogEnabled = true;
+            let isDragging = false;
+            let dragOffsetX = 0;
+            let dragOffsetY = 0;
+            let time = 0;
+            let animationId = null;
+
+            // --- Parameters ---
+            let fogDensity = 70; // 0-100%
+            let beamAngle = 120; // 20-180 degrees
+            let intensity = 80; // 10-100%
+
+            // --- Lamp position ---
+            const lamp = {
+                x: 200,
+                y: 300,
+                targetX: 200,
+                targetY: 300
+            };
+
+            // --- Fog particles ---
+            let fogParticles = [];
+            const MAX_FOG_PARTICLES = 200;
+
+            class FogParticle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.size = 20 + Math.random() * 80;
+                    this.opacity = 0.05 + Math.random() * 0.15;
+                    this.speed = 0.1 + Math.random() * 0.3;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.drift = (Math.random() - 0.5) * 0.2;
+                }
+
+                update() {
+                    this.x += Math.cos(this.angle) * this.speed * 0.2;
+                    this.y += Math.sin(this.angle) * this.speed * 0.1;
+                    this.angle += this.drift * 0.01;
+
+                    if (this.x < -100) this.x = W + 100;
+                    if (this.x > W + 100) this.x = -100;
+                    if (this.y < -100) this.y = H + 100;
+                    if (this.y > H + 100) this.y = -100;
+                }
+
+                draw(ctx) {
+                    const fogFactor = fogDensity / 100;
+                    const alpha = this.opacity * (0.5 + fogFactor * 0.5);
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    grad.addColorStop(0, `rgba(220, 235, 245, ${alpha * 0.3})`);
+                    grad.addColorStop(0.5, `rgba(200, 215, 225, ${alpha * 0.2})`);
+                    grad.addColorStop(1, `rgba(180, 195, 205, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Create fog particles ---
+            function createFogParticles(count) {
+                fogParticles = [];
+                for (let i = 0; i < count; i++) {
+                    fogParticles.push(new FogParticle());
+                }
+            }
+
+            // --- Draw beam ---
+            function drawBeam(ctx) {
+                if (!isOn) return;
+
+                const intensityFactor = intensity / 100;
+                const angleRad = (beamAngle * Math.PI) / 180;
+                const halfAngle = angleRad / 2;
+
+                // Beam direction (toward right)
+                const dirX = 1;
+                const dirY = 0;
+
+                // Beam length with fog attenuation
+                const fogFactor = fogDensity / 100;
+                const maxLength = 400 - fogFactor * 200;
+                const beamLength = maxLength * (0.5 + intensityFactor * 0.5);
+
+                // Beam origin (slightly offset from lamp)
+                const originX = lamp.x + 30;
+                const originY = lamp.y;
+
+                // --- Beam glow (outer) ---
+                ctx.save();
+
+                // Beam gradient for volumetric effect
+                const steps = 40;
+                for (let i = 0; i < steps; i++) {
+                    const t = i / steps;
+                    const dist = t * beamLength;
+                    const width = Math.tan(halfAngle) * dist * 2;
+
+                    // Fog attenuation (more fog = less visible beam)
+                    const attenuation = Math.exp(-fogFactor * t * 2);
+                    const brightness = intensityFactor * 0.6 * attenuation * (1 - t * 0.3);
+
+                    // Beam color (warm white to yellow)
+                    const r = 255;
+                    const g = 240 - t * 60;
+                    const b = 200 - t * 100;
+
+                    const alpha = brightness * 0.15;
+
+                    // Create beam slice with gradient
+                    const grad = ctx.createRadialGradient(
+                        originX + dist * dirX,
+                        originY + dist * dirY,
+                        0,
+                        originX + dist * dirX,
+                        originY + dist * dirY,
+                        width / 2
+                    );
+
+                    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${alpha * 0.8})`);
+                    grad.addColorStop(0.5, `rgba(${r - 20}, ${g - 30}, ${b - 40}, ${alpha * 0.4})`);
+                    grad.addColorStop(1, `rgba(${r - 40}, ${g - 60}, ${b - 80}, 0)`);
+
+                    ctx.fillStyle = grad;
+
+                    // Draw beam slice
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        originX + dist * dirX,
+                        originY + dist * dirY,
+                        width / 2,
+                        width / 4,
+                        0, 0, Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+
+                // --- Core beam (bright center) ---
+                const coreGrad = ctx.createRadialGradient(
+                    originX, originY, 0,
+                    originX, originY, beamLength
+                );
+
+                const coreAlpha = intensityFactor * 0.4 * (1 - fogFactor * 0.5);
+                coreGrad.addColorStop(0, `rgba(255, 255, 240, ${coreAlpha * 0.4})`);
+                coreGrad.addColorStop(0.3, `rgba(255, 245, 220, ${coreAlpha * 0.2})`);
+                coreGrad.addColorStop(0.6, `rgba(255, 235, 200, ${coreAlpha * 0.08})`);
+                coreGrad.addColorStop(1, `rgba(255, 220, 180, 0)`);
+
+                ctx.fillStyle = coreGrad;
+                ctx.beginPath();
+                ctx.moveTo(originX, originY);
+                ctx.quadraticCurveTo(
+                    originX + beamLength * 0.5,
+                    originY - beamLength * 0.15,
+                    originX + beamLength,
+                    originY
+                );
+                ctx.quadraticCurveTo(
+                    originX + beamLength * 0.5,
+                    originY + beamLength * 0.15,
+                    originX, originY
+                );
+                ctx.fill();
+
+                ctx.restore();
+
+                // --- Light rays (god rays) ---
+                ctx.save();
+                const rayCount = 8;
+                const rayAlpha = intensityFactor * 0.03 * (1 - fogFactor * 0.3);
+                for (let i = 0; i < rayCount; i++) {
+                    const angle = (i / rayCount - 0.5) * angleRad * 0.8;
+                    const rayLength = beamLength * (0.6 + Math.random() * 0.4);
+                    const x1 = originX;
+                    const y1 = originY;
+                    const x2 = originX + Math.cos(angle) * rayLength;
+                    const y2 = originY + Math.sin(angle) * rayLength;
+
+                    const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+                    grad.addColorStop(0, `rgba(255, 240, 200, ${rayAlpha * 0.5})`);
+                    grad.addColorStop(0.5, `rgba(255, 230, 180, ${rayAlpha * 0.2})`);
+                    grad.addColorStop(1, `rgba(255, 220, 160, 0)`);
+
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.strokeStyle = grad;
+                    ctx.lineWidth = 2 + Math.random() * 3;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = `rgba(255, 220, 180, ${rayAlpha * 0.1})`;
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // --- Beam scatter (particles in beam) ---
+                if (fogDensity > 20) {
+                    ctx.save();
+                    const scatterCount = Math.floor(fogFactor * 30);
+                    for (let i = 0; i < scatterCount; i++) {
+                        const t = Math.random();
+                        const dist = t * beamLength;
+                        const width = Math.tan(halfAngle) * dist * 1.5;
+                        const x = originX + dist * dirX + (Math.random() - 0.5) * width;
+                        const y = originY + dist * dirY + (Math.random() - 0.5) * width * 0.3;
+
+                        const scatterAlpha = intensityFactor * 0.1 * (1 - t) * fogFactor;
+                        const size = 1 + Math.random() * 4;
+
+                        ctx.globalAlpha = scatterAlpha;
+                        ctx.fillStyle = `rgba(255, 240, 220, ${0.3 + Math.random() * 0.3})`;
+                        ctx.shadowBlur = 10;
+                        ctx.shadowColor = `rgba(255, 220, 180, ${scatterAlpha * 0.2})`;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Update beam info
+                beamInfo.textContent = `🔦 Beam: ${beamAngle}°`;
+            }
+
+            // --- Draw lamp ---
+            function drawLamp(ctx) {
+                const x = lamp.x;
+                const y = lamp.y;
+
+                ctx.save();
+
+                // Lamp housing glow (if on)
+                if (isOn) {
+                    const glowGrad = ctx.createRadialGradient(
+                        x, y, 5,
+                        x, y, 60
+                    );
+                    const glowAlpha = (intensity / 100) * 0.3;
+                    glowGrad.addColorStop(0, `rgba(255, 240, 200, ${glowAlpha * 0.5})`);
+                    glowGrad.addColorStop(0.5, `rgba(255, 220, 150, ${glowAlpha * 0.2})`);
+                    glowGrad.addColorStop(1, `rgba(255, 200, 100, 0)`);
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 60, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Lamp body
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+
+                // Housing
+                const housingGrad = ctx.createLinearGradient(x - 20, y - 15, x + 20, y + 15);
+                housingGrad.addColorStop(0, '#4a4a4a');
+                housingGrad.addColorStop(0.3, '#6a6a6a');
+                housingGrad.addColorStop(0.7, '#5a5a5a');
+                housingGrad.addColorStop(1, '#3a3a3a');
+
+                ctx.fillStyle = housingGrad;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+
+                // Main body (cylinder)
+                ctx.beginPath();
+                ctx.roundRect(x - 18, y - 20, 36, 40, 4);
+                ctx.fill();
+
+                // Lens
+                const lensGrad = ctx.createRadialGradient(
+                    x + 10, y, 2,
+                    x + 18, y, 15
+                );
+                if (isOn) {
+                    lensGrad.addColorStop(0, 'rgba(255, 255, 240, 0.9)');
+                    lensGrad.addColorStop(0.3, 'rgba(255, 240, 200, 0.6)');
+                    lensGrad.addColorStop(0.7, 'rgba(255, 220, 150, 0.3)');
+                    lensGrad.addColorStop(1, 'rgba(200, 180, 120, 0.1)');
+                } else {
+                    lensGrad.addColorStop(0, 'rgba(100, 100, 100, 0.5)');
+                    lensGrad.addColorStop(1, 'rgba(60, 60, 60, 0.1)');
+                }
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = lensGrad;
+                ctx.beginPath();
+                ctx.ellipse(x + 20, y, 10, 14, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lens rim
+                ctx.strokeStyle = 'rgba(80, 80, 80, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.ellipse(x + 20, y, 10, 14, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Bracket
+                ctx.strokeStyle = '#5a5a5a';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x - 18, y - 15);
+                ctx.lineTo(x - 30, y - 30);
+                ctx.moveTo(x - 18, y + 15);
+                ctx.lineTo(x - 30, y + 30);
+                ctx.stroke();
+
+                // Mounting plate
+                ctx.fillStyle = '#4a4a4a';
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.roundRect(x - 35, y - 5, 10, 10, 2);
+                ctx.fill();
+
+                // Status light
+                if (isOn) {
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'rgba(0, 255, 100, 0.3)';
+                    ctx.fillStyle = '#00ff64';
+                    ctx.beginPath();
+                    ctx.arc(x - 25, y - 20, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+            }
+
+            // --- Draw environment ---
+            function drawEnvironment(ctx) {
+                // Background
+                const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+                const fogFactor = fogDensity / 100;
+                const darkBase = 5 + fogFactor * 40;
+                const darkMid = 15 + fogFactor * 50;
+                const darkLight = 25 + fogFactor * 60;
+
+                bgGrad.addColorStop(0, `rgb(${darkBase + 5}, ${darkBase + 8}, ${darkBase + 10})`);
+                bgGrad.addColorStop(0.3, `rgb(${darkMid}, ${darkMid + 5}, ${darkMid + 8})`);
+                bgGrad.addColorStop(0.6, `rgb(${darkLight}, ${darkLight + 8}, ${darkLight + 12})`);
+                bgGrad.addColorStop(1, `rgb(${darkLight + 10}, ${darkLight + 12}, ${darkLight + 15})`);
+
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Ground
+                const groundY = H - 60;
+                const groundGrad = ctx.createLinearGradient(0, groundY, 0, H);
+                const groundOpacity = 0.3 + fogFactor * 0.4;
+                groundGrad.addColorStop(0, `rgba(30, 40, 50, ${groundOpacity * 0.3})`);
+                groundGrad.addColorStop(0.5, `rgba(40, 50, 60, ${groundOpacity * 0.5})`);
+                groundGrad.addColorStop(1, `rgba(50, 60, 70, ${groundOpacity * 0.7})`);
+
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, groundY, W, H - groundY);
+
+                // Ground line
+                ctx.strokeStyle = `rgba(100, 120, 140, ${0.05 + fogFactor * 0.1})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, groundY);
+                for (let x = 0; x <= W; x += 2) {
+                    const bump = Math.sin(x * 0.02) * 3 + Math.sin(x * 0.05 + 1.2) * 2;
+                    ctx.lineTo(x, groundY + bump);
+                }
+                ctx.stroke();
+
+                // --- Fog particles ---
+                if (fogEnabled) {
+                    for (const p of fogParticles) {
+                        p.update();
+                        p.draw(ctx);
+                    }
+                }
+
+                // --- Atmospheric haze ---
+                if (fogDensity > 20) {
+                    ctx.save();
+                    const hazeAlpha = (fogDensity / 100) * 0.15;
+                    const hazeGrad = ctx.createRadialGradient(
+                        W / 2, H / 2, 50,
+                        W / 2, H / 2, 500
+                    );
+                    hazeGrad.addColorStop(0, `rgba(200, 215, 225, ${hazeAlpha * 0.3})`);
+                    hazeGrad.addColorStop(0.5, `rgba(180, 195, 205, ${hazeAlpha * 0.2})`);
+                    hazeGrad.addColorStop(1, `rgba(160, 175, 185, 0)`);
+                    ctx.fillStyle = hazeGrad;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
+
+                // Update fog status
+                fogStatus.textContent = `🌫️ Fog: ${fogDensity}%`;
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Smooth lamp movement
+                lamp.x += (lamp.targetX - lamp.x) * 0.1;
+                lamp.y += (lamp.targetY - lamp.y) * 0.1;
+
+                // --- Render ---
+                ctx.clearRect(0, 0, W, H);
+
+                // Environment (background, fog, ground)
+                drawEnvironment(ctx);
+
+                // Draw beam (behind lamp)
+                drawBeam(ctx);
+
+                // Draw lamp (on top)
+                drawLamp(ctx);
+
+                // Lamp status
+                lampStatus.textContent = isOn ? '💡 On' : '💡 Off';
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleLamp() {
+                isOn = !isOn;
+                toggleBtn.textContent = isOn ? '💡 Toggle' : '💡 Off';
+                lampStatus.textContent = isOn ? '💡 On' : '💡 Off';
+            }
+
+            function resetLamp() {
+                lamp.targetX = 200;
+                lamp.targetY = 300;
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function toggleFog() {
+                fogEnabled = !fogEnabled;
+                fogBtn.textContent = fogEnabled ? '🌫️ Fog' : '🌫️ Off';
+                if (!fogEnabled) {
+                    fogParticles = [];
+                } else {
+                    createFogParticles(MAX_FOG_PARTICLES);
+                }
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function isInsideLamp(pos) {
+                const dx = pos.x - lamp.x;
+                const dy = pos.y - lamp.y;
+                return Math.sqrt(dx * dx + dy * dy) < 40;
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                if (isInsideLamp(pos)) {
+                    isDragging = true;
+                    dragOffsetX = pos.x - lamp.targetX;
+                    dragOffsetY = pos.y - lamp.targetY;
+                    hint.classList.add('hidden');
+                }
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+
+                if (isDragging) {
+                    lamp.targetX = Math.max(40, Math.min(W - 40, pos.x - dragOffsetX));
+                    lamp.targetY = Math.max(40, Math.min(H - 40, pos.y - dragOffsetY));
+                }
+
+                // Update cursor
+                if (!isDragging) {
+                    canvas.style.cursor = isInsideLamp(pos) ? 'grab' : 'default';
+                } else {
+                    canvas.style.cursor = 'grabbing';
+                }
+            }
+
+            function onEnd(e) {
+                e.preventDefault();
+                isDragging = false;
+                canvas.style.cursor = 'default';
+            }
+
+            // --- Mouse wheel for beam angle ---
+            canvas.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -2 : 2;
+                beamAngle = Math.max(20, Math.min(180, beamAngle + delta));
+                beamSlider.value = beamAngle;
+                beamLabel.textContent = `${beamAngle}°`;
+                beamInfo.textContent = `🔦 Beam: ${beamAngle}°`;
+            }, { passive: false });
+
+            // --- Slider handlers ---
+            fogSlider.addEventListener('input', function() {
+                fogDensity = parseFloat(this.value);
+                fogLabel.textContent = `${Math.round(fogDensity)}%`;
+                fogStatus.textContent = `🌫️ Fog: ${fogDensity}%`;
+                if (fogEnabled && fogParticles.length === 0) {
+                    createFogParticles(MAX_FOG_PARTICLES);
+                }
+            });
+
+            beamSlider.addEventListener('input', function() {
+                beamAngle = parseFloat(this.value);
+                beamLabel.textContent = `${Math.round(beamAngle)}°`;
+                beamInfo.textContent = `🔦 Beam: ${beamAngle}°`;
+            });
+
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleLamp);
+            resetBtn.addEventListener('click', resetLamp);
+            fogBtn.addEventListener('click', toggleFog);
+
+            // --- Mouse events ---
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd, { passive: false });
+            canvas.addEventListener('touchcancel', onEnd, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleLamp();
+                }
+                if (e.key === 'r' || e.key === 'R') resetLamp();
+                if (e.key === 'f' || e.key === 'F') toggleFog();
+
+                // Beam angle adjustments
+                if (e.key === 'ArrowRight') {
+                    beamAngle = Math.min(180, beamAngle + 5);
+                    beamSlider.value = beamAngle;
+                    beamLabel.textContent = `${Math.round(beamAngle)}°`;
+                    beamInfo.textContent = `🔦 Beam: ${beamAngle}°`;
+                }
+                if (e.key === 'ArrowLeft') {
+                    beamAngle = Math.max(20, beamAngle - 5);
+                    beamSlider.value = beamAngle;
+                    beamLabel.textContent = `${Math.round(beamAngle)}°`;
+                    beamInfo.textContent = `🔦 Beam: ${beamAngle}°`;
+                }
+            });
+
+            // --- Init ---
+            createFogParticles(MAX_FOG_PARTICLES);
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('💡 Fog Lamp ready!');
+            console.log('Controls: Space (toggle), R (reset), F (fog)');
+            console.log('          ←/→ (beam angle), Scroll (beam angle)');
+            console.log('          Drag lamp to move');
+
+        })();
+    </script>
+</body>
+</html>
