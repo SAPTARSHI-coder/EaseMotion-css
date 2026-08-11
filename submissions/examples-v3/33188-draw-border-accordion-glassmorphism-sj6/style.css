@@ -1,0 +1,289 @@
+/* ==========================================================================
+   Draw-Border Line Accordion — Glassmorphism UI
+   --------------------------------------------------------------------------
+   Pure CSS accordion of frosted-glass cards where opening a section makes
+   a luminous line DRAW ITSELF around the card — clockwise, in two phases:
+   top + right first, then bottom + left. Closing retracts the line in
+   reverse. Because the draw is a background-size TRANSITION (not an
+   animation), it is fully reversible mid-gesture: close a half-drawn
+   card and the line walks back the way it came.
+
+   Built on native <details>/<summary>. Zero JavaScript.
+
+   Issue: #33188
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens — motion first, then the glass recipe
+   -------------------------------------------------------------------------- */
+:root {
+  /* Line draw */
+  --dl-line: 2px;                                  /* stroke thickness       */
+  --dl-draw-duration: 520ms;                       /* full perimeter time    */
+  --dl-ease: ease-in-out;                          /* steady, pen-like       */
+  --dl-line-color: #7ff5e3;                        /* luminous mint          */
+  --dl-toggle-duration: 240ms;                     /* chevron rotation       */
+  --dl-body-duration: 260ms;                       /* content fade           */
+
+  /* Glass recipe */
+  --dl-blur: 14px;
+  --dl-tint: rgba(255, 255, 255, 0.12);
+  --dl-tint-open: rgba(255, 255, 255, 0.18);
+  --dl-edge: rgba(255, 255, 255, 0.28);
+  --dl-heading: #ffffff;
+  --dl-body-color: rgba(255, 255, 255, 0.75);
+
+  --dl-card-shadow: 0 8px 32px rgba(6, 20, 34, 0.3);
+}
+
+/* --------------------------------------------------------------------------
+   2. Demo stage — a deep teal scene for the glass to frost
+   -------------------------------------------------------------------------- */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 34px 16px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(560px 420px at 12% 15%, rgba(127, 245, 227, 0.35), transparent 60%),
+    radial-gradient(520px 460px at 90% 25%, rgba(94, 140, 235, 0.45), transparent 62%),
+    radial-gradient(600px 520px at 50% 100%, rgba(38, 90, 115, 0.6), transparent 65%),
+    linear-gradient(155deg, #123146 0%, #1a2f56 55%, #0c2233 100%);
+  background-attachment: fixed;
+  font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  color: var(--dl-body-color);
+}
+
+.dl-stack {
+  width: 100%;
+  max-width: 520px;
+}
+
+.dl-stack-title {
+  margin: 0 0 3px;
+  font-size: 1.1rem;
+  font-weight: 650;
+  color: var(--dl-heading);
+  text-shadow: 0 1px 8px rgba(6, 20, 34, 0.4);
+}
+
+.dl-stack-sub {
+  margin: 0 0 18px;
+  font-size: 0.78rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Glass cards with a drawable perimeter
+   -------------------------------------------------------------------------- */
+.dl-item {
+  position: relative;
+  background: var(--dl-tint);
+  -webkit-backdrop-filter: blur(var(--dl-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--dl-blur)) saturate(1.35);
+  border: 1px solid var(--dl-edge);
+  border-radius: 10px;
+  box-shadow: var(--dl-card-shadow);
+  transition: background-color 220ms ease;
+}
+
+.dl-item + .dl-item {
+  margin-top: 12px;
+}
+
+.dl-item[open] {
+  background: var(--dl-tint-open);
+}
+
+/* Fallback: where backdrop-filter is unsupported, deepen the tint */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .dl-item { background: rgba(16, 42, 60, 0.85); }
+  .dl-item[open] { background: rgba(16, 42, 60, 0.94); }
+}
+
+/* --------------------------------------------------------------------------
+   4. The draw — two pseudo-elements, four growing lines
+   --------------------------------------------------------------------------
+   ::before holds the TOP line (grows left→right) and the RIGHT line
+   (grows top→bottom); ::after holds the BOTTOM (right→left) and LEFT
+   (bottom→top). Phase delays sequence them clockwise on open; the
+   delays swap on close so the line retracts the way it came. */
+.dl-item::before,
+.dl-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 0 6px rgba(127, 245, 227, 0.55));
+}
+
+.dl-item::before {
+  background-image:
+    linear-gradient(var(--dl-line-color), var(--dl-line-color)),
+    linear-gradient(var(--dl-line-color), var(--dl-line-color));
+  background-position: left top, right top;
+  background-size: 0 var(--dl-line), var(--dl-line) 0;
+  /* closed state: retract second (this pair un-draws after ::after) */
+  transition: background-size calc(var(--dl-draw-duration) / 2) var(--dl-ease)
+    calc(var(--dl-draw-duration) / 2);
+}
+
+.dl-item::after {
+  background-image:
+    linear-gradient(var(--dl-line-color), var(--dl-line-color)),
+    linear-gradient(var(--dl-line-color), var(--dl-line-color));
+  background-position: right bottom, left bottom;
+  background-size: 0 var(--dl-line), var(--dl-line) 0;
+  /* closed state: retract first */
+  transition: background-size calc(var(--dl-draw-duration) / 2) var(--dl-ease);
+}
+
+.dl-item[open]::before {
+  background-size: 100% var(--dl-line), var(--dl-line) 100%;
+  /* open state: draw first */
+  transition-delay: 0s;
+}
+
+.dl-item[open]::after {
+  background-size: 100% var(--dl-line), var(--dl-line) 100%;
+  /* open state: draw second */
+  transition-delay: calc(var(--dl-draw-duration) / 2);
+}
+
+/* --------------------------------------------------------------------------
+   5. Summary — the clickable header row
+   -------------------------------------------------------------------------- */
+.dl-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;                 /* hide default marker (Firefox) */
+  user-select: none;
+  color: var(--dl-heading);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.dl-head::-webkit-details-marker { display: none; }
+
+.dl-head:focus-visible {
+  outline: 2px solid var(--dl-line-color);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+.dl-day {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  flex: none;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(127, 245, 227, 0.14);
+  border: 1px solid rgba(127, 245, 227, 0.35);
+  color: var(--dl-line-color);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.dl-head-meta {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--dl-body-color);
+}
+
+.dl-chevron {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--dl-body-color);
+  border-bottom: 2px solid var(--dl-body-color);
+  transform: rotate(45deg);
+  transition: transform var(--dl-toggle-duration) var(--dl-ease);
+}
+
+.dl-item[open] > .dl-head .dl-chevron {
+  transform: rotate(225deg);
+}
+
+/* --------------------------------------------------------------------------
+   6. Body — quiet fade so the drawn line stays the star
+   -------------------------------------------------------------------------- */
+.dl-body {
+  padding: 2px 16px 14px;
+  animation: dl-fade var(--dl-body-duration) var(--dl-ease) both;
+}
+
+@keyframes dl-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dl-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 9px 0;
+  font-size: 0.8rem;
+}
+
+.dl-row + .dl-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dl-time {
+  flex: none;
+  min-width: 52px;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--dl-line-color);
+}
+
+.dl-what {
+  color: var(--dl-heading);
+  font-weight: 600;
+}
+
+.dl-note {
+  margin-left: auto;
+  font-size: 0.72rem;
+}
+
+/* --------------------------------------------------------------------------
+   7. Small screens — tighten paddings, notes wrap under the activity
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .dl-head { padding: 13px 13px; }
+  .dl-body { padding: 2px 13px 12px; }
+  .dl-note { flex-basis: 100%; margin-left: 64px; }
+}
+
+/* --------------------------------------------------------------------------
+   8. Reduced motion — the line appears fully drawn, nothing travels
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .dl-item::before,
+  .dl-item::after {
+    transition: none;
+  }
+
+  .dl-body {
+    animation: none;
+  }
+
+  .dl-chevron {
+    transition: none;
+  }
+
+  .dl-item {
+    transition: none;
+  }
+}

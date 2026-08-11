@@ -1,0 +1,1 @@
+A dark-themed code block with a title bar showing the language label and a CSS-only copy icon. Syntax highlighting is applied via colored spans, and the block gains a subtle glow on hover. Pure CSS with reduced-motion support.

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volcanic Pulse</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="volcano-app">
+
+    <section class="volcano-card">
+
+      <header class="volcano-header">
+        <div>
+          <span class="eyebrow">🌋 EaseMotion Experience</span>
+          <h1>Volcanic Pulse</h1>
+          <p>
+            Control the pressure of a living volcano and watch
+            the landscape respond in real time.
+          </p>
+        </div>
+
+        <div class="status-pill" id="statusPill">
+          DORMANT
+        </div>
+      </header>
+
+      <section class="volcano-display" id="volcanoDisplay">
+
+        <canvas id="volcanoCanvas"></canvas>
+
+        <div class="display-overlay">
+          <div class="metric">
+            <span>Pressure</span>
+            <strong id="pressureValue">0%</strong>
+          </div>
+
+          <div class="metric">
+            <span>Eruptions</span>
+            <strong id="eruptionCount">0</strong>
+          </div>
+        </div>
+
+        <div class="scene-label" id="sceneLabel">
+          🌅 Calm
+        </div>
+
+      </section>
+
+      <section class="controls">
+
+        <div class="control-block">
+          <div class="control-heading">
+            <label for="intensitySlider">
+              🌡️ Eruption Intensity
+            </label>
+
+            <span id="intensityValue">0%</span>
+          </div>
+
+          <input
+            id="intensitySlider"
+            class="intensity-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+          >
+        </div>
+
+        <div class="control-block">
+          <span class="control-label">🎨 Atmosphere</span>
+
+          <div class="scene-buttons">
+
+            <button
+              class="scene-btn active"
+              data-scene="calm"
+            >
+              🌅
+              <span>Calm</span>
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="sunset"
+            >
+              🌇
+              <span>Sunset</span>
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="eruption"
+            >
+              🌋
+              <span>Eruption</span>
+            </button>
+
+            <button
+              class="scene-btn"
+              data-scene="midnight"
+            >
+              🌙
+              <span>Midnight</span>
+            </button>
+
+          </div>
+        </div>
+
+        <div class="action-row">
+
+          <button
+            class="action-btn erupt-btn"
+            id="eruptBtn"
+          >
+            🌋 Trigger Eruption
+          </button>
+
+          <button
+            class="action-btn reset-btn"
+            id="resetBtn"
+          >
+            ↻ Reset
+          </button>
+
+        </div>
+
+      </section>
+
+      <footer class="volcano-footer">
+        <span>🌋 Volcanic Pulse</span>
+        <span id="message">
+          The volcano is resting...
+        </span>
+      </footer>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("volcanoCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const slider = document.getElementById("intensitySlider");
+    const intensityValue = document.getElementById("intensityValue");
+    const pressureValue = document.getElementById("pressureValue");
+    const eruptionCount = document.getElementById("eruptionCount");
+    const statusPill = document.getElementById("statusPill");
+    const message = document.getElementById("message");
+    const sceneLabel = document.getElementById("sceneLabel");
+
+    const eruptBtn = document.getElementById("eruptBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let width = 0;
+    let height = 0;
+
+    let intensity = 0;
+    let targetIntensity = 0;
+    let pressure = 0;
+
+    let eruptions = 0;
+    let activeScene = "calm";
+
+    let eruptionFlash = 0;
+    let pulse = 0;
+
+    const lava = [];
+    const smoke = [];
+    const embers = [];
+    const rocks = [];
+    const stars = [];
+
+    const scenes = {
+      calm: {
+        top: "#8ec5fc",
+        bottom: "#f7d9aa",
+        ground: "#202b2b"
+      },
+
+      sunset: {
+        top: "#ff7b54",
+        bottom: "#ffd29d",
+        ground: "#261c1c"
+      },
+
+      eruption: {
+        top: "#321313",
+        bottom: "#a83232",
+        ground: "#180d0d"
+      },
+
+      midnight: {
+        top: "#07111f",
+        bottom: "#172b4d",
+        ground: "#080c12"
+      }
+    };
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      width = canvas.width = rect.width * devicePixelRatio;
+      height = canvas.height = rect.height * devicePixelRatio;
+
+      ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+      );
+
+      width = rect.width;
+      height = rect.height;
+
+      createStars();
+    }
+
+    function createStars() {
+      stars.length = 0;
+
+      for (let i = 0; i < 70; i++) {
+        stars.push({
+          x: Math.random(),
+          y: Math.random() * 0.55,
+          size: Math.random() * 1.8 + 0.4,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+    }
+
+    function spawnLava() {
+      const centerX = width * 0.5;
+      const craterY = height * 0.58;
+
+      lava.push({
+        x: centerX + (Math.random() - 0.5) * 22,
+        y: craterY,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: -(Math.random() * 3 + 1),
+        size: Math.random() * 3 + 2,
+        life: 1
+      });
+    }
+
+    function spawnSmoke() {
+      smoke.push({
+        x: width * 0.5 + (Math.random() - 0.5) * 20,
+        y: height * 0.56,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -(Math.random() * 0.7 + 0.25),
+        size: Math.random() * 18 + 15,
+        life: 1
+      });
+    }
+
+    function spawnEmber() {
+      embers.push({
+        x: width * 0.5 + (Math.random() - 0.5) * 25,
+        y: height * 0.56,
+        vx: (Math.random() - 0.5) * 3,
+        vy: -(Math.random() * 5 + 2),
+        size: Math.random() * 3 + 1,
+        life: 1
+      });
+    }
+
+    function spawnRock() {
+      rocks.push({
+        x: width * 0.5 + (Math.random() - 0.5) * 20,
+        y: height * 0.55,
+        vx: (Math.random() - 0.5) * 4,
+        vy: -(Math.random() * 6 + 3),
+        size: Math.random() * 5 + 3,
+        life: 1
+      });
+    }
+
+    function drawBackground(time) {
+      const scene = scenes[activeScene];
+
+      const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        height
+      );
+
+      gradient.addColorStop(0, scene.top);
+      gradient.addColorStop(1, scene.bottom);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+
+      if (activeScene === "midnight") {
+        stars.forEach(star => {
+          const alpha =
+            0.35 +
+            Math.sin(time * 0.002 + star.phase) * 0.25;
+
+          ctx.globalAlpha = Math.max(0.1, alpha);
+
+          ctx.beginPath();
+          ctx.arc(
+            star.x * width,
+            star.y * height,
+            star.size,
+            0,
+            Math.PI * 2
+          );
+
+          ctx.fillStyle = "#fff";
+          ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function drawGround() {
+      const scene = scenes[activeScene];
+
+      ctx.fillStyle = scene.ground;
+
+      ctx.beginPath();
+      ctx.moveTo(0, height * 0.73);
+
+      ctx.quadraticCurveTo(
+        width * 0.25,
+        height * 0.68,
+        width * 0.5,
+        height * 0.72
+      );
+
+      ctx.quadraticCurveTo(
+        width * 0.75,
+        height * 0.67,
+        width,
+        height * 0.73
+      );
+
+      ctx.lineTo(width, height);
+      ctx.lineTo(0, height);
+      ctx.closePath();
+
+      ctx.fill();
+    }
+
+    function drawVolcano() {
+      const baseY = height * 0.82;
+      const craterY = height * 0.56;
+
+      const gradient = ctx.createLinearGradient(
+        0,
+        craterY,
+        0,
+        baseY
+      );
+
+      gradient.addColorStop(0, "#333");
+      gradient.addColorStop(1, "#111");
+
+      ctx.fillStyle = gradient;
+
+      ctx.beginPath();
+
+      ctx.moveTo(width * 0.15, baseY);
+
+      ctx.quadraticCurveTo(
+        width * 0.3,
+        height * 0.72,
+        width * 0.42,
+        height * 0.58
+      );
+
+      ctx.quadraticCurveTo(
+        width * 0.5,
+        height * 0.52,
+        width * 0.58,
+        height * 0.58
+      );
+
+      ctx.quadraticCurveTo(
+        width * 0.7,
+        height * 0.72,
+        width * 0.85,
+        baseY
+      );
+
+      ctx.closePath();
+      ctx.fill();
+
+      const glow = intensity / 100;
+
+      if (glow > 0.1) {
+        ctx.shadowBlur = 30 * glow;
+        ctx.shadowColor = "#ff5a16";
+
+        ctx.strokeStyle = `rgba(255,90,22,${glow})`;
+        ctx.lineWidth = 4;
+
+        ctx.beginPath();
+        ctx.ellipse(
+          width * 0.5,
+          craterY,
+          30 + glow * 10,
+          8,
+          0,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    function updateParticles() {
+
+      const lavaCount =
+        Math.floor(intensity * 0.7);
+
+      const smokeCount =
+        Math.floor(intensity * 0.35);
+
+      const emberCount =
+        Math.floor(intensity * 0.45);
+
+      if (Math.random() * 100 < lavaCount) {
+        spawnLava();
+      }
+
+      if (Math.random() * 100 < smokeCount) {
+        spawnSmoke();
+      }
+
+      if (Math.random() * 100 < emberCount) {
+        spawnEmber();
+      }
+
+      if (
+        intensity > 70 &&
+        Math.random() * 100 < intensity * 0.08
+      ) {
+        spawnRock();
+      }
+
+      lava.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08;
+        p.life -= 0.012;
+      });
+
+      smoke.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.size += 0.08;
+        p.life -= 0.006;
+      });
+
+      embers.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.07;
+        p.life -= 0.018;
+      });
+
+      rocks.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15;
+        p.life -= 0.01;
+      });
+
+      removeDead(lava);
+      removeDead(smoke);
+      removeDead(embers);
+      removeDead(rocks);
+    }
+
+    function removeDead(list) {
+      for (let i = list.length - 1; i >= 0; i--) {
+        if (list[i].life <= 0 || list[i].y > height + 50) {
+          list.splice(i, 1);
+        }
+      }
+    }
+
+    function drawParticles() {
+
+      smoke.forEach(p => {
+        ctx.globalAlpha = p.life * 0.4;
+
+        ctx.fillStyle = "#333";
+
+        ctx.beginPath();
+        ctx.arc(
+          p.x,
+          p.y,
+          p.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+
+      lava.forEach(p => {
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = "#ff5a16";
+
+        ctx.fillStyle = "#ff8c22";
+
+        ctx.beginPath();
+        ctx.arc(
+          p.x,
+          p.y,
+          p.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      });
+
+      ctx.shadowBlur = 0;
+
+      embers.forEach(p => {
+        ctx.globalAlpha = p.life;
+
+        ctx.fillStyle = "#ffd166";
+
+        ctx.beginPath();
+        ctx.arc(
+          p.x,
+          p.y,
+          p.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+
+      rocks.forEach(p => {
+        ctx.fillStyle = "#292929";
+
+        ctx.beginPath();
+        ctx.arc(
+          p.x,
+          p.y,
+          p.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      });
+    }
+
+    function triggerEruption() {
+
+      eruptions++;
+
+      eruptionCount.textContent = eruptions;
+
+      eruptionFlash = 1;
+
+      targetIntensity = Math.min(
+        100,
+        Math.max(targetIntensity, intensity + 15)
+      );
+
+      for (let i = 0; i < 15; i++) {
+        spawnEmber();
+      }
+
+      for (let i = 0; i < 5; i++) {
+        spawnRock();
+      }
+    }
+
+    function updateUI() {
+
+      intensityValue.textContent =
+        `${Math.round(intensity)}%`;
+
+      pressureValue.textContent =
+        `${Math.round(pressure)}%`;
+
+      let status = "DORMANT";
+      let text = "The volcano is resting...";
+
+      if (intensity >= 75) {
+        status = "VIOLENT";
+        text = "Extreme eruption detected!";
+      } else if (intensity >= 45) {
+        status = "ACTIVE";
+        text = "Lava is flowing from the crater.";
+      } else if (intensity >= 20) {
+        status = "BUILDING";
+        text = "Pressure is building underground.";
+      }
+
+      statusPill.textContent = status;
+      message.textContent = text;
+    }
+
+    function animate(time) {
+
+      targetIntensity =
+        Number(slider.value);
+
+      intensity +=
+        (targetIntensity - intensity) * 0.05;
+
+      pressure +=
+        (intensity - pressure) * 0.035;
+
+      eruptionFlash *= 0.92;
+
+      drawBackground(time);
+      drawGround();
+      drawVolcano();
+
+      updateParticles();
+      drawParticles();
+
+      updateUI();
+
+      requestAnimationFrame(animate);
+    }
+
+    slider.addEventListener("input", () => {
+      targetIntensity =
+        Number(slider.value);
+    });
+
+    eruptBtn.addEventListener(
+      "click",
+      triggerEruption
+    );
+
+    resetBtn.addEventListener(
+      "click",
+      () => {
+
+        slider.value = 0;
+
+        intensity = 0;
+        targetIntensity = 0;
+        pressure = 0;
+
+        eruptions = 0;
+
+        eruptionCount.textContent = "0";
+
+        lava.length = 0;
+        smoke.length = 0;
+        embers.length = 0;
+        rocks.length = 0;
+
+        updateUI();
+      }
+    );
+
+    document.querySelectorAll(".scene-btn")
+      .forEach(button => {
+
+        button.addEventListener("click", () => {
+
+          document
+            .querySelectorAll(".scene-btn")
+            .forEach(btn =>
+              btn.classList.remove("active")
+            );
+
+          button.classList.add("active");
+
+          activeScene =
+            button.dataset.scene;
+
+          sceneLabel.textContent =
+            button.textContent.trim();
+        });
+
+      });
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    window.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.code === "Space" &&
+          event.target.tagName !== "INPUT"
+        ) {
+          event.preventDefault();
+          triggerEruption();
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+          resetBtn.click();
+        }
+      }
+    );
+
+    resizeCanvas();
+    requestAnimationFrame(animate);
+  </script>
+
+</body>
+</html>

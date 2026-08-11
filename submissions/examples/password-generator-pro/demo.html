@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Generator Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header-actions">
+            <button id="themeToggle" class="theme-btn" aria-label="Toggle Theme">🌓 Mode</button>
+        </div>
+
+        <div class="generator-card">
+            <h2>Password Generator <span class="accent-text">Pro</span></h2>
+            
+            <div class="display-box">
+                <input type="text" id="passwordOutput" readonly placeholder="Click Generate">
+                <button id="copyBtn" class="action-icon-btn" title="Copy to clipboard">
+                    <span id="copyIcon">📋</span>
+                </button>
+            </div>
+
+            <div class="strength-meter-wrap">
+                <div class="strength-label">Strength: <span id="strengthText">Empty</span></div>
+                <div class="meter-bar-container">
+                    <div id="meterBar" class="meter-bar"></div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="slider-header">
+                    <label for="lengthSlider">Password Length</label>
+                    <span id="lengthVal">16</span>
+                </div>
+                <input type="range" id="lengthSlider" min="6" max="32" value="16">
+            </div>
+
+            <div class="options-grid">
+                <label class="toggle-control">
+                    <input type="checkbox" id="chkUpper" checked>
+                    <span class="control-lbl">Uppercase (A-Z)</span>
+                </label>
+                <label class="toggle-control">
+                    <input type="checkbox" id="chkLower" checked>
+                    <span class="control-lbl">Lowercase (a-z)</span>
+                </label>
+                <label class="toggle-control">
+                    <input type="checkbox" id="chkNum" checked>
+                    <span class="control-lbl">Numbers (0-9)</span>
+                </label>
+                <label class="toggle-control">
+                    <input type="checkbox" id="chkSym">
+                    <span class="control-lbl">Symbols (!@#$)</span>
+                </label>
+            </div>
+
+            <div class="control-group custom-input-group">
+                <label for="txtCustom">Include Custom Word (Optional)</label>
+                <input type="text" id="txtCustom" placeholder="e.g., Secure, Alpha" maxlength="15">
+            </div>
+
+            <button id="generateBtn" class="primary-btn">Generate Key</button>
+        </div>
+    </div>
+
+    <script>
+        const charSets = {
+            upper: "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            lower: "abcdefghijklmnopqrstuvwxyz",
+            num: "0123456789",
+            sym: "!@#$%^&*()_+-=[]{}|;:,.<>?"
+        };
+
+        const outputEl = document.getElementById('passwordOutput');
+        const copyBtn = document.getElementById('copyBtn');
+        const copyIcon = document.getElementById('copyIcon');
+        const slider = document.getElementById('lengthSlider');
+        const lengthVal = document.getElementById('lengthVal');
+        const btnGenerate = document.getElementById('generateBtn');
+        const strengthText = document.getElementById('strengthText');
+        const meterBar = document.getElementById('meterBar');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Sync Slider Label
+        slider.addEventListener('input', (e) => lengthVal.textContent = e.target.value);
+
+        // Theme Toggle Handler
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            document.documentElement.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Copy functionality
+        copyBtn.addEventListener('click', async () => {
+            if (!outputEl.value) return;
+            try {
+                await navigator.clipboard.writeText(outputEl.value);
+                copyIcon.textContent = "✅";
+                setTimeout(() => copyIcon.textContent = "📋", 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        });
+
+        // Core Generator Logic
+        function generatePassword() {
+            const useUpper = document.getElementById('chkUpper').checked;
+            const useLower = document.getElementById('chkLower').checked;
+            const useNum = document.getElementById('chkNum').checked;
+            const useSym = document.getElementById('chkSym').checked;
+            const customWord = document.getElementById('txtCustom').value.trim();
+            const targetLength = parseInt(slider.value);
+
+            let pool = "";
+            let guaranteedChars = [];
+
+            if (useUpper) { pool += charSets.upper; guaranteedChars.push(charSets.upper[Math.floor(Math.random() * charSets.upper.length)]); }
+            if (useLower) { pool += charSets.lower; guaranteedChars.push(charSets.lower[Math.floor(Math.random() * charSets.lower.length)]); }
+            if (useNum) { pool += charSets.num; guaranteedChars.push(charSets.num[Math.floor(Math.random() * charSets.num.length)]); }
+            if (useSym) { pool += charSets.sym; guaranteedChars.push(charSets.sym[Math.floor(Math.random() * charSets.sym.length)]); }
+
+            // Handle fallback edge case where everything is unselected
+            if (!pool && !customWord) {
+                outputEl.value = "Select an option!";
+                updateStrength(0);
+                return;
+            }
+
+            let result = "";
+            let coreLength = targetLength - customWord.length;
+
+            if (coreLength < 0) coreLength = 0; // Guard clause against massive base words
+
+            if (pool) {
+                // Add guaranteed tokens first to protect entropy rules
+                while (result.length < guaranteedChars.length && result.length < coreLength) {
+                    result += guaranteedChars[result.length];
+                }
+                // Fill the rest randomly
+                while (result.length < coreLength) {
+                    result += pool[Math.floor(Math.random() * pool.length)];
+                }
+                // Scramble random segments
+                result = result.split('').sort(() => 0.5 - Math.random()).join('');
+            }
+
+            // Append word custom criteria safely
+            let finalPass = customWord + result;
+            outputEl.value = finalPass.substring(0, targetLength);
+            
+            evaluateEntropy(finalPass, useUpper, useLower, useNum, useSym, targetLength);
+        }
+
+        function evaluateEntropy(pass, u, l, n, s, len) {
+            let uniqueTypes = [u, l, n, s].filter(Boolean).length;
+            let score = 0;
+
+            if (len >= 8) score++;
+            if (len >= 14) score++;
+            if (uniqueTypes >= 3) score++;
+            if (uniqueTypes === 4 && len >= 12) score++;
+
+            updateStrength(score);
+        }
+
+        function updateStrength(score) {
+            meterBar.className = "meter-bar";
+            if (score <= 1) {
+                strengthText.textContent = "Weak 🔴";
+                meterBar.classList.add('weak');
+            } else if (score === 2 || score === 3) {
+                strengthText.textContent = "Medium 🟡";
+                meterBar.classList.add('medium');
+            } else {
+                strengthText.textContent = "Strong 🟢";
+                meterBar.classList.add('strong');
+            }
+        }
+
+        btnGenerate.addEventListener('click', generatePassword);
+        // Fire initialization sequence
+        generatePassword();
+    </script>
+</body>
+</html>
