@@ -1,16 +1,16 @@
 # ease-highlighter-tool
 
-A CSS animation component.
+An animated text highlighter effect.
 
 ## Usage
-Open demo.html in a browser. Click the button to toggle the animation.
+Open demo.html in a browser. Wrap the text you want to highlight in an inline element with the class `ease-highlight`. The effect triggers on hover, or by adding the `active` class.
 
 ## Custom Properties
 | Property | Default | Description |
-|----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+|---|---|---|
+| --highlight-color | #fef08a | The color of the highlighter ink |
+| --highlight-height | 40% | The thickness of the highlight line |
+| --highlight-speed | 0.6s | The duration of the animation |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS linear gradients and `background-size` transitions are used to create the drawing effect.

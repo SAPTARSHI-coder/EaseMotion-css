@@ -1,16 +1,15 @@
 # ease-history-timeline-scroll
 
-A CSS animation component.
+A vertical history timeline component that animates items as they scroll into view.
 
 ## Usage
-Open demo.html in a browser. Click the button to toggle the animation.
+Open demo.html in a browser. Wrap your timeline items in the `.ease-timeline` container. Use IntersectionObserver in JS (as shown in the demo) to toggle the `active` class when items scroll into view.
 
 ## Custom Properties
 | Property | Default | Description |
-|----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+|---|---|---|
+| --timeline-color | #3b82f6 | Accent color for dots and dates |
+| --timeline-bg | #e2e8f0 | Line color |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS handles the smooth `translateY` and `opacity` transition when the `active` class is applied.
