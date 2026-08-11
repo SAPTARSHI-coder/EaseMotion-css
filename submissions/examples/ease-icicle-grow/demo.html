@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icicle Grow · icicles grow downward</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="icicle-container">
+      <div class="icicle-display" id="icicleDisplay">
+        <!-- Canvas for icicles -->
+        <canvas id="icicleCanvas"></canvas>
+        
+        <!-- Icicle Info -->
+        <div class="icicle-info">
+          <span class="info-label">🧊 Icicles</span>
+          <span class="info-value" id="icicleCount">0</span>
+        </div>
+
+        <!-- Icicle Controls -->
+        <div class="icicle-controls">
+          <div class="control-group">
+            <label class="control-label">🧊 Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="50">
+            <span class="control-value" id="growthValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">❄️ Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="classic" title="Classic">🧊</button>
+              <button class="style-btn" data-style="crystal" title="Crystal">💎</button>
+              <button class="style-btn" data-style="frost" title="Frost">❄️</button>
+              <button class="style-btn" data-style="glow" title="Glow">✨</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Icicle Text -->
+        <div class="icicle-text">
+          <span class="text-label">🧊 Icicles</span>
+          <span class="text-message" id="icicleMessage">Icicles growing downward</span>
+        </div>
+      </div>
+      
+      <div class="icicle-status">
+        <span id="icicleStatus">🧊 Icicles forming and growing downward</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-grow" id="growBtn">🧊 Grow</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🧊 icicles grow · 4 styles · downward growth</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('icicleCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('icicleDisplay');
+      const icicleCount = document.getElementById('icicleCount');
+      const icicleStatus = document.getElementById('icicleStatus');
+      const icicleMessage = document.getElementById('icicleMessage');
+      const growBtn = document.getElementById('growBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const growthSlider = document.getElementById('growthSlider');
+      const growthValue = document.getElementById('growthValue');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let icicles = [];
+      let particles = [];
+      let animationId = null;
+      let time = 0;
+      let currentStyle = 'classic';
+      let growth = 50;
+
+      // Style configurations
+      const styles = {
+        classic: { name: 'Classic', color: '#e2e8f0', light: '#f1f5f9', dark: '#94a3b8', glow: 'rgba(226,232,240,0.1)' },
+        crystal: { name: 'Crystal', color: '#a78bfa', light: '#c4b5fd', dark: '#7c3aed', glow: 'rgba(167,139,250,0.15)' },
+        frost: { name: 'Frost', color: '#34d399', light: '#6ee7b7', dark: '#059669', glow: 'rgba(52,211,153,0.15)' },
+        glow: { name: 'Glow', color: '#fbbf24', light: '#fcd34d', dark: '#f59e0b', glow: 'rgba(251,191,36,0.15)' }
+      };
+
+      // Icicle class
+      class Icicle {
+        constructor(x, y, width, length, style) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || 0;
+          this.width = width || 2 + Math.random() * 5;
+          this.targetWidth = this.width * (0.5 + Math.random() * 0.5);
+          this.length = length || 5 + Math.random() * 10;
+          this.targetLength = this.length * (2 + Math.random() * 4);
+          this.style = style || currentStyle;
+          this.growProgress = 0;
+          this.speed = 0.005 + Math.random() * 0.015;
+          this.phase = Math.random() * Math.PI * 2;
+          this.wobble = 0.3 + Math.random() * 0.5;
+          this.taper = 0.3 + Math.random() * 0.3;
+          this.segments = 5 + Math.floor(Math.random() * 6);
+          this.growing = true;
+          this.droplets = [];
+          this.opacity = 0.5 + Math.random() * 0.4;
+          
+          // Generate droplets along icicle
+          const numDroplets = 2 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < numDroplets; i++) {
+            this.droplets.push({
+              pos: 0.2 + Math.random() * 0.6,
+              size: 0.5 + Math.random() * 1.5,
+              phase: Math.random() * Math.PI * 2
+            });
+          }
+        }
+
+        update(growth, time) {
+          const growFactor = growth / 100;
+          this.growProgress += (growFactor - this.growProgress) * 0.04;
+          this.phase += 0.02;
+          
+          // Grow
+          if (this.growing && this.length < this.targetLength * growFactor) {
+            this.length += this.speed * (0.5 + growFactor * 0.5);
+            if (this.length >= this.targetLength * growFactor) {
+              this.length = this.targetLength * growFactor;
+            }
+          }
+          
+          // Shrink if growth decreases
+          if (this.length > this.targetLength * growFactor) {
+            this.length -= this.speed * 0.5;
+            if (this.length < this.targetLength * growFactor) {
+              this.length = this.targetLength * growFactor;
+            }
+          }
+          
+          // Update droplets
+          this.droplets.forEach(d => {
+            d.phase += 0.02;
+          });
+          
+          return this.length > 1;
+        }
+
+        draw(ctx, style) {
+          const styleData = styles[style];
+          const progress = Math.min(1, this.length / this.targetLength);
+          const alpha = this.opacity * (0.3 + progress * 0.5);
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          
+          // Glow
+          ctx.shadowColor = styleData.glow;
+          ctx.shadowBlur = 10 * progress;
+          
+          // Icicle gradient
+          const grad = ctx.createLinearGradient(0, 0, 0, this.length);
+          grad.addColorStop(0, styleData.light);
+          grad.addColorStop(0.2, styleData.color);
+          grad.addColorStop(0.6, styleData.color);
+          grad.addColorStop(0.9, styleData.dark);
+          grad.addColorStop(1, styleData.dark + '88');
+          ctx.fillStyle = grad;
+          
+          // Icicle shape with taper and wobble
+          const taper = this.taper * (0.3 + progress * 0.5);
+          const width = this.width * (0.5 + progress * 0.5);
+          const bottomWidth = width * (0.1 + (1 - taper) * 0.3);
+          
+          ctx.beginPath();
+          ctx.moveTo(-width/2, 0);
+          
+          // Wobble on left side
+          for (let i = 1; i <= this.segments; i++) {
+            const t = i / this.segments;
+            const yPos = t * this.length;
+            const wobbleAmount = Math.sin(t * 5 + this.phase) * this.wobble * 0.5;
+            const currentWidth = width - (width - bottomWidth) * t;
+            ctx.lineTo(-currentWidth/2 + wobbleAmount, yPos);
+          }
+          
+          // Bottom tip
+          const tipOffset = (Math.random() - 0.5) * 2;
+          ctx.lineTo(tipOffset, this.length);
+          
+          // Right side
+          for (let i = this.segments; i >= 0; i--) {
+            const t = i / this.segments;
+            const yPos = t * this.length;
+            const wobbleAmount = Math.sin(t * 5 + this.phase + 0.5) * this.wobble * 0.5;
+            const currentWidth = width - (width - bottomWidth) * t;
+            ctx.lineTo(currentWidth/2 + wobbleAmount, yPos);
+          }
+          ctx.closePath();
+          ctx.fill();
+          
+          // Icicle highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.1;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.moveTo(-width/4, 0);
+          ctx.lineTo(-width/6, this.length * 0.5);
+          ctx.lineTo(-width/8, this.length * 0.8);
+          ctx.lineTo(-width/4, this.length * 0.3);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Droplets
+          ctx.shadowBlur = 5;
+          this.droplets.forEach(d => {
+            const dPos = d.pos * this.length;
+            const dSize = d.size * (0.5 + progress * 0.5);
+            const wobble2 = Math.sin(d.phase + this.phase) * 2;
+            
+            ctx.globalAlpha = alpha * 0.4;
+            ctx.fillStyle = styleData.light;
+            ctx.shadowColor = styleData.glow;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(wobble2, dPos, dSize, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate icicles
+      function generateIcicles() {
+        const count = 8 + Math.floor(Math.random() * 8);
+        icicles = [];
+        const w = canvas.width;
+        
+        for (let i = 0; i < count; i++) {
+          const x = 10 + (i / count) * (w - 20) + (Math.random() - 0.5) * 15;
+          const width = 2 + Math.random() * 5;
+          const length = 10 + Math.random() * 20;
+          const icicle = new Icicle(x, 0, width, length, currentStyle);
+          icicle.targetLength = length * (2 + Math.random() * 3);
+          icicle.speed = 0.005 + Math.random() * 0.02;
+          icicles.push(icicle);
+        }
+        icicleCount.textContent = icicles.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(20, 30, 50, 0.2)');
+        grad.addColorStop(0.3, 'rgba(30, 40, 60, 0.3)');
+        grad.addColorStop(0.7, 'rgba(20, 30, 50, 0.4)');
+        grad.addColorStop(1, 'rgba(10, 20, 30, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Top edge
+        ctx.fillStyle = 'rgba(30, 40, 60, 0.1)';
+        ctx.fillRect(0, 0, w, 15);
+        
+        // Snow on top
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * 10;
+          const size = 2 + Math.random() * 5;
+          const alpha = 0.05 + Math.random() * 0.05;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateIcicles();
+      }
+
+      // Animation loop
+      function animate() {
+        const growth = parseInt(growthSlider.value);
+        time += 0.02;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw icicles
+        icicles.forEach(icicle => {
+          icicle.update(growth, time);
+          icicle.draw(ctx, currentStyle);
+        });
+        
+        // Update icicle count
+        icicleCount.textContent = icicles.length;
+        
+        // Update status
+        if (growth > 70) {
+          icicleStatus.textContent = '🧊 Icicles growing rapidly! ✨';
+          icicleStatus.style.color = '#fbbf24';
+        } else if (growth > 30) {
+          icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+          icicleStatus.style.color = '#818cf8';
+        } else {
+          icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+          icicleStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message
+        const styleData = styles[currentStyle];
+        icicleMessage.textContent = `${styleData.name} icicles growing downward`;
+        icicleMessage.style.color = styleData.color;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleData = styles[style];
+        icicleStatus.textContent = `🎨 Style: ${styleData.name}`;
+        icicleStatus.style.color = styleData.color;
+        generateIcicles();
+        setTimeout(() => {
+          if (growth < 10) {
+            icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+            icicleStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetIcicle() {
+        growthSlider.value = 50;
+        growthValue.textContent = '50%';
+        generateIcicles();
+        icicleStatus.textContent = '🔄 Reset complete';
+        icicleStatus.style.color = '#94a3b8';
+        icicleMessage.textContent = 'Icicles growing downward';
+        icicleMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+          icicleStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        growthValue.textContent = this.value + '%';
+      });
+
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      if (growBtn) {
+        growBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          icicleStatus.textContent = '🧊 Icicles growing!';
+          icicleStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+            icicleStatus.style.color = '#94a3b8';
+          }, 1500);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetIcicle();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'g' || key === 'G') {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          icicleStatus.textContent = '🧊 Icicles growing!';
+          icicleStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            icicleStatus.textContent = '🧊 Icicles forming and growing downward';
+            icicleStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetIcicle();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🧊 Icicle Grow ready · shortcuts: [G] Grow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

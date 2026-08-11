@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EaseMotion CSS — Glow Colour-Banding Fix (#32490)</title>
+  <meta name="description" content="Demonstrates how to eliminate colour banding on glow animations on 16-bit displays using multi-layer box-shadow stacking and SVG noise dithering." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ── Hero ──────────────────────────────────────────── -->
+    <header class="hero">
+      <div class="badge">🐛 Bug Fix — Issue #32490</div>
+      <h1>Glow Colour-Banding Fix</h1>
+      <p>
+        On 16-bit colour-depth displays, glow animations that transition a
+        wide alpha range in a single <code>box-shadow</code> layer produce
+        visible <em>banding</em> — discrete colour steps instead of a smooth
+        gradient. This fix uses <strong>multi-layer shadow stacking</strong>
+        and an <strong>SVG noise dithering</strong> overlay to eliminate
+        banding across all display depths.
+      </p>
+
+      <!-- Live colour-depth detection chip -->
+      <div class="depth-bar" id="depthBar">
+        <div class="depth-chip">
+          <span class="depth-dot dot-indigo" id="depthDot"></span>
+          <span id="depthLabel">Detecting display colour depth…</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Side-by-side comparison ───────────────────────── -->
+    <section class="section" aria-label="Side-by-side glow comparison">
+      <p class="section-label">✨ Live Comparison — banding visible on 16-bit displays</p>
+
+      <div class="demo-grid">
+
+        <!--
+          BUGGY card
+          Single large box-shadow jumping from α=0.1 to α=0.6.
+          On a 16-bit (RGB 5-6-5) display:
+          - Red channel: only 32 discrete values
+          - Green channel: only 64 discrete values
+          - Blue channel: only 32 discrete values
+          The alpha-blended transition quantises into ~8-12 visible
+          colour steps → harsh "rings" visible in the glow halo.
+        -->
+        <div class="demo-card glow-buggy" id="cardBuggy">
+          <span class="card-tag card-tag-bad">✗ Without Fix</span>
+          <span class="card-orb">🌑</span>
+          <h3>Banding on 16-bit</h3>
+          <p>
+            Single <code>box-shadow</code> with a wide alpha range
+            (<code>0.1 → 0.6</code>). On low colour-depth screens the
+            gradient quantises into discrete colour rings — visible as
+            harsh concentric bands in the glow halo.
+          </p>
+        </div>
+
+        <!--
+          FIXED card
+          Multi-layer stacked shadows + SVG noise dither.
+          Each layer covers only a narrow alpha slice so the
+          quantisation steps in any one layer are too small to see.
+          The noise overlay randomises pixel values across the
+          quantisation boundaries, making the remaining steps
+          visually imperceptible.
+        -->
+        <div class="demo-card glow-smooth" id="cardSmooth">
+          <span class="card-tag card-tag-good">✓ With Fix</span>
+          <span class="card-orb">🔮</span>
+          <h3>Smooth on All Displays</h3>
+          <p>
+            Five stacked shadows each covering a narrow alpha slice, plus
+            an SVG Perlin noise overlay at 4% opacity. The human eye
+            blends the layers; the noise breaks up quantisation edges.
+            Looks smooth on 16-bit and flawless on 24-bit.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Colour variant swatches ───────────────────────── -->
+    <section class="section" aria-label="Colour variant swatches">
+      <p class="section-label">🎨 Works on every hue — same multi-layer technique</p>
+      <div class="swatch-row">
+        <div class="swatch swatch-indigo" title="Indigo">🔷</div>
+        <div class="swatch swatch-rose"   title="Rose">🌸</div>
+        <div class="swatch swatch-emerald" title="Emerald">💚</div>
+        <div class="swatch swatch-amber"  title="Amber">🌟</div>
+        <div class="swatch swatch-sky"    title="Sky">🔵</div>
+      </div>
+    </section>
+
+    <!-- ── Technique breakdown table ─────────────────────── -->
+    <section aria-label="Technique breakdown">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Technique</th>
+              <th>How it works</th>
+              <th>Why it eliminates banding</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Multi-layer shadow stacking</td>
+              <td>5 concentric <code>box-shadow</code> layers, each ≈ 0.06–0.08 alpha wide</td>
+              <td class="tec">Each layer's alpha range is too narrow to produce visible quantisation steps on its own; layers sum perceptually into a continuous gradient</td>
+            </tr>
+            <tr>
+              <td>SVG noise dithering (::before)</td>
+              <td>64×64 feTurbulence noise tile at 4% opacity with <code>mix-blend-mode: overlay</code></td>
+              <td class="tec">Randomly offsets pixel colours by ±1–2 levels across quantisation boundaries — the same principle image encoders use for low-bit-depth output</td>
+            </tr>
+            <tr>
+              <td>filter: brightness() animation</td>
+              <td>Adds a secondary animated property alongside box-shadow</td>
+              <td class="tec">Increases the number of intermediate compositor values the browser must blend, spreading colour transitions across more frames</td>
+            </tr>
+            <tr>
+              <td>ease-in-out timing</td>
+              <td>Non-linear interpolation — spends more time near the endpoints</td>
+              <td class="tec">Slows down the transition in the dark region where banding is most visible (low colour values with few available palette entries)</td>
+            </tr>
+            <tr>
+              <td>will-change: box-shadow, filter</td>
+              <td>Signals both animated properties upfront</td>
+              <td class="tec">Lets the browser allocate dedicated compositor resources; avoids mid-animation recalculation that can cause colour snapping</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Code snippets ─────────────────────────────────── -->
+    <section class="code-section">
+      <h2>🎨 The CSS Fix</h2>
+      <p>Apply <code>.glow-smooth</code> to any element. The noise layer is a self-contained <code>::before</code> pseudo-element — no extra HTML needed.</p>
+      <div class="code-block">
+        <pre><span class="cm">/* ① Apply to the element */</span>
+<span class="hl">.glow-smooth</span> {
+  <span class="prop">position</span>: <span class="val">relative</span>;        <span class="cm">/* contains the ::before noise layer */</span>
+  <span class="prop">border-radius</span>: <span class="val">inherit</span>;   <span class="cm">/* noise inherits card corner radius */</span>
+  <span class="prop">will-change</span>: <span class="val">box-shadow, filter</span>;
+  <span class="prop">animation</span>: glow-smooth <span class="num">2.5s</span> ease-in-out infinite;
+}
+
+<span class="cm">/* ② SVG Perlin noise dithering layer (no extra HTML needed) */</span>
+<span class="hl">.glow-smooth::before</span> {
+  <span class="prop">content</span>: <span class="val">""</span>;
+  <span class="prop">position</span>: <span class="val">absolute</span>;
+  <span class="prop">inset</span>: <span class="val">0</span>;
+  <span class="prop">border-radius</span>: <span class="val">inherit</span>;
+  <span class="prop">pointer-events</span>: <span class="val">none</span>;
+  <span class="prop">opacity</span>: <span class="num">0.04</span>;            <span class="cm">/* invisible on 24-bit, active on 16-bit */</span>
+  <span class="prop">background-image</span>: url(<span class="val">"data:image/svg+xml,..."</span>); <span class="cm">/* feTurbulence noise */</span>
+  <span class="prop">mix-blend-mode</span>: <span class="val">overlay</span>; <span class="cm">/* scatters values across quant. steps */</span>
+}
+
+<span class="cm">/* ③ 5 shadow layers — narrow alpha slices prevent banding */</span>
+<span class="hl">@keyframes</span> glow-smooth {
+  0%, 100% {
+    <span class="prop">box-shadow</span>:
+      0 0  <span class="num">6px</span> rgba(<span class="num">99,102,241, 0.22</span>),  <span class="cm">/* layer 1: tight inner */</span>
+      0 0 <span class="num">14px</span> rgba(<span class="num">99,102,241, 0.14</span>),  <span class="cm">/* layer 2: mid ring   */</span>
+      0 0 <span class="num">26px</span> rgba(<span class="num">99,102,241, 0.08</span>),  <span class="cm">/* layer 3: outer halo */</span>
+      0 0 <span class="num">42px</span> rgba(<span class="num">99,102,241, 0.04</span>),  <span class="cm">/* layer 4: ambient    */</span>
+      0 0 <span class="num">64px</span> rgba(<span class="num">99,102,241, 0.02</span>);  <span class="cm">/* layer 5: atmosphere */</span>
+    <span class="prop">filter</span>: brightness(<span class="num">1</span>);
+  }
+  50% {
+    <span class="prop">box-shadow</span>:
+      0 0  <span class="num">8px</span> rgba(<span class="num">99,102,241, 0.55</span>),
+      0 0 <span class="num">18px</span> rgba(<span class="num">99,102,241, 0.38</span>),
+      0 0 <span class="num">34px</span> rgba(<span class="num">99,102,241, 0.20</span>),
+      0 0 <span class="num">56px</span> rgba(<span class="num">99,102,241, 0.09</span>),
+      0 0 <span class="num">80px</span> rgba(<span class="num">99,102,241, 0.03</span>);
+    <span class="prop">filter</span>: brightness(<span class="num">1.08</span>);
+  }
+}</pre>
+      </div>
+
+      <h2>📐 HTML — no extra markup needed</h2>
+      <div class="code-block">
+        <pre>&lt;<span class="hl">div</span> class=<span class="val">"glow-smooth"</span>&gt;
+  Smooth glow without colour banding
+&lt;/<span class="hl">div</span>&gt;</pre>
+      </div>
+
+      <h2>♿ Reduced motion — static glow preserved</h2>
+      <p>Animation stops, but a static mid-intensity glow is kept so the element still looks intentionally designed.</p>
+      <div class="code-block">
+        <pre><span class="hl">@media</span> (prefers-reduced-motion: reduce) {
+  <span class="hl">.glow-smooth</span> {
+    <span class="prop">animation</span>: <span class="val">none</span> <span class="val">!important</span>;
+    <span class="prop">box-shadow</span>:
+      0 0  <span class="num">8px</span> rgba(<span class="num">99,102,241, 0.38</span>),
+      0 0 <span class="num">20px</span> rgba(<span class="num">99,102,241, 0.18</span>),
+      0 0 <span class="num">38px</span> rgba(<span class="num">99,102,241, 0.08</span>);
+  }
+}</pre>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>EaseMotion CSS — Community Submission · Issue #32490</p>
+    </footer>
+  </div>
+
+  <!--
+    ── Colour depth detection (demo display only) ──────────────────────
+
+    `screen.colorDepth` returns the bit depth of the display's colour
+    palette. Common values:
+      16  — older/budget monitors, some projectors (RGB 5-6-5)
+      24  — standard (RGB 8-8-8, 16.7 million colours)
+      30  — HDR / wide-gamut (RGB 10-10-10)
+      32  — 24-bit colour + 8-bit alpha channel (same visual depth as 24)
+
+    The banding fix CSS is always active regardless of depth —
+    it costs nothing on 24-bit displays and is critical on 16-bit ones.
+  -->
+  <script>
+    (function () {
+      "use strict";
+
+      var dot   = document.getElementById("depthDot");
+      var label = document.getElementById("depthLabel");
+      var depth = screen.colorDepth || screen.pixelDepth || 24;
+
+      if (depth <= 16) {
+        dot.className   = "depth-dot dot-amber";
+        label.textContent =
+          "16-bit display detected (" + depth + "-bit) — banding fix is essential";
+      } else if (depth >= 30) {
+        dot.className   = "depth-dot dot-green";
+        label.textContent =
+          "HDR / wide-gamut display (" + depth + "-bit) — fix is transparent, no cost";
+      } else {
+        dot.className   = "depth-dot dot-indigo";
+        label.textContent =
+          "24-bit display (" + depth + "-bit) — fix is invisible, always on";
+      }
+    }());
+  </script>
+
+</body>
+</html>
