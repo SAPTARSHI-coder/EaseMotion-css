@@ -1,85 +1,102 @@
+````markdown
 # Skeleton Loader
 
-Submission for EaseMotion CSS — resolves [Issue #2667](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/2667)
+A lightweight CSS-only skeleton loading component with a smooth shimmer animation.
 
----
+## Features
 
-## 1. What does this do?
+- Pure HTML and CSS
+- No JavaScript required
+- Smooth shimmer animation
+- Responsive layout
+- Card and list skeleton examples
+- Customizable CSS variables
+- Reduced-motion support
+- Lightweight and reusable
 
-Adds shimmer and pulse loading placeholder classes that visually fill the
-space where content will appear, giving users instant layout feedback while
-data is being fetched.
+## Preview
 
----
+The component demonstrates loading placeholders for:
 
-## 2. How is it used?
+- Image
+- Title
+- Text content
+- Button
+- Avatar
+- List items
 
-Apply the class directly to any block-level element in place of real content.
-Size it with `width` and `height` (inline or via your own layout classes):
+A shimmer highlight continuously moves across the placeholders to indicate that content is loading.
+
+## Customization
+
+The animation can be customized using CSS custom properties.
+
+```css
+:root {
+    --skeleton-base: #e5e7eb;
+    --skeleton-shimmer: #f8fafc;
+    --shimmer-duration: 1.5s;
+    --card-radius: 14px;
+}
+````
+
+### Available Variables
+
+| Variable             | Purpose                 | Default   |
+| -------------------- | ----------------------- | --------- |
+| `--skeleton-base`    | Base skeleton color     | `#e5e7eb` |
+| `--skeleton-shimmer` | Shimmer highlight color | `#f8fafc` |
+| `--shimmer-duration` | Shimmer speed           | `1.5s`    |
+| `--card-radius`      | Card corner radius      | `14px`    |
+
+## Usage
+
+Include the stylesheet:
 
 ```html
-<!-- Block placeholder (image, card, banner) -->
-<div class="skeleton" style="width: 100%; height: 160px;"></div>
-
-<!-- Text line placeholder -->
-<span class="skeleton-text" style="width: 75%;"></span>
-<span class="skeleton-text" style="width: 100%;"></span>
-<span class="skeleton-text" style="width: 50%;"></span>
-
-<!-- Avatar / icon placeholder -->
-<span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
-
-<!-- Pulse variant (softer, no sweep) -->
-<div class="skeleton-pulse" style="width: 100%; height: 160px;"></div>
+<link rel="stylesheet" href="style.css">
 ```
 
-**Profile card example:**
+Then add the skeleton elements:
 
 ```html
-<div style="display: flex; gap: 0.75rem; align-items: center;">
-  <span class="skeleton-circle" style="width: 48px; height: 48px;"></span>
-  <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
-    <span class="skeleton-text" style="width: 60%;"></span>
-    <span class="skeleton-text" style="width: 40%;"></span>
-  </div>
-</div>
+<div class="skeleton skeleton-title"></div>
+<div class="skeleton skeleton-text"></div>
+<div class="skeleton skeleton-button"></div>
 ```
 
----
+## Accessibility
 
-## 3. Why is it useful?
+The demo includes:
 
-Skeleton loaders are a first-class animation pattern — the entire effect is
-driven by a single `@keyframes` shimmer sweep or opacity pulse. There is no
-JavaScript, no dependencies, and no build step required. This aligns directly
-with EaseMotion CSS's core philosophy of making animations first-class through
-simple, readable class names.
+* Semantic HTML structure
+* `aria-label` to describe loading content
+* `prefers-reduced-motion` support
+* No JavaScript dependency
 
-Unlike a generic spinner, a skeleton preserves the layout of the real content,
-so there is no layout shift when data loads. Frameworks like Chakra UI, Vuetify,
-and MUI all ship skeleton loaders because developers reach for them constantly.
-EaseMotion CSS should too.
+## Responsive Design
 
-The shimmer uses `background-position` animation (GPU-composited) so it is
-performant even on many elements simultaneously. The pulse variant uses
-`opacity` animation — equally cheap, and a good choice when the shimmer sweep
-feels too intense for the context.
+The skeleton card changes from a horizontal layout to a vertical layout on smaller screens.
 
-Dark mode is handled automatically via `@media (prefers-color-scheme: dark)`.
-The maintainer can replace the hard-coded hex values with `--ease-color-surface`
-and related tokens when integrating into `core/`.
+## Browser Support
 
----
+The component uses standard CSS features such as:
 
-## Files
+* CSS custom properties
+* CSS animations
+* CSS gradients
+* Media queries
+* Pseudo-elements
 
-| File        | Purpose                              |
-|-------------|--------------------------------------|
-| `style.css` | Raw CSS — shimmer + pulse keyframes, four utility classes |
-| `demo.html` | Self-contained demo with toggle between loading/loaded states |
-| `README.md` | This file                            |
+Modern browsers are recommended.
 
----
+## Contribution
 
-*Proposed ease-\* names (maintainer decides):*
-`ease-skeleton` · `ease-skeleton-text` · `ease-skeleton-circle` · `ease-skeleton-pulse`
+This component is submitted for EaseMotion CSS.
+
+Files are located at:
+
+`submissions/examples/skeleton-loader/`
+
+```
+```

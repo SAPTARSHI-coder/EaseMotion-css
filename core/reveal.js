@@ -10,6 +10,24 @@
     return rect.top < vh * 0.85 && rect.bottom > 0;
   }
 
+  // Check if user prefers reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    var readyReduced = function () {
+      var els = document.querySelectorAll('.' + revealClass);
+      Array.prototype.forEach.call(els, function (el) {
+        el.classList.add(activeClass);
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', readyReduced);
+    } else {
+      readyReduced();
+    }
+    return;
+  }
+
   var supportsObserver = 'IntersectionObserver' in window;
 
   if (supportsObserver) {

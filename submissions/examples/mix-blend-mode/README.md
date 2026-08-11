@@ -1,24 +1,44 @@
-# mix-blend-mode Animation
+# Mix Blend Mode Utilities
 
-## What does this do?
+CSS utility classes for the `mix-blend-mode` property.
 
-Demonstrates CSS `mix-blend-mode` animations — a shape cycles through 7 blend modes (difference, screen, multiply, overlay, hue, color-dodge, normal) against a colorful gradient background, and text uses `difference` mode to invert itself against a moving gradient.
+## Usage
 
-## How is it used?
-
-```css
-.element {
-  animation: blend-cycle 8s step-start infinite;
-}
-
-@keyframes blend-cycle {
-  0%  { mix-blend-mode: normal; }
-  25% { mix-blend-mode: difference; }
-  50% { mix-blend-mode: screen; }
-  75% { mix-blend-mode: multiply; }
-}
+```html
+<div class="mix-normal">...</div>
 ```
 
-## Why is it useful?
+## Classes
 
-`mix-blend-mode` creates visually rich, artistic effects that are impossible with standard CSS alone — and animating between blend modes opens creative possibilities for backgrounds, text overlays, and image galleries. Understanding blend modes helps developers create polished, design-forward UI without SVG filters or canvas, fitting EaseMotion CSS's philosophy of powerful, readable CSS.
+- `.mix-normal` — mix-blend-mode: normal;
+- `.mix-multiply` — mix-blend-mode: multiply;
+- `.mix-screen` — mix-blend-mode: screen;
+- `.mix-overlay` — mix-blend-mode: overlay;
+- `.mix-darken` — mix-blend-mode: darken;
+- `.mix-lighten` — mix-blend-mode: lighten;
+- `.mix-color-dodge` — mix-blend-mode: color-dodge;
+- `.mix-color-burn` — mix-blend-mode: color-burn;
+- `.mix-hard-light` — mix-blend-mode: hard-light;
+- `.mix-soft-light` — mix-blend-mode: soft-light;
+- `.mix-difference` — mix-blend-mode: difference;
+- `.mix-exclusion` — mix-blend-mode: exclusion;
+- `.mix-hue` — mix-blend-mode: hue;
+- `.mix-saturation` — mix-blend-mode: saturation;
+- `.mix-color` — mix-blend-mode: color;
+- `.mix-luminosity` — mix-blend-mode: luminosity;
+- `.mix-plus-lighter` — mix-blend-mode: plus-lighter;
+- `.mix-plus-darker` — mix-blend-mode: plus-darker;
+- `.mix-inherit` — mix-blend-mode: inherit;
+- `.mix-initial` — mix-blend-mode: initial;
+
+## Responsive
+
+- `sm:` prefix for 640px+
+- `lg:` prefix for 1024px+
+
+## Dark Mode
+
+- `dark:` prefix for `prefers-color-scheme: dark`
+## Reduced Motion
+
+- `motion-safe:` prefix for `prefers-reduced-motion: reduce`
