@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swipe Button Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Swipe to Confirm</h1>
+        <p class="subtitle">Drag the slider to confirm action</p>
+
+        <!-- SWIPE BUTTON COMPONENT -->
+        <div class="swipe-container" id="swipeContainer">
+            <!-- Track / Background -->
+            <div class="swipe-track" id="swipeTrack">
+                <span class="swipe-label" id="swipeLabel">Swipe to confirm</span>
+                <span class="swipe-status" id="swipeStatus">✓ Confirmed</span>
+            </div>
+
+            <!-- Draggable Thumb -->
+            <div class="swipe-thumb" id="swipeThumb" draggable="false">
+                <svg
+                    class="swipe-icon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="M5 12h14" />
+                    <path d="M12 5l7 7-7 7" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Action Feedback -->
+        <div class="action-feedback" id="actionFeedback">
+            ✅ Action confirmed!
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const container = document.getElementById('swipeContainer');
+            const thumb = document.getElementById('swipeThumb');
+            const track = document.getElementById('swipeTrack');
+            const feedback = document.getElementById('actionFeedback');
+
+            // ============================================
+            // STATE
+            // ============================================
+            let isDragging = false;
+            let isConfirmed = false;
+            let startX = 0;
+            let currentX = 0;
+            let thumbLeft = 4; // initial left position (matches CSS)
+            const maxLeft = container.offsetWidth - thumb.offsetWidth - 4;
+
+            // ============================================
+            // CONFIGURATION (customize here)
+            // ============================================
+            const CONFIG = {
+                confirmThreshold: 0.85, // 85% of track width
+                onConfirm: function() {
+                    // Your custom action here
+                    console.log('✅ Action confirmed!');
+                    showFeedback('✅ Action confirmed!');
+                },
+                onReset: function() {
+                    console.log('🔄 Swipe reset');
+                }
+            };
+
+            // ============================================
+            // HELPERS
+            // ============================================
+            function getContainerWidth() {
+                return container.offsetWidth;
+            }
+
+            function getThumbWidth() {
+                return thumb.offsetWidth;
+            }
+
+            function updateProgress(percentage) {
+                const progress = Math.min(Math.max(percentage, 0), 100);
+                track.style.setProperty('--progress-width', progress + '%');
+                track.style.background =
+                    `linear-gradient(to right, var(--swipe-progress-color) ${progress}%, var(--swipe-bg) ${progress}%)`;
+            }
+
+            function showFeedback(message) {
+                feedback.textContent = message;
+                feedback.classList.add('show');
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                }, 3000);
+            }
+
+            function resetSwipe() {
+                if (isConfirmed) return;
+
+                isDragging = false;
+                thumbLeft = 4;
+                thumb.style.left = '4px';
+                container.classList.remove('dragging');
+                updateProgress(0);
+                CONFIG.onReset();
+            }
+
+            function confirmSwipe() {
+                if (isConfirmed) return;
+
+                isConfirmed = true;
+                isDragging = false;
+                container.classList.add('confirmed');
+                container.classList.remove('dragging');
+                updateProgress(100);
+
+                // Trigger callback
+                CONFIG.onConfirm();
+
+                // Reset after 3 seconds (auto-reset for demo)
+                setTimeout(() => {
+                    resetSwipeAfterConfirm();
+                }, 3000);
+            }
+
+            function resetSwipeAfterConfirm() {
+                isConfirmed = false;
+                container.classList.remove('confirmed');
+                thumbLeft = 4;
+                thumb.style.left = '4px';
+                updateProgress(0);
+                track.style.background = 'var(--swipe-bg)';
+            }
+
+            // ============================================
+            // CORE DRAG LOGIC
+            // ============================================
+            function handleStart(clientX) {
+                if (isConfirmed) return;
+                isDragging = true;
+                startX = clientX;
+                currentX = thumb.getBoundingClientRect().left;
+                container.classList.add('dragging');
+                thumb.style.transition = 'none';
+            }
+
+            function handleMove(clientX) {
+                if (!isDragging || isConfirmed) return;
+
+                const deltaX = clientX - startX;
+                const newLeft = Math.min(
+                    Math.max(thumbLeft + deltaX, 4),
+                    maxLeft
+                );
+
+                thumb.style.left = newLeft + 'px';
+
+                // Update progress
+                const progress = (newLeft - 4) / (maxLeft - 4);
+                const percentage = Math.min(progress * 100, 100);
+                updateProgress(percentage);
+
+                // Check if reached threshold
+                if (progress >= CONFIG.confirmThreshold) {
+                    confirmSwipe();
+                }
+            }
+
+            function handleEnd() {
+                if (!isDragging || isConfirmed) return;
+                resetSwipe();
+            }
+
+            // ============================================
+            // MOUSE EVENTS
+            // ============================================
+            thumb.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                handleStart(e.clientX);
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                handleMove(e.clientX);
+            });
+
+            document.addEventListener('mouseup', () => {
+                handleEnd();
+            });
+
+            // ============================================
+            // TOUCH EVENTS (mobile)
+            // ============================================
+            thumb.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleStart(touch.clientX);
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                handleMove(touch.clientX);
+            }, { passive: false });
+
+            document.addEventListener('touchend', () => {
+                handleEnd();
+            });
+
+            // ============================================
+            // WINDOW RESIZE HANDLER
+            // ============================================
+            window.addEventListener('resize', () => {
+                // Recalculate maxLeft
+                const newMaxLeft = container.offsetWidth - thumb.offsetWidth - 4;
+                if (thumbLeft > newMaxLeft) {
+                    thumbLeft = newMaxLeft;
+                    thumb.style.left = thumbLeft + 'px';
+                }
+                // Update maxLeft for future calculations
+                Object.defineProperty(window, '_maxLeft', {
+                    value: newMaxLeft,
+                    writable: true
+                });
+            });
+
+            // ============================================
+            // KEYBOARD ACCESSIBILITY (optional)
+            // ============================================
+            thumb.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!isConfirmed) {
+                        // Simulate swipe to confirm
+                        thumbLeft = maxLeft;
+                        thumb.style.left = thumbLeft + 'px';
+                        updateProgress(100);
+                        confirmSwipe();
+                    }
+                }
+            });
+
+            // Make thumb focusable
+            thumb.setAttribute('tabindex', '0');
+            thumb.setAttribute('role', 'slider');
+            thumb.setAttribute('aria-label', 'Swipe to confirm');
+
+            // ============================================
+            // EXPOSE API (optional)
+            // ============================================
+            window.SwipeButton = {
+                reset: resetSwipeAfterConfirm,
+                confirm: confirmSwipe,
+                isConfirmed: () => isConfirmed,
+                setOnConfirm: (callback) => {
+                    CONFIG.onConfirm = callback;
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            // Set initial progress
+            updateProgress(0);
+            thumb.style.left = '4px';
+
+            // Store maxLeft for resize
+            Object.defineProperty(window, '_maxLeft', {
+                value: maxLeft,
+                writable: true
+            });
+
+            console.log('✅ Swipe Button initialized!');
+            console.log('📖 API: window.SwipeButton');
+
+        })();
+    </script>
+</body>
+</html>
