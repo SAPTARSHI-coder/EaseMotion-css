@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light Tunnel · tunnel of light spirals forward</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="tunnel-container">
+      <div class="tunnel-display" id="tunnelDisplay">
+        <!-- Canvas for light tunnel -->
+        <canvas id="tunnelCanvas"></canvas>
+        
+        <!-- Tunnel Info -->
+        <div class="tunnel-info">
+          <span class="info-label">🌀 Rings</span>
+          <span class="info-value" id="ringCount">0</span>
+        </div>
+
+        <!-- Tunnel Controls -->
+        <div class="tunnel-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Speed</label>
+            <input type="range" class="control-slider" id="speedSlider" min="0" max="100" value="50">
+            <span class="control-value" id="speedValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌈 Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="rainbow" title="Rainbow">🌈</button>
+              <button class="color-btn" data-color="blue" title="Blue">💙</button>
+              <button class="color-btn" data-color="purple" title="Purple">💜</button>
+              <button class="color-btn" data-color="gold" title="Gold">💛</button>
+              <button class="color-btn" data-color="pink" title="Pink">💗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tunnel Text -->
+        <div class="tunnel-text">
+          <span class="text-label">🌀 Light Tunnel</span>
+          <span class="text-message" id="tunnelMessage">A tunnel of light spirals forward</span>
+        </div>
+      </div>
+      
+      <div class="tunnel-status">
+        <span id="tunnelStatus">🌀 Watch the light tunnel spiral forward</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌀 light tunnel · 5 colors · speed control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('tunnelCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('tunnelDisplay');
+      const ringCount = document.getElementById('ringCount');
+      const tunnelStatus = document.getElementById('tunnelStatus');
+      const tunnelMessage = document.getElementById('tunnelMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let time = 0;
+      let animationId = null;
+      let currentColor = 'rainbow';
+      let rings = [];
+
+      // Color configurations
+      const colorConfigs = {
+        rainbow: { colors: ['#ef4444', '#f97316', '#fbbf24', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899'], label: 'Rainbow' },
+        blue: { colors: ['#1e3a5f', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#bae6fd', '#dbeafe'], label: 'Blue' },
+        purple: { colors: ['#1a0a2e', '#4c1d95', '#7c3aed', '#a78bfa', '#c4b5fd', '#ddd6fe', '#ede9fe'], label: 'Purple' },
+        gold: { colors: ['#451a03', '#78350f', '#b45309', '#d97706', '#f59e0b', '#fbbf24', '#fcd34d'], label: 'Gold' },
+        pink: { colors: ['#4c0519', '#831843', '#be185d', '#db2777', '#ec4899', '#f472b6', '#f9a8d4'], label: 'Pink' }
+      };
+
+      // Ring class
+      class Ring {
+        constructor(z) {
+          this.z = z || 0;
+          this.size = 1 + Math.random() * 0.3;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.5 + Math.random() * 0.5;
+          this.brightness = 0.3 + Math.random() * 0.4;
+          this.colorOffset = Math.random() * 7;
+          this.points = [];
+          
+          // Generate ring points
+          const numPoints = 20 + Math.floor(Math.random() * 20);
+          for (let i = 0; i < numPoints; i++) {
+            const angle = (i / numPoints) * Math.PI * 2;
+            const radius = 0.8 + Math.random() * 0.4;
+            this.points.push({
+              angle: angle,
+              radius: radius,
+              offset: (Math.random() - 0.5) * 0.2
+            });
+          }
+        }
+
+        update(speed, time) {
+          this.z += speed * 0.5;
+          this.phase += 0.01 * speed;
+        }
+
+        draw(ctx, w, h, colorConfig, speed) {
+          const perspective = 500;
+          const zOffset = this.z;
+          
+          // Project 3D to 2D
+          const scale = perspective / (perspective + zOffset);
+          const cx = w / 2;
+          const cy = h / 2;
+          const maxSize = Math.min(w, h) * 0.4;
+          
+          if (scale < 0.01 || scale > 2) return;
+          
+          const size = maxSize * scale * this.size;
+          const alpha = Math.min(1, scale * 2) * this.brightness * (0.5 + Math.sin(this.phase) * 0.3);
+          
+          // Get color based on z position
+          const colorIndex = Math.floor((zOffset * 0.02 + this.colorOffset) % colorConfig.colors.length);
+          const color = colorConfig.colors[colorIndex % colorConfig.colors.length];
+          
+          ctx.save();
+          ctx.globalAlpha = alpha * 0.6;
+          
+          // Glow
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 20 * scale;
+          
+          // Draw ring
+          ctx.beginPath();
+          const numPoints = this.points.length;
+          for (let i = 0; i < numPoints; i++) {
+            const p = this.points[i];
+            const angle = p.angle + this.phase * 0.2;
+            const radius = size * p.radius;
+            const x = cx + Math.cos(angle) * radius;
+            const y = cy + Math.sin(angle) * radius * 0.6 + zOffset * 0.05;
+            
+            // Perspective distortion
+            const distFromCenter = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+            const distortion = 1 + distFromCenter / (w * 0.3) * 0.1;
+            
+            const px = cx + (x - cx) * distortion;
+            const py = cy + (y - cy) * distortion;
+            
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5 * scale;
+          ctx.stroke();
+          
+          // Inner glow
+          ctx.shadowBlur = 10 * scale;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 0.5 * scale;
+          ctx.stroke();
+          
+          // Dots on ring
+          if (scale > 0.3) {
+            const dotCount = 6;
+            for (let i = 0; i < dotCount; i++) {
+              const angle = (i / dotCount) * Math.PI * 2 + this.phase * 0.3;
+              const radius = size * (0.7 + Math.sin(this.phase + i) * 0.1);
+              const dx = cx + Math.cos(angle) * radius;
+              const dy = cy + Math.sin(angle) * radius * 0.6 + zOffset * 0.05;
+              
+              ctx.shadowBlur = 15 * scale;
+              ctx.globalAlpha = alpha * 0.5;
+              ctx.fillStyle = color;
+              ctx.beginPath();
+              ctx.arc(dx, dy, 2 * scale, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+          
+          ctx.restore();
+          
+          // Return true if still visible
+          return scale > 0.01 && zOffset < 2000;
+        }
+      }
+
+      // Generate rings
+      function generateRings() {
+        rings = [];
+        for (let i = 0; i < 60; i++) {
+          const ring = new Ring(i * 20);
+          ring.speed = 0.3 + Math.random() * 0.7;
+          rings.push(ring);
+        }
+        ringCount.textContent = rings.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Dark space with gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(5, 5, 20, 0.3)');
+        grad.addColorStop(0.5, 'rgba(10, 5, 25, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Distant stars
+        for (let i = 0; i < 50; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.3 + Math.random() * 0.8;
+          const alpha = 0.1 + Math.random() * 0.15;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 1;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Animation loop
+      function animate() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const speed = parseInt(speedSlider.value) / 100;
+        const colorConfig = colorConfigs[currentColor];
+        
+        ctx.clearRect(0, 0, w, h);
+        drawBackground();
+        
+        // Update and draw rings
+        const visibleRings = [];
+        rings.forEach(ring => {
+          ring.update(speed, time);
+          const visible = ring.draw(ctx, w, h, colorConfig, speed);
+          if (visible) visibleRings.push(ring);
+        });
+        
+        // Recycle rings that go too far
+        rings = rings.filter(ring => ring.z < 2000);
+        while (rings.length < 60) {
+          const newRing = new Ring(rings.length > 0 ? rings[rings.length - 1].z + 20 : 0);
+          rings.push(newRing);
+        }
+        
+        // Update status
+        if (speed > 0.7) {
+          tunnelStatus.textContent = '🌀 Light tunnel rushing forward! ✨';
+          tunnelStatus.style.color = '#fbbf24';
+        } else if (speed > 0.3) {
+          tunnelStatus.textContent = '🌀 Light tunnel spiraling forward';
+          tunnelStatus.style.color = '#818cf8';
+        } else {
+          tunnelStatus.textContent = '🌀 Watch the light tunnel spiral forward';
+          tunnelStatus.style.color = '#94a3b8';
+        }
+        
+        ringCount.textContent = rings.length;
+        time += 0.02;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        const colorData = colorConfigs[color];
+        tunnelStatus.textContent = `🎨 Color: ${colorData.label}`;
+        tunnelStatus.style.color = colorData.colors[3];
+        setTimeout(() => {
+          tunnelStatus.textContent = '🌀 Watch the light tunnel spiral forward';
+          tunnelStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetTunnel() {
+        generateRings();
+        tunnelStatus.textContent = '🔄 Reset complete';
+        tunnelStatus.style.color = '#94a3b8';
+        tunnelMessage.textContent = 'A tunnel of light spirals forward';
+        tunnelMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          tunnelStatus.textContent = '🌀 Watch the light tunnel spiral forward';
+          tunnelStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      speedSlider.addEventListener('input', function() {
+        speedValue.textContent = this.value + '%';
+      });
+
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetTunnel();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetTunnel();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      generateRings();
+      animate();
+      
+      console.log('🌀 Light Tunnel ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

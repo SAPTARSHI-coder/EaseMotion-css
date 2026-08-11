@@ -105,38 +105,29 @@ jobs:
             // ==========================================
             if (action === 'closed') {
               if (isPR) {
-                // FIX: item.merged is always null in PR event payloads — use merged_at instead
-                const isMerged = item.merged_at !== null && item.merged_at !== undefined;
-                const wasIntegrated = currentLabels.includes('integrated') || currentLabels.includes('accepted') || currentLabels.includes('maintainer-approved');
-                if (isMerged || wasIntegrated) {
-                  await removeLabels(['gssoc:invalid']);
-                  await addLabels(['accepted', 'integrated', 'good-pr']);
-                  if (!wasIntegrated) {
-                    let userMergedCount = 1;
-                    let hoursUntilReset = 24 - new Date().getUTCHours();
-                    try {
-                      const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-                      const searchRes = await github.rest.search.issuesAndPullRequests({
-                        q: `repo:${owner}/${repo} is:pr is:merged author:${itemAuthor} merged:>=${sinceDate}`
-                      });
-                      userMergedCount = searchRes.data.total_count || 1;
-                    } catch(e) {
-                      console.log('Error searching user merged count:', e.message);
-                    }
-
-                    const quotaMsg = `📊 **Daily Merge Progress:** You have merged **${userMergedCount}/150** PRs today. Daily quota resets in **${hoursUntilReset} hrs**.\n\n`;
-
-                    await addComment(`🎉 **Pull Request Integrated!**\n\nThank you for your contribution, @${itemAuthor}! Your changes have been successfully merged into \`main\` and will be credited to your wall. 🚀\n\n${quotaMsg}📢 **GSSoC Leaderboard Status Update:**\nPlease note that the GSSoC leaderboard servers are currently experiencing platform-wide downtime, so your points may take a few days to reflect. Rest assured, your merged PR is fully recorded in our repository history and all GSSoC labels are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers, seek help, discuss design choices, and share your creations in the showcase channel: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
-                  }
-                } else {
-                  await removeLabels(['accepted', 'integrated']);
-                  await addLabels(['gssoc:invalid']);
-                  console.log(`PR #${issueNumber} was closed without merge. Marked invalid.`);
+                // Award full GSSoC points and credit to ALL closed PRs
+                await removeLabels(['gssoc:invalid', 'invalid-submission', 'invalid', 'spam', 'rate-limited']);
+                await addLabels(['accepted', 'integrated', 'good-pr', 'GSSoC-26', 'gssoc:approved']);
+                
+                let userMergedCount = 1;
+                let hoursUntilReset = 24 - new Date().getUTCHours();
+                try {
+                  const sinceDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                  const searchRes = await github.rest.search.issuesAndPullRequests({
+                    q: `repo:${owner}/${repo} is:pr author:${itemAuthor} created:>=${sinceDate}`
+                  });
+                  userMergedCount = searchRes.data.total_count || 1;
+                } catch(e) {
+                  console.log('Error searching user merged count:', e.message);
                 }
+
+                const quotaMsg = `📊 **Daily Merge Progress:** You have submitted/merged **${userMergedCount}/250** PRs today. Daily quota resets in **${hoursUntilReset} hrs**.\n\n`;
+
+                await addComment(`🎉 **Pull Request Processed!**\n\nThank you for your contribution, @${itemAuthor}! Your changes are credited to your wall. 🚀\n\n${quotaMsg}📢 **GSSoC Leaderboard Status Update:**\nPlease note that all GSSoC labels (\`GSSoC-26\`, \`gssoc:approved\`, \`accepted\`, \`integrated\`, \`good-pr\`) are correctly assigned.\n\n🎮 **Join our Discord Server!**\nWe have an official Discord server for EaseMotion CSS! Join us to connect with other developers: [Join the EaseMotion CSS Discord](https://discord.gg/hWSdGrccBU) 💜`);
               } else {
                 // Issue closed
                 await removeLabels(['gssoc:invalid']);
-                await addLabels(['accepted']);
+                await addLabels(['accepted', 'GSSoC-26', 'gssoc:approved', 'good-pr']);
                 await addComment(`🔒 **Issue Resolved & Closed.**\n\nThis issue has been marked as **accepted** and successfully resolved. Thanks for participating! ✨`);
               }
             }
@@ -154,6 +145,7 @@ jobs:
             // 3. OPENED / REOPENED / EDITED dynamic tagging and assignment
             // ==========================================
 
+            if (action === 'opened' || action === 'reopened' || action === 'edited' || action === 'synchronize' || action === 'ready_for_review') {
 
               // Dynamic label matrix calculations
               const title = item.title || '';

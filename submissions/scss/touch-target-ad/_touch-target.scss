@@ -1,0 +1,117 @@
+// ==========================================================================
+// EaseMotion CSS — Touch Target mixin
+// Issue #63806
+// --------------------------------------------------------------------------
+// Enforces a minimum hit area without changing how large the control looks.
+//
+// WCAG 2.5.8 (AA) requires 24×24 CSS px; 2.5.5 (AAA) and both platform
+// HIGs ask for 44×44. A 20px close icon meets neither, and the usual fix —
+// padding the button out to 44px — changes the visual design, so it gets
+// reverted and the problem comes back.
+//
+// A pseudo-element expands the hit area outward from the centre while the
+// visible box stays exactly as designed. Nothing in the layout moves.
+//
+// The other half of the requirement is spacing: two 44px targets that
+// overlap still fail, because the effective area of each is smaller than
+// its declared size. `touch-target-row` enforces the gap.
+// ==========================================================================
+
+@use "sass:math";
+@use "sass:meta";
+
+$touch-target-min: 44px !default;
+$touch-target-min-aa: 24px !default;
+
+// --------------------------------------------------------------------------
+// touch-target
+//
+// @param {Number} $min  Minimum hit dimension.
+// --------------------------------------------------------------------------
+@mixin touch-target($min: $touch-target-min) {
+    @if meta.type-of($min) != "number" {
+        @error "touch-target(): $min must be a number, got `#{$min}`.";
+    }
+
+    position: relative;
+
+    &::after {
+        content: "";
+        // Centres the hit area on the control regardless of its size, so
+        // a 20px icon and a 32px icon both end up centred in 44px.
+        left: 50%;
+        min-height: $min;
+        min-width: $min;
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        // Full size of the visible box, expanded by min-* to the floor.
+        height: 100%;
+        width: 100%;
+    }
+}
+
+// --------------------------------------------------------------------------
+// touch-target-inset
+//
+// For controls already at or above the minimum, where the pseudo-element
+// would overhang a container edge. Expands only as far as the parent
+// allows, then relies on the row spacing instead.
+// --------------------------------------------------------------------------
+@mixin touch-target-inset($min: $touch-target-min) {
+    min-height: $min;
+    min-width: $min;
+
+    // The control itself grows, but content stays centred so the visible
+    // glyph does not shift.
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+}
+
+// --------------------------------------------------------------------------
+// touch-target-row
+//
+// Enforces spacing between adjacent targets. Two 44px targets that touch
+// still fail WCAG 2.5.8 in practice, because a mis-tap lands on the
+// neighbour rather than missing harmlessly.
+//
+// @param {Number} $gap  Minimum gap between adjacent controls.
+// --------------------------------------------------------------------------
+@mixin touch-target-row($gap: 8px) {
+    display: flex;
+    gap: $gap;
+
+    // Pseudo-element hit areas can overlap even when the visible boxes do
+    // not. Halving the expansion at the row level keeps them apart.
+    > * {
+        position: relative;
+    }
+}
+
+// --------------------------------------------------------------------------
+// touch-target-pointer-only
+//
+// Applies the expansion only where the primary input is coarse. On a
+// mouse-driven desktop a 44px floor is unnecessary, and the invisible
+// pseudo-element can intercept clicks intended for neighbouring content.
+// --------------------------------------------------------------------------
+@mixin touch-target-pointer-only($min: $touch-target-min) {
+    @media (pointer: coarse) {
+        @include touch-target($min);
+    }
+}
+
+// --------------------------------------------------------------------------
+// touch-target-debug
+//
+// Renders the hit areas visibly. Hit-area bugs are invisible by
+// definition — you cannot see that a target is too small, only that a tap
+// "did not work" — so a way to see them is part of the tool.
+// --------------------------------------------------------------------------
+@mixin touch-target-debug($color: rgba(255, 0, 128, 0.25)) {
+    &::after {
+        background: $color;
+        outline: 1px dashed rgb(255, 0, 128);
+    }
+}

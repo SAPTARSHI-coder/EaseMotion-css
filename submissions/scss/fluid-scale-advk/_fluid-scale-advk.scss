@@ -1,0 +1,69 @@
+// ---------------------------------------------------------------------------
+// fluid-scale-advk
+// Type and space that interpolate between two viewports via clamp(), computed
+// so the value is exact at both ends rather than eyeballed.
+// ---------------------------------------------------------------------------
+
+@use "sass:math";
+
+$min-vw: 20rem !default;   // 320px
+$max-vw: 80rem !default;   // 1280px
+$root: 16 !default;        // px per rem
+
+/// Strip units so the slope arithmetic works on plain numbers.
+@function -strip($value) {
+  @return math.div($value, $value * 0 + 1);
+}
+
+/// A clamp() that is exactly $min at $from and exactly $max at $to.
+///
+/// @param {Number} $min   Value at the small viewport.
+/// @param {Number} $max   Value at the large viewport.
+/// @param {Number} $from  Small viewport width.
+/// @param {Number} $to    Large viewport width.
+@function fluid($min, $max, $from: $min-vw, $to: $max-vw) {
+  $min-n: -strip($min);
+  $max-n: -strip($max);
+  $from-n: -strip($from);
+  $to-n: -strip($to);
+
+  @if $from-n == $to-n {
+    @error "fluid(): $from and $to must differ.";
+  }
+
+  // slope in rem per rem of viewport, expressed as vw
+  $slope: math.div($max-n - $min-n, $to-n - $from-n);
+  $intercept: $min-n - ($slope * $from-n);
+
+  @return clamp(
+    #{$min},
+    #{$intercept}rem + #{$slope * 100}vw,
+    #{$max}
+  );
+}
+
+/// Fluid font-size with a matching line-height that tightens as size grows.
+@mixin fluid-type($min, $max, $min-lh: 1.6, $max-lh: 1.15) {
+  font-size: fluid($min, $max);
+  line-height: clamp(#{$max-lh}, #{$min-lh} - 0.5vw, #{$min-lh});
+}
+
+/// A ready-made type scale.
+$type-scale: (
+  "sm": (0.85rem, 0.9rem),
+  "base": (1rem, 1.05rem),
+  "lg": (1.15rem, 1.35rem),
+  "xl": (1.4rem, 1.9rem),
+  "2xl": (1.75rem, 2.75rem),
+  "3xl": (2.1rem, 3.75rem),
+) !default;
+
+@mixin type($step) {
+  $pair: map-get($type-scale, $step);
+
+  @if $pair == null {
+    @error "Unknown type step '#{$step}'.";
+  }
+
+  font-size: fluid(nth($pair, 1), nth($pair, 2));
+}
