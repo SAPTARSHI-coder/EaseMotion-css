@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Time Picker Wheel Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+    }
+    
+    .demo-wrapper {
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .demo-output {
+      font-family: monospace;
+      background: #1e293b;
+      color: #a7f3d0;
+      padding: 16px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    const TimePicker = ({ initialTime = "09:00 AM", onChange }) => {
+      const [initHour, initMinStr, initAmPm] = initialTime.match(/(\d+):(\d+)\s+(AM|PM)/).slice(1);
+      
+      const [hour, setHour] = useState(parseInt(initHour, 10));
+      const [minute, setMinute] = useState(parseInt(initMinStr, 10));
+      const [ampm, setAmpm] = useState(initAmPm);
+
+      const hours = Array.from({ length: 12 }, (_, i) => i + 1);
+      const minutes = Array.from({ length: 60 }, (_, i) => i);
+      const periods = ['AM', 'PM'];
+
+      useEffect(() => {
+        if (onChange) {
+          const formattedMin = minute.toString().padStart(2, '0');
+          const formattedHour = hour.toString().padStart(2, '0');
+          onChange(`${formattedHour}:${formattedMin} ${ampm}`);
+        }
+      }, [hour, minute, ampm]);
+
+      return (
+        <div className="ease-time-picker-container">
+          <div className="ease-time-picker-header">
+            <h3 className="ease-time-picker-title">Set Alarm</h3>
+            <div className="ease-time-picker-display">
+              {hour.toString().padStart(2, '0')}:{minute.toString().padStart(2, '0')} {ampm}
+            </div>
+          </div>
+          
+          <div className="ease-time-picker-wheels">
+            <div className="ease-time-picker-selection-strip"></div>
+            
+            <Wheel data={hours} selectedValue={hour} onSelect={setHour} format={(v) => v.toString().padStart(2, '0')} />
+            <div className="ease-time-picker-colon">:</div>
+            <Wheel data={minutes} selectedValue={minute} onSelect={setMinute} format={(v) => v.toString().padStart(2, '0')} />
+            <div className="ease-time-picker-spacer"></div>
+            <Wheel data={periods} selectedValue={ampm} onSelect={setAmpm} />
+          </div>
+        </div>
+      );
+    };
+
+    const Wheel = ({ data, selectedValue, onSelect, format = (v) => v }) => {
+      const scrollRef = useRef(null);
+      const itemHeight = 44; 
+      const selectedIndex = data.indexOf(selectedValue);
+
+      useEffect(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTo({
+            top: selectedIndex * itemHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, [selectedIndex, itemHeight]);
+
+      const handleScroll = (e) => {
+        clearTimeout(scrollRef.current.scrollTimeout);
+        scrollRef.current.scrollTimeout = setTimeout(() => {
+          if (!scrollRef.current) return;
+          const index = Math.round(scrollRef.current.scrollTop / itemHeight);
+          const safeIndex = Math.max(0, Math.min(index, data.length - 1));
+          
+          if (data[safeIndex] !== selectedValue) {
+            onSelect(data[safeIndex]);
+          }
+        }, 50);
+      };
+
+      return (
+        <div className="ease-time-picker-column" ref={scrollRef} onScroll={handleScroll}>
+          <div className="ease-time-picker-pad"></div>
+          
+          {data.map((item, index) => {
+            const dist = Math.abs(index - selectedIndex);
+            const isCenter = dist === 0;
+            
+            const style = {
+              opacity: isCenter ? 1 : Math.max(0.2, 1 - (dist * 0.3)),
+              transform: `rotateX(${dist * -15}deg) scale(${isCenter ? 1 : Math.max(0.7, 1 - (dist * 0.1))})`
+            };
+
+            return (
+              <div 
+                key={item} 
+                className={`ease-time-picker-item ${isCenter ? 'is-selected' : ''}`}
+                style={style}
+                onClick={() => {
+                  scrollRef.current.scrollTo({ top: index * itemHeight, behavior: 'smooth' });
+                  onSelect(item);
+                }}
+              >
+                {format(item)}
+              </div>
+            );
+          })}
+          
+          <div className="ease-time-picker-pad"></div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [time, setTime] = useState("07:30 AM");
+
+      return (
+        <div className="demo-wrapper">
+          <TimePicker initialTime="07:30 AM" onChange={setTime} />
+          
+          <div className="demo-output">
+            Selected: {time}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

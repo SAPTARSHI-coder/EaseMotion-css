@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Candle Flame Dance</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🕯️ Candle Flame Dance</h1>
+        <p class="subtitle">Flickering candle with wax drip animation</p>
+
+        <div class="candle-wrapper">
+            <canvas id="candleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="blowBtn">💨 Blow</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Warm</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🕯️ Dancing flame</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('candleCanvas');
+        const ctx = canvas.getContext('2d');
+        const blowBtn = document.getElementById('blowBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let flame = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0,
+            particles: [],
+        };
+        let waxDrips = [];
+        let sparks = [];
+        let colorMode = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isBlowing = false;
+        let blowStrength = 0;
+        let candleX = 0;
+        let candleY = 0;
+        let candleHeight = 0;
+        let candleWidth = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Warm',
+                flame: ['#ff6b00', '#ff4500', '#ff8c00', '#ffa500', '#ffcc00'],
+                glow: '#ff6b00',
+                wax: '#f5e6d3',
+                wick: '#2a1a0a'
+            },
+            {
+                name: 'Blue',
+                flame: ['#0066ff', '#0044cc', '#0088ff', '#00aaff', '#44ddff'],
+                glow: '#0066ff',
+                wax: '#e8e8f0',
+                wick: '#1a1a2a'
+            },
+            {
+                name: 'Purple',
+                flame: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                glow: '#7c3aed',
+                wax: '#f0e8f0',
+                wick: '#1a0a2a'
+            },
+            {
+                name: 'Green',
+                flame: ['#00ff44', '#00cc33', '#44ff66', '#88ff88', '#ccffaa'],
+                glow: '#00ff44',
+                wax: '#e8f0e8',
+                wick: '#0a1a0a'
+            },
+            {
+                name: 'Pink',
+                flame: ['#ff1493', '#ff0080', '#ff69b4', '#ff85c1', '#ffb6c1'],
+                glow: '#ff1493',
+                wax: '#f0e8ee',
+                wick: '#2a0a1a'
+            },
+            {
+                name: 'Gold',
+                flame: ['#ffd700', '#ffb300', '#ffcc44', '#ffdd66', '#ffee88'],
+                glow: '#ffd700',
+                wax: '#f5f0e8',
+                wick: '#1a0a00'
+            },
+        ];
+
+        // ===== FLAME PARTICLE CLASS =====
+        class FlameParticle {
+            constructor(x, y) {
+                this.x = x || candleX + (Math.random() - 0.5) * 20;
+                this.y = y || candleY - candleHeight - 10 - Math.random() * 20;
+                this.size = 2 + Math.random() * 6;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = -Math.random() * 1.5 - 0.5;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.colorOffset = Math.random() * 0.5;
+                this.alpha = 0.3 + Math.random() * 0.5;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx + (Math.random() - 0.5) * 0.1 + (blowStrength * 0.1);
+                this.y += this.vy;
+                this.vy -= 0.005;
+                this.vx *= 0.99;
+                this.size *= 0.998;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const colors = palette.flame;
+                const colorIdx = Math.floor((this.colorOffset + time * 0.01) * colors.length);
+                const color = colors[colorIdx % colors.length];
+                const alpha = this.life * this.alpha;
+                const size = this.size * this.life;
+
+                // Glow
+                const glowSize = size * 4 * this.glow;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(0.5, color + '40');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== SPARK CLASS =====
+        class Spark {
+            constructor(x, y) {
+                this.x = x || candleX + (Math.random() - 0.5) * 10;
+                this.y = y || candleY - candleHeight - 20;
+                this.size = 0.5 + Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -Math.random() * 3 - 1;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.color = '#ffd700';
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.gravity = 0.02 + Math.random() * 0.03;
+            }
+
+            update() {
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.size *= 0.998;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.8;
+                const size = this.size * this.life;
+
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 4);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = alpha * 0.9;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '80';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== WAX DRIP CLASS =====
+        class WaxDrip {
+            constructor(x, y) {
+                this.x = x || candleX + (Math.random() - 0.5) * candleWidth * 0.6;
+                this.y = y || candleY - candleHeight;
+                this.size = 2 + Math.random() * 4;
+                this.speed = 0.2 + Math.random() * 0.5;
+                this.life = 1;
+                this.maxLife = 80 + Math.random() * 120;
+                this.age = 0;
+                this.length = 0;
+                this.maxLength = 10 + Math.random() * 20;
+                this.alpha = 0.7 + Math.random() * 0.3;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update() {
+                this.age += speed * 2;
+                this.life = 1 - this.age / this.maxLife;
+                this.y += this.speed * speed * 10;
+                this.length += speed * 0.5;
+                this.phase += 0.02 * speed * 10;
+                this.x += Math.sin(this.phase) * 0.05;
+
+                const bottom = candleY + candleHeight * 0.5;
+                if (this.y > bottom) {
+                    this.y = bottom;
+                    this.speed = 0;
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const palette = colorPalettes[colorMode];
+                const color = palette.wax;
+                const alpha = this.life * this.alpha * 0.8;
+                const size = this.size * (0.5 + 0.5 * this.life);
+                const dripLen = Math.min(this.length, this.maxLength) * (0.3 + 0.7 * this.life);
+
+                ctx.beginPath();
+                ctx.moveTo(this.x - size, this.y);
+                ctx.quadraticCurveTo(this.x - size * 0.5, this.y + dripLen, this.x, this.y + dripLen + size);
+                ctx.quadraticCurveTo(this.x + size * 0.5, this.y + dripLen, this.x + size, this.y);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.globalAlpha = alpha;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW CANDLE =====
+        function drawCandle(ctx, cx, cy) {
+            const palette = colorPalettes[colorMode];
+            const waxColor = palette.wax;
+            const wickColor = palette.wick;
+
+            candleX = cx;
+            candleY = cy;
+            candleHeight = Math.min(canvas.width, canvas.height) * 0.25;
+            candleWidth = candleHeight * 0.35;
+
+            // Candle body
+            const candleGrad = ctx.createLinearGradient(cx - candleWidth/2, 0, cx + candleWidth/2, 0);
+            candleGrad.addColorStop(0, waxColor + '80');
+            candleGrad.addColorStop(0.2, waxColor);
+            candleGrad.addColorStop(0.5, waxColor);
+            candleGrad.addColorStop(0.8, waxColor);
+            candleGrad.addColorStop(1, waxColor + '80');
+            ctx.fillStyle = candleGrad;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'rgba(0,0,0,0.2)';
+            
+            // Rounded rect manually
+            const x = cx - candleWidth/2;
+            const y = cy - candleHeight;
+            const w = candleWidth;
+            const h = candleHeight;
+            const r = 4;
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Candle top
+            const topY = cy - candleHeight;
+            ctx.beginPath();
+            ctx.moveTo(cx - candleWidth/2, topY);
+            for (let i = 0; i <= 20; i++) {
+                const t = i / 20;
+                const xPos = cx - candleWidth/2 + t * candleWidth;
+                const yOffset = Math.sin(t * 10 + time * 0.5) * 2;
+                ctx.lineTo(xPos, topY + yOffset);
+            }
+            ctx.closePath();
+            ctx.fillStyle = waxColor;
+            ctx.fill();
+
+            // Wax pool
+            const poolGrad = ctx.createRadialGradient(cx, topY + 2, 0, cx, topY + 2, candleWidth * 0.4);
+            poolGrad.addColorStop(0, 'rgba(200, 180, 160, 0.3)');
+            poolGrad.addColorStop(0.5, 'rgba(200, 180, 160, 0.1)');
+            poolGrad.addColorStop(1, 'rgba(200, 180, 160, 0)');
+            ctx.beginPath();
+            ctx.ellipse(cx, topY + 2, candleWidth * 0.4, 4, 0, 0, Math.PI * 2);
+            ctx.fillStyle = poolGrad;
+            ctx.fill();
+
+            // Wick
+            ctx.strokeStyle = wickColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            const wickLen = 8 + Math.sin(time * 2) * 1;
+            ctx.moveTo(cx, topY);
+            ctx.quadraticCurveTo(
+                cx + Math.sin(time * 1.5) * 2,
+                topY - wickLen * 0.5,
+                cx + Math.sin(time * 1.7 + 0.5) * 3,
+                topY - wickLen
+            );
+            ctx.stroke();
+
+            // Wick glow
+            const wickGlow = ctx.createRadialGradient(cx, topY - wickLen, 0, cx, topY - wickLen, 10);
+            wickGlow.addColorStop(0, 'rgba(255, 200, 100, 0.2)');
+            wickGlow.addColorStop(1, 'rgba(255, 200, 100, 0)');
+            ctx.beginPath();
+            ctx.arc(cx, topY - wickLen, 10, 0, Math.PI * 2);
+            ctx.fillStyle = wickGlow;
+            ctx.fill();
+
+            // Candle holder
+            const holderWidth = candleWidth * 1.6;
+            const holderY = cy + 5;
+            ctx.beginPath();
+            ctx.ellipse(cx, holderY, holderWidth/2, 4, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(40, 35, 30, 0.15)';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        // ===== DRAW FLAME =====
+        function drawFlame(ctx, cx, cy) {
+            const palette = colorPalettes[colorMode];
+            const colors = palette.flame;
+            const glowColor = palette.glow;
+
+            const topY = cy - candleHeight;
+            const wickLen = 8 + Math.sin(time * 2) * 1;
+            const flameX = cx + Math.sin(time * 1.7 + 0.5) * 3;
+            const flameY = topY - wickLen;
+
+            // Flame height with flicker
+            const flicker1 = Math.sin(time * 12) * 0.08;
+            const flicker2 = Math.sin(time * 8 + 1) * 0.06;
+            const flicker3 = Math.sin(time * 15 + 2) * 0.04;
+            const flicker = 1 + flicker1 + flicker2 + flicker3 - blowStrength * 0.3;
+            const lean = Math.sin(time * 3) * 0.1 + blowStrength * 0.1;
+
+            const flameHeight = 50 * flicker * (0.8 + 0.2 * (1 - blowStrength));
+            const flameWidth = 20 * (0.7 + 0.3 * flicker) * (0.7 + 0.3 * (1 - blowStrength));
+
+            // Outer glow
+            const glowSize = flameHeight * 1.5;
+            const glowGrad = ctx.createRadialGradient(flameX, flameY - flameHeight * 0.3, 0, flameX, flameY - flameHeight * 0.3, glowSize);
+            glowGrad.addColorStop(0, glowColor + '40');
+            glowGrad.addColorStop(0.3, glowColor + '20');
+            glowGrad.addColorStop(0.7, glowColor + '10');
+            glowGrad.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(flameX, flameY - flameHeight * 0.3, glowSize, 0, Math.PI * 2);
+            ctx.fillStyle = glowGrad;
+            ctx.globalAlpha = 0.5 + 0.3 * (1 - blowStrength);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Flame shape
+            const numPoints = 30;
+            const points = [];
+            for (let i = 0; i <= numPoints; i++) {
+                const t = i / numPoints;
+                const angle = t * Math.PI * 2 - Math.PI;
+                const heightScale = 0.3 + 0.7 * (1 - t);
+                const widthScale = 0.2 + 0.8 * Math.sin(t * Math.PI);
+                const wobble = Math.sin(t * 8 + time * 10) * 2 * (1 - t * 0.5);
+                const r = flameWidth * widthScale * heightScale;
+                const px = flameX + Math.cos(angle + lean) * r + wobble * (1 - t * 0.5);
+                const py = flameY - t * flameHeight + Math.sin(t * 10 + time * 8) * 2 * (1 - t);
+                points.push({ x: px, y: py });
+            }
+
+            // Flame gradient
+            const flameGrad = ctx.createRadialGradient(
+                flameX, flameY - flameHeight * 0.3, 0,
+                flameX, flameY - flameHeight * 0.3, flameHeight
+            );
+            for (let i = 0; i < colors.length; i++) {
+                const t = i / (colors.length - 1);
+                flameGrad.addColorStop(t * 0.8 + 0.1, colors[i]);
+            }
+            flameGrad.addColorStop(0.9, colors[colors.length - 1] + '80');
+            flameGrad.addColorStop(1, colors[colors.length - 1] + '00');
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = flameGrad;
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = glowColor + '80';
+            ctx.globalAlpha = 0.9 - blowStrength * 0.3;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = 1;
+
+            // Inner bright core
+            const coreSize = flameWidth * 0.3 * (0.5 + 0.5 * flicker);
+            const coreGrad = ctx.createRadialGradient(
+                flameX, flameY - flameHeight * 0.5, 0,
+                flameX, flameY - flameHeight * 0.5, coreSize
+            );
+            coreGrad.addColorStop(0, 'rgba(255,255,255,0.8)');
+            coreGrad.addColorStop(0.5, 'rgba(255,255,200,0.4)');
+            coreGrad.addColorStop(1, 'rgba(255,255,200,0)');
+            ctx.beginPath();
+            ctx.arc(flameX, flameY - flameHeight * 0.5, coreSize, 0, Math.PI * 2);
+            ctx.fillStyle = coreGrad;
+            ctx.globalAlpha = 0.6 - blowStrength * 0.2;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Spawn flame particles
+            if (Math.random() < 0.1 * (1 - blowStrength * 0.5)) {
+                const p = new FlameParticle(flameX, flameY - flameHeight * 0.2);
+                flame.particles.push(p);
+            }
+
+            // Spawn sparks
+            if (Math.random() < 0.02 * (1 - blowStrength * 0.5)) {
+                const s = new Spark(flameX, flameY - flameHeight * 0.3);
+                sparks.push(s);
+            }
+        }
+
+        // ===== BLOW =====
+        function blow() {
+            if (isBlowing) return;
+            isBlowing = true;
+            blowStrength = 1;
+            statusText.textContent = '💨 Blowing!';
+            blowBtn.textContent = '💨 Blowing...';
+
+            setTimeout(() => {
+                isBlowing = false;
+                blowStrength = 0;
+                blowBtn.textContent = '💨 Blow';
+                statusText.textContent = '🕯️ Dancing flame';
+            }, 1500);
+        }
+
+        // ===== RESET =====
+        function resetCandle() {
+            flame.particles = [];
+            sparks = [];
+            waxDrips = [];
+            blowStrength = 0;
+            isBlowing = false;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            blowBtn.textContent = '💨 Blow';
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🕯️ Dancing flame';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h * 0.7;
+            time += 0.01;
+
+            // Update flame particles
+            for (let i = flame.particles.length - 1; i >= 0; i--) {
+                const p = flame.particles[i];
+                p.update();
+                if (p.isDead()) {
+                    flame.particles.splice(i, 1);
+                }
+            }
+
+            // Update sparks
+            for (let i = sparks.length - 1; i >= 0; i--) {
+                const s = sparks[i];
+                s.update();
+                if (s.isDead()) {
+                    sparks.splice(i, 1);
+                }
+            }
+
+            // Update wax drips
+            for (let i = waxDrips.length - 1; i >= 0; i--) {
+                const d = waxDrips[i];
+                d.update();
+                if (d.isDead()) {
+                    waxDrips.splice(i, 1);
+                }
+            }
+
+            // Spawn wax drips
+            if (Math.random() < 0.005 * speed * 20) {
+                const d = new WaxDrip();
+                waxDrips.push(d);
+            }
+
+            // Draw background
+            const bgGrad = ctx.createRadialGradient(cx, cy - 50, 0, cx, cy - 50, Math.max(w, h) * 0.7);
+            bgGrad.addColorStop(0, '#0a0a1e');
+            bgGrad.addColorStop(0.3, '#060612');
+            bgGrad.addColorStop(0.6, '#030308');
+            bgGrad.addColorStop(1, '#000000');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ambient glow
+            const palette = colorPalettes[colorMode];
+            const ambientGrad = ctx.createRadialGradient(cx, cy - 50, 0, cx, cy - 50, 150);
+            ambientGrad.addColorStop(0, palette.glow + '15');
+            ambientGrad.addColorStop(1, palette.glow + '00');
+            ctx.fillStyle = ambientGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw wax drips (behind candle)
+            for (const d of waxDrips) {
+                d.draw(ctx);
+            }
+
+            // Draw candle
+            drawCandle(ctx, cx, cy);
+
+            // Draw flame
+            drawFlame(ctx, cx, cy);
+
+            // Draw flame particles
+            for (const p of flame.particles) {
+                p.draw(ctx);
+            }
+
+            // Draw sparks
+            for (const s of sparks) {
+                s.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const state = isBlowing ? '💨 Blowing' : '🕯️ Dancing';
+                statusText.textContent = `${state} • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        blowBtn.addEventListener('click', blow);
+
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🕯️ Dancing flame';
+            }, 1000);
+        });
+
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🕯️ Dancing flame';
+            }, 1000);
+        });
+
+        resetBtn.addEventListener('click', resetCandle);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') blowBtn.click();
+            if (e.key === 's' || e.key === 'S') speedBtn.click();
+            if (e.key === 'c' || e.key === 'C') colorBtn.click();
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                blowBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', blow);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            blow();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🕯️ Dancing flame';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('🕯️ Candle Flame Dance loaded!');
+        console.log('💡 B - Blow');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Blow');
+        console.log('💡 Click candle - Blow');
+    </script>
+</body>
+</html>

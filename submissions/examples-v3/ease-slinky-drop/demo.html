@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slinky Drop</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Slinky Drop</h1>
+        <p class="subtitle">Slinky that bounces and stretches when clicked</p>
+
+        <div class="slinky-wrapper">
+            <canvas id="slinkyCanvas"></canvas>
+
+            <div class="controls">
+                <button id="dropBtn">🌀 Drop</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click to drop</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('slinkyCanvas');
+        const ctx = canvas.getContext('2d');
+        const dropBtn = document.getElementById('dropBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let slinky = {
+            segments: [],
+            numSegments: 30,
+            restLength: 200,
+            stretch: 0,
+            velocity: 0,
+            position: 0,
+            targetY: 0,
+            springConstant: 0.02,
+            damping: 0.98,
+            gravity: 0.3,
+            bounce: 0.5,
+            isDropping: false,
+            dropTime: 0,
+            squashAmount: 0,
+            wavePhase: 0,
+        };
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isHovering = false;
+        let mouseX = 0;
+        let mouseY = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 90%, ${50 + t * 20}%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (t) => {
+                    const hue = 200 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (t) => {
+                    const hue = 20 + t * 30 + Math.sin(time * 0.02) * 10;
+                    return `hsl(${hue}, 80%, ${40 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (t) => {
+                    const hue = 250 + t * 50 + Math.sin(time * 0.02) * 15;
+                    return `hsl(${hue}, 80%, ${30 + t * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (t) => {
+                    const hue = (t * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (t) => {
+                    const val = 40 + t * 40 + Math.sin(time * 0.02) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== SLINKY INITIALIZATION =====
+        function initSlinky() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const startY = h * 0.15;
+            slinky.position = startY;
+            slinky.targetY = startY;
+            slinky.velocity = 0;
+            slinky.stretch = 0;
+            slinky.isDropping = false;
+            slinky.squashAmount = 0;
+            slinky.wavePhase = 0;
+            slinky.segments = [];
+            slinky.restLength = Math.min(w, h) * 0.25;
+
+            for (let i = 0; i < slinky.numSegments; i++) {
+                const t = i / slinky.numSegments;
+                slinky.segments.push({
+                    t: t,
+                    x: w / 2,
+                    y: startY + t * slinky.restLength,
+                    offsetX: 0,
+                    offsetY: 0,
+                    phase: Math.random() * Math.PI * 2,
+                    speed: 0.02 + Math.random() * 0.02,
+                    amplitude: 0.3 + Math.random() * 0.5,
+                });
+            }
+        }
+        initSlinky();
+
+        // ===== UPDATE SLINKY =====
+        function updateSlinky() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const gravity = slinky.gravity;
+            const damping = slinky.damping;
+            const spring = slinky.springConstant;
+            const bounce = slinky.bounce;
+
+            // Drop logic
+            if (slinky.isDropping) {
+                slinky.dropTime += 0.02;
+                
+                // Gravity
+                slinky.velocity += gravity * 0.5;
+                
+                // Spring force
+                const stretch = slinky.stretch;
+                const springForce = -spring * stretch;
+                slinky.velocity += springForce;
+
+                // Damping
+                slinky.velocity *= damping;
+
+                // Update position
+                slinky.position += slinky.velocity;
+
+                // Ground collision
+                const groundY = h * 0.75;
+                if (slinky.position + slinky.restLength * 0.5 > groundY) {
+                    slinky.position = groundY - slinky.restLength * 0.5;
+                    slinky.velocity *= -bounce * 0.5;
+                    slinky.squashAmount = Math.abs(slinky.velocity) * 0.3;
+                    
+                    // Stretch on impact
+                    slinky.stretch += Math.abs(slinky.velocity) * 0.01;
+                    
+                    if (Math.abs(slinky.velocity) < 0.5) {
+                        slinky.velocity = 0;
+                        slinky.isDropping = false;
+                        slinky.squashAmount *= 0.5;
+                    }
+                }
+
+                // Ceiling collision
+                const ceilingY = h * 0.05;
+                if (slinky.position < ceilingY) {
+                    slinky.position = ceilingY;
+                    slinky.velocity *= -0.3;
+                }
+
+                // Stretch decay
+                slinky.stretch *= 0.98;
+                slinky.squashAmount *= 0.95;
+
+                // Wave phase
+                slinky.wavePhase += 0.02;
+
+                // Update segments
+                for (let i = 0; i < slinky.segments.length; i++) {
+                    const seg = slinky.segments[i];
+                    const t = seg.t;
+                    
+                    // Position along slinky
+                    const baseY = slinky.position + t * slinky.restLength;
+                    
+                    // Stretch effect
+                    const stretchOffset = slinky.stretch * Math.sin(t * Math.PI) * 20;
+                    
+                    // Squash effect
+                    const squashOffset = slinky.squashAmount * Math.sin(t * Math.PI) * 30;
+                    
+                    // Wave effect
+                    const wave = Math.sin(t * Math.PI * 2 + slinky.wavePhase) * 3;
+                    
+                    // Wobble
+                    seg.phase += seg.speed;
+                    const wobble = Math.sin(seg.phase + time * 0.01) * seg.amplitude;
+                    
+                    seg.y = baseY + stretchOffset + squashOffset + wave + wobble;
+                    seg.x = w / 2 + Math.sin(t * Math.PI * 3 + time * 0.02) * 5 + wobble * 0.5;
+                }
+            } else {
+                // Idle gentle sway
+                slinky.wavePhase += 0.01;
+                for (let i = 0; i < slinky.segments.length; i++) {
+                    const seg = slinky.segments[i];
+                    const t = seg.t;
+                    seg.phase += seg.speed * 0.3;
+                    const wobble = Math.sin(seg.phase + time * 0.01) * seg.amplitude * 0.3;
+                    seg.y = slinky.position + t * slinky.restLength + Math.sin(t * Math.PI * 2 + time * 0.01) * 2 + wobble;
+                    seg.x = w / 2 + Math.sin(t * Math.PI * 3 + time * 0.02) * 3 + wobble * 0.3;
+                }
+            }
+        }
+
+        // ===== DRAW SLINKY =====
+        function drawSlinky() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const colorFn = colorPalettes[colorMode].fn;
+
+            // Glow
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.4);
+            grad.addColorStop(0, 'rgba(255,255,255,0.02)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw segments
+            const segments = slinky.segments;
+            const numSegs = segments.length;
+
+            // Draw connecting lines
+            for (let i = 0; i < numSegs - 1; i++) {
+                const seg1 = segments[i];
+                const seg2 = segments[i + 1];
+                const t1 = seg1.t;
+                const t2 = seg2.t;
+                
+                const color1 = colorFn(t1);
+                const color2 = colorFn(t2);
+
+                // Glow line
+                ctx.beginPath();
+                ctx.moveTo(seg1.x, seg1.y);
+                ctx.lineTo(seg2.x, seg2.y);
+                ctx.strokeStyle = color1;
+                ctx.globalAlpha = 0.1;
+                ctx.lineWidth = 6;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color1;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+
+                // Main line
+                const grad2 = ctx.createLinearGradient(seg1.x, seg1.y, seg2.x, seg2.y);
+                grad2.addColorStop(0, color1);
+                grad2.addColorStop(1, color2);
+                ctx.beginPath();
+                ctx.moveTo(seg1.x, seg1.y);
+                ctx.lineTo(seg2.x, seg2.y);
+                ctx.strokeStyle = grad2;
+                ctx.lineWidth = 2 + (1 - t1) * 2;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color1 + '40';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // Draw nodes
+            for (let i = 0; i < numSegs; i++) {
+                const seg = segments[i];
+                const t = seg.t;
+                const color = colorFn(t);
+                const size = 2 + (1 - t) * 3;
+
+                // Node glow
+                const grad3 = ctx.createRadialGradient(seg.x, seg.y, 0, seg.x, seg.y, size * 4);
+                grad3.addColorStop(0, color + '60');
+                grad3.addColorStop(0.5, color + '20');
+                grad3.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(seg.x, seg.y, size * 4, 0, Math.PI * 2);
+                ctx.fillStyle = grad3;
+                ctx.fill();
+
+                // Node
+                ctx.beginPath();
+                ctx.arc(seg.x, seg.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(seg.x - size * 0.2, seg.y - size * 0.2, size * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+            }
+
+            // Draw ground
+            const groundY = h * 0.75;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 60, 40, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 60, 40, 0.05)');
+            groundGrad.addColorStop(0.7, 'rgba(30, 60, 40, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 60, 40, 0.15)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Ground line
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(w, groundY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Shadow under slinky
+            if (slinky.isDropping) {
+                const shadowY = groundY;
+                const shadowX = w / 2;
+                const shadowSize = 30 + Math.abs(slinky.velocity) * 5;
+                const shadowGrad = ctx.createRadialGradient(shadowX, shadowY, 0, shadowX, shadowY, shadowSize);
+                shadowGrad.addColorStop(0, `rgba(0,0,0,${0.1 + Math.abs(slinky.velocity) * 0.02})`);
+                shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.beginPath();
+                ctx.arc(shadowX, shadowY, shadowSize, 0, Math.PI * 2);
+                ctx.fillStyle = shadowGrad;
+                ctx.fill();
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== DROP SLINKY =====
+        function dropSlinky() {
+            if (slinky.isDropping) return;
+            slinky.isDropping = true;
+            slinky.velocity = -2;
+            slinky.dropTime = 0;
+            slinky.stretch = 0.5;
+            statusText.textContent = '🌀 Dropping!';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Bouncing...';
+            }, 500);
+        }
+
+        // ===== RESET SLINKY =====
+        function resetSlinky() {
+            initSlinky();
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to drop';
+            }, 1000);
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            time += 0.01;
+
+            // Update
+            updateSlinky();
+
+            // Draw
+            drawBackground();
+            drawSlinky();
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                if (!slinky.isDropping) {
+                    statusText.textContent = '🌀 Ready to drop';
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Canvas click
+        canvas.addEventListener('click', () => {
+            dropSlinky();
+        });
+
+        // Mouse hover
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+            canvas.style.cursor = 'pointer';
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            canvas.style.cursor = 'default';
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            dropSlinky();
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Drop
+        dropBtn.addEventListener('click', dropSlinky);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to drop';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetSlinky);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'd' || e.key === 'D') {
+                dropBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                dropBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initSlinky();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Click to drop';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Slinky Drop loaded!');
+        console.log('💡 D - Drop slinky');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Drop slinky');
+        console.log('💡 Click on canvas - Drop slinky');
+    </script>
+</body>
+</html>

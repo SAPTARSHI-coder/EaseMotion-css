@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag to Reveal Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Drag to Reveal</h1>
+        <p class="subtitle">Drag slider to reveal hidden image</p>
+
+        <!-- DRAG TO REVEAL COMPONENT -->
+        <div class="reveal-container">
+            <div class="reveal-wrapper">
+                <div class="reveal-display" id="revealDisplay">
+                    <div class="reveal-before" id="revealBefore">
+                        <div class="reveal-content">
+                            <span class="reveal-icon">🌄</span>
+                            <span class="reveal-text">Before</span>
+                        </div>
+                    </div>
+                    <div class="reveal-after" id="revealAfter">
+                        <div class="reveal-content">
+                            <span class="reveal-icon">🌅</span>
+                            <span class="reveal-text">After</span>
+                        </div>
+                    </div>
+                    <div class="reveal-handle" id="revealHandle">
+                        <div class="handle-line"></div>
+                        <div class="handle-circle">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path d="M8 5v14l11-7z" fill="currentColor"/>
+                            </svg>
+                            <svg viewBox="0 0 24 24" width="24" height="24" style="position:absolute;transform:scaleX(-1);">
+                                <path d="M8 5v14l11-7z" fill="currentColor"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="reveal-percentage" id="revealPercentage">50%</div>
+                </div>
+
+                <!-- Controls -->
+                <div class="reveal-controls">
+                    <div class="control-group">
+                        <label for="positionSlider">Position:</label>
+                        <input type="range" id="positionSlider" min="0" max="100" value="50" />
+                        <span id="positionValue">50%</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Handle Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                    <div class="control-group">
+                        <label>
+                            <input type="checkbox" id="autoReveal" />
+                            Auto Reveal
+                        </label>
+                    </div>
+                </div>
+
+                <div class="reveal-actions">
+                    <button class="reveal-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="reveal-ctrl-btn" id="randomBtn">🎲 Random</button>
+                    <button class="reveal-ctrl-btn" id="animateBtn">▶ Animate</button>
+                    <button class="reveal-ctrl-btn" id="toggleImagesBtn">🔄 Swap Images</button>
+                </div>
+
+                <div class="reveal-status">
+                    <span class="status-label">Position:</span>
+                    <span class="status-value" id="positionDisplay">50%</span>
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="statusDisplay">Ready</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #00d2d3);">
+                        <span>🔄</span>
+                    </div>
+                    <span class="variant-label">Ocean</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>🔄</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>🔄</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>🔄</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const before = document.getElementById('revealBefore');
+            const after = document.getElementById('revealAfter');
+            const handle = document.getElementById('revealHandle');
+            const percentage = document.getElementById('revealPercentage');
+            const positionSlider = document.getElementById('positionSlider');
+            const positionValue = document.getElementById('positionValue');
+            const positionDisplay = document.getElementById('positionDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const colorPicker = document.getElementById('colorPicker');
+            const autoReveal = document.getElementById('autoReveal');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomBtn = document.getElementById('randomBtn');
+            const animateBtn = document.getElementById('animateBtn');
+            const toggleImagesBtn = document.getElementById('toggleImagesBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                position: 50,
+                color: '#4facfe',
+                autoReveal: false,
+                onUpdate: function(position) {
+                    console.log(`🔄 Position: ${position}%`);
+                },
+                onComplete: function() {
+                    console.log('✅ Reveal complete!');
+                },
+                onReset: function() {
+                    console.log('⟳ Reset');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let currentPosition = CONFIG.position;
+            let isDragging = false;
+            let isAnimating = false;
+            let animationId = null;
+            let isImagesSwapped = false;
+
+            // ============================================
+            // REVEAL FUNCTIONS
+            // ============================================
+            function updateReveal(position) {
+                const clamped = Math.min(Math.max(position, 0), 100);
+                currentPosition = clamped;
+                
+                // Update before image clip
+                before.style.clip = `inset(0 ${100 - clamped}% 0 0)`;
+                
+                // Update handle position
+                handle.style.left = clamped + '%';
+                
+                // Update percentage
+                percentage.textContent = clamped + '%';
+                percentage.style.left = clamped + '%';
+                percentage.style.transform = `translateX(-50%)`;
+                
+                // Update slider
+                positionSlider.value = clamped;
+                positionValue.textContent = clamped + '%';
+                positionDisplay.textContent = clamped + '%';
+                
+                // Update status
+                if (clamped === 100) {
+                    statusDisplay.textContent = 'Complete!';
+                    statusDisplay.style.color = '#34c759';
+                    CONFIG.onComplete();
+                } else {
+                    statusDisplay.textContent = 'Revealing...';
+                    statusDisplay.style.color = '#4facfe';
+                }
+                
+                CONFIG.onUpdate(clamped);
+            }
+
+            function setPosition(position) {
+                if (isAnimating) return;
+                updateReveal(position);
+            }
+
+            function resetReveal() {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    isAnimating = false;
+                    animateBtn.textContent = '▶ Animate';
+                }
+                updateReveal(0);
+                CONFIG.onReset();
+                statusDisplay.textContent = 'Reset';
+                setTimeout(() => {
+                    statusDisplay.textContent = 'Ready';
+                }, 1000);
+            }
+
+            function randomReveal() {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    isAnimating = false;
+                    animateBtn.textContent = '▶ Animate';
+                }
+                const random = Math.floor(Math.random() * 100) + 1;
+                updateReveal(random);
+                statusDisplay.textContent = '🎲 Random!';
+                setTimeout(() => {
+                    statusDisplay.textContent = 'Ready';
+                }, 1500);
+            }
+
+            function animateReveal() {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    isAnimating = false;
+                    animateBtn.textContent = '▶ Animate';
+                    return;
+                }
+                
+                isAnimating = true;
+                animateBtn.textContent = '⏹ Stop';
+                const startTime = performance.now();
+                const startPosition = currentPosition;
+                const duration = 2000;
+                
+                function animate(timestamp) {
+                    const elapsed = timestamp - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Ease in-out cubic
+                    const eased = progress < 0.5 ? 
+                        4 * progress * progress * progress : 
+                        1 - Math.pow(-2 * progress + 2, 3) / 2;
+                    
+                    const value = startPosition + (100 - startPosition) * eased;
+                    updateReveal(value);
+                    
+                    if (progress < 1 && isAnimating) {
+                        animationId = requestAnimationFrame(animate);
+                    } else {
+                        isAnimating = false;
+                        animateBtn.textContent = '▶ Animate';
+                        if (currentPosition < 100) {
+                            updateReveal(100);
+                        }
+                    }
+                }
+                
+                animationId = requestAnimationFrame(animate);
+            }
+
+            function toggleImages() {
+                isImagesSwapped = !isImagesSwapped;
+                toggleImagesBtn.textContent = isImagesSwapped ? '🔄 Swap Back' : '🔄 Swap Images';
+                
+                // Swap content
+                const beforeContent = before.innerHTML;
+                const afterContent = after.innerHTML;
+                before.innerHTML = afterContent;
+                after.innerHTML = beforeContent;
+                
+                // Update labels
+                const beforeLabel = before.querySelector('.reveal-text');
+                const afterLabel = after.querySelector('.reveal-text');
+                if (beforeLabel) beforeLabel.textContent = isImagesSwapped ? 'After' : 'Before';
+                if (afterLabel) afterLabel.textContent = isImagesSwapped ? 'Before' : 'After';
+                
+                statusDisplay.textContent = '🔄 Swapped!';
+                setTimeout(() => {
+                    statusDisplay.textContent = 'Ready';
+                }, 1500);
+            }
+
+            // ============================================
+            // DRAG HANDLING
+            // ============================================
+            function getPositionFromEvent(e) {
+                const rect = handle.parentElement.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const x = clientX - rect.left;
+                return Math.min(Math.max((x / rect.width) * 100, 0), 100);
+            }
+
+            function handleDragStart(e) {
+                if (isAnimating) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                    isAnimating = false;
+                    animateBtn.textContent = '▶ Animate';
+                }
+                isDragging = true;
+                handle.style.cursor = 'grabbing';
+                document.body.style.userSelect = 'none';
+                
+                // Update position on drag start
+                const pos = getPositionFromEvent(e);
+                updateReveal(pos);
+                
+                if (autoReveal.checked) {
+                    // Auto-reveal logic when dragging
+                }
+            }
+
+            function handleDragMove(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const pos = getPositionFromEvent(e);
+                updateReveal(pos);
+            }
+
+            function handleDragEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                handle.style.cursor = 'grab';
+                document.body.style.userSelect = '';
+                
+                // Auto-reveal if enabled
+                if (autoReveal.checked && currentPosition < 100) {
+                    animateReveal();
+                }
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Mouse events
+            handle.addEventListener('mousedown', handleDragStart);
+            document.addEventListener('mousemove', handleDragMove);
+            document.addEventListener('mouseup', handleDragEnd);
+
+            // Touch events
+            handle.addEventListener('touchstart', handleDragStart, { passive: true });
+            document.addEventListener('touchmove', handleDragMove, { passive: false });
+            document.addEventListener('touchend', handleDragEnd, { passive: true });
+
+            // Slider
+            positionSlider.addEventListener('input', function() {
+                setPosition(parseFloat(this.value));
+            });
+
+            // Controls
+            colorPicker.addEventListener('input', function() {
+                CONFIG.color = this.value;
+                handle.style.borderColor = this.value;
+                handle.style.boxShadow = `0 0 20px ${this.value}40`;
+                document.querySelector('.handle-circle').style.color = this.value;
+            });
+
+            resetBtn.addEventListener('click', resetReveal);
+            randomBtn.addEventListener('click', randomReveal);
+            animateBtn.addEventListener('click', animateReveal);
+            toggleImagesBtn.addEventListener('click', toggleImages);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetReveal();
+                }
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    animateReveal();
+                }
+                if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setPosition(Math.min(currentPosition + 5, 100));
+                }
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setPosition(Math.max(currentPosition - 5, 0));
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Ocean': ['#4facfe', '#00d2d3'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#00d2d3'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    handle.style.borderColor = primary;
+                    handle.style.boxShadow = `0 0 20px ${primary}40`;
+                    document.querySelector('.handle-circle').style.color = primary;
+                    statusDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        statusDisplay.textContent = 'Ready';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.DragReveal = {
+                setPosition: setPosition,
+                reset: resetReveal,
+                random: randomReveal,
+                animate: animateReveal,
+                swapImages: toggleImages,
+                getPosition: () => currentPosition,
+                isAnimating: () => isAnimating,
+                getState: () => ({
+                    position: currentPosition,
+                    color: CONFIG.color,
+                    autoReveal: autoReveal.checked,
+                    isAnimating: isAnimating,
+                    isSwapped: isImagesSwapped
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                        handle.style.borderColor = config.color;
+                        handle.style.boxShadow = `0 0 20px ${config.color}40`;
+                        document.querySelector('.handle-circle').style.color = config.color;
+                    }
+                    if (config.position !== undefined) {
+                        setPosition(config.position);
+                    }
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            // Set initial color
+            colorPicker.value = CONFIG.color;
+            handle.style.borderColor = CONFIG.color;
+            handle.style.boxShadow = `0 0 20px ${CONFIG.color}40`;
+            document.querySelector('.handle-circle').style.color = CONFIG.color;
+
+            // Set initial position
+            updateReveal(CONFIG.position);
+            statusDisplay.textContent = 'Ready';
+
+            console.log('🔄 Drag to Reveal initialized!');
+            console.log('📖 API: window.DragReveal');
+            console.log('📖 Usage:');
+            console.log('  - Drag the handle to reveal the image');
+            console.log('  - Keyboard shortcuts: Space (animate), R (reset), Arrow keys');
+            console.log('  - Enable "Auto Reveal" for automatic completion');
+
+        })();
+    </script>
+</body>
+</html>

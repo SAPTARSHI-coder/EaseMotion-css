@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nebula Swirl · cosmic nebula swirls with cursor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="nebula-container">
+      <div class="nebula-display" id="nebulaDisplay">
+        <!-- Canvas for nebula -->
+        <canvas id="nebulaCanvas"></canvas>
+        
+        <!-- Nebula Info -->
+        <div class="nebula-info">
+          <span class="info-label">🌌 Particles</span>
+          <span class="info-value" id="particleCount">0</span>
+        </div>
+
+        <!-- Nebula Controls -->
+        <div class="nebula-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Swirl</label>
+            <input type="range" class="control-slider" id="swirlSlider" min="0" max="100" value="50">
+            <span class="control-value" id="swirlValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">⭐ Density</label>
+            <input type="range" class="control-slider" id="densitySlider" min="1" max="10" value="5">
+            <span class="control-value" id="densityValue">5</span>
+          </div>
+        </div>
+
+        <!-- Nebula Text -->
+        <div class="nebula-text">
+          <span class="text-label">🌌 Cosmic Nebula</span>
+          <span class="text-message" id="nebulaMessage">Move your cursor through the cosmos</span>
+        </div>
+      </div>
+      
+      <div class="nebula-status">
+        <span id="nebulaStatus">🌌 Move your cursor to swirl the cosmic nebula</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌌 nebula swirls · 4 cosmic colors · 5 density levels</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('nebulaCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('nebulaDisplay');
+      const particleCount = document.getElementById('particleCount');
+      const nebulaStatus = document.getElementById('nebulaStatus');
+      const nebulaMessage = document.getElementById('nebulaMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const swirlSlider = document.getElementById('swirlSlider');
+      const swirlValue = document.getElementById('swirlValue');
+      const densitySlider = document.getElementById('densitySlider');
+      const densityValue = document.getElementById('densityValue');
+
+      // State
+      let particles = [];
+      let animationId = null;
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let currentX = 0;
+      let currentY = 0;
+
+      // Nebula colors
+      const nebulaPalettes = [
+        { name: 'Cosmic', colors: ['#818cf8', '#a78bfa', '#c4b5fd', '#f472b6', '#34d399'] },
+        { name: 'Aurora', colors: ['#34d399', '#60a5fa', '#a78bfa', '#f472b6', '#fbbf24'] },
+        { name: 'Galaxy', colors: ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#22c55e'] },
+        { name: 'Sunset', colors: ['#ef4444', '#f97316', '#fbbf24', '#f472b6', '#8b5cf6'] }
+      ];
+
+      let paletteIndex = 0;
+
+      // Particle class
+      class NebulaParticle {
+        constructor() {
+          this.reset();
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+        }
+
+        reset() {
+          const w = canvas.width;
+          const h = canvas.height;
+          this.x = Math.random() * w;
+          this.y = Math.random() * h;
+          this.size = 1 + Math.random() * 3;
+          this.baseSize = this.size;
+          this.speed = 0.1 + Math.random() * 0.3;
+          this.angle = Math.random() * Math.PI * 2;
+          this.distance = 50 + Math.random() * 200;
+          this.phase = Math.random() * Math.PI * 2;
+          this.pulseSpeed = 0.005 + Math.random() * 0.015;
+          this.colorIndex = Math.floor(Math.random() * 5);
+          this.orbitRadius = 30 + Math.random() * 150;
+          this.orbitSpeed = 0.002 + Math.random() * 0.008;
+          this.orbitAngle = Math.random() * Math.PI * 2;
+          this.twinkleSpeed = 0.01 + Math.random() * 0.03;
+          this.twinklePhase = Math.random() * Math.PI * 2;
+          this.opacity = 0.3 + Math.random() * 0.7;
+          this.trail = [];
+        }
+
+        update(cx, cy, swirl, time) {
+          const w = canvas.width;
+          const h = canvas.height;
+          
+          // Orbit around cursor
+          this.orbitAngle += this.orbitSpeed * (1 + swirl * 0.5);
+          
+          const targetX = cx + Math.cos(this.orbitAngle) * this.orbitRadius * (0.5 + swirl * 0.5);
+          const targetY = cy + Math.sin(this.orbitAngle) * this.orbitRadius * (0.5 + swirl * 0.5);
+          
+          // Smooth follow
+          this.x += (targetX - this.x) * 0.02;
+          this.y += (targetY - this.y) * 0.02;
+          
+          // Twinkle
+          this.twinklePhase += this.twinkleSpeed;
+          const twinkle = 0.5 + Math.sin(this.twinklePhase) * 0.5;
+          
+          // Size pulse
+          this.size = this.baseSize * (0.5 + twinkle * 0.5);
+          
+          // Opacity pulse
+          this.opacity = 0.3 + twinkle * 0.5;
+          
+          // Trail
+          this.trail.push({ x: this.x, y: this.y, life: 1 });
+          if (this.trail.length > 8) {
+            this.trail.shift();
+          }
+          this.trail.forEach(t => t.life -= 0.05);
+          
+          // Wrap around edges
+          if (this.x < -50) this.x = w + 50;
+          if (this.x > w + 50) this.x = -50;
+          if (this.y < -50) this.y = h + 50;
+          if (this.y > h + 50) this.y = -50;
+        }
+
+        draw(ctx, colors) {
+          const color = colors[this.colorIndex % colors.length];
+          const alpha = this.opacity * 0.6;
+          
+          // Trail
+          this.trail.forEach((t, i) => {
+            if (t.life > 0) {
+              ctx.save();
+              ctx.globalAlpha = t.life * alpha * 0.2;
+              ctx.fillStyle = color;
+              ctx.shadowColor = color;
+              ctx.shadowBlur = 10;
+              ctx.beginPath();
+              ctx.arc(t.x, t.y, this.size * 0.3 * t.life, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          });
+          
+          // Glow
+          ctx.save();
+          ctx.globalAlpha = alpha * 0.2;
+          const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 6);
+          glow.addColorStop(0, color);
+          glow.addColorStop(1, 'transparent');
+          ctx.fillStyle = glow;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 30;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          
+          // Main particle
+          ctx.save();
+          ctx.globalAlpha = alpha * 0.8;
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core highlight
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Generate particles
+      function generateParticles() {
+        const density = densitySlider.value;
+        const count = density * 40 + 20;
+        
+        particles = [];
+        for (let i = 0; i < count; i++) {
+          particles.push(new NebulaParticle());
+        }
+        particleCount.textContent = particles.length;
+      }
+
+      // Draw background stars
+      function drawBackgroundStars() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Deep space background
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
+        grad.addColorStop(0, 'rgba(10, 5, 25, 0.4)');
+        grad.addColorStop(0.5, 'rgba(5, 2, 15, 0.5)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.7)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Static stars
+        for (let i = 0; i < 100; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.1 + Math.random() * 0.3;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateParticles();
+        
+        // Center cursor
+        mouseX = canvas.width / 2;
+        mouseY = canvas.height / 2;
+        currentX = mouseX;
+        currentY = mouseY;
+        targetX = mouseX;
+        targetY = mouseY;
+      }
+
+      // Animation loop
+      function animate() {
+        const time = Date.now() / 1000;
+        const swirl = swirlSlider.value / 100;
+        const colors = nebulaPalettes[paletteIndex].colors;
+        
+        // Smooth cursor follow
+        currentX += (targetX - currentX) * 0.05;
+        currentY += (targetY - currentY) * 0.05;
+        
+        // Clear and draw background
+        drawBackgroundStars();
+        
+        // Update and draw particles
+        particles.forEach(p => {
+          p.update(currentX, currentY, swirl, time);
+          p.draw(ctx, colors);
+        });
+        
+        // Update status
+        const dist = Math.sqrt(Math.pow(targetX - currentX, 2) + Math.pow(targetY - currentY, 2));
+        if (dist > 50) {
+          nebulaStatus.textContent = '🌌 Nebula swirling through the cosmos! ✨';
+          nebulaStatus.style.color = '#fbbf24';
+        } else if (dist > 10) {
+          nebulaStatus.textContent = '🌌 Nebula dances with your movement';
+          nebulaStatus.style.color = '#818cf8';
+        } else {
+          nebulaStatus.textContent = '🌌 Move your cursor through the cosmic nebula';
+          nebulaStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Reset
+      function resetNebula() {
+        paletteIndex = (paletteIndex + 1) % nebulaPalettes.length;
+        generateParticles();
+        nebulaStatus.textContent = `🎨 Palette: ${nebulaPalettes[paletteIndex].name}`;
+        nebulaStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          nebulaStatus.textContent = '🌌 Move your cursor through the cosmic nebula';
+          nebulaStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Event listeners
+      display.addEventListener('mousemove', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        targetX = e.clientX - rect.left;
+        targetY = e.clientY - rect.top;
+      });
+
+      display.addEventListener('mouseleave', function() {
+        targetX = canvas.width / 2;
+        targetY = canvas.height / 2;
+      });
+
+      // Touch support
+      display.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        targetX = touch.clientX - rect.left;
+        targetY = touch.clientY - rect.top;
+      }, { passive: false });
+
+      display.addEventListener('touchend', function() {
+        targetX = canvas.width / 2;
+        targetY = canvas.height / 2;
+      });
+
+      swirlSlider.addEventListener('input', function() {
+        swirlValue.textContent = this.value + '%';
+      });
+
+      densitySlider.addEventListener('input', function() {
+        densityValue.textContent = this.value;
+        generateParticles();
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetNebula();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetNebula();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌌 Nebula Swirl ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

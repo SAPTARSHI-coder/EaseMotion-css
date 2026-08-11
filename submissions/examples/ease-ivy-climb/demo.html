@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ivy Climb · ivy climbs upward on click</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="ivy-container">
+      <div class="ivy-display" id="ivyDisplay">
+        <!-- Canvas for ivy -->
+        <canvas id="ivyCanvas"></canvas>
+        
+        <!-- Ivy Info -->
+        <div class="ivy-info">
+          <span class="info-label">🌿 Growth</span>
+          <span class="info-value" id="growthLevel">0%</span>
+        </div>
+
+        <!-- Ivy Controls -->
+        <div class="ivy-controls">
+          <div class="control-group">
+            <label class="control-label">🌱 Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="0">
+            <span class="control-value" id="growthValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🍃 Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="classic" title="Classic">🌿</button>
+              <button class="style-btn" data-style="vines" title="Vines">🌱</button>
+              <button class="style-btn" data-style="thick" title="Thick">🌳</button>
+              <button class="style-btn" data-style="autumn" title="Autumn">🍂</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ivy Text -->
+        <div class="ivy-text">
+          <span class="text-label">🌿 Ivy Climb</span>
+          <span class="text-message" id="ivyMessage">Click to make ivy climb upward</span>
+        </div>
+      </div>
+      
+      <div class="ivy-status">
+        <span id="ivyStatus">🌿 Click the wall to make ivy grow</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-climb" id="climbBtn">🌱 Climb</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌿 ivy climbs · 4 styles · leaf growth</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('ivyCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('ivyDisplay');
+      const growthLevel = document.getElementById('growthLevel');
+      const growthValue = document.getElementById('growthValue');
+      const ivyStatus = document.getElementById('ivyStatus');
+      const ivyMessage = document.getElementById('ivyMessage');
+      const climbBtn = document.getElementById('climbBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const growthSlider = document.getElementById('growthSlider');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let growth = 0; // 0-100
+      let targetGrowth = 0;
+      let currentStyle = 'classic';
+      let animationId = null;
+      let time = 0;
+      let leaves = [];
+
+      // Style configurations
+      const styles = {
+        classic: {
+          name: 'Classic',
+          leafColor: '#22c55e',
+          leafLight: '#4ade80',
+          leafDark: '#16a34a',
+          stemColor: '#1a4a2a',
+          leafSize: 1.0,
+          density: 1.0,
+          vineWidth: 2
+        },
+        vines: {
+          name: 'Vines',
+          leafColor: '#2d7d3a',
+          leafLight: '#4ade80',
+          leafDark: '#1a5a2a',
+          stemColor: '#2a4a1a',
+          leafSize: 0.8,
+          density: 0.7,
+          vineWidth: 1.5
+        },
+        thick: {
+          name: 'Thick',
+          leafColor: '#15803d',
+          leafLight: '#22c55e',
+          leafDark: '#0d6b2a',
+          stemColor: '#2a3a1a',
+          leafSize: 1.3,
+          density: 1.2,
+          vineWidth: 3
+        },
+        autumn: {
+          name: 'Autumn',
+          leafColor: '#f97316',
+          leafLight: '#fb923c',
+          leafDark: '#ea580c',
+          stemColor: '#4a3a2a',
+          leafSize: 1.0,
+          density: 1.0,
+          vineWidth: 2
+        }
+      };
+
+      // Leaf class
+      class Leaf {
+        constructor(x, y, angle, size, style) {
+          this.x = x;
+          this.y = y;
+          this.angle = angle || (Math.random() - 0.5) * 0.5;
+          this.size = size || 3 + Math.random() * 5;
+          this.style = style || currentStyle;
+          this.phase = Math.random() * Math.PI * 2;
+          this.speed = 0.3 + Math.random() * 0.5;
+          this.grow = 0;
+          this.targetGrow = 0.5 + Math.random() * 0.5;
+          this.side = Math.random() > 0.5 ? 1 : -1;
+          this.branch = 0;
+          this.opacity = 0;
+          this.targetOpacity = 0.6 + Math.random() * 0.4;
+        }
+
+        update(growth) {
+          const progress = growth / 100;
+          this.grow += (this.targetGrow - this.grow) * 0.05;
+          this.opacity += (this.targetOpacity - this.opacity) * 0.05;
+          this.phase += 0.02;
+          
+          // Slight sway
+          const sway = Math.sin(this.phase * this.speed) * 0.02;
+          this.angle += sway * 0.01;
+        }
+
+        draw(ctx, style) {
+          const styleData = styles[style];
+          const size = this.size * styleData.leafSize * this.grow;
+          const alpha = this.opacity * 0.8;
+          
+          if (size < 0.5 || alpha < 0.01) return;
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle + this.side * 0.3);
+          
+          // Leaf glow
+          ctx.shadowColor = styleData.leafColor;
+          ctx.shadowBlur = 3;
+          
+          // Leaf shape
+          const grad = ctx.createRadialGradient(
+            -size * 0.1, -size * 0.1, 0,
+            0, 0, size
+          );
+          grad.addColorStop(0, styleData.leafLight);
+          grad.addColorStop(0.5, styleData.leafColor);
+          grad.addColorStop(1, styleData.leafDark);
+          ctx.fillStyle = grad;
+          
+          ctx.beginPath();
+          ctx.moveTo(0, -size);
+          ctx.quadraticCurveTo(size * 0.6, -size * 0.5, size * 0.5, 0);
+          ctx.quadraticCurveTo(size * 0.3, size * 0.4, 0, size * 0.3);
+          ctx.quadraticCurveTo(-size * 0.3, size * 0.4, -size * 0.5, 0);
+          ctx.quadraticCurveTo(-size * 0.6, -size * 0.5, 0, -size);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Leaf vein
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.15;
+          ctx.strokeStyle = styleData.leafDark;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(0, -size * 0.7);
+          ctx.lineTo(0, size * 0.2);
+          ctx.stroke();
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate ivy path
+      function generateIvyPath(growth) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const styleData = styles[currentStyle];
+        const progress = growth / 100;
+        
+        // Clear leaves that are no longer needed
+        const maxLeaves = Math.floor(20 + progress * 80);
+        while (leaves.length > maxLeaves) {
+          leaves.pop();
+        }
+        
+        // Add new leaves as growth increases
+        const targetCount = Math.floor(20 + progress * 80);
+        while (leaves.length < targetCount) {
+          const t = leaves.length / targetCount;
+          const x = 20 + t * (w - 40) + (Math.random() - 0.5) * 30;
+          const y = h - 20 - t * (h - 40) * progress + (Math.random() - 0.5) * 20;
+          const angle = (Math.random() - 0.5) * 0.5;
+          const size = 3 + Math.random() * 5;
+          const leaf = new Leaf(x, y, angle, size, currentStyle);
+          leaf.targetGrow = 0.5 + Math.random() * 0.5;
+          leaf.targetOpacity = 0.6 + Math.random() * 0.4;
+          leaves.push(leaf);
+        }
+        
+        // Update all leaves
+        leaves.forEach(leaf => {
+          leaf.update(growth);
+        });
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Wall gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, 'rgba(20, 25, 35, 0.3)');
+        grad.addColorStop(0.3, 'rgba(25, 30, 40, 0.35)');
+        grad.addColorStop(0.7, 'rgba(30, 35, 45, 0.4)');
+        grad.addColorStop(1, 'rgba(15, 20, 30, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Brick pattern
+        ctx.strokeStyle = 'rgba(50, 60, 80, 0.05)';
+        ctx.lineWidth = 0.5;
+        const brickH = 20;
+        const brickW = 40;
+        for (let y = 0; y < h; y += brickH) {
+          const offset = (Math.floor(y / brickH) % 2) * brickW / 2;
+          for (let x = -brickW / 2 + offset; x < w + brickW; x += brickW) {
+            ctx.strokeRect(x, y, brickW, brickH);
+          }
+        }
+        
+        // Ground
+        const groundY = h - 20;
+        const grad2 = ctx.createLinearGradient(0, groundY, 0, h);
+        grad2.addColorStop(0, 'rgba(20, 40, 20, 0.1)');
+        grad2.addColorStop(0.5, 'rgba(15, 30, 15, 0.15)');
+        grad2.addColorStop(1, 'rgba(10, 20, 10, 0.2)');
+        ctx.fillStyle = grad2;
+        ctx.fillRect(0, groundY, w, h - groundY);
+        
+        // Ground line
+        ctx.strokeStyle = 'rgba(30, 60, 30, 0.1)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        ctx.lineTo(w, groundY);
+        ctx.stroke();
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        leaves = [];
+        generateIvyPath(growth);
+      }
+
+      // Update ivy
+      function updateIvy() {
+        const percent = Math.round(growth);
+        growthLevel.textContent = percent + '%';
+        growthValue.textContent = percent + '%';
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Draw vine stems
+        const styleData = styles[currentStyle];
+        const progress = growth / 100;
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        ctx.save();
+        ctx.strokeStyle = styleData.stemColor;
+        ctx.lineWidth = styleData.vineWidth;
+        ctx.shadowColor = 'rgba(0,0,0,0.05)';
+        ctx.shadowBlur = 3;
+        ctx.lineCap = 'round';
+        
+        // Main vine
+        const numPoints = Math.floor(10 + progress * 30);
+        ctx.beginPath();
+        for (let i = 0; i < numPoints; i++) {
+          const t = i / numPoints;
+          const x = 20 + t * (w - 40) + Math.sin(t * 3 + 1) * 10 * (1 - t * 0.5);
+          const y = h - 15 - t * (h - 40) * progress + Math.sin(t * 2 + 0.5) * 5 * t;
+          if (i === 0) ctx.moveTo(x, y);
+          else {
+            const prevX = 20 + (i - 1) / numPoints * (w - 40) + Math.sin((i - 1) / numPoints * 3 + 1) * 10 * (1 - (i - 1) / numPoints * 0.5);
+            const prevY = h - 15 - (i - 1) / numPoints * (h - 40) * progress + Math.sin((i - 1) / numPoints * 2 + 0.5) * 5 * (i - 1) / numPoints;
+            const cpX = (prevX + x) / 2;
+            const cpY = (prevY + y) / 2;
+            ctx.quadraticCurveTo(cpX, cpY, x, y);
+          }
+        }
+        ctx.stroke();
+        
+        // Side vines
+        for (let i = 0; i < Math.floor(3 + progress * 7); i++) {
+          const t = i / (3 + progress * 7);
+          const x = 20 + t * (w - 40) + Math.sin(t * 3 + 1) * 10 * (1 - t * 0.5);
+          const y = h - 15 - t * (h - 40) * progress + Math.sin(t * 2 + 0.5) * 5 * t;
+          const side = (i % 2 === 0) ? 1 : -1;
+          const length = 10 + Math.random() * 20;
+          
+          ctx.strokeStyle = styleData.stemColor;
+          ctx.lineWidth = styleData.vineWidth * 0.5;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          const endX = x + side * length * (0.5 + t * 0.5);
+          const endY = y - length * 0.3 * (0.5 + t * 0.5);
+          ctx.quadraticCurveTo((x + endX) / 2 + side * 5, (y + endY) / 2 - 5, endX, endY);
+          ctx.stroke();
+        }
+        ctx.restore();
+        
+        // Draw leaves
+        leaves.forEach(leaf => {
+          leaf.draw(ctx, currentStyle);
+        });
+        
+        // Update status
+        if (growth > 90) {
+          ivyStatus.textContent = '🌿 Ivy has climbed to the top! ✨';
+          ivyStatus.style.color = '#4ade80';
+        } else if (growth > 40) {
+          ivyStatus.textContent = '🌿 Ivy climbing upward...';
+          ivyStatus.style.color = '#818cf8';
+        } else if (growth > 5) {
+          ivyStatus.textContent = '🌱 Ivy beginning to climb...';
+          ivyStatus.style.color = '#94a3b8';
+        } else {
+          ivyStatus.textContent = '🌿 Click the wall to make ivy grow';
+          ivyStatus.style.color = '#94a3b8';
+        }
+        
+        // Update button
+        if (growth > 90) {
+          climbBtn.textContent = '🌱 Fully Grown';
+          climbBtn.style.background = 'linear-gradient(135deg, #4ade80, #22c55e)';
+          climbBtn.style.borderColor = '#4ade80';
+        } else if (growth > 5) {
+          climbBtn.textContent = '🌱 Climbing...';
+          climbBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+          climbBtn.style.borderColor = '#22c55e';
+        } else {
+          climbBtn.textContent = '🌱 Climb';
+          climbBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          climbBtn.style.borderColor = '#818cf8';
+        }
+      }
+
+      // Animation loop
+      function animate() {
+        growth += (targetGrowth - growth) * 0.04;
+        growth = Math.max(0, Math.min(100, growth));
+        
+        generateIvyPath(growth);
+        updateIvy();
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set growth
+      function setGrowth(value) {
+        targetGrowth = Math.max(0, Math.min(100, parseInt(value)));
+        growthSlider.value = targetGrowth;
+        growthValue.textContent = Math.round(targetGrowth) + '%';
+      }
+
+      // Toggle climb
+      function toggleClimb() {
+        if (growth > 80) {
+          setGrowth(0);
+          climbBtn.textContent = '🌱 Climb';
+          climbBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          climbBtn.style.borderColor = '#818cf8';
+          ivyStatus.textContent = '🔄 Reset complete';
+          ivyStatus.style.color = '#94a3b8';
+          setTimeout(() => {
+            ivyStatus.textContent = '🌿 Click the wall to make ivy grow';
+            ivyStatus.style.color = '#94a3b8';
+          }, 1000);
+        } else {
+          setGrowth(100);
+        }
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleData = styles[style];
+        ivyStatus.textContent = `🍃 Style: ${styleData.name}`;
+        ivyStatus.style.color = styleData.leafColor;
+        leaves = [];
+        generateIvyPath(growth);
+        setTimeout(() => {
+          if (growth < 10) {
+            ivyStatus.textContent = '🌿 Click the wall to make ivy grow';
+            ivyStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetIvy() {
+        setGrowth(0);
+        growth = 0;
+        targetGrowth = 0;
+        leaves = [];
+        ivyStatus.textContent = '🔄 Reset complete';
+        ivyStatus.style.color = '#94a3b8';
+        ivyMessage.textContent = 'Click to make ivy climb upward';
+        ivyMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          ivyStatus.textContent = '🌿 Click the wall to make ivy grow';
+          ivyStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        setGrowth(this.value);
+      });
+
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      if (climbBtn) {
+        climbBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleClimb();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetIvy();
+        });
+      }
+
+      // Click on display to climb
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          toggleClimb();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleClimb();
+        } else if (key === 'c' || key === 'C') {
+          e.preventDefault();
+          toggleClimb();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetIvy();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌿 Ivy Climb ready · shortcuts: [Space/C] Climb, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

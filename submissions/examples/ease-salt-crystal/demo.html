@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salt Crystal · salt-like crystals grow on surface</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="salt-container">
+      <div class="salt-display" id="saltDisplay">
+        <!-- Canvas for salt crystals -->
+        <canvas id="saltCanvas"></canvas>
+        
+        <!-- Salt Info -->
+        <div class="salt-info">
+          <span class="info-label">🧂 Crystals</span>
+          <span class="info-value" id="crystalCount">0</span>
+        </div>
+
+        <!-- Salt Controls -->
+        <div class="salt-controls">
+          <div class="control-group">
+            <label class="control-label">🌊 Growth</label>
+            <input type="range" class="control-slider" id="growthSlider" min="0" max="100" value="50">
+            <span class="control-value" id="growthValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">✨ Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="white" title="White">⬜</button>
+              <button class="color-btn" data-color="pink" title="Pink">💗</button>
+              <button class="color-btn" data-color="blue" title="Blue">💙</button>
+              <button class="color-btn" data-color="purple" title="Purple">💜</button>
+              <button class="color-btn" data-color="gold" title="Gold">💛</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Salt Text -->
+        <div class="salt-text">
+          <span class="text-label">🧂 Salt Crystals</span>
+          <span class="text-message" id="saltMessage">Crystals growing on the surface</span>
+        </div>
+      </div>
+      
+      <div class="salt-status">
+        <span id="saltStatus">🧂 Salt crystals growing on the surface</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-grow" id="growBtn">🌊 Grow</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🧂 salt crystals · 5 colors · growth control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('saltCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('saltDisplay');
+      const crystalCount = document.getElementById('crystalCount');
+      const saltStatus = document.getElementById('saltStatus');
+      const saltMessage = document.getElementById('saltMessage');
+      const growBtn = document.getElementById('growBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const growthSlider = document.getElementById('growthSlider');
+      const growthValue = document.getElementById('growthValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let crystals = [];
+      let growth = 50;
+      let currentColor = 'white';
+      let animationId = null;
+      let time = 0;
+
+      // Color configurations
+      const colorConfigs = {
+        white: { main: '#f0f0f0', light: '#ffffff', dark: '#d4d4d4', glow: 'rgba(255,255,255,0.1)' },
+        pink: { main: '#f472b6', light: '#f9a8d4', dark: '#ec4899', glow: 'rgba(244,114,182,0.15)' },
+        blue: { main: '#60a5fa', light: '#93c5fd', dark: '#3b82f6', glow: 'rgba(96,165,250,0.15)' },
+        purple: { main: '#a78bfa', light: '#c4b5fd', dark: '#8b5cf6', glow: 'rgba(167,139,250,0.15)' },
+        gold: { main: '#fbbf24', light: '#fcd34d', dark: '#f59e0b', glow: 'rgba(251,191,36,0.15)' }
+      };
+
+      // Crystal class
+      class SaltCrystal {
+        constructor(x, y, size, color) {
+          this.x = x || Math.random() * canvas.width;
+          this.y = y || Math.random() * canvas.height;
+          this.size = size || 3 + Math.random() * 8;
+          this.targetSize = this.size * (0.5 + Math.random() * 0.5);
+          this.color = color || currentColor;
+          this.angle = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.01;
+          this.facets = 3 + Math.floor(Math.random() * 3);
+          this.phase = Math.random() * Math.PI * 2;
+          this.growSpeed = 0.01 + Math.random() * 0.02;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.glow = 0.2 + Math.random() * 0.3;
+          this.growing = true;
+          this.points = [];
+          
+          // Generate crystal points
+          for (let i = 0; i < this.facets * 2; i++) {
+            const angle = (i / (this.facets * 2)) * Math.PI * 2;
+            const radius = i % 2 === 0 ? 1 : 0.4 + Math.random() * 0.3;
+            this.points.push({ angle, radius });
+          }
+        }
+
+        update(growth, time) {
+          const growthFactor = growth / 100;
+          
+          // Grow
+          if (this.growing && this.size < this.targetSize * growthFactor) {
+            this.size += this.growSpeed * (0.5 + growthFactor * 0.5);
+            if (this.size >= this.targetSize * growthFactor) {
+              this.size = this.targetSize * growthFactor;
+              this.growing = false;
+            }
+          }
+          
+          // Shrink if growth decreases
+          if (this.size > this.targetSize * growthFactor) {
+            this.size -= this.growSpeed * 0.5;
+            if (this.size < this.targetSize * growthFactor) {
+              this.size = this.targetSize * growthFactor;
+            }
+          }
+          
+          this.phase += 0.01;
+          this.angle += this.rotationSpeed;
+          this.opacity = 0.3 + Math.sin(this.phase) * 0.1 + 0.4;
+          this.glow = 0.2 + Math.sin(this.phase * 0.7) * 0.1 + 0.2;
+          
+          return this.size > 0.5;
+        }
+
+        draw(ctx) {
+          const colorData = colorConfigs[this.color];
+          const size = this.size;
+          const alpha = this.opacity * 0.8;
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.angle);
+          
+          // Glow
+          const glowSize = size * 2 * this.glow;
+          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
+          grad.addColorStop(0, colorData.glow);
+          grad.addColorStop(0.5, colorData.glow);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = colorData.main;
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(0, 0, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Crystal shape
+          ctx.shadowBlur = 2;
+          const grad2 = ctx.createRadialGradient(
+            -size * 0.2, -size * 0.2, 0,
+            0, 0, size
+          );
+          grad2.addColorStop(0, colorData.light);
+          grad2.addColorStop(0.4, colorData.main);
+          grad2.addColorStop(0.8, colorData.dark);
+          grad2.addColorStop(1, colorData.dark + '88');
+          ctx.fillStyle = grad2;
+          
+          ctx.beginPath();
+          for (let i = 0; i < this.points.length; i++) {
+            const p = this.points[i];
+            const angle = p.angle + this.phase * 0.1;
+            const radius = p.radius * size;
+            const px = Math.cos(angle) * radius;
+            const py = Math.sin(angle) * radius;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.fill();
+          
+          // Facet highlights
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.1;
+          ctx.strokeStyle = colorData.light;
+          ctx.lineWidth = 0.5;
+          for (let i = 0; i < this.facets; i++) {
+            const angle = (i / this.facets) * Math.PI * 2 + this.phase * 0.1;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * size, Math.sin(angle) * size);
+            ctx.stroke();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate crystals
+      function generateCrystals() {
+        const count = 15 + Math.floor(Math.random() * 15);
+        crystals = [];
+        for (let i = 0; i < count; i++) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = 3 + Math.random() * 10;
+          const crystal = new SaltCrystal(x, y, size, currentColor);
+          crystal.targetSize = size * (0.5 + Math.random() * 0.6);
+          crystal.growSpeed = 0.01 + Math.random() * 0.03;
+          crystals.push(crystal);
+        }
+        crystalCount.textContent = crystals.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Dark surface
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(20, 25, 35, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(10, 15, 25, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Surface texture
+        for (let i = 0; i < 50; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 1 + Math.random() * 2;
+          const alpha = 0.02 + Math.random() * 0.03;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateCrystals();
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const growthValue = parseInt(growthSlider.value);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Update and draw crystals
+        crystals = crystals.filter(c => {
+          const alive = c.update(growthValue, time);
+          if (alive) c.draw(ctx);
+          return alive;
+        });
+        
+        // Maintain crystal count
+        const targetCount = Math.floor(15 + (growthValue / 100) * 15);
+        while (crystals.length < targetCount) {
+          const x = Math.random() * canvas.width;
+          const y = Math.random() * canvas.height;
+          const size = 2 + Math.random() * 8;
+          const crystal = new SaltCrystal(x, y, size, currentColor);
+          crystal.targetSize = size * (0.3 + Math.random() * 0.5);
+          crystal.growSpeed = 0.01 + Math.random() * 0.03;
+          crystals.push(crystal);
+        }
+        
+        // Update crystal count
+        crystalCount.textContent = crystals.length;
+        
+        // Update status
+        if (growthValue > 70) {
+          saltStatus.textContent = '🧂 Crystals growing rapidly! ✨';
+          saltStatus.style.color = '#fbbf24';
+        } else if (growthValue > 30) {
+          saltStatus.textContent = '🧂 Salt crystals forming on the surface';
+          saltStatus.style.color = '#818cf8';
+        } else {
+          saltStatus.textContent = '🧂 Salt crystals growing on the surface';
+          saltStatus.style.color = '#94a3b8';
+        }
+        
+        // Update message based on color
+        const colorData = colorConfigs[currentColor];
+        saltMessage.textContent = `${colorData.main} crystals growing on the surface`;
+        saltMessage.style.color = colorData.main;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        const colorData = colorConfigs[color];
+        saltStatus.textContent = `🎨 Color: ${colorData.label}`;
+        saltStatus.style.color = colorData.main;
+        // Update existing crystals
+        crystals.forEach(c => {
+          c.color = color;
+        });
+        setTimeout(() => {
+          saltStatus.textContent = '🧂 Salt crystals growing on the surface';
+          saltStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetSalt() {
+        growthSlider.value = 50;
+        growthValue.textContent = '50%';
+        generateCrystals();
+        saltStatus.textContent = '🔄 Reset complete';
+        saltStatus.style.color = '#94a3b8';
+        saltMessage.textContent = 'Crystals growing on the surface';
+        saltMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          saltStatus.textContent = '🧂 Salt crystals growing on the surface';
+          saltStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      growthSlider.addEventListener('input', function() {
+        growthValue.textContent = this.value + '%';
+      });
+
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      if (growBtn) {
+        growBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          saltStatus.textContent = '🌊 Crystals growing!';
+          saltStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            saltStatus.textContent = '🧂 Salt crystals growing on the surface';
+            saltStatus.style.color = '#94a3b8';
+          }, 1500);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetSalt();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'g' || key === 'G') {
+          e.preventDefault();
+          const currentGrowth = parseInt(growthSlider.value);
+          const newGrowth = Math.min(100, currentGrowth + 15);
+          growthSlider.value = newGrowth;
+          growthValue.textContent = newGrowth + '%';
+          saltStatus.textContent = '🌊 Crystals growing!';
+          saltStatus.style.color = '#4ade80';
+          setTimeout(() => {
+            saltStatus.textContent = '🧂 Salt crystals growing on the surface';
+            saltStatus.style.color = '#94a3b8';
+          }, 1500);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetSalt();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🧂 Salt Crystal ready · shortcuts: [G] Grow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

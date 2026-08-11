@@ -1,0 +1,363 @@
+<!-- demo.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory Sort – EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="demo-wrapper">
+    <h1>📦 Inventory Sort</h1>
+    <p class="subtitle">Items organizing with animation</p>
+
+    <div class="is-container">
+      <div class="is-scene">
+        <!-- Inventory -->
+        <div class="inventory">
+          <!-- Inventory header -->
+          <div class="inventory-header">
+            <span class="inventory-title">🎒 Inventory</span>
+            <div class="inventory-actions">
+              <button class="sort-btn" data-sort="name">🔤 Name</button>
+              <button class="sort-btn" data-sort="type">📂 Type</button>
+              <button class="sort-btn" data-sort="rarity">⭐ Rarity</button>
+              <button class="sort-btn" data-sort="quantity">🔢 Quantity</button>
+            </div>
+          </div>
+
+          <!-- Inventory grid -->
+          <div class="inventory-grid" id="inventoryGrid">
+            <!-- Items will be rendered by JavaScript -->
+          </div>
+
+          <!-- Inventory stats -->
+          <div class="inventory-footer">
+            <span class="item-count">Items: <span id="itemCount">0</span></span>
+            <span class="total-weight">Weight: <span id="totalWeight">0</span> kg</span>
+          </div>
+        </div>
+
+        <!-- Sort indicator -->
+        <div class="sort-indicator" id="sortIndicator">
+          <span class="sort-label">Sorting by: <span id="currentSort">None</span></span>
+          <span class="sort-direction" id="sortDirection">⬇️</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="addItemBtn">➕ Add Random Item</button>
+      <button id="resetBtn">⟳ Reset Inventory</button>
+      <label>
+        Animation Speed
+        <input type="range" id="speedControl" min="0.3" max="3" step="0.1" value="1" />
+      </label>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const inventoryGrid = document.getElementById('inventoryGrid');
+      const itemCount = document.getElementById('itemCount');
+      const totalWeight = document.getElementById('totalWeight');
+      const currentSort = document.getElementById('currentSort');
+      const sortDirection = document.getElementById('sortDirection');
+      const sortIndicator = document.getElementById('sortIndicator');
+      const sortBtns = document.querySelectorAll('.sort-btn');
+
+      const addItemBtn = document.getElementById('addItemBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const speedInput = document.getElementById('speedControl');
+
+      let speedMultiplier = 1;
+      let items = [];
+      let currentSortKey = null;
+      let sortAscending = true;
+      let isSorting = false;
+      let animationFrame = null;
+      let lastTimestamp = 0;
+
+      // ----- Item data -----
+      const itemTypes = [
+        { name: 'Sword', emoji: '⚔️', type: 'Weapon', rarity: 'Rare', weight: 3.5, value: 150 },
+        { name: 'Shield', emoji: '🛡️', type: 'Armor', rarity: 'Common', weight: 5.0, value: 80 },
+        { name: 'Potion', emoji: '🧪', type: 'Consumable', rarity: 'Common', weight: 0.5, value: 25 },
+        { name: 'Helmet', emoji: '⛑️', type: 'Armor', rarity: 'Uncommon', weight: 2.0, value: 120 },
+        { name: 'Bow', emoji: '🏹', type: 'Weapon', rarity: 'Rare', weight: 2.5, value: 200 },
+        { name: 'Ring', emoji: '💍', type: 'Accessory', rarity: 'Epic', weight: 0.2, value: 500 },
+        { name: 'Staff', emoji: '🪄', type: 'Weapon', rarity: 'Rare', weight: 2.0, value: 180 },
+        { name: 'Chestplate', emoji: '👕', type: 'Armor', rarity: 'Uncommon', weight: 8.0, value: 160 },
+        { name: 'Scroll', emoji: '📜', type: 'Consumable', rarity: 'Rare', weight: 0.3, value: 75 },
+        { name: 'Amulet', emoji: '📿', type: 'Accessory', rarity: 'Epic', weight: 0.3, value: 350 },
+        { name: 'Dagger', emoji: '🗡️', type: 'Weapon', rarity: 'Common', weight: 1.0, value: 60 },
+        { name: 'Boots', emoji: '👢', type: 'Armor', rarity: 'Uncommon', weight: 3.0, value: 100 },
+        { name: 'Gem', emoji: '💎', type: 'Accessory', rarity: 'Legendary', weight: 0.1, value: 1000 },
+        { name: 'Key', emoji: '🔑', type: 'Consumable', rarity: 'Common', weight: 0.1, value: 10 },
+        { name: 'Cloak', emoji: '🧥', type: 'Armor', rarity: 'Rare', weight: 2.0, value: 140 },
+        { name: 'Potion (Big)', emoji: '🧪', type: 'Consumable', rarity: 'Uncommon', weight: 1.0, value: 50 },
+      ];
+
+      // ----- Generate random item -----
+      function generateRandomItem() {
+        const template = itemTypes[Math.floor(Math.random() * itemTypes.length)];
+        const quantity = Math.floor(Math.random() * 5) + 1;
+        return {
+          id: Date.now() + Math.random() * 1000,
+          name: template.name,
+          emoji: template.emoji,
+          type: template.type,
+          rarity: template.rarity,
+          weight: template.weight * quantity,
+          value: template.value * quantity,
+          quantity: quantity,
+        };
+      }
+
+      // ----- Rarity colors -----
+      function getRarityColor(rarity) {
+        const colors = {
+          'Common': '#8a8a8a',
+          'Uncommon': '#6bcb6b',
+          'Rare': '#6bcbff',
+          'Epic': '#b88aff',
+          'Legendary': '#ffd93d'
+        };
+        return colors[rarity] || '#8a8a8a';
+      }
+
+      function getRarityBg(rarity) {
+        const colors = {
+          'Common': 'rgba(138, 138, 138, 0.05)',
+          'Uncommon': 'rgba(107, 203, 107, 0.05)',
+          'Rare': 'rgba(107, 203, 255, 0.05)',
+          'Epic': 'rgba(184, 138, 255, 0.05)',
+          'Legendary': 'rgba(255, 217, 61, 0.05)'
+        };
+        return colors[rarity] || 'rgba(138, 138, 138, 0.05)';
+      }
+
+      // ----- Render inventory -----
+      function renderInventory(animate = true) {
+        const grid = inventoryGrid;
+        grid.innerHTML = '';
+
+        if (items.length === 0) {
+          grid.innerHTML = '<div class="empty-inventory">🎒 Inventory is empty</div>';
+          itemCount.textContent = '0';
+          totalWeight.textContent = '0';
+          return;
+        }
+
+        items.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = 'inventory-item';
+          div.dataset.index = index;
+          div.style.setProperty('--item-delay', (index * 0.03 / speedMultiplier) + 's');
+          div.style.setProperty('--item-color', getRarityColor(item.rarity));
+          div.style.background = getRarityBg(item.rarity);
+          div.style.borderColor = getRarityColor(item.rarity) + '33';
+
+          div.innerHTML = `
+            <div class="item-emoji">${item.emoji}</div>
+            <div class="item-info">
+              <div class="item-name">${item.name}</div>
+              <div class="item-details">
+                <span class="item-rarity" style="color: ${getRarityColor(item.rarity)}">${item.rarity}</span>
+                <span class="item-type">${item.type}</span>
+              </div>
+            </div>
+            <div class="item-quantity">
+              <span class="qty">×${item.quantity}</span>
+              <span class="item-weight">${item.weight.toFixed(1)}kg</span>
+            </div>
+            <div class="item-value">💰 ${item.value}</div>
+          `;
+
+          if (animate) {
+            div.classList.add('appear');
+          }
+
+          grid.appendChild(div);
+        });
+
+        // Update stats
+        itemCount.textContent = items.length;
+        const totalW = items.reduce((sum, item) => sum + item.weight, 0);
+        totalWeight.textContent = totalW.toFixed(1);
+
+        // Auto-scroll to top
+        grid.scrollTop = 0;
+      }
+
+      // ----- Sort items -----
+      function sortItems(key) {
+        if (isSorting) return;
+        isSorting = true;
+
+        // Toggle direction if same key
+        if (currentSortKey === key) {
+          sortAscending = !sortAscending;
+        } else {
+          currentSortKey = key;
+          sortAscending = true;
+        }
+
+        // Update sort indicator
+        const sortLabels = {
+          name: 'Name',
+          type: 'Type',
+          rarity: 'Rarity',
+          quantity: 'Quantity'
+        };
+        currentSort.textContent = sortLabels[key] || key;
+        sortDirection.textContent = sortAscending ? '⬆️' : '⬇️';
+        sortIndicator.classList.add('active');
+
+        // Sort
+        const sorted = [...items];
+        sorted.sort((a, b) => {
+          let valA = a[key];
+          let valB = b[key];
+
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+
+          if (valA < valB) return sortAscending ? -1 : 1;
+          if (valA > valB) return sortAscending ? 1 : -1;
+          return 0;
+        });
+
+        items = sorted;
+
+        // Re-render with animation
+        renderInventory(true);
+
+        // Update button states
+        sortBtns.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.sort === key) {
+            btn.classList.add('active');
+            btn.textContent = btn.textContent.replace(/[⬆️⬇️]/, '') + (sortAscending ? ' ⬆️' : ' ⬇️');
+          } else {
+            btn.textContent = btn.textContent.replace(/[⬆️⬇️]/, '');
+          }
+        });
+
+        setTimeout(() => {
+          isSorting = false;
+        }, 500 / speedMultiplier);
+      }
+
+      // ----- Add item -----
+      function addItem() {
+        const item = generateRandomItem();
+        items.push(item);
+        renderInventory(true);
+
+        // Auto-sort if sort is active
+        if (currentSortKey) {
+          sortItems(currentSortKey);
+        }
+
+        // Scroll to show new item
+        const grid = inventoryGrid;
+        grid.scrollTop = grid.scrollHeight;
+      }
+
+      // ----- Reset inventory -----
+      function resetInventory() {
+        items = [];
+        currentSortKey = null;
+        sortAscending = true;
+        currentSort.textContent = 'None';
+        sortDirection.textContent = '⬇️';
+        sortIndicator.classList.remove('active');
+        sortBtns.forEach(btn => {
+          btn.classList.remove('active');
+          btn.textContent = btn.textContent.replace(/[⬆️⬇️]/, '');
+        });
+        renderInventory(false);
+      }
+
+      // ----- Update speed -----
+      function updateSpeed(value) {
+        speedMultiplier = parseFloat(value);
+        // Re-render to update animation speeds
+        renderInventory(true);
+      }
+
+      // ----- Animation loop -----
+      function animate(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const deltaTime = Math.min((timestamp - lastTimestamp) / 16.67, 3);
+        lastTimestamp = timestamp;
+
+        // Animate inventory items glow
+        document.querySelectorAll('.inventory-item').forEach((item, i) => {
+          const glow = Math.sin(timestamp / 2000 + i * 0.1) * 0.1 + 0.9;
+          const color = getComputedStyle(item).getPropertyValue('--item-color').trim();
+          if (color) {
+            item.style.boxShadow = `0 0 ${10 + 5 * glow}px ${color}11`;
+          }
+        });
+
+        animationFrame = requestAnimationFrame(animate);
+      }
+
+      // ----- Init -----
+      function init() {
+        // Add some initial items
+        const initialItems = [
+          { name: 'Sword', emoji: '⚔️', type: 'Weapon', rarity: 'Rare', weight: 3.5, value: 150, quantity: 1 },
+          { name: 'Potion', emoji: '🧪', type: 'Consumable', rarity: 'Common', weight: 0.5, value: 25, quantity: 3 },
+          { name: 'Ring', emoji: '💍', type: 'Accessory', rarity: 'Epic', weight: 0.2, value: 500, quantity: 1 },
+          { name: 'Helmet', emoji: '⛑️', type: 'Armor', rarity: 'Uncommon', weight: 2.0, value: 120, quantity: 1 },
+          { name: 'Scroll', emoji: '📜', type: 'Consumable', rarity: 'Rare', weight: 0.3, value: 75, quantity: 2 },
+          { name: 'Shield', emoji: '🛡️', type: 'Armor', rarity: 'Common', weight: 5.0, value: 80, quantity: 1 },
+        ];
+        items = initialItems.map(item => ({ ...item, id: Date.now() + Math.random() * 1000 }));
+
+        renderInventory(false);
+
+        // Start animation
+        lastTimestamp = 0;
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(animate);
+
+        // Auto-sort after 1.5 seconds
+        setTimeout(() => {
+          sortItems('rarity');
+        }, 1500);
+
+        // Auto-add item after 4 seconds
+        setTimeout(() => {
+          addItem();
+        }, 4500);
+      }
+
+      // ----- Event listeners -----
+      sortBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          sortItems(this.dataset.sort);
+        });
+      });
+
+      addItemBtn.addEventListener('click', addItem);
+      resetBtn.addEventListener('click', resetInventory);
+      speedInput.addEventListener('input', function() {
+        updateSpeed(this.value);
+      });
+
+      window.addEventListener('beforeunload', function() {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+      });
+
+      init();
+    })();
+  </script>
+
+</body>
+</html>

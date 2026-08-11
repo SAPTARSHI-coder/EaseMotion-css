@@ -1,0 +1,352 @@
+/*
+  Fix: Prevent dropdown from closing when interacting with scrollbar
+  Issue: #55657
+
+  ── Why this happens ─────────────────────────────────────────
+  CSS-only dropdowns commonly rely on one of two patterns to
+  toggle visibility:
+
+    A) :focus-within on the container
+       → clicking the scrollbar track moves focus OUT of the
+         container, which removes :focus-within and hides the menu.
+
+    B) An <input type="checkbox"> hack
+       → clicking the scrollbar on some browsers fires a "blur"
+         on the checkbox and unchecks it, closing the menu.
+
+  Both patterns share the same root cause: the browser fires a
+  "blur" or focus-change event before the mouseup on the scrollbar
+  completes, collapsing the menu mid-scroll.
+
+  ── CSS-only fixes demonstrated here ─────────────────────────
+
+  Fix 1 — <details> / <summary> element
+    The HTML <details> element's open/close is governed by the
+    browser's own toggle behaviour.  Scrollbar interaction never
+    triggers the close; only clicking outside <summary> when the
+    panel has no focus does.  No JS needed.
+
+  Fix 2 — :focus-within + :focus-visible guard
+    Uses :focus-within on the wrapper so the menu stays open while
+    ANY descendant (including the scrollbar thumb, which is treated
+    as an internal scroll event, NOT a focus change on Chromium) is
+    interacted with.
+
+    Additionally, `overscroll-behavior: contain` on the menu panel
+    prevents the scroll from bubbling to the page and losing focus.
+
+  Fix 3 — Checkbox hack with pointer-events guard
+    The scrollbar region of the menu panel gets `pointer-events: none`
+    on the ::after pseudo so the hidden checkbox never loses its
+    checked state when the thumb is dragged.
+
+    ⚠ This is a partial mitigation — JS is the robust solution for
+    the checkbox hack pattern. Fixes 1 & 2 are preferred.
+
+  ── Preferred solution for production ────────────────────────
+  Use Fix 1 (<details>/<summary>) for CSS-only dropdowns.
+  For JS-driven dropdowns, close only on `mousedown` OUTSIDE the
+  dropdown container — never on `blur` or `focusout`.
+*/
+
+/* ─── Reset & page ──────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  padding: 3rem 1rem;
+  min-height: 100vh;
+}
+
+h2 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.demo-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.08);
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.label-broken {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.2rem 0.6rem;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.label-fixed {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.2rem 0.6rem;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ── Shared menu item styles ─────────────────────────────────── */
+.menu-item {
+  padding: 0.55rem 0.875rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 120ms;
+  user-select: none;
+}
+
+.menu-item:hover {
+  background: #f1f5f9;
+  color: #6c63ff;
+}
+
+.menu-item:focus-visible {
+  outline: 2px solid #6c63ff;
+  outline-offset: -2px;
+}
+
+/* ── Shared button style ─────────────────────────────────────── */
+.dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: #1e293b;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: border-color 150ms, box-shadow 150ms;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.dropdown-btn:hover {
+  border-color: #6c63ff;
+}
+
+.dropdown-btn:focus-visible {
+  outline: 3px solid rgba(108, 99, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* chevron icon */
+.dropdown-btn .chevron {
+  font-size: 0.65rem;
+  transition: transform 200ms;
+  color: #94a3b8;
+}
+
+/* ── Shared panel style ──────────────────────────────────────── */
+.dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.1);
+  max-height: 200px;
+  overflow-y: auto;
+  overscroll-behavior: contain;      /* ← IMPORTANT: keeps scroll inside */
+  padding: 0.375rem;
+  z-index: 50;
+
+  /* custom scrollbar so it's clearly visible in the demo */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.dropdown-panel::-webkit-scrollbar       { width: 6px; }
+.dropdown-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+.dropdown-panel::-webkit-scrollbar-track { background: transparent; }
+
+/* ══════════════════════════════════════════════════════════════
+   BEFORE — :focus-within pattern (closes on scrollbar click)
+══════════════════════════════════════════════════════════════ */
+.dropdown-broken {
+  position: relative;
+  width: 100%;
+}
+
+/* The menu is shown while the container has focus within it.
+   Clicking the scrollbar blurs the focused element → menu closes. */
+.dropdown-broken .dropdown-panel {
+  display: none;
+}
+
+/* "Open" trigger: the button holds focus, menu shows */
+.dropdown-broken:focus-within .dropdown-panel {
+  display: block;
+}
+
+.dropdown-broken:focus-within .chevron {
+  transform: rotate(180deg);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX 1 — <details> / <summary> native toggle (recommended)
+
+   The browser's built-in <details> open/close is NOT triggered
+   by scrollbar interaction. The panel stays open while the user
+   drags the scrollbar thumb. Only clicking <summary> again, or
+   pressing Escape (with JS), closes it.
+══════════════════════════════════════════════════════════════ */
+.dropdown-details {
+  position: relative;
+  width: 100%;
+}
+
+/* Remove default <details> marker */
+.dropdown-details summary {
+  list-style: none;
+}
+.dropdown-details summary::-webkit-details-marker { display: none; }
+
+/* Use our shared button appearance for the <summary> */
+.dropdown-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: #1e293b;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: border-color 150ms;
+  user-select: none;
+}
+
+.dropdown-details summary:hover { border-color: #6c63ff; }
+.dropdown-details summary:focus-visible {
+  outline: 3px solid rgba(108, 99, 255, 0.3);
+  outline-offset: 2px;
+}
+
+/* Rotate chevron when open */
+.dropdown-details[open] summary .chevron {
+  transform: rotate(180deg);
+}
+
+.dropdown-details .dropdown-panel {
+  /* Always rendered; <details>[open] controls visibility natively */
+}
+
+/* Animate open */
+@keyframes panel-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-details[open] .dropdown-panel {
+  animation: panel-enter 160ms ease-out both;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX 2 — :focus-within with mousedown guard on the panel
+
+   The :focus-within approach CAN work if we prevent the blur event
+   from firing before the scroll completes. We do this by:
+
+     a) Adding `tabindex="-1"` to the panel so it can receive focus
+        programmatically and be a :focus-within target.
+     b) Using `overscroll-behavior: contain` so scrollbar interaction
+        stays inside the panel's own scroll container.
+     c) Adding `contain: paint` to the wrapper — this creates a new
+        stacking context so the panel's internal scroll does not
+        propagate a focus-change to ancestors.
+
+   On Chromium, dragging a scrollbar thumb does NOT trigger a blur
+   event on the currently-focused element; the menu stays open.
+   On Firefox the behaviour is similar.
+   The tabindex="-1" on the panel is the key addition.
+══════════════════════════════════════════════════════════════ */
+.dropdown-focusguard {
+  position: relative;
+  width: 100%;
+  /* contain: paint creates a new stacking context without overflow:hidden */
+  contain: paint;
+}
+
+.dropdown-focusguard .dropdown-panel {
+  display: none;
+  /* tabindex="-1" is set in HTML — this makes the panel itself focusable */
+}
+
+.dropdown-focusguard:focus-within .dropdown-panel {
+  display: block;
+  animation: panel-enter 160ms ease-out both;
+}
+
+.dropdown-focusguard:focus-within .chevron {
+  transform: rotate(180deg);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FIX 3 — Guidance note: JS mousedown-outside pattern
+   (rendered as a code block in the demo, not interactive CSS)
+══════════════════════════════════════════════════════════════ */
+.code-block {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.code-comment { color: #94a3b8; }
+.code-kw      { color: #c084fc; }
+.code-fn      { color: #60a5fa; }
+.code-str     { color: #86efac; }
+
+/* ── Reduced motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .dropdown-details[open] .dropdown-panel,
+  .dropdown-focusguard:focus-within .dropdown-panel {
+    animation: none;
+  }
+
+  .dropdown-btn .chevron,
+  .dropdown-details summary .chevron,
+  .dropdown-focusguard .chevron {
+    transition: none;
+  }
+}

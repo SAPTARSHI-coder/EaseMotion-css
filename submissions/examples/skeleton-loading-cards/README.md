@@ -1,16 +1,54 @@
-# Animated Skeleton Loading Cards
+# CSS-only Skeleton Loading Cards
 
-Skeleton placeholder cards that pulse to indicate content is loading. Each card has a rectangular image placeholder and three text lines of varying widths. The pulse animation alternates opacity to simulate loading activity.
+A modern skeleton loading card example built entirely with **HTML** and **CSS**. It simulates loading content using a smooth shimmer animation without any JavaScript.
 
-## EaseMotion CSS classes used
+## Features
 
-- `ease-flex` — page-level centering
-- `ease-center` — vertical and horizontal centering
+- ✨ Pure HTML & CSS
+- 💫 Smooth shimmer animation
+- 📱 Fully responsive layout
+- 🎨 Modern card design
+- 🚀 No JavaScript required
+- 📦 Easy to customize
 
-## How to run
+## Folder Structure
 
-Open `demo.html` in a browser to see the skeleton cards with pulse animation.
+```
+submissions/examples/skeleton-loading-cards/
+├── demo.html
+├── style.css
+└── README.md
+```
 
-## Accessibility notes
+## How to Use
 
-Skeletons are purely decorative placeholders. Reduced motion disables the pulse animation.
+1. Open `demo.html` in your browser.
+2. Ensure `style.css` is in the same folder.
+3. Modify colors, dimensions, or animation speed as needed.
+
+## Customization
+
+You can easily customize:
+
+- Card width
+- Border radius
+- Animation duration
+- Placeholder colors
+- Number of cards
+- Layout spacing
+
+## Browser Support
+
+Works in all modern browsers that support CSS animations.
+
+## Preview
+
+The example displays multiple loading cards with:
+
+- Circular avatar placeholder
+- Title placeholder
+- Text placeholders
+- Button placeholder
+- Continuous shimmer animation
+
+No JavaScript is required.

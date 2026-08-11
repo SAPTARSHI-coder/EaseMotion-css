@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs Bug & Fix Showcase</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="showcase-container">
+    <h1>Tabs Performance and Alignment Fix</h1>
+    
+    <div class="card">
+      <div class="controls">
+        <button id="toggle-fix" class="active">Fix Mode: ON</button>
+        <button id="mutate-dom">Simulate DOM Mutation</button>
+      </div>
+
+      <div id="tab-container" class="tab-demo-wrapper">
+        <input type="radio" name="showcase-tabs" id="tab-1" class="tab-inputs" checked>
+        <input type="radio" name="showcase-tabs" id="tab-2" class="tab-inputs">
+        <input type="radio" name="showcase-tabs" id="tab-3" class="tab-inputs">
+        
+        <div class="tab-demo-nav">
+          <label for="tab-1" class="tab-demo-label">Tab 1</label>
+          <label for="tab-2" class="tab-demo-label">Tab 2</label>
+          <label for="tab-3" class="tab-demo-label">Tab 3</label>
+          <div class="tab-demo-underline"></div>
+        </div>
+      </div>
+
+      <div class="status-box">
+        <div>Registered resize listeners: <span id="resize-count">1</span></div>
+        <div>Stacked change listeners: <span id="change-count">1</span></div>
+        <div style="margin-top: 8px;" id="alignment-status">Underline state: Correct (transform reset)</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const underline = document.querySelector('.tab-demo-underline');
+    const inputs = document.querySelectorAll('.tab-inputs');
+    const labels = document.querySelectorAll('.tab-demo-label');
+    const toggleFixBtn = document.getElementById('toggle-fix');
+    const mutateDomBtn = document.getElementById('mutate-dom');
+    
+    let isFixEnabled = true;
+    let resizeListenersCount = 1;
+    let changeListenersCount = 1;
+
+    // Tracker to prevent listener leaks when fix is active
+    let initialized = false;
+
+    function updateUnderline() {
+      const checkedInput = document.querySelector('.tab-inputs:checked');
+      let checkedIndex = -1;
+      
+      inputs.forEach((input, index) => {
+        if (input === checkedInput) checkedIndex = index;
+      });
+
+      if (checkedIndex === -1) return;
+
+      const activeLabel = labels[checkedIndex];
+      underline.style.width = activeLabel.offsetWidth + 'px';
+      underline.style.left = activeLabel.offsetLeft + 'px';
+
+      const alignmentStatus = document.getElementById('alignment-status');
+      if (isFixEnabled) {
+        underline.style.transform = 'none';
+        alignmentStatus.textContent = 'Underline state: Correct (transform: none overrides CSS translate)';
+        alignmentStatus.style.color = '#15803d';
+      } else {
+        underline.style.transform = '';
+        alignmentStatus.textContent = 'Underline state: Broken (left coordinate + CSS transform applied together)';
+        alignmentStatus.style.color = '#b91c1c';
+      }
+    }
+
+    function setupEventListeners() {
+      // Simulate tabs.js initialization logic
+      if (isFixEnabled) {
+        if (initialized) return;
+        initialized = true;
+
+        inputs.forEach(input => {
+          input.addEventListener('change', updateUnderline);
+        });
+      } else {
+        // Buggy behavior: keeps stacking event listeners
+        changeListenersCount++;
+        document.getElementById('change-count').textContent = changeListenersCount;
+        
+        inputs.forEach(input => {
+          input.addEventListener('change', updateUnderline);
+        });
+
+        resizeListenersCount++;
+        document.getElementById('resize-count').textContent = resizeListenersCount;
+        window.addEventListener('resize', updateUnderline);
+      }
+    }
+
+    // Toggle fix state
+    toggleFixBtn.addEventListener('click', () => {
+      isFixEnabled = !isFixEnabled;
+      if (isFixEnabled) {
+        toggleFixBtn.textContent = 'Fix Mode: ON';
+        toggleFixBtn.classList.add('active');
+        resizeListenersCount = 1;
+        changeListenersCount = 1;
+        document.getElementById('resize-count').textContent = '1';
+        document.getElementById('change-count').textContent = '1';
+      } else {
+        toggleFixBtn.textContent = 'Fix Mode: OFF';
+        toggleFixBtn.classList.remove('active');
+        initialized = false;
+      }
+      updateUnderline();
+    });
+
+    // Simulate DOM mutation triggering MutationObserver
+    mutateDomBtn.addEventListener('click', () => {
+      const dummy = document.createElement('span');
+      dummy.style.display = 'none';
+      document.getElementById('tab-container').appendChild(dummy);
+      setupEventListeners();
+    });
+
+    // Handle initial state
+    inputs.forEach(input => input.addEventListener('change', updateUnderline));
+    window.addEventListener('resize', updateUnderline);
+    updateUnderline();
+  </script>
+</body>
+</html>

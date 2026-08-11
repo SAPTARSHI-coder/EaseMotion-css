@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ease Tabs — Memory Leak Fix Demo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <main class="demo-wrapper">
+    <h1>Ease Tabs — Fixed (No Memory Leak)</h1>
+    <p class="demo-note">
+      This demo fixes the bug where <code>initializeTabs()</code> re-attached a
+      <code>window</code> resize listener and per-input <code>change</code> listeners
+      on every MutationObserver trigger, causing listeners to accumulate indefinitely.
+    </p>
+
+    <div class="ease-tabs">
+      <div class="ease-tabs-nav">
+        <input type="radio" name="ease-tab" id="tab1" class="ease-tab-radio" checked>
+        <label for="tab1" class="ease-tab-label">Overview</label>
+
+        <input type="radio" name="ease-tab" id="tab2" class="ease-tab-radio">
+        <label for="tab2" class="ease-tab-label">Details</label>
+
+        <input type="radio" name="ease-tab" id="tab3" class="ease-tab-radio">
+        <label for="tab3" class="ease-tab-label">Settings</label>
+
+        <div class="ease-tab-underline"></div>
+      </div>
+
+      <div class="ease-tabs-panels">
+        <div class="ease-tab-panel" data-panel="tab1">
+          <p>Overview panel content. Resize the window — the underline recalculates smoothly, with only one resize listener bound.</p>
+        </div>
+        <div class="ease-tab-panel" data-panel="tab2">
+          <p>Details panel content. Try clicking "Mutate DOM" below repeatedly, then check DevTools console for the listener count.</p>
+        </div>
+        <div class="ease-tab-panel" data-panel="tab3">
+          <p>Settings panel content. No matter how many mutations occur, the resize listener count stays at 1.</p>
+        </div>
+      </div>
+    </div>
+
+    <button id="mutate" class="mutate-btn">Mutate DOM (simulate framework re-render)</button>
+    <p id="listener-count" class="listener-count"></p>
+  </main>
+
+  <script>
+    /* ---------------------------------------------------------
+       FIXED core/tabs.js logic
+       - resize listener bound exactly once via window.__easeTabsResizeBound
+       - per-container change listeners bound exactly once via
+         the data-tabs-initialized attribute guard
+    --------------------------------------------------------- */
+
+    function updateUnderlineWidth(container) {
+      var checked = container.querySelector('.ease-tab-radio:checked');
+      var underline = container.querySelector('.ease-tab-underline');
+      if (!checked || !underline) return;
+
+      var label = container.querySelector('label[for="' + checked.id + '"]');
+      if (!label) return;
+
+      var labelRect = label.getBoundingClientRect();
+      var navRect = container.querySelector('.ease-tabs-nav').getBoundingClientRect();
+
+      underline.style.width = labelRect.width + 'px';
+      underline.style.transform = 'translateX(' + (labelRect.left - navRect.left) + 'px)';
+    }
+
+    function updateActivePanel(container) {
+      var checked = container.querySelector('.ease-tab-radio:checked');
+      if (!checked) return;
+      var panels = container.querySelectorAll('.ease-tab-panel');
+      Array.prototype.forEach.call(panels, function (panel) {
+        panel.classList.toggle('active', panel.dataset.panel === checked.id);
+      });
+    }
+
+    function initializeTabs() {
+      var tabContainers = document.querySelectorAll('.ease-tabs');
+
+      Array.prototype.forEach.call(tabContainers, function (container) {
+        // Guard against re-initialization on repeated MutationObserver triggers
+        if (container.hasAttribute('data-tabs-initialized')) {
+          updateUnderlineWidth(container);
+          return;
+        }
+        container.setAttribute('data-tabs-initialized', 'true');
+
+        var radios = container.querySelectorAll('.ease-tab-radio');
+        Array.prototype.forEach.call(radios, function (radio) {
+          radio.addEventListener('change', function () {
+            updateUnderlineWidth(container);
+            updateActivePanel(container);
+          });
+        });
+
+        updateUnderlineWidth(container);
+        updateActivePanel(container);
+      });
+    }
+
+    // Bind the resize listener exactly ONCE, outside initializeTabs,
+    // guarded by a global flag so re-running initializeTabs() never re-adds it.
+    if (!window.__easeTabsResizeBound) {
+      window.__easeTabsResizeBound = true;
+      var resizeTimeout;
+      window.addEventListener('resize', function () {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function () {
+          var tabContainers = document.querySelectorAll('.ease-tabs');
+          Array.prototype.forEach.call(tabContainers, function (container) {
+            updateUnderlineWidth(container);
+          });
+        }, 150);
+      });
+    }
+
+    // Simulate a framework triggering repeated re-initialization via MutationObserver
+    var observer = new MutationObserver(function () {
+      initializeTabs();
+    });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+    initializeTabs();
+
+    // Demo helper: mutate DOM and report the resize listener count
+    document.getElementById('mutate').addEventListener('click', function () {
+      document.body.classList.toggle('dummy-class');
+      var count = (typeof getEventListeners === 'function')
+        ? (getEventListeners(window).resize ? getEventListeners(window).resize.length : 0)
+        : 'N/A (getEventListeners only works in DevTools console)';
+      document.getElementById('listener-count').textContent =
+        'Resize listeners on window: ' + count + ' (should always stay at 1)';
+    });
+  </script>
+
+</body>
+</html>

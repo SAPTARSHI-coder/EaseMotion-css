@@ -1,32 +1,85 @@
-# CSS-Only Interactive Tabs
+# CSS-Only Tabs Without JavaScript
 
-This is a demonstration of a fully functional, interactive tab component built exclusively with HTML and CSS, without a single line of JavaScript.
+A responsive tab component built entirely with HTML and CSS. No JavaScript or external libraries are required.
 
-## How it works
+## ✨ Features
 
-The core of this technique is the **"CSS Radio Button Hack"**. 
+* Pure HTML and CSS
+* No JavaScript
+* Responsive layout
+* Three tab panels
+* Animated active-tab indicator
+* Keyboard-accessible native controls
+* Visible focus state
+* Hover interactions
+* Reduced-motion support
+* Easy to customize
 
-1. **Hidden Radios:** We use standard HTML `<input type="radio">` elements but hide them visually with `display: none;`.
-2. **Labels as Buttons:** We use `<label>` elements linked to those radio buttons using the `for` attribute. Clicking a label activates its corresponding radio button.
-3. **General Sibling Combinator (`~`):** We use this CSS selector to target elements that come *after* the checked radio button in the HTML structure.
-4. **State Management (`:checked`):** When a radio button is `:checked`, we can style its siblings accordingly. In this case, we show the matching content panel and move the slider indicator.
+## 📁 Files
 
-### CSS Selector Example
-
-```css
-/* If tab1 is checked, show the first section */
-#tab1:checked ~ .content-sections section:nth-child(1) {
-    opacity: 1;
-    visibility: visible;
-}
+```text
+css-only-tabs/
+├── demo.html
+├── style.css
+└── README.md
 ```
 
-## Features
+## 🚀 How It Works
 
-* **Zero JS Dependency**: Faster load times and no script execution overhead.
-* **Animated State Changes**: Smooth slider indicator and fading content panels.
-* **Accessible Foundation**: Uses native HTML form elements for keyboard accessibility.
+The component uses native radio inputs as the tab state.
 
-## Usage
+CSS sibling selectors detect the selected radio button and display the corresponding content panel.
 
-Simply open `demo.html` in your browser to interact with the tabs. The logic is entirely self-contained within `style.css`.
+For example:
+
+```html
+<input type="radio" name="tabs" id="tab-overview" checked>
+<input type="radio" name="tabs" id="tab-features">
+<input type="radio" name="tabs" id="tab-usage">
+```
+
+The checked state is then used by CSS to control which panel is visible.
+
+No JavaScript is required.
+
+## ♿ Accessibility
+
+The component provides:
+
+* Native keyboard-focusable radio controls
+* Labels associated with every control
+* Semantic `main`, `section`, `header`, and `article` elements
+* Visible focus indication
+* Reduced-motion support
+* Responsive text and controls
+
+## 📱 Responsive Design
+
+The layout adapts to smaller screens using CSS media queries.
+
+It has been designed for:
+
+* Desktop
+* Tablet
+* Mobile
+
+## 🧪 Testing
+
+Open `demo.html` in a modern browser.
+
+Test:
+
+1. Click each tab.
+2. Confirm the correct panel appears.
+3. Use the keyboard to reach the tab controls.
+4. Verify the focus indicator.
+5. Resize the browser window.
+6. Test with reduced-motion preferences enabled.
+
+## 📌 Related Issue
+
+EaseMotion CSS issue #68301 — CSS-only Tabs without JS.
+
+## 📄 License
+
+This contribution follows the license and contribution guidelines of the EaseMotion CSS repository.

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Shopping Cart Drawer Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f1f5f9;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+    }
+
+    .demo-page {
+      padding: 3rem 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .demo-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+    }
+
+    .demo-sub {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin: 0 0 32px 0;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .product-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px 16px;
+      box-shadow: 0 2px 8px -2px rgba(0,0,0,0.06);
+      border: 1px solid #e2e8f0;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px -6px rgba(0,0,0,0.12);
+    }
+
+    .product-emoji { font-size: 2.2rem; margin-bottom: 10px; }
+    .product-name  { font-size: 0.85rem; font-weight: 700; color: #0f172a; margin: 0 0 4px 0; }
+    .product-price { font-size: 0.8rem; color: #3b82f6; font-weight: 600; margin: 0 0 12px 0; }
+
+    .add-btn {
+      width: 100%;
+      padding: 8px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .add-btn:hover { background: #2563eb; }
+
+    .open-cart-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 14px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.45);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 100;
+    }
+    .open-cart-btn:hover { transform: scale(1.06); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    /* ── Quantity Counter ── */
+    const QuantityCounter = ({ value, onChange, min = 1, max = 99 }) => {
+      const [dir, setDir] = useState('up');
+      const dec = () => { if (value <= min) return; setDir('down'); onChange(value - 1); };
+      const inc = () => { if (value >= max) return; setDir('up'); onChange(value + 1); };
+      return (
+        <div className="ease-sc-qty">
+          <button className="ease-sc-qty-btn" onClick={dec} disabled={value <= min} aria-label="Decrease">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <div className="ease-sc-qty-display" aria-live="polite">
+            <span key={`${value}-${dir}`} className={`ease-sc-qty-num ease-sc-slide-${dir}`}>{value}</span>
+          </div>
+          <button className="ease-sc-qty-btn" onClick={inc} disabled={value >= max} aria-label="Increase">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+      );
+    };
+
+    /* ── Cart Item ── */
+    const CartItem = ({ item, onQuantityChange, onRemove }) => {
+      const [removing, setRemoving] = useState(false);
+      const handleRemove = () => { setRemoving(true); setTimeout(() => onRemove(item.id), 300); };
+      return (
+        <div className={`ease-sc-item ${removing ? 'is-removing' : ''}`}>
+          <div className="ease-sc-item-img" style={{ background: item.color }}>
+            <span className="ease-sc-item-emoji">{item.emoji}</span>
+          </div>
+          <div className="ease-sc-item-info">
+            <p className="ease-sc-item-name">{item.name}</p>
+            {item.variant && <p className="ease-sc-item-variant">{item.variant}</p>}
+            <p className="ease-sc-item-price">${(item.price * item.quantity).toFixed(2)}</p>
+          </div>
+          <div className="ease-sc-item-controls">
+            <QuantityCounter value={item.quantity} onChange={(q) => onQuantityChange(item.id, q)} />
+            <button className="ease-sc-remove-btn" onClick={handleRemove} aria-label="Remove">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    /* ── CartDrawer ── */
+    const CartDrawer = ({ open, onClose, items, setItems, onCheckout }) => {
+      const [entering, setEntering] = useState(false);
+      const [visible, setVisible] = useState(open);
+
+      useEffect(() => {
+        if (open) { setVisible(true); requestAnimationFrame(() => setEntering(true)); }
+        else { setEntering(false); const t = setTimeout(() => setVisible(false), 380); return () => clearTimeout(t); }
+      }, [open]);
+
+      useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [open]);
+      useEffect(() => { const fn = (e) => e.key === 'Escape' && onClose(); document.addEventListener('keydown', fn); return () => document.removeEventListener('keydown', fn); }, [onClose]);
+
+      const handleQtyChange = (id, qty) => setItems(prev => prev.map(i => i.id === id ? { ...i, quantity: qty } : i));
+      const handleRemove = (id) => setItems(prev => prev.filter(i => i.id !== id));
+
+      const subtotal = items.reduce((s, i) => s + i.price * i.quantity, 0);
+      const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+
+      if (!visible) return null;
+
+      return (
+        <div className="ease-sc-root">
+          <div className={`ease-sc-overlay ${entering ? 'is-entering' : ''}`} onClick={onClose} />
+          <div className={`ease-sc-drawer ${entering ? 'is-entering' : ''}`} role="dialog" aria-modal="true" aria-label="Shopping cart">
+            <div className="ease-sc-header">
+              <div className="ease-sc-header-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+                <span>Cart</span>
+                {itemCount > 0 && <span className="ease-sc-count-badge">{itemCount}</span>}
+              </div>
+              <button className="ease-sc-close-btn" onClick={onClose} aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div className="ease-sc-items">
+              {items.length === 0
+                ? <div className="ease-sc-empty"><div className="ease-sc-empty-icon">🛒</div><p className="ease-sc-empty-title">Your cart is empty</p><p className="ease-sc-empty-desc">Add some items to get started!</p></div>
+                : items.map(item => <CartItem key={item.id} item={item} onQuantityChange={handleQtyChange} onRemove={handleRemove} />)
+              }
+            </div>
+
+            {items.length > 0 && (
+              <div className="ease-sc-footer">
+                <div className="ease-sc-subtotal"><span>Subtotal</span><span className="ease-sc-subtotal-value">${subtotal.toFixed(2)}</span></div>
+                <p className="ease-sc-shipping-note">Shipping & taxes calculated at checkout</p>
+                <button className="ease-sc-checkout-btn" onClick={() => { onCheckout(items); }}>Checkout · ${subtotal.toFixed(2)}</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    /* ── Demo App ── */
+    const CATALOG = [
+      { id: 'p1', name: 'Wireless Headphones', emoji: '🎧', color: '#dbeafe', price: 89.99, variant: 'Midnight Black' },
+      { id: 'p2', name: 'Mechanical Keyboard', emoji: '⌨️', color: '#fce7f3', price: 129.00, variant: 'TKL Layout' },
+      { id: 'p3', name: 'USB-C Hub',          emoji: '🔌', color: '#dcfce7', price: 49.99, variant: '7-in-1' },
+      { id: 'p4', name: 'Desk Lamp',           emoji: '💡', color: '#fef9c3', price: 39.00, variant: 'Warm White' },
+    ];
+
+    const App = () => {
+      const [cartOpen, setCartOpen] = useState(false);
+      const [cartItems, setCartItems] = useState([]);
+
+      const addToCart = (product) => {
+        setCartItems(prev => {
+          const existing = prev.find(i => i.id === product.id);
+          if (existing) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
+          return [...prev, { ...product, quantity: 1 }];
+        });
+      };
+
+      const totalQty = cartItems.reduce((s, i) => s + i.quantity, 0);
+
+      return (
+        <>
+          <div className="demo-page">
+            <h1 className="demo-title">EaseMotion Store</h1>
+            <p className="demo-sub">Add items to cart, then open the drawer to manage quantities.</p>
+            <div className="product-grid">
+              {CATALOG.map(p => (
+                <div className="product-card" key={p.id}>
+                  <div className="product-emoji">{p.emoji}</div>
+                  <p className="product-name">{p.name}</p>
+                  <p className="product-price">${p.price.toFixed(2)}</p>
+                  <button className="add-btn" onClick={() => addToCart(p)}>Add to Cart</button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button className="open-cart-btn" onClick={() => setCartOpen(true)}>
+            🛒 View Cart {totalQty > 0 && `(${totalQty})`}
+          </button>
+
+          <CartDrawer
+            open={cartOpen}
+            onClose={() => setCartOpen(false)}
+            items={cartItems}
+            setItems={setCartItems}
+            onCheckout={(items) => alert(`Proceeding to checkout with ${items.length} item(s)!`)}
+          />
+        </>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

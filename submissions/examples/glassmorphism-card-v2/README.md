@@ -1,16 +1,51 @@
-# Glassmorphism Card
+# ✨ CSS Glassmorphism Card v2
 
-A frosted glass card with a semi-transparent background, backdrop blur, and a subtle border highlight. Positioned over a gradient background to showcase the transparency effect. Includes an icon, title, description, and a pill-style meta badge.
+A modern glassmorphism card with a translucent surface, backdrop blur,
+animated gradient border glow, and subtle hover interaction.
 
-## EaseMotion CSS classes used
+This component is built entirely with HTML and CSS.
 
-- `ease-flex` — page-level centering
-- `ease-center` — vertical and horizontal centering
+## Features
 
-## How to run
+- Pure CSS implementation
+- No JavaScript
+- Glassmorphism effect
+- `backdrop-filter` blur
+- Animated gradient border
+- Soft glow effects
+- Hover elevation
+- Responsive layout
+- Reduced-motion support
+- No external dependencies
 
-Open `demo.html` in a browser to view the glassmorphism card over the gradient background.
+## Usage
 
-## Accessibility notes
+Add the card structure to your page:
 
-The card content uses high-contrast white text. The emoji icon is decorative. The backdrop blur effect does not affect readability.
+```html
+<article class="glass-card">
+  <div class="card-content">
+    <div class="card-icon" aria-hidden="true">
+      ✦
+    </div>
+
+    <div class="card-heading">
+      <p class="card-label">EASEMOTION</p>
+      <h2>Crystal UI</h2>
+    </div>
+
+    <p class="card-description">
+      A modern glass interface enhanced with translucent layers,
+      backdrop blur, and a shifting border glow.
+    </p>
+
+    <div class="card-footer">
+      <span class="status">
+        <span class="status-dot" aria-hidden="true"></span>
+        Motion Active
+      </span>
+
+      <span class="card-version">v2.0</span>
+    </div>
+  </div>
+</article>
