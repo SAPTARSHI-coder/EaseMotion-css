@@ -1,10 +1,9 @@
 # SCSS Fluid Typography Mixins
 
-Fluid font scaling using CSS clamp() function.
+Helpers for generating `clamp()` based responsive typography.
 
 ## Usage
 ```scss
-@import 'fluid-typography';
-
-h1 { @include ease-fluid-type(1.5rem, 3rem); }
+h1 { @include ease-fluid-h1(); }
+p { @include ease-fluid-p(); }
 ```
