@@ -1,16 +1,14 @@
 # ease-hologram-effect
 
-A CSS animation component.
+A glowing, glitching CSS hologram text animation effect.
 
 ## Usage
-Open demo.html in a browser. Click the button to toggle the animation.
+Open demo.html in a browser. Apply the class and the data attribute to your text.
 
 ## Custom Properties
 | Property | Default | Description |
-|----------|---------|-------------|
-| --primary | #4f46e5 | Primary color |
-| --bg | #f8fafc | Background |
-| --duration | 0.5s | Animation speed |
+|---|---|---|
+| --hologram-color | #00f0ff | Main hologram glow color |
 
 ## Notes
-CSS handles visual transitions. JavaScript toggles state.
+CSS handles glitch animations, flickering, and glowing text. The pseudo-elements duplicate the text for the chromatic aberration glitch effect. Scanlines provide a retro sci-fi projection feel.
