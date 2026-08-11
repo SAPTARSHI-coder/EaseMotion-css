@@ -1,0 +1,396 @@
+/* 
+  ==========================================================================
+  EaseMotion Cinematic Depth-of-Field Parallax
+  ========================================================================== 
+*/
+
+:root {
+    --bg-color: #020617;
+    --text-primary: #f8fafc;
+    --accent: #38bdf8;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    font-family: system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+/* 
+  ==========================================================================
+  The Scrolling Architecture
+  ========================================================================== 
+*/
+
+.scroll-track {
+    /* 
+      Force the page to be extremely tall to allow for a long scroll timeline 
+      The viewport will be fixed, and animations will tie to the scroll position 
+      of this massive element!
+    */
+    height: 300vh;
+    position: relative;
+}
+
+.parallax-viewport {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #87CEEB; /* Fallback sky color */
+}
+
+/* 
+  ==========================================================================
+  The Physical Layers
+  ========================================================================== 
+*/
+
+.parallax-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120%; /* Extra height to allow for Y-axis panning */
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    will-change: transform, filter; /* Hardware acceleration hint */
+    
+    /* Bind all layers to the root scroll timeline natively! */
+    animation-timeline: scroll(root block);
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+}
+
+/* 
+  Layer 1: The Sky (Background)
+  - Moves very slowly (Parallax)
+  - Starts blurred, comes into focus
+*/
+.layer-1-sky {
+    background-image: url('https://images.unsplash.com/photo-1513628253939-010e64ac66cd?auto=format&fit=crop&q=80&w=2000');
+    z-index: 1;
+    animation-name: cinematic-sky;
+}
+
+/* 
+  Layer 2: The Mountains
+  - Moves slightly faster
+  - Starts slightly blurred, comes into focus
+*/
+.layer-2-mountains {
+    background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000');
+    /* We use an image with an alpha channel/sky removed, or simulate it via CSS mix-blend-mode for the demo */
+    mix-blend-mode: multiply;
+    z-index: 2;
+    animation-name: cinematic-mountains;
+}
+
+/* 
+  Layer 3: The Forest (Midground / Hero)
+  - Moves at a normal speed
+  - Starts sharp, becomes heavily blurred as camera pushes past it!
+*/
+.layer-3-forest {
+    background-image: url('https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=2000');
+    /* For demo purposes to isolate trees over mountains */
+    mask-image: linear-gradient(to top, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to top, black 50%, transparent 100%);
+    z-index: 3;
+    animation-name: cinematic-forest;
+}
+
+/* 
+  Layer 4: Foreground Leaves
+  - Moves extremely fast
+  - Always blurred (too close to camera)
+*/
+.layer-4-foreground {
+    background-image: url('https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=2000');
+    mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+    -webkit-mask-image: radial-gradient(circle at center, transparent 30%, black 100%);
+    opacity: 0.8;
+    z-index: 4;
+    animation-name: cinematic-foreground;
+}
+
+/* 
+  ==========================================================================
+  The Cinematic Keyframes (The Magic)
+  ========================================================================== 
+*/
+
+/* 
+  Notice how we animate BOTH transform (for parallax) 
+  AND filter (for Depth of Field)! 
+*/
+
+@keyframes cinematic-sky {
+    0% {
+        transform: translateY(0);
+        filter: blur(10px) brightness(1.2);
+    }
+    100% {
+        transform: translateY(10%);
+        filter: blur(0px) brightness(0.8);
+    }
+}
+
+@keyframes cinematic-mountains {
+    0% {
+        transform: translateY(0) scale(1.1);
+        filter: blur(6px);
+    }
+    100% {
+        transform: translateY(20%) scale(1.1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes cinematic-forest {
+    0% {
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+    100% {
+        /* Pushes down fast and blurs out heavily! */
+        transform: translateY(50%) scale(1.2);
+        filter: blur(15px);
+    }
+}
+
+@keyframes cinematic-foreground {
+    0% {
+        transform: translateY(0) scale(1.5);
+        filter: blur(12px);
+    }
+    100% {
+        transform: translateY(120%) scale(2);
+        filter: blur(25px);
+    }
+}
+
+/* 
+  ==========================================================================
+  UI & Typography Overlays
+  ========================================================================== 
+*/
+
+.content-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    
+    /* We fade out the text as the user scrolls to reveal the landscape */
+    animation: fade-text linear both;
+    animation-timeline: scroll(root block);
+    /* Only run the animation for the first 30% of the scroll track */
+    animation-range: 0% 30%; 
+}
+
+@keyframes fade-text {
+    to {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+}
+
+.content-overlay h1 {
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: -2px;
+    margin: 0 0 20px 0;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+.content-overlay p {
+    font-size: 1.5rem;
+    max-width: 600px;
+    line-height: 1.6;
+    margin: 0;
+    text-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+.scroll-indicator {
+    position: absolute;
+    bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.mouse {
+    width: 30px;
+    height: 50px;
+    border: 2px solid white;
+    border-radius: 20px;
+    position: relative;
+}
+
+.mouse::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 8px;
+    background-color: white;
+    border-radius: 2px;
+    animation: scroll-wheel 1.5s infinite;
+}
+
+@keyframes scroll-wheel {
+    0% { transform: translate(-50%, 0); opacity: 1; }
+    100% { transform: translate(-50%, 15px); opacity: 0; }
+}
+
+/* 
+  ==========================================================================
+  The Section Below the Parallax
+  ========================================================================== 
+*/
+
+.info-section {
+    background-color: var(--bg-color);
+    padding: 100px 20px;
+    position: relative;
+    z-index: 20;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.info-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.info-container h2 {
+    font-size: 3rem;
+    margin: 0 0 20px 0;
+}
+
+.info-container p {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto 60px auto;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: #0f172a;
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+}
+
+.feature-card h3 {
+    color: var(--accent);
+    font-size: 1.5rem;
+    margin: 0 0 15px 0;
+}
+
+.feature-card p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Accessibility Fallback */
+@media (prefers-reduced-motion: reduce) {
+    .parallax-layer, .content-overlay {
+        animation: none !important;
+    }
+}
+
+/* 
+  ==========================================================================
+  Responsive Adjustments for Mobile Devices
+  ========================================================================== 
+*/
+
+@media (max-width: 1024px) {
+    .content-overlay h1 {
+        font-size: 4rem;
+    }
+    
+    .content-overlay p {
+        font-size: 1.2rem;
+        padding: 0 20px;
+    }
+    
+    .info-container h2 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .scroll-track {
+        height: 200vh; /* Reduce scroll track length for mobile to prevent fatigue */
+    }
+    
+    .content-overlay h1 {
+        font-size: 3rem;
+    }
+    
+    .scroll-indicator {
+        bottom: 30px;
+    }
+    
+    /* On mobile, massive blurring of large images can cause GPU stutter */
+    /* We slightly reduce the maximum blur values to ensure buttery 60fps */
+    @keyframes cinematic-forest {
+        0% { transform: translateY(0) scale(1); filter: blur(0px); }
+        100% { transform: translateY(30%) scale(1.1); filter: blur(8px); }
+    }
+    
+    @keyframes cinematic-foreground {
+        0% { transform: translateY(0) scale(1.2); filter: blur(6px); }
+        100% { transform: translateY(80%) scale(1.5); filter: blur(15px); }
+    }
+}
+
+@media (max-width: 480px) {
+    .content-overlay h1 {
+        font-size: 2.2rem;
+    }
+    
+    .content-overlay p {
+        font-size: 1rem;
+    }
+    
+    .info-container h2 {
+        font-size: 2rem;
+    }
+    
+    .feature-card {
+        padding: 25px;
+    }
+}
