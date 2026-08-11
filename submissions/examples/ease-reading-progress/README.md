@@ -1,47 +1,25 @@
-# Ease Reading Progress
+# CSS Reading Progress Bar (Scroll-Driven)
 
-A reusable reading progress indicator component for EaseMotion CSS.
+A modern, highly performant reading progress bar that perfectly syncs with the user's scroll position without using a single line of JavaScript. Built for **EaseMotion CSS**.
 
-## Features
+## 🚀 Features
 
-- Real-time scroll tracking
-- Basic progress bar
-- Gradient progress bar
-- Glow progress bar
-- Circular reading indicator
-- Responsive design
-- Reduced motion support
+- **Zero JavaScript:** Completely eliminates the need for expensive `window.addEventListener('scroll')` functions.
+- **Compositor Thread Performance:** Because it uses the native `animation-timeline` API, the browser calculates the progress off the main thread, preventing layout thrashing and guaranteeing buttery-smooth 60fps animations.
+- **Minimal CSS:** Achieved using just a few lines of modern CSS.
+- **Graceful Degradation:** Includes a `@supports not (animation-timeline: scroll())` fallback to quietly hide the bar on older browsers rather than showing a broken layout.
+- **Accessibility:** Honors `@media (prefers-reduced-motion: reduce)` by disabling the tracker for users who are sensitive to persistent screen movement.
 
-## Variants
+## 🛠️ Usage
 
-### ease-reading-progress-basic
-Simple top progress bar.
+### 1. HTML Structure
 
-### ease-reading-progress-gradient
-Gradient animated progress bar.
-
-### ease-reading-progress-glow
-Progress bar with glow effect.
-
-### ease-reading-progress-circle
-Circular percentage indicator.
-
-## Usage
+Simply place the progress bar `div` at the top of your `<body>`.
 
 ```html
-<div class="ease-reading-progress basic"></div>
-```
-
-## Accessibility
-
-Supports:
-
-- Responsive layouts
-- Reduced motion preferences
-- High visibility progress indicators
-
-## Files
-
-- demo.html
-- style.css
-- README.md
+<body>
+    <div class="ease-reading-progress" aria-hidden="true"></div>
+    
+    <!-- Your page content goes here -->
+    <main>...</main>
+</body>

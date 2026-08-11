@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tea Ceremony · tea steam rises gently</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="tea-container">
+      <div class="tea-display" id="teaDisplay">
+        <!-- Canvas for tea ceremony -->
+        <canvas id="teaCanvas"></canvas>
+        
+        <!-- Tea Info -->
+        <div class="tea-info">
+          <span class="info-label">🍵 Steam</span>
+          <span class="info-value" id="steamCount">0</span>
+        </div>
+
+        <!-- Tea Controls -->
+        <div class="tea-controls">
+          <div class="control-group">
+            <label class="control-label">🌡️ Temperature</label>
+            <input type="range" class="control-slider" id="tempSlider" min="1" max="10" value="5">
+            <span class="control-value" id="tempValue">5</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🍵 Style</label>
+            <div class="style-options">
+              <button class="style-btn active" data-style="matcha" title="Matcha">🍵</button>
+              <button class="style-btn" data-style="sencha" title="Sencha">🌿</button>
+              <button class="style-btn" data-style="hōjicha" title="Hōjicha">🔥</button>
+              <button class="style-btn" data-style="genmaicha" title="Genmaicha">🍚</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tea Text -->
+        <div class="tea-text">
+          <span class="text-label">🍵 Tea Ceremony</span>
+          <span class="text-message" id="teaMessage">Steam rises gently from the tea</span>
+        </div>
+      </div>
+      
+      <div class="tea-status">
+        <span id="teaStatus">🍵 Tea steam rises gently in the ceremony</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🍵 tea steam rises · 4 tea styles · temperature control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('teaCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('teaDisplay');
+      const steamCount = document.getElementById('steamCount');
+      const teaStatus = document.getElementById('teaStatus');
+      const teaMessage = document.getElementById('teaMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const tempSlider = document.getElementById('tempSlider');
+      const tempValue = document.getElementById('tempValue');
+      const styleBtns = document.querySelectorAll('.style-btn');
+
+      // State
+      let steamParticles = [];
+      let animationId = null;
+      let currentStyle = 'matcha';
+      let currentTemp = 5;
+      let time = 0;
+
+      // Tea styles
+      const teaStyles = {
+        matcha: { name: 'Matcha', color: '#4a8a3a', light: '#6aaa5a', dark: '#2a6a2a', steamColor: 'rgba(180, 200, 180, 0.3)' },
+        sencha: { name: 'Sencha', color: '#5a8a4a', light: '#7aaa6a', dark: '#3a6a2a', steamColor: 'rgba(160, 200, 160, 0.25)' },
+        hōjicha: { name: 'Hōjicha', color: '#8a6a3a', light: '#aa8a5a', dark: '#6a4a2a', steamColor: 'rgba(200, 180, 150, 0.3)' },
+        genmaicha: { name: 'Genmaicha', color: '#7a8a4a', light: '#9aaa6a', dark: '#5a6a2a', steamColor: 'rgba(180, 200, 160, 0.25)' }
+      };
+
+      // Steam particle class
+      class SteamParticle {
+        constructor(x, y, temp) {
+          this.x = x || canvas.width / 2 + (Math.random() - 0.5) * 30;
+          this.y = y || canvas.height * 0.6 + Math.random() * 20;
+          this.size = 2 + Math.random() * 4;
+          this.baseSize = this.size;
+          this.opacity = 0.3 + Math.random() * 0.4;
+          this.speed = 0.2 + temp * 0.06 + Math.random() * 0.1;
+          this.wobble = 0.3 + Math.random() * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.temp = temp;
+          this.glow = 0.2 + Math.random() * 0.3;
+        }
+
+        update() {
+          this.y -= this.speed * 0.5;
+          this.phase += 0.03;
+          this.x += Math.sin(this.phase) * this.wobble * 0.15;
+          this.life -= 0.004 * (1 + this.temp * 0.05);
+          this.size = this.baseSize * (1 + (1 - this.life / this.maxLife) * 0.5);
+          this.opacity = (this.life / this.maxLife) * 0.5;
+          return this.life > 0 && this.y > 0;
+        }
+
+        draw(ctx) {
+          const alpha = this.opacity * (0.6 + Math.sin(this.phase * 2) * 0.2);
+          const size = this.size * (1 + Math.sin(this.phase * 0.5) * 0.2);
+          
+          ctx.save();
+          
+          // Glow
+          const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 3);
+          const style = teaStyles[currentStyle];
+          glow.addColorStop(0, style.steamColor);
+          glow.addColorStop(0.3, style.steamColor);
+          glow.addColorStop(1, 'rgba(200, 220, 200, 0)');
+          ctx.globalAlpha = alpha * 0.5;
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Main steam
+          ctx.globalAlpha = alpha * 0.7;
+          const grad = ctx.createRadialGradient(
+            this.x - size * 0.2,
+            this.y - size * 0.2,
+            0,
+            this.x,
+            this.y,
+            size
+          );
+          grad.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+          grad.addColorStop(0.5, 'rgba(220, 240, 220, 0.2)');
+          grad.addColorStop(1, 'rgba(200, 220, 200, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Soft steam trails
+          ctx.globalAlpha = alpha * 0.2;
+          for (let i = 0; i < 3; i++) {
+            const angle = Math.sin(this.phase + i * 2) * 0.5;
+            const dist = size * (0.5 + i * 0.5);
+            const tx = this.x + Math.cos(angle) * dist;
+            const ty = this.y - size * (0.5 + i * 0.3);
+            ctx.beginPath();
+            ctx.arc(tx, ty, size * (0.3 + i * 0.15), 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fill();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        drawBackground();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const style = teaStyles[currentStyle];
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Warm background
+        const grad = ctx.createRadialGradient(w/2, h * 0.6, 0, w/2, h * 0.6, w * 0.6);
+        grad.addColorStop(0, 'rgba(35, 30, 25, 0.2)');
+        grad.addColorStop(0.5, 'rgba(25, 22, 18, 0.3)');
+        grad.addColorStop(1, 'rgba(15, 12, 10, 0.5)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Tea bowl
+        const bowlX = w/2;
+        const bowlY = h * 0.65;
+        const bowlW = 100 + currentTemp * 3;
+        const bowlH = 30 + currentTemp * 1.5;
+        
+        // Bowl shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetY = 5;
+        
+        // Bowl body
+        const bowlGrad = ctx.createRadialGradient(bowlX, bowlY, 0, bowlX, bowlY, bowlW/2);
+        bowlGrad.addColorStop(0, style.light);
+        bowlGrad.addColorStop(0.5, style.color);
+        bowlGrad.addColorStop(1, style.dark);
+        ctx.fillStyle = bowlGrad;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.ellipse(bowlX, bowlY, bowlW/2, bowlH/2, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Bowl rim
+        ctx.shadowBlur = 5;
+        ctx.strokeStyle = style.light;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(bowlX, bowlY - bowlH/4, bowlW/2 * 0.9, bowlH/3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Tea liquid
+        const teaGrad = ctx.createRadialGradient(bowlX, bowlY + 5, 0, bowlX, bowlY + 5, bowlW/2 * 0.8);
+        teaGrad.addColorStop(0, style.color);
+        teaGrad.addColorStop(0.5, style.dark);
+        teaGrad.addColorStop(1, style.dark + '88');
+        ctx.fillStyle = teaGrad;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(bowlX, bowlY + 5, bowlW/2 * 0.85, bowlH/2 * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Tea reflection
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 0.1;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(bowlX - 15, bowlY - 2, 20, 8, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // Subtle steam glow from bowl
+        const glowGrad = ctx.createRadialGradient(bowlX, bowlY - 30, 0, bowlX, bowlY - 30, 60);
+        glowGrad.addColorStop(0, 'rgba(200, 220, 200, 0.05)');
+        glowGrad.addColorStop(1, 'rgba(200, 220, 200, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(bowlX, bowlY - 30, 60, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Create steam particle
+      function createSteam() {
+        const temp = currentTemp / 10;
+        const count = 1 + Math.floor(temp * 2 + Math.random());
+        
+        for (let i = 0; i < count; i++) {
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 20;
+          const y = canvas.height * 0.55 + Math.random() * 20;
+          const particle = new SteamParticle(x, y, temp);
+          steamParticles.push(particle);
+        }
+        
+        steamCount.textContent = steamParticles.length;
+      }
+
+      // Animate
+      function animate() {
+        time += 0.02;
+        
+        // Create new steam particles
+        if (Math.random() < 0.3 + currentTemp * 0.04) {
+          createSteam();
+        }
+        
+        // Clear and draw background
+        drawBackground();
+        
+        // Update and draw steam
+        steamParticles = steamParticles.filter(p => p.update());
+        steamParticles.forEach(p => p.draw(ctx));
+        
+        // Update status based on temperature
+        const temp = currentTemp / 10;
+        if (temp > 0.7) {
+          teaStatus.textContent = '🌡️ Steam rises vigorously from the tea';
+          teaStatus.style.color = '#fbbf24';
+        } else if (temp > 0.4) {
+          teaStatus.textContent = '🍵 Gentle steam rises from the tea';
+          teaStatus.style.color = '#818cf8';
+        } else {
+          teaStatus.textContent = '🍵 Tea steam rises gently in the ceremony';
+          teaStatus.style.color = '#94a3b8';
+        }
+        
+        // Update steam count
+        steamCount.textContent = steamParticles.length;
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set style
+      function setStyle(style) {
+        currentStyle = style;
+        styleBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.style === style);
+        });
+        const styleNames = {
+          matcha: 'Matcha',
+          sencha: 'Sencha',
+          hōjicha: 'Hōjicha',
+          genmaicha: 'Genmaicha'
+        };
+        teaStatus.textContent = `🍵 Style: ${styleNames[style]}`;
+        teaStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          teaStatus.textContent = '🍵 Tea steam rises gently in the ceremony';
+          teaStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Set temperature
+      function setTemperature(value) {
+        currentTemp = parseInt(value);
+        tempValue.textContent = currentTemp;
+        teaStatus.textContent = `🌡️ Temperature: ${currentTemp}/10`;
+        teaStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          teaStatus.textContent = '🍵 Tea steam rises gently in the ceremony';
+          teaStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetTea() {
+        steamParticles = [];
+        steamCount.textContent = '0';
+        drawBackground();
+        teaStatus.textContent = '🔄 Reset complete';
+        teaStatus.style.color = '#94a3b8';
+        teaMessage.textContent = 'Steam rises gently from the tea';
+        teaMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          teaStatus.textContent = '🍵 Tea steam rises gently in the ceremony';
+          teaStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      styleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setStyle(this.dataset.style);
+        });
+      });
+
+      tempSlider.addEventListener('input', function() {
+        setTemperature(this.value);
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetTea();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetTea();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🍵 Tea Ceremony ready · shortcuts: [R] Reset');
+    })();
+  </script>
+</body>
+</html>

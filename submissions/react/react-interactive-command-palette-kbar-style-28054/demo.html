@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>React Command Palette Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="./style.css">
+  
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+    }
+    
+    .demo-instructions {
+      text-align: center;
+    }
+
+    .demo-btn {
+      background-color: #0f172a;
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.15s ease;
+    }
+    
+    .demo-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .demo-btn kbd {
+      background-color: rgba(255,255,255,0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    /* Toast for showing actions */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #3b82f6;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const CommandPalette = ({ isOpen, onClose, commands = [] }) => {
+      const [searchQuery, setSearchQuery] = useState('');
+      const [selectedIndex, setSelectedIndex] = useState(0);
+      const inputRef = useRef(null);
+      const listRef = useRef(null);
+
+      const filteredCommands = commands.filter(cmd => 
+        cmd.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+
+      useEffect(() => {
+        if (isOpen) {
+          setSearchQuery('');
+          setSelectedIndex(0);
+          setTimeout(() => inputRef.current?.focus(), 50);
+        }
+      }, [isOpen]);
+
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (!isOpen) return;
+          switch (e.key) {
+            case 'Escape': e.preventDefault(); onClose(); break;
+            case 'ArrowDown': e.preventDefault(); setSelectedIndex(p => (p < filteredCommands.length - 1 ? p + 1 : p)); break;
+            case 'ArrowUp': e.preventDefault(); setSelectedIndex(p => (p > 0 ? p - 1 : p)); break;
+            case 'Enter': e.preventDefault(); if (filteredCommands[selectedIndex]) { filteredCommands[selectedIndex].action(); onClose(); } break;
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [isOpen, filteredCommands, selectedIndex, onClose]);
+
+      useEffect(() => {
+        if (isOpen && listRef.current) {
+          const activeItem = listRef.current.children[selectedIndex];
+          if (activeItem) activeItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }, [selectedIndex, isOpen]);
+
+      if (!isOpen) return null;
+
+      return (
+        <div className="ease-kpalette-overlay" onClick={onClose}>
+          <div className="ease-kpalette-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="ease-kpalette-header">
+              <svg className="ease-kpalette-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                ref={inputRef}
+                className="ease-kpalette-input"
+                type="text"
+                placeholder="Type a command or search..."
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setSelectedIndex(0); }}
+              />
+              <kbd className="ease-kpalette-esc-hint">ESC</kbd>
+            </div>
+
+            <div className="ease-kpalette-list" ref={listRef}>
+              {filteredCommands.length > 0 ? (
+                filteredCommands.map((cmd, index) => (
+                  <div
+                    key={cmd.id}
+                    className={`ease-kpalette-item ${index === selectedIndex ? 'is-selected' : ''}`}
+                    onMouseEnter={() => setSelectedIndex(index)}
+                    onClick={() => { cmd.action(); onClose(); }}
+                  >
+                    <div className="ease-kpalette-item-icon">{cmd.icon}</div>
+                    <span className="ease-kpalette-item-title">{cmd.title}</span>
+                    {cmd.shortcut && (
+                      <div className="ease-kpalette-item-shortcuts">
+                        {cmd.shortcut.map(key => <kbd key={key}>{key}</kbd>)}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="ease-kpalette-empty">No results found for "{searchQuery}"</div>
+              )}
+            </div>
+            
+            <div className="ease-kpalette-footer">
+              <span>Search for actions across the app</span>
+              <div className="ease-kpalette-footer-hints">
+                <span><kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+                <span><kbd>↵</kbd> to select</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [isOpen, setIsOpen] = useState(false);
+      const [toastMsg, setToastMsg] = useState("");
+
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(""), 3000);
+      };
+
+      // Listen for Ctrl+K or Cmd+K
+      useEffect(() => {
+        const handleGlobalKeyDown = (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            setIsOpen(prev => !prev);
+          }
+        };
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+      }, []);
+
+      const getIcon = (type) => {
+        const props = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: "2", strokeLinecap: "round", strokeLinejoin: "round", width: "16", height: "16" };
+        switch(type) {
+          case 'file': return <svg {...props}><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>;
+          case 'settings': return <svg {...props}><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>;
+          case 'user': return <svg {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+          case 'theme': return <svg {...props}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>;
+        }
+      };
+
+      const commands = [
+        { id: '1', title: 'Create new file', icon: getIcon('file'), shortcut: ['⌘', 'N'], action: () => showToast('Creating new file...') },
+        { id: '2', title: 'Go to Settings', icon: getIcon('settings'), shortcut: ['⌘', ','], action: () => showToast('Opening Settings...') },
+        { id: '3', title: 'View Profile', icon: getIcon('user'), action: () => showToast('Navigating to Profile...') },
+        { id: '4', title: 'Toggle Dark Mode', icon: getIcon('theme'), shortcut: ['⌘', 'D'], action: () => showToast('Toggled Dark Mode!') },
+        { id: '5', title: 'Export Data', icon: getIcon('file'), action: () => showToast('Exporting data as CSV...') },
+      ];
+
+      return (
+        <div className="demo-instructions">
+          <button className="demo-btn" onClick={() => setIsOpen(true)}>
+            Open Command Palette
+            <kbd>⌘ K</kbd>
+          </button>
+          
+          <CommandPalette 
+            isOpen={isOpen} 
+            onClose={() => setIsOpen(false)} 
+            commands={commands} 
+          />
+
+          <div className={`toast ${toastMsg ? 'show' : ''}`}>
+            {toastMsg}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

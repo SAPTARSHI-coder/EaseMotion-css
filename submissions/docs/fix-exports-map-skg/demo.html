@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fix: exports map blocks component imports (Issue #53768)</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem;
+      gap: 2rem;
+      font-family: var(--ease-font-sans, system-ui, sans-serif);
+      background: var(--ease-color-bg, #f8fafc);
+      color: var(--ease-color-text, #1e293b);
+    }
+
+    .page-header {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem;
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      color: var(--ease-color-muted, #64748b);
+      margin: 0;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Fix: <code>exports</code> map blocks component imports</h1>
+    <p>
+      Issue #53768 — <code>package.json</code> is missing wildcard export entries
+      for <code>components/</code> and <code>core/</code>, causing
+      <code>ERR_PACKAGE_PATH_NOT_EXPORTED</code> when users try to import
+      individual component stylesheets.
+    </p>
+  </div>
+
+  <div class="exports-demo-wrapper">
+
+    <!-- ── Section 1: The problem ── -->
+    <div class="exports-demo-section">
+      <h2>1. What breaks today</h2>
+      <p>
+        Any bundler (Vite, webpack, Rollup, esbuild) or Node.js runtime that
+        respects the <code>exports</code> field will refuse subpaths not declared
+        in it — even if the file physically exists on disk.
+      </p>
+
+      <div class="exports-code-block"><span class="line-comment">// In any project that imports easemotion-css:</span>
+
+<span class="line-comment">// ❌ Throws ERR_PACKAGE_PATH_NOT_EXPORTED</span>
+import 'easemotion-css/components/buttons.css';
+import 'easemotion-css/components/cards.css';
+import 'easemotion-css/components/modals.css';
+
+<span class="line-comment">// ✅ Works — declared in exports</span>
+import 'easemotion-css';             <span class="line-comment">// "."</span>
+import 'easemotion-css/min';         <span class="line-comment">// "./min"</span></div>
+
+      <span class="exports-badge broken">✕ Per-component imports throw resolution errors</span>
+    </div>
+
+    <hr class="divider-line" />
+
+    <!-- ── Section 2: Current exports vs proposed ── -->
+    <div class="exports-demo-section">
+      <h2>2. Current <code>package.json</code> vs proposed fix</h2>
+
+      <div class="exports-code-block"><span class="line-comment">// package.json — current (incomplete)</span>
+"exports": {
+  ".":                  "./easemotion.css",
+  "./min":              "./easemotion.min.css",
+  "./engine":           "./easemotion/index.js",
+  "./engine/parser":    "./easemotion/engine/parser.js",
+  "./engine/compiler":  "./easemotion/engine/compiler.js",
+  "./engine/optimizer": "./easemotion/engine/optimizer.js",
+  "./engine/runtime":   "./easemotion/engine/runtime.js",
+  "./core":             "./core/animations.css"
+<span class="line-removed">  // ← no components/ or core/*.css entries</span>
+}
+
+<span class="line-comment">// package.json — proposed (add these two lines)</span>
+"exports": {
+  <span class="line-comment">/* ... existing entries ... */</span>
+<span class="line-added">  "./components/*.css": "./components/*.css",</span>
+<span class="line-added">  "./core/*.css":       "./core/*.css"</span>
+}</div>
+
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        <span class="exports-badge info">ℹ Node.js wildcard subpaths require Node ≥ 12.20</span>
+        <span class="exports-badge fixed">✓ Project already requires Node ≥ 18 — safe to use</span>
+      </div>
+    </div>
+
+    <hr class="divider-line" />
+
+    <!-- ── Section 3: All component files now accessible ── -->
+    <div class="exports-demo-section">
+      <h2>3. All component files unblocked after the fix</h2>
+      <p>
+        With the wildcard entry in place, all 33 component stylesheets become
+        directly importable.
+      </p>
+
+      <table class="exports-component-table">
+        <thead>
+          <tr>
+            <th>Import path</th>
+            <th>Before fix</th>
+            <th>After fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>easemotion-css/components/buttons.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/cards.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/modals.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/forms.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/navbar.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/tabs.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/badges.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/toast.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/loaders.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/tooltips.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/avatar.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/skeleton.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/progress.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/pagination.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>easemotion-css/components/sidebar.css</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+          <tr><td>…and 18 more</td><td class="status-blocked">✕ Blocked</td><td class="status-ok">✓ Works</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <hr class="divider-line" />
+
+    <!-- ── Section 4: Usage examples after fix ── -->
+    <div class="exports-demo-section">
+      <h2>4. Usage examples enabled by the fix</h2>
+      <p>Per-component imports in common toolchains — none of these work today.</p>
+
+      <div class="exports-code-block"><span class="line-comment">/* Vite / Rollup / esbuild (CSS import in JS) */</span>
+<span class="line-added">import 'easemotion-css/components/buttons.css';</span>
+<span class="line-added">import 'easemotion-css/components/modals.css';</span>
+
+<span class="line-comment">/* CSS @import (PostCSS, bundler-resolved) */</span>
+<span class="line-added">@import 'easemotion-css/components/cards.css';</span>
+<span class="line-added">@import 'easemotion-css/components/forms.css';</span>
+
+<span class="line-comment">/* React component — load only what you need */</span>
+<span class="line-added">import 'easemotion-css/components/tabs.css';</span>
+<span class="line-added">
+export function MyTabs() {
+  return &lt;div className="ease-tabs"&gt;...&lt;/div&gt;;
+}</span></div>
+
+      <span class="exports-badge fixed">✓ True per-component tree-shaking — load only what you use</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

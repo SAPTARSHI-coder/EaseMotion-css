@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dandelion Dispersal</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 Dandelion Dispersal</h1>
+        <p class="subtitle">Seeds floating away when blown with interactive wind</p>
+
+        <div class="dandelion-wrapper">
+            <canvas id="dandelionCanvas"></canvas>
+
+            <div class="controls">
+                <button id="blowBtn">💨 Blow</button>
+                <button id="windBtn">Wind: Gentle</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌾 Ready to blow</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('dandelionCanvas');
+        const ctx = canvas.getContext('2d');
+        const blowBtn = document.getElementById('blowBtn');
+        const windBtn = document.getElementById('windBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let seeds = [];
+        let stem = [];
+        let center = {};
+        let windStrength = 0;
+        let windLevel = 1;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isBlowing = false;
+        let blowPhase = 0;
+
+        // ===== WIND OPTIONS =====
+        const windLevels = [
+            { name: 'Gentle', value: 0.02 },
+            { name: 'Moderate', value: 0.04 },
+            { name: 'Strong', value: 0.07 },
+            { name: 'Gusty', value: 0.12 },
+        ];
+
+        // ===== SEED CLASS =====
+        class Seed {
+            constructor(x, y, angle, size) {
+                this.x = x;
+                this.y = y;
+                this.angle = angle || Math.random() * Math.PI * 2;
+                this.size = size || 2 + Math.random() * 2;
+                this.vx = (Math.random() - 0.5) * 0.2;
+                this.vy = (Math.random() - 0.5) * 0.2 - 0.1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                this.wobbleAmount = 0.5 + Math.random() * 1.5;
+                this.life = 1;
+                this.maxLife = 300 + Math.random() * 400;
+                this.age = 0;
+                this.flying = false;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.trail = [];
+                this.maxTrail = 8 + Math.floor(Math.random() * 8);
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.fluffSize = 3 + Math.random() * 4;
+                this.fluffCount = 6 + Math.floor(Math.random() * 6);
+                this.fallen = false;
+                this.groundY = 0;
+            }
+
+            launch(wind) {
+                this.flying = true;
+                const angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+                const speed = 0.5 + Math.random() * 1.5;
+                this.vx = Math.cos(angle) * speed * 0.5 + wind * 2;
+                this.vy = Math.sin(angle) * speed * 0.5 - 0.5 - Math.random() * 0.5;
+                this.rotSpeed = (Math.random() - 0.5) * 0.03;
+            }
+
+            update(wind, time) {
+                if (!this.flying) return;
+
+                this.age++;
+                this.life = 1 - this.age / this.maxLife;
+                this.phase += this.wobbleSpeed;
+
+                // Wind effect
+                this.vx += wind * 0.02;
+                this.vy += (Math.random() - 0.5) * 0.01;
+
+                // Wobble
+                this.x += this.vx + Math.sin(this.phase) * this.wobbleAmount * 0.02;
+                this.y += this.vy + Math.cos(this.phase * 0.7) * this.wobbleAmount * 0.01;
+
+                // Gravity
+                this.vy += 0.002;
+
+                // Rotation
+                this.rotation += this.rotSpeed;
+
+                // Trail
+                this.trail.push({ x: this.x, y: this.y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.97;
+                }
+
+                // Ground collision
+                const groundY = canvas.height * 0.85 + Math.sin(this.x * 0.01) * 5;
+                if (this.y > groundY) {
+                    this.y = groundY;
+                    this.vy = 0;
+                    this.vx *= 0.95;
+                    this.fallen = true;
+                    this.groundY = groundY;
+                }
+
+                // Boundary
+                if (this.x < -20 || this.x > canvas.width + 20 || this.y < -20) {
+                    this.life = 0;
+                }
+            }
+
+            draw(ctx) {
+                if (!this.flying || this.life <= 0) return;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.15 * this.life;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, this.size * 0.3 * (i / this.trail.length), 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    ctx.fill();
+                }
+
+                // Glow
+                const glowSize = this.size * 8 * this.glowIntensity * this.life;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+                grad.addColorStop(0, `rgba(255, 255, 200, ${0.05 * this.life})`);
+                grad.addColorStop(1, `rgba(255, 255, 200, 0)`);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Fluff (parachute)
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                const fluffSize = this.fluffSize * this.life * (0.8 + 0.2 * Math.sin(this.phase));
+                for (let i = 0; i < this.fluffCount; i++) {
+                    const angle = (i / this.fluffCount) * Math.PI * 2 + this.phase * 0.5;
+                    const fluffDist = fluffSize * (0.6 + 0.4 * Math.sin(this.phase + i));
+                    const fx = Math.cos(angle) * fluffDist;
+                    const fy = Math.sin(angle) * fluffDist * 0.3 - fluffSize * 0.3;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, -fluffSize * 0.1);
+                    ctx.quadraticCurveTo(fx * 0.5, fy * 0.5 + fluffSize * 0.1, fx, fy + fluffSize * 0.2);
+                    ctx.strokeStyle = `rgba(255, 255, 240, ${0.3 * this.life})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.stroke();
+
+                    // Fluff tip
+                    ctx.beginPath();
+                    ctx.arc(fx, fy + fluffSize * 0.2, 1 + Math.sin(this.phase + i) * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 240, ${0.2 * this.life})`;
+                    ctx.fill();
+                }
+
+                // Center dot
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size * 0.5 * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(200, 180, 150, ${0.6 * this.life})`;
+                ctx.fill();
+
+                // Core
+                ctx.beginPath();
+                ctx.arc(0, -fluffSize * 0.1, this.size * 0.3 * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 240, 200, ${0.5 * this.life})`;
+                ctx.fill();
+
+                ctx.restore();
+
+                // Light reflection
+                if (this.life > 0.5) {
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.x - this.size * 0.2,
+                        this.y - this.size * 0.5,
+                        this.size * 0.15 * this.life,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.15 * this.life})`;
+                    ctx.fill();
+                }
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== STEM CLASS =====
+        class StemPoint {
+            constructor(x, y, parent) {
+                this.x = x;
+                this.y = y;
+                this.parent = parent;
+                this.children = [];
+                this.phase = Math.random() * Math.PI * 2;
+                this.wobble = 0.02 + Math.random() * 0.03;
+                this.offsetX = 0;
+                this.offsetY = 0;
+            }
+
+            update(time, wind) {
+                this.phase += this.wobble;
+                this.offsetX = Math.sin(this.phase + time * 0.01) * wind * 2;
+                this.offsetY = Math.cos(this.phase * 0.7 + time * 0.01) * wind * 0.5;
+
+                for (const child of this.children) {
+                    child.update(time, wind);
+                }
+            }
+
+            draw(ctx) {
+                const x = this.x + this.offsetX;
+                const y = this.y + this.offsetY;
+
+                if (this.parent) {
+                    const px = this.parent.x + this.parent.offsetX;
+                    const py = this.parent.y + this.parent.offsetY;
+                    ctx.beginPath();
+                    ctx.moveTo(px, py);
+                    ctx.lineTo(x, y);
+                    ctx.strokeStyle = 'rgba(80, 120, 60, 0.6)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                for (const child of this.children) {
+                    child.draw(ctx);
+                }
+            }
+        }
+
+        // ===== INIT DANDELION =====
+        function initDandelion() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h * 0.7;
+
+            seeds = [];
+            stem = [];
+            center = { x: cx, y: cy };
+
+            // Create stem
+            const root = new StemPoint(cx, h * 0.85, null);
+            const points = 15;
+            let current = root;
+            for (let i = 1; i <= points; i++) {
+                const t = i / points;
+                const x = cx + Math.sin(t * Math.PI * 0.3) * 10;
+                const y = h * 0.85 - t * (h * 0.15);
+                const child = new StemPoint(x, y, current);
+                current.children.push(child);
+                current = child;
+            }
+            stem.push(root);
+
+            // Create center fluff
+            const centerFluff = new StemPoint(cx, cy, current);
+            current.children.push(centerFluff);
+            stem.push(centerFluff);
+
+            // Create seeds around center
+            const numSeeds = 40 + Math.floor(Math.random() * 30);
+            for (let i = 0; i < numSeeds; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 10 + Math.random() * 30;
+                const x = cx + Math.cos(angle) * dist;
+                const y = cy + Math.sin(angle) * dist * 0.5;
+                const seed = new Seed(x, y, angle, 1.5 + Math.random() * 2);
+                seed.fluffSize = 2 + Math.random() * 3;
+                seed.fluffCount = 5 + Math.floor(Math.random() * 5);
+                seeds.push(seed);
+            }
+        }
+        initDandelion();
+
+        // ===== BLOW FUNCTION =====
+        function blowDandelion() {
+            if (isBlowing) return;
+            isBlowing = true;
+            blowPhase = 0;
+
+            // Launch seeds with wind
+            const wind = windLevels[windLevel].value * 3;
+            let launched = 0;
+            for (const seed of seeds) {
+                if (!seed.flying && Math.random() < 0.7) {
+                    seed.launch(wind + (Math.random() - 0.5) * 0.5);
+                    launched++;
+                }
+            }
+
+            statusText.textContent = `💨 Blown! ${launched} seeds flying`;
+            setTimeout(() => {
+                isBlowing = false;
+                statusText.textContent = `🌾 ${seeds.filter(s => !s.flying).length} seeds remain`;
+            }, 500);
+        }
+
+        // ===== DRAW DANDELION CENTER =====
+        function drawCenter(ctx, x, y) {
+            // Glow
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, 40);
+            grad.addColorStop(0, 'rgba(255, 255, 200, 0.1)');
+            grad.addColorStop(1, 'rgba(255, 255, 200, 0)');
+            ctx.beginPath();
+            ctx.arc(x, y, 40, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            // Center dot
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(80, 120, 60, 0.6)';
+            ctx.fill();
+
+            // Remaining seeds indicator
+            const remaining = seeds.filter(s => !s.flying).length;
+            if (remaining > 0) {
+                ctx.beginPath();
+                ctx.arc(x, y, 8 + Math.sin(time * 0.02) * 2, 0, Math.PI * 2);
+                ctx.strokeStyle = `rgba(200, 180, 150, ${0.2 + Math.sin(time * 0.02) * 0.1})`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            grad.addColorStop(0, '#0a0a1a');
+            grad.addColorStop(0.3, '#0a1a0a');
+            grad.addColorStop(0.6, '#0a1a0a');
+            grad.addColorStop(0.8, '#0f1f0f');
+            grad.addColorStop(1, '#050f05');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground
+            const groundY = h * 0.85;
+            const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+            groundGrad.addColorStop(0, 'rgba(30, 60, 30, 0)');
+            groundGrad.addColorStop(0.3, 'rgba(30, 60, 30, 0.1)');
+            groundGrad.addColorStop(1, 'rgba(30, 60, 30, 0.2)');
+            ctx.fillStyle = groundGrad;
+            ctx.fillRect(0, groundY, w, h - groundY);
+
+            // Grass
+            for (let i = 0; i < 40; i++) {
+                const x = (i / 40) * w + Math.sin(i * 0.7 + time * 0.01) * 5;
+                const y = groundY + Math.sin(i * 1.3 + time * 0.02) * 3;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.quadraticCurveTo(
+                    x + Math.sin(i + time * 0.01) * 5,
+                    y - 10 - Math.sin(i * 0.7 + time * 0.02) * 5,
+                    x + Math.sin(i * 1.5 + time * 0.015) * 8,
+                    y - 15 - Math.sin(i * 1.1 + time * 0.025) * 8
+                );
+                ctx.strokeStyle = `rgba(40, 80, 40, ${0.15 + Math.sin(i + time * 0.01) * 0.05})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Stars
+            for (let i = 0; i < 30; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % (h * 0.7);
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${0.05 + Math.sin(i + time * 0.01) * 0.03})`;
+                ctx.fill();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            const wind = windLevels[windLevel].value;
+
+            // Draw background
+            drawBackground(ctx, w, h);
+
+            // Draw stem
+            for (const point of stem) {
+                point.update(time, wind);
+                point.draw(ctx);
+            }
+
+            // Draw center
+            drawCenter(ctx, center.x, center.y);
+
+            // Update and draw seeds
+            for (const seed of seeds) {
+                if (!seed.flying) {
+                    // Draw resting seeds
+                    const angle = seed.angle || 0;
+                    const dist = 10 + Math.random() * 30;
+                    const x = center.x + Math.cos(angle) * dist + Math.sin(time * 0.01 + angle) * 2;
+                    const y = center.y + Math.sin(angle) * dist * 0.5 + Math.cos(time * 0.01 + angle) * 1;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(200, 180, 150, 0.3)';
+                    ctx.fill();
+
+                    // Tiny fluff
+                    for (let i = 0; i < 3; i++) {
+                        const a = (i / 3) * Math.PI * 2 + time * 0.01;
+                        const fx = x + Math.cos(a) * 2;
+                        const fy = y + Math.sin(a) * 2;
+                        ctx.beginPath();
+                        ctx.arc(fx, fy, 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(255, 255, 240, 0.2)';
+                        ctx.fill();
+                    }
+                } else {
+                    seed.update(wind, time);
+                    seed.draw(ctx);
+                }
+            }
+
+            // Clean dead seeds
+            seeds = seeds.filter(s => !s.isDead());
+
+            // Auto-blow when few seeds remain
+            const remaining = seeds.filter(s => !s.flying).length;
+            if (remaining < 5 && remaining > 0 && !isBlowing) {
+                setTimeout(() => {
+                    if (!isBlowing) blowDandelion();
+                }, 1000);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const flying = seeds.filter(s => s.flying).length;
+                const remaining = seeds.filter(s => !s.flying).length;
+                statusText.textContent = `🌾 ${remaining} seeds • ${flying} flying • ${windLevels[windLevel].name} wind`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Blow
+        blowBtn.addEventListener('click', blowDandelion);
+
+        // Wind
+        windBtn.addEventListener('click', () => {
+            windLevel = (windLevel + 1) % windLevels.length;
+            windBtn.textContent = `Wind: ${windLevels[windLevel].name}`;
+            statusText.textContent = `💨 ${windLevels[windLevel].name} wind`;
+            setTimeout(() => {
+                const remaining = seeds.filter(s => !s.flying).length;
+                statusText.textContent = `🌾 ${remaining} seeds remain`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            initDandelion();
+            windLevel = 1;
+            windBtn.textContent = `Wind: ${windLevels[1].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌾 Ready to blow';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') {
+                blowBtn.click();
+            }
+            if (e.key === 'w' || e.key === 'W') {
+                windBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                blowBtn.click();
+            }
+        });
+
+        // ===== CLICK ON CANVAS =====
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            // Check if click is near center
+            const dx = x - center.x;
+            const dy = y - center.y;
+            if (Math.sqrt(dx * dx + dy * dy) < 80) {
+                blowDandelion();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initDandelion();
+        });
+
+        // ===== INIT =====
+        windBtn.textContent = `Wind: ${windLevels[1].name}`;
+        statusText.textContent = '🌾 Ready to blow';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌾 Dandelion Dispersal loaded!');
+        console.log('💡 B - Blow');
+        console.log('💡 W - Change wind');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Blow');
+        console.log('💡 Click center - Blow');
+    </script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+// =============================================================================
+// Motion Recipe Composer
+// -----------------------------------------------------------------------------
+// A framework-agnostic SCSS utility for declaratively defining "recipes" —
+// named combinations of one or more animation steps (name, duration, delay,
+// easing, fill-mode) — then composing recipes together and outputting a
+// single resolved `animation` shorthand declaration at compile time.
+//
+// This utility does not generate @keyframes for you; it composes references
+// to keyframes you already define, so it stays fully framework agnostic.
+// =============================================================================
+
+// Internal registry. Holds every defined recipe as a list of resolved step
+// maps. Not intended to be used directly by consumers.
+$__motion-recipes: () !default;
+
+// -----------------------------------------------------------------------------
+// motion-recipe-exists($name)
+// Returns true if a recipe with the given name has already been defined.
+// -----------------------------------------------------------------------------
+@function motion-recipe-exists($name) {
+  @return map-has-key($__motion-recipes, $name);
+}
+
+// -----------------------------------------------------------------------------
+// motion-recipe-get($name)
+// Returns the resolved list of step maps for a defined recipe.
+// Errors at compile time if the recipe has not been defined yet.
+// -----------------------------------------------------------------------------
+@function motion-recipe-get($name) {
+  @if not motion-recipe-exists($name) {
+    @error "Motion recipe `#{$name}` does not exist. Define it first using define-motion-recipe().";
+  }
+  @return map-get($__motion-recipes, $name);
+}
+
+// -----------------------------------------------------------------------------
+// _motion-step-defaults($step)
+// Internal helper. Fills in sane defaults for any keys missing from a step.
+// -----------------------------------------------------------------------------
+@function _motion-step-defaults($step) {
+  @return map-merge((
+    name: null,
+    duration: 0.3s,
+    delay: 0s,
+    easing: ease,
+    fill-mode: both
+  ), $step);
+}
+
+// -----------------------------------------------------------------------------
+// define-motion-recipe($name, $steps)
+// Registers a new named recipe.
+//
+// $name  : Unique identifier for the recipe (string).
+// $steps : List of step maps. Each step map may define:
+//            name       - keyframes name to reference (required)
+//            duration   - default 0.3s
+//            delay      - default 0s
+//            easing     - default ease
+//            fill-mode  - default both
+// -----------------------------------------------------------------------------
+@mixin define-motion-recipe($name, $steps) {
+  $resolved-steps: ();
+
+  @each $step in $steps {
+    $resolved-steps: append($resolved-steps, _motion-step-defaults($step));
+  }
+
+  $__motion-recipes: map-merge($__motion-recipes, ($name: $resolved-steps)) !global;
+}
+
+// -----------------------------------------------------------------------------
+// compose-motion-recipe($new-name, $recipe-names, $overrides: ())
+// Creates a new recipe by concatenating the steps of one or more existing
+// recipes, in order. Useful for building complex interaction patterns
+// (e.g. a "toast" recipe composed of a "fade-in" recipe and a "slide-up"
+// recipe) without redefining steps.
+//
+// $new-name     : Identifier for the composed recipe.
+// $recipe-names : List of previously-defined recipe names, in play order.
+// $overrides    : (optional) Map applied on top of every combined step,
+//                 e.g. to unify duration/easing across the composed recipe.
+// -----------------------------------------------------------------------------
+@mixin compose-motion-recipe($new-name, $recipe-names, $overrides: ()) {
+  $combined: ();
+
+  @each $recipe-name in $recipe-names {
+    $combined: join($combined, motion-recipe-get($recipe-name));
+  }
+
+  @if length($overrides) > 0 {
+    $overridden: ();
+    @each $step in $combined {
+      $overridden: append($overridden, map-merge($step, $overrides));
+    }
+    $combined: $overridden;
+  }
+
+  $__motion-recipes: map-merge($__motion-recipes, ($new-name: $combined)) !global;
+}
+
+// -----------------------------------------------------------------------------
+// use-motion-recipe($name, $overrides: (), $step-overrides: ())
+// Outputs a single `animation` shorthand declaration combining every step
+// of the recipe as a comma-separated animation list.
+//
+// $name           : Recipe to output.
+// $overrides      : (optional) Map applied to every step at the call site
+//                   (e.g. speed up every step for a "fast" variant) without
+//                   mutating the registry.
+// $step-overrides : (optional) Map of 1-based step index => override map,
+//                   for tweaking a single step (e.g. only the 2nd step's
+//                   delay) without affecting the others.
+// -----------------------------------------------------------------------------
+@mixin use-motion-recipe($name, $overrides: (), $step-overrides: ()) {
+  $steps: motion-recipe-get($name);
+  $animation-list: ();
+  $index: 1;
+
+  @each $step in $steps {
+    $merged: map-merge($step, $overrides);
+
+    @if map-has-key($step-overrides, $index) {
+      $merged: map-merge($merged, map-get($step-overrides, $index));
+    }
+
+    $animation-list: append(
+      $animation-list,
+      map-get($merged, name) map-get($merged, duration) map-get($merged, easing) map-get($merged, delay) map-get($merged, fill-mode),
+      comma
+    );
+
+    $index: $index + 1;
+  }
+
+  animation: #{$animation-list};
+}
