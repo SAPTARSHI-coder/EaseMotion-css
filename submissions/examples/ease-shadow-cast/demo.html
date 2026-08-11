@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌓 Shadow Cast – Realistic Shadow Simulation</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌓 Shadow Cast</h1>
+            <div class="controls">
+                <button class="control-btn" id="resetBtn" title="Reset object">🔄</button>
+                <button class="control-btn" id="toggleLightBtn" title="Toggle light">💡</button>
+                <button class="control-btn" id="toggleShadowBtn" title="Toggle shadow">🌓</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="shadowCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="shadowInfo">🌓 Shadow visible</span>
+                <span id="lightInfo">💡 Light: 45°</span>
+            </div>
+            <div class="hint" id="hint">🖱️ Drag object · 💡 Drag light source</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>☀️ Light Angle</label>
+                <input type="range" id="angleSlider" min="0" max="360" value="315" step="1" />
+                <span id="angleLabel">315°</span>
+            </div>
+            <div class="slider-group">
+                <label>📏 Light Height</label>
+                <input type="range" id="heightSlider" min="50" max="400" value="200" step="10" />
+                <span id="heightLabel">200</span>
+            </div>
+            <div class="slider-group">
+                <label>🎨 Shadow Blur</label>
+                <input type="range" id="blurSlider" min="0" max="40" value="15" step="1" />
+                <span id="blurLabel">15px</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Shadow Cast – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('shadowCanvas');
+            const ctx = canvas.getContext('2d');
+            const shadowInfo = document.getElementById('shadowInfo');
+            const lightInfo = document.getElementById('lightInfo');
+            const hint = document.getElementById('hint');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleLightBtn = document.getElementById('toggleLightBtn');
+            const toggleShadowBtn = document.getElementById('toggleShadowBtn');
+            const angleSlider = document.getElementById('angleSlider');
+            const angleLabel = document.getElementById('angleLabel');
+            const heightSlider = document.getElementById('heightSlider');
+            const heightLabel = document.getElementById('heightLabel');
+            const blurSlider = document.getElementById('blurSlider');
+            const blurLabel = document.getElementById('blurLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isDragging = false;
+            let isDraggingLight = false;
+            let dragOffsetX = 0;
+            let dragOffsetY = 0;
+            let animationId = null;
+
+            // --- Parameters ---
+            let lightAngle = 315; // degrees
+            let lightHeight = 200; // pixels
+            let shadowBlur = 15;
+            let lightOn = true;
+            let shadowOn = true;
+
+            // --- Object properties ---
+            const object = {
+                x: 400,
+                y: 350,
+                width: 80,
+                height: 120,
+                rotation: 0,
+                type: 'vase', // vase, cube, sphere, cone
+            };
+
+            // --- Light properties ---
+            const light = {
+                x: 0,
+                y: 0,
+                getPosition() {
+                    const angleRad = (lightAngle * Math.PI) / 180;
+                    const dist = 500;
+                    return {
+                        x: W / 2 + Math.cos(angleRad) * dist,
+                        y: H / 2 - Math.sin(angleRad) * dist * 0.6
+                    };
+                }
+            };
+
+            // --- Shadow points (for polygon shadow) ---
+            let shadowPoints = [];
+
+            // --- Object shapes ---
+            function getObjectPath(ctx, x, y, w, h, rot, type) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rot);
+
+                const hw = w / 2;
+                const hh = h / 2;
+
+                ctx.beginPath();
+
+                switch (type) {
+                    case 'vase':
+                        // Vase shape
+                        ctx.moveTo(-hw * 0.3, hh);
+                        ctx.quadraticCurveTo(-hw * 0.8, hh * 0.5, -hw * 0.7, 0);
+                        ctx.quadraticCurveTo(-hw * 0.6, -hh * 0.3, -hw * 0.4, -hh * 0.7);
+                        ctx.quadraticCurveTo(-hw * 0.2, -hh * 0.9, 0, -hh);
+                        ctx.quadraticCurveTo(hw * 0.2, -hh * 0.9, hw * 0.4, -hh * 0.7);
+                        ctx.quadraticCurveTo(hw * 0.6, -hh * 0.3, hw * 0.7, 0);
+                        ctx.quadraticCurveTo(hw * 0.8, hh * 0.5, hw * 0.3, hh);
+                        ctx.closePath();
+                        break;
+
+                    case 'cube':
+                        // Cube with perspective
+                        ctx.rect(-hw, -hh, w, h);
+                        break;
+
+                    case 'sphere':
+                        // Circle
+                        ctx.arc(0, 0, Math.min(hw, hh), 0, Math.PI * 2);
+                        break;
+
+                    case 'cone':
+                        // Cone
+                        ctx.moveTo(0, -hh);
+                        ctx.lineTo(-hw, hh);
+                        ctx.lineTo(hw, hh);
+                        ctx.closePath();
+                        break;
+
+                    default:
+                        ctx.rect(-hw, -hh, w, h);
+                }
+
+                ctx.restore();
+                return ctx;
+            }
+
+            // --- Calculate shadow ---
+            function calculateShadow() {
+                const lightPos = light.getPosition();
+                const dx = object.x - lightPos.x;
+                const dy = object.y - lightPos.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 10) {
+                    shadowPoints = [];
+                    return;
+                }
+
+                const angle = Math.atan2(dy, dx);
+                const shadowScale = 1 + (lightHeight / (dist + 10));
+
+                // Get object bounding box
+                const hw = object.width / 2;
+                const hh = object.height / 2;
+
+                // Calculate shadow points (simplified polygon)
+                const points = [
+                    { x: -hw, y: -hh },
+                    { x: hw, y: -hh },
+                    { x: hw, y: hh },
+                    { x: -hw, y: hh }
+                ];
+
+                // Rotate points based on object rotation
+                const rot = object.rotation;
+                const cos = Math.cos(rot);
+                const sin = Math.sin(rot);
+
+                const rotatedPoints = points.map(p => ({
+                    x: p.x * cos - p.y * sin,
+                    y: p.x * sin + p.y * cos
+                }));
+
+                // Project shadow
+                shadowPoints = rotatedPoints.map(p => {
+                    const sx = object.x + p.x + dx * shadowScale * 0.3;
+                    const sy = object.y + p.y + dy * shadowScale * 0.3;
+                    return { x: sx, y: sy };
+                });
+            }
+
+            // --- Render ---
+            function render() {
+                // Clear
+                ctx.clearRect(0, 0, W, H);
+
+                // --- Background ---
+                const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, 500);
+                bgGrad.addColorStop(0, '#2a3a50');
+                bgGrad.addColorStop(0.5, '#1a2a3f');
+                bgGrad.addColorStop(1, '#0a1525');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Ground plane ---
+                const groundGrad = ctx.createLinearGradient(0, H * 0.6, 0, H);
+                groundGrad.addColorStop(0, 'rgba(30, 50, 70, 0)');
+                groundGrad.addColorStop(0.3, 'rgba(30, 50, 70, 0.3)');
+                groundGrad.addColorStop(1, 'rgba(20, 35, 50, 0.6)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H * 0.6, W, H * 0.4);
+
+                // --- Grid (subtle) ---
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                for (let x = 0; x <= W; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, H * 0.6);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                for (let y = H * 0.6; y <= H; y += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // --- Light source ---
+                const lightPos = light.getPosition();
+
+                if (lightOn) {
+                    // Light glow
+                    ctx.save();
+                    const glowGrad = ctx.createRadialGradient(
+                        lightPos.x, lightPos.y, 5,
+                        lightPos.x, lightPos.y, 120
+                    );
+                    glowGrad.addColorStop(0, 'rgba(255, 240, 200, 0.4)');
+                    glowGrad.addColorStop(0.3, 'rgba(255, 220, 150, 0.15)');
+                    glowGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Light rays (subtle)
+                    for (let i = 0; i < 12; i++) {
+                        const angle = (i / 12) * Math.PI * 2;
+                        const len = 40 + Math.random() * 60;
+                        ctx.beginPath();
+                        ctx.moveTo(lightPos.x, lightPos.y);
+                        ctx.lineTo(
+                            lightPos.x + Math.cos(angle) * len,
+                            lightPos.y + Math.sin(angle) * len
+                        );
+                        ctx.strokeStyle = `rgba(255, 240, 200, ${0.02 + Math.random() * 0.03})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                    // Light source circle
+                    ctx.save();
+                    const bulbGrad = ctx.createRadialGradient(
+                        lightPos.x - 3, lightPos.y - 3, 2,
+                        lightPos.x, lightPos.y, 12
+                    );
+                    bulbGrad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+                    bulbGrad.addColorStop(0.3, 'rgba(255, 240, 200, 0.9)');
+                    bulbGrad.addColorStop(0.7, 'rgba(255, 220, 150, 0.5)');
+                    bulbGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = bulbGrad;
+                    ctx.beginPath();
+                    ctx.arc(lightPos.x, lightPos.y, 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.shadowColor = 'rgba(255, 200, 100, 0.3)';
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = 'rgba(255, 255, 200, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(lightPos.x, lightPos.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // --- Shadow (if enabled) ---
+                if (shadowOn && shadowPoints.length > 0 && lightOn) {
+                    ctx.save();
+
+                    // Shadow with blur
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0)';
+                    ctx.shadowBlur = 0;
+
+                    // Shadow gradient (darker further from object)
+                    const shadowGrad = ctx.createRadialGradient(
+                        object.x, object.y, 10,
+                        object.x, object.y, 200
+                    );
+                    shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0.4)');
+                    shadowGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.3)');
+                    shadowGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+                    // Draw shadow polygon
+                    if (shadowPoints.length > 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(shadowPoints[0].x, shadowPoints[0].y);
+                        for (let i = 1; i < shadowPoints.length; i++) {
+                            ctx.lineTo(shadowPoints[i].x, shadowPoints[i].y);
+                        }
+                        ctx.closePath();
+
+                        // Apply blur via shadow
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                        ctx.shadowBlur = shadowBlur;
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                        ctx.fill();
+
+                        // Add gradient overlay for realistic shadow
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = shadowGrad;
+                        ctx.fill();
+
+                        // Edge softening
+                        ctx.shadowBlur = shadowBlur * 0.5;
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+
+                    // Shadow distance indicator
+                    const dist = Math.sqrt(
+                        Math.pow(object.x - lightPos.x, 2) +
+                        Math.pow(object.y - lightPos.y, 2)
+                    );
+                    const shadowLen = Math.min(200, dist * 0.3);
+                    shadowInfo.textContent = `🌓 Shadow: ${Math.round(shadowLen)}px`;
+                } else {
+                    shadowInfo.textContent = shadowOn ? '🌓 No shadow (light off)' : '🌓 Shadow hidden';
+                }
+
+                // --- Object ---
+                ctx.save();
+
+                // Object glow (subtle rim light)
+                if (lightOn) {
+                    const rimGrad = ctx.createRadialGradient(
+                        object.x - 20, object.y - 30, 10,
+                        object.x, object.y, object.width
+                    );
+                    rimGrad.addColorStop(0, 'rgba(255, 240, 200, 0.05)');
+                    rimGrad.addColorStop(0.5, 'rgba(255, 220, 150, 0.02)');
+                    rimGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+                    ctx.fillStyle = rimGrad;
+                    ctx.fillRect(object.x - 150, object.y - 150, 300, 300);
+                }
+
+                // Object shape
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetY = 5;
+
+                const objGrad = ctx.createLinearGradient(
+                    object.x - object.width / 2,
+                    object.y - object.height / 2,
+                    object.x + object.width / 2,
+                    object.y + object.height / 2
+                );
+
+                // Color based on type
+                let colors;
+                switch (object.type) {
+                    case 'vase':
+                        colors = ['#5a7a9a', '#3a5a7a', '#2a4a6a', '#1a3a5a'];
+                        break;
+                    case 'cube':
+                        colors = ['#8a7a6a', '#6a5a4a', '#4a3a2a', '#2a1a0a'];
+                        break;
+                    case 'sphere':
+                        colors = ['#7a8a6a', '#5a6a4a', '#3a4a2a', '#1a2a0a'];
+                        break;
+                    case 'cone':
+                        colors = ['#8a6a5a', '#6a4a3a', '#4a2a1a', '#2a0a0a'];
+                        break;
+                    default:
+                        colors = ['#7a8a9a', '#5a6a7a', '#3a4a5a', '#1a2a3a'];
+                }
+
+                objGrad.addColorStop(0, colors[0]);
+                objGrad.addColorStop(0.3, colors[1]);
+                objGrad.addColorStop(0.7, colors[2]);
+                objGrad.addColorStop(1, colors[3]);
+
+                // Draw object
+                getObjectPath(ctx, object.x, object.y, object.width, object.height, object.rotation, object.type);
+
+                // Fill with gradient
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowBlur = 30;
+                ctx.shadowOffsetY = 10;
+                ctx.fillStyle = objGrad;
+                ctx.fill();
+
+                // Highlight
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Specular highlight (based on light position)
+                if (lightOn) {
+                    const angleToLight = Math.atan2(
+                        lightPos.y - object.y,
+                        lightPos.x - object.x
+                    );
+                    const hx = Math.cos(angleToLight) * object.width * 0.3;
+                    const hy = Math.sin(angleToLight) * object.height * 0.3;
+
+                    ctx.save();
+                    ctx.globalAlpha = 0.15;
+                    const specGrad = ctx.createRadialGradient(
+                        object.x + hx, object.y + hy, 5,
+                        object.x + hx, object.y + hy, 40
+                    );
+                    specGrad.addColorStop(0, 'rgba(255,255,255,0.8)');
+                    specGrad.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = specGrad;
+                    ctx.beginPath();
+                    ctx.arc(object.x + hx, object.y + hy, 40, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                ctx.restore();
+
+                // --- Object outline (interactive) ---
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(
+                    object.x - object.width / 2 - 10,
+                    object.y - object.height / 2 - 10,
+                    object.width + 20,
+                    object.height + 20
+                );
+                ctx.setLineDash([]);
+                ctx.restore();
+
+                // --- Light info ---
+                if (lightOn) {
+                    lightInfo.textContent = `💡 Light: ${Math.round(lightAngle)}° | Height: ${lightHeight}px`;
+                } else {
+                    lightInfo.textContent = '💡 Light: OFF';
+                }
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Update shadow ---
+            function updateShadow() {
+                calculateShadow();
+                // Update light info display
+                if (lightOn) {
+                    lightInfo.textContent = `💡 Light: ${Math.round(lightAngle)}° | Height: ${lightHeight}px`;
+                }
+            }
+
+            // --- Event handlers ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function isInsideObject(pos) {
+                const hw = object.width / 2 + 15;
+                const hh = object.height / 2 + 15;
+                return pos.x > object.x - hw &&
+                    pos.x < object.x + hw &&
+                    pos.y > object.y - hh &&
+                    pos.y < object.y + hh;
+            }
+
+            function isInsideLight(pos) {
+                const lightPos = light.getPosition();
+                const dist = Math.sqrt(
+                    Math.pow(pos.x - lightPos.x, 2) +
+                    Math.pow(pos.y - lightPos.y, 2)
+                );
+                return dist < 25;
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+
+                if (isInsideLight(pos)) {
+                    isDraggingLight = true;
+                    return;
+                }
+
+                if (isInsideObject(pos)) {
+                    isDragging = true;
+                    dragOffsetX = pos.x - object.x;
+                    dragOffsetY = pos.y - object.y;
+                    hint.classList.add('hidden');
+                }
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+
+                if (isDragging && !isDraggingLight) {
+                    object.x = Math.max(50, Math.min(W - 50, pos.x - dragOffsetX));
+                    object.y = Math.max(50, Math.min(H - 50, pos.y - dragOffsetY));
+                    updateShadow();
+                }
+
+                if (isDraggingLight) {
+                    const lightPos = light.getPosition();
+                    const dx = pos.x - W / 2;
+                    const dy = pos.y - H / 2;
+                    const angle = Math.atan2(-dy, dx) * (180 / Math.PI);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > 50) {
+                        lightAngle = ((angle % 360) + 360) % 360;
+                        lightHeight = Math.max(50, Math.min(400, dist * 0.5));
+                        angleSlider.value = lightAngle;
+                        angleLabel.textContent = `${Math.round(lightAngle)}°`;
+                        heightSlider.value = lightHeight;
+                        heightLabel.textContent = Math.round(lightHeight);
+                        updateShadow();
+                    }
+                }
+
+                // Update cursor
+                if (!isDragging && !isDraggingLight) {
+                    if (isInsideObject(pos) || isInsideLight(pos)) {
+                        canvas.style.cursor = 'grab';
+                    } else {
+                        canvas.style.cursor = 'default';
+                    }
+                } else {
+                    canvas.style.cursor = 'grabbing';
+                }
+            }
+
+            function onEnd(e) {
+                e.preventDefault();
+                isDragging = false;
+                isDraggingLight = false;
+                canvas.style.cursor = 'default';
+            }
+
+            // --- Controls ---
+            function resetObject() {
+                object.x = 400;
+                object.y = 350;
+                object.rotation = 0;
+                updateShadow();
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 2000);
+            }
+
+            function toggleLight() {
+                lightOn = !lightOn;
+                toggleLightBtn.textContent = lightOn ? '💡' : '💡 OFF';
+                updateShadow();
+            }
+
+            function toggleShadow() {
+                shadowOn = !shadowOn;
+                toggleShadowBtn.textContent = shadowOn ? '🌓' : '🌓 OFF';
+                updateShadow();
+            }
+
+            // --- Slider handlers ---
+            angleSlider.addEventListener('input', function() {
+                lightAngle = parseFloat(this.value);
+                angleLabel.textContent = `${Math.round(lightAngle)}°`;
+                updateShadow();
+            });
+
+            heightSlider.addEventListener('input', function() {
+                lightHeight = parseFloat(this.value);
+                heightLabel.textContent = Math.round(lightHeight);
+                updateShadow();
+            });
+
+            blurSlider.addEventListener('input', function() {
+                shadowBlur = parseFloat(this.value);
+                blurLabel.textContent = `${Math.round(shadowBlur)}px`;
+            });
+
+            // --- Button events ---
+            resetBtn.addEventListener('click', resetObject);
+            toggleLightBtn.addEventListener('click', toggleLight);
+            toggleShadowBtn.addEventListener('click', toggleShadow);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') resetObject();
+                if (e.key === 'l' || e.key === 'L') toggleLight();
+                if (e.key === 's' || e.key === 'S') toggleShadow();
+
+                // Arrow keys to move object
+                const step = 5;
+                if (e.key === 'ArrowLeft') { object.x = Math.max(50, object.x - step);
+                    updateShadow(); }
+                if (e.key === 'ArrowRight') { object.x = Math.min(W - 50, object.x + step);
+                    updateShadow(); }
+                if (e.key === 'ArrowUp') { object.y = Math.max(50, object.y - step);
+                    updateShadow(); }
+                if (e.key === 'ArrowDown') { object.y = Math.min(H - 50, object.y + step);
+                    updateShadow(); }
+
+                // Rotate object
+                if (e.key === 'q' || e.key === 'Q') { object.rotation -= 0.1;
+                    updateShadow(); }
+                if (e.key === 'e' || e.key === 'E') { object.rotation += 0.1;
+                    updateShadow(); }
+            });
+
+            // --- Mouse events ---
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd, { passive: false });
+            canvas.addEventListener('touchcancel', onEnd, { passive: false });
+
+            // --- Init ---
+            updateShadow();
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌓 Shadow Cast ready!');
+            console.log('Controls: Drag object, drag light source, sliders for fine-tuning');
+            console.log('Keyboard: R (reset), L (toggle light), S (toggle shadow),');
+            console.log('          Arrow keys (move), Q/E (rotate)');
+
+        })();
+    </script>
+</body>
+</html>
