@@ -1,12 +1,15 @@
 # Contributing to EaseMotion CSS
 
 > [!IMPORTANT]
-> **📢 Maintainer Announcement & Contribution Guidelines (August 2026)**
+> **Temporary Contribution Guidelines & Freeze Notice**
 >
-> 1. **🔓 Account Access Restored:** All soft-bans have been removed. All contributors can now submit PRs normally.
-> 2. **⏱️ Daily Contribution Rate Limit:** Maximum **100 PRs per day** per contributor.
-> 3. **📁 Submission Placement:** All pull requests MUST be placed under `submissions/examples/your-feature-name/` containing `demo.html`, `style.css`, and `README.md`.
-> 4. **✨ Approved GSSoC Issues:** 500 new approved GSSoC issues (#59099 to #59610) are open for contribution!
+> Due to the high volume of contributions and multiple merge conflicts affecting framework stability, PRs modifying core files, workflows, configs, or shared framework code are temporarily restricted.
+>
+> For now, only self-contained submissions inside the `submissions/` directory (e.g. `submissions/examples/*` or `submissions/docs/*`) will be reviewed and merged.
+>
+> This is being done to stabilize the repository, reduce breaking changes, and ensure contributor work is preserved without conflicts or accidental overwrites.
+>
+> Core contribution access may reopen once the framework structure and validation systems are fully stabilized.
 
 Thank you for your interest in improving EaseMotion CSS.
 
