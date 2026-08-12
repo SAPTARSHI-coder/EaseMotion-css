@@ -1,0 +1,162 @@
+// ==========================================================================
+// EaseMotion CSS — Selection Style mixin
+// Issue #63812
+// --------------------------------------------------------------------------
+// `::selection` with contrast checking at build time.
+//
+// Two things go wrong with selection styling, and both produce text the
+// user cannot read at the exact moment they are trying to read it.
+//
+//   1. Only the background is set. The text keeps its inherited colour,
+//      which may have no contrast against the new background. Brand-blue
+//      selection over blue links is the classic case.
+//
+//   2. Both are set, but never checked. Selection colours are chosen to
+//      look attractive against the page, not for legibility of the
+//      selected text itself, and nobody runs a contrast checker on a
+//      transient state.
+//
+// This mixin requires both halves and computes the ratio at build time,
+// warning when the pair falls below WCAG AA.
+// ==========================================================================
+
+@use "sass:color";
+@use "sass:math";
+@use "sass:meta";
+
+$selection-bg: rgba(56, 189, 248, 0.32) !default;
+$selection-fg: #f8fafc !default;
+$selection-min-ratio: 4.5 !default;
+
+// --------------------------------------------------------------------------
+// Relative luminance, per WCAG 2.1.
+// --------------------------------------------------------------------------
+@function selection-channel($channel) {
+    $c: math.div($channel, 255);
+
+    @if $c <= 0.03928 {
+        @return math.div($c, 12.92);
+    }
+
+    @return math.pow(math.div($c + 0.055, 1.055), 2.4);
+}
+
+@function selection-luminance($col) {
+    @return 0.2126 * selection-channel(color.channel($col, "red", $space: rgb))
+        + 0.7152 * selection-channel(color.channel($col, "green", $space: rgb))
+        + 0.0722 * selection-channel(color.channel($col, "blue", $space: rgb));
+}
+
+@function selection-ratio($fg, $bg) {
+    $l1: selection-luminance($fg);
+    $l2: selection-luminance($bg);
+
+    @return math.div(math.max($l1, $l2) + 0.05, math.min($l1, $l2) + 0.05);
+}
+
+// --------------------------------------------------------------------------
+// selection-style
+//
+// @param {Color} $bg       Selection background.
+// @param {Color} $fg       Selection foreground.
+// @param {Color} $over     Page background the selection sits on. Needed
+//                          because $bg is usually semi-transparent, and
+//                          the real contrast is against the composite.
+// @param {Bool}  $check    Emit a contrast warning.
+// --------------------------------------------------------------------------
+@mixin selection-style(
+    $bg: $selection-bg,
+    $fg: $selection-fg,
+    $over: null,
+    $check: true
+) {
+    @if meta.type-of($fg) != "color" {
+        @error "selection-style(): $fg must be a color, got `#{$fg}`.";
+    }
+
+    @if $check {
+        // A semi-transparent selection composites over the page, so
+        // checking against $bg alone overstates the contrast. Flattening
+        // against $over first is what makes the number meaningful.
+        $effective: $bg;
+
+        @if $over and color.alpha($bg) < 1 {
+            // Strip the alpha before mixing. Mixing a translucent colour
+            // directly leaves the result translucent too, so the check
+            // would never run — the weight has to do the compositing.
+            $opaque: color.change($bg, $alpha: 1);
+            $effective: color.mix($opaque, $over, color.alpha($bg) * 100%);
+        }
+
+        @if color.alpha($effective) == 1 {
+            $ratio: selection-ratio($fg, $effective);
+
+            @if $ratio < $selection-min-ratio {
+                @warn "selection-style(): contrast #{math.div(math.round($ratio * 100), 100)}:1 "
+                    + "is below AA (#{$selection-min-ratio}:1). Selected text "
+                    + "will be hard to read.";
+            }
+        } @else {
+            @warn "selection-style(): $bg is semi-transparent and no $over "
+                + "was supplied, so contrast could not be checked. Pass the "
+                + "page background as $over to enable the check.";
+        }
+    }
+
+    // Split rules — an unrecognised selector in a list invalidates the
+    // whole rule, so grouping ::selection with ::-moz-selection breaks
+    // selection styling everywhere except Firefox.
+    &::selection {
+        background: $bg;
+        color: $fg;
+        // Text shadows survive selection and smear against the new
+        // background, which is the one thing that still looks broken
+        // after the colours are right.
+        text-shadow: none;
+    }
+
+    &::-moz-selection {
+        background: $bg;
+        color: $fg;
+        text-shadow: none;
+    }
+}
+
+// --------------------------------------------------------------------------
+// selection-global
+//
+// Document-wide selection styling.
+// --------------------------------------------------------------------------
+@mixin selection-global($bg: $selection-bg, $fg: $selection-fg, $over: null) {
+    ::selection {
+        background: $bg;
+        color: $fg;
+        text-shadow: none;
+    }
+
+    ::-moz-selection {
+        background: $bg;
+        color: $fg;
+        text-shadow: none;
+    }
+}
+
+// --------------------------------------------------------------------------
+// selection-none
+//
+// Suppresses selection on elements where dragging should do something
+// else — a slider track, a drag handle, a canvas. Prefer this over
+// `user-select: none` on a whole subtree, which also blocks copying text
+// the user may legitimately want.
+// --------------------------------------------------------------------------
+@mixin selection-none {
+    user-select: none;
+
+    &::selection {
+        background: transparent;
+    }
+
+    &::-moz-selection {
+        background: transparent;
+    }
+}
