@@ -2,33 +2,33 @@
 
 ## Overview
 
-Issue #73403 demonstrates a fluid morphing text treatment using scale, skew, and letter-spacing changes in CSS.
+Issue #73403 demonstrates a fluid typographic morph using transform and spacing changes with no JavaScript.
 
 ## Features
 
-- Smooth shape transition
-- Responsive typography
-- Lightweight CSS animation
-- Semantic text
+- Organic scale and skew transition
+- Controlled easing curve
+- Responsive display sizes
+- Stable surrounding layout
 - Reduced-motion support
-- No JavaScript or external assets
+- Pure HTML and vanilla CSS
 
 ## Implementation
 
-The component keeps the text in the normal document flow while animating its visual geometry around the center. The restrained movement avoids abrupt layout changes.
+The `.morph` class changes scale, skew, and letter spacing around the center of the text. Because the element is transformed rather than reflowed, surrounding content remains stable.
 
 ## Accessibility
 
-The text is semantic and selectable. Reduced-motion preferences disable the decorative animation.
+The content is semantic HTML text. The animation is decorative and is disabled with `prefers-reduced-motion: reduce`.
 
-## Responsive behavior
+## Usage
 
-The showcase and fact grid stack on smaller screens, while display sizes use fluid typography.
+Open `demo.html` and reuse `.morph` for short display headings. Keep animated phrases concise so the transformation remains easy to follow.
 
 ## Files
 
-- `demo.html` — morphing text showcase
-- `style.css` — morphing animation and responsive styling
+- `demo.html` — semantic examples
+- `style.css` — morph animation and responsive rules
 - `README.md` — documentation
 
 ## Issue
