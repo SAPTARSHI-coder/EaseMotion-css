@@ -1,21 +1,23 @@
-# Native Scroll-Driven Multi-Layer Parallax
+# CSS Scroll-Driven Parallax Header
 
-A true parallax effect requires a foreground, midground, and background to scroll at completely different speeds as the user moves down the page, simulating physical depth.
+## 1. What does this do?
+This component creates a multi-layered parallax hero header that dynamically responds to the user's scroll position. As the user scrolls down the page, different visual layers (background nebula, starfield, mountain silhouetted foreground, and central typography) move and transform at staggered rates to create a deep, immersive 3D spatial effect.
 
-### Usage
-```html
-<header class="ease-parallax-header">
-    <div class="parallax-layer parallax-bg"></div>
-    <div class="parallax-layer parallax-mid"><h1>Title</h1></div>
-    <div class="parallax-layer parallax-fg"></div>
-</header>
+## 2. How is it used?
+It utilizes the modern CSS Scroll-Driven Animations API via `animation-timeline: scroll()`. By attaching `animation-timeline: scroll()` alongside standard CSS `@keyframes` animations, the progression of keyframes is linked directly to the scrollbar container's scroll offset rather than an elapsed time duration:
+
+```css
+.ease-layer-bg {
+  animation: ease-scroll-bg linear;
+  animation-timeline: scroll();
+}
+
+@keyframes ease-scroll-bg {
+  to { transform: translateY(30%); }
+}
 ```
 
-### Why is it useful?
-Historically, implementing true multi-layer parallax without extreme jitter on mobile devices required complex JavaScript `requestAnimationFrame` loops (like GSAP ScrollTrigger or basic `window.addEventListener('scroll')`). The browser had to constantly pause rendering, run your JS math to calculate the new offset based on `window.scrollY`, and apply inline DOM styles on every single tick.
+## 3. Why is it useful?
+Historically, implementing smooth multi-layered parallax scrolling required JavaScript event listeners attached to `window.addEventListener('scroll')`. Scripting on scroll often clogs the browser's main thread, causing frame drops, jank, and severe layout thrashing (especially on mobile devices or complex pages). 
 
-This component implements a next-generation approach. By utilizing the bleeding-edge `animation-timeline: scroll()` specification, we can define standard `@keyframes` that simply translate our layers along the Y axis. We then tie those keyframes strictly to the native scroll timeline. 
-
-Because we bypass JavaScript entirely, the browser is able to hand off these depth calculations directly to its hardware-accelerated compositor thread. The result is an incredibly performant, perfectly synced true parallax effect that costs 0 bytes of JavaScript overhead.
-
-> **Note:** As `animation-timeline` is a newer CSS specification, it degrades gracefully on older browsers (the layers will simply remain static and scroll normally with the page document).
+By leveraging native CSS Scroll-Driven Animations, the scroll calculation and matrix transformations are delegated directly to the browser's GPU compositor thread. This delivers silky-smooth 60+ FPS performance with zero JavaScript execution cost and zero main-thread overhead.
