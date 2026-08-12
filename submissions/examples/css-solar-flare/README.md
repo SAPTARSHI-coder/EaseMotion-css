@@ -10,5 +10,6 @@ A smooth, hardware-accelerated pure CSS accordion component showcasing a dynamic
 
 ## Usage
 
+//usage
 1. Copy the structure from `demo.html`.
 2. Link `style.css` to load the Solar Flare accordion animations.
