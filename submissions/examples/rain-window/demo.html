@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Rain Window</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="rain-window">
+
+    <canvas id="rainCanvas"></canvas>
+
+    <div class="background">
+      <div class="city-light light-one"></div>
+      <div class="city-light light-two"></div>
+      <div class="city-light light-three"></div>
+      <div class="city-light light-four"></div>
+    </div>
+
+    <div class="glass-overlay"></div>
+
+    <div class="rain-info">
+      <span class="info-title">🌧️ Rain Window</span>
+      <span class="info-status" id="status">
+        Calm Rain
+      </span>
+    </div>
+
+    <div class="droplet-counter">
+      <span>💧 Droplets</span>
+      <strong id="dropletCount">0</strong>
+    </div>
+
+    <div class="instruction">
+      Move your cursor across the glass · Click to create ripples
+    </div>
+
+    <div class="controls">
+      <button id="burstBtn" class="control-btn">
+        🌧️ Rain Burst
+      </button>
+
+      <button id="resetBtn" class="control-btn">
+        ↻ Reset
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("rainCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const status = document.getElementById("status");
+    const dropletCount = document.getElementById("dropletCount");
+
+    let width = 0;
+    let height = 0;
+
+    let droplets = [];
+    let ripples = [];
+    let splashes = [];
+
+    let pointer = {
+      x: -1000,
+      y: -1000,
+      active: false
+    };
+
+    const MAX_DROPLETS = 90;
+
+    class Droplet {
+      constructor(x, y, radius) {
+        this.x = x;
+        this.y = y;
+
+        this.radius = radius || (Math.random() * 5 + 1);
+
+        this.velocity =
+          Math.random() * 1.8 + 0.4;
+
+        this.acceleration =
+          Math.random() * 0.015 + 0.005;
+
+        this.opacity =
+          Math.random() * 0.35 + 0.45;
+
+        this.phase =
+          Math.random() * Math.PI * 2;
+
+        this.lifetime =
+          Math.random() * 500 + 300;
+      }
+
+      update() {
+
+        this.phase += 0.025;
+
+        this.velocity += this.acceleration;
+
+        if (this.velocity > 3.2) {
+          this.velocity = 3.2;
+        }
+
+        this.y += this.velocity;
+
+        this.x += Math.sin(this.phase) * 0.15;
+
+        if (pointer.active) {
+
+          const dx = this.x - pointer.x;
+          const dy = this.y - pointer.y;
+
+          const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+          const influence = 110;
+
+          if (distance < influence) {
+
+            const force =
+              (1 - distance / influence) *
+              0.8;
+
+            this.x +=
+              (dx / (distance || 1)) *
+              force;
+
+            this.velocity +=
+              force * 0.03;
+          }
+        }
+
+        this.lifetime--;
+
+        return (
+          this.y < height + 30 &&
+          this.lifetime > 0
+        );
+      }
+
+      draw() {
+
+        ctx.save();
+
+        ctx.globalAlpha = this.opacity;
+
+        const gradient =
+          ctx.createRadialGradient(
+            this.x - this.radius * 0.35,
+            this.y - this.radius * 0.35,
+            0,
+            this.x,
+            this.y,
+            this.radius
+          );
+
+        gradient.addColorStop(
+          0,
+          "rgba(255,255,255,0.95)"
+        );
+
+        gradient.addColorStop(
+          0.35,
+          "rgba(190,220,240,0.65)"
+        );
+
+        gradient.addColorStop(
+          1,
+          "rgba(120,170,200,0.08)"
+        );
+
+        ctx.fillStyle = gradient;
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+          this.x,
+          this.y,
+          this.radius * 0.75,
+          this.radius * 1.45,
+          0,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+          "rgba(255,255,255,0.8)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x - this.radius * 0.3,
+          this.y - this.radius * 0.5,
+          Math.max(0.5, this.radius * 0.18),
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    class Ripple {
+
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 5;
+        this.opacity = 0.65;
+      }
+
+      update() {
+
+        this.radius += 3.2;
+        this.opacity -= 0.018;
+
+        return this.opacity > 0;
+      }
+
+      draw() {
+
+        ctx.save();
+
+        ctx.globalAlpha = this.opacity;
+
+        ctx.strokeStyle =
+          "rgba(180,220,240,0.7)";
+
+        ctx.lineWidth = 1.5;
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+
+    class Splash {
+
+      constructor(x, y) {
+
+        this.x = x;
+        this.y = y;
+
+        this.vx =
+          (Math.random() - 0.5) * 3;
+
+        this.vy =
+          (Math.random() - 0.5) * 3;
+
+        this.life = 30;
+      }
+
+      update() {
+
+        this.x += this.vx;
+        this.y += this.vy;
+
+        this.vy += 0.04;
+
+        this.life--;
+
+        return this.life > 0;
+      }
+
+      draw() {
+
+        ctx.save();
+
+        ctx.globalAlpha =
+          this.life / 30;
+
+        ctx.fillStyle =
+          "rgba(200,230,245,0.8)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x,
+          this.y,
+          1.5,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    function resize() {
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const ratio =
+        window.devicePixelRatio || 1;
+
+      canvas.width =
+        width * ratio;
+
+      canvas.height =
+        height * ratio;
+
+      ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+      );
+    }
+
+    function createDroplet() {
+
+      if (droplets.length >= MAX_DROPLETS) {
+        return;
+      }
+
+      droplets.push(
+        new Droplet(
+          Math.random() * width,
+          -20,
+          null
+        )
+      );
+    }
+
+    function createInitialRain() {
+
+      droplets = [];
+
+      for (let i = 0; i < 45; i++) {
+
+        droplets.push(
+          new Droplet(
+            Math.random() * width,
+            Math.random() * height,
+            null
+          )
+        );
+      }
+    }
+
+    function createBurst() {
+
+      status.textContent = "Heavy Rain";
+
+      for (let i = 0; i < 18; i++) {
+
+        droplets.push(
+          new Droplet(
+            Math.random() * width,
+            -Math.random() * 150,
+            Math.random() * 5 + 1
+          )
+        );
+      }
+
+      setTimeout(() => {
+        status.textContent = "Rain";
+      }, 1200);
+    }
+
+    function createRipple(x, y) {
+
+      ripples.push(
+        new Ripple(x, y)
+      );
+
+      for (let i = 0; i < 8; i++) {
+
+        splashes.push(
+          new Splash(x, y)
+        );
+      }
+
+      droplets.forEach(drop => {
+
+        const dx = drop.x - x;
+        const dy = drop.y - y;
+
+        const distance =
+          Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 130) {
+
+          const force =
+            (1 - distance / 130) * 4;
+
+          drop.x +=
+            (dx / (distance || 1)) * force;
+
+          drop.velocity +=
+            force * 0.12;
+        }
+      });
+
+      status.textContent = "Ripple";
+
+      setTimeout(() => {
+        status.textContent = "Rain";
+      }, 800);
+    }
+
+    function mergeDroplets() {
+
+      for (let i = 0; i < droplets.length; i++) {
+
+        for (
+          let j = i + 1;
+          j < droplets.length;
+          j++
+        ) {
+
+          const a = droplets[i];
+          const b = droplets[j];
+
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+
+          const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+          const mergeDistance =
+            Math.max(
+              6,
+              Math.min(a.radius, b.radius) * 1.8
+            );
+
+          if (distance < mergeDistance) {
+
+            const combinedRadius =
+              Math.sqrt(
+                a.radius * a.radius +
+                b.radius * b.radius
+              );
+
+            a.radius =
+              Math.min(combinedRadius, 10);
+
+            a.velocity =
+              Math.max(a.velocity, b.velocity);
+
+            a.opacity =
+              Math.min(0.9, a.opacity + 0.08);
+
+            splashes.push(
+              new Splash(
+                (a.x + b.x) / 2,
+                (a.y + b.y) / 2
+              )
+            );
+
+            droplets.splice(j, 1);
+
+            j--;
+          }
+        }
+      }
+    }
+
+    function animate() {
+
+      ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+      if (
+        Math.random() < 0.12 &&
+        droplets.length < MAX_DROPLETS
+      ) {
+        createDroplet();
+      }
+
+      droplets =
+        droplets.filter(
+          drop => {
+            const alive = drop.update();
+
+            if (alive) {
+              drop.draw();
+            }
+
+            return alive;
+          }
+        );
+
+      mergeDroplets();
+
+      ripples =
+        ripples.filter(
+          ripple => {
+            const alive = ripple.update();
+
+            if (alive) {
+              ripple.draw();
+            }
+
+            return alive;
+          }
+        );
+
+      splashes =
+        splashes.filter(
+          splash => {
+            const alive = splash.update();
+
+            if (alive) {
+              splash.draw();
+            }
+
+            return alive;
+          }
+        );
+
+      dropletCount.textContent =
+        droplets.length;
+
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener(
+      "pointermove",
+      event => {
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        pointer.x =
+          event.clientX - rect.left;
+
+        pointer.y =
+          event.clientY - rect.top;
+
+        pointer.active = true;
+
+        status.textContent =
+          "Glass Disturbed";
+      }
+    );
+
+    canvas.addEventListener(
+      "pointerleave",
+      () => {
+
+        pointer.active = false;
+
+        status.textContent = "Rain";
+      }
+    );
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        createRipple(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    document
+      .getElementById("burstBtn")
+      .addEventListener(
+        "click",
+        createBurst
+      );
+
+    document
+      .getElementById("resetBtn")
+      .addEventListener(
+        "click",
+        () => {
+
+          ripples = [];
+          splashes = [];
+
+          createInitialRain();
+
+          status.textContent =
+            "Calm Rain";
+        }
+      );
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (event.code === "Space") {
+
+          event.preventDefault();
+
+          createBurst();
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+
+          ripples = [];
+          splashes = [];
+
+          createInitialRain();
+
+          status.textContent =
+            "Calm Rain";
+        }
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        resize();
+
+        createInitialRain();
+      }
+    );
+
+    resize();
+    createInitialRain();
+    animate();
+  </script>
+
+</body>
+</html>

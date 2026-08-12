@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snow Angel · impression forms like snow angel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="snowangel-container">
+      <div class="snowangel-display" id="snowangelDisplay">
+        <!-- Canvas for snow angel -->
+        <canvas id="snowangelCanvas"></canvas>
+        
+        <!-- Snow Angel Info -->
+        <div class="snowangel-info">
+          <span class="info-label">❄️ Impressions</span>
+          <span class="info-value" id="impressionCount">0</span>
+        </div>
+
+        <!-- Snow Angel Controls -->
+        <div class="snowangel-controls">
+          <div class="control-group">
+            <label class="control-label">❄️ Form</label>
+            <input type="range" class="control-slider" id="formSlider" min="0" max="100" value="0">
+            <span class="control-value" id="formValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Scene</label>
+            <div class="scene-options">
+              <button class="scene-btn active" data-scene="day" title="Day">☀️</button>
+              <button class="scene-btn" data-scene="twilight" title="Twilight">🌆</button>
+              <button class="scene-btn" data-scene="night" title="Night">🌙</button>
+              <button class="scene-btn" data-scene="aurora" title="Aurora">🌌</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Snow Angel Text -->
+        <div class="snowangel-text">
+          <span class="text-label">❄️ Snow Angel</span>
+          <span class="text-message" id="snowangelMessage">Click to make a snow angel</span>
+        </div>
+      </div>
+      
+      <div class="snowangel-status">
+        <span id="snowangelStatus">❄️ Click the snow to make a snow angel</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-make" id="makeBtn">❄️ Make Snow Angel</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>❄️ snow angel · 4 scenes · impression forms</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('snowangelCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('snowangelDisplay');
+      const impressionCount = document.getElementById('impressionCount');
+      const snowangelStatus = document.getElementById('snowangelStatus');
+      const snowangelMessage = document.getElementById('snowangelMessage');
+      const makeBtn = document.getElementById('makeBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const formSlider = document.getElementById('formSlider');
+      const formValue = document.getElementById('formValue');
+      const sceneBtns = document.querySelectorAll('.scene-btn');
+
+      // State
+      let impressions = [];
+      let snowflakes = [];
+      let animationId = null;
+      let time = 0;
+      let currentScene = 'day';
+      let formProgress = 0;
+      let targetForm = 0;
+
+      // Scene configurations
+      const scenes = {
+        day: { name: 'Day', sky: ['#87CEEB', '#B0D4E8', '#E8F4F8'], snow: '#f0f4f8', shadow: '#d4e0e8', accent: '#e8f0f8' },
+        twilight: { name: 'Twilight', sky: ['#2d1b4e', '#4a2a6a', '#7a4a8a'], snow: '#b8c8d8', shadow: '#8a9aaa', accent: '#c8d8e8' },
+        night: { name: 'Night', sky: ['#0a0a1a', '#1a1a3a', '#2a2a4a'], snow: '#8a9aaa', shadow: '#5a6a7a', accent: '#aabaca' },
+        aurora: { name: 'Aurora', sky: ['#0a1a2a', '#0a2a3a', '#1a3a4a'], snow: '#aac8d8', shadow: '#7a9aaa', accent: '#4ade80' }
+      };
+
+      // Snowflake class for background
+      class Snowflake {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.size = 0.5 + Math.random() * 1.5;
+          this.speed = 0.1 + Math.random() * 0.2;
+          this.opacity = 0.1 + Math.random() * 0.2;
+          this.wobble = 0.5 + Math.random() * 0.5;
+          this.phase = Math.random() * Math.PI * 2;
+        }
+
+        update() {
+          this.y += this.speed;
+          this.phase += 0.01;
+          this.x += Math.sin(this.phase) * this.wobble * 0.05;
+          
+          if (this.y > canvas.height) {
+            this.y = -5;
+            this.x = Math.random() * canvas.width;
+          }
+        }
+
+        draw(ctx) {
+          ctx.save();
+          ctx.globalAlpha = this.opacity;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Snow Angel Impression class
+      class SnowAngelImpression {
+        constructor(x, y) {
+          this.x = x || canvas.width / 2;
+          this.y = y || canvas.height / 2 + 20;
+          this.progress = 0;
+          this.targetProgress = 1;
+          this.speed = 0.02 + Math.random() * 0.01;
+          this.opacity = 0;
+          this.size = 0;
+          this.targetSize = 0.5 + Math.random() * 0.3;
+          this.phase = Math.random() * Math.PI * 2;
+          this.shimmer = 0;
+          this.complete = false;
+          
+          // Body parts positions
+          this.body = {
+            head: { x: 0, y: -30, r: 12 },
+            torso: { x: 0, y: 0, w: 20, h: 30 },
+            leftArm: { x: -35, y: -5, angle: -0.8, length: 35 },
+            rightArm: { x: 35, y: -5, angle: 0.8, length: 35 },
+            leftLeg: { x: -12, y: 30, angle: -0.6, length: 30 },
+            rightLeg: { x: 12, y: 30, angle: 0.6, length: 30 }
+          };
+        }
+
+        update() {
+          if (this.progress < this.targetProgress) {
+            this.progress += this.speed;
+            if (this.progress > this.targetProgress) {
+              this.progress = this.targetProgress;
+              this.complete = true;
+            }
+          }
+          this.opacity = this.progress * 0.8;
+          this.size = this.progress * this.targetSize;
+          this.shimmer = Math.sin(this.phase) * 0.2 + 0.3;
+          this.phase += 0.02;
+        }
+
+        draw(ctx, scene) {
+          const sceneData = scenes[scene];
+          const alpha = this.opacity;
+          const size = this.size;
+          
+          if (alpha < 0.01) return;
+          
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.translate(this.x, this.y);
+          
+          // Shadow/impression glow
+          ctx.shadowColor = sceneData.accent;
+          ctx.shadowBlur = 10 * size * this.shimmer;
+          
+          // Draw snow angel impression
+          const b = this.body;
+          
+          // Head
+          ctx.beginPath();
+          ctx.arc(b.head.x, b.head.y, b.head.r * size, 0, Math.PI * 2);
+          ctx.fillStyle = sceneData.shadow;
+          ctx.fill();
+          
+          // Torso
+          ctx.fillRect(
+            b.torso.x - b.torso.w/2 * size,
+            b.torso.y - b.torso.h/2 * size,
+            b.torso.w * size,
+            b.torso.h * size
+          );
+          
+          // Arms
+          ctx.save();
+          ctx.translate(b.leftArm.x, b.leftArm.y);
+          ctx.rotate(b.leftArm.angle);
+          ctx.fillRect(0, -3 * size, -b.leftArm.length * size, 6 * size);
+          ctx.restore();
+          
+          ctx.save();
+          ctx.translate(b.rightArm.x, b.rightArm.y);
+          ctx.rotate(b.rightArm.angle);
+          ctx.fillRect(0, -3 * size, b.rightArm.length * size, 6 * size);
+          ctx.restore();
+          
+          // Legs
+          ctx.save();
+          ctx.translate(b.leftLeg.x, b.leftLeg.y);
+          ctx.rotate(b.leftLeg.angle);
+          ctx.fillRect(0, -3 * size, -b.leftLeg.length * size, 6 * size);
+          ctx.restore();
+          
+          ctx.save();
+          ctx.translate(b.rightLeg.x, b.rightLeg.y);
+          ctx.rotate(b.rightLeg.angle);
+          ctx.fillRect(0, -3 * size, b.rightLeg.length * size, 6 * size);
+          ctx.restore();
+          
+          // Sparkle effects
+          if (this.progress > 0.5) {
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = sceneData.accent;
+            ctx.globalAlpha = alpha * 0.2 * this.shimmer;
+            for (let i = 0; i < 6; i++) {
+              const angle = (i / 6) * Math.PI * 2 + this.phase;
+              const dist = 20 + Math.random() * 15 * size;
+              const x = Math.cos(angle) * dist;
+              const y = Math.sin(angle) * dist;
+              ctx.beginPath();
+              ctx.arc(x, y, 1 + Math.random() * 2 * size, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate background snowflakes
+      function generateSnowflakes() {
+        snowflakes = [];
+        for (let i = 0; i < 50; i++) {
+          snowflakes.push(new Snowflake());
+        }
+      }
+
+      // Draw background
+      function drawBackground(scene) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const sceneData = scenes[scene];
+        
+        // Sky gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, sceneData.sky[0]);
+        grad.addColorStop(0.5, sceneData.sky[1]);
+        grad.addColorStop(1, sceneData.sky[2]);
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Snow ground
+        const groundY = h * 0.7;
+        const grad2 = ctx.createLinearGradient(0, groundY, 0, h);
+        grad2.addColorStop(0, sceneData.snow);
+        grad2.addColorStop(0.5, sceneData.snow + '88');
+        grad2.addColorStop(1, sceneData.shadow + '66');
+        ctx.fillStyle = grad2;
+        ctx.beginPath();
+        ctx.moveTo(0, groundY);
+        for (let i = 0; i <= w; i += 10) {
+          const y = groundY + Math.sin(i * 0.02 + 1) * 3 + Math.sin(i * 0.015 + 0.5) * 2;
+          ctx.lineTo(i, y);
+        }
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Snow texture
+        for (let i = 0; i < 30; i++) {
+          const x = Math.random() * w;
+          const y = groundY + Math.random() * (h - groundY);
+          const size = 1 + Math.random() * 3;
+          const alpha = 0.05 + Math.random() * 0.08;
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Make snow angel
+      function makeSnowAngel(x, y) {
+        const cx = x || canvas.width / 2;
+        const cy = y || canvas.height / 2 + 20;
+        const impression = new SnowAngelImpression(cx, cy);
+        impressions.push(impression);
+        impressionCount.textContent = impressions.length;
+        targetForm = 1;
+        
+        snowangelStatus.textContent = '❄️ Making a snow angel! ✨';
+        snowangelStatus.style.color = '#fbbf24';
+        snowangelMessage.textContent = '✨ A snow angel appears in the snow!';
+        snowangelMessage.style.color = '#fbbf24';
+        
+        setTimeout(() => {
+          snowangelStatus.textContent = '❄️ Click the snow to make a snow angel';
+          snowangelStatus.style.color = '#94a3b8';
+          snowangelMessage.textContent = 'Click to make a snow angel';
+          snowangelMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateSnowflakes();
+      }
+
+      // Animation loop
+      function animate() {
+        const scene = currentScene;
+        time += 0.02;
+        
+        // Update form progress
+        formProgress += (targetForm - formProgress) * 0.05;
+        formSlider.value = Math.round(formProgress * 100);
+        formValue.textContent = Math.round(formProgress * 100) + '%';
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground(scene);
+        
+        // Update and draw snowflakes
+        snowflakes.forEach(flake => {
+          flake.update();
+          flake.draw(ctx);
+        });
+        
+        // Update and draw impressions
+        impressions.forEach(impression => {
+          impression.update();
+          impression.draw(ctx, scene);
+        });
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set scene
+      function setScene(scene) {
+        currentScene = scene;
+        sceneBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.scene === scene);
+        });
+        const sceneData = scenes[scene];
+        snowangelStatus.textContent = `🎨 Scene: ${sceneData.name}`;
+        snowangelStatus.style.color = sceneData.sky[1];
+        setTimeout(() => {
+          snowangelStatus.textContent = '❄️ Click the snow to make a snow angel';
+          snowangelStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetSnowAngel() {
+        impressions = [];
+        targetForm = 0;
+        formProgress = 0;
+        impressionCount.textContent = '0';
+        snowangelStatus.textContent = '🔄 Reset complete';
+        snowangelStatus.style.color = '#94a3b8';
+        snowangelMessage.textContent = 'Click to make a snow angel';
+        snowangelMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          snowangelStatus.textContent = '❄️ Click the snow to make a snow angel';
+          snowangelStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const groundY = canvas.height * 0.7;
+        if (y > groundY) {
+          makeSnowAngel(x, y);
+        } else {
+          snowangelStatus.textContent = '❄️ Click on the snow!';
+          snowangelStatus.style.color = '#fbbf24';
+          setTimeout(() => {
+            snowangelStatus.textContent = '❄️ Click the snow to make a snow angel';
+            snowangelStatus.style.color = '#94a3b8';
+          }, 1000);
+        }
+      });
+
+      if (makeBtn) {
+        makeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 80;
+          const y = canvas.height * 0.8 + (Math.random() - 0.5) * 30;
+          makeSnowAngel(x, y);
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetSnowAngel();
+        });
+      }
+
+      sceneBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setScene(this.dataset.scene);
+        });
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          const x = canvas.width / 2 + (Math.random() - 0.5) * 80;
+          const y = canvas.height * 0.8 + (Math.random() - 0.5) * 30;
+          makeSnowAngel(x, y);
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetSnowAngel();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('❄️ Snow Angel ready · shortcuts: [Space] Make, [R] Reset');
+    })();
+  </script>
+</body>
+</html>
