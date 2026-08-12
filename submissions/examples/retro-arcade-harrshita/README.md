@@ -1,2 +1,0 @@
-# Arcade Machine
-CSS Arcade.
