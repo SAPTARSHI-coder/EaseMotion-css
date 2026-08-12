@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>jsDelivr @main vs npm Drift Visualizer</title>
+  <meta
+    name="description"
+    content="Compare EaseMotion CSS class drift between jsDelivr @main and latest npm package."
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css"
+  />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="dv-header ease-fade-in">
+    <p class="dv-kicker">EaseMotion CSS · Docs Utility</p>
+    <h1>jsDelivr <code>@main</code> vs npm Version Drift Visualizer</h1>
+    <p class="dv-subtitle">
+      Detect class API drift between freshest CDN branch builds and stable npm releases.
+      Use this to decide when to prototype with <code>@main</code> and when to pin for production.
+    </p>
+  </header>
+
+  <main class="dv-main">
+    <section class="dv-top">
+      <div class="dv-source-card">
+        <h2>Data sources</h2>
+        <ul>
+          <li><strong>CDN branch:</strong> <code id="main-url-label"></code></li>
+          <li><strong>npm latest tag:</strong> <code id="npm-meta-label"></code></li>
+          <li><strong>npm CSS URL:</strong> <code id="npm-url-label"></code></li>
+        </ul>
+      </div>
+
+      <div class="dv-controls-card">
+        <h2>Run comparison</h2>
+        <div class="dv-controls">
+          <button type="button" id="run-btn" class="ease-btn ease-btn-primary">Run Drift Check</button>
+          <label class="dv-autorun">
+            <input type="checkbox" id="autorun-toggle" checked />
+            Auto-run on load
+          </label>
+        </div>
+        <p id="status" class="dv-status" role="status" aria-live="polite">
+          Waiting to start...
+        </p>
+      </div>
+    </section>
+
+    <section class="dv-metrics" aria-label="drift summary">
+      <article class="dv-metric">
+        <h3>CDN (@main) classes</h3>
+        <p id="cdn-count">-</p>
+      </article>
+      <article class="dv-metric">
+        <h3>npm latest classes</h3>
+        <p id="npm-count">-</p>
+      </article>
+      <article class="dv-metric">
+        <h3>Common classes</h3>
+        <p id="common-count">-</p>
+      </article>
+      <article class="dv-metric dv-metric-warn">
+        <h3>Total drift</h3>
+        <p id="drift-count">-</p>
+      </article>
+    </section>
+
+    <section id="policy" class="dv-policy dv-policy-neutral">
+      <h2>Pin for production policy</h2>
+      <p id="policy-text">
+        Run a comparison first. This panel will explain drift risk and recommended usage.
+      </p>
+      <p id="pin-link" class="dv-pin-link"></p>
+    </section>
+
+    <section class="dv-filter-row">
+      <label for="search-input">Filter class names</label>
+      <input
+        id="search-input"
+        type="search"
+        placeholder="Search class (example: ease-hover, ease-fade)"
+        autocomplete="off"
+      />
+    </section>
+
+    <section class="dv-grids">
+      <article class="dv-list-card">
+        <h3>CDN-only classes (<span id="cdn-only-count">0</span>)</h3>
+        <p class="dv-hint">Exists on jsDelivr <code>@main</code>, missing in npm latest.</p>
+        <ul id="cdn-only-list" class="dv-class-list"></ul>
+      </article>
+      <article class="dv-list-card">
+        <h3>npm-only classes (<span id="npm-only-count">0</span>)</h3>
+        <p class="dv-hint">Exists in npm latest, missing on current CDN <code>@main</code>.</p>
+        <ul id="npm-only-list" class="dv-class-list"></ul>
+      </article>
+      <article class="dv-list-card">
+        <h3>Common classes (<span id="common-list-count">0</span>)</h3>
+        <p class="dv-hint">Present on both sources.</p>
+        <ul id="common-list" class="dv-class-list"></ul>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var URL_MAIN = 'https://cdn.jsdelivr.net/gh/SAPTARSHI-coder/EaseMotion-css@main/easemotion.min.css';
+      var URL_NPM_META = 'https://registry.npmjs.org/easemotion-css/latest';
+
+      var state = {
+        npmVersion: '',
+        npmCssUrl: '',
+        cdnClasses: [],
+        npmClasses: [],
+        common: [],
+        cdnOnly: [],
+        npmOnly: []
+      };
+
+      var mainLabel = document.getElementById('main-url-label');
+      var npmMetaLabel = document.getElementById('npm-meta-label');
+      var npmUrlLabel = document.getElementById('npm-url-label');
+      var runBtn = document.getElementById('run-btn');
+      var autoRunToggle = document.getElementById('autorun-toggle');
+      var statusEl = document.getElementById('status');
+      var searchInput = document.getElementById('search-input');
+      var policyBox = document.getElementById('policy');
+      var policyText = document.getElementById('policy-text');
+      var pinLink = document.getElementById('pin-link');
+
+      var counts = {
+        cdn: document.getElementById('cdn-count'),
+        npm: document.getElementById('npm-count'),
+        common: document.getElementById('common-count'),
+        drift: document.getElementById('drift-count'),
+        cdnOnly: document.getElementById('cdn-only-count'),
+        npmOnly: document.getElementById('npm-only-count'),
+        commonList: document.getElementById('common-list-count')
+      };
+
+      var lists = {
+        cdnOnly: document.getElementById('cdn-only-list'),
+        npmOnly: document.getElementById('npm-only-list'),
+        common: document.getElementById('common-list')
+      };
+
+      mainLabel.textContent = URL_MAIN;
+      npmMetaLabel.textContent = URL_NPM_META;
+      npmUrlLabel.textContent = '-';
+
+      function normalizeClassName(raw) {
+        return raw.trim().replace(/^\.?/, '').replace(/[:\s].*$/, '');
+      }
+
+      function extractEaseClasses(cssText) {
+        var classSet = new Set();
+        var rx = /\.ease-[A-Za-z0-9_-]+/g;
+        var match = null;
+        while ((match = rx.exec(cssText)) !== null) {
+          classSet.add(normalizeClassName(match[0]));
+        }
+        return Array.from(classSet).sort();
+      }
+
+      function diffLists(a, b) {
+        var bSet = new Set(b);
+        return a.filter(function (item) { return !bSet.has(item); });
+      }
+
+      function intersectLists(a, b) {
+        var bSet = new Set(b);
+        return a.filter(function (item) { return bSet.has(item); });
+      }
+
+      function setStatus(message, type) {
+        statusEl.textContent = message;
+        statusEl.className = 'dv-status ' + (type ? 'dv-status-' + type : '');
+      }
+
+      function renderList(container, values, query) {
+        container.innerHTML = '';
+        var filtered = values;
+        if (query) {
+          filtered = values.filter(function (value) { return value.indexOf(query) !== -1; });
+        }
+        if (filtered.length === 0) {
+          var empty = document.createElement('li');
+          empty.className = 'dv-empty';
+          empty.textContent = query ? 'No matching classes for current filter.' : 'No classes in this bucket.';
+          container.appendChild(empty);
+          return;
+        }
+        filtered.forEach(function (name) {
+          var li = document.createElement('li');
+          li.textContent = name;
+          container.appendChild(li);
+        });
+      }
+
+      function renderPolicy() {
+        var totalDrift = state.cdnOnly.length + state.npmOnly.length;
+        var overlapPct = state.cdnClasses.length
+          ? Math.round((state.common.length / state.cdnClasses.length) * 100)
+          : 0;
+
+        policyBox.classList.remove('dv-policy-neutral', 'dv-policy-safe', 'dv-policy-warn');
+        if (totalDrift === 0) {
+          policyBox.classList.add('dv-policy-safe');
+          policyText.textContent =
+            'No class drift detected right now. You can prototype on @main, but keep production pinned to a versioned npm URL for reproducibility.';
+        } else {
+          policyBox.classList.add('dv-policy-warn');
+          policyText.textContent =
+            'Drift detected (' + totalDrift + ' classes differ). Prefer a pinned npm version in production to avoid freshness-related breakage.';
+        }
+
+        pinLink.textContent =
+          'Recommended production pin: https://cdn.jsdelivr.net/npm/easemotion-css@' +
+          state.npmVersion + '/easemotion.min.css  (overlap ' + overlapPct + '%)';
+      }
+
+      function renderAll() {
+        counts.cdn.textContent = state.cdnClasses.length;
+        counts.npm.textContent = state.npmClasses.length;
+        counts.common.textContent = state.common.length;
+        counts.cdnOnly.textContent = state.cdnOnly.length;
+        counts.npmOnly.textContent = state.npmOnly.length;
+        counts.commonList.textContent = state.common.length;
+        counts.drift.textContent = state.cdnOnly.length + state.npmOnly.length;
+
+        var query = searchInput.value.trim().toLowerCase();
+        renderList(lists.cdnOnly, state.cdnOnly, query);
+        renderList(lists.npmOnly, state.npmOnly, query);
+        renderList(lists.common, state.common, query);
+        renderPolicy();
+      }
+
+      async function fetchText(url) {
+        var response = await fetch(url, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error('Failed fetch: ' + url + ' (' + response.status + ')');
+        }
+        return response.text();
+      }
+
+      async function runComparison() {
+        runBtn.disabled = true;
+        setStatus('Fetching npm latest metadata...', 'loading');
+        try {
+          var npmMetaRaw = await fetchText(URL_NPM_META);
+          var npmMeta = JSON.parse(npmMetaRaw);
+          state.npmVersion = npmMeta.version;
+          state.npmCssUrl =
+            'https://cdn.jsdelivr.net/npm/easemotion-css@' + state.npmVersion + '/easemotion.min.css';
+          npmUrlLabel.textContent = state.npmCssUrl;
+
+          setStatus('Fetching CSS from both sources...', 'loading');
+          var results = await Promise.all([fetchText(URL_MAIN), fetchText(state.npmCssUrl)]);
+
+          setStatus('Extracting class API and computing drift...', 'loading');
+          state.cdnClasses = extractEaseClasses(results[0]);
+          state.npmClasses = extractEaseClasses(results[1]);
+          state.common = intersectLists(state.cdnClasses, state.npmClasses);
+          state.cdnOnly = diffLists(state.cdnClasses, state.npmClasses);
+          state.npmOnly = diffLists(state.npmClasses, state.cdnClasses);
+
+          renderAll();
+          setStatus(
+            'Done. Compared @main vs npm@' + state.npmVersion +
+              '. Drift classes: ' + (state.cdnOnly.length + state.npmOnly.length) + '.',
+            'success'
+          );
+        } catch (error) {
+          setStatus(
+            'Comparison failed: ' + error.message + '. Check network access and retry.',
+            'error'
+          );
+        } finally {
+          runBtn.disabled = false;
+        }
+      }
+
+      runBtn.addEventListener('click', runComparison);
+      searchInput.addEventListener('input', renderAll);
+
+      if (autoRunToggle.checked) {
+        runComparison();
+      }
+    })();
+  </script>
+</body>
+</html>

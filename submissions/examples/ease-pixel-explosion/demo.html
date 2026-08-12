@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Explosion · 8-bit burst</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-wrapper">
+            <canvas id="pixelCanvas" width="400" height="400"></canvas>
+        </div>
+        <div class="info">
+            <span>⚡ 8‑bit burst ⚡</span>
+            <small>click / tap → explode</small>
+        </div>
+        <div class="hint">
+            <span>double‑click or press 'R' to reset</span>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 400, H = 400;
+
+            // ---- 8-bit palette (retro bright) ----
+            const PALETTE = [
+                '#f94144', // red
+                '#f3722c', // orange
+                '#f8961e', // gold
+                '#f9c74f', // yellow
+                '#90be6d', // green
+                '#43aa8b', // teal
+                '#577590', // blue
+                '#6d597a', // purple
+                '#b5838d', // pink
+                '#e5989b', // light pink
+                '#ffb3a6', // peach
+                '#b8d4e3', // sky
+                '#cddaf5', // lavender
+                '#f7ede2', // cream
+            ];
+
+            const GRID_SIZE = 8;
+            const BLOCK_SIZE = W / GRID_SIZE;
+
+            let grid = Array(GRID_SIZE).fill().map(() => Array(GRID_SIZE).fill(null));
+
+            function randomColor() {
+                return PALETTE[Math.floor(Math.random() * PALETTE.length)];
+            }
+
+            function initRandomPattern(density = 0.35) {
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        grid[r][c] = Math.random() < density ? randomColor() : null;
+                    }
+                }
+                let count = 0;
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (grid[r][c] !== null) count++;
+                    }
+                }
+                if (count < 3) {
+                    grid[2][3] = PALETTE[0];
+                    grid[3][4] = PALETTE[3];
+                    grid[4][2] = PALETTE[5];
+                    grid[5][6] = PALETTE[7];
+                    grid[1][5] = PALETTE[2];
+                }
+            }
+
+            function drawGrid() {
+                ctx.clearRect(0, 0, W, H);
+                ctx.strokeStyle = '#2d364a';
+                ctx.lineWidth = 0.8;
+                for (let i = 0; i <= GRID_SIZE; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * BLOCK_SIZE, 0);
+                    ctx.lineTo(i * BLOCK_SIZE, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * BLOCK_SIZE);
+                    ctx.lineTo(W, i * BLOCK_SIZE);
+                    ctx.stroke();
+                }
+
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        const color = grid[r][c];
+                        if (color === null) continue;
+                        ctx.fillStyle = color;
+                        ctx.fillRect(c * BLOCK_SIZE, r * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                        ctx.fillRect(c * BLOCK_SIZE + 2, r * BLOCK_SIZE + 2, BLOCK_SIZE-4, 4);
+                        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                        ctx.fillRect(c * BLOCK_SIZE + 2, r * BLOCK_SIZE + BLOCK_SIZE-6, BLOCK_SIZE-4, 4);
+                    }
+                }
+            }
+
+            function explode(cx, cy, radius = 3.5) {
+                const affected = [];
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (grid[r][c] === null) continue;
+                        const dx = c - cx;
+                        const dy = r - cy;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist <= radius) {
+                            affected.push({ row: r, col: c, dist, dx, dy });
+                        }
+                    }
+                }
+
+                if (affected.length === 0) {
+                    for (let i = 0; i < 4; i++) {
+                        const r = Math.floor(Math.random() * GRID_SIZE);
+                        const c = Math.floor(Math.random() * GRID_SIZE);
+                        grid[r][c] = randomColor();
+                    }
+                    drawGrid();
+                    return;
+                }
+
+                const newGrid = grid.map(row => [...row]);
+
+                for (let p of affected) {
+                    const { row, col, dx, dy, dist } = p;
+                    const len = Math.max(0.3, dist);
+                    const nx = dx / len;
+                    const ny = dy / len;
+
+                    const strength = 1.6 + Math.random() * 2.6;
+                    let newRow = Math.round(row + ny * strength);
+                    let newCol = Math.round(col + nx * strength);
+
+                    newRow = Math.min(GRID_SIZE-1, Math.max(0, newRow));
+                    newCol = Math.min(GRID_SIZE-1, Math.max(0, newCol));
+
+                    const newColor = randomColor();
+
+                    if (newGrid[newRow][newCol] === null) {
+                        newGrid[newRow][newCol] = newColor;
+                    } else {
+                        let placed = false;
+                        for (let step = 1; step < 4 && !placed; step++) {
+                            for (let dr = -step; dr <= step && !placed; dr++) {
+                                for (let dc = -step; dc <= step && !placed; dc++) {
+                                    const nr = newRow + dr;
+                                    const nc = newCol + dc;
+                                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE && newGrid[nr][nc] === null) {
+                                        newGrid[nr][nc] = newColor;
+                                        placed = true;
+                                    }
+                                }
+                            }
+                        }
+                        if (!placed) {
+                            const rr = Math.floor(Math.random() * GRID_SIZE);
+                            const rc = Math.floor(Math.random() * GRID_SIZE);
+                            newGrid[rr][rc] = newColor;
+                        }
+                    }
+
+                    if (!(newRow === row && newCol === col)) {
+                        newGrid[row][col] = null;
+                    }
+                }
+
+                for (let i = 0; i < 2; i++) {
+                    const r = Math.floor(Math.random() * GRID_SIZE);
+                    const c = Math.floor(Math.random() * GRID_SIZE);
+                    if (newGrid[r][c] === null) {
+                        newGrid[r][c] = randomColor();
+                    }
+                }
+
+                grid = newGrid;
+                drawGrid();
+            }
+
+            function handleCanvasClick(e) {
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                let cssX = clientX - rect.left;
+                let cssY = clientY - rect.top;
+                cssX = Math.min(rect.width, Math.max(0, cssX));
+                cssY = Math.min(rect.height, Math.max(0, cssY));
+
+                const px = cssX * scaleX;
+                const py = cssY * scaleY;
+
+                const col = Math.floor(px / BLOCK_SIZE);
+                const row = Math.floor(py / BLOCK_SIZE);
+                const clampedRow = Math.min(GRID_SIZE-1, Math.max(0, row));
+                const clampedCol = Math.min(GRID_SIZE-1, Math.max(0, col));
+
+                explode(clampedCol, clampedRow, 3.8);
+            }
+
+            function resetPattern() {
+                initRandomPattern(0.3);
+                drawGrid();
+            }
+
+            initRandomPattern(0.3);
+            drawGrid();
+
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', handleCanvasClick, { passive: false });
+
+            canvas.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                resetPattern();
+            });
+
+            window.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetPattern();
+                    e.preventDefault();
+                }
+            });
+
+            console.log('💥 Pixel Explosion · click to burst · double-click / R to reset');
+        })();
+    </script>
+</body>
+</html>

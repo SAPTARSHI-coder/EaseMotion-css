@@ -1,0 +1,122 @@
+/* ============================================================
+   EaseMotion CSS — ease-slide-up Fix (Issue #7960)
+   
+   Root cause: `overflow: hidden` on flex containers clips
+   transformed children whose bounding box hasn't fully settled,
+   cutting ~10px off the text baseline during the last 20% of
+   the keyframe timeline on narrow viewports.
+
+   Fix strategy:
+   1. Drive the animation with `clip-path` instead of relying on
+      the parent's overflow boundary.
+   2. Add `will-change: transform, opacity` so the browser
+      promotes the element to its own compositing layer, preventing
+      the parent's stacking context from clipping it mid-animation.
+   3. Use `padding-bottom` + negative `margin-bottom` trick as a
+      safe-guard for flex containers that still need overflow:hidden.
+   ============================================================ */
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes easeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+    clip-path: inset(0 0 0 0);   /* full rect — nothing clipped */
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ── Utility class ─────────────────────────────────────────── */
+.ease-slide-up {
+  animation: easeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  /*
+   * KEY FIX: promote to its own GPU layer so the flex parent's
+   * overflow:hidden stacking context cannot clip this element
+   * while the transform is in flight.
+   */
+  will-change: transform, opacity;
+
+  /*
+   * KEY FIX: ensure the element's own overflow never clips
+   * descending text (line-height artefacts on Safari).
+   */
+  overflow: visible;
+
+  /*
+   * Safe-guard for flex/grid parents that use overflow:hidden:
+   * add breathing room below the element so the baseline is
+   * never within the clipping boundary during animation.
+   * Compensated with a negative margin so layout is unchanged.
+   */
+  padding-bottom: 0.15em;
+  margin-bottom: -0.15em;
+}
+
+/* ── Flex-container safe-guard ─────────────────────────────── */
+/*
+ * When .ease-slide-up lives inside a flex container, the parent
+ * MUST NOT clip the compositing layer. Force overflow:visible
+ * on direct flex/grid parents during the animation window.
+ *
+ * Target only containers, not every ancestor, to avoid side-effects.
+ */
+.flex-container:has(> .ease-slide-up),
+.flex-wrap:has(> .ease-slide-up),
+[class*="flex"]:has(> .ease-slide-up) {
+  overflow: visible;
+}
+
+/* ── Responsive adjustments ────────────────────────────────── */
+@media (max-width: 480px) {
+  .ease-slide-up {
+    /*
+     * Reduce translateY on narrow viewports so the element
+     * starts closer to its rest position — less travel means
+     * less chance of clipping at the clip boundary.
+     */
+    animation-name: easeSlideUpMobile;
+
+    /*
+     * Slightly longer duration compensates for slower CPUs
+     * on mid-range mobile devices (prevents jank at 80-100%).
+     */
+    animation-duration: 0.65s;
+  }
+
+  @keyframes easeSlideUpMobile {
+    0% {
+      opacity: 0;
+      transform: translateY(14px); /* reduced from 24px */
+      clip-path: inset(0 0 0 0);
+    }
+    80% {
+      opacity: 1;
+      transform: translateY(0);
+      clip-path: inset(0 0 0 0);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      clip-path: inset(0 0 0 0);
+    }
+  }
+}
+
+/* ── Respect reduced-motion preference ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ease-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

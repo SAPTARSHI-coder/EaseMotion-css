@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurora Borealis Waves</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Aurora Borealis Waves</h1>
+        <p class="subtitle">Flowing colorful waves that ripple across the screen</p>
+
+        <div class="aurora-wrapper">
+            <canvas id="auroraCanvas"></canvas>
+
+            <div class="controls">
+                <button id="colorBtn">Palette: Aurora</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="waveBtn">Waves: 5</button>
+                <button id="clearBtn">Clear</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌌 Dancing lights</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('auroraCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorBtn = document.getElementById('colorBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const waveBtn = document.getElementById('waveBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(450, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let time = 0;
+        let speed = 0.02;
+        let numWaves = 5;
+        let speedLevel = 0;
+        let colorPalette = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let stars = [];
+
+        // ===== COLOR PALETTES =====
+        const palettes = [
+            // Aurora (Green/Purple/Blue)
+            { 
+                name: 'Aurora',
+                colors: ['#00ff87', '#60efff', '#a78bfa', '#7c3aed', '#06b6d4'],
+                bg: '#0a0a1a'
+            },
+            // Sunset (Orange/Pink/Purple)
+            { 
+                name: 'Sunset',
+                colors: ['#ff6b35', '#f7931e', '#fbb03b', '#ff1493', '#ff6b9d'],
+                bg: '#1a0a0a'
+            },
+            // Ocean (Blue/Cyan/Teal)
+            { 
+                name: 'Ocean',
+                colors: ['#006994', '#0077b6', '#00b4d8', '#48cae4', '#90e0ef'],
+                bg: '#0a0a1a'
+            },
+            // Fire (Red/Orange/Yellow)
+            { 
+                name: 'Fire',
+                colors: ['#ff0000', '#ff4500', '#ff6b00', '#ffa500', '#ffd700'],
+                bg: '#1a0a00'
+            },
+            // Galaxy (Purple/Pink/Blue)
+            { 
+                name: 'Galaxy',
+                colors: ['#7c3aed', '#a78bfa', '#ec4899', '#f472b6', '#60efff'],
+                bg: '#0a001a'
+            },
+            // Forest (Green/Yellow/Teal)
+            { 
+                name: 'Forest',
+                colors: ['#059669', '#10b981', '#34d399', '#fcd34d', '#a3e635'],
+                bg: '#0a1a0a'
+            },
+            // Cyber (Cyan/Magenta/Purple)
+            { 
+                name: 'Cyber',
+                colors: ['#00ffff', '#ff00ff', '#ff0080', '#00ff80', '#80ff00'],
+                bg: '#0a0a1a'
+            },
+            // Pastel (Soft Pink/Blue/Purple)
+            { 
+                name: 'Pastel',
+                colors: ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff'],
+                bg: '#1a1a2a'
+            },
+        ];
+
+        // ===== WAVE OPTIONS =====
+        const waveCounts = [3, 5, 7, 9, 12];
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== STAR GENERATION =====
+        function generateStars() {
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: 0.5 + Math.random() * 1.5,
+                    alpha: 0.3 + Math.random() * 0.7,
+                    twinkleSpeed: 0.01 + Math.random() * 0.03,
+                });
+            }
+        }
+        generateStars();
+
+        // ===== AURORA WAVE CLASS =====
+        class AuroraWave {
+            constructor(index) {
+                this.index = index;
+                this.phase = (index / numWaves) * Math.PI * 2;
+                this.amplitude = 60 + Math.random() * 40;
+                this.frequency = 0.02 + Math.random() * 0.015;
+                this.width = 2 + Math.random() * 3;
+                this.opacity = 0.4 + Math.random() * 0.4;
+                this.yOffset = (index / numWaves) * canvas.height * 0.8 + canvas.height * 0.1;
+                this.colorOffset = index / numWaves;
+                this.trail = [];
+                this.maxTrail = 20;
+            }
+
+            getY(x) {
+                const wave1 = Math.sin(x * this.frequency + this.phase + time * 0.5) * this.amplitude;
+                const wave2 = Math.sin(x * this.frequency * 0.5 + this.phase * 1.5 + time * 0.3) * this.amplitude * 0.5;
+                const wave3 = Math.sin(x * this.frequency * 2 + this.phase * 0.7 + time * 0.7) * this.amplitude * 0.3;
+                return this.yOffset + wave1 + wave2 + wave3;
+            }
+
+            getColor(x) {
+                const palette = palettes[colorPalette];
+                const colors = palette.colors;
+                const pos = (x / canvas.width + this.colorOffset + time * 0.02) % 1;
+                const colorIndex = pos * (colors.length - 1);
+                const idx = Math.floor(colorIndex);
+                const frac = colorIndex - idx;
+                
+                if (idx >= colors.length - 1) return colors[colors.length - 1];
+                
+                const c1 = colors[idx];
+                const c2 = colors[idx + 1];
+                return this.interpolateColor(c1, c2, frac);
+            }
+
+            interpolateColor(c1, c2, t) {
+                const r1 = parseInt(c1.slice(1, 3), 16);
+                const g1 = parseInt(c1.slice(3, 5), 16);
+                const b1 = parseInt(c1.slice(5, 7), 16);
+                const r2 = parseInt(c2.slice(1, 3), 16);
+                const g2 = parseInt(c2.slice(3, 5), 16);
+                const b2 = parseInt(c2.slice(5, 7), 16);
+                
+                const r = Math.round(r1 + (r2 - r1) * t);
+                const g = Math.round(g1 + (g2 - g1) * t);
+                const b = Math.round(b1 + (b2 - b1) * t);
+                
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            draw(ctx) {
+                const w = canvas.width;
+                const h = canvas.height;
+                
+                // Build wave points
+                const points = [];
+                for (let x = 0; x <= w; x += 2) {
+                    const y = this.getY(x);
+                    points.push({ x, y });
+                }
+                
+                // Draw glow trail
+                const gradient = ctx.createLinearGradient(0, 0, 0, h);
+                gradient.addColorStop(0, 'rgba(0,0,0,0)');
+                gradient.addColorStop(0.5, `rgba(0,0,0,${0.02 * this.opacity})`);
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+                
+                // Draw main wave with glow
+                for (let i = 0; i < points.length - 1; i++) {
+                    const p = points[i];
+                    const p2 = points[i + 1];
+                    
+                    const color = this.getColor(p.x);
+                    const alpha = this.opacity * (0.5 + 0.5 * Math.sin(p.x * 0.01 + time));
+                    
+                    // Glow layer
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y - this.width * 4);
+                    ctx.lineTo(p2.x, p2.y - this.width * 4);
+                    ctx.lineTo(p2.x, p2.y + this.width * 4);
+                    ctx.lineTo(p.x, p.y + this.width * 4);
+                    ctx.closePath();
+                    
+                    const glowGrad = ctx.createRadialGradient(
+                        p.x, p.y, 0,
+                        p.x, p.y, this.width * 8
+                    );
+                    glowGrad.addColorStop(0, color + '60');
+                    glowGrad.addColorStop(0.5, color + '30');
+                    glowGrad.addColorStop(1, color + '00');
+                    ctx.fillStyle = glowGrad;
+                    ctx.globalAlpha = alpha * 0.3;
+                    ctx.fill();
+                    
+                    // Main wave line
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = color;
+                    ctx.globalAlpha = alpha * 0.8;
+                    ctx.lineWidth = this.width;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = color;
+                    ctx.stroke();
+                    
+                    // Inner bright core
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.globalAlpha = alpha * 0.2;
+                    ctx.lineWidth = this.width * 0.3;
+                    ctx.shadowBlur = 0;
+                    ctx.stroke();
+                    
+                    ctx.globalAlpha = 1;
+                    ctx.shadowBlur = 0;
+                }
+                
+                // Draw shimmer particles along wave
+                if (Math.random() < 0.3) {
+                    for (let i = 0; i < 3; i++) {
+                        const idx = Math.floor(Math.random() * points.length);
+                        const p = points[idx];
+                        const color = this.getColor(p.x);
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y + (Math.random() - 0.5) * 20, 1 + Math.random() * 2, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = 0.5 + Math.random() * 0.5;
+                        ctx.shadowBlur = 20;
+                        ctx.shadowColor = color;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+        }
+
+        // ===== CREATE WAVES =====
+        let waves = [];
+
+        function createWaves() {
+            waves = [];
+            for (let i = 0; i < numWaves; i++) {
+                waves.push(new AuroraWave(i));
+            }
+        }
+        createWaves();
+
+        // ===== DRAW STARS =====
+        function drawStars(ctx, w, h) {
+            const palette = palettes[colorPalette];
+            ctx.fillStyle = '#0a0a1a';
+            ctx.fillRect(0, 0, w, h);
+            
+            for (const star of stars) {
+                const twinkle = 0.5 + 0.5 * Math.sin(time * star.twinkleSpeed * 2 + star.x);
+                ctx.globalAlpha = star.alpha * twinkle;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ===== RENDER LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Clear and draw background
+            const palette = palettes[colorPalette];
+            ctx.fillStyle = palette.bg;
+            ctx.fillRect(0, 0, w, h);
+            
+            // Draw stars
+            drawStars(ctx, w, h);
+            
+            // Update time
+            time += speed;
+            
+            // Draw aurora waves
+            for (const wave of waves) {
+                wave.draw(ctx);
+            }
+            
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Color palette
+        colorBtn.addEventListener('click', () => {
+            colorPalette = (colorPalette + 1) % palettes.length;
+            colorBtn.textContent = `Palette: ${palettes[colorPalette].name}`;
+            statusText.textContent = `🎨 ${palettes[colorPalette].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌌 Dancing lights';
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌌 Dancing lights';
+            }, 1000);
+        });
+
+        // Wave count
+        waveBtn.addEventListener('click', () => {
+            const currentIndex = waveCounts.indexOf(numWaves);
+            const nextIndex = (currentIndex + 1) % waveCounts.length;
+            numWaves = waveCounts[nextIndex];
+            waveBtn.textContent = `Waves: ${numWaves}`;
+            createWaves();
+            statusText.textContent = `🌊 ${numWaves} waves`;
+            setTimeout(() => {
+                statusText.textContent = '🌌 Dancing lights';
+            }, 1000);
+        });
+
+        // Clear / Reset
+        clearBtn.addEventListener('click', () => {
+            time = 0;
+            createWaves();
+            statusText.textContent = '✨ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌌 Dancing lights';
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'w' || e.key === 'W') {
+                waveBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                clearBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            generateStars();
+            createWaves();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Palette: ${palettes[0].name}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        waveBtn.textContent = `Waves: ${numWaves}`;
+        statusText.textContent = '🌌 Dancing lights';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌌 Aurora Borealis Waves loaded!');
+        console.log('💡 C - Change palette');
+        console.log('💡 S - Change speed');
+        console.log('💡 W - Change wave count');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>

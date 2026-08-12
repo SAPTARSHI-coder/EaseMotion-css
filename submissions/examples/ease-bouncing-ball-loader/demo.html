@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bouncing Ball Loader Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Bouncing Ball Loader</h1>
+        <p class="subtitle">Ball bounces across the screen</p>
+
+        <!-- BOUNCING BALL LOADER COMPONENT -->
+        <div class="ball-container">
+            <div class="ball-wrapper">
+                <div class="ball-display">
+                    <canvas id="ballCanvas"></canvas>
+                    <div class="ball-overlay">
+                        <span class="overlay-icon">⚡</span>
+                        <span class="overlay-text">Loading...</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="ball-controls">
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.5" max="3" step="0.1" value="1" />
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="bounceSlider">Bounce:</label>
+                        <input type="range" id="bounceSlider" min="0.3" max="1" step="0.05" value="0.7" />
+                        <span id="bounceValue">0.70</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="gravitySlider">Gravity:</label>
+                        <input type="range" id="gravitySlider" min="0.1" max="1" step="0.05" value="0.5" />
+                        <span id="gravityValue">0.50</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="ball-actions">
+                    <button class="ball-ctrl-btn" id="toggleBtn">⏸ Pause</button>
+                    <button class="ball-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="ball-ctrl-btn" id="randomColorBtn">🎲 Random</button>
+                    <button class="ball-ctrl-btn" id="multiBallBtn">🔵 Multi Ball</button>
+                </div>
+
+                <div class="ball-status">
+                    <span class="status-label">Balls:</span>
+                    <span class="status-value" id="ballCount">1</span>
+                    <span class="status-label">Bounces:</span>
+                    <span class="status-value" id="bounceCount">0</span>
+                    <span class="status-label">State:</span>
+                    <span class="status-value" id="stateDisplay">Running</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #43e97b);">
+                        <span>⚽</span>
+                    </div>
+                    <span class="variant-label">Aurora</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>⚽</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>⚽</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>⚽</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('ballCanvas');
+            const ctx = canvas.getContext('2d');
+            const ballCount = document.getElementById('ballCount');
+            const bounceCount = document.getElementById('bounceCount');
+            const stateDisplay = document.getElementById('stateDisplay');
+            const speedSlider = document.getElementById('speedSlider');
+            const bounceSlider = document.getElementById('bounceSlider');
+            const gravitySlider = document.getElementById('gravitySlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const speedValue = document.getElementById('speedValue');
+            const bounceValue = document.getElementById('bounceValue');
+            const gravityValue = document.getElementById('gravityValue');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomColorBtn = document.getElementById('randomColorBtn');
+            const multiBallBtn = document.getElementById('multiBallBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                speed: 1,
+                bounce: 0.7,
+                gravity: 0.5,
+                color: '#4facfe',
+                onBounce: function(count) {
+                    console.log(`🔄 Bounce #${count}`);
+                },
+                onToggle: function(state) {
+                    console.log(`⚽ Ball ${state ? 'paused' : 'running'}`);
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let balls = [];
+            let isPaused = false;
+            let animationId = null;
+            let totalBounces = 0;
+            let isMultiBall = false;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // BALL CLASS
+            // ============================================
+            class Ball {
+                constructor(x, y, color) {
+                    this.x = x || Math.random() * canvas.width;
+                    this.y = y || Math.random() * canvas.height * 0.3;
+                    this.radius = 15 + Math.random() * 10;
+                    this.color = color || CONFIG.color;
+                    this.vx = (Math.random() - 0.5) * 4 * CONFIG.speed;
+                    this.vy = -Math.random() * 6 * CONFIG.speed;
+                    this.gravity = CONFIG.gravity * 0.3;
+                    this.bounce = CONFIG.bounce;
+                    this.trail = [];
+                    this.maxTrail = 12;
+                    this.bounceCount = 0;
+                    this.isActive = true;
+                }
+
+                update() {
+                    if (!this.isActive) return;
+
+                    // Apply gravity
+                    this.vy += this.gravity * CONFIG.speed;
+
+                    // Apply friction
+                    this.vx *= 0.999;
+
+                    // Update position
+                    this.x += this.vx * CONFIG.speed;
+                    this.y += this.vy * CONFIG.speed;
+
+                    // Floor collision
+                    const floor = canvas.height - this.radius - 10;
+                    if (this.y > floor) {
+                        this.y = floor;
+                        this.vy = -this.vy * this.bounce;
+                        this.vx *= 0.98;
+                        this.bounceCount++;
+                        totalBounces++;
+                        if (this.bounceCount % 5 === 0) {
+                            CONFIG.onBounce(totalBounces);
+                        }
+                        if (Math.abs(this.vy) < 0.5) {
+                            this.vy = 0;
+                            this.isActive = false;
+                        }
+                    }
+
+                    // Ceiling collision
+                    if (this.y < this.radius) {
+                        this.y = this.radius;
+                        this.vy = Math.abs(this.vy) * this.bounce;
+                    }
+
+                    // Wall collisions
+                    if (this.x < this.radius) {
+                        this.x = this.radius;
+                        this.vx = Math.abs(this.vx) * 0.8;
+                    }
+                    if (this.x > canvas.width - this.radius) {
+                        this.x = canvas.width - this.radius;
+                        this.vx = -Math.abs(this.vx) * 0.8;
+                    }
+
+                    // Trail
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > this.maxTrail) {
+                        this.trail.shift();
+                    }
+
+                    // Reactivate if velocity > threshold
+                    if (!this.isActive && (Math.abs(this.vx) > 0.5 || Math.abs(this.vy) > 0.5)) {
+                        this.isActive = true;
+                    }
+                }
+
+                draw(ctx) {
+                    if (!this.isActive && this.trail.length === 0) return;
+
+                    const color = this.color;
+
+                    // Draw trail
+                    if (this.trail.length > 1) {
+                        for (let i = 1; i < this.trail.length; i++) {
+                            const alpha = (i / this.trail.length) * 0.3;
+                            const size = this.radius * (i / this.trail.length) * 0.5;
+                            ctx.beginPath();
+                            ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                            ctx.fillStyle = color + Math.floor(alpha * 200).toString(16).padStart(2, '0');
+                            ctx.fill();
+                        }
+                    }
+
+                    // Shadow
+                    const shadowY = canvas.height - 10;
+                    const shadowSize = this.radius * (1 - (canvas.height - this.y) / canvas.height);
+                    if (shadowSize > 1) {
+                        ctx.beginPath();
+                        ctx.ellipse(this.x, shadowY, this.radius * 0.8 * (1 - this.vy / 20), shadowSize * 0.5, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                        ctx.fill();
+                    }
+
+                    // Glow effect
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.radius * 3
+                    );
+                    gradient.addColorStop(0, color + '60');
+                    gradient.addColorStop(0.5, color + '20');
+                    gradient.addColorStop(1, color + '00');
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // Ball body
+                    const ballGrad = ctx.createRadialGradient(
+                        this.x - this.radius * 0.3,
+                        this.y - this.radius * 0.3,
+                        0,
+                        this.x,
+                        this.y,
+                        this.radius
+                    );
+                    ballGrad.addColorStop(0, '#ffffff');
+                    ballGrad.addColorStop(0.3, color);
+                    ballGrad.addColorStop(1, color + '88');
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = ballGrad;
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.radius * 0.25, this.y - this.radius * 0.3, this.radius * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                    ctx.fill();
+
+                    // Small shine
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.radius * 0.1, this.y - this.radius * 0.5, this.radius * 0.1, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                    ctx.fill();
+
+                    // Bounce count indicator
+                    if (this.bounceCount > 0) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                        ctx.font = '10px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(this.bounceCount, this.x, this.y + this.radius + 16);
+                    }
+                }
+
+                isMoving() {
+                    return Math.abs(this.vx) > 0.1 || Math.abs(this.vy) > 0.1;
+                }
+            }
+
+            // ============================================
+            // BALL SYSTEM
+            // ============================================
+            function initBalls(count = 1) {
+                balls = [];
+                totalBounces = 0;
+                for (let i = 0; i < count; i++) {
+                    const x = 100 + (i * 150) % (canvas.width - 200);
+                    const y = 50 + Math.random() * 100;
+                    const hue = (i / count) * 360;
+                    const color = `hsl(${hue}, 80%, 60%)`;
+                    const ball = new Ball(x, y, color);
+                    ball.vx = (Math.random() - 0.5) * 6 * CONFIG.speed;
+                    ball.vy = -Math.random() * 8 * CONFIG.speed - 2;
+                    balls.push(ball);
+                }
+                ballCount.textContent = balls.length;
+                bounceCount.textContent = '0';
+            }
+
+            function updateBalls() {
+                balls.forEach(b => b.update());
+                // Update bounce count
+                const total = balls.reduce((sum, b) => sum + b.bounceCount, 0);
+                bounceCount.textContent = total;
+            }
+
+            function drawBalls() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw floor line
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - 10);
+                ctx.lineTo(canvas.width, canvas.height - 10);
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Draw balls
+                balls.forEach(b => b.draw(ctx));
+            }
+
+            function animate() {
+                if (!isPaused) {
+                    updateBalls();
+                }
+                drawBalls();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+                stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                stateDisplay.style.color = isPaused ? '#f59e0b' : '#34c759';
+                CONFIG.onToggle(isPaused);
+            }
+
+            function resetBalls() {
+                const count = isMultiBall ? 5 : 1;
+                initBalls(count);
+                if (isPaused) {
+                    togglePause();
+                }
+                stateDisplay.textContent = 'Reset';
+                setTimeout(() => {
+                    stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                }, 1000);
+            }
+
+            function randomizeColor() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43', '#a29bfe', '#55efc4'];
+                const random = colors[Math.floor(Math.random() * colors.length)];
+                colorPicker.value = random;
+                CONFIG.color = random;
+                balls.forEach(b => b.color = random);
+            }
+
+            function toggleMultiBall() {
+                isMultiBall = !isMultiBall;
+                multiBallBtn.textContent = isMultiBall ? '🔵 Single Ball' : '🔵 Multi Ball';
+                const count = isMultiBall ? 5 : 1;
+                initBalls(count);
+            }
+
+            function updateConfig() {
+                CONFIG.speed = parseFloat(speedSlider.value);
+                CONFIG.bounce = parseFloat(bounceSlider.value);
+                CONFIG.gravity = parseFloat(gravitySlider.value);
+                CONFIG.color = colorPicker.value;
+                speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+                bounceValue.textContent = CONFIG.bounce.toFixed(2);
+                gravityValue.textContent = CONFIG.gravity.toFixed(2);
+                // Update existing balls
+                balls.forEach(b => {
+                    b.bounce = CONFIG.bounce;
+                    b.gravity = CONFIG.gravity * 0.3;
+                    b.color = CONFIG.color;
+                });
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            speedSlider.addEventListener('input', updateConfig);
+            bounceSlider.addEventListener('input', updateConfig);
+            gravitySlider.addEventListener('input', updateConfig);
+            colorPicker.addEventListener('input', updateConfig);
+
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetBalls);
+            randomColorBtn.addEventListener('click', randomizeColor);
+            multiBallBtn.addEventListener('click', toggleMultiBall);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBalls();
+                }
+                if (e.key === 'm' || e.key === 'M') {
+                    toggleMultiBall();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Aurora': ['#4facfe', '#43e97b'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#43e97b'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    balls.forEach(b => b.color = primary);
+                    stateDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        stateDisplay.textContent = isPaused ? 'Paused' : 'Running';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.BouncingBallLoader = {
+                toggle: togglePause,
+                reset: resetBalls,
+                randomize: randomizeColor,
+                toggleMultiBall: toggleMultiBall,
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    updateConfig();
+                },
+                setBounce: (bounce) => {
+                    bounceSlider.value = bounce;
+                    updateConfig();
+                },
+                setGravity: (gravity) => {
+                    gravitySlider.value = gravity;
+                    updateConfig();
+                },
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    updateConfig();
+                },
+                isPaused: () => isPaused,
+                isMultiBall: () => isMultiBall,
+                getState: () => ({
+                    paused: isPaused,
+                    speed: CONFIG.speed,
+                    bounce: CONFIG.bounce,
+                    gravity: CONFIG.gravity,
+                    color: CONFIG.color,
+                    ballCount: balls.length,
+                    totalBounces: totalBounces
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                    }
+                    if (config.bounce) {
+                        bounceSlider.value = config.bounce;
+                    }
+                    if (config.gravity) {
+                        gravitySlider.value = config.gravity;
+                    }
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    updateConfig();
+                    balls.forEach(b => {
+                        b.bounce = CONFIG.bounce;
+                        b.gravity = CONFIG.gravity * 0.3;
+                        b.color = CONFIG.color;
+                    });
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            initBalls(1);
+            updateConfig();
+            animate();
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                }, 200);
+            });
+
+            console.log('⚽ Bouncing Ball Loader initialized!');
+            console.log('📖 API: window.BouncingBallLoader');
+            console.log('📖 Usage:');
+            console.log('  - Watch the ball bounce across the screen');
+            console.log('  - Keyboard shortcuts: Space (pause), R (reset), M (multi ball)');
+            console.log('  - Adjust speed, bounce, and gravity');
+
+        })();
+    </script>
+</body>
+</html>

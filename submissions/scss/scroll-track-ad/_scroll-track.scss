@@ -1,0 +1,154 @@
+// ==========================================================================
+// EaseMotion CSS — Scroll Track mixin
+// Issue #63563
+// --------------------------------------------------------------------------
+// Cross-browser scrollbar styling, plus optional scroll shadows.
+//
+// Two independent APIs exist and neither is a superset of the other:
+//
+//   `scrollbar-color` / `scrollbar-width`  — the standard properties.
+//   Supported in Firefox and, more recently, Chromium. Only accepts a
+//   thumb and track colour and a coarse `thin` / `auto` width.
+//
+//   `::-webkit-scrollbar-*`  — the older pseudo-element family. Allows
+//   arbitrary sizing, radius and padding, but is ignored by Firefox.
+//
+// Emitting both is the only way to cover the field. They are ordered
+// standard-first so that where an engine supports both, the more capable
+// pseudo-element rules win.
+//
+// The scroll shadow uses the `background-attachment: local` technique:
+// two gradients pinned to the scroll container and two pinned to the
+// content, layered so the shadows are revealed only when there is content
+// out of view. No JavaScript and no scroll listener.
+// ==========================================================================
+
+@use "sass:meta";
+
+$scroll-track-thumb: rgba(148, 163, 184, 0.3) !default;
+$scroll-track-bg: transparent !default;
+$scroll-track-size: 10px !default;
+
+// --------------------------------------------------------------------------
+// scroll-track
+//
+// @param {Color}  $thumb   Thumb colour.
+// @param {Color}  $track   Track colour.
+// @param {Number} $size    Scrollbar thickness (webkit only).
+// @param {Bool}   $shadow  Emit scroll shadows.
+// @param {Color}  $surface Surface colour, required when $shadow is true —
+//                          the gradients must fade to the real background
+//                          or they read as grey bars.
+// --------------------------------------------------------------------------
+@mixin scroll-track(
+    $thumb: $scroll-track-thumb,
+    $track: $scroll-track-bg,
+    $size: $scroll-track-size,
+    $shadow: false,
+    $surface: null
+) {
+    @if meta.type-of($size) != "number" {
+        @error "scroll-track(): $size must be a number, got `#{$size}`.";
+    }
+
+    // Standard properties first.
+    scrollbar-color: $thumb $track;
+    scrollbar-width: thin;
+
+    // Webkit pseudo-elements second, so they win where both are supported.
+    &::-webkit-scrollbar {
+        height: $size;
+        width: $size;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $track;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: $thumb;
+        background-clip: content-box;
+        // Transparent border inset the thumb without changing the hit area.
+        border: 3px solid transparent;
+        border-radius: 999px;
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+        background: rgba(148, 163, 184, 0.5);
+        background-clip: content-box;
+    }
+
+    // Prevents the corner square rendering as an opaque block where both
+    // axes scroll.
+    &::-webkit-scrollbar-corner {
+        background: transparent;
+    }
+
+    @if $shadow {
+        @if not $surface {
+            @error "scroll-track(): $surface is required when $shadow is true — "
+                 + "the shadow gradients must fade into the real background "
+                 + "colour or they render as grey bars.";
+        }
+
+        @include scroll-shadow($surface);
+    }
+}
+
+// --------------------------------------------------------------------------
+// scroll-shadow
+//
+// Vertical scroll shadows via `background-attachment: local`.
+//
+// Layer order matters and is not arbitrary: the two `local` cover
+// gradients are listed FIRST so they paint over the `scroll` shadow
+// gradients at the extremes. At the top of the scroll range the top cover
+// sits flush over the top shadow and hides it; as content scrolls away
+// the cover moves with it and the shadow is revealed.
+// --------------------------------------------------------------------------
+@mixin scroll-shadow($surface, $size: 26px, $shade: rgba(0, 0, 0, 0.28)) {
+    background:
+        // Covers — move with the content.
+        linear-gradient($surface 30%, rgba(255, 255, 255, 0)) top / 100% $size,
+        linear-gradient(rgba(255, 255, 255, 0), $surface 70%) bottom / 100% $size,
+        // Shadows — pinned to the container.
+        radial-gradient(farthest-side at 50% 0, $shade, rgba(0, 0, 0, 0)) top / 100% calc(#{$size} * 0.5),
+        radial-gradient(farthest-side at 50% 100%, $shade, rgba(0, 0, 0, 0)) bottom / 100% calc(#{$size} * 0.5);
+    background-attachment: local, local, scroll, scroll;
+    background-color: $surface;
+    background-repeat: no-repeat;
+}
+
+// --------------------------------------------------------------------------
+// scroll-track-hide
+//
+// Hide the scrollbar while keeping the element scrollable — for carousels
+// and chip rows where a visible bar is noise.
+//
+// Note: this hides an affordance. Only use it where another cue (arrows,
+// peeking content) tells the user the area scrolls.
+// --------------------------------------------------------------------------
+@mixin scroll-track-hide {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+// --------------------------------------------------------------------------
+// scroll-snap-x
+//
+// Horizontal snap track. `scroll-padding` matters when the container has
+// sticky edges — without it a snapped item aligns under them.
+// --------------------------------------------------------------------------
+@mixin scroll-snap-x($align: start, $padding: 0) {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: $padding;
+    -webkit-overflow-scrolling: touch;
+
+    > * {
+        scroll-snap-align: $align;
+    }
+}

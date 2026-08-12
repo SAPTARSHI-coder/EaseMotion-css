@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fog Unveil · Fog Clears to Show Content</title>
+    <meta name="description" content="Interactive fog that clears to reveal hidden content beneath with atmospheric mist effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌫️ FOG UNVEIL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="fogCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🌤️ CLEAR FOG</button>
+                <button class="reset-btn" id="resetBtn">🌫️ RESET FOG</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Fog Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5">
+                <span id="densityLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌫️ FOG UNVEIL</span>
+            <small>fog clears · content emerges · atmosphere</small>
+        </div>
+        <div class="hint">
+            <span>🌤️ watch the fog clear to reveal what's hidden beneath</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('fogCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const clearBtn = document.getElementById('clearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            let fogDensity = 5;
+            let fogParticles = [];
+            let isClearing = false;
+            let clearProgress = 0;
+
+            // ---- Fog Particle Class ----
+            class FogParticle {
+                constructor(x, y) {
+                    this.x = x || Math.random() * W;
+                    this.y = y || Math.random() * H;
+                    this.size = 40 + Math.random() * 120;
+                    this.speed = 0.1 + Math.random() * 0.3;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.opacity = 0.1 + Math.random() * 0.25;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.driftX = (Math.random() - 0.5) * 0.2;
+                    this.driftY = (Math.random() - 0.5) * 0.2;
+                }
+
+                update() {
+                    // Drift slowly
+                    this.x += Math.cos(this.angle) * this.speed * 0.1 + this.driftX;
+                    this.y += Math.sin(this.angle) * this.speed * 0.05 + this.driftY;
+                    
+                    // Gentle wave
+                    this.x += Math.sin(time * 0.01 + this.phase) * 0.05;
+                    this.y += Math.cos(time * 0.008 + this.phase * 0.7) * 0.05;
+                    
+                    // Wrap around
+                    if (this.x < -this.size) this.x = W + this.size;
+                    if (this.x > W + this.size) this.x = -this.size;
+                    if (this.y < -this.size) this.y = H + this.size;
+                    if (this.y > H + this.size) this.y = -this.size;
+                    
+                    // Slight size pulsing
+                    this.size += Math.sin(time * 0.005 + this.phase) * 0.05;
+                }
+
+                draw(ctx, progress) {
+                    const alpha = this.opacity * (1 - progress * 0.9);
+                    if (alpha < 0.01) return;
+                    
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    grad.addColorStop(0, `rgba(220, 230, 240, ${alpha * 0.7})`);
+                    grad.addColorStop(0.4, `rgba(200, 215, 230, ${alpha * 0.5})`);
+                    grad.addColorStop(0.7, `rgba(180, 200, 220, ${alpha * 0.3})`);
+                    grad.addColorStop(1, `rgba(160, 190, 210, 0)`);
+                    
+                    ctx.fillStyle = grad;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Hidden Content ----
+            let hiddenContent = null;
+
+            function generateHiddenContent() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = W;
+                tempCanvas.height = H;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Beautiful landscape/gradient
+                const grad = tempCtx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, '#1a3a5a');
+                grad.addColorStop(0.3, '#2a6a8a');
+                grad.addColorStop(0.6, '#3a8a6a');
+                grad.addColorStop(0.8, '#5a8a4a');
+                grad.addColorStop(1, '#3a5a2a');
+                tempCtx.fillStyle = grad;
+                tempCtx.fillRect(0, 0, W, H);
+                
+                // Mountains
+                tempCtx.fillStyle = 'rgba(40, 60, 80, 0.3)';
+                for (let i = 0; i < 5; i++) {
+                    const x = i * 150 + 50;
+                    const height = 60 + Math.random() * 80;
+                    tempCtx.beginPath();
+                    tempCtx.moveTo(x - 80, H);
+                    tempCtx.quadraticCurveTo(x - 40, H - height, x, H - height - 20);
+                    tempCtx.quadraticCurveTo(x + 40, H - height, x + 80, H);
+                    tempCtx.fill();
+                }
+                
+                // Sun
+                const sunGrad = tempCtx.createRadialGradient(W - 80, 60, 0, W - 80, 60, 50);
+                sunGrad.addColorStop(0, 'rgba(255, 220, 100, 0.8)');
+                sunGrad.addColorStop(0.5, 'rgba(255, 200, 80, 0.4)');
+                sunGrad.addColorStop(1, 'rgba(255, 180, 60, 0)');
+                tempCtx.fillStyle = sunGrad;
+                tempCtx.beginPath();
+                tempCtx.arc(W - 80, 60, 50, 0, Math.PI * 2);
+                tempCtx.fill();
+                
+                // Trees
+                for (let i = 0; i < 12; i++) {
+                    const x = 20 + i * 50 + Math.random() * 20;
+                    const y = H - 30 - Math.random() * 40;
+                    const size = 15 + Math.random() * 25;
+                    tempCtx.fillStyle = `rgba(30, 60, 30, ${0.2 + Math.random() * 0.2})`;
+                    tempCtx.beginPath();
+                    tempCtx.moveTo(x, y - size);
+                    tempCtx.lineTo(x - size/2, y);
+                    tempCtx.lineTo(x + size/2, y);
+                    tempCtx.closePath();
+                    tempCtx.fill();
+                }
+                
+                // Text
+                tempCtx.fillStyle = 'rgba(255,255,255,0.2)';
+                tempCtx.font = '48px monospace';
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText('✨ REVEALED ✨', W/2, H/2 - 30);
+                
+                tempCtx.font = '20px monospace';
+                tempCtx.fillStyle = 'rgba(255,255,255,0.15)';
+                tempCtx.fillText('The fog has cleared', W/2, H/2 + 40);
+                
+                return tempCtx.getImageData(0, 0, W, H);
+            }
+
+            // ---- Create Fog ----
+            function createFog() {
+                fogParticles = [];
+                const numParticles = 80 + Math.floor(Math.random() * 40);
+                for (let i = 0; i < numParticles; i++) {
+                    fogParticles.push(new FogParticle());
+                }
+                clearProgress = 0;
+                isClearing = false;
+            }
+
+            // ---- Clear Fog ----
+            function clearFog() {
+                if (isClearing) return;
+                isClearing = true;
+                clearProgress = 0;
+            }
+
+            // ---- Reset Fog ----
+            function resetFog() {
+                isClearing = false;
+                clearProgress = 0;
+                createFog();
+            }
+
+            // ---- Draw Hidden Content ----
+            function drawHiddenContent(ctx, progress) {
+                if (!hiddenContent) {
+                    hiddenContent = generateHiddenContent();
+                }
+                
+                // Draw content with reveal effect
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = W;
+                tempCanvas.height = H;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.putImageData(hiddenContent, 0, 0);
+                
+                // Fade in effect
+                ctx.save();
+                ctx.globalAlpha = 0.2 + progress * 0.8;
+                ctx.drawImage(tempCanvas, 0, 0);
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                ctx.fillStyle = '#0a0a18';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw hidden content (always present, but hidden by fog)
+                if (hiddenContent) {
+                    drawHiddenContent(ctx, clearProgress);
+                }
+                
+                // Update fog particles
+                const fogOpacity = 1 - clearProgress * 0.95;
+                if (fogOpacity > 0.01) {
+                    for (let p of fogParticles) {
+                        p.update();
+                        p.draw(ctx, clearProgress);
+                    }
+                }
+                
+                // Additional fog layer (density controlled)
+                if (clearProgress < 0.9) {
+                    const density = fogDensity / 10;
+                    const extraFog = 0.1 + density * 0.2 * (1 - clearProgress);
+                    ctx.save();
+                    ctx.globalAlpha = extraFog;
+                    const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+                    grad.addColorStop(0, 'rgba(200, 215, 230, 0.1)');
+                    grad.addColorStop(0.5, 'rgba(180, 200, 220, 0.08)');
+                    grad.addColorStop(1, 'rgba(160, 190, 210, 0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
+                
+                // Fog edge effect (when clearing)
+                if (clearProgress > 0 && clearProgress < 1) {
+                    const edgeAlpha = Math.sin(clearProgress * Math.PI) * 0.15;
+                    ctx.save();
+                    ctx.globalAlpha = edgeAlpha;
+                    const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+                    grad.addColorStop(0, 'rgba(200, 220, 240, 0)');
+                    grad.addColorStop(0.5, 'rgba(200, 220, 240, 0.05)');
+                    grad.addColorStop(1, 'rgba(200, 220, 240, 0.1)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Clear animation
+                if (isClearing && clearProgress < 1) {
+                    clearProgress += 0.003;
+                    if (clearProgress > 1) {
+                        clearProgress = 1;
+                        isClearing = false;
+                    }
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Density Control ----
+            densitySlider.addEventListener('input', function() {
+                fogDensity = parseInt(this.value);
+                densityLabel.textContent = fogDensity;
+            });
+
+            // ---- Event Listeners ----
+            clearBtn.addEventListener('click', clearFog);
+            resetBtn.addEventListener('click', resetFog);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearFog();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetFog();
+                }
+            });
+
+            // ---- Initialize ----
+            hiddenContent = generateHiddenContent();
+            createFog();
+            render();
+            animate();
+
+            console.log('🌫️ Fog Unveil · Click Clear Fog to reveal the hidden content!');
+        })();
+    </script>
+</body>
+</html>

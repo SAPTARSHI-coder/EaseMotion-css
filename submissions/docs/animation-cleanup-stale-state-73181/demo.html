@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animation Cleanup Regression Tests</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Animation Cleanup & Stale State Tests</h1>
+    <p>
+      Regression checks for completed, cancelled, removed, and restarted animations.
+    </p>
+
+    <div id="target" class="target">Animation Target</div>
+
+    <div class="controls">
+      <button id="start">Start</button>
+      <button id="cancel">Cancel</button>
+      <button id="restart">Restart</button>
+      <button id="remove">Remove Element</button>
+      <button id="reattach">Reattach Element</button>
+      <button id="cycle">Rapid Start/Cancel</button>
+      <button id="clear">Clear Log</button>
+    </div>
+
+    <h2>Event Log</h2>
+    <pre id="log" aria-live="polite"></pre>
+  </main>
+
+  <script>
+    const target = document.getElementById("target");
+    const log = document.getElementById("log");
+
+    let animation = null;
+    let elementAttached = true;
+
+    function writeLog(message) {
+      const time = new Date().toLocaleTimeString();
+      log.textContent += `[${time}] ${message}\n`;
+    }
+
+    function createAnimation() {
+      if (!elementAttached) {
+        writeLog("SKIP: target is not attached");
+        return null;
+      }
+
+      const currentTarget = document.getElementById("target");
+
+      const instance = currentTarget.animate(
+        [
+          { transform: "translateX(0)", opacity: 1 },
+          { transform: "translateX(180px)", opacity: 0.4 },
+          { transform: "translateX(0)", opacity: 1 }
+        ],
+        {
+          duration: 1200,
+          iterations: 1,
+          fill: "both"
+        }
+      );
+
+      instance.onfinish = () => {
+        writeLog("finish: animation completed and released");
+        animation = null;
+      };
+
+      instance.oncancel = () => {
+        writeLog("cancel: animation cancelled and cleaned");
+        animation = null;
+      };
+
+      return instance;
+    }
+
+    document.getElementById("start").onclick = () => {
+      if (animation) {
+        writeLog("start: existing animation detected");
+        return;
+      }
+
+      animation = createAnimation();
+
+      if (animation) {
+        writeLog("start: animation created");
+      }
+    };
+
+    document.getElementById("cancel").onclick = () => {
+      if (!animation) {
+        writeLog("cancel: no active animation");
+        return;
+      }
+
+      animation.cancel();
+    };
+
+    document.getElementById("restart").onclick = () => {
+      if (animation) {
+        animation.cancel();
+      }
+
+      animation = createAnimation();
+
+      if (animation) {
+        writeLog("restart: fresh animation created");
+      }
+    };
+
+    document.getElementById("remove").onclick = () => {
+      if (animation) {
+        animation.cancel();
+      }
+
+      const currentTarget = document.getElementById("target");
+
+      if (currentTarget) {
+        currentTarget.remove();
+        elementAttached = false;
+        animation = null;
+        writeLog("remove: target removed and animation reference cleared");
+      }
+    };
+
+    document.getElementById("reattach").onclick = () => {
+      if (elementAttached) {
+        writeLog("reattach: target already attached");
+        return;
+      }
+
+      const newTarget = document.createElement("div");
+
+      newTarget.id = "target";
+      newTarget.className = "target";
+      newTarget.textContent = "Animation Target";
+
+      document.querySelector(".container").insertBefore(
+        newTarget,
+        document.querySelector(".controls")
+      );
+
+      elementAttached = true;
+      animation = null;
+
+      writeLog("reattach: fresh target created without stale animation state");
+    };
+
+    document.getElementById("cycle").onclick = () => {
+      if (!elementAttached) {
+        writeLog("cycle: target is not attached");
+        return;
+      }
+
+      let count = 0;
+
+      const runCycle = () => {
+        if (count >= 5) {
+          writeLog("cycle: completed 5 start/cancel cycles");
+          animation = null;
+          return;
+        }
+
+        if (animation) {
+          animation.cancel();
+        }
+
+        animation = createAnimation();
+        count++;
+
+        setTimeout(() => {
+          if (animation) {
+            animation.cancel();
+          }
+
+          setTimeout(runCycle, 80);
+        }, 100);
+      };
+
+      runCycle();
+    };
+
+    document.getElementById("clear").onclick = () => {
+      log.textContent = "";
+    };
+
+    writeLog("ready: regression test environment initialized");
+  </script>
+</body>
+</html>

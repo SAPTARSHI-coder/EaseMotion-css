@@ -1,36 +1,29 @@
 # ease-flip
 
-3D card flip with front/back faces using `perspective` + `rotateY`. Zero JavaScript required.
+3D flip Y-axis entrance animation with perspective and backface-visibility. Creates a card-flip reveal effect.
 
 ## Usage
 
 ```html
-<div class="ease-flip-container">
-  <div class="ease-flip" style="width:200px; height:120px;">
-    <div class="ease-flip-front">Front</div>
-    <div class="ease-flip-back">Back</div>
-  </div>
-</div>
+<div class="ease-flip">Flips into view</div>
 ```
 
 ## Variants
 
 | Class | Description |
 |---|---|
-| `ease-flip` | Default hover flip (Y axis) |
-| `ease-flip-x` | Flip on X axis |
-| `ease-flip-click` | Click to flip (toggle `is-flipped`) |
-| `ease-flip-fast` | 300ms transition |
-| `ease-flip-slow` | 1000ms transition |
+| `ease-flip` | Default flip Y-axis entrance |
+| `ease-flip-sm` | Subtle flip |
+| `ease-flip-lg` | Strong flip |
 
 ## Notes
 
-- Always wrap with `ease-flip-container` for perspective
-- `ease-flip-front` and `ease-flip-back` are required children
-- For click-to-flip, toggle the `is-flipped` class on the element
+- Uses `perspective(400px)` and `backface-visibility: hidden`
+- Rotates around Y-axis from 90deg to 0deg
+- Great for card reveals, badge entrances, and tile content
+- Respects `prefers-reduced-motion`
 
 ## Submission
 
-- **Author:** sudha09-git
-- **Issue:** #2257
+- **Author:** SAPTARSHI-coder
 - **Files:** `style.css`, `demo.html`
