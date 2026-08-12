@@ -1,0 +1,271 @@
+/*
+  Fix: Ghost button variant nearly invisible on dark backgrounds
+  Issue: #55576
+
+  Root cause (from buttons.css)
+  ─────────────────────────────
+  .ease-btn-ghost {
+    background-color: transparent;
+    color: var(--ease-color-neutral-700, #334155);   ← dark gray
+    border-color: transparent;                        ← no border at all
+  }
+  .ease-btn-ghost:hover {
+    background-color: var(--ease-color-neutral-100, #f1f5f9);  ← near-white
+    color: var(--ease-color-neutral-900, #0f172a);
+  }
+
+  Both the text color (#334155) and hover background (#f1f5f9) are
+  hard-coded light-theme neutrals. On a dark page background these
+  values produce a button that:
+    - Is nearly unreadable (dark text on dark background)
+    - Has no border/shape cue to identify it as a button
+    - Has a near-white hover that looks broken on dark surfaces
+
+  ── Fix strategy ─────────────────────────────────────────────
+
+  1. Replace hardcoded neutrals with theme-aware CSS custom
+     properties that resolve to appropriate values in both light
+     and dark contexts.
+
+  2. Add a subtle 1px border using `currentColor` at low opacity so
+     the button always has a visible shape even at rest — consistent
+     with how browsers render ghost/outline elements.
+
+  3. Adjust the hover surface to use a semi-transparent neutral
+     (rgba) rather than a fully opaque light value, so it looks
+     correct on any background colour.
+
+  4. Add an explicit @media (prefers-color-scheme: dark) block that
+     flips the text/hover to light values — matching how other
+     variants in the framework handle dark mode.
+
+  All other button variants are shown for comparison.
+*/
+
+/* ─── Reset & page ──────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0f172a;          /* dark page — reproduces the exact bug */
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 2.5rem 1rem;
+  min-height: 100vh;
+}
+
+h2 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.demo-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 560px;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.label-broken {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  background: #7f1d1d;
+  color: #fca5a5;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.label-fixed {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  background: #14532d;
+  color: #86efac;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.note {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.note code {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  background: #0f172a;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SHARED BASE — matches the framework's .ease-btn
+══════════════════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border: 2px solid transparent;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition:
+    background-color 150ms cubic-bezier(0.4, 0, 0.2, 1),
+    color            150ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color     150ms cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow       300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:active  { transform: scale(0.97); }
+.btn:focus-visible {
+  outline: 2px solid #6c63ff;
+  outline-offset: 3px;
+}
+
+/* Other variants — for comparison */
+.btn-primary  { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+.btn-success  { background: #22c55e; color: #fff; border-color: #22c55e; }
+.btn-danger   { background: #ef4444; color: #fff; border-color: #ef4444; }
+.btn-outline  { background: transparent; color: #6c63ff; border-color: #6c63ff; }
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover { background: #4b44cc; border-color: #4b44cc; }
+  .btn-success:hover { background: #15803d; border-color: #15803d; }
+  .btn-danger:hover  { background: #b91c1c; border-color: #b91c1c; }
+  .btn-outline:hover { background: #6c63ff; color: #fff; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BEFORE (broken) — exact copy of current .ease-btn-ghost
+   Hard-coded light-mode neutrals, no border, invisible on dark.
+══════════════════════════════════════════════════════════════ */
+.btn-ghost-broken {
+  background-color: transparent;
+  color: #334155;               /* ← dark gray, invisible on dark bg */
+  border-color: transparent;    /* ← no border — doesn't read as a button */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-ghost-broken:hover {
+    background-color: #f1f5f9;  /* ← near-white fill, looks broken on dark */
+    color: #0f172a;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   AFTER (fixed) — theme-aware ghost button
+
+   Changes:
+   1. color uses currentColor fallback chain with CSS variable
+      → resolves to a readable value on both light & dark
+   2. border: 1px solid (rgba currentColor at 25%)
+      → always visible button shape, zero extra markup
+   3. hover uses semi-transparent rgba
+      → looks correct on any background colour
+   4. @media (prefers-color-scheme: dark)
+      → explicit dark mode flip for maximum browser compatibility
+══════════════════════════════════════════════════════════════ */
+.btn-ghost-fixed {
+  background-color: transparent;
+
+  /*
+    Use the framework's text variable. On a light page this is a
+    dark neutral; the dark-mode override below flips it to light.
+    Fallback chain: framework token → system text color → safe gray.
+  */
+  color: var(--ease-color-text, var(--ease-color-neutral-700, #334155));
+
+  /*
+    A subtle 1 px border at 25 % opacity of the current text colour
+    gives the button a clear shape without overpowering the layout.
+    Uses currentColor so the border automatically matches the text.
+  */
+  border: 1px solid rgba(100, 116, 139, 0.35);   /* slate-500 at 35 % */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .btn-ghost-fixed:hover {
+    /*
+      Semi-transparent neutral surface — works on any bg colour.
+      Light page: slightly darker surface.
+      Dark page: slightly lighter surface.
+    */
+    background-color: rgba(100, 116, 139, 0.12);
+
+    /* Intensify border slightly on hover */
+    border-color: rgba(100, 116, 139, 0.55);
+
+    color: var(--ease-color-text, var(--ease-color-neutral-900, #0f172a));
+  }
+}
+
+/* ── Dark mode override ──────────────────────────────────────
+   On dark-themed pages, flip text to a light neutral so the
+   ghost button is as readable as Primary / Outline / etc.
+   This matches the pattern other framework variants use.
+─────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .btn-ghost-fixed {
+    color: var(--ease-color-neutral-300, #cbd5e1);   /* light neutral */
+    border-color: rgba(203, 213, 225, 0.25);          /* border from light text */
+  }
+
+  .btn-ghost-fixed:hover {
+    background-color: rgba(203, 213, 225, 0.1);
+    border-color: rgba(203, 213, 225, 0.45);
+    color: var(--ease-color-neutral-100, #f1f5f9);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LIGHT BACKGROUND COMPARISON
+   Show both variants on white so the reviewer can verify the
+   fixed button also looks correct on light pages.
+══════════════════════════════════════════════════════════════ */
+.demo-card.light {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #1e293b;
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none !important; }
+  .btn:active { transform: none !important; }
+}

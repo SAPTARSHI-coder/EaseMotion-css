@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>⚡ Thunder Clap – Thunder Rumbles With Visual Flash</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>⚡ Thunder Clap</h1>
+            <div class="controls">
+                <button class="control-btn" id="strikeBtn" title="Strike thunder">⚡ Strike</button>
+                <button class="control-btn" id="autoBtn" title="Auto-thunder">▶️ Auto</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="thunderCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="thunderStatus">🌤️ Clear</span>
+                <span id="strikeCount">⚡ 0 strikes</span>
+                <span id="intensityInfo">💥 Intensity: -</span>
+            </div>
+            <div class="hint" id="hint">⚡ Click to strike thunder</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>⚡ Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="70" step="1" />
+                <span id="intensityLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Rumble</label>
+                <input type="range" id="rumbleSlider" min="10" max="100" value="60" step="1" />
+                <span id="rumbleLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>💫 Flash Duration</label>
+                <input type="range" id="flashSlider" min="10" max="100" value="50" step="1" />
+                <span id="flashLabel">50%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Thunder Clap – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('thunderCanvas');
+            const ctx = canvas.getContext('2d');
+            const thunderStatus = document.getElementById('thunderStatus');
+            const strikeCount = document.getElementById('strikeCount');
+            const intensityInfo = document.getElementById('intensityInfo');
+            const hint = document.getElementById('hint');
+            const strikeBtn = document.getElementById('strikeBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const rumbleSlider = document.getElementById('rumbleSlider');
+            const rumbleLabel = document.getElementById('rumbleLabel');
+            const flashSlider = document.getElementById('flashSlider');
+            const flashLabel = document.getElementById('flashLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isAuto = false;
+            let autoTimer = 0;
+            let time = 0;
+            let animationId = null;
+            let strikeCountTotal = 0;
+            let isFlashing = false;
+            let flashIntensity = 0;
+            let flashDuration = 0;
+            let rumbleIntensity = 0;
+            let rumbleDecay = 0;
+
+            // --- Parameters ---
+            let intensity = 70; // 10-100
+            let rumble = 60; // 10-100
+            let flashDurationParam = 50; // 10-100
+
+            // --- Lightning bolts ---
+            let bolts = [];
+            let particles = [];
+            let shockwaves = [];
+
+            // --- Lightning bolt class ---
+            class LightningBolt {
+                constructor(x, y, intensity) {
+                    this.x = x || W / 2 + (Math.random() - 0.5) * 200;
+                    this.y = y || 20 + Math.random() * 100;
+                    this.intensity = intensity / 100;
+                    this.segments = [];
+                    this.maxSegments = 8 + Math.floor(Math.random() * 8);
+                    this.branches = [];
+                    this.width = 2 + this.intensity * 4;
+                    this.opacity = 0.9 + Math.random() * 0.1;
+                    this.life = 1;
+                    this.decay = 0.02 + Math.random() * 0.03;
+                    this.color = `hsl(${40 + Math.random() * 20}, 100%, ${60 + Math.random() * 30}%)`;
+
+                    this.generateBolt();
+                }
+
+                generateBolt() {
+                    let x = this.x;
+                    let y = this.y;
+                    const segments = [];
+
+                    for (let i = 0; i < this.maxSegments; i++) {
+                        const dx = (Math.random() - 0.5) * (40 + this.intensity * 30);
+                        const dy = 20 + Math.random() * 40 + this.intensity * 20;
+                        x += dx;
+                        y += dy;
+                        segments.push({ x, y, width: this.width * (1 - i / this.maxSegments * 0.7) });
+                    }
+                    this.segments = segments;
+
+                    // Generate branches
+                    const branchCount = Math.floor(2 + Math.random() * 4 * this.intensity);
+                    for (let i = 0; i < branchCount; i++) {
+                        const segIndex = Math.floor(Math.random() * (this.segments.length - 2)) + 1;
+                        const start = this.segments[segIndex];
+                        const branch = this.generateBranch(start.x, start.y, segIndex / this.segments.length);
+                        if (branch) this.branches.push(branch);
+                    }
+                }
+
+                generateBranch(x, y, t) {
+                    const segments = [];
+                    let cx = x;
+                    let cy = y;
+                    const count = 3 + Math.floor(Math.random() * 4);
+
+                    for (let i = 0; i < count; i++) {
+                        const dx = (Math.random() - 0.5) * 30;
+                        const dy = 15 + Math.random() * 25;
+                        cx += dx;
+                        cy += dy;
+                        const width = this.width * (1 - t) * (1 - i / count * 0.7);
+                        segments.push({ x: cx, y: cy, width });
+                    }
+                    return segments;
+                }
+
+                update() {
+                    this.life -= this.decay;
+                    this.opacity *= 0.99;
+                    return this.life > 0 && this.opacity > 0.01;
+                }
+
+                draw(ctx) {
+                    if (this.opacity < 0.01) return;
+
+                    const alpha = this.life * this.opacity;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Glow
+                    ctx.shadowBlur = 30 * this.intensity;
+                    ctx.shadowColor = `rgba(200, 220, 255, ${alpha * 0.3})`;
+
+                    // Main bolt
+                    ctx.beginPath();
+                    ctx.moveTo(this.segments[0].x, this.segments[0].y);
+                    for (let i = 1; i < this.segments.length; i++) {
+                        const seg = this.segments[i];
+                        ctx.lineTo(seg.x, seg.y);
+                    }
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = this.width * alpha;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.stroke();
+
+                    // Inner bright core
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.2})`;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+                    ctx.lineWidth = this.width * 0.3 * alpha;
+                    ctx.beginPath();
+                    ctx.moveTo(this.segments[0].x, this.segments[0].y);
+                    for (let i = 1; i < this.segments.length; i++) {
+                        const seg = this.segments[i];
+                        ctx.lineTo(seg.x, seg.y);
+                    }
+                    ctx.stroke();
+
+                    // Branches
+                    for (const branch of this.branches) {
+                        if (branch.length < 2) continue;
+                        ctx.shadowBlur = 15 * this.intensity;
+                        ctx.shadowColor = `rgba(200, 220, 255, ${alpha * 0.2})`;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = this.width * 0.5 * alpha;
+                        ctx.beginPath();
+                        ctx.moveTo(branch[0].x, branch[0].y);
+                        for (let i = 1; i < branch.length; i++) {
+                            ctx.lineTo(branch[i].x, branch[i].y);
+                        }
+                        ctx.stroke();
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Shockwave class ---
+            class Shockwave {
+                constructor(x, y, intensity) {
+                    this.x = x || W / 2;
+                    this.y = y || H / 2;
+                    this.radius = 10;
+                    this.maxRadius = 150 + intensity * 150;
+                    this.speed = 2 + intensity * 3;
+                    this.opacity = 0.8 + intensity * 0.2;
+                    this.width = 3 + intensity * 5;
+                    this.life = 1;
+                    this.decay = 0.005 + intensity * 0.005;
+                    this.color = `hsl(200, 80%, ${60 + intensity * 30}%)`;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.opacity *= 0.99;
+                    this.life -= this.decay;
+                    this.width *= 0.995;
+                    return this.life > 0 && this.opacity > 0.01 && this.radius < this.maxRadius;
+                }
+
+                draw(ctx) {
+                    const alpha = this.life * this.opacity;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha * 0.3;
+
+                    // Outer ring
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `rgba(180, 210, 255, ${alpha * 0.2})`;
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = this.width * alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Inner glow
+                    ctx.shadowBlur = 0;
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.radius
+                    );
+                    grad.addColorStop(0, `rgba(180, 210, 255, ${alpha * 0.05})`);
+                    grad.addColorStop(1, `rgba(180, 210, 255, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Particle class ---
+            class ThunderParticle {
+                constructor(x, y, intensity) {
+                    this.x = x || W / 2 + (Math.random() - 0.5) * 100;
+                    this.y = y || 50 + Math.random() * 100;
+                    const angle = (Math.random() - 0.5) * Math.PI * 0.8;
+                    const speed = 1 + intensity * 3 + Math.random() * 2;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 1;
+                    this.size = 1 + Math.random() * 3;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.gravity = 0.05;
+                    this.decay = 0.01 + Math.random() * 0.02;
+                    this.hue = 40 + Math.random() * 20;
+                    this.saturation = 80 + Math.random() * 20;
+                    this.lightness = 60 + Math.random() * 30;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.life -= this.decay;
+                    this.size *= 0.995;
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    const alpha = (this.life / this.maxLife) * 0.8;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Glow
+                    ctx.shadowBlur = this.size * 4;
+                    ctx.shadowColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * 0.3})`;
+                    ctx.fillStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${alpha * 0.8})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Bright core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Dark stormy sky
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+
+                // Darken during flash
+                const flashFactor = 1 - flashIntensity * 0.3;
+                const darkBase = Math.floor(5 * flashFactor);
+                const darkMid = Math.floor(15 * flashFactor);
+                const darkLight = Math.floor(25 * flashFactor);
+
+                grad.addColorStop(0, `rgb(${darkBase + 5}, ${darkBase + 8}, ${darkBase + 10})`);
+                grad.addColorStop(0.3, `rgb(${darkMid}, ${darkMid + 5}, ${darkMid + 8})`);
+                grad.addColorStop(0.6, `rgb(${darkLight}, ${darkLight + 8}, ${darkLight + 12})`);
+                grad.addColorStop(1, `rgb(${darkLight + 10}, ${darkLight + 12}, ${darkLight + 15})`);
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Lightning flash overlay ---
+                if (flashIntensity > 0.05) {
+                    ctx.save();
+                    const flashAlpha = flashIntensity * 0.6;
+                    const grad2 = ctx.createRadialGradient(
+                        W / 2, H / 3, 50,
+                        W / 2, H / 3, 500
+                    );
+                    grad2.addColorStop(0, `rgba(255, 255, 255, ${flashAlpha * 0.8})`);
+                    grad2.addColorStop(0.3, `rgba(255, 240, 220, ${flashAlpha * 0.4})`);
+                    grad2.addColorStop(0.6, `rgba(200, 220, 255, ${flashAlpha * 0.1})`);
+                    grad2.addColorStop(1, `rgba(200, 220, 255, 0)`);
+                    ctx.fillStyle = grad2;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Secondary flash
+                    const grad3 = ctx.createRadialGradient(
+                        W / 2 + 100, H / 4, 30,
+                        W / 2 + 100, H / 4, 400
+                    );
+                    grad3.addColorStop(0, `rgba(200, 220, 255, ${flashAlpha * 0.2})`);
+                    grad3.addColorStop(1, `rgba(200, 220, 255, 0)`);
+                    ctx.fillStyle = grad3;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
+
+                // --- Storm clouds ---
+                ctx.save();
+                ctx.globalAlpha = 0.1 + rumbleIntensity * 0.05;
+                for (let i = 0; i < 8; i++) {
+                    const cx = (i * 150 + 50 + Math.sin(i * 2.3) * 50) % (W + 100) - 50;
+                    const cy = 30 + i * 15 + Math.sin(i * 1.7) * 20;
+                    const cw = 120 + Math.sin(i * 2.1) * 40;
+                    const ch = 20 + Math.sin(i * 1.3) * 10;
+
+                    const grad4 = ctx.createRadialGradient(cx, cy, 0, cx, cy, cw);
+                    grad4.addColorStop(0, `rgba(80, 100, 130, 0.3)`);
+                    grad4.addColorStop(0.5, `rgba(60, 80, 110, 0.2)`);
+                    grad4.addColorStop(1, `rgba(40, 60, 90, 0)`);
+
+                    ctx.fillStyle = grad4;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, cw, ch, 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // --- Ground ---
+                ctx.save();
+                const groundGrad = ctx.createLinearGradient(0, H - 30, 0, H);
+                groundGrad.addColorStop(0, 'rgba(20, 30, 40, 0)');
+                groundGrad.addColorStop(0.5, `rgba(20, 30, 40, ${0.1 + rumbleIntensity * 0.05})`);
+                groundGrad.addColorStop(1, `rgba(20, 30, 40, ${0.2 + rumbleIntensity * 0.1})`);
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 30, W, 30);
+
+                // Ground line
+                ctx.strokeStyle = `rgba(40, 60, 80, ${0.05 + rumbleIntensity * 0.05})`;
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                for (let x = 0; x <= W; x += 2) {
+                    const bump = Math.sin(x * 0.02 + time * 0.001 * rumbleIntensity) * 2 +
+                        Math.sin(x * 0.05 + time * 0.002 * rumbleIntensity) * 1;
+                    if (x === 0) ctx.moveTo(x, H - 30 + bump);
+                    else ctx.lineTo(x, H - 30 + bump);
+                }
+                ctx.stroke();
+                ctx.restore();
+
+                // --- Rumble effect (screen shake) ---
+                if (rumbleIntensity > 0.01) {
+                    const shakeX = (Math.random() - 0.5) * rumbleIntensity * 4;
+                    const shakeY = (Math.random() - 0.5) * rumbleIntensity * 4;
+                    ctx.save();
+                    ctx.translate(shakeX, shakeY);
+                    ctx.restore();
+                }
+            }
+
+            // --- Strike thunder ---
+            function strikeThunder(force) {
+                const intensityFactor = (force || intensity) / 100;
+                const flashFactor = flashDurationParam / 100;
+                const rumbleFactor = rumble / 100;
+
+                // Flash
+                flashIntensity = 0.6 + intensityFactor * 0.4;
+                flashDuration = 0.3 + flashFactor * 0.7;
+                isFlashing = true;
+
+                // Rumble
+                rumbleIntensity = 0.3 + intensityFactor * 0.7;
+                rumbleDecay = 0.01 + (1 - rumbleFactor) * 0.03;
+
+                // Create lightning bolts
+                const boltCount = Math.floor(1 + intensityFactor * 2);
+                for (let i = 0; i < boltCount; i++) {
+                    const x = W / 4 + Math.random() * (W / 2);
+                    const y = 20 + Math.random() * 80;
+                    const bolt = new LightningBolt(x, y, intensity);
+                    bolts.push(bolt);
+                }
+
+                // Create shockwaves
+                const shockwaveCount = Math.floor(1 + intensityFactor * 2);
+                for (let i = 0; i < shockwaveCount; i++) {
+                    const x = W / 3 + Math.random() * (W / 3);
+                    const y = H / 2 + Math.random() * 100;
+                    const shockwave = new Shockwave(x, y, intensityFactor);
+                    shockwaves.push(shockwave);
+                }
+
+                // Create particles
+                const particleCount = Math.floor(20 + intensityFactor * 40);
+                for (let i = 0; i < particleCount; i++) {
+                    const x = W / 4 + Math.random() * (W / 2);
+                    const y = 50 + Math.random() * 100;
+                    const particle = new ThunderParticle(x, y, intensityFactor);
+                    particles.push(particle);
+                }
+
+                strikeCountTotal++;
+                strikeCount.textContent = `⚡ ${strikeCountTotal} strikes`;
+                intensityInfo.textContent = `💥 Intensity: ${Math.round(intensityFactor * 100)}%`;
+                thunderStatus.textContent = '⚡ THUNDER!';
+
+                setTimeout(() => {
+                    thunderStatus.textContent = '🌤️ Clear';
+                }, 1000);
+
+                hint.textContent = '⚡ BOOM!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 800);
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Auto-thunder
+                if (isAuto) {
+                    autoTimer++;
+                    const interval = Math.max(30, 300 - intensity * 2);
+                    if (autoTimer >= interval) {
+                        autoTimer = 0;
+                        const force = 40 + Math.random() * 60;
+                        strikeThunder(force);
+                    }
+                }
+
+                // Flash decay
+                if (isFlashing) {
+                    flashDuration -= 0.01;
+                    if (flashDuration <= 0) {
+                        isFlashing = false;
+                        flashIntensity *= 0.95;
+                    }
+                } else {
+                    flashIntensity *= 0.98;
+                    if (flashIntensity < 0.01) flashIntensity = 0;
+                }
+
+                // Rumble decay
+                rumbleIntensity *= (1 - rumbleDecay);
+                if (rumbleIntensity < 0.01) rumbleIntensity = 0;
+
+                // Update bolts
+                bolts = bolts.filter(b => b.update());
+
+                // Update shockwaves
+                shockwaves = shockwaves.filter(s => s.update());
+
+                // Update particles
+                particles = particles.filter(p => p.update());
+
+                // Limit particles
+                if (particles.length > 200) {
+                    particles = particles.slice(0, 200);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw shockwaves (behind bolts)
+                for (const shockwave of shockwaves) {
+                    shockwave.draw(ctx);
+                }
+
+                // Draw bolts
+                for (const bolt of bolts) {
+                    bolt.draw(ctx);
+                }
+
+                // Draw particles
+                for (const particle of particles) {
+                    particle.draw(ctx);
+                }
+
+                // Update rumble display
+                if (rumbleIntensity > 0.1) {
+                    thunderStatus.textContent = '🌩️ Rumbling...';
+                }
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleAuto() {
+                isAuto = !isAuto;
+                autoBtn.textContent = isAuto ? '⏹️ Stop' : '▶️ Auto';
+                if (isAuto) {
+                    autoTimer = 0;
+                    hint.textContent = '▶️ Auto-thunder started';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                } else {
+                    hint.textContent = '⏹️ Auto-thunder stopped';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function resetAll() {
+                bolts = [];
+                particles = [];
+                shockwaves = [];
+                flashIntensity = 0;
+                rumbleIntensity = 0;
+                isFlashing = false;
+                strikeCountTotal = 0;
+                strikeCount.textContent = '⚡ 0 strikes';
+                intensityInfo.textContent = '💥 Intensity: -';
+                thunderStatus.textContent = '🌤️ Clear';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+            });
+
+            rumbleSlider.addEventListener('input', function() {
+                rumble = parseFloat(this.value);
+                rumbleLabel.textContent = `${Math.round(rumble)}%`;
+            });
+
+            flashSlider.addEventListener('input', function() {
+                flashDurationParam = parseFloat(this.value);
+                flashLabel.textContent = `${Math.round(flashDurationParam)}%`;
+            });
+
+            // --- Button events ---
+            strikeBtn.addEventListener('click', () => strikeThunder(intensity));
+            autoBtn.addEventListener('click', toggleAuto);
+            resetBtn.addEventListener('click', resetAll);
+
+            // --- Click canvas to strike ---
+            canvas.addEventListener('click', (e) => {
+                strikeThunder(intensity);
+            });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    strikeThunder(intensity);
+                }
+                if (e.key === 'a' || e.key === 'A') toggleAuto();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Intensity adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    intensity = Math.min(100, intensity + 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    intensity = Math.max(10, intensity - 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('⚡ Thunder Clap ready!');
+            console.log('Controls: Click canvas or Space (strike), A (auto), R (reset)');
+            console.log('          ↑/↓ (intensity), watch the thunder roll!');
+
+        })();
+    </script>
+</body>
+</html>
