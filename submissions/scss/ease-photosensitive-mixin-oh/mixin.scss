@@ -1,0 +1,191 @@
+// ==========================================
+// Photosensitive-Safe Animation Mixin
+// For GSSoC Issue #44487
+// ==========================================
+
+// Configuration
+$photo-safe-max-flash-rate: 3 !default; // Maximum flashes per second
+$photo-safe-min-duration: 0.3s !default; // Minimum animation duration
+$photo-safe-opacity-min: 0.3 !default; // Minimum opacity (no complete flashes)
+$photo-safe-opacity-max: 1 !default; // Maximum opacity
+
+// ==========================================
+// Main Mixin: photosensitive-safe-animation
+// ==========================================
+// Parameters:
+// - $name: Animation name
+// - $duration: Animation duration (default: 1s)
+// - $timing: Timing function (default: ease-in-out)
+// - $iterations: Iteration count (default: infinite)
+// - $opacity-range: Min/max opacity values (default: 0.3 to 1)
+// ==========================================
+
+@mixin photosensitive-safe-animation(
+  $name,
+  $duration: 1s,
+  $timing: ease-in-out,
+  $iterations: infinite,
+  $opacity-range: ($photo-safe-opacity-min, $photo-safe-opacity-max)
+) {
+  // Ensure minimum duration for flash rate safety
+  $safe-duration: if(
+    $duration < $photo-safe-min-duration,
+    $photo-safe-min-duration,
+    $duration
+  );
+  
+  // Calculate safe opacity values
+  $min-opacity: if(
+    length($opacity-range) > 0,
+    nth($opacity-range, 1),
+    $photo-safe-opacity-min
+  );
+  $max-opacity: if(
+    length($opacity-range) > 1,
+    nth($opacity-range, 2),
+    $photo-safe-opacity-max
+  );
+  
+  // Ensure minimum opacity is not 0 (prevents full flash)
+  $min-opacity: if($min-opacity < $photo-safe-opacity-min, $photo-safe-opacity-min, $min-opacity);
+
+  animation: #{$name} #{$safe-duration} #{$timing} #{$iterations};
+  
+  // Prefers reduced motion support
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+// ==========================================
+// Flash-Safe Pulse Mixin
+// For pulsing effects without rapid flashing
+// ==========================================
+
+@mixin flash-safe-pulse(
+  $duration: 2s,
+  $min-opacity: 0.4,
+  $max-opacity: 1
+) {
+  // Ensure min opacity prevents full black/white flashes
+  $safe-min: if($min-opacity < 0.3, 0.3, $min-opacity);
+  
+  animation: pulse-safe #{$duration} ease-in-out infinite;
+  
+  @keyframes pulse-safe {
+    0%, 100% {
+      opacity: $safe-min;
+    }
+    50% {
+      opacity: $max-opacity;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: $safe-min;
+  }
+}
+
+// ==========================================
+// Flash-Safe Blink Mixin
+// Alternative to rapid blink animations
+// ==========================================
+
+@mixin flash-safe-blink(
+  $duration: 1s,
+  $opacity-1: 1,
+  $opacity-2: 0.3
+) {
+  // Ensure neither state is fully opaque to fully transparent
+  $safe-opacity-1: if($opacity-1 > 0.95, 0.95, $opacity-1);
+  $safe-opacity-2: if($opacity-2 < 0.3, 0.3, $opacity-2);
+  
+  animation: blink-safe #{$duration} ease-in-out infinite;
+  
+  @keyframes blink-safe {
+    0%, 100% {
+      opacity: $safe-opacity-1;
+    }
+    50% {
+      opacity: $safe-opacity-2;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: $safe-opacity-1;
+  }
+}
+
+// ==========================================
+// Flash-Safe Fade Mixin
+// For fade effects within safe limits
+// ==========================================
+
+@mixin flash-safe-fade(
+  $duration: 2s,
+  $fade-type: 'in-out' // 'in', 'out', 'in-out'
+) {
+  @if $fade-type == 'in' {
+    animation: fade-safe-in #{$duration} ease-out forwards;
+    
+    @keyframes fade-safe-in {
+      from {
+        opacity: 0.3; // Start from safe minimum
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  } @else if $fade-type == 'out' {
+    animation: fade-safe-out #{$duration} ease-in forwards;
+    
+    @keyframes fade-safe-out {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0.3; // End at safe minimum
+      }
+    }
+  } @else {
+    animation: fade-safe-in-out #{$duration} ease-in-out forwards;
+    
+    @keyframes fade-safe-in-out {
+      0% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.3;
+      }
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    opacity: if($fade-type == 'out', 0.3, 1);
+  }
+}
+
+// ==========================================
+// Batch Reduced Motion Support
+// Apply to multiple elements at once
+// ==========================================
+
+@mixin batch-reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+// Usage:
+// .risky-animation,
+// .pulse-animation,
+// .blink-animation {
+//   @include batch-reduced-motion;
+// }

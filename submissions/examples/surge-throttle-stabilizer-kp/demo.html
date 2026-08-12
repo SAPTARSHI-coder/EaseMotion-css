@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Surge Throttle Stabilizer</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="stabilizer" data-state="shape">
+      <section class="topline" aria-labelledby="title">
+        <div>
+          <p class="eyebrow">EaseMotion traffic resilience</p>
+          <h1 id="title">Surge Throttle Stabilizer</h1>
+          <p class="lede">
+            Tune demand signals and watch the governor preserve priority routes
+            while slowing noisy traffic before queues collapse.
+          </p>
+        </div>
+        <aside class="status-card" aria-live="polite">
+          <span class="status-light"></span>
+          <small>Current mode</small>
+          <strong id="stateLabel">Traffic shaping</strong>
+        </aside>
+      </section>
+
+      <section class="controls" aria-label="Traffic inputs">
+        <label>
+          <span>Demand surge</span>
+          <input id="demand" type="range" min="10" max="100" value="64" />
+          <output id="demandOut">64%</output>
+        </label>
+        <label>
+          <span>Volatility</span>
+          <input id="volatility" type="range" min="0" max="100" value="52" />
+          <output id="volatilityOut">52%</output>
+        </label>
+        <label>
+          <span>Queue pressure</span>
+          <input id="queue" type="range" min="5" max="100" value="59" />
+          <output id="queueOut">59%</output>
+        </label>
+        <label>
+          <span>Priority traffic</span>
+          <input id="priority" type="range" min="10" max="95" value="47" />
+          <output id="priorityOut">47%</output>
+        </label>
+      </section>
+
+      <section class="board" aria-label="Stabilizer visualization">
+        <article class="surge-map">
+          <div class="panel-title">
+            <span>Surge map</span>
+            <strong id="score">58</strong>
+          </div>
+          <div class="orbital" aria-hidden="true">
+            <span class="orbit orbit-a"></span>
+            <span class="orbit orbit-b"></span>
+            <span class="orbit orbit-c"></span>
+            <span class="beam beam-a"></span>
+            <span class="beam beam-b"></span>
+            <span class="beam beam-c"></span>
+            <span class="packet packet-a"></span>
+            <span class="packet packet-b"></span>
+            <span class="packet packet-c"></span>
+            <span class="packet packet-d"></span>
+            <span class="core"></span>
+          </div>
+          <div class="telemetry">
+            <span></span><span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </article>
+
+        <article class="routes">
+          <div class="panel-title">
+            <span>Route shaping</span>
+            <strong id="routeLabel">Balanced</strong>
+          </div>
+          <div class="route-list">
+            <div class="route" style="--fill: 0.78">
+              <span>Payments</span><i></i><b>priority</b>
+            </div>
+            <div class="route" style="--fill: 0.62">
+              <span>Search</span><i></i><b>jitter</b>
+            </div>
+            <div class="route" style="--fill: 0.48">
+              <span>Reports</span><i></i><b>delay</b>
+            </div>
+            <div class="route" style="--fill: 0.38">
+              <span>Exports</span><i></i><b>defer</b>
+            </div>
+            <div class="route" style="--fill: 0.56">
+              <span>Notifications</span><i></i><b>shape</b>
+            </div>
+          </div>
+        </article>
+
+        <article class="actions">
+          <div class="panel-title">
+            <span>Throttle plan</span>
+            <strong id="planLabel">Shape</strong>
+          </div>
+          <div class="action-grid">
+            <div class="action active">
+              <em>01</em>
+              <strong>Sample route pressure</strong>
+              <p>Compare incoming slope against queue drain rate.</p>
+            </div>
+            <div class="action">
+              <em>02</em>
+              <strong>Apply weighted tokens</strong>
+              <p>Reserve capacity for user-visible priority paths.</p>
+            </div>
+            <div class="action">
+              <em>03</em>
+              <strong>Clamp retry loops</strong>
+              <p>Spread noisy clients with jitter and retry budgets.</p>
+            </div>
+            <div class="action">
+              <em>04</em>
+              <strong>Restore by gradient</strong>
+              <p>Open traffic only when the cooling trend holds.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="readouts">
+          <div class="readout">
+            <span>Throttle window</span>
+            <strong id="windowLabel">21s</strong>
+          </div>
+          <div class="readout">
+            <span>Reserved tokens</span>
+            <strong id="tokenLabel">47%</strong>
+          </div>
+          <div class="readout">
+            <span>Shed probability</span>
+            <strong id="shedLabel">18%</strong>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const root = document.querySelector(".stabilizer");
+      const inputs = {
+        demand: document.querySelector("#demand"),
+        volatility: document.querySelector("#volatility"),
+        queue: document.querySelector("#queue"),
+        priority: document.querySelector("#priority"),
+      };
+      const out = {
+        demand: document.querySelector("#demandOut"),
+        volatility: document.querySelector("#volatilityOut"),
+        queue: document.querySelector("#queueOut"),
+        priority: document.querySelector("#priorityOut"),
+        score: document.querySelector("#score"),
+        state: document.querySelector("#stateLabel"),
+        route: document.querySelector("#routeLabel"),
+        plan: document.querySelector("#planLabel"),
+        window: document.querySelector("#windowLabel"),
+        token: document.querySelector("#tokenLabel"),
+        shed: document.querySelector("#shedLabel"),
+      };
+
+      function update() {
+        const demand = Number(inputs.demand.value);
+        const volatility = Number(inputs.volatility.value);
+        const queue = Number(inputs.queue.value);
+        const priority = Number(inputs.priority.value);
+        const score = Math.round(
+          demand * 0.34 + volatility * 0.22 + queue * 0.32 - priority * 0.12
+        );
+        const shed = Math.max(0, Math.round(score - 54));
+        let state = "watch";
+        let stateText = "Watching surge";
+        let plan = "Watch";
+        let route = "Open";
+
+        if (score > 76) {
+          state = "clamp";
+          stateText = "Hard throttle";
+          plan = "Clamp";
+          route = "Protected";
+        } else if (score > 52) {
+          state = "shape";
+          stateText = "Traffic shaping";
+          plan = "Shape";
+          route = "Balanced";
+        } else if (score < 34) {
+          state = "restore";
+          stateText = "Restoring flow";
+          plan = "Restore";
+          route = "Cooling";
+        }
+
+        root.dataset.state = state;
+        root.style.setProperty("--score", score);
+        root.style.setProperty("--demand", demand);
+        root.style.setProperty("--volatility", volatility);
+        root.style.setProperty("--queue", queue);
+        root.style.setProperty("--priority", priority);
+        out.demand.value = `${demand}%`;
+        out.volatility.value = `${volatility}%`;
+        out.queue.value = `${queue}%`;
+        out.priority.value = `${priority}%`;
+        out.score.textContent = score;
+        out.state.textContent = stateText;
+        out.plan.textContent = plan;
+        out.route.textContent = route;
+        out.window.textContent = `${Math.max(7, Math.round(score / 2.7))}s`;
+        out.token.textContent = `${priority}%`;
+        out.shed.textContent = `${shed}%`;
+      }
+
+      Object.values(inputs).forEach((input) =>
+        input.addEventListener("input", update)
+      );
+      update();
+    </script>
+  </body>
+</html>

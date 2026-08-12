@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto-Scroll Log Viewer — EaseMotion CSS</title>
+  <meta name="description" content="An auto-scrolling log viewer built with EaseMotion CSS utility classes. Auto-follows new lines, pauses on user scroll, and offers a jump-to-latest control." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <h1 class="demo-heading">Auto-Scroll Log Viewer</h1>
+  <p class="demo-subheading">Scroll up to pause · click the pill to resume · try keyboard shortcuts</p>
+
+  <!-- ─── Log viewer component ──────────────────────────────── -->
+  <div class="log-viewer" role="log" aria-label="Application log output" aria-live="polite" aria-relevant="additions">
+
+    <!-- Toolbar -->
+    <div class="log-toolbar" role="toolbar" aria-label="Log controls">
+      <div class="log-toolbar-dots" aria-hidden="true">
+        <span class="log-toolbar-dot log-toolbar-dot--close"></span>
+        <span class="log-toolbar-dot log-toolbar-dot--min"></span>
+        <span class="log-toolbar-dot log-toolbar-dot--max"></span>
+      </div>
+      <span class="log-toolbar-title" aria-hidden="true">~/app — log output</span>
+      <div class="log-status" id="logStatus" data-paused="false" role="status">
+        <span class="log-status-dot" aria-hidden="true"></span>
+        <span class="log-status-label" aria-label="Log stream status"></span>
+      </div>
+    </div>
+
+    <!-- Scrollable log output -->
+    <div class="log-pane" id="logPane" tabindex="0" role="log" aria-label="Log lines">
+      <!-- Lines appended by JS -->
+    </div>
+
+    <!-- Jump-to-latest pill (hidden by default) -->
+    <button
+      class="log-jump"
+      id="logJump"
+      type="button"
+      aria-label="Jump to latest log entry"
+    >
+      <span class="log-jump-arrow" aria-hidden="true">↓</span>
+      Jump to latest
+      <span class="log-jump-count" id="logJumpCount" aria-label="New lines since paused">0</span>
+    </button>
+  </div>
+
+  <!-- Demo controls -->
+  <div class="demo-controls">
+    <button class="demo-btn" id="btnToggle" type="button" aria-label="Pause or resume log stream">
+      ⏸ Pause stream
+    </button>
+    <button class="demo-btn" id="btnBurst" type="button" aria-label="Emit a burst of 20 log lines">
+      ⚡ Burst 20 lines
+    </button>
+    <button class="demo-btn demo-btn--danger" id="btnClear" type="button" aria-label="Clear all log lines">
+      🗑 Clear
+    </button>
+  </div>
+
+  <p class="demo-kbd-hint">
+    <kbd>End</kbd> jump to latest &nbsp;·&nbsp;
+    <kbd>Home</kbd> jump to top &nbsp;·&nbsp;
+    <kbd>Space</kbd> toggle stream
+  </p>
+
+  <!-- ─── Accessible live-region for screen readers ─────────── -->
+  <div id="srAnnounce" class="sr-only" aria-live="assertive" aria-atomic="true"
+       style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+  </div>
+
+  <script>
+    /* ================================================================
+       Auto-Scroll Log Viewer — behaviour script
+       ─ auto-follows new lines
+       ─ pauses when the user scrolls up
+       ─ shows a "Jump to latest" pill with a new-line counter
+       ─ supports keyboard navigation & screen-reader announcements
+       ================================================================ */
+
+    (() => {
+      'use strict';
+
+      // ── DOM refs ──────────────────────────────────────────────
+      const pane       = document.getElementById('logPane');
+      const jumpBtn    = document.getElementById('logJump');
+      const jumpCount  = document.getElementById('logJumpCount');
+      const statusEl   = document.getElementById('logStatus');
+      const srAnnounce = document.getElementById('srAnnounce');
+      const btnToggle  = document.getElementById('btnToggle');
+      const btnBurst   = document.getElementById('btnBurst');
+      const btnClear   = document.getElementById('btnClear');
+
+      // ── State ─────────────────────────────────────────────────
+      let lineNumber       = 0;
+      let isAutoScroll     = true;
+      let isStreaming      = true;
+      let missedLines      = 0;
+      let streamInterval   = null;
+      const SCROLL_THRESH  = 48;  // px from bottom to consider "at bottom"
+
+      // ── Sample log data ───────────────────────────────────────
+      const LEVELS = ['info', 'info', 'info', 'warn', 'error', 'debug', 'ok'];
+      const MSGS   = [
+        'Server listening on port 3000',
+        'Connected to database cluster — latency 12ms',
+        'GET /api/users → 200 OK (43ms)',
+        'POST /api/auth/login → 201 Created',
+        'Cache miss for key session:abc123',
+        'Worker pool scaled to 4 threads',
+        'Garbage collection pause: 3.2ms',
+        'Rate limit triggered for IP 192.168.1.42',
+        'TLS handshake completed — cipher TLS_AES_256_GCM',
+        'Heartbeat acknowledged by node-02',
+        'Retry attempt 2/5 for upstream service',
+        'Request body exceeds 1MB — rejecting',
+        'WebSocket connection upgraded successfully',
+        'Deprecated API version v1 called — migrate to v2',
+        'DNS resolution for api.example.com: 8ms',
+        'JWT token refreshed — expires in 3600s',
+        'Static assets served from CDN edge-eu-west-1',
+        'Memory usage: 312MB / 512MB (60.9%)',
+        'Incoming webhook payload validated',
+        'Background job queue depth: 7 tasks pending',
+        'Circuit breaker OPEN for payment-service',
+        'Config hot-reload detected — applying changes',
+        'Outbound email queued: order-confirmation #4821',
+        'Container health check passed ✓',
+        'File upload: 2.4MB processed in 190ms',
+        'Error connecting to Redis — retrying in 5s',
+        'Schema migration v14 applied successfully',
+        'Feature flag dark-mode-v2 enabled for 25% rollout',
+        'CORS preflight handled for origin app.example.io',
+        'Audit log: user admin@co deleted record #1092',
+      ];
+
+      // ── Helpers ───────────────────────────────────────────────
+      function timestamp() {
+        const d = new Date();
+        return (
+          String(d.getHours()).padStart(2, '0') + ':' +
+          String(d.getMinutes()).padStart(2, '0') + ':' +
+          String(d.getSeconds()).padStart(2, '0') + '.' +
+          String(d.getMilliseconds()).padStart(3, '0')
+        );
+      }
+
+      function pick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function isNearBottom() {
+        return pane.scrollHeight - pane.scrollTop - pane.clientHeight < SCROLL_THRESH;
+      }
+
+      function scrollToBottom() {
+        pane.scrollTop = pane.scrollHeight;
+      }
+
+      // ── Announce to screen readers ────────────────────────────
+      function announce(msg) {
+        srAnnounce.textContent = '';
+        requestAnimationFrame(() => { srAnnounce.textContent = msg; });
+      }
+
+      // ── Pill visibility ───────────────────────────────────────
+      function showPill() {
+        jumpBtn.classList.add('is-visible');
+        statusEl.setAttribute('data-paused', 'true');
+      }
+
+      function hidePill() {
+        jumpBtn.classList.remove('is-visible');
+        jumpCount.textContent = '0';
+        missedLines = 0;
+        statusEl.setAttribute('data-paused', 'false');
+      }
+
+      // ── Add a single log line ─────────────────────────────────
+      function addLine(level, msg) {
+        lineNumber++;
+        const row = document.createElement('div');
+        row.className = 'log-line';
+        row.innerHTML =
+          `<span class="log-line-number">${lineNumber}</span>` +
+          `<span class="log-line-ts">${timestamp()}</span>` +
+          `<span class="log-line-level log-line-level--${level}">${level}</span>` +
+          `<span class="log-line-msg">${msg}</span>`;
+
+        // When reduced-motion is preferred, skip animation
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          row.style.animation = 'none';
+        }
+
+        pane.appendChild(row);
+
+        if (isAutoScroll) {
+          scrollToBottom();
+        } else {
+          missedLines++;
+          jumpCount.textContent = missedLines > 99 ? '99+' : missedLines;
+        }
+      }
+
+      // ── Scroll event: detect user scroll-up ───────────────────
+      let userScrolling = false;
+      pane.addEventListener('scroll', () => {
+        if (userScrolling) {
+          if (isNearBottom()) {
+            // User scrolled back to bottom → re-enable auto-scroll
+            isAutoScroll = true;
+            hidePill();
+            announce('Auto-scroll resumed');
+          } else if (isAutoScroll) {
+            // User scrolled away from bottom → pause auto-scroll
+            isAutoScroll = false;
+            showPill();
+            announce('Auto-scroll paused. ' + missedLines + ' new lines. Press End to jump to latest.');
+          }
+        }
+      });
+
+      // Distinguish user scrolls from programmatic scrolls
+      pane.addEventListener('pointerdown',  () => { userScrolling = true; });
+      pane.addEventListener('pointerup',    () => { userScrolling = false; });
+      pane.addEventListener('wheel',        () => { userScrolling = true;
+        requestAnimationFrame(() => { userScrolling = false; }); }, { passive: true });
+
+      // ── Jump-to-latest button ─────────────────────────────────
+      jumpBtn.addEventListener('click', () => {
+        isAutoScroll = true;
+        scrollToBottom();
+        hidePill();
+        announce('Jumped to latest log entry');
+      });
+
+      // ── Keyboard support ──────────────────────────────────────
+      document.addEventListener('keydown', (e) => {
+        // Only handle keys when the log pane or jump button is focused,
+        // or when no specific input element has focus
+        const active = document.activeElement;
+        const isLogFocused = pane.contains(active) || active === jumpBtn || active === document.body;
+        if (!isLogFocused) return;
+
+        switch (e.key) {
+          case 'End':
+            e.preventDefault();
+            isAutoScroll = true;
+            scrollToBottom();
+            hidePill();
+            announce('Jumped to latest log entry');
+            break;
+
+          case 'Home':
+            e.preventDefault();
+            isAutoScroll = false;
+            pane.scrollTop = 0;
+            showPill();
+            announce('Jumped to first log entry');
+            break;
+
+          case ' ':
+            // Only toggle stream when not focused on a button
+            if (active.tagName === 'BUTTON') return;
+            e.preventDefault();
+            toggleStream();
+            break;
+        }
+      });
+
+      // ── Stream control ────────────────────────────────────────
+      function startStream() {
+        if (streamInterval) return;
+        streamInterval = setInterval(() => {
+          addLine(pick(LEVELS), pick(MSGS));
+        }, 800 + Math.random() * 600);
+      }
+
+      function stopStream() {
+        clearInterval(streamInterval);
+        streamInterval = null;
+      }
+
+      function toggleStream() {
+        isStreaming = !isStreaming;
+        if (isStreaming) {
+          startStream();
+          btnToggle.textContent = '⏸ Pause stream';
+          announce('Log stream resumed');
+        } else {
+          stopStream();
+          btnToggle.textContent = '▶ Resume stream';
+          announce('Log stream paused');
+        }
+      }
+
+      // ── Demo buttons ──────────────────────────────────────────
+      btnToggle.addEventListener('click', toggleStream);
+
+      btnBurst.addEventListener('click', () => {
+        for (let i = 0; i < 20; i++) {
+          setTimeout(() => addLine(pick(LEVELS), pick(MSGS)), i * 60);
+        }
+        announce('Burst: 20 log lines emitted');
+      });
+
+      btnClear.addEventListener('click', () => {
+        pane.innerHTML = '';
+        lineNumber = 0;
+        missedLines = 0;
+        isAutoScroll = true;
+        hidePill();
+        announce('Log cleared');
+      });
+
+      // ── Boot ──────────────────────────────────────────────────
+      // Seed a few lines so the viewer isn't empty on load
+      for (let i = 0; i < 8; i++) {
+        addLine(pick(LEVELS), pick(MSGS));
+      }
+      startStream();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,108 @@
+// ==========================================================================
+// EaseMotion CSS — Easing Curve function
+// Issue #61719
+// --------------------------------------------------------------------------
+// Exposes EaseMotion's easing vocabulary as named SCSS tokens that resolve
+// to `cubic-bezier()` values, with build-time validation.
+//
+// The point of the `@error` is not tidiness. A typo'd easing keyword in raw
+// CSS — `transition: transform 300ms ease-ouy` — makes the browser discard
+// the entire declaration. The transition silently does not happen, and
+// nothing in the build or the console says so. Resolving easings through a
+// function turns that into a build failure instead.
+// ==========================================================================
+
+@use "sass:map";
+@use "sass:list";
+
+// --------------------------------------------------------------------------
+// Token map
+//
+// Values mirror the easings already used across the EaseMotion engine
+// (see easemotion/engine/parser.js EASING_MAP), so SCSS consumers and the
+// runtime engine stay in agreement rather than drifting apart.
+// --------------------------------------------------------------------------
+$easing-curves: (
+    "ease": cubic-bezier(0.4, 0, 0.2, 1),
+    "ease-in": cubic-bezier(0.4, 0, 1, 1),
+    "ease-out": cubic-bezier(0, 0, 0.2, 1),
+    "ease-in-out": cubic-bezier(0.4, 0, 0.2, 1),
+    "linear": linear,
+    "spring": cubic-bezier(0.34, 1.56, 0.64, 1),
+    "bounce": cubic-bezier(0.34, 1.56, 0.64, 1),
+    "snap": cubic-bezier(0.77, 0, 0.175, 1),
+    "decelerate": cubic-bezier(0.16, 1, 0.3, 1),
+    "accelerate": cubic-bezier(0.55, 0, 1, 0.45),
+) !default;
+
+// --------------------------------------------------------------------------
+// easing-curve($name)
+//
+// Resolve a named easing token to its CSS value.
+//
+// @param  {String} $name  Token name, quoted or unquoted.
+// @return {String}        A `cubic-bezier()` value or `linear`.
+// @throw  If the token is not defined.
+// --------------------------------------------------------------------------
+@function easing-curve($name) {
+    // Accept both quoted and unquoted tokens by normalising to a string.
+    $key: "#{$name}";
+
+    @if not map.has-key($easing-curves, $key) {
+        @error "easing-curve(): unknown easing `#{$key}`. "
+             + "Available: #{list.join((), map.keys($easing-curves), $separator: comma)}.";
+    }
+
+    @return map.get($easing-curves, $key);
+}
+
+// --------------------------------------------------------------------------
+// easing-names()
+//
+// @return {List} Every registered token name. Useful for generating
+//                utility classes or documentation tables.
+// --------------------------------------------------------------------------
+@function easing-names() {
+    @return map.keys($easing-curves);
+}
+
+// --------------------------------------------------------------------------
+// has-easing($name)
+//
+// Non-throwing membership test, for callers that want to fall back rather
+// than fail the build.
+//
+// @return {Bool}
+// --------------------------------------------------------------------------
+@function has-easing($name) {
+    @return map.has-key($easing-curves, "#{$name}");
+}
+
+// --------------------------------------------------------------------------
+// register-easing($name, $curve)
+//
+// Add a project-specific easing at build time. Refuses to silently clobber
+// an existing token — shadowing `ease-out` project-wide from a partial is a
+// debugging problem nobody enjoys.
+// --------------------------------------------------------------------------
+@mixin register-easing($name, $curve) {
+    @if map.has-key($easing-curves, $name) {
+        @error "register-easing(): `#{$name}` is already defined as "
+             + "#{map.get($easing-curves, $name)}. Pick a different name.";
+    }
+
+    $easing-curves: map.set($easing-curves, $name, $curve) !global;
+}
+
+// --------------------------------------------------------------------------
+// easing-utilities($prefix)
+//
+// Emit one utility class per registered token, e.g. `.ease-fn-spring`.
+// --------------------------------------------------------------------------
+@mixin easing-utilities($prefix: "ease-fn") {
+    @each $name, $curve in $easing-curves {
+        .#{$prefix}-#{$name} {
+            transition-timing-function: $curve;
+        }
+    }
+}
