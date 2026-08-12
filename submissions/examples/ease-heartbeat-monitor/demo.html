@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>💓 Heartbeat Monitor – Heartbeat Line Pulses</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>💓 Heartbeat Monitor</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle beat">⏸️ Pause</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="modeBtn" title="Change mode">🌀 Mode</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="heartCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="heartStatus">💓 Beating</span>
+                <span id="bpmDisplay">❤️ 72 BPM</span>
+                <span id="modeDisplay">📊 Normal</span>
+            </div>
+            <div class="hint" id="hint">💓 Watch the heartbeat pulse</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>💓 BPM</label>
+                <input type="range" id="bpmSlider" min="30" max="180" value="72" step="2" />
+                <span id="bpmLabel">72</span>
+            </div>
+            <div class="slider-group">
+                <label>📈 Amplitude</label>
+                <input type="range" id="amplitudeSlider" min="20" max="100" value="70" step="1" />
+                <span id="amplitudeLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>✨ Glow</label>
+                <input type="range" id="glowSlider" min="0" max="100" value="50" step="1" />
+                <span id="glowLabel">50%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Heartbeat Monitor – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('heartCanvas');
+            const ctx = canvas.getContext('2d');
+            const heartStatus = document.getElementById('heartStatus');
+            const bpmDisplay = document.getElementById('bpmDisplay');
+            const modeDisplay = document.getElementById('modeDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const modeBtn = document.getElementById('modeBtn');
+            const bpmSlider = document.getElementById('bpmSlider');
+            const bpmLabel = document.getElementById('bpmLabel');
+            const amplitudeSlider = document.getElementById('amplitudeSlider');
+            const amplitudeLabel = document.getElementById('amplitudeLabel');
+            const glowSlider = document.getElementById('glowSlider');
+            const glowLabel = document.getElementById('glowLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isPaused = false;
+            let time = 0;
+            let animationId = null;
+            let modeIndex = 0;
+            let beatPhase = 0;
+            let lastBeatTime = 0;
+            let heartPulse = 0;
+
+            // --- Parameters ---
+            let bpm = 72; // 30-180
+            let amplitude = 70; // 20-100
+            let glowIntensity = 50; // 0-100
+
+            // --- Modes ---
+            const modes = [
+                { name: 'Normal', desc: '📊 Normal', color: '#00ff88' },
+                { name: 'Fast', desc: '⚡ Fast', color: '#ff6b6b' },
+                { name: 'Slow', desc: '🐢 Slow', color: '#4ecdc4' },
+                { name: 'Irregular', desc: '🌀 Irregular', color: '#ffd93d' },
+                { name: 'Stress', desc: '🔥 Stress', color: '#ff6b35' },
+                { name: 'Calm', desc: '🌊 Calm', color: '#6bcbff' },
+            ];
+
+            // --- Heartbeat data ---
+            let heartData = [];
+            const MAX_POINTS = 300;
+
+            // --- Grid lines ---
+            function drawGrid(ctx) {
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+
+                // Vertical lines
+                for (let x = 0; x <= W; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+
+                // Horizontal lines
+                for (let y = 0; y <= H; y += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Major grid
+                ctx.save();
+                ctx.globalAlpha = 0.08;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+                for (let x = 0; x <= W; x += 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= H; y += 80) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            // --- Generate heartbeat waveform ---
+            function generateHeartbeat(t, bpm, amp, mode) {
+                const modeName = modes[mode].name;
+                const bpmFactor = bpm / 72;
+                let value = 0;
+
+                // Base heartbeat pattern
+                const beatInterval = 60 / bpm;
+                const phase = t % beatInterval;
+                const normalizedPhase = phase / beatInterval;
+
+                // P-wave (atrial contraction)
+                if (normalizedPhase < 0.1) {
+                    const p = normalizedPhase / 0.1;
+                    value += 0.15 * Math.sin(p * Math.PI) * amp;
+                }
+                // QRS complex (ventricular contraction - main spike)
+                else if (normalizedPhase < 0.2) {
+                    const qrs = (normalizedPhase - 0.1) / 0.1;
+                    value += amp * Math.sin(qrs * Math.PI) * 0.9;
+                    // R-wave peak
+                    if (qrs > 0.3 && qrs < 0.6) {
+                        const peak = (qrs - 0.3) / 0.3;
+                        value += amp * 0.3 * Math.sin(peak * Math.PI);
+                    }
+                }
+                // T-wave (ventricular repolarization)
+                else if (normalizedPhase < 0.35) {
+                    const tWave = (normalizedPhase - 0.2) / 0.15;
+                    value += 0.2 * Math.sin(tWave * Math.PI) * amp;
+                }
+
+                // Mode-specific variations
+                switch (modeName) {
+                    case 'Fast':
+                        value *= (1 + 0.1 * Math.sin(t * 2));
+                        break;
+                    case 'Slow':
+                        value *= (1 - 0.05 * Math.sin(t * 0.5));
+                        break;
+                    case 'Irregular':
+                        const irregularity = 0.2 * Math.sin(t * 0.3 + Math.sin(t * 0.7));
+                        value *= (1 + irregularity);
+                        break;
+                    case 'Stress':
+                        value *= (1 + 0.15 * Math.sin(t * 1.5));
+                        break;
+                    case 'Calm':
+                        value *= (1 - 0.05 * Math.sin(t * 0.3));
+                        break;
+                    default:
+                        break;
+                }
+
+                // Scale to canvas height
+                const baseline = H / 2;
+                const scaledValue = baseline - value * 1.2;
+
+                return Math.max(0, Math.min(H, scaledValue));
+            }
+
+            // --- Update heartbeat data ---
+            function updateHeartbeat() {
+                const mode = modes[modeIndex];
+                const bpmValue = bpm;
+                const amp = amplitude / 100;
+
+                // Add new point
+                const t = time / 60;
+                const y = generateHeartbeat(t, bpmValue, amp, modeIndex);
+
+                heartData.push({ x: W, y: y });
+
+                // Remove old points
+                if (heartData.length > MAX_POINTS) {
+                    heartData.shift();
+                }
+
+                // Shift all points left
+                for (let i = 0; i < heartData.length; i++) {
+                    heartData[i].x -= 1.5;
+                }
+
+                // Detect beat (R-wave)
+                if (heartData.length > 2) {
+                    const last = heartData[heartData.length - 1];
+                    const prev = heartData[heartData.length - 2];
+                    if (last.y < prev.y && prev.y < heartData[heartData.length - 3]?.y) {
+                        const now = performance.now();
+                        if (now - lastBeatTime > 100) {
+                            heartPulse = 1;
+                            lastBeatTime = now;
+                        }
+                    }
+                }
+
+                // Decay pulse
+                heartPulse *= 0.98;
+                if (heartPulse < 0.01) heartPulse = 0;
+            }
+
+            // --- Draw heartbeat monitor ---
+            function drawHeartbeat(ctx) {
+                if (heartData.length < 2) return;
+
+                const mode = modes[modeIndex];
+                const color = mode.color;
+                const glow = glowIntensity / 100;
+
+                // --- Glow effect ---
+                if (glow > 0.01) {
+                    ctx.save();
+                    const grad = ctx.createRadialGradient(
+                        W / 2, H / 2, 50,
+                        W / 2, H / 2, 300
+                    );
+                    const glowAlpha = (0.05 + heartPulse * 0.1) * glow;
+                    const r = parseInt(color.slice(1, 3), 16);
+                    const g = parseInt(color.slice(3, 5), 16);
+                    const b = parseInt(color.slice(5, 7), 16);
+                    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.5})`);
+                    grad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.2})`);
+                    grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                    ctx.restore();
+                }
+
+                // --- Heartbeat line ---
+                ctx.save();
+
+                // Shadow glow
+                ctx.shadowBlur = 15 + heartPulse * 20;
+                ctx.shadowColor = color;
+
+                // Main line with gradient
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                const r = parseInt(color.slice(1, 3), 16);
+                const g = parseInt(color.slice(3, 5), 16);
+                const b = parseInt(color.slice(5, 7), 16);
+                grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.2)`);
+                grad.addColorStop(0.3, `rgba(${r}, ${g}, ${b}, 0.8)`);
+                grad.addColorStop(0.5, `rgba(255, 255, 255, 0.9)`);
+                grad.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, 0.8)`);
+                grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0.2)`);
+
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 2 + heartPulse * 2;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+
+                // Draw path
+                ctx.beginPath();
+                let first = true;
+                for (const point of heartData) {
+                    if (first) {
+                        ctx.moveTo(point.x, point.y);
+                        first = false;
+                    } else {
+                        ctx.lineTo(point.x, point.y);
+                    }
+                }
+                ctx.stroke();
+
+                // --- Bright spot at current position ---
+                if (heartData.length > 0) {
+                    const last = heartData[heartData.length - 1];
+                    ctx.shadowBlur = 20 + heartPulse * 30;
+                    ctx.shadowColor = color;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + heartPulse * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 3 + heartPulse * 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Inner bright spot
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `rgba(255, 255, 255, ${0.5 + heartPulse * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 1 + heartPulse * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+
+                // --- Fill under curve ---
+                ctx.save();
+                ctx.globalAlpha = 0.05 + heartPulse * 0.05;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                if (heartData.length > 0) {
+                    ctx.moveTo(heartData[0].x, H);
+                    for (const point of heartData) {
+                        ctx.lineTo(point.x, point.y);
+                    }
+                    ctx.lineTo(heartData[heartData.length - 1].x, H);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // --- Heartbeat indicator ---
+                if (heartPulse > 0.05) {
+                    ctx.save();
+                    const pulseAlpha = heartPulse * 0.3;
+                    const pulseX = 60;
+                    const pulseY = 40;
+                    ctx.globalAlpha = pulseAlpha;
+                    ctx.fillStyle = '#ff1744';
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = '#ff1744';
+                    ctx.beginPath();
+                    ctx.arc(pulseX, pulseY, 8, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Heart icon
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = '#ff1744';
+                    ctx.font = '20px system-ui';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('❤️', pulseX, pulseY + 1);
+                    ctx.restore();
+                }
+
+                // --- BPM display ---
+                ctx.save();
+                ctx.fillStyle = `rgba(255, 255, 255, 0.1)`;
+                ctx.font = '14px system-ui';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`${Math.round(bpm)} BPM`, W - 20, 20);
+                ctx.restore();
+            }
+
+            // --- Draw monitor frame ---
+            function drawMonitorFrame(ctx) {
+                // Border
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(2, 2, W - 4, H - 4);
+
+                // Corner accents
+                const cornerSize = 20;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.lineWidth = 1;
+                // Top-left
+                ctx.beginPath();
+                ctx.moveTo(0, cornerSize);
+                ctx.lineTo(0, 0);
+                ctx.lineTo(cornerSize, 0);
+                ctx.stroke();
+                // Top-right
+                ctx.beginPath();
+                ctx.moveTo(W - cornerSize, 0);
+                ctx.lineTo(W, 0);
+                ctx.lineTo(W, cornerSize);
+                ctx.stroke();
+                // Bottom-left
+                ctx.beginPath();
+                ctx.moveTo(0, H - cornerSize);
+                ctx.lineTo(0, H);
+                ctx.lineTo(cornerSize, H);
+                ctx.stroke();
+                // Bottom-right
+                ctx.beginPath();
+                ctx.moveTo(W - cornerSize, H);
+                ctx.lineTo(W, H);
+                ctx.lineTo(W, H - cornerSize);
+                ctx.stroke();
+                ctx.restore();
+
+                // Mode label
+                ctx.save();
+                ctx.fillStyle = `rgba(255, 255, 255, 0.05)`;
+                ctx.font = '10px system-ui';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`MODE: ${modes[modeIndex].name.toUpperCase()}`, 20, H - 10);
+                ctx.restore();
+
+                // Heart rate label
+                ctx.save();
+                ctx.fillStyle = `rgba(255, 255, 255, 0.05)`;
+                ctx.font = '10px system-ui';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`HR: ${Math.round(bpm)} BPM`, W - 20, H - 10);
+                ctx.restore();
+
+                // Status line
+                ctx.save();
+                ctx.fillStyle = `rgba(0, 255, 136, ${0.03 + heartPulse * 0.02})`;
+                ctx.fillRect(0, H - 1, W, 1);
+                ctx.restore();
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Dark medical monitor background
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f14');
+                grad.addColorStop(0.5, '#060a0e');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Grid
+                drawGrid(ctx);
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                if (!isPaused) {
+                    // Update heart data
+                    updateHeartbeat();
+
+                    // Update BPM display
+                    bpmDisplay.textContent = `❤️ ${Math.round(bpm)} BPM`;
+                    heartStatus.textContent = '💓 Beating';
+                    modeDisplay.textContent = modes[modeIndex].desc;
+                } else {
+                    heartStatus.textContent = '⏸️ Paused';
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+                drawHeartbeat(ctx);
+                drawMonitorFrame(ctx);
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶️ Resume' : '⏸️ Pause';
+                if (isPaused) {
+                    hint.textContent = '⏸️ Paused';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                } else {
+                    hint.textContent = '💓 Resumed';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function resetMonitor() {
+                heartData = [];
+                heartPulse = 0;
+                lastBeatTime = 0;
+                time = 0;
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function nextMode() {
+                modeIndex = (modeIndex + 1) % modes.length;
+                hint.textContent = `🌀 ${modes[modeIndex].name}`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Slider handlers ---
+            bpmSlider.addEventListener('input', function() {
+                bpm = parseFloat(this.value);
+                bpmLabel.textContent = Math.round(bpm);
+                bpmDisplay.textContent = `❤️ ${Math.round(bpm)} BPM`;
+            });
+
+            amplitudeSlider.addEventListener('input', function() {
+                amplitude = parseFloat(this.value);
+                amplitudeLabel.textContent = `${Math.round(amplitude)}%`;
+            });
+
+            glowSlider.addEventListener('input', function() {
+                glowIntensity = parseFloat(this.value);
+                glowLabel.textContent = `${Math.round(glowIntensity)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetMonitor);
+            modeBtn.addEventListener('click', nextMode);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') resetMonitor();
+                if (e.key === 'm' || e.key === 'M') nextMode();
+
+                // BPM adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    bpm = Math.min(180, bpm + 5);
+                    bpmSlider.value = bpm;
+                    bpmLabel.textContent = Math.round(bpm);
+                    bpmDisplay.textContent = `❤️ ${Math.round(bpm)} BPM`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    bpm = Math.max(30, bpm - 5);
+                    bpmSlider.value = bpm;
+                    bpmLabel.textContent = Math.round(bpm);
+                    bpmDisplay.textContent = `❤️ ${Math.round(bpm)} BPM`;
+                }
+            });
+
+            // --- Init ---
+            // Seed initial data
+            for (let i = 0; i < 50; i++) {
+                const t = i / 60;
+                const y = generateHeartbeat(t, bpm, amplitude / 100, modeIndex);
+                heartData.push({ x: 50 + i * 3, y: y });
+            }
+
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('💓 Heartbeat Monitor ready!');
+            console.log('Controls: Space (pause), R (reset), M (mode)');
+            console.log('          ↑/↓ (BPM), watch your heart beat!');
+
+        })();
+    </script>
+</body>
+</html>

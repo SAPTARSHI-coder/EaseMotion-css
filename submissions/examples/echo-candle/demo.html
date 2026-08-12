@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Candle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main class="candle-app">
+
+  <header>
+    <span>AMBIENT MEMORY</span>
+    <h1>Echo Candle</h1>
+    <p>Every flame remembers where it has been.</p>
+  </header>
+
+  <section class="scene" id="scene">
+
+    <canvas id="canvas"></canvas>
+
+    <div class="candle">
+      <div class="flame-shadow"></div>
+
+      <div class="flame" id="flame">
+        <div class="flame-inner"></div>
+        <div class="flame-core"></div>
+      </div>
+
+      <div class="wick"></div>
+
+      <div class="wax">
+        <div class="wax-top"></div>
+        <div class="wax-drip one"></div>
+        <div class="wax-drip two"></div>
+      </div>
+
+      <div class="candle-base"></div>
+    </div>
+
+    <div class="message" id="message">
+      The flame is calm.
+    </div>
+
+  </section>
+
+  <section class="controls">
+
+    <div>
+      <label>
+        Wind
+        <span id="windValue">15%</span>
+      </label>
+
+      <input
+        id="wind"
+        type="range"
+        min="0"
+        max="100"
+        value="15"
+      >
+    </div>
+
+    <button id="relight">🔥 Relight</button>
+    <button id="reset">↻ Reset</button>
+
+  </section>
+
+</main>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const scene = document.getElementById("scene");
+const flame = document.getElementById("flame");
+const wind = document.getElementById("wind");
+const windValue = document.getElementById("windValue");
+const message = document.getElementById("message");
+
+let width;
+let height;
+let time = 0;
+let flameEnergy = 1;
+let memory = [];
+let embers = [];
+
+function resize() {
+  const rect = scene.getBoundingClientRect();
+
+  width = rect.width;
+  height = rect.height;
+
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function addEmber() {
+  embers.push({
+    x: width / 2 + (Math.random() - 0.5) * 28,
+    y: height / 2 - 100,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: -Math.random() * 1.2 - 0.4,
+    life: 1
+  });
+}
+
+function drawEmbers() {
+  for (let i = embers.length - 1; i >= 0; i--) {
+    const e = embers[i];
+
+    e.x += e.vx;
+    e.y += e.vy;
+    e.vy -= 0.005;
+    e.life -= 0.012;
+
+    if (e.life <= 0) {
+      embers.splice(i, 1);
+      continue;
+    }
+
+    ctx.beginPath();
+    ctx.arc(e.x, e.y, 1.5, 0, Math.PI * 2);
+
+    ctx.fillStyle =
+      `rgba(255,190,90,${e.life})`;
+
+    ctx.fill();
+  }
+}
+
+function drawMemory() {
+  for (let i = 0; i < memory.length; i++) {
+    const point = memory[i];
+
+    point.life -= 0.006;
+
+    if (point.life <= 0) continue;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      point.x,
+      point.y,
+      2 + point.life * 3,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fillStyle =
+      `rgba(255,170,80,${point.life * 0.12})`;
+
+    ctx.fill();
+  }
+
+  memory = memory.filter(p => p.life > 0);
+}
+
+function animate() {
+  time += 0.02;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const windPower = Number(wind.value) / 100;
+
+  const flicker =
+    Math.sin(time * 5) * 4 +
+    Math.sin(time * 11) * 2;
+
+  const lean =
+    windPower * 38 +
+    flicker;
+
+  flame.style.transform =
+    `translateX(-50%) rotate(${lean * 0.55}deg) scaleX(${1 + Math.abs(lean) * 0.006})`;
+
+  flame.style.opacity = flameEnergy;
+
+  if (flameEnergy > 0.25 && Math.random() < 0.035) {
+    addEmber();
+  }
+
+  if (Math.random() < 0.08 && flameEnergy > 0.3) {
+    memory.push({
+      x: width / 2 + lean * 0.6,
+      y: height / 2 - 125,
+      life: 1
+    });
+  }
+
+  if (windPower > 0.82) {
+    flameEnergy -= 0.0025;
+  } else {
+    flameEnergy += 0.001;
+  }
+
+  flameEnergy =
+    Math.max(0, Math.min(1, flameEnergy));
+
+  if (flameEnergy <= 0.02) {
+    message.textContent = "The flame has gone quiet.";
+  } else if (windPower > 0.75) {
+    message.textContent = "The flame is fighting the wind.";
+  } else if (windPower > 0.35) {
+    message.textContent = "The flame is remembering the wind.";
+  } else {
+    message.textContent = "The flame is calm.";
+  }
+
+  drawMemory();
+  drawEmbers();
+
+  requestAnimationFrame(animate);
+}
+
+wind.addEventListener("input", () => {
+  windValue.textContent = wind.value + "%";
+});
+
+scene.addEventListener("pointerdown", event => {
+  const rect = scene.getBoundingClientRect();
+
+  memory.push({
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+    life: 1
+  });
+
+  wind.value = Math.min(
+    100,
+    Number(wind.value) + 8
+  );
+
+  windValue.textContent = wind.value + "%";
+});
+
+document.getElementById("relight").onclick = () => {
+  flameEnergy = 1;
+  wind.value = 15;
+  windValue.textContent = "15%";
+};
+
+document.getElementById("reset").onclick = () => {
+  flameEnergy = 1;
+  wind.value = 15;
+  windValue.textContent = "15%";
+  memory = [];
+  embers = [];
+};
+
+window.addEventListener("resize", resize);
+
+resize();
+animate();
+</script>
+
+</body>
+</html>

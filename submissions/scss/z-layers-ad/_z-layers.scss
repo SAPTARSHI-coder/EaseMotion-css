@@ -1,0 +1,134 @@
+// ==========================================================================
+// EaseMotion CSS — Z Layers function
+// Issue #63560
+// --------------------------------------------------------------------------
+// Named stacking order, replacing scattered magic z-index numbers.
+//
+// The failure this addresses is well known: `z-index: 9999` appears once,
+// then someone needs to sit above it and writes `99999`, and eventually a
+// codebase has no way to answer "what is above what" short of grepping.
+// Ordering also becomes impossible to reason about because the numbers
+// carry no relationship to each other.
+//
+// Declaring the order as a LIST rather than a map of numbers is the key
+// decision — the index is derived from position, so inserting a layer
+// between two others requires no renumbering of anything.
+// ==========================================================================
+
+@use "sass:list";
+@use "sass:map";
+@use "sass:meta";
+
+// Bottom to top. Position in this list IS the stacking order.
+$z-layers-order: (
+    "base",
+    "raised",
+    "dropdown",
+    "sticky",
+    "overlay",
+    "drawer",
+    "modal",
+    "popover",
+    "toast",
+    "tooltip"
+) !default;
+
+$z-layers-step: 10 !default;
+$z-layers-base: 0 !default;
+
+// --------------------------------------------------------------------------
+// z-layer($name)
+//
+// @return {Number} The computed z-index for a named layer.
+// --------------------------------------------------------------------------
+@function z-layer($name) {
+    $key: "#{$name}";
+    $index: list.index($z-layers-order, $key);
+
+    @if not $index {
+        @error "z-layer(): unknown layer `#{$key}`. "
+             + "Known layers, bottom to top: "
+             + "#{list.join((), $z-layers-order, $separator: comma)}.";
+    }
+
+    @return $z-layers-base + (($index - 1) * $z-layers-step);
+}
+
+// --------------------------------------------------------------------------
+// z-above($name, $offset)
+//
+// A value just above a named layer, without inventing a new one. Useful
+// for a close button that must sit over its own modal but below toasts.
+// The offset is validated against the step so it cannot silently overtake
+// the next layer up — the exact bug this whole module exists to prevent.
+// --------------------------------------------------------------------------
+@function z-above($name, $offset: 1) {
+    @if meta.type-of($offset) != "number" {
+        @error "z-above(): $offset must be a number, got `#{$offset}`.";
+    }
+
+    @if $offset >= $z-layers-step {
+        @error "z-above(): $offset (#{$offset}) must be less than "
+             + "$z-layers-step (#{$z-layers-step}), or `#{$name}` would "
+             + "overtake the layer above it.";
+    }
+
+    @return z-layer($name) + $offset;
+}
+
+// --------------------------------------------------------------------------
+// z-below($name, $offset)
+// --------------------------------------------------------------------------
+@function z-below($name, $offset: 1) {
+    @if $offset >= $z-layers-step {
+        @error "z-below(): $offset (#{$offset}) must be less than "
+             + "$z-layers-step (#{$z-layers-step}).";
+    }
+
+    @return z-layer($name) - $offset;
+}
+
+// --------------------------------------------------------------------------
+// has-z-layer($name) — non-throwing membership test.
+// --------------------------------------------------------------------------
+@function has-z-layer($name) {
+    @return list.index($z-layers-order, "#{$name}") != null;
+}
+
+// --------------------------------------------------------------------------
+// z-layer-vars
+//
+// Expose every layer as a custom property, so runtime code and inline
+// styles use the same scale as the stylesheets.
+// --------------------------------------------------------------------------
+@mixin z-layer-vars($prefix: "z") {
+    :root {
+        @each $name in $z-layers-order {
+            --#{$prefix}-#{$name}: #{z-layer($name)};
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// z-layer-utilities
+// --------------------------------------------------------------------------
+@mixin z-layer-utilities($prefix: "z-ad") {
+    @each $name in $z-layers-order {
+        .#{$prefix}-#{$name} {
+            z-index: z-layer($name);
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// stacking-context
+//
+// Creates a new stacking context explicitly. Worth having as a named
+// mixin because `isolation: isolate` is the only way to do this WITHOUT
+// side effects — the usual alternatives (a transform, an opacity below 1,
+// a will-change) all create one too, but as an accident of some other
+// visual change, which makes the resulting z-index behaviour baffling.
+// --------------------------------------------------------------------------
+@mixin stacking-context {
+    isolation: isolate;
+}
