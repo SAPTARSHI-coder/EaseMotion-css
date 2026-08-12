@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Liquid Mirror</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="liquid-mirror-wrapper">
+
+      <div class="liquid-mirror-display" id="mirrorDisplay">
+
+        <canvas id="mirrorCanvas"></canvas>
+
+        <div class="mirror-overlay">
+
+          <div class="mirror-header">
+            <span class="mirror-icon">🌊</span>
+
+            <div>
+              <span class="mirror-title">Liquid Mirror</span>
+              <span class="mirror-subtitle">
+                Move across the surface
+              </span>
+            </div>
+          </div>
+
+          <div class="interaction-counter">
+            <span class="counter-label">💧 Ripples</span>
+            <span class="counter-value" id="rippleCount">0</span>
+          </div>
+
+        </div>
+
+        <div class="mirror-center">
+          <div class="center-symbol">◈</div>
+
+          <span class="center-text">
+            Touch the liquid
+          </span>
+        </div>
+
+        <div class="mirror-status" id="mirrorStatus">
+          Surface is calm
+        </div>
+
+      </div>
+
+      <div class="mirror-controls">
+
+        <div class="control-group">
+
+          <label class="control-label">
+            💧 Intensity
+          </label>
+
+          <input
+            type="range"
+            class="intensity-slider"
+            id="intensitySlider"
+            min="0"
+            max="100"
+            value="60"
+          >
+
+          <span
+            class="control-value"
+            id="intensityValue"
+          >
+            60%
+          </span>
+
+        </div>
+
+        <div class="control-group">
+
+          <label class="control-label">
+            🪞 Mirror
+          </label>
+
+          <div class="mirror-modes">
+
+            <button
+              class="mode-btn active"
+              data-mode="calm"
+              title="Calm"
+            >
+              🌊
+            </button>
+
+            <button
+              class="mode-btn"
+              data-mode="ripple"
+              title="Ripple"
+            >
+              💧
+            </button>
+
+            <button
+              class="mode-btn"
+              data-mode="deep"
+              title="Deep"
+            >
+              🌑
+            </button>
+
+            <button
+              class="mode-btn"
+              data-mode="cosmic"
+              title="Cosmic"
+            >
+              ✨
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="mirror-actions">
+
+        <button
+          class="mirror-button primary"
+          id="rippleButton"
+        >
+          💧 Create Ripple
+        </button>
+
+        <button
+          class="mirror-button secondary"
+          id="resetButton"
+        >
+          ⟳ Reset
+        </button>
+
+      </div>
+
+      <div class="mirror-help">
+        <span>Move</span>
+        <span>•</span>
+        <span>Click</span>
+        <span>•</span>
+        <span>Space</span>
+        <span>•</span>
+        <span>R</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    const canvas = document.getElementById("mirrorCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const display = document.getElementById("mirrorDisplay");
+
+    const rippleCount =
+      document.getElementById("rippleCount");
+
+    const mirrorStatus =
+      document.getElementById("mirrorStatus");
+
+    const intensitySlider =
+      document.getElementById("intensitySlider");
+
+    const intensityValue =
+      document.getElementById("intensityValue");
+
+    const rippleButton =
+      document.getElementById("rippleButton");
+
+    const resetButton =
+      document.getElementById("resetButton");
+
+    let width = 0;
+    let height = 0;
+
+    let ripples = [];
+    let particles = [];
+
+    let totalRipples = 0;
+
+    let currentMode = "calm";
+
+    const MAX_RIPPLES = 12;
+
+    const mirrorModes = {
+
+      calm: {
+        colors: ["#071a2b", "#12395a", "#071522"],
+        ripple: "rgba(150, 220, 255, 0.65)",
+        particle: "rgba(190, 230, 255, 0.55)"
+      },
+
+      ripple: {
+        colors: ["#06233a", "#12608a", "#071827"],
+        ripple: "rgba(120, 230, 255, 0.8)",
+        particle: "rgba(180, 245, 255, 0.7)"
+      },
+
+      deep: {
+        colors: ["#03050b", "#0b1324", "#010208"],
+        ripple: "rgba(100, 150, 210, 0.6)",
+        particle: "rgba(160, 190, 230, 0.45)"
+      },
+
+      cosmic: {
+        colors: ["#12082b", "#25205d", "#07091e"],
+        ripple: "rgba(190, 150, 255, 0.75)",
+        particle: "rgba(220, 190, 255, 0.65)"
+      }
+
+    };
+
+    class Ripple {
+
+      constructor(x, y, strength = 1) {
+
+        this.x = x;
+        this.y = y;
+
+        this.radius = 0;
+
+        this.opacity = 1;
+
+        this.strength = strength;
+
+        this.speed =
+          2.2 + Math.random() * 1.2;
+
+        this.maxRadius =
+          80 + Math.random() * 80;
+
+      }
+
+      update() {
+
+        const intensity =
+          Number(intensitySlider.value) / 100;
+
+        this.radius +=
+          this.speed *
+          (0.7 + intensity * 0.8);
+
+        this.opacity -=
+          0.008 +
+          (1 - intensity) * 0.002;
+
+        return (
+          this.opacity > 0 &&
+          this.radius < this.maxRadius
+        );
+      }
+
+      draw() {
+
+        const mode =
+          mirrorModes[currentMode];
+
+        const gradient =
+          ctx.createRadialGradient(
+            this.x,
+            this.y,
+            this.radius * 0.65,
+            this.x,
+            this.y,
+            this.radius
+          );
+
+        gradient.addColorStop(
+          0,
+          "rgba(255,255,255,0)"
+        );
+
+        gradient.addColorStop(
+          0.7,
+          mode.ripple
+        );
+
+        gradient.addColorStop(
+          1,
+          "rgba(255,255,255,0)"
+        );
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.strokeStyle = gradient;
+
+        ctx.globalAlpha =
+          this.opacity * this.strength;
+
+        ctx.lineWidth = 1.5;
+
+        ctx.stroke();
+
+        ctx.globalAlpha = 1;
+      }
+
+    }
+
+    class Particle {
+
+      constructor() {
+
+        this.x =
+          Math.random() * width;
+
+        this.y =
+          Math.random() * height;
+
+        this.size =
+          0.5 + Math.random() * 2;
+
+        this.speed =
+          0.05 + Math.random() * 0.25;
+
+        this.phase =
+          Math.random() * Math.PI * 2;
+
+        this.amplitude =
+          5 + Math.random() * 12;
+
+      }
+
+      update() {
+
+        this.phase += 0.01;
+
+        this.y -= this.speed;
+
+        this.x +=
+          Math.sin(this.phase) * 0.15;
+
+        if (this.y < -10) {
+
+          this.y =
+            height + 10;
+
+          this.x =
+            Math.random() * width;
+
+        }
+
+      }
+
+      draw() {
+
+        const mode =
+          mirrorModes[currentMode];
+
+        ctx.beginPath();
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fillStyle =
+          mode.particle;
+
+        ctx.globalAlpha =
+          0.4 +
+          Math.sin(this.phase) * 0.2;
+
+        ctx.fill();
+
+        ctx.globalAlpha = 1;
+
+      }
+
+    }
+
+    function resizeCanvas() {
+
+      const rect =
+        display.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const dpr =
+        window.devicePixelRatio || 1;
+
+      canvas.width =
+        width * dpr;
+
+      canvas.height =
+        height * dpr;
+
+      canvas.style.width =
+        width + "px";
+
+      canvas.style.height =
+        height + "px";
+
+      ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+      );
+
+      createParticles();
+
+    }
+
+    function createParticles() {
+
+      particles = [];
+
+      for (let i = 0; i < 30; i++) {
+
+        particles.push(
+          new Particle()
+        );
+
+      }
+
+    }
+
+    function createRipple(
+      x = width / 2,
+      y = height / 2,
+      strength = 1
+    ) {
+
+      if (ripples.length >= MAX_RIPPLES) {
+
+        ripples.shift();
+
+      }
+
+      ripples.push(
+        new Ripple(
+          x,
+          y,
+          strength
+        )
+      );
+
+      totalRipples++;
+
+      rippleCount.textContent =
+        totalRipples;
+
+      mirrorStatus.textContent =
+        "Ripple spreading...";
+
+    }
+
+    function resetMirror() {
+
+      ripples = [];
+
+      totalRipples = 0;
+
+      rippleCount.textContent = "0";
+
+      mirrorStatus.textContent =
+        "Surface is calm";
+
+    }
+
+    function drawBackground() {
+
+      const mode =
+        mirrorModes[currentMode];
+
+      const gradient =
+        ctx.createLinearGradient(
+          0,
+          0,
+          width,
+          height
+        );
+
+      gradient.addColorStop(
+        0,
+        mode.colors[0]
+      );
+
+      gradient.addColorStop(
+        0.5,
+        mode.colors[1]
+      );
+
+      gradient.addColorStop(
+        1,
+        mode.colors[2]
+      );
+
+      ctx.fillStyle = gradient;
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+    }
+
+    function drawShimmer(time) {
+
+      const intensity =
+        Number(intensitySlider.value) / 100;
+
+      const position =
+        ((time * 0.00008) % 1) *
+        (width + 300) - 150;
+
+      const gradient =
+        ctx.createLinearGradient(
+          position - 100,
+          0,
+          position + 100,
+          0
+        );
+
+      gradient.addColorStop(
+        0,
+        "rgba(255,255,255,0)"
+      );
+
+      gradient.addColorStop(
+        0.5,
+        `rgba(255,255,255,${0.04 + intensity * 0.08})`
+      );
+
+      gradient.addColorStop(
+        1,
+        "rgba(255,255,255,0)"
+      );
+
+      ctx.fillStyle = gradient;
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+    }
+
+    function animate(time) {
+
+      drawBackground();
+
+      particles.forEach(
+        particle => {
+
+          particle.update();
+
+          particle.draw();
+
+        }
+      );
+
+      ripples =
+        ripples.filter(
+          ripple => {
+
+            const alive =
+              ripple.update();
+
+            ripple.draw();
+
+            return alive;
+
+          }
+        );
+
+      drawShimmer(time);
+
+      if (ripples.length === 0) {
+
+        mirrorStatus.textContent =
+          "Surface is calm";
+
+      }
+
+      requestAnimationFrame(
+        animate
+      );
+
+    }
+
+    display.addEventListener(
+      "pointermove",
+      event => {
+
+        const rect =
+          display.getBoundingClientRect();
+
+        const x =
+          event.clientX - rect.left;
+
+        const y =
+          event.clientY - rect.top;
+
+        const intensity =
+          Number(
+            intensitySlider.value
+          ) / 100;
+
+        if (Math.random() < 0.12) {
+
+          createRipple(
+            x,
+            y,
+            0.25 + intensity * 0.45
+          );
+
+        }
+
+      }
+    );
+
+    display.addEventListener(
+      "pointerdown",
+      event => {
+
+        const rect =
+          display.getBoundingClientRect();
+
+        createRipple(
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+          0.8
+        );
+
+      }
+    );
+
+    rippleButton.addEventListener(
+      "click",
+      () => {
+
+        createRipple();
+
+      }
+    );
+
+    resetButton.addEventListener(
+      "click",
+      resetMirror
+    );
+
+    intensitySlider.addEventListener(
+      "input",
+      () => {
+
+        intensityValue.textContent =
+          intensitySlider.value + "%";
+
+      }
+    );
+
+    document
+      .querySelectorAll(".mode-btn")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            document
+              .querySelectorAll(".mode-btn")
+              .forEach(
+                btn =>
+                  btn.classList.remove(
+                    "active"
+                  )
+              );
+
+            button.classList.add(
+              "active"
+            );
+
+            currentMode =
+              button.dataset.mode;
+
+            mirrorStatus.textContent =
+              "Mirror atmosphere changed";
+
+          }
+        );
+
+      });
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.code === "Space"
+        ) {
+
+          event.preventDefault();
+
+          createRipple();
+
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+
+          resetMirror();
+
+        }
+
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+
+    requestAnimationFrame(
+      animate
+    );
+
+  </script>
+
+</body>
+</html>

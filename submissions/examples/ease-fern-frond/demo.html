@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fern Frond · fern uncurls like a fiddlehead</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="fern-container">
+      <div class="fern-display" id="fernDisplay">
+        <!-- Canvas for fern -->
+        <canvas id="fernCanvas"></canvas>
+        
+        <!-- Fern Info -->
+        <div class="fern-info">
+          <span class="info-label">🌿 Uncurl</span>
+          <span class="info-value" id="uncurlLevel">0%</span>
+        </div>
+
+        <!-- Fern Controls -->
+        <div class="fern-controls">
+          <div class="control-group">
+            <label class="control-label">🌀 Uncurl</label>
+            <input type="range" class="control-slider" id="uncurlSlider" min="0" max="100" value="0">
+            <span class="control-value" id="uncurlValue">0%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌿 Variety</label>
+            <div class="variety-options">
+              <button class="variety-btn active" data-variety="classic" title="Classic">🌿</button>
+              <button class="variety-btn" data-variety="fern" title="Fern">🌱</button>
+              <button class="variety-btn" data-variety="fiddle" title="Fiddle">🎻</button>
+              <button class="variety-btn" data-variety="maidenhair" title="Maidenhair">🍃</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fern Text -->
+        <div class="fern-text">
+          <span class="text-label">🌿 Fern Frond</span>
+          <span class="text-message" id="fernMessage">A fiddlehead fern slowly uncurls</span>
+        </div>
+      </div>
+      
+      <div class="fern-status">
+        <span id="fernStatus">🌿 Watch the fern frond uncurl</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-uncurl" id="uncurlBtn">🌀 Uncurl</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌿 fern uncurls · 4 varieties · fiddlehead effect</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('fernCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('fernDisplay');
+      const uncurlLevel = document.getElementById('uncurlLevel');
+      const uncurlValue = document.getElementById('uncurlValue');
+      const fernStatus = document.getElementById('fernStatus');
+      const fernMessage = document.getElementById('fernMessage');
+      const uncurlBtn = document.getElementById('uncurlBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const uncurlSlider = document.getElementById('uncurlSlider');
+      const varietyBtns = document.querySelectorAll('.variety-btn');
+
+      // State
+      let uncurl = 0; // 0-100
+      let targetUncurl = 0;
+      let currentVariety = 'classic';
+      let animationId = null;
+      let time = 0;
+
+      // Variety configurations
+      const varieties = {
+        classic: {
+          name: 'Classic',
+          color: '#22c55e',
+          light: '#4ade80',
+          dark: '#16a34a',
+          leafColor: '#22c55e',
+          leafLight: '#86efac',
+          leafDark: '#15803d',
+          curve: 0.3,
+          leafSize: 0.6
+        },
+        fern: {
+          name: 'Fern',
+          color: '#16a34a',
+          light: '#4ade80',
+          dark: '#0d6b2a',
+          leafColor: '#22c55e',
+          leafLight: '#86efac',
+          leafDark: '#15803d',
+          curve: 0.5,
+          leafSize: 0.8
+        },
+        fiddle: {
+          name: 'Fiddle',
+          color: '#2d7d3a',
+          light: '#4ade80',
+          dark: '#1a5a2a',
+          leafColor: '#2d7d3a',
+          leafLight: '#6ee7b7',
+          leafDark: '#1a5a2a',
+          curve: 0.7,
+          leafSize: 0.5
+        },
+        maidenhair: {
+          name: 'Maidenhair',
+          color: '#10b981',
+          light: '#34d399',
+          dark: '#059669',
+          leafColor: '#10b981',
+          leafLight: '#6ee7b7',
+          leafDark: '#047857',
+          curve: 0.2,
+          leafSize: 0.4
+        }
+      };
+
+      // Fern frond class
+      class FernFrond {
+        constructor() {
+          this.points = [];
+          this.leaves = [];
+          this.generate();
+        }
+
+        generate() {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2 + 30;
+          
+          // Generate stem points (spiral)
+          this.points = [];
+          const numPoints = 60;
+          const maxRadius = Math.min(w, h) * 0.3;
+          
+          for (let i = 0; i < numPoints; i++) {
+            const t = i / numPoints;
+            const angle = t * Math.PI * 2.5;
+            const radius = maxRadius * (1 - t * 0.5) * 0.8;
+            const x = cx + Math.cos(angle) * radius * (1 + t * 0.2);
+            const y = cy + Math.sin(angle) * radius * 0.6 * (1 - t * 0.1);
+            this.points.push({ x, y, t });
+          }
+          
+          // Generate leaves along the stem
+          this.leaves = [];
+          for (let i = 0; i < numPoints; i += 2) {
+            const t = i / numPoints;
+            if (t < 0.05 || t > 0.95) continue;
+            const pos = this.points[i];
+            const nextPos = this.points[Math.min(i + 2, numPoints - 1)];
+            const angle = Math.atan2(nextPos.y - pos.y, nextPos.x - pos.x);
+            
+            // Add leaves on both sides
+            for (let side = -1; side <= 1; side += 2) {
+              if (Math.random() > 0.6 && side === 1) continue;
+              this.leaves.push({
+                x: pos.x,
+                y: pos.y,
+                angle: angle + side * 0.5 + (Math.random() - 0.5) * 0.2,
+                side: side,
+                size: 0.3 + Math.random() * 0.4,
+                phase: Math.random() * Math.PI * 2,
+                t: t
+              });
+            }
+          }
+        }
+
+        draw(ctx, uncurl, variety) {
+          const progress = uncurl / 100;
+          const varietyData = varieties[variety];
+          const numPoints = this.points.length;
+          const drawPoints = Math.floor(numPoints * progress);
+          
+          if (drawPoints < 2) {
+            // Draw bud
+            this.drawBud(ctx, varietyData);
+            return;
+          }
+
+          // Draw stem
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.05)';
+          ctx.shadowBlur = 3;
+          ctx.shadowOffsetX = 1;
+          ctx.shadowOffsetY = 1;
+
+          // Stem gradient
+          const stemGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+          stemGrad.addColorStop(0, varietyData.light);
+          stemGrad.addColorStop(0.5, varietyData.color);
+          stemGrad.addColorStop(1, varietyData.dark);
+          
+          ctx.strokeStyle = stemGrad;
+          ctx.lineWidth = 2 + progress * 1.5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          
+          ctx.beginPath();
+          for (let i = 0; i < drawPoints; i++) {
+            const p = this.points[i];
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else {
+              const prev = this.points[i - 1];
+              const cpX = (prev.x + p.x) / 2;
+              const cpY = (prev.y + p.y) / 2;
+              ctx.quadraticCurveTo(cpX, cpY, p.x, p.y);
+            }
+          }
+          ctx.stroke();
+          
+          // Stem highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 0.1;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < drawPoints; i += 2) {
+            const p = this.points[i];
+            if (i === 0) ctx.moveTo(p.x - 1, p.y - 1);
+            else {
+              const prev = this.points[i - 2];
+              const cpX = (prev.x + p.x) / 2 - 1;
+              const cpY = (prev.y + p.y) / 2 - 1;
+              ctx.quadraticCurveTo(cpX, cpY, p.x - 1, p.y - 1);
+            }
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+          
+          ctx.restore();
+          
+          // Draw leaves
+          this.leaves.forEach(leaf => {
+            if (leaf.t > progress) return;
+            
+            const leafProgress = (progress - leaf.t) / (1 - leaf.t);
+            const size = leaf.size * varietyData.leafSize * (0.5 + leafProgress * 0.5);
+            const fadeIn = Math.min(1, leafProgress * 2);
+            
+            ctx.save();
+            ctx.globalAlpha = fadeIn * 0.7;
+            ctx.translate(leaf.x, leaf.y);
+            ctx.rotate(leaf.angle + leaf.side * 0.3 * (1 - leafProgress));
+            
+            // Leaf shape
+            const leafColor = varietyData.leafColor;
+            const leafLight = varietyData.leafLight;
+            const leafDark = varietyData.leafDark;
+            
+            const grad = ctx.createRadialGradient(
+              -size * 2 * 0.1, -size * 2 * 0.1, 0,
+              0, 0, size * 2
+            );
+            grad.addColorStop(0, leafLight);
+            grad.addColorStop(0.5, leafColor);
+            grad.addColorStop(1, leafDark);
+            
+            ctx.fillStyle = grad;
+            ctx.shadowColor = 'rgba(0,0,0,0.02)';
+            ctx.shadowBlur = 3;
+            
+            const leafWidth = size * 2;
+            const leafHeight = size * 4;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, -leafHeight * 0.8 * leafProgress);
+            ctx.quadraticCurveTo(
+              leafWidth * 0.3, -leafHeight * 0.4 * leafProgress,
+              leafWidth * 0.6 * leaf.side, 0
+            );
+            ctx.quadraticCurveTo(
+              leafWidth * 0.3, leafHeight * 0.2 * leafProgress,
+              0, leafHeight * 0.4 * leafProgress
+            );
+            ctx.quadraticCurveTo(
+              -leafWidth * 0.3, leafHeight * 0.2 * leafProgress,
+              -leafWidth * 0.6 * leaf.side, 0
+            );
+            ctx.quadraticCurveTo(
+              -leafWidth * 0.3, -leafHeight * 0.4 * leafProgress,
+              0, -leafHeight * 0.8 * leafProgress
+            );
+            ctx.closePath();
+            ctx.fill();
+            
+            // Leaf vein
+            ctx.shadowBlur = 0;
+            ctx.globalAlpha = fadeIn * 0.15;
+            ctx.strokeStyle = leafDark;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -leafHeight * 0.6 * leafProgress);
+            ctx.lineTo(0, leafHeight * 0.2 * leafProgress);
+            ctx.stroke();
+            
+            ctx.restore();
+          });
+        }
+
+        drawBud(ctx, varietyData) {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2 + 30;
+          
+          ctx.save();
+          
+          // Bud shape
+          const grad = ctx.createRadialGradient(cx - 5, cy - 5, 0, cx, cy, 20);
+          grad.addColorStop(0, varietyData.light);
+          grad.addColorStop(0.5, varietyData.color);
+          grad.addColorStop(1, varietyData.dark);
+          ctx.fillStyle = grad;
+          ctx.shadowColor = 'rgba(0,0,0,0.05)';
+          ctx.shadowBlur = 10;
+          
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, 15, 20, 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Bud highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 0.15;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.ellipse(cx - 5, cy - 8, 5, 8, -0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate fern
+      function generateFern() {
+        fern = new FernFrond();
+      }
+
+      let fern;
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 25, 0.3)');
+        grad.addColorStop(0.5, 'rgba(15, 20, 30, 0.4)');
+        grad.addColorStop(1, 'rgba(5, 10, 20, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Subtle light
+        for (let i = 0; i < 2; i++) {
+          const x = w * (0.3 + i * 0.4) + Math.sin(i * 1.5) * 20;
+          const y = h * 0.2 + i * 30;
+          const size = 40 + i * 20;
+          const grad2 = ctx.createRadialGradient(x, y, 0, x, y, size);
+          grad2.addColorStop(0, 'rgba(255,255,255,0.02)');
+          grad2.addColorStop(1, 'rgba(255,255,255,0)');
+          ctx.fillStyle = grad2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateFern();
+      }
+
+      // Update fern
+      function updateFern() {
+        const progress = uncurl / 100;
+        const percent = Math.round(uncurl);
+        uncurlLevel.textContent = percent + '%';
+        uncurlValue.textContent = percent + '%';
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        fern.draw(ctx, uncurl, currentVariety);
+        
+        // Update status
+        if (uncurl > 90) {
+          fernStatus.textContent = '🌿 Fern fully uncurled! ✨';
+          fernStatus.style.color = '#4ade80';
+        } else if (uncurl > 40) {
+          fernStatus.textContent = '🌿 Fern frond uncurling gracefully';
+          fernStatus.style.color = '#818cf8';
+        } else if (uncurl > 5) {
+          fernStatus.textContent = '🌿 Fiddlehead beginning to uncurl...';
+          fernStatus.style.color = '#94a3b8';
+        } else {
+          fernStatus.textContent = '🌿 Watch the fern frond uncurl';
+          fernStatus.style.color = '#94a3b8';
+        }
+        
+        // Update button
+        if (uncurl > 90) {
+          uncurlBtn.textContent = '🌀 Fully Uncurled';
+          uncurlBtn.style.background = 'linear-gradient(135deg, #4ade80, #22c55e)';
+          uncurlBtn.style.borderColor = '#4ade80';
+        } else if (uncurl > 5) {
+          uncurlBtn.textContent = '🌀 Uncurling...';
+          uncurlBtn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+          uncurlBtn.style.borderColor = '#22c55e';
+        } else {
+          uncurlBtn.textContent = '🌀 Uncurl';
+          uncurlBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          uncurlBtn.style.borderColor = '#818cf8';
+        }
+      }
+
+      // Animation loop
+      function animate() {
+        uncurl += (targetUncurl - uncurl) * 0.06;
+        uncurl = Math.max(0, Math.min(100, uncurl));
+        
+        updateFern();
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Set uncurl
+      function setUncurl(value) {
+        targetUncurl = Math.max(0, Math.min(100, parseInt(value)));
+        uncurlSlider.value = targetUncurl;
+        uncurlValue.textContent = Math.round(targetUncurl) + '%';
+      }
+
+      // Toggle uncurl
+      function toggleUncurl() {
+        if (uncurl > 80) {
+          setUncurl(0);
+          uncurlBtn.textContent = '🌀 Uncurl';
+          uncurlBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+          uncurlBtn.style.borderColor = '#818cf8';
+          fernStatus.textContent = '🔄 Reset complete';
+          fernStatus.style.color = '#94a3b8';
+          setTimeout(() => {
+            fernStatus.textContent = '🌿 Watch the fern frond uncurl';
+            fernStatus.style.color = '#94a3b8';
+          }, 1000);
+        } else {
+          setUncurl(100);
+        }
+      }
+
+      // Set variety
+      function setVariety(variety) {
+        currentVariety = variety;
+        varietyBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.variety === variety);
+        });
+        const varietyData = varieties[variety];
+        fernStatus.textContent = `🌿 Variety: ${varietyData.name}`;
+        fernStatus.style.color = varietyData.color;
+        generateFern();
+        setTimeout(() => {
+          if (uncurl < 10) {
+            fernStatus.textContent = '🌿 Watch the fern frond uncurl';
+            fernStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Reset
+      function resetFern() {
+        setUncurl(0);
+        uncurl = 0;
+        targetUncurl = 0;
+        fernStatus.textContent = '🔄 Reset complete';
+        fernStatus.style.color = '#94a3b8';
+        fernMessage.textContent = 'A fiddlehead fern slowly uncurls';
+        fernMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          fernStatus.textContent = '🌿 Watch the fern frond uncurl';
+          fernStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Event listeners
+      uncurlSlider.addEventListener('input', function() {
+        setUncurl(this.value);
+      });
+
+      varietyBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setVariety(this.dataset.variety);
+        });
+      });
+
+      if (uncurlBtn) {
+        uncurlBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleUncurl();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetFern();
+        });
+      }
+
+      // Click on display to toggle
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          toggleUncurl();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          toggleUncurl();
+        } else if (key === 'u' || key === 'U') {
+          e.preventDefault();
+          toggleUncurl();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetFern();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌿 Fern Frond ready · shortcuts: [Space/U] Uncurl, [R] Reset');
+    })();
+  </script>
+</body>
+</html>
