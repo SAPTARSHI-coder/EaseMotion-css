@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🧊 Ice Sculptor – Shape Ice With Touch</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🧊 Ice Sculptor</h1>
+            <div class="toolbar">
+                <button class="tool-btn active" data-tool="carve" title="Carve (drag)">⛏️</button>
+                <button class="tool-btn" data-tool="melt" title="Melt (hold)">🔥</button>
+                <button class="tool-btn" data-tool="smooth" title="Smooth (circle)">✨</button>
+                <button class="tool-btn" data-tool="chisel" title="Chisel (flick)">🔪</button>
+                <span class="divider"></span>
+                <button class="tool-btn" id="resetBtn" title="Reset ice block">🔄</button>
+                <button class="tool-btn" id="saveBtn" title="Save sculpture">💾</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="iceCanvas" width="800" height="600"></canvas>
+            <div class="hint" id="hint">👆 Touch or drag to sculpt</div>
+        </div>
+
+        <!-- Stats -->
+        <footer class="footer">
+            <div class="stats">
+                <span>🧊 <span id="volumeDisplay" class="value">100</span>% volume</span>
+                <span>✨ <span id="detailDisplay" class="value">0</span> details</span>
+                <span>⏱️ <span id="timeDisplay" class="value">0:00</span></span>
+            </div>
+            <div class="color-picker">
+                <label>Ice color:</label>
+                <input type="color" id="iceColor" value="#a8d8ea" />
+                <label class="checkbox-label">
+                    <input type="checkbox" id="sparkleToggle" checked /> ✨ Sparkle
+                </label>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Ice Sculptor – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('iceCanvas');
+            const ctx = canvas.getContext('2d');
+            const volumeDisplay = document.getElementById('volumeDisplay');
+            const detailDisplay = document.getElementById('detailDisplay');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const hint = document.getElementById('hint');
+            const resetBtn = document.getElementById('resetBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const iceColorInput = document.getElementById('iceColor');
+            const sparkleToggle = document.getElementById('sparkleToggle');
+
+            // --- Canvas sizing ---
+            let W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let volume = 100; // 0–100
+            let detailCount = 0;
+            let elapsedSeconds = 0;
+            let timerInterval = null;
+            let isDrawing = false;
+            let currentTool = 'carve';
+            let lastX = 0,
+                lastY = 0;
+            let mouseDown = false;
+
+            // --- Ice data (heightmap) ---
+            // We store a "height" value 0..1 for each pixel.
+            // 1 = full ice, 0 = fully carved away.
+            const imageData = ctx.createImageData(W, H);
+            const data = imageData.data;
+
+            // We'll use a separate height array for performance
+            const heightMap = new Float32Array(W * H);
+
+            // --- Init ice block ---
+            function initIce() {
+                // Fill with ice (height = 1)
+                for (let i = 0; i < heightMap.length; i++) {
+                    heightMap[i] = 1.0;
+                }
+                // Add slight natural variation for realism
+                for (let i = 0; i < heightMap.length; i++) {
+                    const x = i % W;
+                    const y = Math.floor(i / W);
+                    // Gentle noise bump in center
+                    const cx = W / 2,
+                        cy = H / 2;
+                    const dist = Math.sqrt((x - cx) ** 2 + (y - cy) ** 2);
+                    const maxDist = Math.min(W, H) / 2;
+                    const falloff = 1 - (dist / maxDist) * 0.15;
+                    heightMap[i] = Math.min(1, heightMap[i] * (0.92 + 0.08 * falloff));
+                }
+                volume = 100;
+                detailCount = 0;
+                updateStats();
+                render();
+            }
+
+            // --- Render the ice ---
+            function render() {
+                const color = iceColorInput.value;
+                const sparkle = sparkleToggle.checked;
+                const r = parseInt(color.slice(1, 3), 16);
+                const g = parseInt(color.slice(3, 5), 16);
+                const b = parseInt(color.slice(5, 7), 16);
+
+                const imgData = ctx.createImageData(W, H);
+                const d = imgData.data;
+
+                for (let i = 0; i < heightMap.length; i++) {
+                    const h = heightMap[i];
+                    const x = i % W;
+                    const y = Math.floor(i / W);
+
+                    // Base ice color with height variation (darker = deeper)
+                    const brightness = 0.5 + 0.5 * h;
+                    let rr = Math.round(r * brightness);
+                    let gg = Math.round(g * brightness);
+                    let bb = Math.round(b * brightness);
+
+                    // Add subtle blue tint at depth
+                    const depthFactor = 1 - h;
+                    rr = Math.round(rr - depthFactor * 20);
+                    gg = Math.round(gg - depthFactor * 10);
+                    bb = Math.round(bb + depthFactor * 30);
+
+                    // Clamp
+                    rr = Math.max(0, Math.min(255, rr));
+                    gg = Math.max(0, Math.min(255, gg));
+                    bb = Math.max(0, Math.min(255, bb));
+
+                    // Alpha based on height (transparent where carved)
+                    const alpha = Math.max(0, Math.min(255, Math.round(h * 255)));
+
+                    const idx = i * 4;
+                    d[idx] = rr;
+                    d[idx + 1] = gg;
+                    d[idx + 2] = bb;
+                    d[idx + 3] = alpha;
+
+                    // Sparkle effect: tiny bright dots on surface
+                    if (sparkle && h > 0.6 && Math.random() < 0.002) {
+                        const sparkleBright = 180 + Math.random() * 75;
+                        d[idx] = Math.min(255, d[idx] + sparkleBright);
+                        d[idx + 1] = Math.min(255, d[idx + 1] + sparkleBright);
+                        d[idx + 2] = Math.min(255, d[idx + 2] + sparkleBright);
+                    }
+                }
+
+                ctx.putImageData(imgData, 0, 0);
+
+                // --- Draw subtle grid/reflections ---
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.shadowColor = 'rgba(255,255,255,0.03)';
+                ctx.shadowBlur = 20;
+
+                // Edge glow
+                const grad = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, 350);
+                grad.addColorStop(0, 'rgba(255,255,255,0.02)');
+                grad.addColorStop(0.5, 'rgba(255,255,255,0.01)');
+                grad.addColorStop(1, 'rgba(255,255,255,0.08)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                ctx.restore();
+
+                updateStats();
+            }
+
+            // --- Carve / modify ice ---
+            function modifyIce(cx, cy, radius, intensity, mode) {
+                // mode: 'carve' (remove), 'melt' (remove + blur), 'smooth' (flatten), 'chisel' (sharp cut)
+                const radiusSq = radius * radius;
+                const minX = Math.max(0, Math.floor(cx - radius));
+                const maxX = Math.min(W, Math.ceil(cx + radius));
+                const minY = Math.max(0, Math.floor(cy - radius));
+                const maxY = Math.min(H, Math.ceil(cy + radius));
+
+                let changed = false;
+
+                for (let y = minY; y < maxY; y++) {
+                    for (let x = minX; x < maxX; x++) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const distSq = dx * dx + dy * dy;
+                        if (distSq > radiusSq) continue;
+
+                        const dist = Math.sqrt(distSq);
+                        const falloff = 1 - (dist / radius);
+                        const idx = y * W + x;
+
+                        let oldVal = heightMap[idx];
+
+                        switch (mode) {
+                            case 'carve':
+                                heightMap[idx] = Math.max(0, oldVal - intensity * falloff * 0.15);
+                                break;
+                            case 'melt':
+                                heightMap[idx] = Math.max(0, oldVal - intensity * falloff * 0.08);
+                                // blur nearby
+                                for (let dy2 = -1; dy2 <= 1; dy2++) {
+                                    for (let dx2 = -1; dx2 <= 1; dx2++) {
+                                        const nx = x + dx2;
+                                        const ny = y + dy2;
+                                        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+                                            const nIdx = ny * W + nx;
+                                            heightMap[nIdx] = Math.max(0, heightMap[nIdx] - intensity * falloff * 0.02);
+                                        }
+                                    }
+                                }
+                                break;
+                            case 'smooth':
+                                // Average with neighbors
+                                let sum = 0,
+                                    count = 0;
+                                for (let dy2 = -2; dy2 <= 2; dy2++) {
+                                    for (let dx2 = -2; dx2 <= 2; dx2++) {
+                                        const nx = x + dx2;
+                                        const ny = y + dy2;
+                                        if (nx >= 0 && nx < W && ny >= 0 && ny < H) {
+                                            sum += heightMap[ny * W + nx];
+                                            count++;
+                                        }
+                                    }
+                                }
+                                const avg = sum / count;
+                                heightMap[idx] = oldVal + (avg - oldVal) * 0.3 * intensity * falloff;
+                                break;
+                            case 'chisel':
+                                // Sharp V-cut
+                                const sharpness = 1 - (dist / radius);
+                                heightMap[idx] = Math.max(0, oldVal - intensity * sharpness * sharpness * 0.3);
+                                break;
+                        }
+
+                        if (Math.abs(heightMap[idx] - oldVal) > 0.001) changed = true;
+                    }
+                }
+
+                // Recalculate volume
+                if (changed) {
+                    let total = 0;
+                    for (let i = 0; i < heightMap.length; i++) {
+                        total += heightMap[i];
+                    }
+                    volume = Math.round((total / heightMap.length) * 100);
+                    if (volume < 0) volume = 0;
+                    if (volume > 100) volume = 100;
+
+                    // Count details (edges/transitions)
+                    detailCount = 0;
+                    for (let i = 1; i < heightMap.length - 1; i++) {
+                        const h = heightMap[i];
+                        if (h > 0.05 && h < 0.95) {
+                            const left = heightMap[i - 1];
+                            const right = heightMap[i + 1];
+                            const up = heightMap[i - W];
+                            const down = heightMap[i + W];
+                            const diff = Math.abs(h - left) + Math.abs(h - right) +
+                                Math.abs(h - up) + Math.abs(h - down);
+                            if (diff > 0.3) detailCount++;
+                        }
+                    }
+                    detailCount = Math.round(detailCount / 20);
+
+                    updateStats();
+                    render();
+                }
+            }
+
+            // --- Tool handlers ---
+            function handleSculpt(x, y, pressure) {
+                if (x < 0 || x >= W || y < 0 || y >= H) return;
+
+                const radius = currentTool === 'chisel' ? 8 : 18;
+                const intensity = pressure || 0.5;
+
+                // Randomize a bit for organic feel
+                const jitter = 0.85 + Math.random() * 0.3;
+                const finalRadius = radius * jitter;
+
+                modifyIce(x, y, finalRadius, intensity * 0.6 + 0.4, currentTool);
+
+                // Hide hint after first interaction
+                hint.classList.add('hidden');
+            }
+
+            // --- Drawing events ---
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                return { x: Math.max(0, Math.min(W, x)), y: Math.max(0, Math.min(H, y)) };
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                isDrawing = true;
+                lastX = pos.x;
+                lastY = pos.y;
+                mouseDown = true;
+                handleSculpt(pos.x, pos.y, 0.3);
+            }
+
+            function onMove(e) {
+                e.preventDefault();
+                if (!isDrawing && !mouseDown) return;
+                const pos = getPos(e);
+                const dx = pos.x - lastX;
+                const dy = pos.y - lastY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > 2) {
+                    const pressure = Math.min(1, dist / 40);
+                    handleSculpt(pos.x, pos.y, pressure * 0.5 + 0.3);
+                    lastX = pos.x;
+                    lastY = pos.y;
+                }
+            }
+
+            function onEnd(e) {
+                e.preventDefault();
+                isDrawing = false;
+                mouseDown = false;
+            }
+
+            // --- Timer ---
+            function startTimer() {
+                if (timerInterval) return;
+                timerInterval = setInterval(() => {
+                    elapsedSeconds++;
+                    const mins = Math.floor(elapsedSeconds / 60);
+                    const secs = elapsedSeconds % 60;
+                    timeDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            // --- Update stats ---
+            function updateStats() {
+                volumeDisplay.textContent = volume;
+                detailDisplay.textContent = detailCount;
+            }
+
+            // --- Reset ---
+            function resetIce() {
+                initIce();
+                elapsedSeconds = 0;
+                timeDisplay.textContent = '0:00';
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                startTimer();
+                hint.classList.remove('hidden');
+                render();
+            }
+
+            // --- Save ---
+            function saveSculpture() {
+                // Add a subtle watermark
+                ctx.save();
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.font = '14px system-ui';
+                ctx.fillText('🧊 Ice Sculptor', 20, H - 20);
+                ctx.restore();
+
+                const link = document.createElement('a');
+                link.download = `ice-sculpture-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                render(); // re-render without watermark
+            }
+
+            // --- Tool switching ---
+            document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tool-btn[data-tool]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTool = this.dataset.tool;
+                });
+            });
+
+            // --- Event listeners ---
+            // Mouse
+            canvas.addEventListener('mousedown', onStart);
+            canvas.addEventListener('mousemove', onMove);
+            canvas.addEventListener('mouseup', onEnd);
+            canvas.addEventListener('mouseleave', onEnd);
+
+            // Touch
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+            canvas.addEventListener('touchmove', onMove, { passive: false });
+            canvas.addEventListener('touchend', onEnd, { passive: false });
+            canvas.addEventListener('touchcancel', onEnd, { passive: false });
+
+            // Buttons
+            resetBtn.addEventListener('click', resetIce);
+            saveBtn.addEventListener('click', saveSculpture);
+
+            // Color change
+            iceColorInput.addEventListener('input', render);
+
+            // Sparkle toggle
+            sparkleToggle.addEventListener('change', render);
+
+            // --- Init ---
+            initIce();
+            startTimer();
+
+            // Handle resize
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🧊 Ice Sculptor ready!');
+            console.log('Tools: carve ⛏️, melt 🔥, smooth ✨, chisel 🔪');
+
+        })();
+    </script>
+
+</body>
+</html>
