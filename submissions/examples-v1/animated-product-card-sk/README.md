@@ -1,1 +1,0 @@
-A pure CSS animated product card featuring an image placeholder gradient, title, price, star rating, and an "Add to Cart" button. On hover the card lifts, the image scales slightly, and the button glows — perfect for e-commerce UIs. Implements a dark theme with smooth transitions and reduced-motion support.
