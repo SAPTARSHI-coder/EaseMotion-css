@@ -13,19 +13,21 @@ UI লেখো যেভাবে ইংরেজিতে বলো। কো�
 <br/>
 
 [![npm version](https://img.shields.io/npm/v/easemotion-css?style=flat-square&color=6c63ff&label=npm)](https://www.npmjs.com/package/easemotion-css)
+[![committers.top public badge](https://user-badge.committers.top/india_public/SAPTARSHI-coder.svg)](https://committers.top/india_public)
+[![committers.top private badge](https://user-badge.committers.top/india_private/SAPTARSHI-coder.svg)](https://committers.top/india_private)
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/hWSdGrccBU)
 [![npm downloads](https://img.shields.io/npm/dm/easemotion-css?style=flat-square&color=a78bfa&label=downloads%2Fmo)](https://www.npmjs.com/package/easemotion-css)
 [![jsDelivr CDN](https://data.jsdelivr.com/v1/package/npm/easemotion-css/badge)](https://www.jsdelivr.com/package/npm/easemotion-css)
 [![GitHub Stars](https://flat.badgen.net/github/stars/SAPTARSHI-coder/EaseMotion-css?color=6c63ff&icon=github&label=stars)](https://github.com/SAPTARSHI-coder/EaseMotion-css/stargazers)
 [![GitHub Forks](https://flat.badgen.net/github/forks/SAPTARSHI-coder/EaseMotion-css?color=22c55e&icon=github&label=forks)](https://github.com/SAPTARSHI-coder/EaseMotion-css/network/members)
-[![GitHub Contributors](https://img.shields.io/badge/contributors-299-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
-[![Merged PRs](https://img.shields.io/badge/merged%20PRs-1595-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
-[![Closed Issues](https://img.shields.io/badge/closed%20issues-1156-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
+[![GitHub Contributors](https://img.shields.io/badge/contributors-420+-f59e0b?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/graphs/contributors)
+[![Merged PRs](https://img.shields.io/badge/merged%20PRs-12078-8b5cf6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls?q=is%3Apr+is%3Amerged)
+[![Closed Issues](https://img.shields.io/badge/closed%20issues-10211-3b82f6?style=flat-square)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues?q=is%3Aissue+is%3Aclosed)
 [![Open PRs](https://flat.badgen.net/github/open-prs/SAPTARSHI-coder/EaseMotion-css?color=a78bfa&label=open%20PRs)](https://github.com/SAPTARSHI-coder/EaseMotion-css/pulls)
 [![Open Issues](https://flat.badgen.net/github/open-issues/SAPTARSHI-coder/EaseMotion-css?color=ef4444&label=issues)](https://github.com/SAPTARSHI-coder/EaseMotion-css/issues)
 [![License: MIT](https://img.shields.io/badge/License-MIT-6c63ff?style=flat-square)](./LICENSE)
 [![GSSoC](https://img.shields.io/badge/GSSoC-2026-orange?style=flat-square)](https://gssoc.girlscript.tech/)
-[![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
+[![Maintainer](https://img.shields.io/badge/Maintainer-Saptarshi%20Sadhu%20%28Rank%20%232%20Public%20%7C%20%235%20All%20Time%20Private%20🇮🇳%29-a78bfa?style=flat-square)](https://github.com/SAPTARSHI-coder)
 
 <br/>
 
@@ -494,10 +496,11 @@ EaseMotion CSS একটি **কিউরেটেড, মেইনটেইন
 ### ✅ কন্ট্রিবিউটররা যা করেন
 
 ```
-✅ submissions/examples/your-feature/ ফোল্ডারে যোগ করো
-✅ অন্তর্ভুক্ত করো: demo.html + style.css + README.md
-✅ যেকোনো ক্লাস নামকরণ ব্যবহার করো — ease- প্রিফিক্স দরকার নেই
-✅ প্রতি PR-এ একটি ফিচার
+✅ সঠিক ট্র্যাক ফোল্ডারে অবদান জমা দিন (submissions/examples/, submissions/react/, submissions/scss/, বা submissions/docs/)
+✅ ট্র্যাক অনুযায়ী প্রয়োজনীয় ফাইল রাখুন (যেমন React-এর জন্য JSX + README, SCSS-এর জন্য SCSS + README, অথবা Standard-এর জন্য HTML + CSS + README)
+✅ নামকরণের সংঘাত এড়াতে নামের শেষে ছোট ইউনিক সাফিক্স যুক্ত করুন (যেমন: ease-component-yourid)
+✅ কমিট স্কোয়াশ (Squash) করে গিট হিস্ট্রি পরিষ্কার রাখুন
+✅ প্রতি PR-এ একটি ফিচার বা কম্পোনেন্ট বা মিক্সিন
 ```
 
 ### ❌ কন্ট্রিবিউটররা যা করেন না
@@ -555,9 +558,9 @@ EaseMotion CSS শত শত কন্ট্রিবিউটর এবং হ�
 
 ### 📢 অবদান পলিসি আপডেট
 
-রেপো স্ট্রাকচার এবং গাইডলাইন অনুসরণ করে `submissions/examples/` ফোল্ডারের ভেতরে জমা দেওয়া প্রতিটি অবদানকে স্বাগত জানানো হবে এবং তা মার্জ করার জন্য যোগ্য বলে বিবেচিত হবে।
+রেপো স্ট্রাকচার এবং গাইডলাইন অনুসরণ করে `submissions/` ডিরেক্টরির নিচে সঠিক ট্র্যাক ফোল্ডারে জমা দেওয়া প্রতিটি অবদানকে স্বাগত জানানো হবে এবং তা মার্জ করার জন্য যোগ্য বলে বিবেচিত হবে।
 
-নামকরণের সংঘাত (naming conflicts) এবং একে অপরের উপর ওভারল্যাপ করা এড়াতে, কন্ট্রিবিউটরদের অবশ্যই তাদের ফিচার বা কম্পোনেন্টের নামের শেষে একটি ছোট ইউনিক আইডেন্টিফায়ার বা সংক্ষিপ্ত রূপ যুক্ত করতে হবে।
+নামকরণের সংঘাত (naming conflicts) এবং একে অপরের উপর ওভারল্যাপ করা এড়াতে, কন্ট্রিবিউটরদের অবশ্যই তাদের ফিচার, কম্পোনেন্ট বা মিক্সিনের নামের শেষে একটি ছোট ইউনিক আইডেন্টিফায়ার বা সংক্ষিপ্ত রূপ যুক্ত করতে হবে।
 
 **উদাহরণ:**
 

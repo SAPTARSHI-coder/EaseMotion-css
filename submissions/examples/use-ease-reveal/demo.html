@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>useEaseReveal · EaseMotion CSS</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="root"></div>
+
+  <!-- Demo-only: React + Babel standalone loaded via CDN so this hook
+       can be previewed in a plain .html file without a build step.
+       In a real app, useEaseReveal.js is imported normally via your
+       bundler (Vite, Next.js, CRA, etc). -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="react">
+    const { useEffect, useRef, useState, useCallback } = React;
+
+    // ---- Inlined copy of useEaseReveal for standalone demo purposes.
+    // ---- See useEaseReveal.js for the real, importable module.
+    function useEaseReveal({
+      animation = "fade",
+      threshold = 0.15,
+      rootMargin = "0px",
+      once = true,
+      root = null,
+    } = {}) {
+      const elementRef = useRef(null);
+      const [, forceRerender] = useState(0);
+
+      const setRef = useCallback((node) => {
+        elementRef.current = node;
+        forceRerender((n) => n + 1);
+      }, []);
+
+      useEffect(() => {
+        const node = elementRef.current;
+        if (!node) return undefined;
+
+        node.classList.add("ease-scroll-reveal", `ease-scroll-reveal--${animation}`);
+
+        const supportsObserver =
+          typeof window !== "undefined" && "IntersectionObserver" in window;
+        const prefersReducedMotion =
+          typeof window !== "undefined" &&
+          window.matchMedia &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        if (!supportsObserver || prefersReducedMotion) {
+          node.classList.add("is-visible");
+          return undefined;
+        }
+
+        let rafId = null;
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (rafId) cancelAnimationFrame(rafId);
+              rafId = requestAnimationFrame(() => {
+                if (entry.isIntersecting) {
+                  node.classList.add("is-visible");
+                  if (once) observer.unobserve(node);
+                } else if (!once) {
+                  node.classList.remove("is-visible");
+                }
+              });
+            });
+          },
+          { threshold, rootMargin, root }
+        );
+
+        observer.observe(node);
+        return () => {
+          if (rafId) cancelAnimationFrame(rafId);
+          observer.disconnect();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [elementRef.current, animation, threshold, rootMargin, once, root]);
+
+      return setRef;
+    }
+
+    function Card({ animation, title, children }) {
+      const ref = useEaseReveal({ animation, threshold: 0.2, once: true });
+      return (
+        <div ref={ref} className="ease-card">
+          <h3>{title}</h3>
+          <p>{children}</p>
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <>
+          <header className="demo-header">
+            <h1>useEaseReveal</h1>
+            <p>
+              Scroll down — each card below reveals itself using the
+              <code> useEaseReveal</code> hook and the existing
+              <code> ease-scroll-reveal</code> CSS utility.
+            </p>
+          </header>
+
+          <div className="demo-scroll-spacer">↓ scroll down ↓</div>
+
+          <main className="demo-grid">
+            <Card animation="fade" title="Fade">
+              Reveals with a simple opacity fade using animation: "fade".
+            </Card>
+            <Card animation="slide-up" title="Slide Up">
+              Reveals by fading in and sliding up using animation: "slide-up".
+            </Card>
+            <Card animation="slide-left" title="Slide Left">
+              Slides in from the right using animation: "slide-left".
+            </Card>
+            <Card animation="slide-right" title="Slide Right">
+              Slides in from the left using animation: "slide-right".
+            </Card>
+            <Card animation="zoom" title="Zoom">
+              Reveals by scaling up from 90% using animation: "zoom".
+            </Card>
+          </main>
+        </>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+</body>
+</html>

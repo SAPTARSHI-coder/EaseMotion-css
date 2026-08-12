@@ -1,46 +1,31 @@
-# ease-typewriter
+# CSS Typewriter v2
 
-Typewriter text reveal animation using CSS steps() and width keyframes. Zero JavaScript required.
+A lightweight and accessible multi-line typewriter animation built
+entirely with semantic HTML and vanilla CSS.
 
-## Usage
+The component supports typing, pausing, deleting and retyping
+sequences without JavaScript or external dependencies.
 
-Add the class to any inline element. Set --ease-typewriter-steps to match your character count:
+## ✨ Features
 
-    <p class="ease-typewriter" style="--ease-typewriter-steps: 13;">Hello, World!</p>
+- Pure HTML and CSS
+- No JavaScript
+- Multi-line typewriter animation
+- Delete and retype effect
+- Blinking cursor
+- Responsive typography
+- Dark-mode support
+- `prefers-reduced-motion` support
+- Semantic HTML
+- Screen-reader-friendly fallback text
+- Lightweight and dependency-free
+- Hardware-friendly CSS animation
+- Easy to customize
 
-## Variants
+## 📁 File Structure
 
-| Class | Description |
-|---|---|
-| ease-typewriter | Default one-shot typewriter reveal |
-| ease-typewriter-loop | Types and deletes infinitely |
-| ease-typewriter-no-cursor | Reveal without cursor |
-| ease-typewriter-cursor-only | Blinking cursor only |
-| ease-typewriter-fast | Fast 800ms reveal |
-| ease-typewriter-slow | Slow 4s reveal |
-| ease-typewriter-cursor-primary | Indigo cursor color |
-| ease-typewriter-cursor-white | White cursor color |
-| ease-typewriter-cursor-green | Green cursor color |
-| ease-delay-100 | 100ms start delay |
-| ease-delay-200 | 200ms start delay |
-| ease-delay-300 | 300ms start delay |
-| ease-delay-500 | 500ms start delay |
-
-## Custom Properties
-
-| Property | Default | Description |
-|---|---|---|
-| --ease-typewriter-steps | 30 | Number of steps = character count of your text |
-
-## Notes
-
-- Set --ease-typewriter-steps to match your text length for smooth stepping
-- Use delay variants for staggered multi-line typewriter effects
-- Works best on monospace fonts for even character spacing
-- ease-typewriter-loop animates a type-and-delete cycle continuously
-
-## Submission
-
-- **Author:** sudha09-git
-- **Issue:** #3815
-- **Files:** style.css, demo.html
+```text
+typewriter-v2/
+├── demo.html
+├── style.css
+└── README.md

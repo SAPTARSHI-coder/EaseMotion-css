@@ -1,12 +1,26 @@
-# CSS-only Scroll-Snap Carousel
+# Pure CSS Image Carousel
 
-A high-performance, touch-friendly carousel built utilizing native CSS `scroll-snap-type`. It avoids the heavy overhead of traditional JavaScript slider libraries while maintaining interactive pagination dots and incredibly smooth physics.
+A fully functional image slider driven entirely by CSS state management and 2D transforms, built without a single line of JavaScript.
+
+## Features
+- Pure CSS and HTML (Zero JavaScript required for state management, tracking the current slide, or animating transitions).
+- **Pure CSS State Management (The "Radio Button Hack")**: 
+- This component utilizes a set of hidden `<input type="radio">` elements placed at the root level of the component wrapper.
+- All interactive controls (the bottom dots, and the left/right arrows) are actually `<label>` elements linked via the `for` attribute to these hidden radio buttons.
+- Clicking an arrow or a dot simply checks the corresponding hidden radio input.
+- CSS sibling selectors (`~`) are then used to read which radio is currently `:checked` and update the UI accordingly.
+- **Sliding Track Logic**: 
+- The `.carousel-track` is a flex container holding three slides side-by-side, making its total width `300%`.
+- Depending on which radio button is active, the track is translated horizontally (`transform: translateX(-33.333%)`, etc.) to bring the correct slide into the viewport.
+- **Context-Aware Navigation Arrows**: 
+- Because there is no JavaScript to dynamically say "if current slide is 2, the 'Next' button goes to 3", we hardcode specific arrows for every state.
+- All arrows exist in the DOM simultaneously, but are hidden by default.
+- Using CSS sibling selectors (`#slide-2:checked ~ .carousel-container .arrow-for-2`), we only reveal the specific Next/Prev arrow pair that correctly routes to the adjacent slides for the current state.
+- Fully accessible with `prefers-reduced-motion` support. For motion-sensitive users, the horizontal track sliding and the staggered text entrance animations are completely disabled, resulting in instant slide transitions.
+
+## Usage
+Open `demo.html` in your browser. You will see an image carousel featuring three slides. You can navigate between them by clicking the left/right arrows on the sides, or by directly clicking the pagination dots at the bottom.
 
 ## Files
-- `demo.html` - Interactive demonstration.
-- `style.css` - The CSS implementation defining the scroll track, snap points, and radio button state hacks.
-
-## Details
-Carousels are notoriously complex, but native browser APIs have evolved. By using `scroll-snap-type: x mandatory`, the browser handles all touch events, momentum scrolling, and slide snapping natively on the GPU.
-
-To provide pagination dots, we use a hidden radio button hack. When a dot (`<label>`) is clicked, it checks a hidden radio button. The CSS `~` sibling selector then styles the active dot. A tiny, optional 5-line inline JavaScript snippet is included in the demo just to trigger `scrollIntoView()` and keep the dots synced when a user manually swipes, but the core layout and animation is strictly CSS.
+- `demo.html`: The HTML structure for the slider, detailing the crucial hidden radio inputs, the 300%-width track, and the context-specific navigation arrows.
+- `style.css`: The styling, the CSS sibling logic (`:checked ~`) powering the state machine, and the smooth `transform` and `opacity` transitions.

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🔔 Cymbal Crash – Cymbal Ripples On Impact</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🔔 Cymbal Crash</h1>
+            <div class="controls">
+                <button class="control-btn" id="crashBtn" title="Crash the cymbal">💥 Crash</button>
+                <button class="control-btn" id="autoBtn" title="Auto-crash">▶️ Auto</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="cymbalCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="cymbalStatus">🔔 Ready</span>
+                <span id="rippleCount">🌊 0 ripples</span>
+                <span id="impactInfo">💥 Impact: -</span>
+            </div>
+            <div class="hint" id="hint">🔔 Click the cymbal or press Space to crash</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label> Impact Force</label>
+                <input type="range" id="forceSlider" min="10" max="100" value="70" step="1" />
+                <span id="forceLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Ripple Speed</label>
+                <input type="range" id="speedSlider" min="10" max="100" value="60" step="1" />
+                <span id="speedLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>✨ Ripple Count</label>
+                <input type="range" id="countSlider" min="1" max="12" value="6" step="1" />
+                <span id="countLabel">6</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Cymbal Crash – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('cymbalCanvas');
+            const ctx = canvas.getContext('2d');
+            const cymbalStatus = document.getElementById('cymbalStatus');
+            const rippleCount = document.getElementById('rippleCount');
+            const impactInfo = document.getElementById('impactInfo');
+            const hint = document.getElementById('hint');
+            const crashBtn = document.getElementById('crashBtn');
+            const autoBtn = document.getElementById('autoBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const forceSlider = document.getElementById('forceSlider');
+            const forceLabel = document.getElementById('forceLabel');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const countSlider = document.getElementById('countSlider');
+            const countLabel = document.getElementById('countLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isAuto = false;
+            let autoTimer = 0;
+            let time = 0;
+            let animationId = null;
+
+            // --- Parameters ---
+            let force = 70; // 10-100
+            let rippleSpeed = 60; // 10-100
+            //let rippleCount = 6; // 1-12
+
+            // --- Ripples ---
+            let ripples = [];
+            let sparks = [];
+
+            // --- Cymbal properties ---
+            const cymbal = {
+                x: W / 2,
+                y: H / 2,
+                radius: 80,
+                rotation: 0,
+                wobble: 0,
+                isVibrating: false,
+                vibrationAmplitude: 0,
+                targetAmplitude: 0
+            };
+
+            // --- Ripple class ---
+            class Ripple {
+                constructor(x, y, force, count) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = 5;
+                    this.maxRadius = 80 + force * 1.5 + Math.random() * 40;
+                    this.speed = (0.5 + (rippleSpeed / 100) * 2) * (0.8 + Math.random() * 0.4);
+                    this.opacity = 1;
+                    this.width = 2 + force / 20;
+                    this.angle = (Math.random() - 0.5) * 0.1;
+                    this.wobble = 0;
+                    this.wobbleSpeed = 0.05 + Math.random() * 0.05;
+                    this.wobbleAmount = 0.05 + Math.random() * 0.1;
+                    this.hue = 45 + Math.random() * 20; // Golden/brass tones
+                    this.saturation = 70 + Math.random() * 30;
+                    this.lightness = 50 + Math.random() * 30;
+                    this.alive = true;
+                    this.pulse = 0;
+                    this.pulseSpeed = 0.02 + Math.random() * 0.02;
+                    this.shimmer = Math.random() * 100;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.opacity = 1 - (this.radius / this.maxRadius) * 0.9;
+                    this.width *= 0.997;
+                    this.wobble += this.wobbleSpeed;
+                    this.pulse += this.pulseSpeed;
+                    this.shimmer += 0.02;
+
+                    if (this.radius > this.maxRadius || this.opacity < 0.01) {
+                        this.alive = false;
+                    }
+
+                    // Second wind (ripple bounce effect)
+                    if (this.radius > this.maxRadius * 0.6 && Math.random() < 0.01) {
+                        this.opacity += 0.05;
+                    }
+                }
+
+                draw(ctx) {
+                    if (!this.alive || this.opacity < 0.01) return;
+
+                    const wobbleOffset = Math.sin(this.wobble) * this.wobbleAmount * this.radius;
+                    const pulseFactor = 1 + 0.05 * Math.sin(this.pulse);
+                    const currentRadius = this.radius * pulseFactor + wobbleOffset;
+
+                    ctx.save();
+
+                    // Glow
+                    ctx.shadowBlur = 20 * this.opacity;
+                    ctx.shadowColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${this.opacity * 0.3})`;
+
+                    // Main ring
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
+                    ctx.strokeStyle = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness}%, ${this.opacity * 0.8})`;
+                    ctx.lineWidth = this.width * (0.5 + 0.5 * (1 - this.radius / this.maxRadius));
+                    ctx.stroke();
+
+                    // Inner glow ring
+                    if (this.radius < this.maxRadius * 0.5) {
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, currentRadius * 0.6, 0, Math.PI * 2);
+                        ctx.strokeStyle = `hsla(${this.hue + 10}, ${this.saturation - 20}%, ${this.lightness + 20}%, ${this.opacity * 0.2})`;
+                        ctx.lineWidth = this.width * 0.3;
+                        ctx.stroke();
+                    }
+
+                    // Outer glow ring
+                    if (this.radius > this.maxRadius * 0.3) {
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, currentRadius * 1.1, 0, Math.PI * 2);
+                        ctx.strokeStyle = `hsla(${this.hue - 10}, ${this.saturation - 10}%, ${this.lightness - 20}%, ${this.opacity * 0.15})`;
+                        ctx.lineWidth = this.width * 0.5;
+                        ctx.stroke();
+                    }
+
+                    // Sparkle points on ring
+                    if (this.radius > 20 && this.opacity > 0.3) {
+                        const sparkleCount = Math.floor(4 + this.opacity * 8);
+                        for (let i = 0; i < sparkleCount; i++) {
+                            const angle = (i / sparkleCount) * Math.PI * 2 + this.shimmer * 0.1 + i * 0.5;
+                            const dist = currentRadius * (0.7 + 0.3 * Math.sin(this.shimmer + i));
+                            const sx = this.x + Math.cos(angle) * dist;
+                            const sy = this.y + Math.sin(angle) * dist;
+                            const size = 1 + Math.random() * 2 * this.opacity;
+                            ctx.shadowBlur = 5;
+                            ctx.shadowColor = `hsla(50, 100%, 80%, ${this.opacity * 0.3})`;
+                            ctx.fillStyle = `hsla(50, 100%, 90%, ${this.opacity * 0.4})`;
+                            ctx.beginPath();
+                            ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Spark class ---
+            class Spark {
+                constructor(x, y, force) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = (1 + force / 30) * (0.5 + Math.random() * 1);
+                    this.x = x + (Math.random() - 0.5) * 10;
+                    this.y = y + (Math.random() - 0.5) * 10;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed - 0.5;
+                    this.size = 1 + Math.random() * 3;
+                    this.life = 1;
+                    this.decay = 0.01 + Math.random() * 0.02;
+                    this.gravity = 0.05;
+                    this.hue = 35 + Math.random() * 30;
+                    this.saturation = 80 + Math.random() * 20;
+                    this.lightness = 60 + Math.random() * 30;
+                    this.trail = [];
+                    this.maxTrail = 5;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= 0.98;
+                    this.life -= this.decay;
+                    this.size *= 0.995;
+
+                    // Trail
+                    if (Math.random() < 0.5) {
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    }
+
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    if (this.life < 0.01) return;
+
+                    const alpha = this.life;
+
+                    ctx.save();
+
+                    // Trail
+                    for (let i = 0; i < this.trail.length; i++) {
+                        const t = i / this.trail.length;
+                        ctx.globalAlpha = alpha * t * 0.2;
+                        ctx.fillStyle = `hsl(${this.hue}, ${this.saturation}%, ${this.lightness}%)`;
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(this.trail[i].x, this.trail[i].y, this.size * t * 0.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Main spark
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = this.size * 4;
+                    ctx.shadowColor = `hsla(${this.hue}, ${this.saturation}%, ${this.lightness + 20}%, ${alpha * 0.5})`;
+                    ctx.fillStyle = `hsl(${this.hue}, ${this.saturation}%, ${this.lightness}%)`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Bright core
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `hsla(50, 100%, 95%, ${alpha * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Draw cymbal ---
+            function drawCymbal(ctx) {
+                const x = cymbal.x;
+                const y = cymbal.y;
+                const radius = cymbal.radius;
+                const rotation = cymbal.rotation;
+                const wobble = cymbal.wobble;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(rotation);
+
+                // Cymbal glow (when vibrating)
+                if (cymbal.isVibrating && cymbal.vibrationAmplitude > 0.1) {
+                    const glowGrad = ctx.createRadialGradient(0, 0, radius * 0.2, 0, 0, radius * 1.8);
+                    const glowAlpha = cymbal.vibrationAmplitude * 0.15;
+                    glowGrad.addColorStop(0, `rgba(255, 200, 100, ${glowAlpha * 0.5})`);
+                    glowGrad.addColorStop(0.5, `rgba(255, 180, 80, ${glowAlpha * 0.2})`);
+                    glowGrad.addColorStop(1, `rgba(255, 160, 60, 0)`);
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, radius * 1.8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Cymbal shadow
+                ctx.shadowBlur = 30;
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+                ctx.shadowOffsetY = 5;
+
+                // Cymbal body gradient
+                const gradient = ctx.createRadialGradient(
+                    -radius * 0.2, -radius * 0.2, radius * 0.1,
+                    0, 0, radius
+                );
+
+                // Brass/gold colors
+                const baseHue = 45;
+                const vibOffset = cymbal.vibrationAmplitude * 10;
+                gradient.addColorStop(0, `hsl(${baseHue + vibOffset}, 80%, ${75 + vibOffset * 0.5}%)`);
+                gradient.addColorStop(0.3, `hsl(${baseHue + vibOffset * 0.5}, 75%, ${65 + vibOffset * 0.5}%)`);
+                gradient.addColorStop(0.6, `hsl(${baseHue + vibOffset * 0.3}, 70%, ${55 + vibOffset * 0.3}%)`);
+                gradient.addColorStop(0.85, `hsl(${baseHue - 5}, 65%, ${45 + vibOffset * 0.2}%)`);
+                gradient.addColorStop(1, `hsl(${baseHue - 10}, 60%, ${35 + vibOffset * 0.1}%)`);
+
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                ctx.shadowOffsetY = 3;
+
+                // Cymbal shape (ellipse with wobble)
+                const wobbleFactor = 1 + wobble * 0.1;
+                const rx = radius * wobbleFactor;
+                const ry = radius * (1 - wobble * 0.05);
+
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // Cymbal edge highlight
+                ctx.shadowBlur = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.strokeStyle = `hsla(50, 60%, 70%, ${0.3 + cymbal.vibrationAmplitude * 0.3})`;
+                ctx.lineWidth = 2 + cymbal.vibrationAmplitude * 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, rx - 3, ry - 3, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Inner rings (lathe lines)
+                for (let i = 1; i < 5; i++) {
+                    const ringRadius = (i / 5) * radius * 0.85;
+                    const ringWobble = 1 + wobble * 0.05 * (1 - i / 5);
+                    ctx.globalAlpha = 0.1 + cymbal.vibrationAmplitude * 0.05;
+                    ctx.strokeStyle = `hsla(50, 50%, ${50 + i * 5}%, 0.3)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, ringRadius * ringWobble, ringRadius * (1 - wobble * 0.02), 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // Center bell
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                const bellGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, radius * 0.2);
+                bellGrad.addColorStop(0, `hsl(45, 70%, ${70 + cymbal.vibrationAmplitude * 5}%)`);
+                bellGrad.addColorStop(0.5, `hsl(45, 65%, ${60 + cymbal.vibrationAmplitude * 3}%)`);
+                bellGrad.addColorStop(1, `hsl(40, 60%, ${50 + cymbal.vibrationAmplitude * 2}%)`);
+                ctx.fillStyle = bellGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bell highlight
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = `hsla(55, 100%, 90%, ${0.2 + cymbal.vibrationAmplitude * 0.1})`;
+                ctx.beginPath();
+                ctx.arc(-radius * 0.05, -radius * 0.05, radius * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cymbal edge detail (wavy edge)
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = `hsla(45, 50%, 60%, ${0.2 + cymbal.vibrationAmplitude * 0.1})`;
+                ctx.lineWidth = 0.5;
+                const segments = 20;
+                ctx.beginPath();
+                for (let i = 0; i <= segments; i++) {
+                    const angle = (i / segments) * Math.PI * 2;
+                    const wave = Math.sin(angle * 3 + time * 0.02 * cymbal.vibrationAmplitude) * 2 * cymbal
+                    .vibrationAmplitude;
+                    const r = radius + wave;
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+
+                ctx.restore();
+
+                // Update cymbal vibration decay
+                if (cymbal.vibrationAmplitude > 0.01) {
+                    cymbal.vibrationAmplitude *= 0.985;
+                } else {
+                    cymbal.vibrationAmplitude = 0;
+                    cymbal.isVibrating = false;
+                }
+
+                cymbal.wobble = cymbal.vibrationAmplitude * 0.3 * Math.sin(time * 0.1);
+                cymbal.rotation += cymbal.vibrationAmplitude * 0.005 * Math.sin(time * 0.05);
+            }
+
+            // --- Crash the cymbal ---
+            function crashCymbal(impactForce) {
+                const forceFactor = (impactForce || force) / 100;
+                const x = cymbal.x + (Math.random() - 0.5) * 20;
+                const y = cymbal.y + (Math.random() - 0.5) * 20;
+
+                // Create ripples
+                const count = Math.floor(rippleCount * (0.5 + forceFactor * 0.5));
+                for (let i = 0; i < count; i++) {
+                    const delay = i * 0.05;
+                    setTimeout(() => {
+                        const ripple = new Ripple(x, y, forceFactor * 100, count);
+                        ripples.push(ripple);
+                    }, delay * 1000);
+                }
+
+                // Create sparks
+                const sparkCount = Math.floor(10 + forceFactor * 30);
+                for (let i = 0; i < sparkCount; i++) {
+                    const spark = new Spark(x, y, forceFactor * 100);
+                    sparks.push(spark);
+                }
+
+                // Vibrate cymbal
+                cymbal.isVibrating = true;
+                cymbal.vibrationAmplitude = 0.5 + forceFactor * 1.5;
+                cymbal.targetAmplitude = cymbal.vibrationAmplitude;
+
+                // Update status
+                cymbalStatus.textContent = '🔔 CRASH!';
+                impactInfo.textContent = `💥 Impact: ${Math.round(forceFactor * 100)}%`;
+                rippleCount.textContent = `🌊 ${ripples.length} ripples`;
+
+                // Flash status
+                setTimeout(() => {
+                    cymbalStatus.textContent = '🔔 Ready';
+                }, 800);
+
+                hint.textContent = '🔔 CRASH!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 800);
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a0f18');
+                grad.addColorStop(0.3, '#080c14');
+                grad.addColorStop(0.6, '#060a10');
+                grad.addColorStop(0.8, '#04060c');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle grid (like drum head)
+                ctx.save();
+                ctx.globalAlpha = 0.02;
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    const radius = 20 + i * 20;
+                    ctx.beginPath();
+                    ctx.arc(W / 2, H / 2, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(W / 2, H / 2);
+                    ctx.lineTo(
+                        W / 2 + Math.cos(angle) * 400,
+                        H / 2 + Math.sin(angle) * 400
+                    );
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Subtle ground reflection
+                ctx.save();
+                const groundGrad = ctx.createRadialGradient(
+                    W / 2, H - 20, 50,
+                    W / 2, H - 20, 300
+                );
+                groundGrad.addColorStop(0, 'rgba(30, 40, 60, 0.1)');
+                groundGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 100, W, 100);
+                ctx.restore();
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Auto-crash
+                if (isAuto) {
+                    autoTimer++;
+                    const interval = Math.max(20, 200 - force);
+                    if (autoTimer >= interval) {
+                        autoTimer = 0;
+                        crashCymbal(50 + Math.random() * 50);
+                    }
+                }
+
+                // Update ripples
+                ripples = ripples.filter(r => {
+                    r.update();
+                    return r.alive;
+                });
+
+                // Update sparks
+                sparks = sparks.filter(s => s.update());
+
+                // Limit sparks
+                if (sparks.length > 200) {
+                    sparks = sparks.slice(0, 200);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw ripples
+                for (const ripple of ripples) {
+                    ripple.draw(ctx);
+                }
+
+                // Draw sparks
+                for (const spark of sparks) {
+                    spark.draw(ctx);
+                }
+
+                // Draw cymbal
+                drawCymbal(ctx);
+
+                // Update ripple count
+                rippleCount.textContent = `🌊 ${ripples.length} ripples`;
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleAuto() {
+                isAuto = !isAuto;
+                autoBtn.textContent = isAuto ? '⏹️ Stop' : '▶️ Auto';
+                if (isAuto) {
+                    autoTimer = 0;
+                    hint.textContent = '▶️ Auto-crash started';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                } else {
+                    hint.textContent = '⏹️ Auto-crash stopped';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function resetAll() {
+                ripples = [];
+                sparks = [];
+                cymbal.vibrationAmplitude = 0;
+                cymbal.isVibrating = false;
+                cymbal.wobble = 0;
+                cymbal.rotation = 0;
+                cymbalStatus.textContent = '🔔 Ready';
+                rippleCount.textContent = '🌊 0 ripples';
+                impactInfo.textContent = '💥 Impact: -';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Event handlers ---
+            function handleCrash(e) {
+                e.preventDefault();
+                crashCymbal(force);
+            }
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function isInsideCymbal(pos) {
+                const dx = pos.x - cymbal.x;
+                const dy = pos.y - cymbal.y;
+                return Math.sqrt(dx * dx + dy * dy) < cymbal.radius + 20;
+            }
+
+            function onStart(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                if (isInsideCymbal(pos)) {
+                    handleCrash(e);
+                }
+            }
+
+            // --- Slider handlers ---
+            forceSlider.addEventListener('input', function() {
+                force = parseFloat(this.value);
+                forceLabel.textContent = `${Math.round(force)}%`;
+            });
+
+            speedSlider.addEventListener('input', function() {
+                rippleSpeed = parseFloat(this.value);
+                speedLabel.textContent = `${Math.round(rippleSpeed)}%`;
+            });
+
+            countSlider.addEventListener('input', function() {
+                rippleCount = parseFloat(this.value);
+                countLabel.textContent = Math.round(rippleCount);
+            });
+
+            // --- Button events ---
+            crashBtn.addEventListener('click', () => crashCymbal(force));
+            autoBtn.addEventListener('click', toggleAuto);
+            resetBtn.addEventListener('click', resetAll);
+
+            // --- Mouse events ---
+            canvas.addEventListener('click', handleCrash);
+            canvas.addEventListener('mousedown', onStart);
+
+            // --- Touch events ---
+            canvas.addEventListener('touchstart', onStart, { passive: false });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    crashCymbal(force);
+                }
+                if (e.key === 'a' || e.key === 'A') toggleAuto();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Force adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    force = Math.min(100, force + 5);
+                    forceSlider.value = force;
+                    forceLabel.textContent = `${Math.round(force)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    force = Math.max(10, force - 5);
+                    forceSlider.value = force;
+                    forceLabel.textContent = `${Math.round(force)}%`;
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🔔 Cymbal Crash ready!');
+            console.log('Controls: Click cymbal or Space (crash), A (auto), R (reset)');
+            console.log('          ↑/↓ (force), drag sliders for ripple control');
+
+        })();
+    </script>
+</body>
+</html>

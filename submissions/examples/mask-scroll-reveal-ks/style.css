@@ -1,0 +1,684 @@
+/* ====================================================================
+   Mask Scroll Reveal
+   Cinematic text and image reveals using CSS mask-image driven
+   by @property + animation-timeline: view() — zero JavaScript.
+   ==================================================================== */
+
+/* ── @property registrations ─────────────────────────────────────── */
+
+@property --mask-progress {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+@property --mask-size {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 0%;
+}
+
+@property --mask-angle {
+  syntax: '<angle>';
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@property --mask-opacity {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --card-y {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 2rem;
+}
+
+/* ── Theme tokens ────────────────────────────────────────────────── */
+
+:root {
+  --color-bg: #08080c;
+  --color-surface: #14141a;
+  --color-text: #e8e8ed;
+  --color-text-muted: #7a7a8a;
+  --color-accent: #8b5cf6;
+  --color-accent-glow: #a78bfa;
+  --color-border: #252530;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --max-width: 56rem;
+  --radius: 0.875rem;
+}
+
+/* ── Base ────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark light;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────── */
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  background:
+    radial-gradient(ellipse 50% 50% at 50% 40%, rgba(139, 92, 246, 0.08), transparent),
+    radial-gradient(ellipse 40% 40% at 30% 60%, rgba(167, 139, 250, 0.05), transparent),
+    var(--color-bg);
+}
+
+.hero-content {
+  max-width: 40rem;
+}
+
+.hero-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-accent-glow);
+  margin-bottom: 1.25rem;
+}
+
+.hero-title {
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--color-accent-glow), #c4b5fd, var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-desc {
+  font-size: 1.0625rem;
+  color: var(--color-text-muted);
+  max-width: 32rem;
+  margin: 0 auto;
+  line-height: 1.75;
+}
+
+.hero-desc code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--color-accent-glow);
+  padding: 0.15em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.scroll-hint-text {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.scroll-hint-arrow {
+  animation: scroll-hint-bounce 2s ease-in-out infinite;
+}
+
+@keyframes scroll-hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(6px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint-arrow { animation: none; }
+}
+
+/* ── Demo blocks ─────────────────────────────────────────────────── */
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.demo-block {
+  padding: 6rem 0;
+}
+
+.demo-block + .demo-block {
+  border-top: 1px solid var(--color-border);
+}
+
+.demo-block-label {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.demo-body {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  max-width: 34rem;
+  line-height: 1.75;
+  margin-top: 1.5rem;
+}
+
+.demo-body code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 0.1em 0.35em;
+  border-radius: 0.2rem;
+}
+
+/* ── Technique 1: Horizontal wipe ────────────────────────────────── */
+
+.mask-wipe-title {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  max-width: 26rem;
+
+  /* Fallback: fully visible */
+  -webkit-mask-image: none;
+  mask-image: none;
+
+  /* Scroll-driven mask */
+  -webkit-mask-image: linear-gradient(to right, black var(--mask-progress), transparent calc(var(--mask-progress) + 5%));
+  mask-image: linear-gradient(to right, black var(--mask-progress), transparent calc(var(--mask-progress) + 5%));
+
+  animation: mask-wipe 1s linear both;
+  animation-timeline: view();
+  animation-range: entry 10% cover 50%;
+}
+
+@keyframes mask-wipe {
+  from { --mask-progress: 0%; }
+  to   { --mask-progress: 100%; }
+}
+
+.mask-wipe-em {
+  display: block;
+  color: var(--color-accent-glow);
+}
+
+/* ── Technique 2: Radial fade reveal ─────────────────────────────── */
+
+.mask-fade-title {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  max-width: 26rem;
+
+  -webkit-mask-image: none;
+  mask-image: none;
+
+  -webkit-mask-image: radial-gradient(circle at center, black var(--mask-size), transparent calc(var(--mask-size) + 10%));
+  mask-image: radial-gradient(circle at center, black var(--mask-size), transparent calc(var(--mask-size) + 10%));
+
+  animation: mask-fade 1.2s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 8% cover 55%;
+}
+
+@keyframes mask-fade {
+  from { --mask-size: 0%; }
+  to   { --mask-size: 100%; }
+}
+
+.mask-fade-em {
+  display: block;
+  color: var(--color-accent-glow);
+}
+
+/* ── Technique 3: Diagonal stripe ────────────────────────────────── */
+
+.mask-slant-title {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  max-width: 26rem;
+
+  -webkit-mask-image: none;
+  mask-image: none;
+
+  -webkit-mask-image: linear-gradient(
+    -45deg,
+    black calc(var(--mask-progress) - 5%),
+    transparent var(--mask-progress),
+    transparent calc(var(--mask-progress) + 5%),
+    black calc(var(--mask-progress) + 10%)
+  );
+  mask-image: linear-gradient(
+    -45deg,
+    black calc(var(--mask-progress) - 5%),
+    transparent var(--mask-progress),
+    transparent calc(var(--mask-progress) + 5%),
+    black calc(var(--mask-progress) + 10%)
+  );
+
+  animation: mask-slant 1s linear both;
+  animation-timeline: view();
+  animation-range: entry 12% cover 50%;
+}
+
+@keyframes mask-slant {
+  from { --mask-progress: -10%; }
+  to   { --mask-progress: 110%; }
+}
+
+.mask-slant-em {
+  display: block;
+  color: var(--color-accent-glow);
+}
+
+/* ── Technique 4: Image blind reveal ─────────────────────────────── */
+
+.mask-image-title {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.mask-image-em {
+  display: block;
+  color: var(--color-accent-glow);
+}
+
+.mask-image-demo {
+  margin-top: 2rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 3 / 2;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+
+  -webkit-mask-image: none;
+  mask-image: none;
+
+  -webkit-mask-image: linear-gradient(to top, black var(--mask-progress), transparent);
+  mask-image: linear-gradient(to top, black var(--mask-progress), transparent);
+
+  animation: mask-image-reveal 1s linear both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 40%;
+}
+
+@keyframes mask-image-reveal {
+  from { --mask-progress: 0%; }
+  to   { --mask-progress: 100%; }
+}
+
+.mask-image-inner {
+  width: 100%;
+  height: 100%;
+  background:
+    linear-gradient(135deg, #1a0533 0%, #2d1b69 25%, #4c1d95 50%, #5b21b6 75%, #7c3aed 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Technique 5: Texture reveal cards ───────────────────────────── */
+
+.mask-texture-title {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.mask-texture-em {
+  display: block;
+  color: var(--color-accent-glow);
+}
+
+.mask-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.mask-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+
+  opacity: var(--mask-opacity);
+  transform: translateY(var(--card-y));
+
+  -webkit-mask-image: none;
+  mask-image: none;
+  -webkit-mask-image: linear-gradient(to top, transparent calc(var(--mask-progress) - 10%), black var(--mask-progress));
+  mask-image: linear-gradient(to top, transparent calc(var(--mask-progress) - 10%), black var(--mask-progress));
+
+  /* Static fallback */
+  opacity: 1;
+  transform: none;
+
+  animation: card-reveal 0.8s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 30%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mask-card:nth-child(1) { animation-delay: 0s; }
+.mask-card:nth-child(2) { animation-delay: 0.08s; }
+.mask-card:nth-child(3) { animation-delay: 0.16s; }
+
+@keyframes card-reveal {
+  from {
+    --mask-opacity: 0;
+    --card-y: 2rem;
+    --mask-progress: 0%;
+  }
+  to {
+    --mask-opacity: 1;
+    --card-y: 0;
+    --mask-progress: 100%;
+  }
+}
+
+.mask-card:hover,
+.mask-card:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), 0 4px 24px rgba(139, 92, 246, 0.12);
+  outline: none;
+}
+
+.mask-card-icon {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--color-accent);
+  margin-bottom: 0.75rem;
+}
+
+.mask-card h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.mask-card p {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+/* ── API reference table ─────────────────────────────────────────── */
+
+.api-reference {
+  padding-bottom: 3rem;
+}
+
+.api-reference h2 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.api-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.api-table-wrapper:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.api-table caption {
+  text-align: left;
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  padding: 0.75rem 1rem 0.5rem;
+  font-style: italic;
+}
+
+.api-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-accent-glow);
+  padding: 0.75rem 1rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.api-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.api-table td:first-child { white-space: nowrap; }
+.api-table td:last-child { color: var(--color-text-muted); font-size: 0.75rem; }
+.api-table tr:last-child td { border-bottom: none; }
+
+.api-table code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 0.1em 0.35em;
+  border-radius: 0.2rem;
+}
+
+.api-note {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  max-width: 40rem;
+  line-height: 1.7;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+
+.demo-footer {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.demo-footer p + p { margin-top: 0.25rem; }
+
+/* ── Reduced motion ──────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .mask-wipe-title,
+  .mask-fade-title,
+  .mask-slant-title,
+  .mask-image-demo,
+  .mask-card {
+    -webkit-mask-image: none;
+    mask-image: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .mask-image-inner { animation: none; }
+}
+
+/* ── Forced colors ───────────────────────────────────────────────── */
+
+@media (forced-colors: active) {
+  .mask-card {
+    border-color: ButtonBorder;
+  }
+
+  .mask-card:hover,
+  .mask-card:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+    box-shadow: none;
+  }
+
+  .hero-title {
+    background: none;
+    color: inherit;
+  }
+
+  .api-table-wrapper { border-color: ButtonBorder; }
+
+  .hero-desc code,
+  .demo-body code,
+  .api-table code {
+    background: transparent;
+    color: inherit;
+  }
+}
+
+/* ── Light mode ──────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #faf9fb;
+    --color-surface: #ffffff;
+    --color-text: #1a1a2e;
+    --color-text-muted: #555;
+    --color-border: #e4e4eb;
+    --color-accent: #7c3aed;
+    --color-accent-glow: #6d28d9;
+  }
+
+  html { color-scheme: light; }
+}
+
+/* ── Print ───────────────────────────────────────────────────────── */
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  .hero {
+    min-height: auto;
+    padding: 2rem 0;
+    background: none;
+  }
+
+  .hero-title {
+    background: none;
+    color: black;
+    font-size: 24pt;
+  }
+
+  .scroll-hint { display: none; }
+
+  .demo-block { padding: 1.5rem 0; }
+
+  .mask-wipe-title,
+  .mask-fade-title,
+  .mask-slant-title,
+  .mask-image-demo,
+  .mask-card {
+    -webkit-mask-image: none;
+    mask-image: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .mask-image-inner {
+    background: #f0f0f0;
+    animation: none;
+  }
+
+  .mask-card {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .demo-footer { border-top: 1px solid #ccc; }
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .hero { padding: 1rem; }
+  .hero-title { font-size: clamp(2.25rem, 12vw, 3.5rem); }
+
+  .mask-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-block { padding: 4rem 0; }
+}
