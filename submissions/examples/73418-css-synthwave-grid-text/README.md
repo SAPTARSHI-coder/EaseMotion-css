@@ -2,34 +2,33 @@
 
 ## Overview
 
-Issue #73418 demonstrates a synthwave-inspired text animation using CSS grid lines, neon color, and a moving horizon highlight.
+Issue #73418 demonstrates a retro-futuristic text animation using neon color, grid lines, and a restrained horizon movement.
 
 ## Features
 
-- Synthwave grid background
-- Neon text glow
-- Animated horizon highlight
-- Responsive typography and layout
-- Semantic HTML
+- Synthwave gradient text
+- Perspective grid surface
+- Neon glow treatment
+- Responsive typography
 - Reduced-motion support
-- No JavaScript or external assets
+- Pure HTML and vanilla CSS
 
 ## Implementation
 
-The grid is produced with layered linear gradients while the text uses a restrained background highlight and text-shadow. The animation is limited to the decorative layer so the surrounding layout remains stable.
+Repeating linear gradients create the grid without external assets. The display text uses a clipped gradient and a small background-position animation to suggest a moving horizon.
 
 ## Accessibility
 
-The effect is applied to real HTML text. Reduced-motion users receive a static presentation through `prefers-reduced-motion`.
+The grid is decorative and does not carry information. The text remains semantic and selectable, while reduced-motion preferences disable the animated gradient movement.
 
-## Responsive behavior
+## Usage
 
-Cards and supporting facts stack on smaller screens. Fluid heading sizes keep the display readable without overflowing narrow viewports.
+Open `demo.html` in a modern browser. Adjust the grid size, gradient colors, or `.synth` animation duration in `style.css` to create another synthwave variation.
 
 ## Files
 
-- `demo.html` — synthwave text showcase
-- `style.css` — grid, glow, animation, and responsive styling
+- `demo.html` — semantic examples and implementation notes
+- `style.css` — grid, neon text, responsive rules, and motion handling
 - `README.md` — documentation
 
 ## Issue
