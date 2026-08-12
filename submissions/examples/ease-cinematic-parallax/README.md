@@ -1,14 +1,10 @@
-### What does this do?
-This creates a true cinematic depth-of-field parallax effect by dynamically shifting the focal plane and translation of background, midground, and foreground layers natively via the CSS `animation-timeline: scroll()` API.
+# Cinematic Depth-of-Field Parallax (`ease-cinematic-parallax`)
 
-### How is it used?
-```html
-<div class="parallax-scene">
-  <div class="parallax-layer layer-bg"></div>
-  <div class="parallax-layer layer-mid"></div>
-  <div class="parallax-layer layer-fg"></div>
-</div>
-```
+## 1. What does this do?
+A premium, scroll-driven cinematic parallax effect that simulates a physical camera's Depth-of-Field (DoF) by dynamically pulling focus across foreground, midground, and background layers.
 
-### Why is it useful?
-It aligns perfectly with EaseMotion's philosophy of delivering premium, high-performance UI animations without JavaScript overhead, pushing the boundaries of what is possible purely via CSS using modern web standards.
+## 2. How is it used?
+It utilizes the modern CSS `animation-timeline: scroll()` API. By binding standard `@keyframes` to the scroll position, we can smoothly interpolate both `translateY` for movement AND `filter: blur()` for focus. The foreground starts sharp and blurs out as you scroll, while the background starts heavily blurred and comes into crisp focus, mimicking a lens racking focus across focal planes.
+
+## 3. Why is it useful?
+Replicating AAA-grade cinematic focal pulls traditionally required heavy JavaScript `IntersectionObserver` scripts calculating element bounding boxes on every frame. This method executes the exact same mathematical physics flawlessly at 60fps on the GPU Compositor, requiring exactly 0 lines of JavaScript.
