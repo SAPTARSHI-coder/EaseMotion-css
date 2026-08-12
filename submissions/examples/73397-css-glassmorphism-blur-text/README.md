@@ -2,39 +2,39 @@
 
 ## Overview
 
-Issue #73397 demonstrates a glassmorphism-inspired CSS text animation using transparency, blur, and layered depth.
+Issue #73397 demonstrates a glassmorphism-inspired text animation using only semantic HTML and vanilla CSS.
 
 ## Features
 
-- Frosted glass presentation
+- Soft blur-to-clear entrance
+- Animated glass-like gradient sheen
+- Translucent supporting surfaces
 - Responsive typography
-- Subtle blur animation
-- Interactive showcase cards
-- Semantic HTML
-- Reduced-motion support
-- No JavaScript or external assets
+- Dark-surface presentation
+- Reduced-motion fallback
+- No JavaScript or external dependencies
 
 ## Implementation
 
-The effect combines translucent surfaces, `backdrop-filter`, restrained shadows, and a soft opacity transition. The text remains normal HTML content so it can be selected and read by assistive technology.
+The text uses a transparent fill, subtle stroke, gradient clipping, and a blur transition. The supporting cards use translucent backgrounds and `backdrop-filter` to reinforce the glass aesthetic without changing the document structure.
 
 ## Accessibility
 
-The animation is decorative and is removed under `prefers-reduced-motion`. Supporting copy does not depend on the visual blur to communicate meaning.
+The displayed words remain real selectable text. The animation is decorative, and `prefers-reduced-motion: reduce` removes the animated blur and sheen so the content stays immediately readable.
 
-## Responsive behavior
+## Performance
 
-The three-column showcase and supporting fact grid collapse to one column on smaller screens. Heading sizes use `clamp()` to avoid oversized text on mobile devices.
+The animation is limited to visual properties such as `filter`, `opacity`, and background positioning. The layout does not depend on JavaScript or repeated DOM updates.
 
 ## Usage
 
-Open `demo.html` directly in a browser. No build process or JavaScript dependency is required.
+Open `demo.html` in a modern browser. The component is self-contained and can be adapted by changing the text, scale classes, and CSS custom properties.
 
 ## Files
 
-- `demo.html` — glass text showcase
-- `style.css` — glass surfaces, blur, animation, and responsive rules
-- `README.md` — implementation documentation
+- `demo.html` — semantic demonstration markup
+- `style.css` — glass treatment, responsive rules, and motion preferences
+- `README.md` — implementation and usage notes
 
 ## Issue
 
