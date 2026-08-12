@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alien Creature</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>👽 Alien Creature</h1>
+        <p class="subtitle">Glowing alien with tentacles and blinking eyes</p>
+
+        <div class="alien-wrapper">
+            <canvas id="alienCanvas"></canvas>
+
+            <div class="controls">
+                <button id="blinkBtn">👁️ Blink</button>
+                <button id="colorBtn">Color: Green</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">👽 Alien watching</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('alienCanvas');
+        const ctx = canvas.getContext('2d');
+        const blinkBtn = document.getElementById('blinkBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let tentacles = [];
+        let numTentacles = 6;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let eyeOpen = 1;
+        let targetEyeOpen = 1;
+        let blinkTimer = 0;
+        let isBlinking = false;
+        let glowIntensity = 0.5;
+        let glowPulse = 0;
+        let particles = [];
+        let alienX = 0;
+        let alienY = 0;
+        let headBob = 0;
+        let eyeAngle = 0;
+        let mouthOpen = 0;
+        let antennaAngle = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Green',
+                body: '#2d7d46',
+                glow: '#4a9a5a',
+                eye: '#ffd93d',
+                pupil: '#1a1a1a',
+                tentacle: '#3a8a55',
+                accent: '#6aba8a'
+            },
+            {
+                name: 'Purple',
+                body: '#5a2a8a',
+                glow: '#7a4aaa',
+                eye: '#ffd93d',
+                pupil: '#1a0a2a',
+                tentacle: '#6a3a9a',
+                accent: '#9a6aba'
+            },
+            {
+                name: 'Blue',
+                body: '#2a5a8a',
+                glow: '#4a7aaa',
+                eye: '#ffd93d',
+                pupil: '#1a1a2a',
+                tentacle: '#3a6a9a',
+                accent: '#6a9aba'
+            },
+            {
+                name: 'Red',
+                body: '#8a2a2a',
+                glow: '#aa4a4a',
+                eye: '#ffd93d',
+                pupil: '#2a1a1a',
+                tentacle: '#9a3a3a',
+                accent: '#ba6a6a'
+            },
+            {
+                name: 'Gold',
+                body: '#c4a02a',
+                glow: '#d4b04a',
+                eye: '#ffd93d',
+                pupil: '#1a1a0a',
+                tentacle: '#b4903a',
+                accent: '#e4c04a'
+            },
+            {
+                name: 'White',
+                body: '#aaaaaa',
+                glow: '#cccccc',
+                eye: '#ff6b6b',
+                pupil: '#1a1a1a',
+                tentacle: '#999999',
+                accent: '#dddddd'
+            },
+        ];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd93d';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2 - 0.5;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.glow = 0.3 + Math.random() * 0.4;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 3);
+                grad.addColorStop(0, this.color + '60');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.6;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== TENTACLE CLASS =====
+        class Tentacle {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.segments = 15 + Math.floor(Math.random() * 5);
+                this.length = 50 + Math.random() * 30;
+                this.thickness = 4 + Math.random() * 3;
+                this.angle = (index / total) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                this.baseAngle = this.angle;
+                this.phase = Math.random() * Math.PI * 2;
+                this.speed = 0.01 + Math.random() * 0.02;
+                this.wobble = 0.5 + Math.random() * 0.5;
+                this.amplitude = 0.3 + Math.random() * 0.4;
+                this.colorOffset = Math.random();
+                this.points = [];
+                this.trail = [];
+                this.maxTrail = 5 + Math.floor(Math.random() * 5);
+                this.glowIntensity = 0.3 + Math.random() * 0.4;
+                this.suctionCups = 2 + Math.floor(Math.random() * 3);
+                this.segmentLength = this.length / this.segments;
+                
+                for (let i = 0; i <= this.segments; i++) {
+                    this.points.push({
+                        x: 0,
+                        y: 0,
+                        angle: 0
+                    });
+                }
+            }
+
+            update(time, speed, cx, cy) {
+                this.phase += this.speed * speed * 10;
+                
+                let currentAngle = this.baseAngle + Math.sin(time * 0.005 + this.index) * 0.05;
+                
+                for (let i = 0; i <= this.segments; i++) {
+                    const t = i / this.segments;
+                    const dist = t * this.length;
+                    
+                    const wave = Math.sin(t * 2 + this.phase + time * 0.01) * this.wobble * 0.15;
+                    const wave2 = Math.sin(t * 3 + this.phase * 0.5 + time * 0.015) * this.wobble * 0.1;
+                    const wave3 = Math.sin(t * 4 + this.phase * 0.3 + time * 0.02) * this.wobble * 0.05;
+                    
+                    currentAngle += (wave + wave2 + wave3) * 0.02;
+                    
+                    const x = cx + Math.cos(currentAngle) * dist;
+                    const y = cy + Math.sin(currentAngle) * dist + Math.sin(t * 2 + this.phase) * 2;
+                    
+                    this.points[i].x = x;
+                    this.points[i].y = y;
+                    this.points[i].angle = currentAngle;
+                }
+
+                const tip = this.points[this.points.length - 1];
+                this.trail.push({ x: tip.x, y: tip.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx, time) {
+                const palette = colorPalettes[colorMode];
+                const color = palette.tentacle;
+                const glowColor = palette.glow;
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.05;
+                    const trailSize = this.thickness * (0.1 + (i / this.trail.length) * 0.2);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = glowColor + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Tentacle body
+                ctx.beginPath();
+                ctx.moveTo(this.points[0].x, this.points[0].y);
+                for (let i = 1; i < this.points.length; i++) {
+                    ctx.lineTo(this.points[i].x, this.points[i].y);
+                }
+                
+                const grad = ctx.createLinearGradient(
+                    this.points[0].x, this.points[0].y,
+                    this.points[this.points.length - 1].x, this.points[this.points.length - 1].y
+                );
+                grad.addColorStop(0, color);
+                grad.addColorStop(1, color + '80');
+                
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = this.thickness * 0.5;
+                ctx.lineCap = 'round';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = glowColor + '60';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Suction cups
+                for (let i = 0; i < this.suctionCups; i++) {
+                    const idx = Math.floor(2 + i * (this.points.length - 4) / this.suctionCups);
+                    if (idx < this.points.length) {
+                        const p = this.points[idx];
+                        const t = idx / this.points.length;
+                        const size = 1 + t * 2;
+                        const angle = p.angle + Math.PI / 2;
+                        const offset = 2 + t * 2;
+                        
+                        const sx = p.x + Math.cos(angle) * offset;
+                        const sy = p.y + Math.sin(angle) * offset;
+                        
+                        ctx.beginPath();
+                        ctx.ellipse(sx, sy, size * 0.5, size * 0.7, angle, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = 0.3 + t * 0.2;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = glowColor + '40';
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                // Tip glow
+                const tip = this.points[this.points.length - 1];
+                const tipGrad = ctx.createRadialGradient(tip.x, tip.y, 0, tip.x, tip.y, 5);
+                tipGrad.addColorStop(0, glowColor + '80');
+                tipGrad.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(tip.x, tip.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = tipGrad;
+                ctx.fill();
+            }
+        }
+
+        // ===== DRAW ALIEN =====
+        function drawAlien(ctx, cx, cy, scale) {
+            const palette = colorPalettes[colorMode];
+            const bodyColor = palette.body;
+            const glowColor = palette.glow;
+            const eyeColor = palette.eye;
+            const pupilColor = palette.pupil;
+            const accentColor = palette.accent;
+
+            const s = scale || 1;
+            const headSize = 60 * s;
+            const bodySize = 50 * s;
+
+            ctx.save();
+            ctx.translate(cx, cy + headBob);
+
+            // Body glow
+            const bodyGlow = ctx.createRadialGradient(0, 10 * s, 0, 0, 10 * s, bodySize * 2);
+            bodyGlow.addColorStop(0, glowColor + '30');
+            bodyGlow.addColorStop(0.5, glowColor + '15');
+            bodyGlow.addColorStop(1, glowColor + '00');
+            ctx.beginPath();
+            ctx.arc(0, 10 * s, bodySize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = bodyGlow;
+            ctx.fill();
+
+            // Body
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = glowColor + '60';
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 10 * s, bodySize * 0.9, bodySize * 0.8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body pattern (spots)
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = accentColor;
+            ctx.globalAlpha = 0.2;
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2 + 0.3;
+                const dist = bodySize * 0.4;
+                const sx = Math.cos(angle) * dist;
+                const sy = Math.sin(angle) * dist + 10 * s;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 3 * s + Math.sin(i * 2) * 2 * s, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Head
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = glowColor + '60';
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, -20 * s, headSize * 0.8, headSize * 0.7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Head ridges
+            ctx.fillStyle = accentColor;
+            ctx.globalAlpha = 0.2;
+            for (let i = -2; i <= 2; i++) {
+                const rx = i * 15 * s;
+                const ry = -40 * s + Math.abs(i) * 5 * s;
+                ctx.beginPath();
+                ctx.moveTo(rx - 4 * s, ry);
+                ctx.quadraticCurveTo(rx, ry - 10 * s - Math.abs(i) * 3 * s, rx + 4 * s, ry);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // Antennae
+            ctx.strokeStyle = bodyColor;
+            ctx.lineWidth = 2 * s;
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = glowColor + '60';
+
+            // Left antenna
+            const antAngleL = -0.4 + Math.sin(time * 0.5) * 0.05;
+            ctx.beginPath();
+            ctx.moveTo(-15 * s, -45 * s);
+            ctx.quadraticCurveTo(-30 * s, -55 * s + Math.sin(time * 0.7) * 5, -20 * s, -70 * s + Math.sin(time * 0.5) * 3);
+            ctx.stroke();
+            
+            // Right antenna
+            const antAngleR = 0.4 + Math.cos(time * 0.5) * 0.05;
+            ctx.beginPath();
+            ctx.moveTo(15 * s, -45 * s);
+            ctx.quadraticCurveTo(30 * s, -55 * s + Math.cos(time * 0.7) * 5, 20 * s, -70 * s + Math.cos(time * 0.5) * 3);
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+
+            // Antenna tips
+            ctx.fillStyle = eyeColor;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = eyeColor + '60';
+            ctx.beginPath();
+            ctx.arc(-20 * s + Math.sin(time * 0.5) * 2, -70 * s + Math.sin(time * 0.5) * 3, 4 * s, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(20 * s + Math.cos(time * 0.5) * 2, -70 * s + Math.cos(time * 0.5) * 3, 4 * s, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Eyes
+            const eyeY = -25 * s;
+            const eyeSize = 14 * s * eyeOpen;
+            const eyeSpacing = 20 * s;
+
+            // Eye glow
+            const eyeGlow = ctx.createRadialGradient(-eyeSpacing, eyeY, 0, -eyeSpacing, eyeY, eyeSize * 2);
+            eyeGlow.addColorStop(0, eyeColor + '40');
+            eyeGlow.addColorStop(1, eyeColor + '00');
+            ctx.beginPath();
+            ctx.arc(-eyeSpacing, eyeY, eyeSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = eyeGlow;
+            ctx.fill();
+
+            const eyeGlow2 = ctx.createRadialGradient(eyeSpacing, eyeY, 0, eyeSpacing, eyeY, eyeSize * 2);
+            eyeGlow2.addColorStop(0, eyeColor + '40');
+            eyeGlow2.addColorStop(1, eyeColor + '00');
+            ctx.beginPath();
+            ctx.arc(eyeSpacing, eyeY, eyeSize * 2, 0, Math.PI * 2);
+            ctx.fillStyle = eyeGlow2;
+            ctx.fill();
+
+            // Left eye
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = eyeColor + '60';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(-eyeSpacing, eyeY, eyeSize, eyeSize * 0.9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Left pupil
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = pupilColor;
+            const pupilSize = eyeSize * 0.5;
+            ctx.beginPath();
+            ctx.arc(-eyeSpacing + eyeAngle * 2, eyeY + eyeAngle * 1.5, pupilSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Left eye highlight
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.arc(-eyeSpacing - pupilSize * 0.3, eyeY - pupilSize * 0.3, pupilSize * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            // Right eye
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = eyeColor + '60';
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(eyeSpacing, eyeY, eyeSize, eyeSize * 0.9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right pupil
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = pupilColor;
+            ctx.beginPath();
+            ctx.arc(eyeSpacing + eyeAngle * 2, eyeY + eyeAngle * 1.5, pupilSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right eye highlight
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 0.6;
+            ctx.beginPath();
+            ctx.arc(eyeSpacing - pupilSize * 0.3, eyeY - pupilSize * 0.3, pupilSize * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+
+            ctx.shadowBlur = 0;
+
+            // Mouth
+            const mouthY = -10 * s;
+            const mouthOpenScale = 0.2 + 0.8 * mouthOpen;
+            
+            ctx.beginPath();
+            ctx.arc(0, mouthY + 5 * s * mouthOpenScale, 12 * s, 0.1, Math.PI - 0.1);
+            ctx.strokeStyle = pupilColor;
+            ctx.lineWidth = 1.5 * s;
+            ctx.stroke();
+
+            // Mouth glow (when open)
+            if (mouthOpen > 0.1) {
+                const mouthGlow = ctx.createRadialGradient(0, mouthY + 5 * s * mouthOpenScale, 0, 0, mouthY + 5 * s * mouthOpenScale, 10 * s * mouthOpen);
+                mouthGlow.addColorStop(0, glowColor + '40');
+                mouthGlow.addColorStop(1, glowColor + '00');
+                ctx.beginPath();
+                ctx.arc(0, mouthY + 5 * s * mouthOpenScale, 10 * s * mouthOpen, 0, Math.PI * 2);
+                ctx.fillStyle = mouthGlow;
+                ctx.fill();
+            }
+
+            ctx.restore();
+
+            // Draw tentacles
+            for (const tentacle of tentacles) {
+                tentacle.draw(ctx, time);
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars
+            for (let i = 0; i < 80; i++) {
+                const x = (i * 37 + Math.sin(i * 0.3) * 20) % w;
+                const y = (i * 23 + Math.cos(i * 0.5) * 15) % h;
+                const size = 0.5 + Math.sin(i + time * 0.005) * 0.3;
+                const brightness = 0.05 + Math.sin(i + time * 0.01) * 0.03;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 200, ${brightness})`;
+                ctx.fill();
+            }
+
+            // Nebula glow
+            const nebulaColors = colorPalettes[colorMode];
+            const nebulaGrad = ctx.createRadialGradient(w * 0.7, h * 0.2, 0, w * 0.7, h * 0.2, Math.max(w, h) * 0.3);
+            nebulaGrad.addColorStop(0, nebulaColors.glow + '08');
+            nebulaGrad.addColorStop(1, nebulaColors.glow + '00');
+            ctx.fillStyle = nebulaGrad;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // ===== BLINK =====
+        function blink() {
+            if (isBlinking) return;
+            isBlinking = true;
+            targetEyeOpen = 0;
+            statusText.textContent = '👁️ Blink!';
+            setTimeout(() => {
+                targetEyeOpen = 1;
+                setTimeout(() => {
+                    isBlinking = false;
+                    statusText.textContent = '👽 Alien watching';
+                }, 100);
+            }, 150);
+        }
+
+        // ===== RESET =====
+        function resetAlien() {
+            tentacles = [];
+            particles = [];
+            time = 0;
+            eyeOpen = 1;
+            targetEyeOpen = 1;
+            isBlinking = false;
+            blinkTimer = 0;
+            colorMode = 0;
+            numTentacles = 6;
+            initTentacles();
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '👽 Alien watching';
+            }, 1000);
+        }
+
+        // ===== INIT TENTACLES =====
+        function initTentacles() {
+            tentacles = [];
+            for (let i = 0; i < numTentacles; i++) {
+                tentacles.push(new Tentacle(i, numTentacles));
+            }
+        }
+        initTentacles();
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2 + 20;
+            const scale = Math.min(w, h) / 400;
+            time += 0.01;
+
+            // Blink timer
+            if (!isBlinking) {
+                blinkTimer += 0.01;
+                if (blinkTimer > 3 + Math.random() * 2) {
+                    blink();
+                    blinkTimer = 0;
+                }
+            }
+
+            // Smooth eye open/close
+            eyeOpen += (targetEyeOpen - eyeOpen) * 0.1;
+
+            // Head bob
+            headBob = Math.sin(time * 0.5) * 2;
+
+            // Eye tracking (subtle movement)
+            eyeAngle = Math.sin(time * 0.3) * 2;
+
+            // Mouth open (occasional)
+            mouthOpen = 0.2 + 0.3 * Math.sin(time * 0.2 + 1);
+
+            // Glow pulse
+            glowPulse = 0.5 + 0.5 * Math.sin(time * 0.5);
+            glowIntensity = 0.5 + 0.3 * glowPulse;
+
+            // Update tentacles
+            for (const tentacle of tentacles) {
+                tentacle.update(time, 0.02, cx, cy + 30 * scale);
+            }
+
+            // Spawn glow particles
+            if (Math.random() < 0.02) {
+                const palette = colorPalettes[colorMode];
+                const p = new Particle(
+                    cx + (Math.random() - 0.5) * 60,
+                    cy + (Math.random() - 0.5) * 60,
+                    palette.glow
+                );
+                p.vx = (Math.random() - 0.5) * 1;
+                p.vy = -Math.random() * 0.5 - 0.2;
+                particles.push(p);
+            }
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Draw alien
+            drawAlien(ctx, cx, cy, scale);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `👽 ${colorPalettes[colorMode].name} alien • ${tentacles.length} tentacles`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Blink
+        blinkBtn.addEventListener('click', blink);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '👽 Alien watching';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetAlien);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'b' || e.key === 'B') {
+                blinkBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                blinkBtn.click();
+            }
+        });
+
+        // ===== CANVAS CLICK =====
+        canvas.addEventListener('click', blink);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            blink();
+        }, { passive: false });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '👽 Alien watching';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('👽 Alien Creature loaded!');
+        console.log('💡 B - Blink');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Blink');
+        console.log('💡 Click alien - Blink');
+    </script>
+</body>
+</html>

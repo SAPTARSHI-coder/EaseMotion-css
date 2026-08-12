@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stagger Timeline Visualizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="intro">
+      <p class="eyebrow">Stagger timeline</p>
+      <h1>See delay knobs map to motion</h1>
+      <p class="lede">
+        Drag the delay knobs to change stagger spacing. The timeline and list restagger live
+        so you can learn how delay utilities compose.
+      </p>
+    </header>
+
+    <section class="panel">
+      <div class="knobs" id="knobs" aria-label="Delay knobs">
+        <label class="knob">
+          <span>Base delay</span>
+          <input type="range" id="base-delay" min="0" max="400" step="20" value="80" />
+          <strong id="base-delay-val">80ms</strong>
+        </label>
+        <label class="knob">
+          <span>Step gap</span>
+          <input type="range" id="step-gap" min="40" max="260" step="20" value="120" />
+          <strong id="step-gap-val">120ms</strong>
+        </label>
+        <button type="button" class="replay-btn" id="replay-btn">Replay stagger</button>
+      </div>
+
+      <div class="timeline" id="timeline" aria-label="Stagger timeline">
+        <div class="timeline-track">
+          <span class="marker" style="--t:0">0ms</span>
+          <span class="marker" style="--t:0.25">25%</span>
+          <span class="marker" style="--t:0.5">50%</span>
+          <span class="marker" style="--t:0.75">75%</span>
+          <span class="marker" style="--t:1">end</span>
+          <div class="playhead" id="playhead"></div>
+        </div>
+        <div class="lanes" id="lanes"></div>
+      </div>
+
+      <ul class="preview-list" id="preview-list">
+        <li>Nova card</li>
+        <li>Orbit tip</li>
+        <li>Pulse chip</li>
+        <li>Drift note</li>
+        <li>Signal row</li>
+      </ul>
+
+      <p class="mapping" id="mapping" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const baseInput = document.getElementById('base-delay');
+      const stepInput = document.getElementById('step-gap');
+      const baseVal = document.getElementById('base-delay-val');
+      const stepVal = document.getElementById('step-gap-val');
+      const lanes = document.getElementById('lanes');
+      const list = document.getElementById('preview-list');
+      const mapping = document.getElementById('mapping');
+      const playhead = document.getElementById('playhead');
+      const items = Array.from(list.children);
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let animTimer;
+
+      function nearestDelayClass(ms) {
+        const steps = [0, 75, 100, 150, 200, 300, 500, 700, 1000];
+        let best = steps[0];
+        let dist = Math.abs(ms - best);
+        steps.forEach(function (value) {
+          const d = Math.abs(ms - value);
+          if (d < dist) {
+            dist = d;
+            best = value;
+          }
+        });
+        return best === 0 ? 'delay-0' : 'delay-' + best;
+      }
+
+      function render() {
+        const base = Number(baseInput.value);
+        const step = Number(stepInput.value);
+        baseVal.textContent = base + 'ms';
+        stepVal.textContent = step + 'ms';
+        lanes.innerHTML = '';
+
+        const max = base + step * (items.length - 1) || 1;
+        const classNames = [];
+
+        items.forEach(function (item, index) {
+          const delay = base + step * index;
+          const pct = (delay / (max + 180)) * 100;
+          item.style.setProperty('--delay', delay + 'ms');
+          item.dataset.delay = String(delay);
+
+          const cls = nearestDelayClass(delay);
+          classNames.push(cls);
+
+          const lane = document.createElement('div');
+          lane.className = 'lane';
+          lane.innerHTML =
+            '<span class="lane-label">Item ' + (index + 1) + '</span>' +
+            '<span class="lane-dot" style="left:' + pct + '%"></span>' +
+            '<span class="lane-ms">' + delay + 'ms · ' + cls + '</span>';
+          lanes.appendChild(lane);
+        });
+
+        mapping.textContent =
+          'Mapped classes: ' + classNames.join(', ') +
+          ' (nearest educational mapping from knob values).';
+      }
+
+      function replay() {
+        clearTimeout(animTimer);
+        list.classList.remove('is-playing');
+        void list.offsetWidth;
+        list.classList.add('is-playing');
+
+        playhead.style.transition = 'none';
+        playhead.style.transform = 'scaleX(0)';
+        void playhead.offsetWidth;
+
+        const base = Number(baseInput.value);
+        const step = Number(stepInput.value);
+        const total = base + step * (items.length - 1) + 500;
+
+        if (reduced) {
+          playhead.style.transform = 'scaleX(1)';
+          return;
+        }
+
+        playhead.style.transition = 'transform ' + total + 'ms linear';
+        playhead.style.transform = 'scaleX(1)';
+
+        animTimer = window.setTimeout(function () {
+          list.classList.remove('is-playing');
+        }, total + 40);
+      }
+
+      baseInput.addEventListener('input', function () {
+        render();
+        replay();
+      });
+      stepInput.addEventListener('input', function () {
+        render();
+        replay();
+      });
+      document.getElementById('replay-btn').addEventListener('click', replay);
+
+      render();
+      replay();
+    })();
+  </script>
+</body>
+</html>

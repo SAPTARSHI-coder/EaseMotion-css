@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pendulum Wave</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Pendulum Wave</h1>
+        <p class="subtitle">Multiple pendulums creating wave patterns</p>
+
+        <div class="pendulum-wrapper">
+            <canvas id="pendulumCanvas"></canvas>
+
+            <div class="controls">
+                <button id="countBtn">Count: 15</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Wave in motion</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('pendulumCanvas');
+        const ctx = canvas.getContext('2d');
+        const countBtn = document.getElementById('countBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let pendulums = [];
+        let numPendulums = 15;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isRunning = true;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [5, 8, 10, 12, 15, 18, 20, 24];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (i, total, time) => {
+                    const hue = 200 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (i, total, time) => {
+                    const hue = 20 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (i, total, time) => {
+                    const hue = 250 + (i / total) * 50 + Math.sin(time * 0.02 + i * 0.1) * 15;
+                    return `hsl(${hue}, 80%, ${40 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (i, total, time) => {
+                    const hue = (i / total * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (i, total, time) => {
+                    const val = 40 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== PENDULUM CLASS =====
+        class Pendulum {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.length = 120 + (index / total) * 80;
+                this.angle = 0.3 + (index / total) * 0.1;
+                this.velocity = 0;
+                this.gravity = 0.3 + (index / total) * 0.05;
+                this.damping = 0.999;
+                this.phase = (index / total) * Math.PI * 2;
+                this.colorOffset = index / total;
+                this.trail = [];
+                this.maxTrail = 30 + Math.floor(Math.random() * 20);
+                this.swingSpeed = 0.98 + (index / total) * 0.02;
+                this.angleOffset = (index / total) * 0.5;
+            }
+
+            update(time, speed) {
+                // Wave pattern physics
+                const waveForce = Math.sin(time * 0.5 + this.phase) * 0.02;
+                const gravityForce = -this.gravity * Math.sin(this.angle);
+                const dampingForce = -this.velocity * 0.005;
+                
+                this.velocity += (gravityForce + waveForce) * speed * 20;
+                this.velocity *= this.damping;
+                this.angle += this.velocity * speed * 10;
+
+                // Limit angle
+                this.angle = Math.max(-1.2, Math.min(1.2, this.angle));
+
+                // Trail
+                const x = this.getX();
+                const y = this.getY();
+                this.trail.push({ x, y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.98;
+                }
+            }
+
+            getX() {
+                const cx = canvas.width / 2;
+                const pivotY = canvas.height * 0.15;
+                return cx + (this.index - this.total / 2) * 14 + Math.sin(this.angle) * this.length;
+            }
+
+            getY() {
+                const pivotY = canvas.height * 0.15;
+                return pivotY + Math.cos(this.angle) * this.length;
+            }
+
+            getPivotX() {
+                const cx = canvas.width / 2;
+                return cx + (this.index - this.total / 2) * 14;
+            }
+
+            getPivotY() {
+                return canvas.height * 0.15;
+            }
+
+            draw(ctx, time) {
+                const cx = this.getPivotX();
+                const cy = this.getPivotY();
+                const x = this.getX();
+                const y = this.getY();
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.index, this.total, time);
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.15;
+                    const trailSize = 2 + (i / this.trail.length) * 3;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha * 0.5;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = 30 + Math.abs(this.angle) * 20;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                grad.addColorStop(0, color + '50');
+                grad.addColorStop(0.5, color + '20');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // String
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = 0.3;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                // Bob
+                const bobSize = 6 + (1 - this.index / this.total) * 4;
+                const grad2 = ctx.createRadialGradient(
+                    x - bobSize * 0.3,
+                    y - bobSize * 0.3,
+                    0,
+                    x,
+                    y,
+                    bobSize
+                );
+                grad2.addColorStop(0, color);
+                grad2.addColorStop(0.7, color);
+                grad2.addColorStop(1, color + '80');
+                ctx.beginPath();
+                ctx.arc(x, y, bobSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(x - bobSize * 0.2, y - bobSize * 0.2, bobSize * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // Pivot point
+                ctx.beginPath();
+                ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.globalAlpha = 0.5;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            getEndPosition() {
+                return { x: this.getX(), y: this.getY() };
+            }
+        }
+
+        // ===== INIT PENDULUMS =====
+        function initPendulums(count) {
+            numPendulums = count;
+            pendulums = [];
+            for (let i = 0; i < count; i++) {
+                const p = new Pendulum(i, count);
+                p.angle = 0.3 + (i / count) * 0.2;
+                p.velocity = 0;
+                pendulums.push(p);
+            }
+        }
+        initPendulums(numPendulums);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+
+            // Support bar
+            const barY = h * 0.15;
+            const barX1 = w * 0.05;
+            const barX2 = w * 0.95;
+            ctx.beginPath();
+            ctx.moveTo(barX1, barY);
+            ctx.lineTo(barX2, barY);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Support brackets
+            for (let i = 0; i < 3; i++) {
+                const x = barX1 + (barX2 - barX1) * (i / 2);
+                ctx.beginPath();
+                ctx.moveTo(x, barY - 10);
+                ctx.lineTo(x, barY + 5);
+                ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Update pendulums
+            for (const p of pendulums) {
+                p.update(time, speed);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw connecting lines between pendulum bobs
+            ctx.globalAlpha = 0.05;
+            for (let i = 0; i < pendulums.length - 1; i++) {
+                const p1 = pendulums[i];
+                const p2 = pendulums[i + 1];
+                const pos1 = p1.getEndPosition();
+                const pos2 = p2.getEndPosition();
+                ctx.beginPath();
+                ctx.moveTo(pos1.x, pos1.y);
+                ctx.lineTo(pos2.x, pos2.y);
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(i / pendulums.length, pendulums.length, time);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = 0.1;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            // Draw pendulums
+            for (const p of pendulums) {
+                p.draw(ctx, time);
+            }
+
+            // Wave pattern indicator
+            const waveY = h * 0.92;
+            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+            ctx.fillRect(0, waveY, w, 2);
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${pendulums.length} pendulums • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numPendulums);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Count: ${newCount}`;
+            initPendulums(newCount);
+            statusText.textContent = `📐 ${newCount} pendulums`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${newCount} pendulums • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${numPendulums} pendulums • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${numPendulums} pendulums • ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            initPendulums(numPendulums);
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${numPendulums} pendulums • ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                isRunning = !isRunning;
+                statusText.textContent = isRunning ? '▶️ Running' : '⏸️ Paused';
+                setTimeout(() => {
+                    statusText.textContent = `🌀 ${numPendulums} pendulums • ${colorModes[colorMode].name}`;
+                }, 1000);
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initPendulums(numPendulums);
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Count: ${numPendulums}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🌀 ${numPendulums} pendulums • ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Pendulum Wave loaded!');
+        console.log('💡 C - Change count');
+        console.log('💡 S - Change speed');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Pause/Resume');
+    </script>
+</body>
+</html>

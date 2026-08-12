@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Newton's Cradle</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🌀 Newton's Cradle</h1>
+        <p class="subtitle">Classic physics toy with clicking balls</p>
+
+        <div class="cradle-wrapper">
+            <canvas id="cradleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="swingBtn">🎯 Swing</button>
+                <button id="countBtn">Balls: 5</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Click to swing</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('cradleCanvas');
+        const ctx = canvas.getContext('2d');
+        const swingBtn = document.getElementById('swingBtn');
+        const countBtn = document.getElementById('countBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let balls = [];
+        let numBalls = 5;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isSwining = false;
+        let swingForce = 0;
+        let particles = [];
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Rainbow',
+                fn: (i, total) => {
+                    const hue = (i / total * 360 + time * 20) % 360;
+                    return `hsl(${hue}, 90%, 60%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (i, total) => {
+                    const hue = 200 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (i, total) => {
+                    const hue = 20 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(${hue}, 80%, ${50 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (i, total) => {
+                    const hue = 250 + (i / total) * 50 + Math.sin(time * 0.02 + i * 0.1) * 15;
+                    return `hsl(${hue}, 80%, ${40 + (i / total) * 30}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (i, total) => {
+                    const hue = (i / total * 360 + time * 30) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (i, total) => {
+                    const hue = (i / total * 360 + time * 15) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (i, total) => {
+                    const val = 40 + (i / total) * 40 + Math.sin(time * 0.02 + i * 0.1) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== COUNT OPTIONS =====
+        const countOptions = [3, 4, 5, 6, 7, 8];
+
+        // ===== PARTICLE CLASS =====
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4 - 2;
+                this.size = 1 + Math.random() * 3;
+                this.life = 1;
+                this.maxLife = 20 + Math.random() * 30;
+                this.age = 0;
+                this.color = color || `hsl(${Math.random() * 360}, 80%, 60%)`;
+                this.gravity = 0.05 + Math.random() * 0.05;
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.98;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.995;
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.8;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== BALL CLASS =====
+        class Ball {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.radius = 18;
+                this.angle = 0;
+                this.velocity = 0;
+                this.damping = 0.9995;
+                this.gravity = 0.15;
+                this.restAngle = 0;
+                this.pivotX = 0;
+                this.pivotY = 0;
+                this.stringLength = 150;
+                this.color = '';
+                this.trail = [];
+                this.maxTrail = 10;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.phase = Math.random() * Math.PI * 2;
+                
+                this.updateColor();
+                this.setPosition();
+            }
+
+            updateColor() {
+                const colorFn = colorPalettes[colorMode].fn;
+                this.color = colorFn(this.index, this.total);
+            }
+
+            setPosition() {
+                const w = canvas.width;
+                const h = canvas.height;
+                const spacing = this.radius * 2.2;
+                const totalWidth = (this.total - 1) * spacing;
+                const startX = (w - totalWidth) / 2;
+                
+                this.pivotX = startX + this.index * spacing;
+                this.pivotY = h * 0.2;
+                this.restAngle = 0;
+            }
+
+            update(time) {
+                // Physics
+                const acceleration = -this.gravity * Math.sin(this.angle);
+                this.velocity += acceleration;
+                this.velocity *= this.damping;
+                this.angle += this.velocity;
+
+                // Limit angle
+                this.angle = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, this.angle));
+
+                // Trail
+                const x = this.getX();
+                const y = this.getY();
+                this.trail.push({ x, y, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+
+                this.phase += 0.02;
+            }
+
+            getX() {
+                return this.pivotX + Math.sin(this.angle) * this.stringLength;
+            }
+
+            getY() {
+                return this.pivotY + Math.cos(this.angle) * this.stringLength;
+            }
+
+            draw(ctx) {
+                const x = this.getX();
+                const y = this.getY();
+
+                // String
+                ctx.beginPath();
+                ctx.moveTo(this.pivotX, this.pivotY);
+                ctx.lineTo(x, y);
+                ctx.strokeStyle = 'rgba(200, 200, 200, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = (i / this.trail.length) * 0.1;
+                    const size = this.radius * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = this.radius * 2.5 * this.glowIntensity;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, glowSize);
+                grad.addColorStop(0, this.color + '40');
+                grad.addColorStop(0.5, this.color + '15');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Ball body
+                const grad2 = ctx.createRadialGradient(
+                    x - this.radius * 0.2,
+                    y - this.radius * 0.3,
+                    0,
+                    x,
+                    y,
+                    this.radius
+                );
+                grad2.addColorStop(0, this.color);
+                grad2.addColorStop(0.5, this.color);
+                grad2.addColorStop(1, this.color + '80');
+                ctx.beginPath();
+                ctx.arc(x, y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.color + '60';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(x - this.radius * 0.2, y - this.radius * 0.3, this.radius * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // Secondary highlight
+                ctx.beginPath();
+                ctx.arc(x - this.radius * 0.15, y - this.radius * 0.45, this.radius * 0.12, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.fill();
+
+                // Pivot point
+                ctx.beginPath();
+                ctx.arc(this.pivotX, this.pivotY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(200, 200, 200, 0.2)';
+                ctx.fill();
+            }
+
+            getAngle() {
+                return this.angle;
+            }
+
+            setAngle(angle) {
+                this.angle = angle;
+            }
+
+            getVelocity() {
+                return this.velocity;
+            }
+
+            setVelocity(velocity) {
+                this.velocity = velocity;
+            }
+
+            getRestAngle() {
+                return this.restAngle;
+            }
+        }
+
+        // ===== INIT CRADLE =====
+        function initCradle(count) {
+            numBalls = count;
+            balls = [];
+            for (let i = 0; i < count; i++) {
+                const ball = new Ball(i, count);
+                ball.setPosition();
+                ball.updateColor();
+                balls.push(ball);
+            }
+            isSwining = false;
+            particles = [];
+        }
+        initCradle(numBalls);
+
+        // ===== SWING =====
+        function swingCradle() {
+            if (isSwining) return;
+            
+            // Reset all balls to rest
+            for (const ball of balls) {
+                ball.angle = 0;
+                ball.velocity = 0;
+            }
+
+            // Swing the first ball
+            if (balls.length > 0) {
+                const firstBall = balls[0];
+                firstBall.angle = -0.6;
+                firstBall.velocity = 0;
+                isSwining = true;
+                
+                // Create particles
+                const colorFn = colorPalettes[colorMode].fn;
+                for (let i = 0; i < 15; i++) {
+                    const p = new Particle(
+                        firstBall.getX() + (Math.random() - 0.5) * 10,
+                        firstBall.getY() + (Math.random() - 0.5) * 10,
+                        colorFn(0)
+                    );
+                    p.vx += (Math.random() - 0.5) * 3;
+                    p.vy += (Math.random() - 0.5) * 3 - 1;
+                    particles.push(p);
+                }
+                
+                statusText.textContent = '🎯 Swinging!';
+                setTimeout(() => {
+                    isSwining = false;
+                    statusText.textContent = '🌀 Click to swing';
+                }, 3000);
+            }
+        }
+
+        // ===== RESET =====
+        function resetCradle() {
+            for (const ball of balls) {
+                ball.angle = 0;
+                ball.velocity = 0;
+            }
+            particles = [];
+            isSwining = false;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to swing';
+            }, 1000);
+        }
+
+        // ===== PHYSICS UPDATE =====
+        function updatePhysics() {
+            // Update each ball
+            for (const ball of balls) {
+                ball.update(time);
+            }
+
+            // Collision detection between adjacent balls
+            for (let i = 0; i < balls.length - 1; i++) {
+                const b1 = balls[i];
+                const b2 = balls[i + 1];
+                
+                const angle1 = b1.getAngle();
+                const angle2 = b2.getAngle();
+                
+                // Check if balls are close enough to collide (nearly vertical)
+                if (Math.abs(angle1 - angle2) < 0.01) {
+                    // Elastic collision
+                    const v1 = b1.getVelocity();
+                    const v2 = b2.getVelocity();
+                    
+                    // Transfer momentum
+                    if (v1 > v2) {
+                        b1.setVelocity(v2 * 0.3);
+                        b2.setVelocity(v1 * 0.85);
+                    }
+                }
+            }
+
+            // Collision with walls (first and last ball)
+            if (balls.length > 0) {
+                const first = balls[0];
+                const last = balls[balls.length - 1];
+                
+                // First ball
+                if (first.getAngle() < -0.8) {
+                    first.setVelocity(first.getVelocity() * -0.3);
+                }
+                
+                // Last ball
+                if (last.getAngle() > 0.8) {
+                    last.setVelocity(last.getVelocity() * -0.3);
+                }
+            }
+
+            // Energy transfer - simulate the classic cradle effect
+            for (let i = 0; i < balls.length - 1; i++) {
+                const b1 = balls[i];
+                const b2 = balls[i + 1];
+                
+                const angle1 = b1.getAngle();
+                const angle2 = b2.getAngle();
+                const v1 = b1.getVelocity();
+                const v2 = b2.getVelocity();
+                
+                // If balls are nearly touching and one is moving
+                if (Math.abs(angle1 - angle2) < 0.05) {
+                    if (v1 > 0.5 && v2 < 0.1) {
+                        // Transfer energy from left to right
+                        b1.setVelocity(v1 * 0.2);
+                        b2.setVelocity(v1 * 0.7);
+                    } else if (v2 < -0.5 && v1 > -0.1) {
+                        // Transfer energy from right to left
+                        b2.setVelocity(v2 * 0.2);
+                        b1.setVelocity(v2 * 0.7);
+                    }
+                }
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Support frame
+            const frameY = h * 0.2 - 10;
+            const frameX1 = w * 0.05;
+            const frameX2 = w * 0.95;
+            
+            ctx.strokeStyle = 'rgba(200, 200, 200, 0.1)';
+            ctx.lineWidth = 2;
+            
+            // Top bar
+            ctx.beginPath();
+            ctx.moveTo(frameX1, frameY);
+            ctx.lineTo(frameX2, frameY);
+            ctx.stroke();
+
+            // Side supports
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(frameX1, frameY);
+            ctx.lineTo(frameX1 + 10, frameY + 30);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(frameX2, frameY);
+            ctx.lineTo(frameX2 - 10, frameY + 30);
+            ctx.stroke();
+
+            // Base
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(frameX1 + 10, frameY + 30);
+            ctx.lineTo(frameX2 - 10, frameY + 30);
+            ctx.stroke();
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                if (p.isDead()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // Update physics
+            updatePhysics();
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw balls
+            for (const ball of balls) {
+                ball.draw(ctx);
+            }
+
+            // Draw particles
+            for (const p of particles) {
+                p.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const moving = balls.filter(b => Math.abs(b.getVelocity()) > 0.1).length;
+                if (moving > 0) {
+                    statusText.textContent = `🌀 ${moving} balls moving`;
+                } else if (!isSwining) {
+                    statusText.textContent = '🌀 Click to swing';
+                }
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Canvas click
+        canvas.addEventListener('click', () => {
+            swingCradle();
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            swingCradle();
+        }, { passive: false });
+
+        // ===== CONTROLS =====
+
+        // Swing
+        swingBtn.addEventListener('click', swingCradle);
+
+        // Count
+        countBtn.addEventListener('click', () => {
+            const currentIndex = countOptions.indexOf(numBalls);
+            const nextIndex = (currentIndex + 1) % countOptions.length;
+            const newCount = countOptions[nextIndex];
+            countBtn.textContent = `Balls: ${newCount}`;
+            initCradle(newCount);
+            statusText.textContent = `📐 ${newCount} balls`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to swing';
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            for (const ball of balls) {
+                ball.updateColor();
+            }
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '🌀 Click to swing';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetCradle);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                swingBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                countBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                swingBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            for (const ball of balls) {
+                ball.setPosition();
+            }
+        });
+
+        // ===== INIT =====
+        countBtn.textContent = `Balls: ${numBalls}`;
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '🌀 Click to swing';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Newton\'s Cradle loaded!');
+        console.log('💡 S - Swing');
+        console.log('💡 C - Change count');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Swing');
+        console.log('💡 Click canvas - Swing');
+    </script>
+</body>
+</html>

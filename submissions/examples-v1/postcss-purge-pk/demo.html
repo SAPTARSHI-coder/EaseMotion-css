@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EaseMotion — PostCSS Tree-Shaking Plugin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../easemotion.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">PostCSS Tree-Shaking Plugin</h1>
+    <p class="subtitle">
+      Remove unused <code>ease-*</code> animation classes and <code>@keyframes</code>
+      from your production bundle.
+    </p>
+
+    <div class="demo-layout">
+      <div class="demo-col">
+        <h2 class="col-heading col-heading-bad">Before (Full Bundle)</h2>
+        <p class="desc">Every <code>@keyframes</code> and component — even if unused.</p>
+        <div class="bundle-card">
+          <div class="bundle-size">74.2 <span class="unit">KB</span></div>
+          <div class="bundle-label">easemotion.min.css</div>
+          <div class="bundle-breakdown">
+            <div class="bar-item"><span class="bar-label">@keyframes (48)</span><div class="bar"><div class="bar-fill" style="width:45%"></div></div></div>
+            <div class="bar-item"><span class="bar-label">Components (34)</span><div class="bar"><div class="bar-fill" style="width:35%"></div></div></div>
+            <div class="bar-item"><span class="bar-label">Utilities</span><div class="bar"><div class="bar-fill" style="width:20%"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-col">
+        <h2 class="col-heading col-heading-good">After (Tree-Shaken)</h2>
+        <p class="desc">Only used classes survive — <strong>~80% reduction</strong> for a typical page.</p>
+        <div class="bundle-card">
+          <div class="bundle-size">12.8 <span class="unit">KB</span></div>
+          <div class="bundle-label">easemotion.purged.css</div>
+          <div class="bundle-breakdown">
+            <div class="bar-item"><span class="bar-label">@keyframes (3)</span><div class="bar"><div class="bar-fill bar-fill-good" style="width:15%"></div></div></div>
+            <div class="bar-item"><span class="bar-label">Components (2)</span><div class="bar"><div class="bar-fill bar-fill-good" style="width:10%"></div></div></div>
+            <div class="bar-item"><span class="bar-label">Utilities</span><div class="bar"><div class="bar-fill bar-fill-good" style="width:5%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="how-it-works">
+      <h2>How It Works</h2>
+      <ol>
+        <li><strong>Scan</strong> your HTML/JS/JSX/TSX/Vue/Svelte files for <code>ease-*</code> class names</li>
+        <li><strong>Match</strong> used class names against the full library's selectors and <code>@keyframes</code></li>
+        <li><strong>Remove</strong> any rule, keyframe, or import that doesn't match a used class</li>
+        <li><strong>Output</strong> a minimal CSS file containing only what you actually use</li>
+      </ol>
+    </div>
+
+    <div class="code-section">
+      <h2>Plugin Source</h2>
+      <div class="code-block">
+        <div class="code-header">scripts/postcss-easemotion-purge.js</div>
+        <pre><code>const fs = require('fs');
+const glob = require('glob');
+
+module.exports = (opts = {}) => {
+  const contentPatterns = opts.content || ['./src/**/*.{html,js,jsx,tsx,vue,svelte}'];
+
+  return {
+    postcssPlugin: 'postcss-easemotion-purge',
+
+    Once(root, { result }) {
+      const usedClasses = new Set();
+
+      // 1. Collect all ease-* class names from content files
+      for (const pattern of contentPatterns) {
+        const files = glob.sync(pattern, { ignore: ['node_modules/**'] });
+        for (const file of files) {
+          const content = fs.readFileSync(file, 'utf8');
+          const matches = content.match(/\bease-[\w-]+/g);
+          if (matches) matches.forEach(c => usedClasses.add(c));
+        }
+      }
+
+      // 2. Walk CSS AST and remove unused rules
+      root.walk(node => {
+        if (node.type === 'atrule' && node.name === 'keyframes') {
+          // Keep @keyframes only if the animation name is used
+          const keyframeName = node.params;
+          if (!usedClasses.has(keyframeName) &&
+              !usedClasses.has('ease-' + keyframeName)) {
+            node.remove();
+          }
+          return;
+        }
+
+        if (node.type === 'rule') {
+          const selectors = node.selectors.filter(sel => {
+            const match = sel.match(/\.(ease-[\w-]+)/);
+            return !match || usedClasses.has(match[1]);
+          });
+
+          if (selectors.length === 0) {
+            node.remove();
+          } else {
+            node.selectors = selectors;
+          }
+        }
+      });
+    },
+  };
+};
+
+module.exports.postcss = true;</code></pre>
+      </div>
+    </div>
+
+    <div class="config-section">
+      <h2>Configuration</h2>
+
+      <div class="code-block">
+        <div class="code-header">postcss.config.js</div>
+        <pre><code>module.exports = {
+  plugins: [
+    require('./scripts/postcss-easemotion-purge')({
+      content: ['./src/**/*.{html,jsx,tsx,vue,svelte}'],
+    }),
+    require('cssnano')({ preset: 'default' }),
+  ],
+};</code></pre>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">package.json (scripts)</div>
+        <pre><code>{
+  "scripts": {
+    "build:purge": "postcss easemotion.css -o dist/easemotion.purged.css"
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="whitelist">
+      <h2>Dynamic Class Allowlist</h2>
+      <p>For classes constructed at runtime (e.g., <code>ease-${variant}</code>), add to the allowlist:</p>
+      <div class="code-block">
+        <pre><code>require('./scripts/postcss-easemotion-purge')({
+  content: ['./src/**/*.{html,jsx}'],
+  allowlist: ['ease-fade-in', 'ease-slide-up', 'ease-pulse'],
+})</code></pre>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animated Blob</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="scene">
+
+  <!-- Ambient floating particles -->
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+
+  <!-- Blob wrapper (handles positional drift) -->
+  <div class="blob-wrapper">
+
+    <!-- Glow layer: blurred duplicate behind the main blob -->
+    <div class="blob-glow">
+      <svg class="blob-svg" id="blobGlow" viewBox="-200 -200 400 400"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop class="glow-stop-a" offset="0%"   stop-color="#5B8DEF"/>
+            <stop class="glow-stop-b" offset="100%" stop-color="#C44B8A"/>
+          </linearGradient>
+        </defs>
+        <path id="glowPath" fill="url(#glowGrad)" d=""/>
+      </svg>
+    </div>
+
+    <!-- Main blob -->
+    <div class="blob-main">
+      <svg class="blob-svg" id="blobMain" viewBox="-200 -200 400 400"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop class="blob-gradient-stop-a" offset="0%"   stop-color="#5B8DEF"/>
+            <stop class="blob-gradient-stop-b" offset="100%" stop-color="#C44B8A"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Main blob fill -->
+        <path id="mainPath" fill="url(#blobGrad)" d=""/>
+
+        <!-- Ghost inner contour (decorative trace line) -->
+        <path class="blob-ghost-path" id="ghostPath" d=""/>
+
+        <!-- Inner highlight ellipse (breathe/pulse) -->
+        <ellipse class="blob-highlight"
+          cx="-35" cy="-20" rx="52" ry="32"
+          fill="rgba(255,255,255,0.18)"
+          style="filter: url(#highlightBlur)"/>
+
+        <defs>
+          <filter id="highlightBlur">
+            <feGaussianBlur stdDeviation="8"/>
+          </filter>
+        </defs>
+      </svg>
+    </div>
+
+  </div><!-- /.blob-wrapper -->
+</div><!-- /.scene -->
+
+<script>
+  // ─────────────────────────────────────────────
+  //  BLOB MORPH ENGINE
+  //  Organic blob via sinusoidal Bezier control points.
+  //  Each of N anchor points oscillates independently
+  //  at a unique frequency + phase offset.
+  // ─────────────────────────────────────────────
+
+  const TAU = Math.PI * 2;
+
+  // Config — mirrors the analyzed video
+  const NUM_POINTS    = 8;       // control points around the blob
+  const BASE_RADIUS   = 110;     // base circle radius (viewBox units)
+  const AMPLITUDE_MIN = 28;      // min oscillation per point
+  const AMPLITUDE_MAX = 62;      // max oscillation per point
+  const SPEED_MIN     = 0.0018;  // slowest oscillation (rad/ms)
+  const SPEED_MAX     = 0.0038;  // fastest oscillation
+
+  // Per-point oscillation parameters (random but seeded for reproducibility)
+  function seededRand(seed) {
+    let s = seed;
+    return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+  }
+
+  const rand = seededRand(42);
+
+  const points = Array.from({ length: NUM_POINTS }, (_, i) => ({
+    angle:     (TAU / NUM_POINTS) * i,
+    ampR:      AMPLITUDE_MIN + rand() * (AMPLITUDE_MAX - AMPLITUDE_MIN),
+    speedR:    SPEED_MIN     + rand() * (SPEED_MAX - SPEED_MIN),
+    phaseR:    rand() * TAU,
+    ampA:      0.06 + rand() * 0.10,   // angular wobble amplitude (rad)
+    speedA:    SPEED_MIN + rand() * (SPEED_MAX - SPEED_MIN),
+    phaseA:    rand() * TAU,
+  }));
+
+  // Ghost contour — a smaller, inner squiggle path (offset points)
+  const ghostPoints = Array.from({ length: NUM_POINTS }, (_, i) => ({
+    angle:  (TAU / NUM_POINTS) * i + 0.3,
+    ampR:   18 + rand() * 22,
+    speedR: SPEED_MIN + rand() * (SPEED_MAX - SPEED_MIN),
+    phaseR: rand() * TAU,
+    ampA:   0.04 + rand() * 0.08,
+    speedA: SPEED_MIN + rand() * (SPEED_MAX - SPEED_MIN),
+    phaseA: rand() * TAU,
+    scale:  0.48,   // ghost is ~48% the size of main blob
+  }));
+
+  // Convert polar list → smooth closed cubic-bezier SVG path
+  // Uses Catmull-Rom → Bezier conversion for smooth interpolation
+  function buildPath(polars, t) {
+    const pts = polars.map(p => {
+      const r = (p.scale ?? 1) * BASE_RADIUS
+              + p.ampR * Math.sin(p.speedR * t + p.phaseR);
+      const a = p.angle + p.ampA * Math.cos(p.speedA * t + p.phaseA);
+      return { x: r * Math.cos(a), y: r * Math.sin(a) };
+    });
+
+    const n = pts.length;
+    let d = '';
+
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[(i - 1 + n) % n];
+      const p1 = pts[i];
+      const p2 = pts[(i + 1) % n];
+      const p3 = pts[(i + 2) % n];
+
+      // Catmull-Rom tangents → Bezier handles (alpha = 0.5)
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      if (i === 0) {
+        d += `M ${p1.x.toFixed(2)},${p1.y.toFixed(2)} `;
+      }
+      d += `C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} `
+         +   `${cp2x.toFixed(2)},${cp2y.toFixed(2)} `
+         +   `${p2.x.toFixed(2)},${p2.y.toFixed(2)} `;
+    }
+    d += 'Z';
+    return d;
+  }
+
+  // ── DOM refs ──
+  const mainPath  = document.getElementById('mainPath');
+  const glowPath  = document.getElementById('glowPath');
+  const ghostPath = document.getElementById('ghostPath');
+
+  // ── Scale-in: blob starts tiny, grows to full over 900ms ──
+  let startTime = null;
+  const SCALE_DUR = 900; // ms
+
+  function tick(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+
+    // Build blob path
+    const pathD = buildPath(points, elapsed);
+    mainPath.setAttribute('d', pathD);
+    glowPath.setAttribute('d', pathD);
+
+    // Ghost inner path
+    ghostPath.setAttribute('d', buildPath(ghostPoints, elapsed));
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+
+
+  // ─────────────────────────────────────────────
+  //  PARTICLE TWEAKS — inject CSS custom property
+  //  drift values per particle for variety
+  // ─────────────────────────────────────────────
+  document.querySelectorAll('.particle').forEach((el, i) => {
+    const dxA = (Math.random() * 28 - 14).toFixed(1) + 'px';
+    const dyA = (Math.random() * 28 - 14).toFixed(1) + 'px';
+    const dxB = (Math.random() * 28 - 14).toFixed(1) + 'px';
+    const dyB = (Math.random() * 28 - 14).toFixed(1) + 'px';
+    el.style.setProperty('--dx',  dxA);
+    el.style.setProperty('--dy',  dyA);
+    el.style.setProperty('--dx2', dxB);
+    el.style.setProperty('--dy2', dyB);
+  });
+</script>
+
+</body>
+</html>
