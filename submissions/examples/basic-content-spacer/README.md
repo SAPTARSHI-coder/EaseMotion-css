@@ -1,16 +1,9 @@
-# Basic Content Spacer
+# Basic Content Spacer (#75281)
 
-A tiny CSS-only utility for consistent vertical spacing between grouped
-content sections — text blocks, cards, form groups, settings sections.
+A lightweight, reusable CSS-only content spacer utility designed to establish consistent vertical rhythm between grouped UI sections.
 
-## Usage
-```html
-<div class="basic-content-spacer"></div>
-```
-
-## Variants
-- `.basic-content-spacer` — default 24px gap
-- `.basic-content-spacer-sm` — 12px gap, for tighter grouping
-- `.basic-content-spacer-lg` — 40px gap, for section breaks
-
-Closes #75281
+## Features
+- **Aesthetic:** Clean, unopinionated vertical layout spacing for text blocks, cards, and form groups.
+- **Pure CSS:** Zero JavaScript dependencies; utilizes standard CSS spacing variables and flexbox rhythm.
+- **Performance:** Ultra-lightweight layout utility with zero performance overhead.
+- **Accessibility:** Fully responsive and adaptable to user font-size settings via relative units.
