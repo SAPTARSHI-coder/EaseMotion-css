@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nested Reveal · Layers Peel Back to Reveal</title>
+    <meta name="description" content="Interactive nested reveal where layers peel back to reveal hidden content beneath.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🧅 NESTED REVEAL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="nestedCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="info-text">
+                <span id="statusText">Click layers to peel them back</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🧅 NESTED REVEAL</span>
+            <small>layers · peel · reveal</small>
+        </div>
+        <div class="hint">
+            <span>🔄 click layers to peel them back and reveal what's underneath</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('nestedCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusText = document.getElementById('statusText');
+
+            let isAnimating = true;
+            let time = 0;
+            let layers = [];
+            let peeledLayers = [];
+            let isPeeling = false;
+
+            // ---- Generate Image for Layers ----
+            function generateLayerImage(width, height, depth) {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = width;
+                tempCanvas.height = height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Different content at each depth
+                const hue = (depth * 60 + 180) % 360;
+                const grad = tempCtx.createRadialGradient(
+                    width/2, height/2, 0,
+                    width/2, height/2, Math.min(width, height) / 2
+                );
+                grad.addColorStop(0, `hsl(${hue}, 80%, 70%)`);
+                grad.addColorStop(0.5, `hsl(${(hue + 30) % 360}, 70%, 55%)`);
+                grad.addColorStop(1, `hsl(${(hue + 60) % 360}, 60%, 40%)`);
+                tempCtx.fillStyle = grad;
+                tempCtx.fillRect(0, 0, width, height);
+                
+                // Add shapes
+                tempCtx.fillStyle = 'rgba(255,255,255,0.15)';
+                for (let i = 0; i < 3; i++) {
+                    const x = 20 + Math.random() * (width - 40);
+                    const y = 20 + Math.random() * (height - 40);
+                    const size = 20 + Math.random() * 40;
+                    tempCtx.beginPath();
+                    tempCtx.arc(x, y, size, 0, Math.PI * 2);
+                    tempCtx.fill();
+                }
+                
+                // Text indicating depth
+                tempCtx.fillStyle = 'rgba(255,255,255,0.3)';
+                tempCtx.font = `${Math.min(width, height) * 0.3}px monospace`;
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText(`Layer ${depth + 1}`, width/2, height/2);
+                
+                return tempCtx.getImageData(0, 0, width, height);
+            }
+
+            // ---- Layer Class ----
+            class Layer {
+                constructor(x, y, width, height, depth, totalLayers) {
+                    this.x = x;
+                    this.y = y;
+                    this.width = width;
+                    this.height = height;
+                    this.depth = depth;
+                    this.totalLayers = totalLayers;
+                    
+                    // Image content
+                    this.imageData = generateLayerImage(width, height, depth);
+                    
+                    // Peel state
+                    this.peeled = false;
+                    this.peelProgress = 0;
+                    this.peelTarget = 0;
+                    this.peelAngle = 0;
+                    this.targetAngle = 0;
+                    
+                    // Random offset for organic feel
+                    this.offsetX = (Math.random() - 0.5) * 10;
+                    this.offsetY = (Math.random() - 0.5) * 10;
+                    this.rotation = (Math.random() - 0.5) * 0.05;
+                    
+                    // Scale for nested effect
+                    const scale = 1 - (depth / totalLayers) * 0.25;
+                    this.scale = scale;
+                    this.targetScale = scale;
+                }
+
+                peel() {
+                    if (this.peeled) return;
+                    this.peeled = true;
+                    this.peelTarget = 1;
+                    this.targetAngle = (Math.random() - 0.5) * 0.5;
+                }
+
+                update() {
+                    const speed = 0.04;
+                    if (this.peelProgress < this.peelTarget) {
+                        this.peelProgress += speed;
+                        if (this.peelProgress > this.peelTarget) {
+                            this.peelProgress = this.peelTarget;
+                        }
+                    }
+                    
+                    // Smooth angle
+                    this.peelAngle += (this.targetAngle - this.peelAngle) * 0.05;
+                }
+
+                draw(ctx) {
+                    const cx = this.x + this.width / 2;
+                    const cy = this.y + this.height / 2;
+                    const progress = this.peelProgress;
+                    
+                    // Calculate scale for peel effect
+                    const scaleX = 1 - progress * 0.1;
+                    const scaleY = 1 - progress * 0.05;
+                    const translateX = progress * 20;
+                    const translateY = -progress * 15;
+                    
+                    ctx.save();
+                    ctx.translate(cx + this.offsetX, cy + this.offsetY);
+                    ctx.rotate(this.rotation + this.peelAngle * progress * 0.3);
+                    ctx.scale(this.scale * scaleX, this.scale * scaleY);
+                    
+                    // Shadow for depth
+                    if (progress < 0.9) {
+                        ctx.shadowColor = `rgba(0,0,0,${0.1 + progress * 0.15})`;
+                        ctx.shadowBlur = 15 + progress * 20;
+                        ctx.shadowOffsetX = 5 + progress * 10;
+                        ctx.shadowOffsetY = 5 + progress * 10;
+                    }
+                    
+                    // Draw layer image
+                    const imgData = this.imageData;
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = this.width;
+                    tempCanvas.height = this.height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.putImageData(imgData, 0, 0);
+                    
+                    // Apply peel translation
+                    ctx.translate(translateX, translateY);
+                    
+                    // Draw with clipping for peel effect
+                    ctx.drawImage(tempCanvas, -this.width/2, -this.height/2, this.width, this.height);
+                    
+                    // Edge glow
+                    if (progress > 0.1) {
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = `rgba(255,255,255,${progress * 0.1})`;
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(-this.width/2, -this.height/2, this.width, this.height);
+                    }
+                    
+                    ctx.restore();
+                    
+                    // Draw peel indicator (corner curl)
+                    if (!this.peeled && this.depth < this.totalLayers - 1) {
+                        ctx.save();
+                        ctx.translate(cx + this.offsetX + this.width/2 - 15, cy + this.offsetY - this.height/2 + 15);
+                        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.lineTo(20, 0);
+                        ctx.lineTo(0, 20);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                }
+
+                containsPoint(px, py) {
+                    const cx = this.x + this.width / 2 + this.offsetX;
+                    const cy = this.y + this.height / 2 + this.offsetY;
+                    const halfW = this.width / 2 * this.scale;
+                    const halfH = this.height / 2 * this.scale;
+                    return px >= cx - halfW && px <= cx + halfW && 
+                           py >= cy - halfH && py <= cy + halfH;
+                }
+            }
+
+            // ---- Create Layers ----
+            function createLayers() {
+                layers = [];
+                peeledLayers = [];
+                isPeeling = false;
+                statusText.textContent = 'Click layers to peel them back';
+                statusText.style.color = '#88aacc';
+                
+                const numLayers = 5 + Math.floor(Math.random() * 3);
+                const margin = 30;
+                const maxSize = Math.min(W, H) - margin * 2;
+                
+                for (let i = 0; i < numLayers; i++) {
+                    const size = maxSize * (1 - (i / numLayers) * 0.6);
+                    const x = (W - size) / 2;
+                    const y = (H - size) / 2;
+                    const layer = new Layer(x, y, size, size, i, numLayers);
+                    layers.push(layer);
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw layers from back to front
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    if (!layer.peeled || layer.peelProgress < 0.95) {
+                        layer.draw(ctx);
+                    }
+                }
+                
+                // Draw peeled layers (floating)
+                for (let i = 0; i < layers.length; i++) {
+                    const layer = layers[i];
+                    if (layer.peeled && layer.peelProgress > 0.1) {
+                        // Draw floating peeled layer with transparency
+                        ctx.save();
+                        ctx.globalAlpha = 0.3 + layer.peelProgress * 0.2;
+                        ctx.translate(layer.x + layer.width/2 + 30 + layer.peelProgress * 50, 
+                                     layer.y + layer.height/2 - 30 - layer.peelProgress * 30);
+                        ctx.rotate(layer.peelAngle * 0.5);
+                        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                        ctx.shadowBlur = 20;
+                        
+                        const imgData = layer.imageData;
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = layer.width;
+                        tempCanvas.height = layer.height;
+                        const tempCtx = tempCanvas.getContext('2d');
+                        tempCtx.putImageData(imgData, 0, 0);
+                        ctx.drawImage(tempCanvas, -layer.width/2, -layer.height/2, layer.width, layer.height);
+                        
+                        ctx.restore();
+                    }
+                }
+                
+                // Completion message
+                const allPeeled = layers.every(l => l.peeled);
+                if (allPeeled && layers.length > 0) {
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.2)';
+                    ctx.shadowBlur = 30;
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.6)';
+                    ctx.font = '28px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('✨ All Layers Revealed! ✨', W/2, 40);
+                    ctx.restore();
+                    
+                    if (statusText.textContent !== '🎉 All Layers Revealed!') {
+                        statusText.textContent = '🎉 All Layers Revealed! Click Reset for new layers';
+                        statusText.style.color = '#66ff88';
+                    }
+                }
+            }
+
+            // ---- Handle Click ----
+            function handleCanvasClick(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                // Find topmost unpeeled layer
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    if (!layer.peeled && layer.containsPoint(x, y)) {
+                        layer.peel();
+                        break;
+                    }
+                }
+            }
+
+            // ---- Reset ----
+            function resetLayers() {
+                createLayers();
+                render();
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                // Update layers
+                for (let layer of layers) {
+                    layer.update();
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetLayers);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', handleCanvasClick, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetLayers();
+                }
+            });
+
+            // ---- Initialize ----
+            createLayers();
+            render();
+            animate();
+
+            console.log('🧅 Nested Reveal · Click layers to peel them back and reveal what\'s underneath!');
+        })();
+    </script>
+</body>
+</html>
