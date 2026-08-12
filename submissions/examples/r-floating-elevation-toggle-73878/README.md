@@ -1,0 +1,24 @@
+A smooth and responsive pure CSS toggle featuring a floating elevation effect when the toggle is enabled 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
