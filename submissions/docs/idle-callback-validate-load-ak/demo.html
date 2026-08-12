@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EaseMotion CSS — Deferred validateEaseMotionLoad Demo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Deferred <code>validateEaseMotionLoad()</code> via <code>requestIdleCallback</code></h1>
+  <p class="subtitle">Demonstrates deferring the dev-mode load check off the critical rendering path — relates to issue #66081.</p>
+
+  <div class="panel">
+    <h2><span class="spinner" id="spinner-sync"></span> Synchronous (current behavior)</h2>
+    <p><span class="status blocked" id="status-sync">Blocks immediately</span></p>
+    <pre id="log-sync"></pre>
+  </div>
+
+  <div class="panel">
+    <h2><span class="spinner" id="spinner-idle"></span> Deferred via requestIdleCallback</h2>
+    <p><span class="status blocked" id="status-idle">Waiting for idle…</span></p>
+    <pre id="log-idle"></pre>
+  </div>
+
+  <button id="run-btn">Run demo</button>
+
+  <script>
+    // Inlined mirror of utils/validate-load.js's check logic,
+    // kept self-contained per the Standard/Docs track requirements.
+    function runCheck() {
+      if (typeof window === "undefined" || typeof getComputedStyle === "undefined") {
+        return "Guard triggered — SSR-safe, returned early.";
+      }
+      const sentinelValue = getComputedStyle(document.documentElement)
+        .getPropertyValue("--ease-version")
+        .trim();
+      if (!sentinelValue) {
+        return "[EaseMotion] core/variables.css does not appear to be loaded correctly.";
+      }
+      return "Sentinel found — variables.css loaded correctly.";
+    }
+
+    // Current (synchronous) behavior: runs immediately, "blocking" the
+    // spinner instantly since it executes in the same tick as page load.
+    function validateEaseMotionLoadSync() {
+      const result = runCheck();
+      document.getElementById("spinner-sync").classList.add("stopped");
+      document.getElementById("status-sync").textContent = "Ran synchronously (blocked main thread)";
+      document.getElementById("status-sync").className = "status blocked";
+      document.getElementById("log-sync").textContent = result;
+    }
+
+    // Proposed deferred behavior: uses requestIdleCallback, falling back
+    // to setTimeout for browsers without support.
+    function validateEaseMotionLoadDeferred() {
+      const finish = () => {
+        const result = runCheck();
+        document.getElementById("spinner-idle").classList.add("stopped");
+        document.getElementById("status-idle").textContent = "Ran once main thread was idle";
+        document.getElementById("status-idle").className = "status idle";
+        document.getElementById("log-idle").textContent = result;
+      };
+
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(finish, { timeout: 2000 });
+      } else {
+        setTimeout(finish, 0);
+      }
+    }
+
+    document.getElementById("run-btn").addEventListener("click", () => {
+      // Reset UI
+      document.getElementById("spinner-sync").classList.remove("stopped");
+      document.getElementById("spinner-idle").classList.remove("stopped");
+      document.getElementById("status-sync").textContent = "Blocks immediately";
+      document.getElementById("status-sync").className = "status blocked";
+      document.getElementById("status-idle").textContent = "Waiting for idle…";
+      document.getElementById("status-idle").className = "status blocked";
+      document.getElementById("log-sync").textContent = "";
+      document.getElementById("log-idle").textContent = "";
+
+      validateEaseMotionLoadSync();
+      validateEaseMotionLoadDeferred();
+    });
+
+    // Auto-run once on load
+    validateEaseMotionLoadSync();
+    validateEaseMotionLoadDeferred();
+  </script>
+</body>
+</html>

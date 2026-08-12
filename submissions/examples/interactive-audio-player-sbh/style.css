@@ -1,0 +1,219 @@
+/* interactive-audio-player — premium audio widget.
+   All motion is CSS-driven via a single `.is-playing` class on the
+   `.player` root (toggled by the tiny script in demo.html):
+     - album art rotates continuously while playing
+     - equalizer bars animate (staggered scaleY) while playing
+     - play button glows and pulses while playing
+   The progress bar fill width is set inline by the script from audio time. */
+
+:root {
+  --ap-bg: #0f0f1a;
+  --ap-surface: rgba(255,255,255,0.04);
+  --ap-ink: #f8fafc;
+  --ap-muted: #94a3b8;
+  --ap-accent: #a855f7;
+  --ap-accent-2: #ec4899;
+  --ap-accent-3: #38bdf8;
+  --ap-glow: rgba(168, 85, 247, 0.55);
+  --ap-radius: 1.4rem;
+  --ap-dur: 0.25s;
+  --ap-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---------- Page (demo only) ---------- */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ap-ink);
+  background:
+    radial-gradient(900px 520px at 80% -10%, rgba(168,85,247,0.18), transparent 60%),
+    radial-gradient(700px 440px at 0% 100%, rgba(56,189,248,0.14), transparent 55%),
+    var(--ap-bg);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+.page { max-width: 40rem; margin: 0 auto; padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem); }
+.page__eyebrow {
+  margin: 0 0 0.5rem; text-transform: uppercase; letter-spacing: 0.18em;
+  font-size: 0.78rem; font-weight: 700; color: var(--ap-accent);
+}
+.page__head h1 { margin: 0 0 0.8rem; font-size: clamp(1.6rem, 4.5vw, 2.4rem); letter-spacing: -0.02em; }
+.page__lede { margin: 0 0 2.5rem; color: var(--ap-muted); max-width: 38rem; }
+.page__lede code { background: rgba(168,85,247,0.18); color: var(--ap-accent); padding: 0.12rem 0.4rem; border-radius: 0.4rem; font-size: 0.9em; }
+.footnote { color: var(--ap-muted); font-size: 0.85rem; margin: 1.5rem 0 0; }
+.footnote code { background: rgba(255,255,255,0.06); padding: 0.1rem 0.35rem; border-radius: 0.35rem; }
+
+/* ---------- Player shell ---------- */
+.player {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.4rem;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(56,189,248,0.06));
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--ap-radius);
+  padding: clamp(1.2rem, 3vw, 1.8rem);
+  box-shadow: 0 30px 60px -25px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+@media (max-width: 30rem) {
+  .player { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+}
+
+/* ---------- Album art (vinyl) ---------- */
+.player__art {
+  position: relative;
+  width: 6.5rem; height: 6.5rem;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at center, #1e1e2c 0 0.18rem, #15151f 0.18rem 0.36rem),
+    radial-gradient(circle at center, var(--ap-accent), var(--ap-accent-2) 60%, #1e1e2c 62%);
+  background-blend-mode: normal;
+  box-shadow:
+    0 10px 30px -8px rgba(0,0,0,0.6),
+    0 0 0 2px rgba(255,255,255,0.05);
+  /* rotation only runs while playing (animation defined below, paused by default) */
+}
+.player__art-core {
+  position: absolute; inset: 22%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--ap-accent), var(--ap-accent-2), var(--ap-accent-3), var(--ap-accent));
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08);
+}
+.player__art-hole {
+  position: absolute; top: 50%; left: 50%;
+  width: 0.7rem; height: 0.7rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--ap-bg);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+/* Spin: paused unless .is-playing */
+.player__art {
+  animation: ap-spin 6s linear infinite;
+  animation-play-state: paused;
+}
+.player.is-playing .player__art { animation-play-state: running; }
+@keyframes ap-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Body ---------- */
+.player__body { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; }
+.player__meta { display: flex; flex-direction: column; gap: 0.1rem; }
+.player__track { margin: 0; font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+.player__artist { margin: 0; color: var(--ap-muted); font-size: 0.85rem; }
+
+/* ---------- Equalizer ---------- */
+.player__eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  height: 1.6rem;
+}
+.player__eq span {
+  flex: 1;
+  height: 30%;
+  border-radius: 0.2rem;
+  background: linear-gradient(var(--ap-accent-3), var(--ap-accent));
+  opacity: 0.5;
+  /* animation paused unless playing */
+  animation: ap-bounce 0.9s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+.player.is-playing .player__eq span { opacity: 1; animation-play-state: running; }
+/* stagger the bars */
+.player__eq span:nth-child(1)  { animation-delay: 0.00s; }
+.player__eq span:nth-child(2)  { animation-delay: 0.15s; }
+.player__eq span:nth-child(3)  { animation-delay: 0.30s; }
+.player__eq span:nth-child(4)  { animation-delay: 0.45s; }
+.player__eq span:nth-child(5)  { animation-delay: 0.10s; }
+.player__eq span:nth-child(6)  { animation-delay: 0.25s; }
+.player__eq span:nth-child(7)  { animation-delay: 0.40s; }
+.player__eq span:nth-child(8)  { animation-delay: 0.55s; }
+.player__eq span:nth-child(9)  { animation-delay: 0.05s; }
+.player__eq span:nth-child(10) { animation-delay: 0.20s; }
+.player__eq span:nth-child(11) { animation-delay: 0.35s; }
+.player__eq span:nth-child(12) { animation-delay: 0.50s; }
+@keyframes ap-bounce { from { height: 25%; } to { height: 100%; } }
+
+/* ---------- Progress ---------- */
+.player__progress { position: relative; display: flex; flex-direction: column; gap: 0.35rem; }
+.player__progress-track {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+.player__progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--ap-accent-3), var(--ap-accent), var(--ap-accent-2));
+  transition: width 0.1s linear;
+}
+/* The range input sits invisibly over the track for native keyboard/touch scrubbing */
+.player__seek {
+  position: absolute;
+  top: -0.35rem; left: 0;
+  width: 100%; height: 1.1rem;
+  margin: 0;
+  background: transparent;
+  -webkit-appearance: none; appearance: none;
+  cursor: pointer;
+}
+.player__seek::-webkit-slider-runnable-track { background: transparent; border: 0; }
+.player__seek::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 0.9rem; height: 0.9rem; border-radius: 50%;
+  background: #fff; border: 0;
+  box-shadow: 0 0 0 0.25rem var(--ap-glow);
+  cursor: pointer;
+}
+.player__seek::-moz-range-track { background: transparent; border: 0; }
+.player__seek::-moz-range-thumb {
+  width: 0.9rem; height: 0.9rem; border-radius: 50%;
+  background: #fff; border: 0; box-shadow: 0 0 0 0.25rem var(--ap-glow);
+}
+.player__time { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--ap-muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- Controls ---------- */
+.player__controls { display: flex; align-items: center; justify-content: center; gap: 0.9rem; }
+.ctrl {
+  display: grid; place-items: center;
+  font: inherit; font-weight: 700;
+  color: var(--ap-ink);
+  background: var(--ap-surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform var(--ap-dur) var(--ap-ease), box-shadow var(--ap-dur) var(--ap-ease), background-color var(--ap-dur) var(--ap-ease);
+}
+.ctrl--sm { width: 2.4rem; height: 2.4rem; font-size: 1.1rem; line-height: 1; }
+.ctrl--sm:hover { transform: scale(1.1); background: rgba(255,255,255,0.1); }
+
+.ctrl--play {
+  width: 3.2rem; height: 3.2rem; font-size: 1.1rem;
+  color: #fff;
+  background: linear-gradient(135deg, var(--ap-accent), var(--ap-accent-2));
+  border-color: transparent;
+  box-shadow: 0 8px 20px -6px var(--ap-glow);
+}
+.ctrl--play:hover { transform: scale(1.08); box-shadow: 0 12px 28px -6px var(--ap-glow), 0 0 22px 2px var(--ap-glow); }
+
+/* While playing: the play button pulses */
+.player.is-playing .ctrl--play {
+  animation: ap-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 8px 20px -6px var(--ap-glow), 0 0 18px 1px var(--ap-glow);
+}
+@keyframes ap-pulse {
+  0%, 100% { box-shadow: 0 8px 20px -6px var(--ap-glow), 0 0 14px 0 var(--ap-glow); }
+  50%      { box-shadow: 0 8px 20px -6px var(--ap-glow), 0 0 28px 4px var(--ap-glow); }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .player__art, .player__eq span, .player.is-playing .ctrl--play { animation: none !important; }
+  .ctrl, .ctrl--sm:hover, .ctrl--play:hover { transition: none; transform: none; }
+}

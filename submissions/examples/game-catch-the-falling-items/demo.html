@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧺 Catch the Falling Items</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>🧺 Catch the Falling Items</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">🎯 Score</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">❤️ Lives</span>
+        <span class="stat-value" id="livesDisplay">3</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📊 Level</span>
+        <span class="stat-value" id="levelDisplay">1</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="500" height="550"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+    </div>
+
+    <div class="controls-hint">
+      <span>🖱️ Move mouse or use <kbd>←</kbd> <kbd>→</kbd> to move basket</span>
+      <span>·</span>
+      <span>🎯 Catch good items, avoid bombs!</span>
+    </div>
+
+    <div class="game-status" id="gameStatus">🧺 Click Start to begin catching!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const scoreDisplay = document.getElementById('scoreDisplay');
+      const livesDisplay = document.getElementById('livesDisplay');
+      const levelDisplay = document.getElementById('levelDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const WIDTH = 500;
+      const HEIGHT = 550;
+      const BASKET_WIDTH = 80;
+      const BASKET_HEIGHT = 30;
+      const ITEM_SIZE = 30;
+
+      // ---------- Game State ----------
+      let basket = { x: 0, y: 0 };
+      let items = [];
+      let score = 0;
+      let lives = 3;
+      let level = 1;
+      let bestScore = parseInt(localStorage.getItem('catchBestScore')) || 0;
+      let gameRunning = false;
+      let gameOverFlag = false;
+      let gameLoop = null;
+      let spawnTimer = 0;
+      let spawnRate = 30;
+      let fallSpeed = 2;
+      let keys = { left: false, right: false };
+
+      // ---------- Item Types ----------
+      const GOOD_ITEMS = [
+        { emoji: '🍎', value: 1, color: '#f44336' },
+        { emoji: '🍋', value: 2, color: '#ffeb3b' },
+        { emoji: '🍊', value: 2, color: '#ff9800' },
+        { emoji: '🍉', value: 3, color: '#4caf50' },
+        { emoji: '🍓', value: 3, color: '#e91e63' },
+        { emoji: '⭐', value: 5, color: '#ffd54f' }
+      ];
+      const BAD_ITEMS = ['💣', '☠️', '💀'];
+
+      // ---------- Best Score ----------
+      bestDisplay.textContent = bestScore;
+
+      // ---------- Basket ----------
+      function resetBasket() {
+        basket.x = WIDTH / 2 - BASKET_WIDTH / 2;
+        basket.y = HEIGHT - 50;
+      }
+
+      // ---------- Item Spawning ----------
+      function spawnItem() {
+        const isGood = Math.random() < 0.75 - (level - 1) * 0.03;
+        let item;
+        
+        if (isGood) {
+          const type = GOOD_ITEMS[Math.floor(Math.random() * GOOD_ITEMS.length)];
+          item = {
+            x: 10 + Math.random() * (WIDTH - 20 - ITEM_SIZE),
+            y: -ITEM_SIZE,
+            width: ITEM_SIZE,
+            height: ITEM_SIZE,
+            emoji: type.emoji,
+            value: type.value,
+            color: type.color,
+            type: 'good',
+            speed: fallSpeed * (0.8 + Math.random() * 0.4)
+          };
+        } else {
+          item = {
+            x: 10 + Math.random() * (WIDTH - 20 - ITEM_SIZE),
+            y: -ITEM_SIZE,
+            width: ITEM_SIZE,
+            height: ITEM_SIZE,
+            emoji: BAD_ITEMS[Math.floor(Math.random() * BAD_ITEMS.length)],
+            value: -1,
+            color: '#ff6b6b',
+            type: 'bad',
+            speed: fallSpeed * (0.9 + Math.random() * 0.3)
+          };
+        }
+        items.push(item);
+      }
+
+      // ---------- Update ----------
+      function update() {
+        if (!gameRunning || gameOverFlag) return;
+
+        // Move basket with keys
+        if (keys.left && basket.x > 0) {
+          basket.x -= 6;
+        }
+        if (keys.right && basket.x + BASKET_WIDTH < WIDTH) {
+          basket.x += 6;
+        }
+
+        // Spawn items
+        spawnTimer++;
+        const currentSpawnRate = Math.max(10, spawnRate - level * 1.5);
+        if (spawnTimer >= currentSpawnRate) {
+          spawnTimer = 0;
+          spawnItem();
+          // Sometimes spawn extra items at higher levels
+          if (level > 3 && Math.random() < 0.2) {
+            spawnItem();
+          }
+        }
+
+        // Update items
+        for (let i = items.length - 1; i >= 0; i--) {
+          const item = items[i];
+          item.y += item.speed;
+
+          // Check if caught by basket
+          if (item.y + item.height > basket.y && item.y < basket.y + BASKET_HEIGHT &&
+              item.x + item.width > basket.x && item.x < basket.x + BASKET_WIDTH) {
+            
+            if (item.type === 'good') {
+              score += item.value;
+              // Combo bonus for catching quickly
+              if (level > 1) {
+                const bonus = Math.floor(level / 2);
+                score += bonus;
+              }
+              updateScore();
+              updateBestScore();
+              showEffect(item.x + item.width/2, item.y, '+', item.value);
+            } else {
+              lives--;
+              updateLives();
+              showEffect(item.x + item.width/2, item.y, '💥', 0);
+              if (lives <= 0) {
+                gameOver();
+                return;
+              }
+            }
+            items.splice(i, 1);
+            continue;
+          }
+
+          // Remove if off screen
+          if (item.y > HEIGHT + 50) {
+            if (item.type === 'good') {
+              // Missed good item - lose life
+              lives--;
+              updateLives();
+              if (lives <= 0) {
+                gameOver();
+                return;
+              }
+            }
+            items.splice(i, 1);
+          }
+        }
+
+        // Level up
+        const newLevel = Math.floor(score / 50) + 1;
+        if (newLevel > level) {
+          level = newLevel;
+          fallSpeed = 2 + level * 0.3;
+          updateLevel();
+          setGameStatus(`📈 Level ${level}! Speed increased!`, true);
+          // Visual feedback for level up
+          showEffect(WIDTH/2, HEIGHT/2, '⭐ LEVEL UP!', 0);
+        }
+
+        draw();
+      }
+
+      // ---------- Effects ----------
+      let effects = [];
+
+      function showEffect(x, y, text, value) {
+        effects.push({
+          x, y,
+          text: text + (value > 0 ? value : ''),
+          life: 30,
+          maxLife: 30,
+          color: value > 0 ? '#81c784' : '#ff6b6b'
+        });
+      }
+
+      function updateEffects() {
+        for (let i = effects.length - 1; i >= 0; i--) {
+          const e = effects[i];
+          e.y -= 1.5;
+          e.life--;
+          if (e.life <= 0) {
+            effects.splice(i, 1);
+          }
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+        grad.addColorStop(0, '#0a0e1a');
+        grad.addColorStop(0.5, '#1a0a2a');
+        grad.addColorStop(1, '#0a1a2a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // Draw items
+        for (const item of items) {
+          ctx.save();
+          ctx.shadowColor = item.color;
+          ctx.shadowBlur = 15;
+          ctx.font = `${ITEM_SIZE}px "Segoe UI", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(item.emoji, item.x + item.width/2, item.y + item.height/2);
+          ctx.restore();
+        }
+
+        // Draw effects
+        for (const e of effects) {
+          const alpha = e.life / e.maxLife;
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = e.color;
+          ctx.font = 'bold 24px "Segoe UI", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = e.color;
+          ctx.shadowBlur = 15;
+          ctx.fillText(e.text, e.x, e.y);
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 1;
+        }
+
+        // Draw basket
+        ctx.save();
+        ctx.shadowColor = '#4fc3f7';
+        ctx.shadowBlur = 15;
+        
+        // Basket body
+        const grad2 = ctx.createLinearGradient(basket.x, basket.y, basket.x, basket.y + BASKET_HEIGHT);
+        grad2.addColorStop(0, '#5d4037');
+        grad2.addColorStop(0.5, '#8d6e63');
+        grad2.addColorStop(1, '#4e342e');
+        ctx.fillStyle = grad2;
+        ctx.beginPath();
+        ctx.roundRect(basket.x, basket.y, BASKET_WIDTH, BASKET_HEIGHT, 4);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Basket rim
+        ctx.fillStyle = '#3e2723';
+        ctx.fillRect(basket.x - 4, basket.y - 4, BASKET_WIDTH + 8, 6);
+        ctx.fillStyle = '#5d4037';
+        ctx.fillRect(basket.x - 2, basket.y - 2, BASKET_WIDTH + 4, 4);
+
+        // Basket weave pattern
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < BASKET_WIDTH; i += 10) {
+          ctx.beginPath();
+          ctx.moveTo(basket.x + i, basket.y + 4);
+          ctx.lineTo(basket.x + i, basket.y + BASKET_HEIGHT - 4);
+          ctx.stroke();
+        }
+
+        // Basket label
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🧺', basket.x + BASKET_WIDTH/2, basket.y + BASKET_HEIGHT/2 + 1);
+        ctx.restore();
+
+        // Game Over overlay
+        if (gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.6)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = 'bold 40px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ef9a9a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = '#b71c1c';
+          ctx.shadowBlur = 20;
+          ctx.fillText('💀 GAME OVER', WIDTH/2, HEIGHT/2 - 20);
+          ctx.shadowBlur = 0;
+          ctx.font = '20px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillText(`Score: ${score}`, WIDTH/2, HEIGHT/2 + 40);
+        }
+
+        if (!gameRunning && !gameOverFlag) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+          ctx.font = '28px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ffd54f';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🧺 Catch the Falling Items', WIDTH/2, HEIGHT/2 - 20);
+          ctx.font = '16px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#b0bec5';
+          ctx.fillText('Click Start to begin', WIDTH/2, HEIGHT/2 + 30);
+        }
+      }
+
+      // Helper: roundRect
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (w < 2 * r) r = w / 2;
+        if (h < 2 * r) r = h / 2;
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        return this;
+      };
+
+      // ---------- UI Updates ----------
+      function updateScore() {
+        scoreDisplay.textContent = score;
+      }
+
+      function updateLives() {
+        livesDisplay.textContent = lives;
+      }
+
+      function updateLevel() {
+        levelDisplay.textContent = level;
+      }
+
+      function updateBestScore() {
+        if (score > bestScore) {
+          bestScore = score;
+          localStorage.setItem('catchBestScore', bestScore.toString());
+          bestDisplay.textContent = bestScore;
+        }
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Game Loop ----------
+      function gameLoopFunction() {
+        update();
+        updateEffects();
+        if (gameRunning) {
+          requestAnimationFrame(gameLoopFunction);
+        }
+      }
+
+      function startLoop() {
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = requestAnimationFrame(gameLoopFunction);
+      }
+
+      function stopLoop() {
+        if (gameLoop) {
+          cancelAnimationFrame(gameLoop);
+          gameLoop = null;
+        }
+        gameRunning = false;
+        draw();
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        if (gameRunning) return;
+        resetGameState();
+        gameRunning = true;
+        gameOverFlag = false;
+        startBtn.disabled = true;
+        startBtn.textContent = '⏳ Playing...';
+        resetBasket();
+        setGameStatus('🧺 Catch the good items! Avoid bombs!', true);
+        startLoop();
+      }
+
+      function resetGameState() {
+        items = [];
+        effects = [];
+        score = 0;
+        lives = 3;
+        level = 1;
+        fallSpeed = 2;
+        spawnTimer = 0;
+        updateScore();
+        updateLives();
+        updateLevel();
+        gameOverFlag = false;
+        resetBasket();
+      }
+
+      function gameOver() {
+        gameRunning = false;
+        gameOverFlag = true;
+        stopLoop();
+        updateBestScore();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Play Again';
+        setGameStatus(`💀 Game Over! Score: ${score}`, false);
+        draw();
+      }
+
+      function resetGame() {
+        gameRunning = false;
+        gameOverFlag = false;
+        if (gameLoop) cancelAnimationFrame(gameLoop);
+        gameLoop = null;
+        resetGameState();
+        startBtn.disabled = false;
+        startBtn.textContent = '▶ Start Game';
+        setGameStatus('🔄 Game reset. Click Start to play!', true);
+        draw();
+      }
+
+      // ---------- Event Handlers ----------
+      canvas.addEventListener('mousemove', (e) => {
+        if (!gameRunning || gameOverFlag) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const x = (e.clientX - rect.left) * scaleX;
+        basket.x = Math.max(0, Math.min(WIDTH - BASKET_WIDTH, x - BASKET_WIDTH / 2));
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!gameRunning || gameOverFlag) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const touch = e.touches[0];
+        const x = (touch.clientX - rect.left) * scaleX;
+        basket.x = Math.max(0, Math.min(WIDTH - BASKET_WIDTH, x - BASKET_WIDTH / 2));
+      }, { passive: false });
+
+      // Keyboard
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); keys.left = true; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); keys.right = true; }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (!gameRunning && !gameOverFlag) startGame();
+        }
+        if (e.key === 'r' || e.key === 'R') resetGame();
+      });
+
+      document.addEventListener('keyup', (e) => {
+        if (e.key === 'ArrowLeft') { e.preventDefault(); keys.left = false; }
+        if (e.key === 'ArrowRight') { e.preventDefault(); keys.right = false; }
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+
+      // ---------- Init ----------
+      function init() {
+        resetGameState();
+        draw();
+        setGameStatus('🧺 Click Start to begin catching!', true);
+        bestDisplay.textContent = bestScore;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

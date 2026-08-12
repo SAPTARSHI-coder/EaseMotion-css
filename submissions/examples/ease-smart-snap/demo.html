@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Snap – Snaps into Alignment on Interaction</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🎯 Smart Snap</h1>
+    <p class="subtitle">Snaps into alignment on interaction</p>
+
+    <div class="snap-container">
+      <div class="snap-stage" id="snapStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Snap grid lines -->
+        <div class="snap-grid" id="snapGrid">
+          <div class="grid-line horizontal" style="top: 25%"></div>
+          <div class="grid-line horizontal" style="top: 50%"></div>
+          <div class="grid-line horizontal" style="top: 75%"></div>
+          <div class="grid-line vertical" style="left: 25%"></div>
+          <div class="grid-line vertical" style="left: 50%"></div>
+          <div class="grid-line vertical" style="left: 75%"></div>
+        </div>
+
+        <!-- Draggable element -->
+        <div class="snap-element" id="snapElement">
+          <div class="element-content">
+            <span class="element-icon">🎯</span>
+            <span class="element-label">Drag me</span>
+          </div>
+          <div class="element-glow"></div>
+          <div class="snap-indicator" id="snapIndicator"></div>
+        </div>
+
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="snap-status" id="snapStatus">🎯 Free</span>
+          <span class="snap-count" id="snapCount">✦ 0 snaps</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">🔲 Grid</button>
+      <button class="ctrl-btn center" id="centerBtn">📍 Center</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Snap Strength</span>
+      <input type="range" id="strengthSlider" min="0" max="100" value="70" />
+      <span class="slider-value" id="strengthValue">70%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Snap Threshold</span>
+      <input type="range" id="thresholdSlider" min="10" max="80" value="40" />
+      <span class="slider-value" id="thresholdValue">40px</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Element Size</span>
+      <input type="range" id="sizeSlider" min="40" max="100" value="70" />
+      <span class="slider-value" id="sizeValue">70px</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🎯 Drag the element to snap it into alignment</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>Drag</kbd> Snap · <kbd>R</kbd> Reset · <kbd>G</kbd> Grid · <kbd>C</kbd> Center
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const snapElement = document.getElementById('snapElement');
+      const snapIndicator = document.getElementById('snapIndicator');
+      const snapStatus = document.getElementById('snapStatus');
+      const snapCount = document.getElementById('snapCount');
+      const resetBtn = document.getElementById('resetBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const centerBtn = document.getElementById('centerBtn');
+      const status = document.getElementById('status');
+      const strengthSlider = document.getElementById('strengthSlider');
+      const strengthValue = document.getElementById('strengthValue');
+      const thresholdSlider = document.getElementById('thresholdSlider');
+      const thresholdValue = document.getElementById('thresholdValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+
+      // State
+      let elementX = 0;
+      let elementY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let isDragging = false;
+      let isSnapped = false;
+      let snapCountVal = 0;
+      let gridVisible = true;
+      let animationId = null;
+      let time = 0;
+      let particles = [];
+      let snapTargets = [];
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+        // Center element
+        const cx = size / 2;
+        const cy = size / 2;
+        const elemSize = parseInt(sizeSlider.value);
+        elementX = cx - elemSize / 2;
+        elementY = cy - elemSize / 2;
+        targetX = elementX;
+        targetY = elementY;
+        updateElementPosition();
+        generateSnapTargets();
+      }
+
+      // ----- Generate snap targets -----
+      function generateSnapTargets() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const elemSize = parseInt(sizeSlider.value);
+        snapTargets = [
+          // Center
+          { x: (w - elemSize) / 2, y: (h - elemSize) / 2, label: 'Center' },
+          // Corners
+          { x: 20, y: 20, label: 'Top-Left' },
+          { x: w - elemSize - 20, y: 20, label: 'Top-Right' },
+          { x: 20, y: h - elemSize - 20, label: 'Bottom-Left' },
+          { x: w - elemSize - 20, y: h - elemSize - 20, label: 'Bottom-Right' },
+          // Edges
+          { x: (w - elemSize) / 2, y: 20, label: 'Top' },
+          { x: (w - elemSize) / 2, y: h - elemSize - 20, label: 'Bottom' },
+          { x: 20, y: (h - elemSize) / 2, label: 'Left' },
+          { x: w - elemSize - 20, y: (h - elemSize) / 2, label: 'Right' },
+          // Thirds
+          { x: (w - elemSize) / 3, y: (h - elemSize) / 3, label: 'Third-1' },
+          { x: (w - elemSize) * 2 / 3, y: (h - elemSize) * 2 / 3, label: 'Third-2' },
+          { x: (w - elemSize) / 3, y: (h - elemSize) * 2 / 3, label: 'Third-3' },
+          { x: (w - elemSize) * 2 / 3, y: (h - elemSize) / 3, label: 'Third-4' },
+        ];
+      }
+
+      // ----- Update element position -----
+      function updateElementPosition() {
+        const size = parseInt(sizeSlider.value);
+        snapElement.style.width = size + 'px';
+        snapElement.style.height = size + 'px';
+        snapElement.style.left = elementX + 'px';
+        snapElement.style.top = elementY + 'px';
+      }
+
+      // ----- Check snap targets -----
+      function checkSnap() {
+        const threshold = parseInt(thresholdSlider.value);
+        const strength = parseInt(strengthSlider.value) / 100;
+        const elemSize = parseInt(sizeSlider.value);
+        const cx = elementX + elemSize / 2;
+        const cy = elementY + elemSize / 2;
+
+        let closestTarget = null;
+        let closestDist = Infinity;
+
+        for (const target of snapTargets) {
+          const tx = target.x + elemSize / 2;
+          const ty = target.y + elemSize / 2;
+          const dx = cx - tx;
+          const dy = cy - ty;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (dist < threshold && dist < closestDist) {
+            closestDist = dist;
+            closestTarget = target;
+          }
+        }
+
+        if (closestTarget && strength > 0) {
+          // Snap to target with smooth interpolation
+          const snapStrength = strength * 0.08;
+          const tx = closestTarget.x;
+          const ty = closestTarget.y;
+          elementX += (tx - elementX) * snapStrength;
+          elementY += (ty - elementY) * snapStrength;
+          
+          if (!isSnapped) {
+            isSnapped = true;
+            snapCountVal++;
+            snapCount.textContent = `✦ ${snapCountVal} snaps`;
+            snapStatus.textContent = `🎯 Snapped!`;
+            status.textContent = `🎯 Snapped to ${closestTarget.label}!`;
+            createSnapParticles(elementX + elemSize/2, elementY + elemSize/2);
+            // Vibrate (if supported)
+            if (navigator.vibrate) {
+              navigator.vibrate(15);
+            }
+          }
+          
+          // Show indicator
+          snapIndicator.style.display = 'block';
+          snapIndicator.style.left = (closestTarget.x - 4) + 'px';
+          snapIndicator.style.top = (closestTarget.y - 4) + 'px';
+          snapIndicator.style.width = (elemSize + 8) + 'px';
+          snapIndicator.style.height = (elemSize + 8) + 'px';
+          snapIndicator.style.borderColor = `hsla(120, 100%, 60%, ${0.3 + 0.3 * strength})`;
+          snapIndicator.style.boxShadow = `0 0 30px hsla(120, 100%, 60%, ${0.1 * strength})`;
+          
+          // Update status
+          if (closestDist < 5) {
+            snapStatus.textContent = `🎯 Snapped!`;
+          }
+        } else {
+          isSnapped = false;
+          snapIndicator.style.display = 'none';
+          snapStatus.textContent = '🎯 Free';
+          if (!isDragging) {
+            status.textContent = '🎯 Drag the element to snap it into alignment';
+          }
+        }
+
+        updateElementPosition();
+      }
+
+      // ----- Create snap particles -----
+      function createSnapParticles(x, y) {
+        const count = 15 + Math.floor(Math.random() * 20);
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 0.5 + Math.random() * 2;
+          particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 1 + Math.random() * 3,
+            life: 1,
+            decay: 0.01 + Math.random() * 0.02,
+            hue: 120 + Math.random() * 30,
+            opacity: 0.5 + Math.random() * 0.5
+          });
+        }
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const hue = 120;
+
+        // Clear with fade
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Draw snap targets (visual guides)
+        if (gridVisible) {
+          const elemSize = parseInt(sizeSlider.value);
+          for (const target of snapTargets) {
+            const alpha = isSnapped ? 0.1 : 0.04;
+            ctx.strokeStyle = `rgba(100, 255, 150, ${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 6]);
+            ctx.strokeRect(target.x, target.y, elemSize, elemSize);
+            ctx.setLineDash([]);
+          }
+        }
+
+        // Draw particles
+        particles = particles.filter(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.99;
+          p.vy *= 0.99;
+          p.vy += 0.02;
+          p.life -= p.decay;
+          p.size *= 0.999;
+          return p.life > 0 && p.size > 0.1;
+        });
+
+        for (const p of particles) {
+          const alpha = p.life * p.opacity;
+          const size = p.size * p.life;
+          const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, size * 3);
+          gradient.addColorStop(0, `hsla(${p.hue + 20}, 100%, 90%, ${alpha * 0.3})`);
+          gradient.addColorStop(1, `hsla(${p.hue}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = `hsla(${p.hue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Update snap
+        if (!isDragging) {
+          checkSnap();
+        }
+
+        // Update grid visibility
+        document.querySelector('.snap-grid').style.display = gridVisible ? 'block' : 'none';
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Reset -----
+      function resetSnap() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const elemSize = parseInt(sizeSlider.value);
+        elementX = (w - elemSize) / 2;
+        elementY = (h - elemSize) / 2;
+        targetX = elementX;
+        targetY = elementY;
+        isSnapped = false;
+        particles = [];
+        snapIndicator.style.display = 'none';
+        snapStatus.textContent = '🎯 Free';
+        status.textContent = '↺ Reset';
+        strengthSlider.value = 70;
+        strengthValue.textContent = '70%';
+        thresholdSlider.value = 40;
+        thresholdValue.textContent = '40px';
+        sizeSlider.value = 70;
+        sizeValue.textContent = '70px';
+        updateElementPosition();
+        generateSnapTargets();
+        setTimeout(() => {
+          status.textContent = '🎯 Drag the element to snap it into alignment';
+        }, 500);
+      }
+
+      // ----- Toggle grid -----
+      function toggleGrid() {
+        gridVisible = !gridVisible;
+        toggleBtn.textContent = gridVisible ? '🔲 Grid' : '🔳 Grid Off';
+        status.textContent = gridVisible ? '🔲 Grid visible' : '🔳 Grid hidden';
+        setTimeout(() => {
+          if (!isDragging) {
+            status.textContent = '🎯 Drag the element to snap it into alignment';
+          }
+        }, 1000);
+      }
+
+      // ----- Center element -----
+      function centerElement() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const elemSize = parseInt(sizeSlider.value);
+        elementX = (w - elemSize) / 2;
+        elementY = (h - elemSize) / 2;
+        updateElementPosition();
+        isSnapped = true;
+        snapCountVal++;
+        snapCount.textContent = `✦ ${snapCountVal} snaps`;
+        snapStatus.textContent = '🎯 Centered!';
+        status.textContent = '📍 Centered!';
+        createSnapParticles(elementX + elemSize/2, elementY + elemSize/2);
+        if (navigator.vibrate) {
+          navigator.vibrate(15);
+        }
+        setTimeout(() => {
+          if (!isDragging) {
+            status.textContent = '🎯 Drag the element to snap it into alignment';
+          }
+        }, 1500);
+      }
+
+      // ----- Event Listeners -----
+      // Mouse drag
+      snapElement.addEventListener('mousedown', (e) => {
+        const rect = snapElement.getBoundingClientRect();
+        const stageRect = document.getElementById('snapStage').getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        isDragging = true;
+        snapElement.style.cursor = 'grabbing';
+        snapStatus.textContent = '🎯 Dragging';
+        status.textContent = '🎯 Dragging...';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const stageRect = document.getElementById('snapStage').getBoundingClientRect();
+          const scaleX = canvas.width / stageRect.width;
+          const scaleY = canvas.height / stageRect.height;
+          const newX = (e.clientX - stageRect.left) * scaleX - dragOffsetX;
+          const newY = (e.clientY - stageRect.top) * scaleY - dragOffsetY;
+          const size = parseInt(sizeSlider.value);
+          elementX = Math.max(0, Math.min(canvas.width - size, newX));
+          elementY = Math.max(0, Math.min(canvas.height - size, newY));
+          updateElementPosition();
+          // Check snap during drag
+          checkSnap();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          snapElement.style.cursor = 'grab';
+          if (isSnapped) {
+            status.textContent = '🎯 Snapped into place!';
+          } else {
+            status.textContent = '🎯 Drag the element to snap it into alignment';
+          }
+          // Final snap check
+          checkSnap();
+        }
+      });
+
+      // Touch support
+      snapElement.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = snapElement.getBoundingClientRect();
+        dragOffsetX = touch.clientX - rect.left;
+        dragOffsetY = touch.clientY - rect.top;
+        isDragging = true;
+        snapStatus.textContent = '🎯 Dragging';
+        status.textContent = '🎯 Dragging...';
+      });
+
+      document.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const stageRect = document.getElementById('snapStage').getBoundingClientRect();
+          const scaleX = canvas.width / stageRect.width;
+          const scaleY = canvas.height / stageRect.height;
+          const newX = (touch.clientX - stageRect.left) * scaleX - dragOffsetX;
+          const newY = (touch.clientY - stageRect.top) * scaleY - dragOffsetY;
+          const size = parseInt(sizeSlider.value);
+          elementX = Math.max(0, Math.min(canvas.width - size, newX));
+          elementY = Math.max(0, Math.min(canvas.height - size, newY));
+          updateElementPosition();
+          checkSnap();
+        }
+      });
+
+      document.addEventListener('touchend', () => {
+        if (isDragging) {
+          isDragging = false;
+          if (isSnapped) {
+            status.textContent = '🎯 Snapped into place!';
+          } else {
+            status.textContent = '🎯 Drag the element to snap it into alignment';
+          }
+          checkSnap();
+        }
+      });
+
+      // Buttons
+      resetBtn.addEventListener('click', resetSnap);
+      toggleBtn.addEventListener('click', toggleGrid);
+      centerBtn.addEventListener('click', centerElement);
+
+      // Sliders
+      strengthSlider.addEventListener('input', (e) => {
+        strengthValue.textContent = e.target.value + '%';
+      });
+
+      thresholdSlider.addEventListener('input', (e) => {
+        thresholdValue.textContent = e.target.value + 'px';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        sizeValue.textContent = val + 'px';
+        // Resize element
+        const w = canvas.width;
+        const h = canvas.height;
+        const oldSize = 70; // default
+        const cx = elementX + oldSize / 2;
+        const cy = elementY + oldSize / 2;
+        elementX = cx - val / 2;
+        elementY = cy - val / 2;
+        elementX = Math.max(0, Math.min(w - val, elementX));
+        elementY = Math.max(0, Math.min(h - val, elementY));
+        updateElementPosition();
+        generateSnapTargets();
+        checkSnap();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetSnap();
+        }
+        if (e.key === 'g' || e.key === 'G') {
+          e.preventDefault();
+          toggleGrid();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          centerElement();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          const w = canvas.width;
+          const h = canvas.height;
+          const elemSize = parseInt(sizeSlider.value);
+          // Keep element within bounds
+          elementX = Math.max(0, Math.min(w - elemSize, elementX));
+          elementY = Math.max(0, Math.min(h - elemSize, elementY));
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '🎯 Drag the element to snap it into alignment!';
+        snapElement.style.cursor = 'grab';
+        // Initial snap check
+        setTimeout(() => {
+          checkSnap();
+        }, 100);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🕯️ Candle Glow – Warm Flickering Light</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🕯️ Candle Glow</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Pause/Resume">⏸️</button>
+                <button class="control-btn" id="resetBtn" title="Reset candle">🔄</button>
+                <button class="control-btn" id="blowBtn" title="Blow out candle">💨</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="candleCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="candleStatus">🕯️ Lit</span>
+                <span id="flickerInfo">🔥 Flicker: 100%</span>
+            </div>
+            <div class="hint" id="hint">🕯️ Watch the warm candle glow</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🔥 Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="80" step="1" />
+                <span id="intensityLabel">80%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌊 Flicker</label>
+                <input type="range" id="flickerSlider" min="0" max="100" value="70" step="1" />
+                <span id="flickerLabel">70%</span>
+            </div>
+            <div class="slider-group">
+                <label>🌅 Warmth</label>
+                <input type="range" id="warmthSlider" min="0" max="100" value="60" step="1" />
+                <span id="warmthLabel">60%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Candle Glow – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('candleCanvas');
+            const ctx = canvas.getContext('2d');
+            const candleStatus = document.getElementById('candleStatus');
+            const flickerInfo = document.getElementById('flickerInfo');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const blowBtn = document.getElementById('blowBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const flickerSlider = document.getElementById('flickerSlider');
+            const flickerLabel = document.getElementById('flickerLabel');
+            const warmthSlider = document.getElementById('warmthSlider');
+            const warmthLabel = document.getElementById('warmthLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isPaused = false;
+            let isLit = true;
+            let time = 0;
+            let animationId = null;
+            let flameOffsetX = 0;
+            let flameOffsetY = 0;
+            let glowPulse = 0;
+
+            // --- Parameters ---
+            let intensity = 80; // 10-100%
+            let flickerAmount = 70; // 0-100%
+            let warmth = 60; // 0-100%
+
+            // --- Flame particles ---
+            let flameParticles = [];
+            const MAX_PARTICLES = 80;
+
+            // --- Particle class for flame sparks ---
+            class FlameParticle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    const angle = (Math.random() - 0.5) * 0.8;
+                    const speed = 0.5 + Math.random() * 1.5;
+                    this.x = 0;
+                    this.y = -20 - Math.random() * 10;
+                    this.vx = Math.sin(angle) * speed * (0.5 + Math.random() * 0.5);
+                    this.vy = -(1 + Math.random() * 2) * (intensity / 100) * 0.8;
+                    this.size = 1.5 + Math.random() * 3.5;
+                    this.life = 1;
+                    this.decay = 0.005 + Math.random() * 0.015;
+                    this.alpha = 0.6 + Math.random() * 0.4;
+                    this.color = Math.random() > 0.3 ? 'gold' : 'orange';
+                }
+
+                update() {
+                    this.x += this.vx + (Math.random() - 0.5) * 0.2;
+                    this.y += this.vy;
+                    this.vy += 0.02;
+                    this.life -= this.decay;
+                    this.alpha *= 0.998;
+                    this.size *= 0.999;
+                    return this.life > 0 && this.size > 0.3;
+                }
+
+                draw(ctx) {
+                    const alpha = this.alpha * this.life * (intensity / 100) * 0.8;
+                    const color = this.color === 'gold' ?
+                        `rgba(255, 200, 100, ${alpha})` :
+                        `rgba(255, 150, 50, ${alpha * 0.8})`;
+
+                    ctx.save();
+                    ctx.shadowBlur = this.size * 4;
+                    ctx.shadowColor = `rgba(255, 180, 80, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.8, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Candle drawing ---
+            function drawCandle(ctx, cx, cy, time) {
+                const intensityFactor = intensity / 100;
+                const flickerFactor = flickerAmount / 100;
+                const warmthFactor = warmth / 100;
+
+                // --- Background ---
+                const bgGrad = ctx.createRadialGradient(
+                    cx, cy - 80, 20,
+                    cx, cy - 80, 400
+                );
+                const darkBase = 5;
+                const darkMid = 15 + warmthFactor * 10;
+                bgGrad.addColorStop(0, `rgb(${darkMid + 20}, ${darkMid + 10}, ${darkMid})`);
+                bgGrad.addColorStop(0.3, `rgb(${darkMid + 5}, ${darkMid}, ${darkMid - 5})`);
+                bgGrad.addColorStop(0.7, `rgb(${darkBase + 5}, ${darkBase}, ${darkBase})`);
+                bgGrad.addColorStop(1, `rgb(${darkBase}, ${darkBase - 2}, ${darkBase - 5})`);
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // --- Candle glow (atmospheric) ---
+                if (isLit) {
+                    const glowRadius = 150 + intensityFactor * 100 + Math.sin(time * 0.02) * 10 * flickerFactor;
+                    const glowGrad = ctx.createRadialGradient(
+                        cx + flameOffsetX * 0.3,
+                        cy - 80 + flameOffsetY * 0.3,
+                        10,
+                        cx + flameOffsetX * 0.3,
+                        cy - 80 + flameOffsetY * 0.3,
+                        glowRadius
+                    );
+
+                    const glowAlpha = (0.3 + intensityFactor * 0.4) * (0.8 + Math.sin(time * 0.03) * 0.1 * flickerFactor);
+                    const r = Math.round(200 + warmthFactor * 55);
+                    const g = Math.round(140 + warmthFactor * 60);
+                    const b = Math.round(60 + (1 - warmthFactor) * 40);
+
+                    glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.3})`);
+                    glowGrad.addColorStop(0.2, `rgba(${r - 20}, ${g - 10}, ${b - 10}, ${glowAlpha * 0.15})`);
+                    glowGrad.addColorStop(0.5, `rgba(${r - 40}, ${g - 20}, ${b - 20}, ${glowAlpha * 0.05})`);
+                    glowGrad.addColorStop(1, `rgba(${r - 60}, ${g - 30}, ${b - 30}, 0)`);
+
+                    ctx.fillStyle = glowGrad;
+                    ctx.fillRect(0, 0, W, H);
+
+                    // Secondary wider glow
+                    const glowGrad2 = ctx.createRadialGradient(
+                        cx + flameOffsetX * 0.2,
+                        cy - 60 + flameOffsetY * 0.2,
+                        50,
+                        cx + flameOffsetX * 0.2,
+                        cy - 60 + flameOffsetY * 0.2,
+                        glowRadius * 1.8
+                    );
+                    glowGrad2.addColorStop(0, `rgba(${r - 30}, ${g - 20}, ${b - 20}, ${glowAlpha * 0.05})`);
+                    glowGrad2.addColorStop(1, `rgba(${r - 60}, ${g - 40}, ${b - 40}, 0)`);
+                    ctx.fillStyle = glowGrad2;
+                    ctx.fillRect(0, 0, W, H);
+                }
+
+                // --- Candle body ---
+                ctx.save();
+
+                // Candle holder/base
+                const baseY = cy + 60;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(0,0,0,0.4)';
+
+                // Holder
+                const holderGrad = ctx.createLinearGradient(cx - 30, baseY, cx + 30, baseY);
+                holderGrad.addColorStop(0, '#4a3a2a');
+                holderGrad.addColorStop(0.3, '#6a5a4a');
+                holderGrad.addColorStop(0.5, '#8a7a6a');
+                holderGrad.addColorStop(0.7, '#6a5a4a');
+                holderGrad.addColorStop(1, '#3a2a1a');
+
+                ctx.beginPath();
+                ctx.ellipse(cx, baseY + 10, 35, 8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = holderGrad;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.ellipse(cx, baseY, 30, 7, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#5a4a3a';
+                ctx.fill();
+
+                // Candle wax
+                const waxGrad = ctx.createLinearGradient(cx - 20, cy + 40, cx + 20, cy + 40);
+                waxGrad.addColorStop(0, '#d4c8b0');
+                waxGrad.addColorStop(0.2, '#f0e8d8');
+                waxGrad.addColorStop(0.5, '#faf2e8');
+                waxGrad.addColorStop(0.8, '#f0e8d8');
+                waxGrad.addColorStop(1, '#c8bca8');
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.beginPath();
+                ctx.roundRect(cx - 18, cy - 20, 36, 65, 3);
+                ctx.fillStyle = waxGrad;
+                ctx.fill();
+
+                // Wax drip details
+                ctx.shadowBlur = 5;
+                for (let i = 0; i < 5; i++) {
+                    const dx = (Math.random() - 0.5) * 24;
+                    const dy = 10 + Math.random() * 30;
+                    const dw = 3 + Math.random() * 5;
+                    const dh = 5 + Math.random() * 15;
+                    ctx.beginPath();
+                    ctx.ellipse(cx + dx, cy + dy, dw, dh, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(240, 232, 220, ${0.3 + Math.random() * 0.4})`;
+                    ctx.fill();
+                }
+
+                // Wax pool on top
+                const waxPoolGrad = ctx.createRadialGradient(
+                    cx, cy - 20, 2,
+                    cx, cy - 20, 16
+                );
+                waxPoolGrad.addColorStop(0, 'rgba(255, 240, 220, 0.6)');
+                waxPoolGrad.addColorStop(0.5, 'rgba(240, 225, 200, 0.4)');
+                waxPoolGrad.addColorStop(1, 'rgba(220, 200, 180, 0.1)');
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - 20, 16, 5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = waxPoolGrad;
+                ctx.fill();
+
+                ctx.restore();
+
+                // --- Wick ---
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = '#2a1a0a';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 20);
+                ctx.quadraticCurveTo(
+                    cx + flameOffsetX * 0.1,
+                    cy - 28 + flameOffsetY * 0.1,
+                    cx + flameOffsetX * 0.2,
+                    cy - 30 + flameOffsetY * 0.15
+                );
+                ctx.stroke();
+
+                // Wick tip glow (ember)
+                if (isLit) {
+                    const emberSize = 2 + Math.random() * 1;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = 'rgba(255, 150, 50, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(
+                        cx + flameOffsetX * 0.2,
+                        cy - 30 + flameOffsetY * 0.15,
+                        emberSize, 0, Math.PI * 2
+                    );
+                    ctx.fillStyle = `rgba(255, 200, 100, ${0.5 + Math.random() * 0.3})`;
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // --- Flame ---
+                if (isLit) {
+                    drawFlame(ctx, cx, cy, time, intensityFactor, flickerFactor, warmthFactor);
+                }
+
+                // --- Particles (sparks from flame) ---
+                if (isLit && !isPaused) {
+                    // Update and draw particles
+                    const spawnRate = Math.floor(3 / (intensity / 100));
+                    if (time % Math.max(1, spawnRate) === 0) {
+                        const p = new FlameParticle();
+                        p.x = cx + flameOffsetX * 0.5 + (Math.random() - 0.5) * 6;
+                        p.y = cy - 30 + flameOffsetY * 0.5 + (Math.random() - 0.5) * 8;
+                        p.vy = -(0.8 + Math.random() * 1.5) * (intensity / 100) * 0.8;
+                        p.vx = (Math.random() - 0.5) * 0.8;
+                        flameParticles.push(p);
+                    }
+
+                    // Limit particles
+                    while (flameParticles.length > MAX_PARTICLES) {
+                        flameParticles.shift();
+                    }
+
+                    // Update particles
+                    flameParticles = flameParticles.filter(p => p.update());
+                }
+
+                // Draw particles
+                ctx.save();
+                for (const p of flameParticles) {
+                    p.draw(ctx);
+                }
+                ctx.restore();
+
+                // --- Smoke particles (when blown out) ---
+                if (!isLit && smokeParticles) {
+                    drawSmoke(ctx, cx, cy, time);
+                }
+            }
+
+            // --- Flame drawing ---
+            function drawFlame(ctx, cx, cy, time, intensityFactor, flickerFactor, warmthFactor) {
+                // Flame offset with flicker
+                const flickerSpeed = 0.03 + (1 - flickerFactor) * 0.02;
+                const flickerStrength = 0.5 + flickerFactor * 0.5;
+
+                flameOffsetX = Math.sin(time * 0.05 + 0.5) * 3 * flickerStrength +
+                    Math.sin(time * 0.08 + 1.2) * 1.5 * flickerStrength;
+                flameOffsetY = Math.sin(time * 0.07 + 0.3) * 2 * flickerStrength +
+                    Math.cos(time * 0.04 + 0.8) * 1 * flickerStrength;
+
+                const fx = cx + flameOffsetX * 0.5;
+                const fy = cy - 28 + flameOffsetY * 0.5;
+
+                // Flame size with intensity
+                const baseSize = 25 + intensityFactor * 20;
+                const sizeVariation = 1 + Math.sin(time * 0.06) * 0.08 * flickerFactor;
+                const flameSize = baseSize * sizeVariation;
+
+                // Flame glow
+                ctx.save();
+
+                // Outer glow
+                const glowSize = flameSize * 2.5 + Math.sin(time * 0.04) * 10 * flickerFactor;
+                const glowGrad = ctx.createRadialGradient(
+                    fx, fy - flameSize * 0.3, 5,
+                    fx, fy - flameSize * 0.3, glowSize
+                );
+
+                const r = Math.round(255);
+                const g = Math.round(180 + warmthFactor * 50);
+                const b = Math.round(50 + (1 - warmthFactor) * 30);
+                const glowAlpha = 0.15 * intensityFactor;
+
+                glowGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${glowAlpha * 0.8})`);
+                glowGrad.addColorStop(0.3, `rgba(${r}, ${g - 20}, ${b - 10}, ${glowAlpha * 0.4})`);
+                glowGrad.addColorStop(0.6, `rgba(${r - 30}, ${g - 40}, ${b - 20}, ${glowAlpha * 0.15})`);
+                glowGrad.addColorStop(1, `rgba(${r - 60}, ${g - 60}, ${b - 30}, 0)`);
+
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = glowGrad;
+                ctx.fillRect(fx - glowSize, fy - glowSize * 1.2, glowSize * 2, glowSize * 2.4);
+
+                // Main flame
+                ctx.shadowBlur = 40 + intensityFactor * 40;
+                ctx.shadowColor = `rgba(255, 180, 80, ${0.2 * intensityFactor})`;
+
+                const flameGrad = ctx.createRadialGradient(
+                    fx - flameSize * 0.1, fy - flameSize * 0.4, 2,
+                    fx, fy - flameSize * 0.2, flameSize
+                );
+
+                const warmthOffset = warmthFactor * 20;
+                flameGrad.addColorStop(0, `rgba(255, 255, 240, ${0.9 * intensityFactor})`);
+                flameGrad.addColorStop(0.1, `rgba(255, 240, 200, ${0.8 * intensityFactor})`);
+                flameGrad.addColorStop(0.3, `rgba(255, ${200 + warmthOffset}, 100, ${0.7 * intensityFactor})`);
+                flameGrad.addColorStop(0.5, `rgba(255, ${160 + warmthOffset}, 60, ${0.6 * intensityFactor})`);
+                flameGrad.addColorStop(0.7, `rgba(255, ${120 + warmthOffset * 0.5}, 30, ${0.4 * intensityFactor})`);
+                flameGrad.addColorStop(0.9, `rgba(200, ${80 + warmthOffset * 0.5}, 20, ${0.2 * intensityFactor})`);
+                flameGrad.addColorStop(1, `rgba(150, 50, 10, 0)`);
+
+                // Flame shape (teardrop with flicker)
+                ctx.beginPath();
+                ctx.moveTo(fx, fy - flameSize * 1.2);
+                const leftWave = Math.sin(time * 0.07 + 0.2) * 2 * flickerFactor;
+                const rightWave = Math.sin(time * 0.09 + 0.7) * 2 * flickerFactor;
+
+                ctx.bezierCurveTo(
+                    fx - flameSize * 0.3 + leftWave,
+                    fy - flameSize * 0.7,
+                    fx - flameSize * 0.8 + leftWave,
+                    fy - flameSize * 0.2,
+                    fx - flameSize * 0.5 + leftWave,
+                    fy + flameSize * 0.1
+                );
+                ctx.bezierCurveTo(
+                    fx - flameSize * 0.3 + leftWave * 0.5,
+                    fy + flameSize * 0.2,
+                    fx + flameSize * 0.3 + rightWave * 0.5,
+                    fy + flameSize * 0.2,
+                    fx + flameSize * 0.5 + rightWave,
+                    fy + flameSize * 0.1
+                );
+                ctx.bezierCurveTo(
+                    fx + flameSize * 0.8 + rightWave,
+                    fy - flameSize * 0.2,
+                    fx + flameSize * 0.3 + rightWave,
+                    fy - flameSize * 0.7,
+                    fx,
+                    fy - flameSize * 1.2
+                );
+                ctx.closePath();
+
+                ctx.fillStyle = flameGrad;
+                ctx.fill();
+
+                // Inner flame (bright core)
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = `rgba(255, 220, 180, ${0.1 * intensityFactor})`;
+
+                const innerSize = flameSize * 0.4;
+                const innerGrad = ctx.createRadialGradient(
+                    fx - innerSize * 0.1, fy - innerSize * 0.3, 1,
+                    fx, fy - innerSize * 0.2, innerSize
+                );
+                innerGrad.addColorStop(0, `rgba(255, 255, 255, ${0.8 * intensityFactor})`);
+                innerGrad.addColorStop(0.3, `rgba(255, 255, 220, ${0.6 * intensityFactor})`);
+                innerGrad.addColorStop(0.6, `rgba(255, 230, 180, ${0.3 * intensityFactor})`);
+                innerGrad.addColorStop(1, `rgba(255, 200, 150, 0)`);
+
+                ctx.beginPath();
+                ctx.ellipse(fx, fy - flameSize * 0.3, innerSize * 0.6, innerSize * 0.8, 0, 0, Math.PI * 2);
+                ctx.fillStyle = innerGrad;
+                ctx.fill();
+
+                ctx.restore();
+
+                // Update flicker info
+                const flickerPercent = Math.round((0.5 + Math.sin(time * 0.05) * 0.5 * flickerFactor) * 100);
+                flickerInfo.textContent = `🔥 Flicker: ${flickerPercent}%`;
+            }
+
+            // --- Smoke particles ---
+            let smokeParticles = [];
+
+            class SmokeParticle {
+                constructor(x, y) {
+                    this.x = x + (Math.random() - 0.5) * 20;
+                    this.y = y + (Math.random() - 0.5) * 10;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = -0.2 - Math.random() * 0.5;
+                    this.size = 5 + Math.random() * 15;
+                    this.life = 1;
+                    this.decay = 0.003 + Math.random() * 0.005;
+                    this.alpha = 0.3 + Math.random() * 0.3;
+                }
+
+                update() {
+                    this.x += this.vx + (Math.random() - 0.5) * 0.1;
+                    this.y += this.vy;
+                    this.vy -= 0.005;
+                    this.size += 0.1;
+                    this.life -= this.decay;
+                    this.alpha *= 0.995;
+                    return this.life > 0 && this.alpha > 0.01;
+                }
+
+                draw(ctx) {
+                    const alpha = this.alpha * this.life * 0.4;
+                    ctx.save();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(200, 200, 200, ${alpha * 0.2})`;
+                    ctx.fill();
+
+                    // Soft edge
+                    const grad = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size
+                    );
+                    grad.addColorStop(0, `rgba(200, 200, 200, ${alpha * 0.1})`);
+                    grad.addColorStop(0.5, `rgba(180, 180, 180, ${alpha * 0.05})`);
+                    grad.addColorStop(1, `rgba(150, 150, 150, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            function drawSmoke(ctx, cx, cy, time) {
+                // Spawn smoke particles
+                if (time % 2 === 0 && smokeParticles.length < 50) {
+                    const p = new SmokeParticle(
+                        cx + (Math.random() - 0.5) * 15,
+                        cy - 30 + (Math.random() - 0.5) * 5
+                    );
+                    smokeParticles.push(p);
+                }
+
+                // Update and draw smoke
+                smokeParticles = smokeParticles.filter(p => p.update());
+
+                for (const p of smokeParticles) {
+                    p.draw(ctx);
+                }
+
+                // Candle status
+                candleStatus.textContent = '🕯️ Blown Out';
+            }
+
+            // --- Blow out candle ---
+            function blowOutCandle() {
+                if (isLit) {
+                    isLit = false;
+                    flameParticles = [];
+                    blowBtn.textContent = '🔥 Relight';
+                    candleStatus.textContent = '🕯️ Blown Out';
+                    hint.textContent = '💨 Candle blown out!';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 2000);
+                } else {
+                    isLit = true;
+                    smokeParticles = [];
+                    blowBtn.textContent = '💨';
+                    candleStatus.textContent = '🕯️ Lit';
+                    hint.textContent = '🔥 Relit!';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 2000);
+                }
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                if (!isPaused) {
+                    // Update glow pulse for subtle animation
+                    glowPulse = Math.sin(time * 0.02) * 0.5 + 0.5;
+
+                    // Update candle status if lit
+                    if (isLit) {
+                        const flickerPercent = Math.round((0.5 + Math.sin(time * 0.05) * 0.5 * (flickerAmount / 100)) * 100);
+                        candleStatus.textContent = `🕯️ Lit`;
+                        flickerInfo.textContent = `🔥 Flicker: ${flickerPercent}%`;
+                    }
+                }
+
+                // Clear and draw
+                ctx.clearRect(0, 0, W, H);
+
+                // Draw scene
+                drawCandle(ctx, W / 2, H / 2 - 20, time);
+
+                // Continue animation
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function togglePause() {
+                isPaused = !isPaused;
+                toggleBtn.textContent = isPaused ? '▶️' : '⏸️';
+                if (isPaused) {
+                    hint.textContent = '⏸️ Paused';
+                    hint.classList.remove('hidden');
+                    setTimeout(() => hint.classList.add('hidden'), 1500);
+                }
+            }
+
+            function resetCandle() {
+                isLit = true;
+                flameParticles = [];
+                smokeParticles = [];
+                blowBtn.textContent = '💨';
+                candleStatus.textContent = '🕯️ Lit';
+                time = 0;
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+            });
+
+            flickerSlider.addEventListener('input', function() {
+                flickerAmount = parseFloat(this.value);
+                flickerLabel.textContent = `${Math.round(flickerAmount)}%`;
+            });
+
+            warmthSlider.addEventListener('input', function() {
+                warmth = parseFloat(this.value);
+                warmthLabel.textContent = `${Math.round(warmth)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', togglePause);
+            resetBtn.addEventListener('click', resetCandle);
+            blowBtn.addEventListener('click', blowOutCandle);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    togglePause();
+                }
+                if (e.key === 'r' || e.key === 'R') resetCandle();
+                if (e.key === 'b' || e.key === 'B') blowOutCandle();
+                if (e.key === 'ArrowRight') {
+                    intensity = Math.min(100, intensity + 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+                if (e.key === 'ArrowLeft') {
+                    intensity = Math.max(10, intensity - 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 3000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🕯️ Candle Glow ready!');
+            console.log('Controls: Space (pause), R (reset), B (blow/relight)');
+            console.log('          Arrow Left/Right to adjust intensity');
+
+        })();
+    </script>
+</body>
+</html>

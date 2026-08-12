@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ease-slide-up Fix — Issue #7960 Demo</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Demo page styles (not part of the fix) ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    h1 { font-size: 1.4rem; margin-bottom: 0.4rem; color: #a78bfa; }
+    p.subtitle { font-size: 0.9rem; color: #888; margin-bottom: 2.5rem; }
+
+    .scenario {
+      margin-bottom: 2.5rem;
+    }
+
+    .scenario-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #666;
+      margin-bottom: 0.6rem;
+    }
+
+    /* ── The problematic container (overflow:hidden flex) ── */
+    .flex-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow: hidden;          /* was clipping the animated child */
+      border: 1px solid #2a2a3a;
+      border-radius: 10px;
+      padding: 1.25rem;
+      background: #16161f;
+      max-width: 420px;
+    }
+
+    .card-text {
+      font-size: 1.05rem;
+      line-height: 1.6;
+      color: #d0d0e8;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #1e1b4b;
+      color: #a78bfa;
+      font-size: 0.75rem;
+      padding: 0.2em 0.65em;
+      border-radius: 999px;
+      margin-top: 0.3rem;
+    }
+
+    /* ── Replay button ── */
+    .replay-btn {
+      display: inline-block;
+      margin-top: 0.8rem;
+      padding: 0.45em 1.1em;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .replay-btn:hover { background: #4338ca; }
+
+    .note {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 1rem;
+      max-width: 420px;
+    }
+    .note strong { color: #a78bfa; }
+  </style>
+</head>
+<body>
+
+  <h1>ease-slide-up Fix · Issue #7960</h1>
+  <p class="subtitle">Resize to ≤ 480 px and replay — text baseline no longer clips.</p>
+
+  <!-- Scenario 1: single-line text -->
+  <div class="scenario">
+    <div class="scenario-label">Scenario 1 — single-line text in flex container</div>
+    <div class="flex-container" id="s1">
+      <p class="card-text ease-slide-up">Motion that respects its boundaries.</p>
+      <span class="tag ease-slide-up">EaseMotion CSS</span>
+    </div>
+    <button class="replay-btn" onclick="replay('s1')">↺ Replay</button>
+  </div>
+
+  <!-- Scenario 2: multi-line text (the exact bug report case) -->
+  <div class="scenario">
+    <div class="scenario-label">Scenario 2 — multi-line text (original bug reproduction)</div>
+    <div class="flex-container" id="s2">
+      <p class="card-text ease-slide-up">
+        The baseline of the text was cut off by about 10 px during the final
+        20 % of the keyframe timeline — especially visible on iPhone 15 Simulator
+        at 375 px width and in Chrome responsive mode.
+      </p>
+    </div>
+    <button class="replay-btn" onclick="replay('s2')">↺ Replay</button>
+  </div>
+
+  <!-- Scenario 3: stacked cards -->
+  <div class="scenario">
+    <div class="scenario-label">Scenario 3 — stacked animated cards</div>
+    <div class="flex-container" id="s3" style="gap:1rem">
+      <p class="card-text ease-slide-up" style="animation-delay:0s">First card, fully visible.</p>
+      <p class="card-text ease-slide-up" style="animation-delay:0.12s">Second card, fully visible.</p>
+      <p class="card-text ease-slide-up" style="animation-delay:0.24s">Third card — baseline intact.</p>
+    </div>
+    <button class="replay-btn" onclick="replay('s3')">↺ Replay</button>
+  </div>
+
+  <p class="note">
+    <strong>Fix summary:</strong> Added <code>will-change: transform, opacity</code> to promote
+    the element to its own compositing layer, preventing the flex parent's
+    <code>overflow:hidden</code> boundary from clipping mid-animation. Reduced
+    <code>translateY</code> from 24 px → 14 px on mobile viewports. Added
+    <code>padding-bottom / margin-bottom</code> guard for baseline breathing room.
+  </p>
+
+  <script>
+    // Replay animation by cloning the node (resets animation)
+    function replay(id) {
+      const container = document.getElementById(id);
+      const clone = container.cloneNode(true);
+      clone.querySelectorAll('.ease-slide-up').forEach(el => {
+        el.style.animationName = 'none';
+        void el.offsetWidth; // reflow
+        el.style.animationName = '';
+      });
+      container.replaceWith(clone);
+      // re-attach button listener
+      clone.parentElement.querySelector('.replay-btn').onclick = () => replay(id);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ship Wake · V-shaped Wake Follows Movement</title>
+    <meta name="description" content="Interactive ship wake simulation with V-shaped trail following mouse movement, dynamic water ripples, and maritime atmosphere.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🚢 SHIP WAKE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="wakeCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🚢 SHIP WAKE</span>
+            <small>move mouse → V-shaped wake trail</small>
+        </div>
+        <div class="hint">
+            <span>🌊 V-shaped wake follows your movement across the sea</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('wakeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            
+            // ---- Ship position (follows mouse) ----
+            let shipX = W / 2;
+            let shipY = H / 2;
+            let targetX = W / 2;
+            let targetY = H / 2;
+            let shipAngle = 0;
+            
+            // ---- Wake particles ----
+            let wakeParticles = [];
+            const MAX_PARTICLES = 120;
+
+            // ---- Wake Particle Class ----
+            class WakeParticle {
+                constructor(x, y, angle, speed) {
+                    this.x = x;
+                    this.y = y;
+                    this.angle = angle;
+                    this.speed = speed || 0.5 + Math.random() * 0.5;
+                    this.size = 2 + Math.random() * 4;
+                    this.life = 1;
+                    this.decay = 0.003 + Math.random() * 0.005;
+                    this.vx = Math.cos(angle) * this.speed * 1.5;
+                    this.vy = Math.sin(angle) * this.speed * 1.5;
+                    this.alpha = 0.6 + Math.random() * 0.4;
+                    this.wobble = Math.random() * Math.PI * 2;
+                    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                }
+
+                update(dt) {
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    this.vx *= 0.99;
+                    this.vy *= 0.99;
+                    this.life -= this.decay * dt;
+                    this.wobble += this.wobbleSpeed * dt;
+                    this.x += Math.sin(this.wobble) * 0.1;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    const alpha = this.life * this.alpha;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * this.life, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create wake particles ----
+            function createWake(x, y, angle, count) {
+                const spread = 0.4 + speed * 0.04;
+                const baseSpeed = 0.3 + speed * 0.05;
+                
+                for (let i = 0; i < count; i++) {
+                    const side = (i % 2 === 0) ? 1 : -1;
+                    const offsetAngle = angle + side * (Math.PI * 0.15 + Math.random() * spread);
+                    const particleSpeed = baseSpeed + Math.random() * 0.5;
+                    const p = new WakeParticle(
+                        x + (Math.random() - 0.5) * 10,
+                        y + (Math.random() - 0.5) * 10,
+                        offsetAngle,
+                        particleSpeed
+                    );
+                    p.size = 1 + Math.random() * 4;
+                    p.decay = 0.002 + Math.random() * 0.004;
+                    wakeParticles.push(p);
+                }
+                
+                // Limit particles
+                if (wakeParticles.length > MAX_PARTICLES) {
+                    wakeParticles.splice(0, wakeParticles.length - MAX_PARTICLES);
+                }
+            }
+
+            // ---- Draw ship ----
+            function drawShip(ctx, x, y, angle) {
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+                
+                // Glow
+                ctx.shadowColor = 'rgba(200, 230, 255, 0.1)';
+                ctx.shadowBlur = 30;
+                
+                // Hull
+                ctx.fillStyle = '#2a3a4a';
+                ctx.shadowColor = 'rgba(100, 150, 200, 0.2)';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.moveTo(20, 0);
+                ctx.quadraticCurveTo(10, -10, -15, -8);
+                ctx.lineTo(-20, -4);
+                ctx.lineTo(-20, 4);
+                ctx.lineTo(-15, 8);
+                ctx.quadraticCurveTo(10, 10, 20, 0);
+                ctx.fill();
+                
+                // Deck
+                ctx.fillStyle = '#3a4a5a';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.moveTo(18, -2);
+                ctx.quadraticCurveTo(8, -7, -12, -5);
+                ctx.lineTo(-18, -2);
+                ctx.lineTo(-12, 2);
+                ctx.quadraticCurveTo(8, 5, 18, 2);
+                ctx.fill();
+                
+                // Cabin
+                ctx.fillStyle = '#4a5a6a';
+                ctx.shadowBlur = 5;
+                ctx.fillRect(5, -6, 8, 4);
+                ctx.fillStyle = '#5a6a7a';
+                ctx.fillRect(7, -5, 4, 2);
+                
+                // Smoke stack
+                ctx.fillStyle = '#3a4a5a';
+                ctx.fillRect(-2, -10, 4, 6);
+                ctx.fillStyle = '#2a3a4a';
+                ctx.fillRect(-1, -12, 2, 3);
+                
+                // Bow wave effect
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.moveTo(20, -2);
+                ctx.quadraticCurveTo(25, -5, 28, 0);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(20, 2);
+                ctx.quadraticCurveTo(25, 5, 28, 0);
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            // ---- Draw background ----
+            function drawBackground() {
+                // Ocean gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, H);
+                gradient.addColorStop(0, '#0a1628');
+                gradient.addColorStop(0.2, '#0d2137');
+                gradient.addColorStop(0.4, '#1a3a5a');
+                gradient.addColorStop(0.6, '#0d2a4a');
+                gradient.addColorStop(0.8, '#0a1a2a');
+                gradient.addColorStop(1, '#050a12');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Horizon line
+                ctx.strokeStyle = 'rgba(100, 180, 220, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H * 0.3);
+                ctx.lineTo(W, H * 0.3);
+                ctx.stroke();
+                
+                // Light reflections on water
+                for (let i = 0; i < 8; i++) {
+                    const x = (i * 157 + 20) % W;
+                    const y = H * 0.3 + 20 + (i * 73 + time * 0.01 * 5) % (H * 0.6);
+                    const size = 20 + Math.sin(time * 0.01 + i * 2) * 10 + 10;
+                    const gradient2 = ctx.createRadialGradient(x, y, 0, x, y, size);
+                    gradient2.addColorStop(0, `rgba(100, 200, 255, ${0.02 + Math.sin(time * 0.01 + i) * 0.01})`);
+                    gradient2.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                    ctx.fillStyle = gradient2;
+                    ctx.fillRect(x - size, y - size, size * 2, size * 2);
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                const dt = speed / 5;
+                time += 0.01 * dt;
+                
+                // Smooth ship movement toward target (mouse position)
+                shipX += (targetX - shipX) * 0.08 * dt;
+                shipY += (targetY - shipY) * 0.08 * dt;
+                
+                // Calculate ship angle based on movement direction
+                const dx = targetX - shipX;
+                const dy = targetY - shipY;
+                if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                    const targetAngle = Math.atan2(dy, dx);
+                    let angleDiff = targetAngle - shipAngle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    shipAngle += angleDiff * 0.05 * dt;
+                }
+                
+                // Create wake particles
+                if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+                    const count = Math.floor(2 + speed * 0.3);
+                    createWake(shipX, shipY, shipAngle + Math.PI, count);
+                }
+                
+                // Update particles
+                for (let p of wakeParticles) {
+                    p.update(dt);
+                }
+                wakeParticles = wakeParticles.filter(p => p.life > 0);
+                
+                // ---- Draw ----
+                drawBackground();
+                
+                // Draw wake particles (behind ship)
+                for (let p of wakeParticles) {
+                    p.draw(ctx);
+                }
+                
+                // Draw ship
+                drawShip(ctx, shipX, shipY, shipAngle);
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                targetX = Math.min(W - 20, Math.max(20, x));
+                targetY = Math.min(H - 20, Math.max(20, y));
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetWake() {
+                wakeParticles = [];
+                shipX = W / 2;
+                shipY = H / 2;
+                targetX = W / 2;
+                targetY = H / 2;
+                shipAngle = 0;
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetWake);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetWake();
+                }
+            });
+
+            // ---- Initialize ----
+            animate();
+
+            console.log('🚢 Ship Wake · Move mouse to create V-shaped wake · Space to pause · R to reset');
+        })();
+    </script>
+</body>
+</html>
