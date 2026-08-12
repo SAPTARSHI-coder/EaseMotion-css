@@ -1,46 +1,24 @@
 # Magnetic Button
 
-Buttons that magnetically pull toward the cursor on hover, with a smooth spring-back effect when the mouse leaves.
+A CTA button that is magnetically attracted to the cursor within a radius, with a click ripple and springy release.
 
-## Features
+## How is it used?
 
-- Magnetic pull effect toward cursor within a configurable radius
-- Smooth spring-back animation on mouse leave
-- Click pulse feedback
-- Multiple button variants (solid, outline, sizes)
-- Customizable via CSS custom properties
-
-## Usage
+Wrap the button in a `.magnet-wrap` container and drive two CSS variables from JavaScript:
 
 ```html
-<button class="magnetic-btn" data-strength="0.3" data-radius="150">Click Me</button>
+<div class="magnet-wrap" id="magnetWrap">
+  <button class="magnetic">Get Started</button>
+</div>
 ```
 
-```css
-:root {
-  --mb-duration: 0.4s;
-  --mb-btn-color: #3b82f6;
-  --mb-btn-hover: #2563eb;
-  --mb-magnetic-radius: 150px;
-  --mb-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
-  --mb-radius: 12px;
-}
+```js
+btn.style.setProperty('--mx', dx + 'px');
+btn.style.setProperty('--my', dy + 'px');
 ```
 
-## Custom Properties
+The button reads `--mx` / `--my` in its `translate()` transform and springs back with a bounce curve when the cursor leaves. Clicking spawns a `.ripple` span that scales out via `rippleExpand`.
 
-| Property | Default | Description |
-|---|---|---|
-| `--mb-duration` | `0.4s` | Spring-back transition duration |
-| `--mb-btn-color` | `#3b82f6` | Default button background |
-| `--mb-btn-hover` | `#2563eb` | Hover background color |
-| `--mb-magnetic-radius` | `150px` | Radius of magnetic effect |
-| `--mb-shadow` | `...` | Button box shadow |
-| `--mb-radius` | `12px` | Button border radius |
+## Why is it useful?
 
-## Data Attributes
-
-| Attribute | Default | Description |
-|---|---|---|
-| `data-strength` | `0.3` | How strongly the button follows the cursor |
-| `data-radius` | `150` | Detection radius in pixels |
+Magnetic interactions give buttons a tactile, premium feel and are a signature pattern in modern landing pages. This component packages the whole effect — springy translate, clamped radius, hover shadow lift, and material-style ripple — behind two CSS variables and a tiny event handler, matching EaseMotion's class-driven, dependency-free approach.
