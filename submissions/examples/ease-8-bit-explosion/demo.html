@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8-bit Explosion · Retro Pixel Explosion</title>
+    <meta name="description" content="Retro 8-bit explosion effect with pixel particles, shockwave rings, and classic arcade sound effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">💥 8-BIT EXPLOSION</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="explosionCanvas" width="400" height="400"></canvas>
+            <div class="scanline-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="explode-btn" id="explodeBtn">💥 EXPLODE!</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="size-control">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="1" max="5" value="3" step="1">
+                <span id="sizeLabel">3</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>💥 8-BIT EXPLOSION</span>
+            <small>pixel particles · shockwave · retro sound</small>
+        </div>
+        <div class="hint">
+            <span>⬛ pixel particles burst outward · click to explode</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('explosionCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 400, H = 400;
+            
+            const explodeBtn = document.getElementById('explodeBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+
+            // ---- 8-bit Palette ----
+            const COLORS = [
+                '#ff2d55', // red
+                '#ff6b00', // orange
+                '#ffd700', // yellow
+                '#39ff14', // green
+                '#00d4ff', // blue
+                '#b026ff', // purple
+                '#ff1493', // pink
+                '#00ffcc', // cyan
+                '#ffffff', // white
+                '#ff4500', // bright red
+                '#7cfc00', // lime
+                '#ff69b4'  // hot pink
+            ];
+
+            // ---- Particle System ----
+            let particles = [];
+            let shockwaves = [];
+            let sparks = [];
+            let isExploding = false;
+
+            // ---- Particle Class ----
+            class Particle {
+                constructor(x, y, size, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = size || 4 + Math.random() * 8;
+                    this.color = color || COLORS[Math.floor(Math.random() * COLORS.length)];
+                    
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 6;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    
+                    this.life = 1;
+                    this.decay = 0.005 + Math.random() * 0.015;
+                    this.gravity = 0.05;
+                    this.friction = 0.99;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotationSpeed = (Math.random() - 0.5) * 0.1;
+                    
+                    // Shape: square or rectangle (8-bit style)
+                    this.shape = Math.random() > 0.3 ? 'square' : 'rect';
+                    this.w = this.size;
+                    this.h = this.size * (0.6 + Math.random() * 0.8);
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    this.life -= this.decay;
+                    this.rotation += this.rotationSpeed;
+                    
+                    // Bounce off walls
+                    if (this.x < 0 || this.x > W) {
+                        this.vx *= -0.5;
+                        this.x = Math.max(0, Math.min(W, this.x));
+                    }
+                    if (this.y < 0 || this.y > H) {
+                        this.vy *= -0.5;
+                        this.y = Math.max(0, Math.min(H, this.y));
+                    }
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+                    
+                    // Pixelated look - crisp edges
+                    ctx.imageSmoothingEnabled = false;
+                    
+                    const size = this.size * this.life;
+                    const w = this.w * this.life;
+                    const h = this.h * this.life;
+                    
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 10 * this.life;
+                    
+                    if (this.shape === 'square') {
+                        ctx.fillRect(-size/2, -size/2, size, size);
+                    } else {
+                        ctx.fillRect(-w/2, -h/2, w, h);
+                    }
+                    
+                    // Add pixel highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.shadowBlur = 0;
+                    if (this.shape === 'square') {
+                        ctx.fillRect(-size/4, -size/4, size/2, 2);
+                    } else {
+                        ctx.fillRect(-w/4, -h/4, w/2, 2);
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Shockwave Class ----
+            class Shockwave {
+                constructor(x, y, maxRadius, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = 5;
+                    this.maxRadius = maxRadius || 150 + Math.random() * 50;
+                    this.speed = 3 + Math.random() * 4;
+                    this.life = 1;
+                    this.color = color || '#ffd700';
+                    this.width = 3 + Math.random() * 4;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.life = 1 - (this.radius / this.maxRadius);
+                    return this.life > 0 && this.radius < this.maxRadius;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = this.life * 0.6;
+                    ctx.strokeStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 20 * this.life;
+                    ctx.lineWidth = this.width * this.life;
+                    
+                    // Draw pixelated shockwave (8-bit style ring)
+                    const segments = 16;
+                    const step = (Math.PI * 2) / segments;
+                    ctx.beginPath();
+                    for (let i = 0; i <= segments; i++) {
+                        const angle = i * step;
+                        const r = this.radius + (i % 2 === 0 ? 0 : 2);
+                        const x = this.x + Math.cos(angle) * r;
+                        const y = this.y + Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    
+                    // Inner glow ring
+                    ctx.shadowBlur = 40 * this.life;
+                    ctx.globalAlpha = this.life * 0.3;
+                    ctx.lineWidth = this.width * this.life * 2;
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Spark Class ----
+            class Spark {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * 3;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.life = 1;
+                    this.decay = 0.02 + Math.random() * 0.03;
+                    this.color = '#ffffff';
+                    this.size = 2 + Math.random() * 4;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.life -= this.decay;
+                    this.size *= 0.98;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowColor = this.color;
+                    ctx.shadowBlur = 15 * this.life;
+                    const s = this.size * this.life;
+                    ctx.fillRect(this.x - s/2, this.y - s/2, s, s);
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Explosion ----
+            function createExplosion(x, y, size) {
+                if (isExploding) return;
+                isExploding = true;
+                
+                // Clear previous particles
+                particles = [];
+                shockwaves = [];
+                sparks = [];
+                
+                const numParticles = 30 + size * 20;
+                const numShockwaves = 1 + Math.floor(size / 2);
+                const numSparks = 10 + size * 5;
+                
+                // Create particles
+                for (let i = 0; i < numParticles; i++) {
+                    const pSize = 3 + Math.random() * (4 + size * 2);
+                    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    const p = new Particle(x, y, pSize, color);
+                    // Add some randomness to spread
+                    p.vx *= (0.8 + Math.random() * 0.4);
+                    p.vy *= (0.8 + Math.random() * 0.4);
+                    particles.push(p);
+                }
+                
+                // Create shockwaves
+                for (let i = 0; i < numShockwaves; i++) {
+                    const delay = i * 100;
+                    const colors = ['#ffd700', '#ff6b00', '#ff2d55', '#39ff14', '#00d4ff'];
+                    setTimeout(() => {
+                        const sw = new Shockwave(
+                            x + (Math.random() - 0.5) * 20,
+                            y + (Math.random() - 0.5) * 20,
+                            120 + size * 30 + Math.random() * 40,
+                            colors[i % colors.length]
+                        );
+                        shockwaves.push(sw);
+                    }, delay);
+                }
+                
+                // Create sparks
+                for (let i = 0; i < numSparks; i++) {
+                    const s = new Spark(x, y);
+                    sparks.push(s);
+                }
+                
+                // Play explosion sound
+                playExplosionSound(size);
+                
+                // Update button
+                explodeBtn.textContent = '💥 BOOM!';
+                explodeBtn.disabled = true;
+                
+                // Auto-clear after animation
+                setTimeout(() => {
+                    isExploding = false;
+                    explodeBtn.textContent = '💥 EXPLODE!';
+                    explodeBtn.disabled = false;
+                }, 3000);
+            }
+
+            // ---- Explosion Sound ----
+            function playExplosionSound(size) {
+                try {
+                    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const now = audioCtx.currentTime;
+                    
+                    // Noise burst (8-bit explosion sound)
+                    const bufferSize = audioCtx.sampleRate * 0.3;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        const env = Math.exp(-i / (bufferSize * 0.2));
+                        data[i] = (Math.random() * 2 - 1) * env * 0.8;
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gainNoise = audioCtx.createGain();
+                    gainNoise.gain.setValueAtTime(0.3 + size * 0.05, now);
+                    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    noise.connect(gainNoise);
+                    gainNoise.connect(audioCtx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.3);
+                    
+                    // Low boom (square wave)
+                    const boom = audioCtx.createOscillator();
+                    const gainBoom = audioCtx.createGain();
+                    boom.type = 'square';
+                    boom.frequency.setValueAtTime(80 + size * 20, now);
+                    boom.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+                    gainBoom.gain.setValueAtTime(0.2 + size * 0.03, now);
+                    gainBoom.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    boom.connect(gainBoom);
+                    gainBoom.connect(audioCtx.destination);
+                    boom.start(now);
+                    boom.stop(now + 0.2);
+                    
+                    // High impact (noise burst)
+                    const impact = audioCtx.createOscillator();
+                    const gainImpact = audioCtx.createGain();
+                    impact.type = 'sawtooth';
+                    impact.frequency.setValueAtTime(200 + size * 50, now);
+                    impact.frequency.exponentialRampToValueAtTime(50, now + 0.1);
+                    gainImpact.gain.setValueAtTime(0.1 + size * 0.02, now);
+                    gainImpact.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    impact.connect(gainImpact);
+                    gainImpact.connect(audioCtx.destination);
+                    impact.start(now);
+                    impact.stop(now + 0.1);
+                    
+                } catch (e) {
+                    console.log('Audio not available');
+                }
+            }
+
+            // ---- Draw ----
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+                
+                // Draw background grid
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid lines (subtle)
+                ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i <= 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 20, 0);
+                    ctx.lineTo(i * 20, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 20);
+                    ctx.lineTo(W, i * 20);
+                    ctx.stroke();
+                }
+                
+                // Draw sparks (behind)
+                sparks = sparks.filter(s => s.life > 0);
+                for (let s of sparks) {
+                    s.update();
+                    s.draw(ctx);
+                }
+                
+                // Draw shockwaves
+                shockwaves = shockwaves.filter(sw => sw.update());
+                for (let sw of shockwaves) {
+                    sw.draw(ctx);
+                }
+                
+                // Draw particles (on top)
+                particles = particles.filter(p => p.life > 0);
+                for (let p of particles) {
+                    p.update();
+                    p.draw(ctx);
+                }
+                
+                // Continue animation if particles exist
+                if (particles.length > 0 || shockwaves.length > 0 || sparks.length > 0) {
+                    requestAnimationFrame(draw);
+                } else {
+                    // Draw empty state
+                    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                    ctx.font = '16px "Courier New", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('💥 CLICK TO EXPLODE', W/2, H/2 + 10);
+                }
+            }
+
+            // ---- Trigger Explosion ----
+            function triggerExplosion() {
+                if (isExploding) return;
+                
+                // Get center of canvas
+                const x = W / 2;
+                const y = H / 2;
+                const size = parseInt(sizeSlider.value);
+                
+                createExplosion(x, y, size);
+                
+                // Start drawing loop if not already running
+                draw();
+            }
+
+            // ---- Reset ----
+            function resetExplosion() {
+                particles = [];
+                shockwaves = [];
+                sparks = [];
+                isExploding = false;
+                explodeBtn.textContent = '💥 EXPLODE!';
+                explodeBtn.disabled = false;
+                
+                // Redraw empty state
+                draw();
+            }
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                const val = this.value;
+                sizeLabel.textContent = val;
+            });
+
+            // ---- Event Listeners ----
+            explodeBtn.addEventListener('click', triggerExplosion);
+            resetBtn.addEventListener('click', resetExplosion);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    triggerExplosion();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetExplosion();
+                }
+            });
+
+            // ---- Click on canvas to explode ----
+            canvas.addEventListener('click', function(e) {
+                triggerExplosion();
+            });
+
+            // ---- Initial draw ----
+            draw();
+
+            console.log('💥 8-Bit Explosion · click to explode · Enter/Space to trigger · R to reset');
+        })();
+    </script>
+</body>
+</html>

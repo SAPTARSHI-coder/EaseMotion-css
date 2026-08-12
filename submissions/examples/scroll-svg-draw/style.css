@@ -1,0 +1,283 @@
+/* ============================================================
+   Scroll-Driven SVG Draw — EaseMotion CSS · Issue #74707
+   CSS-only SVG path drawing animation using animation-timeline: view()
+   ============================================================ */
+
+/* ── Design tokens ──────────────────────────────────────────── */
+:root {
+  --color-bg:         #06060c;
+  --color-surface:    #0f0f1a;
+  --color-border:     rgba(255, 255, 255, 0.08);
+  --color-text:       #f0f0f8;
+  --color-muted:      #888898;
+  --color-accent-1:   #FF007A;
+  --color-accent-2:   #7928CA;
+  --color-accent-3:   #4A00E0;
+  --font-sans:        'Outfit', system-ui, sans-serif;
+  --radius-lg:        1.25rem;
+}
+
+/* ── Reset / base ───────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── Layout wrapper ─────────────────────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Shared typography helpers ──────────────────────────────── */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent-1);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(121, 40, 202, 0.18) 0%, transparent 70%),
+    var(--color-bg);
+}
+
+.hero h1 {
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  background: linear-gradient(135deg, #fff 30%, #a0a0b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1.25rem;
+}
+
+.hero p {
+  max-width: 50ch;
+  color: var(--color-muted);
+  font-size: 1.1rem;
+  font-weight: 300;
+  margin-bottom: 2.5rem;
+}
+
+.scroll-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  border: 1px solid var(--color-border);
+  padding: 0.6rem 1.4rem;
+  border-radius: 100px;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.scroll-hint:hover,
+.scroll-hint:focus-visible {
+  border-color: var(--color-accent-1);
+  color: var(--color-text);
+  outline: none;
+}
+
+.scroll-hint span {
+  display: inline-block;
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(6px); }
+}
+
+/* ── Draw stage ─────────────────────────────────────────────── */
+.draw-stage {
+  /* Tall section so the scroll-timeline has room to breathe */
+  min-height: 200vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8rem 2rem 4rem;
+  gap: 5rem;
+}
+
+.draw-stage__label {
+  text-align: center;
+}
+
+.draw-stage__label h2 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* ── SVG wrapper (sticky so it stays visible while scrolling) ─ */
+.svg-wrapper {
+  position: sticky;
+  top: 10vh;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustration {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* ── Path styles ─────────────────────────────────────────────── */
+.path-ghost {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.path-draw {
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  filter: drop-shadow(0 0 12px rgba(121, 40, 202, 0.7))
+          drop-shadow(0 0 28px rgba(255, 0, 122, 0.4));
+
+  /*
+    pathLength="1" is set on the element in HTML, so the full path
+    length is normalised to exactly 1. Setting dasharray and dashoffset
+    to 1 hides the stroke completely at the start.
+  */
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+/*
+  Wrap the scroll-timeline animation inside prefers-reduced-motion: no-preference
+  so users who prefer reduced motion are never shown the animated effect.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .path-draw {
+    animation: draw-svg linear forwards;
+
+    /* Link the animation to the element's scroll position in the viewport */
+    animation-timeline: view();
+
+    /*
+      entry 0%  → animation starts the moment .path-draw enters the viewport
+      entry 80% → animation reaches 100% progress while still well within view
+    */
+    animation-range: entry 0% entry 80%;
+  }
+}
+
+@keyframes draw-svg {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ── Callout ─────────────────────────────────────────────────── */
+.callout {
+  padding: 6rem 2rem;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.callout h2 {
+  font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.callout__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  max-width: 65ch;
+  text-align: left;
+  color: var(--color-muted);
+  font-size: 0.975rem;
+}
+
+.callout__list li {
+  padding-left: 1.4rem;
+  position: relative;
+}
+
+.callout__list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent-1);
+}
+
+code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.88em;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  color: var(--color-text);
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .draw-stage {
+    padding: 5rem 1.25rem 3rem;
+    gap: 3rem;
+  }
+
+  .callout {
+    padding: 4rem 1.25rem;
+  }
+}
+
+/* ── Focus styles ─────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent-1);
+  outline-offset: 3px;
+}
