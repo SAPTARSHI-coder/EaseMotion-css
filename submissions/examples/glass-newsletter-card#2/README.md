@@ -1,0 +1,51 @@
+# Glass Newsletter Card
+
+This submission demonstrates a modern newsletter subscription card built with
+**EaseMotion CSS**. It includes glass styling, animated entrance effects,
+hover motion, form styling, and responsive layout.
+
+## 🌟 Features
+
+- **Newsletter subscription card** with email input and subscribe button.
+- **Staggered entrance animation** using `ease-slide-up` and delay utilities.
+- **Hover lift effect** using `ease-hover-lift`.
+- **Button hover animation** using `ease-hover-grow`.
+- **Perk badges** for showing subscription benefits.
+- **Accessible form label** using a visually hidden label.
+- **Custom glass-style CSS** with gradient background.
+- **Responsive layout** for mobile and desktop.
+
+## 📁 Files
+
+- `demo.html` — interactive newsletter card demo
+- `style.css` — original glass newsletter styling
+- `README.md` — documentation for this submission
+
+## 🛠️ How to Run
+
+1. Open `demo.html` in your browser.
+2. Watch the newsletter card animate on page load.
+3. Hover over the card to see the lift effect.
+4. Hover over the subscribe button to see the grow effect.
+5. Resize the browser window to check responsive behavior.
+
+## 🧩 EaseMotion Classes Used
+
+- `ease-center`
+- `ease-card`
+- `ease-btn`
+- `ease-fade-in`
+- `ease-slide-up`
+- `ease-delay-100`
+- `ease-delay-200`
+- `ease-delay-300`
+- `ease-delay-400`
+- `ease-hover-lift`
+- `ease-hover-grow`
+
+## ✅ Validation Checklist
+
+- `demo.html` includes `<!DOCTYPE html>`, `<html>`, `<head>`, and `<body>`.
+- `style.css` contains original CSS.
+- `README.md` explains the feature and usage.
+- The folder is placed under `submissions/examples/glass-newsletter-card/`.

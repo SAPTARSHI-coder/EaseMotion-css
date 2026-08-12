@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Magma Vein</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="header">
+      <div>
+        <span class="eyebrow">GEOLOGICAL SYSTEM</span>
+        <h1>🌋 Magma Vein</h1>
+        <p>
+          A living volcanic network flowing beneath the surface.
+        </p>
+      </div>
+
+      <div class="status">
+        <span class="status-dot"></span>
+        <span id="statusText">ACTIVE</span>
+      </div>
+    </section>
+
+    <section class="volcano-card">
+
+      <div class="stats">
+        <div class="stat">
+          <span>ACTIVE VEINS</span>
+          <strong id="veinCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>ERUPTIONS</span>
+          <strong id="eruptionCount">0</strong>
+        </div>
+
+        <div class="stat">
+          <span>HEAT</span>
+          <strong id="heatValue">50%</strong>
+        </div>
+      </div>
+
+      <canvas id="magmaCanvas"></canvas>
+
+      <div class="controls">
+
+        <div class="control">
+          <label for="heatSlider">
+            <span>🌡️ Volcanic Pressure</span>
+            <strong id="sliderValue">50%</strong>
+          </label>
+
+          <input
+            id="heatSlider"
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+          >
+        </div>
+
+        <div class="buttons">
+          <button id="eruptBtn">
+            🌋 Trigger Eruption
+          </button>
+
+          <button id="resetBtn">
+            ⟳ Reset
+          </button>
+        </div>
+
+      </div>
+
+      <div class="message">
+        <span>🔥</span>
+        <span id="messageText">
+          Magma is moving beneath the surface...
+        </span>
+      </div>
+
+    </section>
+
+    <footer>
+      Click anywhere on the rock to create a new magma source ·
+      Space to erupt · R to reset
+    </footer>
+
+  </main>
+
+<script>
+
+const canvas = document.getElementById("magmaCanvas");
+const ctx = canvas.getContext("2d");
+
+const heatSlider = document.getElementById("heatSlider");
+const sliderValue = document.getElementById("sliderValue");
+const heatValue = document.getElementById("heatValue");
+
+const veinCount = document.getElementById("veinCount");
+const eruptionCount = document.getElementById("eruptionCount");
+
+const messageText = document.getElementById("messageText");
+const statusText = document.getElementById("statusText");
+
+let width = 0;
+let height = 0;
+
+let heat = 50;
+let eruptions = 0;
+
+let veins = [];
+let particles = [];
+let pulses = [];
+
+const random = (min, max) =>
+  Math.random() * (max - min) + min;
+
+
+class Vein {
+
+  constructor(x, y, angle, depth = 0) {
+
+    this.x = x;
+    this.y = y;
+
+    this.angle = angle;
+    this.depth = depth;
+
+    this.length = random(50, 130);
+    this.progress = 0;
+
+    this.speed = random(0.0015, 0.0035);
+
+    this.width = Math.max(
+      1.5,
+      5 - depth * 0.8
+    );
+
+    this.active = true;
+    this.phase = random(0, Math.PI * 2);
+
+    this.childrenCreated = false;
+  }
+
+  update() {
+
+    this.progress += this.speed * (0.5 + heat / 70);
+
+    if (this.progress >= 1) {
+
+      this.progress = 1;
+      this.active = false;
+
+      if (
+        !this.childrenCreated &&
+        this.depth < 3 &&
+        Math.random() < 0.75
+      ) {
+
+        this.childrenCreated = true;
+
+        const spread = random(0.35, 0.8);
+
+        veins.push(
+          new Vein(
+            this.x + Math.cos(this.angle) * this.length,
+            this.y + Math.sin(this.angle) * this.length,
+            this.angle + spread,
+            this.depth + 1
+          )
+        );
+
+        veins.push(
+          new Vein(
+            this.x + Math.cos(this.angle) * this.length,
+            this.y + Math.sin(this.angle) * this.length,
+            this.angle - spread,
+            this.depth + 1
+          )
+        );
+      }
+    }
+
+    if (
+      this.progress > 0.25 &&
+      Math.random() < 0.02 + heat * 0.0005
+    ) {
+      pulses.push({
+        vein: this,
+        progress: this.progress,
+        life: 0
+      });
+    }
+
+  }
+
+  draw() {
+
+    const endX =
+      this.x +
+      Math.cos(this.angle) *
+      this.length *
+      this.progress;
+
+    const endY =
+      this.y +
+      Math.sin(this.angle) *
+      this.length *
+      this.progress;
+
+    ctx.save();
+
+    ctx.lineCap = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(endX, endY);
+
+    ctx.strokeStyle =
+      `rgba(120, 24, 8, ${0.45 + heat / 180})`;
+
+    ctx.lineWidth = this.width + 7;
+
+    ctx.shadowBlur = 16;
+    ctx.shadowColor = "rgba(255, 45, 0, 0.35)";
+
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(endX, endY);
+
+    const intensity = 0.25 + heat / 120;
+
+    ctx.strokeStyle =
+      `rgba(255, ${80 + heat * 1.2}, 15, ${intensity})`;
+
+    ctx.lineWidth = this.width;
+
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "rgba(255, 90, 10, 0.9)";
+
+    ctx.stroke();
+
+    ctx.restore();
+  }
+}
+
+
+function createVein(x, y) {
+
+  const angle = random(
+    0,
+    Math.PI * 2
+  );
+
+  veins.push(
+    new Vein(x, y, angle)
+  );
+
+  eruptions++;
+
+  createParticles(x, y, 18);
+
+  messageText.textContent =
+    "Fresh magma has entered the network.";
+
+  updateStats();
+}
+
+
+function createParticles(x, y, amount) {
+
+  for (let i = 0; i < amount; i++) {
+
+    particles.push({
+
+      x,
+      y,
+
+      vx: random(-1.5, 1.5),
+      vy: random(-2.5, -0.5),
+
+      life: random(25, 60),
+
+      size: random(1, 3)
+
+    });
+  }
+}
+
+
+function updateParticles() {
+
+  particles.forEach(p => {
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    p.vy += 0.025;
+
+    p.life--;
+
+  });
+
+  particles =
+    particles.filter(p => p.life > 0);
+}
+
+
+function drawParticles() {
+
+  particles.forEach(p => {
+
+    ctx.save();
+
+    ctx.globalAlpha =
+      Math.min(1, p.life / 25);
+
+    ctx.fillStyle = "#ff7a18";
+
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = "#ff3b00";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      p.x,
+      p.y,
+      p.size,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+  });
+}
+
+
+function updatePulses() {
+
+  pulses.forEach(p => {
+
+    p.life += 0.035;
+
+    p.progress += 0.018;
+
+    if (p.progress > 1)
+      p.life = 2;
+
+  });
+
+  pulses =
+    pulses.filter(p => p.life < 1.5);
+}
+
+
+function drawPulses() {
+
+  pulses.forEach(p => {
+
+    const v = p.vein;
+
+    const distance =
+      v.length * p.progress;
+
+    const x =
+      v.x + Math.cos(v.angle) * distance;
+
+    const y =
+      v.y + Math.sin(v.angle) * distance;
+
+    ctx.save();
+
+    ctx.globalAlpha =
+      1 - p.life;
+
+    ctx.fillStyle = "#fff4b0";
+
+    ctx.shadowBlur = 20;
+
+    ctx.shadowColor = "#ff5a00";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      3 + heat / 30,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+
+  });
+}
+
+
+function drawRock() {
+
+  ctx.fillStyle = "#161313";
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  for (let i = 0; i < 160; i++) {
+
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+
+    ctx.fillStyle =
+      `rgba(255,255,255,${Math.random() * 0.035})`;
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x,
+      y,
+      Math.random() * 2,
+      0,
+      Math.PI * 2
+    );
+
+    ctx.fill();
+
+  }
+}
+
+
+function updateStats() {
+
+  veinCount.textContent =
+    veins.filter(v => v.active).length;
+
+  eruptionCount.textContent =
+    eruptions;
+
+  heatValue.textContent =
+    `${heat}%`;
+
+  sliderValue.textContent =
+    `${heat}%`;
+
+}
+
+
+function resizeCanvas() {
+
+  const rect =
+    canvas.getBoundingClientRect();
+
+  width = canvas.width =
+    rect.width * devicePixelRatio;
+
+  height = canvas.height =
+    rect.height * devicePixelRatio;
+
+  ctx.scale(
+    devicePixelRatio,
+    devicePixelRatio
+  );
+
+  width = rect.width;
+  height = rect.height;
+
+  resetNetwork();
+
+}
+
+
+function resetNetwork() {
+
+  veins = [];
+  particles = [];
+  pulses = [];
+  eruptions = 0;
+
+  createVein(
+    width / 2,
+    height / 2
+  );
+
+  eruptions = 0;
+
+  messageText.textContent =
+    "Magma is moving beneath the surface...";
+
+  updateStats();
+
+}
+
+
+function animate() {
+
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+  drawRock();
+
+  veins.forEach(v => {
+    v.update();
+    v.draw();
+  });
+
+  updatePulses();
+  drawPulses();
+
+  updateParticles();
+  drawParticles();
+
+  updateStats();
+
+  requestAnimationFrame(animate);
+
+}
+
+
+canvas.addEventListener(
+  "click",
+  event => {
+
+    const rect =
+      canvas.getBoundingClientRect();
+
+    createVein(
+      event.clientX - rect.left,
+      event.clientY - rect.top
+    );
+
+  }
+);
+
+
+heatSlider.addEventListener(
+  "input",
+  () => {
+
+    heat =
+      Number(heatSlider.value);
+
+    if (heat < 15) {
+
+      statusText.textContent =
+        "DORMANT";
+
+      messageText.textContent =
+        "The volcanic system is cooling...";
+
+    } else if (heat > 80) {
+
+      statusText.textContent =
+        "CRITICAL";
+
+      messageText.textContent =
+        "Extreme magma pressure detected.";
+
+    } else {
+
+      statusText.textContent =
+        "ACTIVE";
+
+    }
+
+    updateStats();
+
+  }
+);
+
+
+document.getElementById("eruptBtn")
+  .addEventListener("click", () => {
+
+    createVein(
+      random(width * 0.2, width * 0.8),
+      random(height * 0.25, height * 0.75)
+    );
+
+  });
+
+
+document.getElementById("resetBtn")
+  .addEventListener(
+    "click",
+    resetNetwork
+  );
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.code === "Space") {
+
+      event.preventDefault();
+
+      document
+        .getElementById("eruptBtn")
+        .click();
+
+    }
+
+    if (
+      event.key.toLowerCase() === "r"
+    ) {
+
+      resetNetwork();
+
+    }
+
+  }
+);
+
+
+window.addEventListener(
+  "resize",
+  resizeCanvas
+);
+
+
+resizeCanvas();
+animate();
+
+</script>
+
+</body>
+</html>

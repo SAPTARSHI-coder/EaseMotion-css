@@ -1,0 +1,151 @@
+// ==========================================================================
+// EaseMotion CSS — Backdrop Layer mixin
+// Issue #63804
+// --------------------------------------------------------------------------
+// Scrims and frosted surfaces with a fallback that actually works.
+//
+// The failure this prevents is a legibility one, not a cosmetic one. The
+// common pattern is:
+//
+//   background: rgba(15, 23, 42, 0.4);
+//   backdrop-filter: blur(12px);
+//
+// Where `backdrop-filter` is unsupported you are left with a 40%-opaque
+// scrim over whatever was behind it. On a busy photo or a dense table,
+// modal text becomes genuinely unreadable — the blur was doing the work,
+// and the alpha alone cannot.
+//
+// The fix is to make the FALLBACK opaque enough to stand alone, then
+// reduce the alpha only inside `@supports`, once the blur is confirmed to
+// be carrying part of the load.
+// ==========================================================================
+
+@use "sass:color";
+@use "sass:meta";
+
+$backdrop-surface: #0b1120 !default;
+$backdrop-blur: 12px !default;
+
+// Alpha used when blur is unavailable — high enough to be readable alone.
+$backdrop-alpha-solid: 0.92 !default;
+
+// Alpha used once blur is confirmed — the blur carries the rest.
+$backdrop-alpha-blurred: 0.62 !default;
+
+// --------------------------------------------------------------------------
+// backdrop-layer
+//
+// @param {Color}  $surface  Base colour.
+// @param {Number} $blur     Blur radius.
+// @param {Number} $solid    Fallback alpha.
+// @param {Number} $blurred  Alpha applied once blur is supported.
+// @param {Number} $saturate Saturation boost, which keeps colour behind a
+//                           heavy blur from going flat and grey.
+// --------------------------------------------------------------------------
+@mixin backdrop-layer(
+    $surface: $backdrop-surface,
+    $blur: $backdrop-blur,
+    $solid: $backdrop-alpha-solid,
+    $blurred: $backdrop-alpha-blurred,
+    $saturate: 160%
+) {
+    @if meta.type-of($surface) != "color" {
+        @error "backdrop-layer(): $surface must be a color, got `#{$surface}`.";
+    }
+
+    @if $solid < $blurred {
+        @error "backdrop-layer(): $solid (#{$solid}) must be >= $blurred "
+             + "(#{$blurred}) — the fallback has to be MORE opaque, since "
+             + "it carries legibility on its own without the blur.";
+    }
+
+    // Opaque fallback first. Legible with no blur at all.
+    background-color: color.change($surface, $alpha: $solid);
+
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+        -webkit-backdrop-filter: blur($blur) saturate($saturate);
+        backdrop-filter: blur($blur) saturate($saturate);
+        background-color: color.change($surface, $alpha: $blurred);
+    }
+}
+
+// --------------------------------------------------------------------------
+// backdrop-scrim
+//
+// Full-viewport scrim behind a dialog. Kept separate because a scrim is
+// about obscuring content, not about being a surface itself.
+// --------------------------------------------------------------------------
+@mixin backdrop-scrim(
+    $surface: #030712,
+    $blur: 6px,
+    $solid: 0.78,
+    $blurred: 0.6
+) {
+    background-color: color.change($surface, $alpha: $solid);
+    inset: 0;
+    position: fixed;
+
+    @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+        -webkit-backdrop-filter: blur($blur);
+        backdrop-filter: blur($blur);
+        background-color: color.change($surface, $alpha: $blurred);
+    }
+
+    // Forced colors discards both the alpha and the filter, so the scrim
+    // would vanish and leave the dialog floating over live content.
+    @media (forced-colors: active) {
+        background-color: Canvas;
+    }
+}
+
+// --------------------------------------------------------------------------
+// backdrop-edge
+//
+// A sticky header or footer over scrolling content. The mask fades the
+// blur out at the inner edge, so there is no hard line where the frosted
+// region stops — that hard line is what makes naive sticky headers look
+// like a pasted-on rectangle.
+// --------------------------------------------------------------------------
+@mixin backdrop-edge($surface: $backdrop-surface, $blur: 10px, $side: top) {
+    @if $side != top and $side != bottom {
+        @error "backdrop-edge(): $side must be `top` or `bottom`, got `#{$side}`.";
+    }
+
+    background-color: color.change($surface, $alpha: 0.9);
+
+    @supports (backdrop-filter: blur(1px)) and (mask-image: linear-gradient(#000, #000)) {
+        $direction: to bottom;
+
+        @if $side == bottom {
+            $direction: to top;
+        }
+
+        -webkit-backdrop-filter: blur($blur);
+        backdrop-filter: blur($blur);
+        background-color: color.change($surface, $alpha: 0.55);
+        -webkit-mask-image: linear-gradient($direction, #000 65%, transparent);
+        mask-image: linear-gradient($direction, #000 65%, transparent);
+    }
+}
+
+// --------------------------------------------------------------------------
+// backdrop-perf-hint
+//
+// `backdrop-filter` promotes an element to its own compositing layer and
+// re-samples everything behind it every frame. Applied to a scrolling or
+// animating element it is one of the most expensive things in CSS.
+//
+// This limits the cost by confining what the browser must re-evaluate.
+// Use it on frosted surfaces that move; skip it on static ones, where the
+// extra layer is pure overhead.
+// --------------------------------------------------------------------------
+@mixin backdrop-perf-hint {
+    contain: paint;
+    will-change: backdrop-filter;
+
+    // will-change on a permanently-hinted element wastes memory, so it is
+    // dropped for users who will not see the animation anyway.
+    @media (prefers-reduced-motion: reduce) {
+        will-change: auto;
+    }
+}
