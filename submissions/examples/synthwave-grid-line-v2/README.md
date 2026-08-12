@@ -1,40 +1,39 @@
-# Synthwave Grid Line 3D Effect
+# Synthwave Grid Line Progress
 
-A smooth and performant 3D Synthwave Grid Line animation created using
-pure HTML and vanilla CSS.
+A futuristic, CSS-only progress bar inspired by retro synthwave grids,
+neon dashboards, and cyberpunk interfaces.
 
-## Features
+## ✨ Features
 
-- Pure HTML and CSS
+- Pure HTML and Vanilla CSS
 - No JavaScript
-- No external libraries
-- 3D perspective grid
-- Animated neon grid
-- Synthwave sun effect
-- Neon pink and cyan glow
-- Smooth hover interaction
-- Hardware-accelerated transforms
-- Responsive design
-- Dark-mode friendly
-- `prefers-reduced-motion` accessibility support
+- No external dependencies
+- Animated synthwave grid lines
+- Neon gradient progress fill
+- Glowing progress endpoint
+- Smooth progress transitions
+- Responsive layout
+- Light and dark color-scheme support
+- Accessible progressbar semantics
+- `prefers-reduced-motion` support
+- Hardware-friendly CSS transforms
+- Multiple progress states
 
-## Preview
+## 🎨 Design
 
-The component creates a retro-futuristic synthwave scene with a glowing
-sun, animated perspective grid, neon horizon, and 3D hover interaction.
+The component combines:
 
-## Technologies
+- Synthwave-inspired neon colors
+- Moving grid lines
+- Gradient progress fills
+- Soft neon glow
+- Glass-like dashboard surfaces
+- Retro-futuristic typography
 
-- HTML5
-- CSS3
-- CSS 3D transforms
-- CSS animations
-- CSS gradients
-- CSS media queries
+## 📁 Files
 
-## Usage
-
-Add the HTML markup from `index.html` and link the stylesheet:
-
-```html
-<link rel="stylesheet" href="style.css">
+```text
+synthwave-grid-line/
+├── demo.html
+├── style.css
+└── README.md
