@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkler Trail</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Sparkler Trail</h1>
+        <p class="subtitle">Sparkler writing with fading trails</p>
+
+        <div class="sparkler-wrapper">
+            <canvas id="sparklerCanvas"></canvas>
+
+            <div class="controls">
+                <button id="drawBtn">✏️ Draw</button>
+                <button id="clearBtn">🗑️ Clear</button>
+                <button id="colorBtn">Color: Gold</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">✨ Draw with sparkler</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('sparklerCanvas');
+        const ctx = canvas.getContext('2d');
+        const drawBtn = document.getElementById('drawBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let sparkles = [];
+        let trail = [];
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let isDrawing = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let lastX = 0;
+        let lastY = 0;
+
+        // ===== COLOR PALETTES =====
+        const colorPalettes = [
+            {
+                name: 'Gold',
+                colors: ['#ffd700', '#ffb300', '#ffcc44', '#ffdd66', '#ffee88'],
+                glow: '#ffd700'
+            },
+            {
+                name: 'Rainbow',
+                colors: ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0088ff', '#8800ff'],
+                glow: '#ff8800'
+            },
+            {
+                name: 'Pink',
+                colors: ['#ff1493', '#ff0080', '#ff69b4', '#ff85c1', '#ffb6c1'],
+                glow: '#ff1493'
+            },
+            {
+                name: 'Blue',
+                colors: ['#0066ff', '#0044cc', '#0088ff', '#00aaff', '#44ddff'],
+                glow: '#0066ff'
+            },
+            {
+                name: 'Green',
+                colors: ['#00ff44', '#00cc33', '#44ff66', '#88ff88', '#ccffaa'],
+                glow: '#00ff44'
+            },
+            {
+                name: 'Purple',
+                colors: ['#7c3aed', '#8b5cf6', '#a78bfa', '#c084fc', '#e0a0ff'],
+                glow: '#7c3aed'
+            },
+            {
+                name: 'White',
+                colors: ['#ffffff', '#f0f0f0', '#e0e0e0', '#d0d0d0', '#c0c0c0'],
+                glow: '#ffffff'
+            },
+            {
+                name: 'Fire',
+                colors: ['#ff4500', '#ff6b00', '#ff8c00', '#ffa500', '#ffcc00'],
+                glow: '#ff6b00'
+            },
+        ];
+
+        // ===== SPARKLE CLASS =====
+        class Sparkle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color || '#ffd700';
+                this.size = 1 + Math.random() * 3;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2 - 1;
+                this.life = 1;
+                this.maxLife = 15 + Math.random() * 25;
+                this.age = 0;
+                this.gravity = 0.02 + Math.random() * 0.03;
+                this.phase = Math.random() * Math.PI * 2;
+                this.glow = 0.3 + Math.random() * 0.4;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.05;
+                this.shape = Math.random() > 0.5 ? 'star' : 'circle';
+                this.trail = [];
+                this.maxTrail = 3 + Math.floor(Math.random() * 3);
+            }
+
+            update() {
+                this.age++;
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += this.gravity;
+                this.vx *= 0.99;
+                this.life = 1 - this.age / this.maxLife;
+                this.size *= 0.998;
+                this.rotation += this.rotSpeed;
+                this.phase += 0.05;
+
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+            }
+
+            draw(ctx) {
+                if (this.life <= 0) return;
+                const alpha = this.life * 0.8;
+                const size = this.size * this.life;
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * alpha * 0.15;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x - this.x, t.y - this.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 5);
+                grad.addColorStop(0, this.color + '80');
+                grad.addColorStop(0.5, this.color + '40');
+                grad.addColorStop(1, this.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 5, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.fill();
+
+                // Main shape
+                if (this.shape === 'star') {
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                        const r = i % 2 === 0 ? size : size * 0.4;
+                        const px = Math.cos(angle + this.phase) * r;
+                        const py = Math.sin(angle + this.phase) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color + '80';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = alpha * 0.9;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = this.color + '80';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0 || this.age > this.maxLife;
+            }
+        }
+
+        // ===== DRAW TRAIL =====
+        function drawTrail(ctx, trailPoints) {
+            if (trailPoints.length < 2) return;
+
+            const palette = colorPalettes[colorMode];
+            const colors = palette.colors;
+
+            // Draw glow trail
+            for (let i = 1; i < trailPoints.length; i++) {
+                const p1 = trailPoints[i - 1];
+                const p2 = trailPoints[i];
+                const t = i / trailPoints.length;
+                const alpha = t * 0.3;
+                const width = 2 + t * 4;
+
+                const colorIdx = Math.floor(t * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = color;
+                ctx.globalAlpha = alpha;
+                ctx.lineWidth = width;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '80';
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw bright core
+            for (let i = 1; i < trailPoints.length; i++) {
+                const p1 = trailPoints[i - 1];
+                const p2 = trailPoints[i];
+                const t = i / trailPoints.length;
+                const alpha = t * 0.15;
+                const width = 0.5 + t * 1;
+
+                const colorIdx = Math.floor(t * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.strokeStyle = '#ffffff';
+                ctx.globalAlpha = alpha;
+                ctx.lineWidth = width;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw end point glow
+            if (trailPoints.length > 0) {
+                const last = trailPoints[trailPoints.length - 1];
+                const colorIdx = Math.floor(0.8 * (colors.length - 1));
+                const color = colors[colorIdx % colors.length];
+                const grad = ctx.createRadialGradient(last.x, last.y, 0, last.x, last.y, 20);
+                grad.addColorStop(0, color + '80');
+                grad.addColorStop(0.5, color + '40');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(last.x, last.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+            }
+        }
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.3, '#060612');
+            grad.addColorStop(0.6, '#030308');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i < 20; i++) {
+                const x = (i / 20) * w;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+            }
+            for (let i = 0; i < 15; i++) {
+                const y = (i / 15) * h;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+        }
+
+        // ===== DRAWING CONTROLS =====
+        function startDrawing(x, y) {
+            isDrawing = true;
+            mouseX = x;
+            mouseY = y;
+            lastX = x;
+            lastY = y;
+            trail = [{ x, y }];
+            statusText.textContent = '✨ Writing...';
+        }
+
+        function drawMove(x, y) {
+            if (!isDrawing) return;
+            
+            mouseX = x;
+            mouseY = y;
+            
+            // Add to trail
+            const dist = Math.sqrt((x - lastX) ** 2 + (y - lastY) ** 2);
+            if (dist > 2) {
+                trail.push({ x, y });
+                lastX = x;
+                lastY = y;
+            }
+
+            // Spawn sparkles along the path
+            if (Math.random() < 0.3) {
+                const palette = colorPalettes[colorMode];
+                const colors = palette.colors;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const sparkle = new Sparkle(
+                    x + (Math.random() - 0.5) * 5,
+                    y + (Math.random() - 0.5) * 5,
+                    color
+                );
+                sparkle.vx = (Math.random() - 0.5) * 3;
+                sparkle.vy = (Math.random() - 0.5) * 3 - 1;
+                sparkles.push(sparkle);
+            }
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            statusText.textContent = '✨ Sparkler trail';
+        }
+
+        // ===== CLEAR =====
+        function clearCanvas() {
+            trail = [];
+            sparkles = [];
+            statusText.textContent = '🗑️ Cleared';
+            setTimeout(() => {
+                statusText.textContent = '✨ Draw with sparkler';
+            }, 1000);
+        }
+
+        // ===== RESET =====
+        function resetSparkler() {
+            trail = [];
+            sparkles = [];
+            colorMode = 0;
+            colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = '✨ Draw with sparkler';
+            }, 1000);
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += 0.01;
+
+            // Update sparkles
+            for (let i = sparkles.length - 1; i >= 0; i--) {
+                const s = sparkles[i];
+                s.update();
+                if (s.isDead()) {
+                    sparkles.splice(i, 1);
+                }
+            }
+
+            // Spawn sparkles from trail end
+            if (isDrawing && trail.length > 0) {
+                const last = trail[trail.length - 1];
+                if (Math.random() < 0.2) {
+                    const palette = colorPalettes[colorMode];
+                    const colors = palette.colors;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const sparkle = new Sparkle(
+                        last.x + (Math.random() - 0.5) * 8,
+                        last.y + (Math.random() - 0.5) * 8,
+                        color
+                    );
+                    sparkle.vx = (Math.random() - 0.5) * 3;
+                    sparkle.vy = (Math.random() - 0.5) * 3 - 1;
+                    sparkles.push(sparkle);
+                }
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            // Draw trail
+            if (trail.length > 0) {
+                drawTrail(ctx, trail);
+            }
+
+            // Draw sparkles
+            for (const s of sparkles) {
+                s.draw(ctx);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const trailLen = trail.length;
+                const sparkleCount = sparkles.length;
+                statusText.textContent = `✨ ${trailLen} points • ${sparkleCount} sparkles • ${colorPalettes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            startDrawing(x, y);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            drawMove(x, y);
+        });
+
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        // Touch
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            startDrawing(x, y);
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (touch.clientX - rect.left) * scaleX;
+            const y = (touch.clientY - rect.top) * scaleY;
+            drawMove(x, y);
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // ===== CONTROLS =====
+
+        // Draw
+        drawBtn.addEventListener('click', () => {
+            // Create a demo drawing
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            
+            // Clear previous trail
+            trail = [];
+            
+            // Draw a star pattern
+            const points = [];
+            const numPoints = 5;
+            const radius = 80;
+            for (let i = 0; i <= numPoints * 2; i++) {
+                const angle = (i / (numPoints * 2)) * Math.PI * 2 - Math.PI / 2;
+                const r = i % 2 === 0 ? radius : radius * 0.4;
+                points.push({
+                    x: cx + Math.cos(angle) * r,
+                    y: cy + Math.sin(angle) * r
+                });
+            }
+            
+            // Animate drawing
+            let idx = 0;
+            const interval = setInterval(() => {
+                if (idx < points.length) {
+                    trail.push(points[idx]);
+                    // Spawn sparkles
+                    const palette = colorPalettes[colorMode];
+                    const colors = palette.colors;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const sparkle = new Sparkle(
+                        points[idx].x + (Math.random() - 0.5) * 5,
+                        points[idx].y + (Math.random() - 0.5) * 5,
+                        color
+                    );
+                    sparkle.vx = (Math.random() - 0.5) * 3;
+                    sparkle.vy = (Math.random() - 0.5) * 3 - 1;
+                    sparkles.push(sparkle);
+                    idx++;
+                } else {
+                    clearInterval(interval);
+                    statusText.textContent = '⭐ Sparkle star!';
+                    setTimeout(() => {
+                        statusText.textContent = '✨ Draw with sparkler';
+                    }, 1500);
+                }
+            }, 50);
+        });
+
+        // Clear
+        clearBtn.addEventListener('click', clearCanvas);
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorPalettes.length;
+            colorBtn.textContent = `Color: ${colorPalettes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorPalettes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = '✨ Draw with sparkler';
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', resetSparkler);
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'c' || e.key === 'C') {
+                clearBtn.click();
+            }
+            if (e.key === 'd' || e.key === 'D') {
+                drawBtn.click();
+            }
+            if (e.key === 'p' || e.key === 'P') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                drawBtn.click();
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        colorBtn.textContent = `Color: ${colorPalettes[0].name}`;
+        statusText.textContent = '✨ Draw with sparkler';
+        lastFpsUpdate = performance.now();
+
+        render(lastFpsUpdate);
+
+        console.log('✨ Sparkler Trail loaded!');
+        console.log('💡 Draw on canvas with mouse/touch');
+        console.log('💡 D - Demo drawing');
+        console.log('💡 C - Clear');
+        console.log('💡 P - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Demo drawing');
+    </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💣 Minesweeper</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>💣 Minesweeper</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">💣 Mines</span>
+        <span class="stat-value" id="mineDisplay">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">🏆 Best</span>
+        <span class="stat-value" id="bestDisplay">—</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">⏱️ Time</span>
+        <span class="stat-value" id="timeDisplay">0</span>
+        <span class="stat-unit">s</span>
+      </div>
+    </div>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="startBtn">▶ Start Game</button>
+      <button class="control-btn" id="resetBtn">🔄 Reset</button>
+      <select class="difficulty-select" id="difficultySelect">
+        <option value="easy">Easy (9×9 · 10 Mines)</option>
+        <option value="medium" selected>Medium (16×16 · 40 Mines)</option>
+        <option value="hard">Hard (30×16 · 99 Mines)</option>
+      </select>
+    </div>
+
+    <div class="game-status" id="gameStatus">💣 Select difficulty and click Start!</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const mineDisplay = document.getElementById('mineDisplay');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const timeDisplay = document.getElementById('timeDisplay');
+      const startBtn = document.getElementById('startBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const difficultySelect = document.getElementById('difficultySelect');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Constants ----------
+      const DIFFICULTIES = {
+        easy: { rows: 9, cols: 9, mines: 10, cellSize: 40 },
+        medium: { rows: 16, cols: 16, mines: 40, cellSize: 30 },
+        hard: { rows: 16, cols: 30, mines: 99, cellSize: 25 }
+      };
+
+      // ---------- Game State ----------
+      let currentDifficulty = 'medium';
+      let rows = 16;
+      let cols = 16;
+      let mines = 40;
+      let cellSize = 30;
+      
+      let grid = [];
+      let revealed = [];
+      let flagged = [];
+      let minePositions = [];
+      let gameOver = false;
+      let gameWon = false;
+      let firstClick = true;
+      let timer = 0;
+      let timerInterval = null;
+      let flagCount = 0;
+      let revealedCount = 0;
+      let bestTimes = {};
+
+      // ---------- Load Best Times ----------
+      function loadBestTimes() {
+        const saved = localStorage.getItem('minesweeperBestTimes');
+        if (saved) {
+          try {
+            bestTimes = JSON.parse(saved);
+          } catch (e) {}
+        }
+        updateBestDisplay();
+      }
+
+      function saveBestTimes() {
+        localStorage.setItem('minesweeperBestTimes', JSON.stringify(bestTimes));
+      }
+
+      function updateBestDisplay() {
+        if (bestTimes[currentDifficulty]) {
+          bestDisplay.textContent = bestTimes[currentDifficulty] + 's';
+        } else {
+          bestDisplay.textContent = '—';
+        }
+      }
+
+      // ---------- Canvas Setup ----------
+      function setupCanvas() {
+        const totalWidth = cols * cellSize;
+        const totalHeight = rows * cellSize;
+        canvas.width = totalWidth;
+        canvas.height = totalHeight;
+        canvas.style.width = totalWidth + 'px';
+        canvas.style.height = totalHeight + 'px';
+      }
+
+      // ---------- Grid Functions ----------
+      function createGrid() {
+        grid = [];
+        revealed = [];
+        flagged = [];
+        minePositions = [];
+        flagCount = 0;
+        revealedCount = 0;
+        gameOver = false;
+        gameWon = false;
+        firstClick = true;
+        timer = 0;
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timeDisplay.textContent = '0';
+
+        for (let r = 0; r < rows; r++) {
+          grid.push(new Array(cols).fill(0));
+          revealed.push(new Array(cols).fill(false));
+          flagged.push(new Array(cols).fill(false));
+        }
+      }
+
+      function placeMines(firstRow, firstCol) {
+        let placed = 0;
+        while (placed < mines) {
+          const r = Math.floor(Math.random() * rows);
+          const c = Math.floor(Math.random() * cols);
+          // Don't place mine on first click position or adjacent
+          if (Math.abs(r - firstRow) <= 1 && Math.abs(c - firstCol) <= 1) continue;
+          if (grid[r][c] === -1) continue;
+          grid[r][c] = -1;
+          minePositions.push({ r, c });
+          placed++;
+        }
+
+        // Calculate numbers
+        for (const pos of minePositions) {
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const nr = pos.r + dr;
+              const nc = pos.c + dc;
+              if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && grid[nr][nc] !== -1) {
+                grid[nr][nc]++;
+              }
+            }
+          }
+        }
+
+        mineDisplay.textContent = mines - flagCount;
+      }
+
+      // ---------- Reveal Logic ----------
+      function revealCell(row, col) {
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+        if (revealed[row][col] || flagged[row][col]) return;
+
+        revealed[row][col] = true;
+        revealedCount++;
+
+        if (grid[row][col] === -1) {
+          // Hit a mine!
+          gameOver = true;
+          revealAllMines();
+          stopTimer();
+          setGameStatus('💥 Game Over! You hit a mine!', false);
+          draw();
+          return;
+        }
+
+        if (grid[row][col] === 0) {
+          // Reveal adjacent cells
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              if (dr === 0 && dc === 0) continue;
+              revealCell(row + dr, col + dc);
+            }
+          }
+        }
+
+        // Check win condition
+        checkWin();
+        draw();
+      }
+
+      function revealAllMines() {
+        for (const pos of minePositions) {
+          revealed[pos.r][pos.c] = true;
+        }
+        draw();
+      }
+
+      function checkWin() {
+        const totalSafe = rows * cols - mines;
+        if (revealedCount === totalSafe) {
+          gameWon = true;
+          gameOver = true;
+          stopTimer();
+          // Save best time
+          if (!bestTimes[currentDifficulty] || timer < bestTimes[currentDifficulty]) {
+            bestTimes[currentDifficulty] = timer;
+            saveBestTimes();
+            updateBestDisplay();
+          }
+          setGameStatus(`🎉 You Win! Time: ${timer}s 🏆`, true);
+          draw();
+        }
+      }
+
+      // ---------- Flag Logic ----------
+      function toggleFlag(row, col) {
+        if (gameOver || revealed[row][col]) return;
+        flagged[row][col] = !flagged[row][col];
+        flagCount += flagged[row][col] ? 1 : -1;
+        mineDisplay.textContent = mines - flagCount;
+        draw();
+      }
+
+      // ---------- Timer ----------
+      function startTimer() {
+        if (timerInterval) return;
+        timer = 0;
+        timerInterval = setInterval(() => {
+          timer++;
+          timeDisplay.textContent = timer;
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      // ---------- Drawing ----------
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Grid background
+        ctx.fillStyle = '#1a1a2e';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw grid lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 0.5;
+        for (let r = 0; r <= rows; r++) {
+          ctx.beginPath();
+          ctx.moveTo(0, r * cellSize);
+          ctx.lineTo(canvas.width, r * cellSize);
+          ctx.stroke();
+        }
+        for (let c = 0; c <= cols; c++) {
+          ctx.beginPath();
+          ctx.moveTo(c * cellSize, 0);
+          ctx.lineTo(c * cellSize, canvas.height);
+          ctx.stroke();
+        }
+
+        // Draw cells
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const x = c * cellSize;
+            const y = r * cellSize;
+            const size = cellSize;
+
+            if (revealed[r][c]) {
+              // Revealed cell
+              ctx.fillStyle = '#2a2a4a';
+              ctx.fillRect(x, y, size, size);
+              
+              if (grid[r][c] === -1) {
+                // Mine
+                ctx.fillStyle = '#f44336';
+                ctx.beginPath();
+                ctx.arc(x + size/2, y + size/2, size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#1a1a2e';
+                ctx.beginPath();
+                ctx.arc(x + size/2, y + size/2, size * 0.12, 0, Math.PI * 2);
+                ctx.fill();
+              } else if (grid[r][c] > 0) {
+                // Number
+                const colors = ['', '#4fc3f7', '#81c784', '#f44336', '#7b1fa2', '#f44336', '#00bcd4', '#4a4a4a', '#78909c'];
+                ctx.fillStyle = colors[grid[r][c]] || '#ffffff';
+                ctx.font = `bold ${size * 0.55}px "Segoe UI", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(grid[r][c], x + size/2, y + size/2 + 1);
+              }
+            } else {
+              // Hidden cell
+              ctx.fillStyle = '#3a3a5a';
+              ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
+              
+              // 3D effect
+              ctx.fillStyle = 'rgba(255,255,255,0.08)';
+              ctx.fillRect(x + 1, y + 1, size - 2, 2);
+              ctx.fillRect(x + 1, y + 1, 2, size - 2);
+              ctx.fillStyle = 'rgba(0,0,0,0.2)';
+              ctx.fillRect(x + size - 3, y + 1, 2, size - 2);
+              ctx.fillRect(x + 1, y + size - 3, size - 2, 2);
+
+              if (flagged[r][c]) {
+                // Flag
+                ctx.fillStyle = '#f44336';
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.35, y + size * 0.25);
+                ctx.lineTo(x + size * 0.35, y + size * 0.8);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillStyle = '#f44336';
+                ctx.beginPath();
+                ctx.moveTo(x + size * 0.35, y + size * 0.25);
+                ctx.lineTo(x + size * 0.75, y + size * 0.4);
+                ctx.lineTo(x + size * 0.35, y + size * 0.55);
+                ctx.closePath();
+                ctx.fill();
+              }
+            }
+          }
+        }
+
+        // Game Over overlay
+        if (gameOver && !gameWon) {
+          ctx.fillStyle = 'rgba(0,0,0,0.4)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 36px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#ef9a9a';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('💥', canvas.width/2, canvas.height/2);
+        }
+
+        if (gameWon) {
+          ctx.fillStyle = 'rgba(0,0,0,0.3)';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = 'bold 36px "Segoe UI", sans-serif';
+          ctx.fillStyle = '#81c784';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('🎉', canvas.width/2, canvas.height/2);
+        }
+      }
+
+      // ---------- Game Control ----------
+      function startGame() {
+        const diff = DIFFICULTIES[currentDifficulty];
+        rows = diff.rows;
+        cols = diff.cols;
+        mines = diff.mines;
+        cellSize = diff.cellSize;
+
+        setupCanvas();
+        createGrid();
+        mineDisplay.textContent = mines;
+        updateBestDisplay();
+        timeDisplay.textContent = '0';
+        gameOver = false;
+        gameWon = false;
+        firstClick = true;
+        stopTimer();
+        startBtn.textContent = '⏳ Playing...';
+        startBtn.disabled = true;
+        setGameStatus('💣 Click a cell to start!', true);
+        draw();
+      }
+
+      function resetGame() {
+        stopTimer();
+        startBtn.textContent = '▶ Start Game';
+        startBtn.disabled = false;
+        setGameStatus('🔄 Game reset. Click Start to play!', true);
+        const diff = DIFFICULTIES[currentDifficulty];
+        rows = diff.rows;
+        cols = diff.cols;
+        mines = diff.mines;
+        cellSize = diff.cellSize;
+        setupCanvas();
+        createGrid();
+        mineDisplay.textContent = mines;
+        updateBestDisplay();
+        timeDisplay.textContent = '0';
+        gameOver = false;
+        gameWon = false;
+        firstClick = true;
+        draw();
+      }
+
+      function setGameStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      // ---------- Event Handlers ----------
+      function handleClick(e) {
+        if (gameOver) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const col = Math.floor(x / cellSize);
+        const row = Math.floor(y / cellSize);
+        
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+
+        // First click - place mines
+        if (firstClick) {
+          placeMines(row, col);
+          firstClick = false;
+          startTimer();
+          setGameStatus('💣 Playing...', true);
+        }
+
+        // Left click - reveal
+        revealCell(row, col);
+      }
+
+      function handleRightClick(e) {
+        e.preventDefault();
+        if (gameOver) return;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (e.clientX - rect.left) * scaleX;
+        const y = (e.clientY - rect.top) * scaleY;
+        const col = Math.floor(x / cellSize);
+        const row = Math.floor(y / cellSize);
+        
+        if (row < 0 || row >= rows || col < 0 || col >= cols) return;
+
+        if (firstClick) return;
+
+        toggleFlag(row, col);
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'r' || e.key === 'R') {
+          resetGame();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          if (startBtn.disabled) {
+            resetGame();
+          } else {
+            startGame();
+          }
+        }
+      });
+
+      // ---------- Button Listeners ----------
+      startBtn.addEventListener('click', startGame);
+      resetBtn.addEventListener('click', resetGame);
+      difficultySelect.addEventListener('change', (e) => {
+        currentDifficulty = e.target.value;
+        resetGame();
+      });
+
+      // ---------- Canvas Events ----------
+      canvas.addEventListener('click', handleClick);
+      canvas.addEventListener('contextmenu', handleRightClick);
+
+      // ---------- Init ----------
+      function init() {
+        loadBestTimes();
+        const diff = DIFFICULTIES[currentDifficulty];
+        rows = diff.rows;
+        cols = diff.cols;
+        mines = diff.mines;
+        cellSize = diff.cellSize;
+        setupCanvas();
+        createGrid();
+        mineDisplay.textContent = mines;
+        updateBestDisplay();
+        timeDisplay.textContent = '0';
+        setGameStatus('💣 Select difficulty and click Start!', true);
+        draw();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

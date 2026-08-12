@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mortgage Calculator - EaseMotion CSS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="calculator-wrapper">
+    <h1>Mortgage Calculator</h1>
+    <div class="input-section">
+      <div class="field">
+        <label for="homePrice">Home Price ($)</label>
+        <input type="number" id="homePrice" class="input" value="450000" min="0" step="1000">
+      </div>
+      <div class="field">
+        <label for="downPct">Down Payment (%)</label>
+        <input type="number" id="downPct" class="input" value="20" min="0" max="100" step="1">
+      </div>
+      <div class="field">
+        <label for="interestRate">Interest Rate (%)</label>
+        <input type="number" id="interestRate" class="input" value="6.5" min="0" max="30" step="0.1">
+      </div>
+      <div class="field">
+        <label for="loanTerm">Loan Term (years)</label>
+        <input type="number" id="loanTerm" class="input" value="30" min="1" max="50" step="1">
+      </div>
+    </div>
+    <div class="results">
+      <div class="result-row">
+        <span>Loan Amount</span>
+        <span id="loanAmount">$0.00</span>
+      </div>
+      <div class="result-row highlight-row">
+        <span>Monthly Payment (P&I)</span>
+        <span id="monthlyPayment">$0.00</span>
+      </div>
+    </div>
+    <div class="pie-section">
+      <div class="comparison-header">Cost Breakdown</div>
+      <div class="pie-container">
+        <div class="pie-chart" id="pieChart">
+          <div class="pie-segment" id="principalSegment"></div>
+          <div class="pie-segment" id="interestSegment"></div>
+        </div>
+        <div class="pie-labels">
+          <div class="pie-label"><span class="dot dot-principal"></span> Total Principal: <span id="totalPrincipal">$0.00</span></div>
+          <div class="pie-label"><span class="dot dot-interest"></span> Total Interest: <span id="totalInterest">$0.00</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="amortization-section">
+      <div class="comparison-header">Amortization Schedule (Yearly)</div>
+      <div class="amort-table-wrapper">
+        <table class="amort-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Balance</th>
+              <th>Principal Paid</th>
+              <th>Interest Paid</th>
+            </tr>
+          </thead>
+          <tbody id="amortBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    const homePrice = document.getElementById('homePrice');
+    const downPct = document.getElementById('downPct');
+    const interestRate = document.getElementById('interestRate');
+    const loanTerm = document.getElementById('loanTerm');
+    const loanAmount = document.getElementById('loanAmount');
+    const monthlyPayment = document.getElementById('monthlyPayment');
+    const amortBody = document.getElementById('amortBody');
+    const totalPrincipal = document.getElementById('totalPrincipal');
+    const totalInterest = document.getElementById('totalInterest');
+    const principalSegment = document.getElementById('principalSegment');
+    const interestSegment = document.getElementById('interestSegment');
+
+    function fmt(n) {
+      return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculate() {
+      const price = parseFloat(homePrice.value) || 0;
+      const dp = parseFloat(downPct.value) || 0;
+      const rate = parseFloat(interestRate.value) || 0;
+      const term = parseFloat(loanTerm.value) || 1;
+
+      const downAmt = price * (dp / 100);
+      const loan = Math.max(0, price - downAmt);
+      const monthlyRate = rate / 100 / 12;
+      const numPayments = term * 12;
+
+      loanAmount.textContent = fmt(loan);
+
+      let monthly = 0;
+      if (monthlyRate > 0 && loan > 0) {
+        monthly = loan * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+      } else if (loan > 0) {
+        monthly = loan / numPayments;
+      }
+      monthlyPayment.textContent = fmt(monthly);
+
+      let balance = loan;
+      let totalInt = 0;
+      let totalPrin = 0;
+      const rows = [];
+
+      for (let year = 1; year <= term; year++) {
+        let yearPrin = 0;
+        let yearInt = 0;
+        for (let m = 1; m <= 12; m++) {
+          if (balance <= 0) break;
+          const intPart = balance * monthlyRate;
+          const prinPart = monthly - intPart;
+          yearInt += intPart;
+          yearPrin += Math.min(prinPart, balance);
+          balance -= prinPart;
+          if (balance < 0) balance = 0;
+        }
+        totalInt += yearInt;
+        totalPrin += yearPrin;
+        rows.push({ year, balance, prin: yearPrin, interest: yearInt });
+      }
+
+      totalPrincipal.textContent = fmt(totalPrin);
+      totalInterest.textContent = fmt(totalInt);
+
+      const totalCost = totalPrin + totalInt;
+      const prinPct = totalCost > 0 ? (totalPrin / totalCost) * 100 : 0;
+      const intPct = totalCost > 0 ? (totalInt / totalCost) * 100 : 0;
+      principalSegment.style.width = prinPct + '%';
+      principalSegment.style.background = '#6366f1';
+      interestSegment.style.width = intPct + '%';
+      interestSegment.style.background = '#ef4444';
+
+      amortBody.innerHTML = '';
+      rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + r.year + '</td><td>' + fmt(r.balance) + '</td><td>' + fmt(r.prin) + '</td><td>' + fmt(r.interest) + '</td>';
+        amortBody.appendChild(tr);
+      });
+    }
+
+    homePrice.addEventListener('input', calculate);
+    downPct.addEventListener('input', calculate);
+    interestRate.addEventListener('input', calculate);
+    loanTerm.addEventListener('input', calculate);
+    calculate();
+  </script>
+</body>
+</html>

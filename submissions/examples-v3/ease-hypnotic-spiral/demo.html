@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hypnotic Spiral</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>Hypnotic Spiral</h1>
+        <p class="subtitle">Infinite spiral that rotates with color gradient shifts</p>
+
+        <div class="spiral-wrapper">
+            <canvas id="spiralCanvas"></canvas>
+
+            <div class="controls">
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="thicknessBtn">Thickness: Medium</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🌀 Spinning</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('spiralCanvas');
+        const ctx = canvas.getContext('2d');
+        const speedBtn = document.getElementById('speedBtn');
+        const thicknessBtn = document.getElementById('thicknessBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let time = 0;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let thickness = 3;
+        let thicknessLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let rotation = 0;
+        let particles = [];
+        let numParticles = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.005 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== THICKNESS OPTIONS =====
+        const thicknesses = [
+            { name: 'Thin', value: 1.5 },
+            { name: 'Medium', value: 3 },
+            { name: 'Thick', value: 5 },
+            { name: 'Very Thick', value: 8 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            { 
+                name: 'Rainbow', 
+                fn: (t) => `hsl(${t * 360}, 100%, 60%)` 
+            },
+            { 
+                name: 'Ocean', 
+                fn: (t) => `hsl(${200 + t * 40}, 80%, ${40 + t * 30}%)` 
+            },
+            { 
+                name: 'Fire', 
+                fn: (t) => `hsl(${10 + t * 40}, 90%, ${40 + t * 40}%)` 
+            },
+            { 
+                name: 'Galaxy', 
+                fn: (t) => `hsl(${250 + t * 40}, 80%, ${30 + t * 30}%)` 
+            },
+            { 
+                name: 'Pastel', 
+                fn: (t) => `hsl(${t * 360}, 60%, 75%)` 
+            },
+            { 
+                name: 'Neon', 
+                fn: (t) => `hsl(${t * 360}, 100%, 55%)` 
+            },
+            { 
+                name: 'Sunset', 
+                fn: (t) => `hsl(${20 + t * 30}, 80%, ${40 + t * 40}%)` 
+            },
+            { 
+                name: 'Monochrome', 
+                fn: (t) => `hsl(0, 0%, ${40 + t * 40}%)` 
+            },
+        ];
+
+        // ===== DRAW SPIRAL =====
+        function drawSpiral(ctx, w, h, time, rotation, thickness, colorMode) {
+            const cx = w / 2;
+            const cy = h / 2;
+            const maxRadius = Math.min(w, h) * 0.45;
+            const turns = 8;
+            const totalPoints = 1200;
+            const colorFn = colorModes[colorMode].fn;
+
+            // Clear canvas with trail effect
+            ctx.fillStyle = 'rgba(10, 10, 26, 0.15)';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw multiple spiral layers with glow
+            for (let layer = 0; layer < 3; layer++) {
+                const layerOffset = layer * 0.3;
+                const layerScale = 1 + layer * 0.05;
+                const layerAlpha = 0.3 + layer * 0.1;
+
+                ctx.beginPath();
+                let first = true;
+
+                for (let i = 0; i < totalPoints; i++) {
+                    const t = i / totalPoints;
+                    const angle = t * turns * Math.PI * 2 + rotation + layerOffset;
+                    const radius = t * maxRadius * layerScale;
+                    
+                    // Add subtle wave distortion
+                    const waveOffset = Math.sin(t * 20 + time * 0.5) * 3;
+                    const x = cx + Math.cos(angle) * (radius + waveOffset);
+                    const y = cy + Math.sin(angle) * (radius + waveOffset);
+
+                    if (first) {
+                        ctx.moveTo(x, y);
+                        first = false;
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                // Set color with gradient
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                for (let i = 0; i <= 10; i++) {
+                    const t = i / 10;
+                    const color = colorFn((t + time * 0.02) % 1);
+                    grad.addColorStop(t, color);
+                }
+
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = thickness * (1 - layer * 0.15);
+                ctx.shadowBlur = 20 + layer * 10;
+                ctx.shadowColor = colorFn((time * 0.02) % 1);
+                ctx.globalAlpha = layerAlpha;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                ctx.globalAlpha = 1;
+            }
+
+            // Draw inner glow
+            const innerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, maxRadius * 0.3);
+            innerGlow.addColorStop(0, 'rgba(255,255,255,0.05)');
+            innerGlow.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = innerGlow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw spiral dots along the path
+            const numDots = 80;
+            for (let i = 0; i < numDots; i++) {
+                const t = i / numDots;
+                const angle = t * turns * Math.PI * 2 + rotation;
+                const radius = t * maxRadius;
+                const waveOffset = Math.sin(t * 20 + time * 0.5) * 3;
+                const x = cx + Math.cos(angle) * (radius + waveOffset);
+                const y = cy + Math.sin(angle) * (radius + waveOffset);
+                
+                const dotSize = 1.5 + Math.sin(t * 30 + time) * 0.5;
+                const hue = (t * 360 + time * 50) % 360;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue}, 100%, 80%, 0.4)`;
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = `hsla(${hue}, 100%, 70%, 0.3)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        function render(timestamp) {
+            // FPS counter
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Update rotation
+            rotation += speed;
+
+            // Draw spiral
+            drawSpiral(ctx, w, h, time, rotation, thickness, colorMode);
+
+            // Update time
+            time += 0.01;
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name} • ${speeds[speedLevel].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== CONTROLS =====
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Thickness
+        thicknessBtn.addEventListener('click', () => {
+            thicknessLevel = (thicknessLevel + 1) % thicknesses.length;
+            thickness = thicknesses[thicknessLevel].value;
+            thicknessBtn.textContent = `Thickness: ${thicknesses[thicknessLevel].name}`;
+            statusText.textContent = `📏 ${thicknesses[thicknessLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[colorMode].name}`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            rotation = 0;
+            time = 0;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            thicknessLevel = 1;
+            thickness = thicknesses[1].value;
+            colorMode = 0;
+            
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            thicknessBtn.textContent = `Thickness: ${thicknesses[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            statusText.textContent = '↩️ Reset';
+            
+            setTimeout(() => {
+                statusText.textContent = `🌀 ${colorModes[0].name}`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 't' || e.key === 'T') {
+                thicknessBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Toggle pause not implemented
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+
+        // ===== INIT =====
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        thicknessBtn.textContent = `Thickness: ${thicknesses[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = `🌀 ${colorModes[0].name}`;
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🌀 Hypnotic Spiral loaded!');
+        console.log('💡 S - Change speed');
+        console.log('💡 T - Change thickness');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+    </script>
+</body>
+</html>

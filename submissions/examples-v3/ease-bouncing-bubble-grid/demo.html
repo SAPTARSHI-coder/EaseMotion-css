@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bouncing Bubble Grid</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>🫧 Bouncing Bubble Grid</h1>
+        <p class="subtitle">Grid of bubbles that bounce when moused over</p>
+
+        <div class="bubble-wrapper">
+            <canvas id="bubbleCanvas"></canvas>
+
+            <div class="controls">
+                <button id="sizeBtn">Size: 8x8</button>
+                <button id="speedBtn">Speed: Normal</button>
+                <button id="colorBtn">Color: Rainbow</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+
+            <div class="status">
+                <span id="statusText">🫧 Hover to bounce</span>
+                <span id="fpsDisplay">FPS: 60</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const canvas = document.getElementById('bubbleCanvas');
+        const ctx = canvas.getContext('2d');
+        const sizeBtn = document.getElementById('sizeBtn');
+        const speedBtn = document.getElementById('speedBtn');
+        const colorBtn = document.getElementById('colorBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusText = document.getElementById('statusText');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== CANVAS SETUP =====
+        function resizeCanvas() {
+            const wrapper = canvas.parentElement;
+            canvas.width = wrapper.clientWidth || 600;
+            canvas.height = Math.min(500, window.innerHeight - 350);
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ===== STATE =====
+        let bubbles = [];
+        let gridSize = 8;
+        let speed = 0.02;
+        let speedLevel = 1;
+        let colorMode = 0;
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let mouseX = -1000;
+        let mouseY = -1000;
+        let isHovering = false;
+        let bubbleSize = 0;
+        let spacing = 0;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // ===== SPEED OPTIONS =====
+        const speeds = [
+            { name: 'Slow', value: 0.008 },
+            { name: 'Normal', value: 0.02 },
+            { name: 'Fast', value: 0.04 },
+            { name: 'Very Fast', value: 0.07 },
+        ];
+
+        // ===== COLOR MODES =====
+        const colorModes = [
+            {
+                name: 'Rainbow',
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 180 + time * 30) % 360;
+                    return `hsl(${hue}, 80%, ${65 + Math.sin(time * 0.02 + i + j) * 15}%)`;
+                }
+            },
+            {
+                name: 'Ocean',
+                fn: (i, j, gridSize, time) => {
+                    const hue = 200 + (i / gridSize) * 40 + (j / gridSize) * 20;
+                    const light = 50 + (j / gridSize) * 30 + Math.sin(time * 0.02 + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(${hue}, 70%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Sunset',
+                fn: (i, j, gridSize, time) => {
+                    const hue = 20 + (i / gridSize) * 40 + (j / gridSize) * 20;
+                    const light = 50 + (j / gridSize) * 40 + Math.sin(time * 0.02 + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Galaxy',
+                fn: (i, j, gridSize, time) => {
+                    const hue = 250 + (i / gridSize) * 40 + (j / gridSize) * 30;
+                    const light = 40 + (j / gridSize) * 30 + Math.sin(time * 0.02 + i * 0.6 + j * 0.4) * 10;
+                    return `hsl(${hue}, 80%, ${light}%)`;
+                }
+            },
+            {
+                name: 'Neon',
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 200 + time * 40) % 360;
+                    return `hsl(${hue}, 100%, 55%)`;
+                }
+            },
+            {
+                name: 'Pastel',
+                fn: (i, j, gridSize, time) => {
+                    const hue = ((i / gridSize) * 360 + (j / gridSize) * 180 + time * 20) % 360;
+                    return `hsl(${hue}, 60%, 75%)`;
+                }
+            },
+            {
+                name: 'Monochrome',
+                fn: (i, j, gridSize, time) => {
+                    const val = 50 + (i / gridSize) * 30 + (j / gridSize) * 20 + Math.sin(time * 0.02 + i * 0.5 + j * 0.3) * 10;
+                    return `hsl(0, 0%, ${val}%)`;
+                }
+            },
+        ];
+
+        // ===== GRID SIZES =====
+        const gridSizes = [4, 6, 8, 10, 12, 16];
+
+        // ===== BUBBLE CLASS =====
+        class Bubble {
+            constructor(x, y, i, j, size) {
+                this.x = x;
+                this.y = y;
+                this.i = i;
+                this.j = j;
+                this.size = size || bubbleSize;
+                this.targetX = x;
+                this.targetY = y;
+                this.velocityX = 0;
+                this.velocityY = 0;
+                this.phase = Math.random() * Math.PI * 2;
+                this.pulseSpeed = 0.02 + Math.random() * 0.03;
+                this.bounceAmount = 0;
+                this.targetBounce = 0;
+                this.scale = 1;
+                this.targetScale = 1;
+                this.glowIntensity = 0.5 + Math.random() * 0.5;
+                this.wobble = 0.2 + Math.random() * 0.3;
+                this.streak = 0;
+                this.isBouncing = false;
+                this.bounceTime = 0;
+                this.bounceDuration = 30 + Math.random() * 30;
+                this.trail = [];
+                this.maxTrail = 8;
+                this.colorOffset = Math.random();
+            }
+
+            update(time, speed) {
+                // Pulse
+                this.phase += this.pulseSpeed * speed * 5;
+                const pulse = 0.7 + 0.3 * Math.sin(this.phase);
+
+                // Scale
+                this.scale += (this.targetScale - this.scale) * 0.1;
+                
+                // Bounce
+                if (this.isBouncing) {
+                    this.bounceTime += speed * 10;
+                    const progress = this.bounceTime / this.bounceDuration;
+                    
+                    // Ease out bounce
+                    const bounceHeight = Math.sin(progress * Math.PI) * (1 - progress * 0.5);
+                    this.bounceAmount = bounceHeight * 30 * speed * 30;
+                    
+                    // Streak
+                    this.streak = 1 - progress;
+                    
+                    if (progress >= 1) {
+                        this.isBouncing = false;
+                        this.bounceAmount = 0;
+                        this.streak = 0;
+                        this.targetScale = 1;
+                    }
+                } else {
+                    this.bounceAmount *= 0.95;
+                    this.streak *= 0.95;
+                }
+
+                // Wobble
+                const wobbleX = Math.sin(this.phase + time * 0.01) * this.wobble * 0.2;
+                const wobbleY = Math.cos(this.phase * 0.7 + time * 0.01) * this.wobble * 0.2;
+
+                // Position with bounce and wobble
+                this.targetX = this.x + wobbleX;
+                this.targetY = this.y + wobbleY - this.bounceAmount;
+
+                // Trail
+                this.trail.push({ x: this.targetX, y: this.targetY, alpha: 0.5 });
+                if (this.trail.length > this.maxTrail) {
+                    this.trail.shift();
+                }
+                for (const t of this.trail) {
+                    t.alpha *= 0.95;
+                }
+            }
+
+            draw(ctx, time) {
+                const colorFn = colorModes[colorMode].fn;
+                const color = colorFn(this.i, this.j, gridSize, time);
+                const size = this.size * this.scale * (0.7 + 0.3 * (this.streak * 0.5 + 0.5));
+
+                // Trail
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const trailAlpha = (i / this.trail.length) * 0.15;
+                    const trailSize = size * (0.2 + (i / this.trail.length) * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, trailSize, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = color + '40';
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.globalAlpha = 1;
+                }
+
+                // Glow
+                const glowSize = size * 3 * (0.5 + 0.5 * this.streak);
+                const grad = ctx.createRadialGradient(
+                    this.targetX, this.targetY, 0,
+                    this.targetX, this.targetY, glowSize
+                );
+                grad.addColorStop(0, color + '50');
+                grad.addColorStop(0.5, color + '20');
+                grad.addColorStop(1, color + '00');
+                ctx.beginPath();
+                ctx.arc(this.targetX, this.targetY, glowSize, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = 0.5 + 0.5 * (this.streak * 0.3);
+                ctx.fill();
+
+                // Main bubble
+                const grad2 = ctx.createRadialGradient(
+                    this.targetX - size * 0.3,
+                    this.targetY - size * 0.3,
+                    0,
+                    this.targetX,
+                    this.targetY,
+                    size
+                );
+                grad2.addColorStop(0, 'rgba(255,255,255,0.4)');
+                grad2.addColorStop(0.3, color + '80');
+                grad2.addColorStop(0.7, color + '60');
+                grad2.addColorStop(1, color + '30');
+
+                ctx.beginPath();
+                ctx.arc(this.targetX, this.targetY, size, 0, Math.PI * 2);
+                ctx.fillStyle = grad2;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = color + '40';
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Highlight
+                ctx.beginPath();
+                ctx.arc(
+                    this.targetX - size * 0.25,
+                    this.targetY - size * 0.25,
+                    size * 0.2,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+
+                // Secondary highlight
+                ctx.beginPath();
+                ctx.arc(
+                    this.targetX - size * 0.15,
+                    this.targetY - size * 0.35,
+                    size * 0.1,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                ctx.fill();
+
+                // Streak effect (speed lines)
+                if (this.streak > 0.1) {
+                    for (let i = 0; i < 3; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = size * (0.5 + Math.random() * 0.8) * this.streak;
+                        const sx = this.targetX + Math.cos(angle) * dist;
+                        const sy = this.targetY + Math.sin(angle) * dist;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, size * 0.05 * this.streak, 0, Math.PI * 2);
+                        ctx.fillStyle = color;
+                        ctx.globalAlpha = this.streak * 0.2;
+                        ctx.fill();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+
+                ctx.globalAlpha = 1;
+            }
+
+            bounce(force) {
+                if (!this.isBouncing) {
+                    this.isBouncing = true;
+                    this.bounceTime = 0;
+                    this.bounceDuration = 20 + Math.random() * 30;
+                    this.targetScale = 0.8 + Math.random() * 0.3;
+                    this.bounceAmount = (force || 1) * 20 + Math.random() * 20;
+                    this.streak = 1;
+                }
+            }
+
+            getEndPosition() {
+                return { x: this.targetX, y: this.targetY };
+            }
+        }
+
+        // ===== INIT GRID =====
+        function initGrid(size) {
+            const w = canvas.width;
+            const h = canvas.height;
+            gridSize = size;
+            
+            // Calculate bubble size and spacing
+            const cols = gridSize;
+            const rows = gridSize;
+            const padding = 20;
+            const availableW = w - padding * 2;
+            const availableH = h - padding * 2;
+            
+            spacing = Math.min(availableW / cols, availableH / rows);
+            bubbleSize = spacing * 0.35;
+            
+            const totalW = cols * spacing;
+            const totalH = rows * spacing;
+            offsetX = (w - totalW) / 2 + spacing / 2;
+            offsetY = (h - totalH) / 2 + spacing / 2;
+
+            bubbles = [];
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = offsetX + i * spacing;
+                    const y = offsetY + j * spacing;
+                    const bubble = new Bubble(x, y, i, j, bubbleSize);
+                    bubble.phase = (i / cols) * Math.PI * 2 + (j / rows) * Math.PI * 2;
+                    bubbles.push(bubble);
+                }
+            }
+        }
+        initGrid(gridSize);
+
+        // ===== DRAW BACKGROUND =====
+        function drawBackground(ctx, w, h) {
+            const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            grad.addColorStop(0, '#0a0a1e');
+            grad.addColorStop(0.5, '#060612');
+            grad.addColorStop(1, '#000000');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Subtle grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= gridSize; i++) {
+                const x = offsetX + i * spacing - spacing / 2;
+                ctx.beginPath();
+                ctx.moveTo(x, offsetY - spacing / 2);
+                ctx.lineTo(x, offsetY + (gridSize - 1) * spacing + spacing / 2);
+                ctx.stroke();
+            }
+            for (let j = 0; j <= gridSize; j++) {
+                const y = offsetY + j * spacing - spacing / 2;
+                ctx.beginPath();
+                ctx.moveTo(offsetX - spacing / 2, y);
+                ctx.lineTo(offsetX + (gridSize - 1) * spacing + spacing / 2, y);
+                ctx.stroke();
+            }
+
+            // Connection lines between bubbles
+            ctx.globalAlpha = 0.05;
+            for (let i = 0; i < bubbles.length; i++) {
+                for (let j = i + 1; j < bubbles.length; j++) {
+                    const dx = bubbles[i].targetX - bubbles[j].targetX;
+                    const dy = bubbles[i].targetY - bubbles[j].targetY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < spacing * 1.5) {
+                        const alpha = 1 - dist / (spacing * 1.5);
+                        ctx.beginPath();
+                        ctx.moveTo(bubbles[i].targetX, bubbles[i].targetY);
+                        ctx.lineTo(bubbles[j].targetX, bubbles[j].targetY);
+                        const colorFn = colorModes[colorMode].fn;
+                        const color = colorFn(0.5, 0.5, gridSize, time);
+                        ctx.strokeStyle = color;
+                        ctx.globalAlpha = alpha * 0.1;
+                        ctx.lineWidth = 0.5;
+                        ctx.stroke();
+                    }
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ===== FIND NEAREST BUBBLE =====
+        function findNearestBubble(x, y) {
+            let nearest = null;
+            let minDist = Infinity;
+            for (const bubble of bubbles) {
+                const dx = x - bubble.targetX;
+                const dy = y - bubble.targetY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = bubble;
+                }
+            }
+            return nearest;
+        }
+
+        // ===== RENDER =====
+        function render(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            const w = canvas.width;
+            const h = canvas.height;
+            time += speed;
+
+            // Update mouse hover
+            if (isHovering) {
+                const nearest = findNearestBubble(mouseX, mouseY);
+                if (nearest) {
+                    const dx = mouseX - nearest.targetX;
+                    const dy = mouseY - nearest.targetY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < nearest.size * 3) {
+                        nearest.bounce(1);
+                        // Also bounce nearby bubbles
+                        for (const bubble of bubbles) {
+                            if (bubble === nearest) continue;
+                            const dx2 = bubble.targetX - nearest.targetX;
+                            const dy2 = bubble.targetY - nearest.targetY;
+                            const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                            if (dist2 < spacing * 1.2) {
+                                const force = 1 - dist2 / (spacing * 1.2);
+                                if (Math.random() < force * 0.3) {
+                                    bubble.bounce(force * 0.5);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Update bubbles
+            for (const bubble of bubbles) {
+                bubble.update(time, speed);
+            }
+
+            // Draw
+            drawBackground(ctx, w, h);
+
+            for (const bubble of bubbles) {
+                bubble.draw(ctx, time);
+            }
+
+            // Update status
+            if (frameCount % 30 === 0) {
+                const bouncing = bubbles.filter(b => b.isBouncing).length;
+                statusText.textContent = `🫧 ${bouncing} bouncing • ${colorModes[colorMode].name}`;
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Mouse
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (e.clientX - rect.left) * scaleX;
+            mouseY = (e.clientY - rect.top) * scaleY;
+            isHovering = true;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isHovering = false;
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            mouseX = (touch.clientX - rect.left) * scaleX;
+            mouseY = (touch.clientY - rect.top) * scaleY;
+            isHovering = true;
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            isHovering = false;
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // ===== CONTROLS =====
+
+        // Size
+        sizeBtn.addEventListener('click', () => {
+            const currentIndex = gridSizes.indexOf(gridSize);
+            const nextIndex = (currentIndex + 1) % gridSizes.length;
+            const newSize = gridSizes[nextIndex];
+            sizeBtn.textContent = `Size: ${newSize}x${newSize}`;
+            initGrid(newSize);
+            statusText.textContent = `📐 ${newSize}x${newSize}`;
+            setTimeout(() => {
+                statusText.textContent = `🫧 Hover to bounce`;
+            }, 1000);
+        });
+
+        // Speed
+        speedBtn.addEventListener('click', () => {
+            speedLevel = (speedLevel + 1) % speeds.length;
+            speed = speeds[speedLevel].value;
+            speedBtn.textContent = `Speed: ${speeds[speedLevel].name}`;
+            statusText.textContent = `⏱️ ${speeds[speedLevel].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🫧 Hover to bounce`;
+            }, 1000);
+        });
+
+        // Color
+        colorBtn.addEventListener('click', () => {
+            colorMode = (colorMode + 1) % colorModes.length;
+            colorBtn.textContent = `Color: ${colorModes[colorMode].name}`;
+            statusText.textContent = `🎨 ${colorModes[colorMode].name}`;
+            setTimeout(() => {
+                statusText.textContent = `🫧 Hover to bounce`;
+            }, 1000);
+        });
+
+        // Reset
+        resetBtn.addEventListener('click', () => {
+            gridSize = 8;
+            speedLevel = 1;
+            speed = speeds[1].value;
+            colorMode = 0;
+            
+            sizeBtn.textContent = `Size: 8x8`;
+            speedBtn.textContent = `Speed: ${speeds[1].name}`;
+            colorBtn.textContent = `Color: ${colorModes[0].name}`;
+            initGrid(8);
+            statusText.textContent = '↩️ Reset';
+            setTimeout(() => {
+                statusText.textContent = `🫧 Hover to bounce`;
+            }, 1000);
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'g' || e.key === 'G') {
+                sizeBtn.click();
+            }
+            if (e.key === 's' || e.key === 'S') {
+                speedBtn.click();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                colorBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetBtn.click();
+            }
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                // Trigger random bounce
+                for (const bubble of bubbles) {
+                    if (Math.random() < 0.1) {
+                        bubble.bounce(0.5 + Math.random() * 0.5);
+                    }
+                }
+                statusText.textContent = '🫧 Boing!';
+                setTimeout(() => {
+                    statusText.textContent = `🫧 Hover to bounce`;
+                }, 500);
+            }
+        });
+
+        // ===== RESIZE HANDLER =====
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initGrid(gridSize);
+        });
+
+        // ===== INIT =====
+        sizeBtn.textContent = `Size: ${gridSize}x${gridSize}`;
+        speedBtn.textContent = `Speed: ${speeds[1].name}`;
+        colorBtn.textContent = `Color: ${colorModes[0].name}`;
+        statusText.textContent = '🫧 Hover to bounce';
+        lastFpsUpdate = performance.now();
+
+        // Start animation
+        render(lastFpsUpdate);
+
+        console.log('🫧 Bouncing Bubble Grid loaded!');
+        console.log('💡 Hover over bubbles to make them bounce');
+        console.log('💡 G - Change grid size');
+        console.log('💡 S - Change speed');
+        console.log('💡 C - Change color');
+        console.log('💡 R - Reset');
+        console.log('💡 SPACE - Random bounce');
+    </script>
+</body>
+</html>

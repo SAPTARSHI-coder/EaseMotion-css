@@ -1,0 +1,663 @@
+/* =========================================================================
+   Clip Path Code Block — EaseMotion CSS submission (ECSoC26 · issue #41422)
+   -------------------------------------------------------------------------
+   A pure-CSS, accessible code-snippet component that reveals itself with
+   springy clip-path animations.
+
+   Design goals
+   ------------
+   1. Uses EaseMotion CSS variables and keyframes (ease-* / cpc-kf-*).
+   2. Works WITHOUT JavaScript — reveal is driven by :checked radios + :has().
+   3. Responsive and accessible (keyboard + screen-reader friendly).
+   4. The "clip-path" feel comes from animated polygon() / circle() / inset()
+      keyframes that wipe, unfold, or iris the code into view.
+
+   File layout
+   -----------
+   A. Design tokens (CSS custom properties)
+   B. Reset & base
+   C. Clip-path keyframes (cpc-kf-*)
+   D. Layout: shell, header, footer
+   E. Controls: segmented radiogroups + replay
+   F. Code block: bar, body, syntax tokens
+   G. Reveal-style overrides (data via :has())
+   H. Theme palettes
+   I. Accessibility: reduced motion, focus, high contrast
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   A. DESIGN TOKENS
+   ------------------------------------------------------------------------- */
+:root {
+  /* Elastic motion tokens */
+  --cpc-elastic: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoot spring */
+  --cpc-duration: 0.7s;
+  --cpc-duration-fast: 0.3s;
+
+  /* Geometry */
+  --cpc-radius: 16px;
+  --cpc-radius-sm: 9px;
+  --cpc-shadow: 0 22px 60px rgba(8, 12, 24, 0.35);
+  --cpc-gap: 16px;
+
+  /* Default (Dark) theme palette — overridden per data-theme below */
+  --cpc-bg: #0b1121;
+  --cpc-surface: #0e1729;
+  --cpc-surface-2: #111c30;
+  --cpc-border: #26324a;
+  --cpc-text: #e2e8f0;
+  --cpc-text-soft: #94a3b8;
+  --cpc-accent: #6c63ff;
+  --cpc-accent-ink: #ffffff;
+  --cpc-glow: rgba(108, 99, 255, 0.4);
+
+  /* Syntax token colors (dark) */
+  --cpc-c: #64748b; /* comment */
+  --cpc-f: #c4b5fd; /* function/selector */
+  --cpc-k: #7dd3fc; /* keyword */
+  --cpc-s: #fcd34d; /* string/value */
+  --cpc-p: #f472b6; /* pseudo */
+  --cpc-n: #e2e8f0; /* normal text */
+
+  /* Active reveal keyframe name (overridden by :has()) */
+  --cpc-reveal: cpc-kf-wipe;
+}
+
+/* -------------------------------------------------------------------------
+   B. RESET & BASE
+   ------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body.cpc-root {
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 50% -10%, #16233c, var(--cpc-bg) 60%);
+  color: var(--cpc-text);
+  display: flex;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+  transition: background var(--cpc-duration) var(--cpc-elastic);
+}
+
+/* Visually hidden but available to assistive tech */
+.cpc-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link */
+.cpc-skip-link {
+  position: absolute;
+  left: 50%;
+  top: -60px;
+  transform: translateX(-50%);
+  background: var(--cpc-accent);
+  color: var(--cpc-accent-ink);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--cpc-radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--cpc-duration-fast) var(--cpc-elastic);
+  z-index: 50;
+}
+.cpc-skip-link:focus {
+  top: 12px;
+}
+
+/* -------------------------------------------------------------------------
+   C. CLIP-PATH KEYFRAMES (cpc-kf-*)
+   ------------------------------------------------------------------------- */
+/* Wipe: left-to-right inset reveal */
+@keyframes cpc-kf-wipe {
+  0% {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.2;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/* Unfold: top-to-bottom inset reveal with slight scale */
+@keyframes cpc-kf-unfold {
+  0% {
+    clip-path: inset(50% 0 50% 0);
+    transform: scaleY(0.6);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Circle: iris open from center */
+@keyframes cpc-kf-circle {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+    opacity: 0;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(150% at 50% 50%);
+    opacity: 1;
+  }
+}
+
+/* Diagonal: polygon sweep from top-left */
+@keyframes cpc-kf-diagonal {
+  0% {
+    clip-path: polygon(0 0, 0 0, 0 0, 0 0);
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    opacity: 1;
+  }
+}
+
+/* Shutter: polygon blinds opening */
+@keyframes cpc-kf-shutter {
+  0% {
+    clip-path: polygon(
+      0 0, 100% 0, 100% 0, 0 0,
+      0 33%, 100% 33%, 100% 33%, 0 33%,
+      0 66%, 100% 66%, 100% 66%, 0 66%,
+      0 100%, 100% 100%, 100% 100%, 0 100%
+    );
+    opacity: 0.3;
+  }
+  100% {
+    clip-path: polygon(
+      0 0, 100% 0, 100% 33%, 0 33%,
+      0 33%, 100% 33%, 100% 66%, 0 66%,
+      0 66%, 100% 66%, 100% 100%, 0 100%,
+      0 100%, 100% 100%, 100% 100%, 0 100%
+    );
+    opacity: 1;
+  }
+}
+
+/* Elastic pop for the whole block on load */
+@keyframes cpc-kf-elastic-pop {
+  0% {
+    transform: scale(0.9) translateY(12px);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.02) translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   D. LAYOUT — SHELL / HEADER / FOOTER
+   ------------------------------------------------------------------------- */
+.cpc-shell {
+  width: min(820px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.cpc-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.cpc-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--cpc-accent);
+}
+
+.cpc-title {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--cpc-text);
+}
+
+.cpc-lede {
+  max-width: 60ch;
+  margin-inline: auto;
+  color: var(--cpc-text-soft);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+.cpc-lede strong {
+  color: var(--cpc-text);
+}
+
+.cpc-footer {
+  text-align: center;
+  color: var(--cpc-text-soft);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--cpc-border);
+  padding-top: 1.25rem;
+}
+.cpc-footer code {
+  background: var(--cpc-surface-2);
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+/* -------------------------------------------------------------------------
+   E. CONTROLS — SEGMENTED RADIOGROUPS + REPLAY
+   ------------------------------------------------------------------------- */
+.cpc-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.cpc-fieldset {
+  border: 1px solid var(--cpc-border);
+  border-radius: var(--cpc-radius);
+  padding: 0.9rem 1.1rem 1.1rem;
+  background: var(--cpc-surface);
+  box-shadow: var(--cpc-shadow);
+  transition: background var(--cpc-duration) var(--cpc-elastic),
+    border-color var(--cpc-duration) var(--cpc-elastic);
+}
+
+.cpc-legend {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--cpc-text-soft);
+  padding: 0 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.cpc-segmented {
+  display: flex;
+  gap: 4px;
+  background: var(--cpc-surface-2);
+  border-radius: 999px;
+  padding: 4px;
+  flex-wrap: wrap;
+}
+
+.cpc-seg {
+  flex: 1;
+  min-width: 64px;
+  text-align: center;
+  padding: 0.5rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--cpc-text-soft);
+  cursor: pointer;
+  transition: background var(--cpc-duration-fast) var(--cpc-elastic),
+    color var(--cpc-duration-fast) var(--cpc-elastic),
+    transform var(--cpc-duration-fast) var(--cpc-elastic);
+}
+.cpc-seg:hover {
+  transform: translateY(-1px);
+}
+.cpc-radio:focus-visible + .cpc-seg {
+  outline: 3px solid var(--cpc-accent);
+  outline-offset: 2px;
+}
+.cpc-radio:checked + .cpc-seg {
+  background: var(--cpc-accent);
+  color: var(--cpc-accent-ink);
+  box-shadow: 0 6px 16px var(--cpc-glow);
+}
+
+.cpc-replay {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--cpc-border);
+  border-radius: 999px;
+  background: var(--cpc-surface-2);
+  color: var(--cpc-text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background var(--cpc-duration-fast) var(--cpc-elastic),
+    transform var(--cpc-duration-fast) var(--cpc-elastic);
+}
+.cpc-replay:hover {
+  background: var(--cpc-accent);
+  color: var(--cpc-accent-ink);
+  transform: translateY(-1px);
+}
+.cpc-replay:active {
+  transform: translateY(0) scale(0.97);
+}
+.cpc-replay:focus-visible {
+  outline: 3px solid var(--cpc-accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------------------
+   F. CODE BLOCK — BAR / BODY / SYNTAX TOKENS
+   ------------------------------------------------------------------------- */
+.cpc-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.cpc-block {
+  width: min(640px, 100%);
+  margin: 0;
+  background: var(--cpc-surface);
+  border: 1px solid var(--cpc-border);
+  border-radius: var(--cpc-radius);
+  overflow: hidden;
+  box-shadow: var(--cpc-shadow);
+  /* The reveal animation is selected via --cpc-reveal (set by :has()) */
+  animation: cpc-kf-elastic-pop var(--cpc-duration) var(--cpc-elastic) both,
+    var(--cpc-reveal) var(--cpc-duration) var(--cpc-elastic) both;
+  animation-delay: 0s, 0.12s;
+  transition: background var(--cpc-duration) var(--cpc-elastic),
+    border-color var(--cpc-duration) var(--cpc-elastic);
+}
+
+.cpc-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.85rem;
+  background: var(--cpc-surface-2);
+  border-bottom: 1px solid var(--cpc-border);
+}
+
+.cpc-dots {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.cpc-dots span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+}
+.cpc-dots span:nth-child(1) {
+  background: #ef4444;
+}
+.cpc-dots span:nth-child(2) {
+  background: #f59e0b;
+}
+.cpc-dots span:nth-child(3) {
+  background: #10b981;
+}
+
+.cpc-file {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--cpc-text-soft);
+  font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+
+.cpc-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--cpc-text);
+  background: var(--cpc-surface);
+  border: 1px solid var(--cpc-border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background var(--cpc-duration-fast) ease,
+    color var(--cpc-duration-fast) ease,
+    transform var(--cpc-duration-fast) var(--cpc-elastic);
+}
+.cpc-copy svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+.cpc-copy:hover {
+  background: var(--cpc-accent);
+  color: var(--cpc-accent-ink);
+  transform: scale(1.05);
+}
+.cpc-copy:active {
+  transform: scale(0.95);
+}
+.cpc-copy:focus-visible {
+  outline: 2px solid var(--cpc-accent);
+  outline-offset: 2px;
+}
+
+.cpc-scroll {
+  overflow-x: auto;
+}
+
+.cpc-body {
+  margin: 0;
+  padding: 0.9rem 0;
+  counter-reset: line;
+  font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.75;
+  color: var(--cpc-n);
+  tab-size: 2;
+}
+
+.cpc-line {
+  display: block;
+  padding: 0 1rem 0 3.2rem;
+  position: relative;
+  white-space: pre;
+  color: var(--cpc-n);
+}
+.cpc-line::before {
+  counter-increment: line;
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  width: 2.2rem;
+  text-align: right;
+  color: var(--cpc-text-soft);
+  opacity: 0.55;
+  font-size: 0.74rem;
+}
+
+/* Syntax highlighting tokens */
+.cpc-line .c {
+  color: var(--cpc-c);
+  font-style: italic;
+}
+.cpc-line .f {
+  color: var(--cpc-f);
+  font-weight: 600;
+}
+.cpc-line .k {
+  color: var(--cpc-k);
+}
+.cpc-line .s {
+  color: var(--cpc-s);
+}
+.cpc-line .p {
+  color: var(--cpc-p);
+}
+
+.cpc-hint {
+  font-size: 0.8rem;
+  color: var(--cpc-text-soft);
+}
+.cpc-hint kbd {
+  background: var(--cpc-surface-2);
+  border: 1px solid var(--cpc-border);
+  border-radius: 5px;
+  padding: 0.05rem 0.4rem;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74rem;
+}
+
+/* -------------------------------------------------------------------------
+   G. REVEAL-STYLE OVERRIDES (via :has())
+   Each :checked radio sets --cpc-reveal to the matching keyframe.
+   ------------------------------------------------------------------------- */
+.cpc-shell:has(#cpc-wipe:checked) {
+  --cpc-reveal: cpc-kf-wipe;
+}
+.cpc-shell:has(#cpc-unfold:checked) {
+  --cpc-reveal: cpc-kf-unfold;
+}
+.cpc-shell:has(#cpc-circle:checked) {
+  --cpc-reveal: cpc-kf-circle;
+}
+.cpc-shell:has(#cpc-diagonal:checked) {
+  --cpc-reveal: cpc-kf-diagonal;
+}
+.cpc-shell:has(#cpc-shutter:checked) {
+  --cpc-reveal: cpc-kf-shutter;
+}
+
+/* -------------------------------------------------------------------------
+   H. THEME PALETTES
+   ------------------------------------------------------------------------- */
+/* Dark (default already set on :root) */
+.cpc-shell:has(#cpc-dark:checked) {
+  --cpc-bg: #0b1121;
+  --cpc-surface: #0e1729;
+  --cpc-surface-2: #111c30;
+  --cpc-border: #26324a;
+  --cpc-text: #e2e8f0;
+  --cpc-text-soft: #94a3b8;
+  --cpc-accent: #6c63ff;
+  --cpc-accent-ink: #ffffff;
+  --cpc-glow: rgba(108, 99, 255, 0.4);
+  --cpc-c: #64748b;
+  --cpc-f: #c4b5fd;
+  --cpc-k: #7dd3fc;
+  --cpc-s: #fcd34d;
+  --cpc-p: #f472b6;
+  --cpc-n: #e2e8f0;
+}
+
+.cpc-shell:has(#cpc-light:checked) {
+  --cpc-bg: #eef1f6;
+  --cpc-surface: #ffffff;
+  --cpc-surface-2: #f1f4f9;
+  --cpc-border: #d8dee9;
+  --cpc-text: #1e293b;
+  --cpc-text-soft: #64748b;
+  --cpc-accent: #6c63ff;
+  --cpc-accent-ink: #ffffff;
+  --cpc-glow: rgba(108, 99, 255, 0.3);
+  --cpc-c: #94a3b8;
+  --cpc-f: #7c3aed;
+  --cpc-k: #0369a1;
+  --cpc-s: #b45309;
+  --cpc-p: #be185d;
+  --cpc-n: #1e293b;
+}
+
+.cpc-shell:has(#cpc-solar:checked) {
+  --cpc-bg: #002b36;
+  --cpc-surface: #073642;
+  --cpc-surface-2: #002b36;
+  --cpc-border: #0a4a5a;
+  --cpc-text: #93a1a1;
+  --cpc-text-soft: #586e75;
+  --cpc-accent: #2aa198;
+  --cpc-accent-ink: #002b36;
+  --cpc-glow: rgba(42, 161, 152, 0.4);
+  --cpc-c: #586e75;
+  --cpc-f: #268bd2;
+  --cpc-k: #859900;
+  --cpc-s: #b58900;
+  --cpc-p: #d33682;
+  --cpc-n: #93a1a1;
+}
+
+/* -------------------------------------------------------------------------
+   I. ACCESSIBILITY — REDUCED MOTION / FOCUS / HIGH CONTRAST
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* Ensure code is fully visible even when animations are disabled */
+  .cpc-block {
+    clip-path: none !important;
+  }
+}
+
+/* High-contrast / forced-colors support */
+@media (forced-colors: active) {
+  .cpc-block,
+  .cpc-fieldset,
+  .cpc-bar {
+    border: 1px solid CanvasText;
+  }
+  .cpc-radio:checked + .cpc-seg {
+    outline: 2px solid Highlight;
+  }
+  .cpc-copy:focus-visible,
+  .cpc-replay:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* Responsive: stack controls on small screens */
+@media (max-width: 560px) {
+  .cpc-controls {
+    grid-template-columns: 1fr;
+  }
+  .cpc-seg {
+    min-width: 0;
+  }
+}
