@@ -2,34 +2,35 @@
 
 ## Overview
 
-Issue #73400 creates an iridescent holographic text effect with a controlled flicker using only CSS.
+Issue #73400 demonstrates a chromatic holographic flicker treatment for short display text using semantic HTML and vanilla CSS.
 
 ## Features
 
-- Animated chromatic gradient
-- Subtle holographic flicker
-- Responsive display type
-- Semantic HTML text
-- Reduced-motion support
+- Animated spectral gradient
+- Controlled flicker intervals
+- Responsive typography
+- Dark-surface presentation
+- Hardware-friendly visual properties
+- Reduced-motion fallback
 - No JavaScript or external assets
 
 ## Implementation
 
-A multi-stop gradient is clipped to the text while opacity changes create the flicker. The animation is deliberately restrained so it reads as a visual accent rather than a distracting strobe.
+The effect combines a clipped multi-color gradient with opacity and background-position animation. The layout stays stable while only decorative visual properties change.
 
 ## Accessibility
 
-The content remains real text. Reduced-motion users receive a static gradient treatment through the motion media query.
+The content remains real selectable text. The flicker is decorative, and `prefers-reduced-motion: reduce` disables both animations so the final text remains stable.
 
-## Responsive behavior
+## Usage
 
-Showcase cards and supporting facts collapse on small screens, while heading sizes scale fluidly.
+Open `demo.html` in a modern browser. Reuse the `.holo` class for short headings or labels and adjust the gradient variables to match another interface palette.
 
 ## Files
 
-- `demo.html` — holographic text showcase
-- `style.css` — gradient, flicker, responsive, and accessibility rules
-- `README.md` — documentation
+- `demo.html` — semantic demonstration and usage examples
+- `style.css` — holographic effect, responsive layout, and motion handling
+- `README.md` — implementation documentation
 
 ## Issue
 
