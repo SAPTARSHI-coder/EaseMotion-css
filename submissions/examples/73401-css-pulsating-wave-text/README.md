@@ -2,34 +2,34 @@
 
 ## Overview
 
-Issue #73401 demonstrates a calm pulsating wave animation for display text using pure HTML and CSS.
+Issue #73401 demonstrates a rhythmic text animation using a moving gradient wave and a restrained pulse.
 
 ## Features
 
-- Gentle vertical pulse
-- Soft cyan glow
-- Responsive typography
-- Semantic HTML
-- Reduced-motion support
-- No JavaScript or external assets
+- Animated highlight wave
+- Subtle scale and opacity pulse
+- Responsive display sizes
+- Stable document flow
+- Reduced-motion fallback
+- Pure HTML and vanilla CSS
 
 ## Implementation
 
-The animation combines a small transform and opacity change with layered text shadows. The effect is intentionally subtle so the text remains easy to read.
+The text uses a clipped gradient whose background position moves across the glyphs. A small scale and opacity pulse adds rhythm without changing surrounding layout dimensions.
 
 ## Accessibility
 
-The content is real text and remains selectable. `prefers-reduced-motion` disables the animation for users who request less movement.
+The effect is decorative and the content remains semantic, selectable text. `prefers-reduced-motion: reduce` disables the animation and leaves a stable gradient presentation.
 
-## Responsive behavior
+## Usage
 
-Cards and fact panels collapse on smaller screens while the heading scale adjusts with `clamp()`.
+Open `demo.html` and reuse the `.wave-text` class for short headings or labels. Adjust the gradient colors and animation duration in `style.css` to match the surrounding design.
 
 ## Files
 
-- `demo.html` — wave text showcase
-- `style.css` — pulse animation and responsive styling
-- `README.md` — documentation
+- `demo.html` — semantic examples and design notes
+- `style.css` — wave, pulse, responsive, and motion rules
+- `README.md` — implementation documentation
 
 ## Issue
 
