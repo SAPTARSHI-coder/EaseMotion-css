@@ -1,2 +1,0 @@
-# Shape Margin Utilities
-Manual implementation for #16459. Provides utility classes for `shape-margin` to control the margin of CSS shapes, allowing for better text wrapping around non-rectangular elements.

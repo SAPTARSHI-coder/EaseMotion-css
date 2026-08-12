@@ -1,1 +1,0 @@
-A masonry grid layout built with CSS columns featuring eight cards of varying heights, each with a unique gradient background. Cards have staggered fade-in animations on load and lift with a shadow on hover. Responsively adjusts from four columns down to one, and fully respects `prefers-reduced-motion`.

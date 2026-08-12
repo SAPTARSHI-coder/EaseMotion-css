@@ -1,9 +1,0 @@
-﻿# cyber-neon-glitch-profile-sticker-v11-2
-
-Cyber stickers with dynamic glitch effects.
-
-## Features
-- Pure CSS layout logic.
-- Light and dark theme adaptable.
-- Clean semantic HTML structure.
-- Over 1000+ lines of layout helpers, classes, and variables.
