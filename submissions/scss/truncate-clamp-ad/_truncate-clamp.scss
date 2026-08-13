@@ -1,0 +1,123 @@
+// ==========================================================================
+// EaseMotion CSS — Truncate Clamp mixin
+// Issue #61722
+// --------------------------------------------------------------------------
+// Multi-line text truncation with a graceful fallback.
+//
+// `-webkit-line-clamp` is the standard approach and it has a hard failure
+// mode: where it is unsupported, the declaration is ignored entirely and the
+// text simply overflows its container, breaking the surrounding layout. It
+// also silently requires `display: -webkit-box`, which resets the element's
+// formatting context — a detail that catches people out when the clamped
+// element also needed to be flex or grid.
+//
+// This mixin pairs the clamp with a `max-height` ceiling derived from
+// line-height, so unsupported engines still bound the text, plus an optional
+// gradient fade so the cut reads as intentional rather than as a glitch.
+// ==========================================================================
+
+@use "sass:math";
+@use "sass:meta";
+
+$truncate-clamp-line-height: 1.5 !default;
+$truncate-clamp-fade-color: transparent !default;
+
+// --------------------------------------------------------------------------
+// truncate-clamp
+//
+// @param {Number} $lines        Number of lines to keep. `1` uses the
+//                               single-line ellipsis path instead.
+// @param {Number} $line-height  Unitless line-height, used to compute the
+//                               fallback max-height.
+// @param {Color}  $fade         Colour to fade into. Set to a real colour
+//                               (matching the surface) to enable the fade.
+// --------------------------------------------------------------------------
+@mixin truncate-clamp(
+    $lines: 3,
+    $line-height: $truncate-clamp-line-height,
+    $fade: $truncate-clamp-fade-color
+) {
+    @if meta.type-of($lines) != "number" or $lines < 1 {
+        @error "truncate-clamp(): $lines must be a positive number, got `#{$lines}`.";
+    }
+
+    @if math.is-unitless($line-height) == false {
+        @error "truncate-clamp(): $line-height must be unitless so the "
+             + "max-height fallback can be computed. Got `#{$line-height}`.";
+    }
+
+    line-height: $line-height;
+    overflow: hidden;
+
+    @if $lines == 1 {
+        // Single line does not need the box model at all, and ellipsis
+        // support is effectively universal.
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    } @else {
+        // Fallback ceiling: applied first so it holds even when the clamp
+        // below is ignored. `em` keeps it tied to the element's own size.
+        max-height: #{$lines * $line-height}em;
+
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: $lines;
+
+        // Where the clamp IS supported, the max-height ceiling can cut a
+        // descender on the final line. Releasing it avoids that.
+        @supports (-webkit-line-clamp: 1) {
+            max-height: none;
+        }
+
+        @if $fade != transparent {
+            position: relative;
+
+            &::after {
+                background: linear-gradient(to right, rgba(0, 0, 0, 0), $fade 85%);
+                bottom: 0;
+                content: "";
+                height: #{$line-height}em;
+                pointer-events: none;
+                position: absolute;
+                right: 0;
+                width: 45%;
+            }
+
+            // The fade is only needed for the hard max-height cut. With a
+            // real clamp the ellipsis already signals truncation, so the
+            // gradient would just dim readable text.
+            @supports (-webkit-line-clamp: 1) {
+                &::after {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+// --------------------------------------------------------------------------
+// truncate-clamp-responsive
+//
+// Different line counts per breakpoint — a card that shows three lines on
+// desktop usually wants two on mobile, and re-declaring the whole mixin at
+// each breakpoint re-emits every fallback rule.
+//
+// @param {Map} $map  Breakpoint (min-width) => line count. The `default`
+//                    key is emitted outside any media query.
+// --------------------------------------------------------------------------
+@mixin truncate-clamp-responsive($map, $line-height: $truncate-clamp-line-height) {
+    @each $breakpoint, $lines in $map {
+        @if $breakpoint == default {
+            @include truncate-clamp($lines, $line-height);
+        } @else {
+            @media (min-width: $breakpoint) {
+                -webkit-line-clamp: $lines;
+                max-height: #{$lines * $line-height}em;
+
+                @supports (-webkit-line-clamp: 1) {
+                    max-height: none;
+                }
+            }
+        }
+    }
+}

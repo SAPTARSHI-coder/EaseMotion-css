@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whispering Grass</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="grass-app">
+
+    <section class="grass-card">
+
+      <div class="grass-header">
+        <div>
+          <span class="eyebrow">INTERACTIVE MEADOW</span>
+          <h1>🌿 Whispering Grass</h1>
+          <p>
+            Move your pointer through the field and watch the grass
+            respond like a gentle breeze.
+          </p>
+        </div>
+
+        <div class="status" id="status">
+          Calm
+        </div>
+      </div>
+
+      <div class="grass-display" id="grassDisplay">
+        <canvas id="grassCanvas"></canvas>
+
+        <div class="pointer-hint" id="pointerHint">
+          Move your pointer through the meadow
+        </div>
+      </div>
+
+      <div class="controls">
+
+        <div class="control">
+          <label for="windSlider">
+            <span>Wind intensity</span>
+            <strong id="windValue">55%</strong>
+          </label>
+
+          <input
+            id="windSlider"
+            type="range"
+            min="0"
+            max="100"
+            value="55"
+          >
+        </div>
+
+        <div class="control">
+          <label for="densitySlider">
+            <span>Grass density</span>
+            <strong id="densityValue">70%</strong>
+          </label>
+
+          <input
+            id="densitySlider"
+            type="range"
+            min="20"
+            max="100"
+            value="70"
+          >
+        </div>
+
+        <div class="control">
+          <label for="radiusSlider">
+            <span>Wave radius</span>
+            <strong id="radiusValue">110px</strong>
+          </label>
+
+          <input
+            id="radiusSlider"
+            type="range"
+            min="50"
+            max="200"
+            value="110"
+          >
+        </div>
+
+        <div class="control">
+          <label for="recoverySlider">
+            <span>Recovery</span>
+            <strong id="recoveryValue">6</strong>
+          </label>
+
+          <input
+            id="recoverySlider"
+            type="range"
+            min="2"
+            max="12"
+            value="6"
+          >
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button id="burstBtn" class="action primary">
+          🌬️ Wind Burst
+        </button>
+
+        <button id="resetBtn" class="action">
+          ↻ Reset
+        </button>
+      </div>
+
+      <div class="footer">
+        <span>🌱 Organic pointer interaction</span>
+        <span>Space · Wind Burst</span>
+        <span>R · Reset</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("grassCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const display = document.getElementById("grassDisplay");
+    const status = document.getElementById("status");
+    const hint = document.getElementById("pointerHint");
+
+    const windSlider = document.getElementById("windSlider");
+    const densitySlider = document.getElementById("densitySlider");
+    const radiusSlider = document.getElementById("radiusSlider");
+    const recoverySlider = document.getElementById("recoverySlider");
+
+    const windValue = document.getElementById("windValue");
+    const densityValue = document.getElementById("densityValue");
+    const radiusValue = document.getElementById("radiusValue");
+    const recoveryValue = document.getElementById("recoveryValue");
+
+    let width = 0;
+    let height = 0;
+
+    let wind = 0.55;
+    let density = 0.70;
+    let waveRadius = 110;
+    let recovery = 0.06;
+
+    let blades = [];
+    let pointer = {
+      x: -1000,
+      y: -1000,
+      active: false,
+      vx: 0,
+      vy: 0
+    };
+
+    class GrassBlade {
+      constructor(x, baseY) {
+        this.x = x;
+        this.baseY = baseY;
+
+        this.height =
+          18 +
+          Math.random() * 30;
+
+        this.width =
+          0.7 +
+          Math.random() * 1.8;
+
+        this.phase =
+          Math.random() * Math.PI * 2;
+
+        this.lean =
+          (Math.random() - 0.5) * 0.12;
+
+        this.angle = this.lean;
+        this.targetAngle = this.lean;
+
+        this.depth =
+          Math.random();
+
+        this.speed =
+          0.008 +
+          Math.random() * 0.012;
+      }
+
+      update(time) {
+        const ambient =
+          Math.sin(time * this.speed + this.phase) *
+          0.035;
+
+        let target = this.lean + ambient;
+
+        if (pointer.active) {
+          const dx = this.x - pointer.x;
+          const dy = this.baseY - pointer.y;
+
+          const distance =
+            Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < waveRadius) {
+            const influence =
+              1 - distance / waveRadius;
+
+            const direction =
+              pointer.vx * 0.012;
+
+            target +=
+              influence *
+              wind *
+              (0.9 + this.depth * 0.6) *
+              Math.sign(direction || 1);
+
+            target +=
+              influence *
+              Math.sin(distance * 0.08 - time * 0.04) *
+              0.12;
+          }
+        }
+
+        this.targetAngle = target;
+
+        this.angle +=
+          (this.targetAngle - this.angle) *
+          recovery;
+      }
+
+      draw() {
+        const ground = this.baseY;
+
+        ctx.save();
+
+        ctx.translate(this.x, ground);
+
+        ctx.rotate(this.angle);
+
+        const gradient =
+          ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            -this.height
+          );
+
+        gradient.addColorStop(
+          0,
+          "#355f3b"
+        );
+
+        gradient.addColorStop(
+          1,
+          "#91c788"
+        );
+
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = this.width;
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+
+        ctx.moveTo(0, 0);
+
+        ctx.quadraticCurveTo(
+          this.width * 2,
+          -this.height * 0.55,
+          Math.sin(this.angle) * 5,
+          -this.height
+        );
+
+        ctx.stroke();
+
+        ctx.restore();
+      }
+    }
+
+    function resize() {
+      const rect =
+        display.getBoundingClientRect();
+
+      const dpr =
+        Math.min(window.devicePixelRatio || 1, 2);
+
+      width = rect.width;
+      height = rect.height;
+
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+
+      ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+      );
+
+      generateGrass();
+    }
+
+    function generateGrass() {
+      blades = [];
+
+      const spacing =
+        Math.max(
+          3,
+          7 - density * 4
+        );
+
+      for (
+        let x = -10;
+        x < width + 10;
+        x += spacing
+      ) {
+        const baseY =
+          height -
+          18 +
+          Math.random() * 14;
+
+        blades.push(
+          new GrassBlade(x, baseY)
+        );
+      }
+    }
+
+    function drawGround() {
+      const gradient =
+        ctx.createLinearGradient(
+          0,
+          height * 0.55,
+          0,
+          height
+        );
+
+      gradient.addColorStop(
+        0,
+        "#b9d8a8"
+      );
+
+      gradient.addColorStop(
+        1,
+        "#6e9f63"
+      );
+
+      ctx.fillStyle = gradient;
+
+      ctx.fillRect(
+        0,
+        height * 0.6,
+        width,
+        height * 0.4
+      );
+    }
+
+    function drawWindIndicator() {
+      if (!pointer.active) return;
+
+      ctx.save();
+
+      ctx.beginPath();
+
+      ctx.arc(
+        pointer.x,
+        pointer.y,
+        waveRadius,
+        0,
+        Math.PI * 2
+      );
+
+      ctx.strokeStyle =
+        "rgba(255,255,255,0.14)";
+
+      ctx.lineWidth = 1;
+
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function animate(time) {
+      ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+      drawGround();
+
+      for (const blade of blades) {
+        blade.update(time);
+        blade.draw();
+      }
+
+      drawWindIndicator();
+
+      requestAnimationFrame(animate);
+    }
+
+    function updateStatus() {
+      if (!pointer.active) {
+        status.textContent = "Calm";
+        return;
+      }
+
+      status.textContent =
+        wind > 0.75
+          ? "Strong wind"
+          : "Breeze";
+    }
+
+    display.addEventListener(
+      "pointermove",
+      (event) => {
+        const rect =
+          display.getBoundingClientRect();
+
+        const x =
+          event.clientX - rect.left;
+
+        const y =
+          event.clientY - rect.top;
+
+        pointer.vx =
+          x - pointer.x;
+
+        pointer.vy =
+          y - pointer.y;
+
+        pointer.x = x;
+        pointer.y = y;
+
+        pointer.active = true;
+
+        hint.style.opacity = "0";
+
+        updateStatus();
+      }
+    );
+
+    display.addEventListener(
+      "pointerleave",
+      () => {
+        pointer.active = false;
+        updateStatus();
+      }
+    );
+
+    function windBurst() {
+      pointer.x = width * 0.5;
+      pointer.y = height * 0.58;
+
+      pointer.vx = 25;
+      pointer.vy = 0;
+
+      pointer.active = true;
+
+      status.textContent = "Wind burst";
+
+      setTimeout(() => {
+        pointer.active = false;
+        updateStatus();
+      }, 650);
+    }
+
+    function resetField() {
+      generateGrass();
+
+      pointer.active = false;
+
+      status.textContent = "Calm";
+
+      hint.style.opacity = "1";
+    }
+
+    windSlider.addEventListener(
+      "input",
+      () => {
+        wind =
+          Number(windSlider.value) / 100;
+
+        windValue.textContent =
+          windSlider.value + "%";
+      }
+    );
+
+    densitySlider.addEventListener(
+      "input",
+      () => {
+        density =
+          Number(densitySlider.value) / 100;
+
+        densityValue.textContent =
+          densitySlider.value + "%";
+
+        generateGrass();
+      }
+    );
+
+    radiusSlider.addEventListener(
+      "input",
+      () => {
+        waveRadius =
+          Number(radiusSlider.value);
+
+        radiusValue.textContent =
+          waveRadius + "px";
+      }
+    );
+
+    recoverySlider.addEventListener(
+      "input",
+      () => {
+        recovery =
+          Number(recoverySlider.value) / 100;
+
+        recoveryValue.textContent =
+          recoverySlider.value;
+      }
+    );
+
+    document
+      .getElementById("burstBtn")
+      .addEventListener(
+        "click",
+        windBurst
+      );
+
+    document
+      .getElementById("resetBtn")
+      .addEventListener(
+        "click",
+        resetField
+      );
+
+    window.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.code === "Space"
+        ) {
+          event.preventDefault();
+          windBurst();
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+          resetField();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      resize
+    );
+
+    resize();
+
+    requestAnimationFrame(animate);
+  </script>
+
+</body>
+</html>
