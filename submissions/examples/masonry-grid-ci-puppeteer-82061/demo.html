@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masonry Grid CI FPS Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="benchmark-shell">
+    <header class="header">
+      <span class="eyebrow">CI Performance Test</span>
+      <h1>Masonry Grid</h1>
+      <p>
+        Headless Chrome-style rendering benchmark for validating Masonry Grid
+        performance budgets.
+      </p>
+    </header>
+
+    <section class="metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <section class="controls">
+      <button id="runBenchmark">
+        Run CI Benchmark
+      </button>
+
+      <span id="progressText">Ready</span>
+    </section>
+
+    <section class="masonry" id="masonry">
+      <article class="card tall"><span>01</span><h2>Rendering</h2></article>
+      <article class="card"><span>02</span><h2>Layout</h2></article>
+      <article class="card wide"><span>03</span><h2>Performance</h2></article>
+      <article class="card"><span>04</span><h2>Frames</h2></article>
+      <article class="card tall"><span>05</span><h2>Chrome</h2></article>
+      <article class="card"><span>06</span><h2>CSS</h2></article>
+      <article class="card wide"><span>07</span><h2>Animation</h2></article>
+      <article class="card"><span>08</span><h2>Metrics</h2></article>
+      <article class="card tall"><span>09</span><h2>Motion</h2></article>
+      <article class="card"><span>10</span><h2>Browser</h2></article>
+      <article class="card wide"><span>11</span><h2>Testing</h2></article>
+      <article class="card"><span>12</span><h2>Runtime</h2></article>
+      <article class="card tall"><span>13</span><h2>Quality</h2></article>
+      <article class="card"><span>14</span><h2>Frames</h2></article>
+      <article class="card wide"><span>15</span><h2>Benchmark</h2></article>
+      <article class="card"><span>16</span><h2>Speed</h2></article>
+      <article class="card tall"><span>17</span><h2>Layout</h2></article>
+      <article class="card"><span>18</span><h2>Render</h2></article>
+      <article class="card wide"><span>19</span><h2>Validation</h2></article>
+      <article class="card"><span>20</span><h2>Complete</h2></article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const grid = document.getElementById("masonry");
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const progressText = document.getElementById("progressText");
+
+    const BUDGET = {
+      minFps: 50,
+      maxBundleBytes: 50 * 1024,
+      maxExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Benchmark in progress";
+      progressText.textContent = "Rendering frames...";
+
+      const start = performance.now();
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function renderFrame(time) {
+          frames++;
+
+          const movement =
+            Math.sin((time - animationStart) / 180) * 6;
+
+          grid.style.transform =
+            `translate3d(${movement}px, 0, 0)`;
+
+          if (time - animationStart < 1000) {
+            requestAnimationFrame(renderFrame);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(renderFrame);
+      });
+
+      const executionMs = performance.now() - start;
+      const measuredFps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch {
+        bundleBytes = 0;
+      }
+
+      const fpsPassed = measuredFps >= BUDGET.minFps;
+      const bundlePassed =
+        bundleBytes <= BUDGET.maxBundleBytes;
+      const executionPassed =
+        executionMs <= BUDGET.maxExecutionMs;
+
+      const passed =
+        fpsPassed &&
+        bundlePassed &&
+        executionPassed;
+
+      fpsOutput.textContent = measuredFps;
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent = passed
+        ? "All performance budgets passed"
+        : "Performance budget exceeded";
+
+      progressText.textContent =
+        passed
+          ? "CI validation passed"
+          : "CI validation failed";
+
+      console.table({
+        fps: measuredFps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minFps: BUDGET.minFps,
+        maxBundleBytes: BUDGET.maxBundleBytes,
+        maxExecutionMs: BUDGET.maxExecutionMs,
+        passed
+      });
+
+      grid.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>
