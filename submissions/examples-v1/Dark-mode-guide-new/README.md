@@ -21,9 +21,9 @@ Only visual tokens are overridden — colors, surfaces, shadows, and glows. Spac
 A fully interactive single-page demo showing:
 
 - A toggle button that switches themes and persists the choice via `localStorage`
-- Both strategies documented with code examples embedded directly in the page
+- Both strategies documented with syntax-highlighted code blocks (Prism.js via CDN)
 - A live variable reference table with colour swatches for every overridden token
-- The EaseMotion-inspired card and animation behavior recreated locally for offline use
+- All core EaseMotion components (buttons, cards, animations) reacting to the theme switch in real time
 
 ---
 
