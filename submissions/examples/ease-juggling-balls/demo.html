@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juggling Balls · Balls Juggle in Arc</title>
+    <meta name="description" content="Interactive juggling balls with realistic arc motion, catching, and throwing physics.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🟠 JUGGLING BALLS</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="juggleCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="start-btn" id="startBtn">🔄 START</button>
+                <button class="stop-btn" id="stopBtn">⏹️ STOP</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Balls</label>
+                <input type="range" id="ballsSlider" min="3" max="7" value="3">
+                <span id="ballsLabel">3</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🟠 JUGGLING BALLS</span>
+            <small>arc · toss · catch</small>
+        </div>
+        <div class="hint">
+            <span>🔄 click to start juggling balls in a graceful arc</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('juggleCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const startBtn = document.getElementById('startBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const ballsSlider = document.getElementById('ballsSlider');
+            const ballsLabel = document.getElementById('ballsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let numBalls = 3;
+            let time = 0;
+            let isJuggling = false;
+            let catchCount = 0;
+            let throwCount = 0;
+
+            // ---- Ball Class ----
+            class JugglingBall {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    this.radius = 18;
+                    this.x = W / 2 - 100 + (index / (total - 1)) * 200;
+                    this.y = H - 80;
+                    this.startX = this.x;
+                    this.startY = this.y;
+                    
+                    // Colors
+                    const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#1dd1a1', '#b026ff', '#ff6bcd', '#ff9f43'];
+                    this.color = colors[index % colors.length];
+                    this.glowColor = this.color;
+                    
+                    // Motion parameters
+                    this.phase = (index / total) * Math.PI * 2;
+                    this.phaseOffset = (index / total) * Math.PI * 2;
+                    this.amplitudeX = 80 + Math.random() * 40;
+                    this.amplitudeY = 120 + Math.random() * 30;
+                    this.frequency = 1 + (index / total) * 0.2;
+                    this.baseY = H - 80 - Math.random() * 20;
+                    
+                    // Trail
+                    this.trail = [];
+                    this.maxTrail = 15;
+                    
+                    // Shadow
+                    this.shadowY = this.y;
+                }
+
+                update(dt) {
+                    // Juggling arc motion
+                    const t = time * 0.5 * this.frequency + this.phaseOffset;
+                    const progress = (Math.sin(t) + 1) / 2;
+                    
+                    // Arc position
+                    this.x = W / 2 + Math.sin(t + this.phase) * this.amplitudeX;
+                    this.y = this.baseY - Math.sin(t) * this.amplitudeY;
+                    
+                    // Add slight randomness for organic feel
+                    this.x += Math.sin(time * 0.7 + this.index) * 2;
+                    this.y += Math.cos(time * 0.5 + this.index * 1.2) * 2;
+                    
+                    // Shadow
+                    this.shadowY = this.baseY + 10;
+                    
+                    // Trail
+                    if (isJuggling) {
+                        this.trail.push({ x: this.x, y: this.y });
+                        if (this.trail.length > this.maxTrail) {
+                            this.trail.shift();
+                        }
+                    }
+                    
+                    // Check for catch (when ball is at lowest point)
+                    if (isJuggling && Math.abs(Math.sin(t)) < 0.05 && Math.cos(t) < 0) {
+                        catchCount++;
+                    }
+                }
+
+                draw(ctx) {
+                    // Trail
+                    for (let i = 0; i < this.trail.length - 1; i++) {
+                        const alpha = (i / this.trail.length) * 0.15;
+                        const size = this.radius * (0.2 + (i / this.trail.length) * 0.3);
+                        ctx.save();
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = this.color;
+                        ctx.shadowColor = this.glowColor;
+                        ctx.shadowBlur = 5;
+                        ctx.beginPath();
+                        ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    
+                    // Shadow
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0)';
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(0,0,0,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(this.x, this.shadowY, this.radius * 0.8, this.radius * 0.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    // Ball glow
+                    const grad = ctx.createRadialGradient(
+                        this.x - this.radius * 0.3,
+                        this.y - this.radius * 0.3,
+                        0,
+                        this.x,
+                        this.y,
+                        this.radius
+                    );
+                    grad.addColorStop(0, this.color);
+                    grad.addColorStop(0.3, this.color);
+                    grad.addColorStop(0.7, this.color);
+                    grad.addColorStop(1, this.color);
+                    
+                    ctx.save();
+                    ctx.shadowColor = this.glowColor;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = grad;
+                    ctx.shadowColor = this.glowColor;
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        this.x - this.radius * 0.2,
+                        this.y - this.radius * 0.25,
+                        this.radius * 0.25,
+                        this.radius * 0.15,
+                        -0.4,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    // Small highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        this.x + this.radius * 0.1,
+                        this.y - this.radius * 0.1,
+                        this.radius * 0.1,
+                        this.radius * 0.06,
+                        0.3,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Juggling System ----
+            let balls = [];
+
+            function initJuggling() {
+                balls = [];
+                for (let i = 0; i < numBalls; i++) {
+                    const ball = new JugglingBall(i, numBalls);
+                    ball.phaseOffset = (i / numBalls) * Math.PI * 2;
+                    ball.amplitudeX = 80 + Math.random() * 40;
+                    ball.amplitudeY = 120 + Math.random() * 30;
+                    ball.frequency = 0.8 + (i / numBalls) * 0.4;
+                    balls.push(ball);
+                }
+                catchCount = 0;
+                throwCount = 0;
+            }
+
+            // ---- Start Juggling ----
+            function startJuggling() {
+                if (isJuggling) return;
+                isJuggling = true;
+                throwCount++;
+                // Reset ball positions for smooth start
+                for (let i = 0; i < balls.length; i++) {
+                    const ball = balls[i];
+                    ball.phaseOffset = (i / balls.length) * Math.PI * 2;
+                    ball.trail = [];
+                }
+            }
+
+            // ---- Stop Juggling ----
+            function stopJuggling() {
+                isJuggling = false;
+            }
+
+            // ---- Reset ----
+            function resetJuggling() {
+                isJuggling = false;
+                time = 0;
+                catchCount = 0;
+                throwCount = 0;
+                initJuggling();
+            }
+
+            // ---- Draw Hands ----
+            function drawHands(ctx) {
+                const leftX = W / 2 - 100;
+                const rightX = W / 2 + 100;
+                const y = H - 70;
+                
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.08)';
+                ctx.font = '28px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Left hand
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.06)';
+                ctx.beginPath();
+                ctx.arc(leftX, y, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.15)';
+                ctx.font = '24px monospace';
+                ctx.fillText('✋', leftX, y);
+                
+                // Right hand
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.06)';
+                ctx.beginPath();
+                ctx.arc(rightX, y, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(200, 180, 150, 0.15)';
+                ctx.font = '24px monospace';
+                ctx.fillText('✋', rightX, y);
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw juggling arc path (preview)
+                if (!isJuggling && balls.length > 0) {
+                    ctx.save();
+                    ctx.setLineDash([4, 8]);
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.03)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    const steps = 40;
+                    for (let i = 0; i <= steps; i++) {
+                        const t = (i / steps) * Math.PI * 2;
+                        const x = W / 2 + Math.sin(t) * 100;
+                        const y = balls[0].baseY - Math.sin(t) * 130;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+                
+                // Draw hands
+                drawHands(ctx);
+                
+                // Draw balls
+                for (let b of balls) {
+                    b.draw(ctx);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Catches: ${catchCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isJuggling ? '🔄 JUGGLING' : '⏸️ STOPPED';
+                ctx.fillText(status, 20, H - 10);
+                
+                if (isJuggling) {
+                    ctx.fillText(`Throws: ${throwCount}`, 20, H - 30);
+                }
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Update balls
+                for (let b of balls) {
+                    b.update(time);
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            ballsSlider.addEventListener('input', function() {
+                numBalls = parseInt(this.value);
+                ballsLabel.textContent = numBalls;
+                resetJuggling();
+            });
+
+            // ---- Event Listeners ----
+            startBtn.addEventListener('click', startJuggling);
+            stopBtn.addEventListener('click', stopJuggling);
+            resetBtn.addEventListener('click', resetJuggling);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isJuggling) {
+                        startJuggling();
+                    } else {
+                        stopJuggling();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetJuggling();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initJuggling();
+            render();
+            animate();
+
+            console.log('🟠 Juggling Balls · Click Start or press Space to begin juggling!');
+        })();
+    </script>
+</body>
+</html>
