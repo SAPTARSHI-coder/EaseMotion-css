@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hummingbird Hover · Hovers and Darts Like Hummingbird</title>
+    <meta name="description" content="Interactive hummingbird with realistic hovering, darting movements, iridescent colors, and flower feeding behavior.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🐦 HUMMINGBIRD</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="hummingbirdCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🐦 HUMMINGBIRD HOVER</span>
+            <small>hovers · darts · feeds</small>
+        </div>
+        <div class="hint">
+            <span>🌸 click to attract hummingbird to flowers</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('hummingbirdCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Flowers ----
+            let flowers = [];
+            
+            function createFlowers() {
+                flowers = [];
+                const positions = [
+                    { x: 80, y: 400 },
+                    { x: 180, y: 430 },
+                    { x: 300, y: 410 },
+                    { x: 420, y: 440 },
+                    { x: 520, y: 400 },
+                    { x: 120, y: 460 },
+                    { x: 380, y: 470 },
+                    { x: 480, y: 450 }
+                ];
+                
+                for (let pos of positions) {
+                    const hue = 320 + Math.random() * 40;
+                    flowers.push({
+                        x: pos.x,
+                        y: pos.y,
+                        size: 8 + Math.random() * 6,
+                        hue: hue,
+                        sat: 60 + Math.random() * 30,
+                        light: 50 + Math.random() * 20,
+                        phase: Math.random() * Math.PI * 2,
+                        nectar: 1
+                    });
+                }
+            }
+
+            // ---- Hummingbird Class ----
+            class Hummingbird {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H / 2;
+                    this.targetX = this.x;
+                    this.targetY = this.y;
+                    this.size = 25;
+                    
+                    // Movement
+                    this.moveSpeed = 0.05;
+                    this.hoverPhase = 0;
+                    this.hoverSpeed = 0.04;
+                    this.hoverAmplitude = 15;
+                    
+                    // Dart
+                    this.dartTarget = null;
+                    this.dartTimer = 0;
+                    this.isDarting = false;
+                    this.dartSpeed = 0.15;
+                    
+                    // Wing beat
+                    this.wingPhase = 0;
+                    this.wingSpeed = 0.3;
+                    this.wingAngle = 0;
+                    
+                    // Body angle
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    
+                    // Colors (iridescent)
+                    this.baseHue = 180;
+                    this.colorOffset = 0;
+                    
+                    // Feeding
+                    this.isFeeding = false;
+                    this.feedTimer = 0;
+                    this.feedTarget = null;
+                    
+                    // Trail
+                    this.trail = [];
+                    this.maxTrail = 15;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Wing beat
+                    this.wingPhase += this.wingSpeed * dt;
+                    this.wingAngle = Math.sin(this.wingPhase) * 0.6;
+                    
+                    // Hover oscillation
+                    this.hoverPhase += this.hoverSpeed * dt;
+                    const hoverX = Math.sin(this.hoverPhase * 0.7) * this.hoverAmplitude * 0.3;
+                    const hoverY = Math.sin(this.hoverPhase * 1.3) * this.hoverAmplitude * 0.4;
+                    
+                    // Dart behavior
+                    if (this.isDarting && this.dartTarget) {
+                        // Move toward dart target
+                        const dx = this.dartTarget.x - this.x;
+                        const dy = this.dartTarget.y - this.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < 10) {
+                            // Reached target
+                            this.isDarting = false;
+                            this.isFeeding = true;
+                            this.feedTimer = 60 + Math.random() * 40;
+                            this.feedTarget = this.dartTarget;
+                            // Set new target
+                            this.setRandomTarget();
+                        } else {
+                            const speed2 = this.dartSpeed * dt * 15;
+                            this.targetX = this.x + (dx / dist) * speed2 * 2;
+                            this.targetY = this.y + (dy / dist) * speed2 * 2;
+                            // Keep within bounds
+                            this.targetX = Math.min(W - 20, Math.max(20, this.targetX));
+                            this.targetY = Math.min(H - 20, Math.max(20, this.targetY));
+                        }
+                    } else if (this.isFeeding) {
+                        this.feedTimer -= dt;
+                        if (this.feedTimer <= 0) {
+                            this.isFeeding = false;
+                            this.feedTarget = null;
+                            this.setRandomTarget();
+                        }
+                        // Small hover near flower
+                        if (this.feedTarget) {
+                            this.targetX = this.feedTarget.x + Math.sin(time * 0.05) * 5;
+                            this.targetY = this.feedTarget.y - 20 + Math.sin(time * 0.07 + 1) * 5;
+                        }
+                    } else {
+                        // Normal hover with random target changes
+                        this.dartTimer -= dt;
+                        if (this.dartTimer <= 0) {
+                            this.setRandomTarget();
+                            this.dartTimer = 100 + Math.random() * 200;
+                            
+                            // Random dart chance
+                            if (Math.random() < 0.3 && flowers.length > 0) {
+                                // Dart to a flower
+                                const flower = flowers[Math.floor(Math.random() * flowers.length)];
+                                if (flower.nectar > 0.5) {
+                                    this.dartTarget = flower;
+                                    this.isDarting = true;
+                                    flower.nectar -= 0.3;
+                                    if (flower.nectar < 0) flower.nectar = 0;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Smooth movement with hover
+                    this.x += (this.targetX - this.x + hoverX * 0.2) * this.moveSpeed * dt * 2;
+                    this.y += (this.targetY - this.y + hoverY * 0.2) * this.moveSpeed * dt * 2;
+                    
+                    // Keep in bounds
+                    this.x = Math.min(W - 20, Math.max(20, this.x));
+                    this.y = Math.min(H - 20, Math.max(20, this.y));
+                    
+                    // Angle toward movement
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+                        this.targetAngle = Math.atan2(dy, dx);
+                    }
+                    this.angle += (this.targetAngle - this.angle) * 0.08 * dt;
+                    
+                    // Color shimmer
+                    this.colorOffset += 0.005 * dt;
+                    this.baseHue = 180 + Math.sin(time * 0.02) * 20;
+                    
+                    // Trail
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > this.maxTrail) {
+                        this.trail.shift();
+                    }
+                    
+                    // Replenish flower nectar
+                    for (let f of flowers) {
+                        f.nectar = Math.min(1, f.nectar + 0.001 * dt);
+                    }
+                }
+
+                setRandomTarget() {
+                    const margin = 50;
+                    this.targetX = margin + Math.random() * (W - margin * 2);
+                    this.targetY = margin + Math.random() * (H - margin * 2);
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    
+                    // ---- Trail ----
+                    for (let i = 0; i < this.trail.length - 1; i++) {
+                        const t = this.trail[i];
+                        const alpha = (i / this.trail.length) * 0.15;
+                        ctx.save();
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = `hsl(${this.baseHue + 30}, 80%, 70%)`;
+                        ctx.shadowColor = `hsl(${this.baseHue + 30}, 100%, 70%)`;
+                        ctx.shadowBlur = 10;
+                        ctx.beginPath();
+                        ctx.arc(t.x - x, t.y - y, 2 * (i / this.trail.length), 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    
+                    // ---- Glow ----
+                    const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 1.5);
+                    glowGrad.addColorStop(0, `hsla(${this.baseHue + 20}, 100%, 70%, 0.1)`);
+                    glowGrad.addColorStop(0.5, `hsla(${this.baseHue + 40}, 100%, 60%, 0.05)`);
+                    glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Wings ----
+                    const wingBeat = this.wingAngle;
+                    
+                    // Left wing
+                    ctx.save();
+                    ctx.shadowColor = `hsla(${this.baseHue + 40}, 100%, 70%, 0.2)`;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = `hsla(${this.baseHue + 20}, 70%, ${60 + Math.sin(time * 0.05) * 10}%, 0.6)`;
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        -size * 0.1,
+                        -size * 0.4 - wingBeat * size * 0.2,
+                        size * 0.4,
+                        size * 0.15 + Math.abs(wingBeat) * size * 0.1,
+                        -0.3 + wingBeat * 0.2,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    // Right wing
+                    ctx.save();
+                    ctx.shadowColor = `hsla(${this.baseHue + 40}, 100%, 70%, 0.2)`;
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = `hsla(${this.baseHue + 20}, 70%, ${60 + Math.sin(time * 0.05 + 1) * 10}%, 0.6)`;
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        size * 0.1,
+                        -size * 0.4 + wingBeat * size * 0.2,
+                        size * 0.4,
+                        size * 0.15 + Math.abs(wingBeat) * size * 0.1,
+                        0.3 - wingBeat * 0.2,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    // ---- Body ----
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.1, -size * 0.1, 0,
+                        0, 0, size
+                    );
+                    const hue1 = (this.baseHue + this.colorOffset * 20) % 360;
+                    const hue2 = (this.baseHue + 30 + this.colorOffset * 20) % 360;
+                    bodyGrad.addColorStop(0, `hsl(${hue1}, 80%, 70%)`);
+                    bodyGrad.addColorStop(0.5, `hsl(${hue2}, 70%, 55%)`);
+                    bodyGrad.addColorStop(0.8, `hsl(${hue1 + 20}, 60%, 40%)`);
+                    bodyGrad.addColorStop(1, `hsl(${hue1 + 40}, 50%, 30%)`);
+                    
+                    ctx.shadowColor = `hsla(${hue2}, 100%, 70%, 0.2)`;
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.6, size * 0.35, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = `hsl(${hue2}, 70%, 60%)`;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.45, -size * 0.05, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Beak ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#2a2a2a';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.6, -size * 0.02);
+                    ctx.lineTo(size * 0.85, 0);
+                    ctx.lineTo(size * 0.6, size * 0.02);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // ---- Eye ----
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.5, -size * 0.08, size * 0.06, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0a0a12';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.52, -size * 0.07, size * 0.035, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.53, -size * 0.08, size * 0.015, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Tail feathers ----
+                    ctx.shadowBlur = 5;
+                    for (let i = -2; i <= 2; i++) {
+                        const tailAngle = i * 0.08;
+                        const tailLen = size * 0.4 + Math.abs(i) * size * 0.05;
+                        ctx.fillStyle = `hsl(${hue1 + i * 10}, 60%, ${40 - Math.abs(i) * 5}%)`;
+                        ctx.beginPath();
+                        ctx.moveTo(-size * 0.5, 0);
+                        ctx.quadraticCurveTo(
+                            -size * 0.5 - tailLen * 0.3,
+                            tailAngle * size * 0.3,
+                            -size * 0.5 - tailLen,
+                            tailAngle * size * 0.5
+                        );
+                        ctx.quadraticCurveTo(
+                            -size * 0.5 - tailLen * 0.3,
+                            tailAngle * size * 0.1,
+                            -size * 0.5,
+                            0
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Throat (gorget) ----
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = `hsla(${hue1 + 60}, 100%, 70%, 0.3)`;
+                    ctx.fillStyle = `hsla(${hue1 + 60}, 90%, 70%, 0.6)`;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.35, 0, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+
+                attractToFlower(flower) {
+                    if (flower && flower.nectar > 0.5) {
+                        this.dartTarget = flower;
+                        this.isDarting = true;
+                        this.isFeeding = false;
+                        flower.nectar -= 0.5;
+                        if (flower.nectar < 0) flower.nectar = 0;
+                    }
+                }
+            }
+
+            // ---- Create Hummingbird ----
+            let hummingbird;
+
+            function createHummingbird() {
+                hummingbird = new Hummingbird();
+                // Set initial random target
+                hummingbird.setRandomTarget();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Sky gradient
+                const grad = ctx.createLinearGradient(0, 0, 0, H);
+                grad.addColorStop(0, '#1a3a5a');
+                grad.addColorStop(0.3, '#2a5a7a');
+                grad.addColorStop(0.6, '#3a7a6a');
+                grad.addColorStop(0.8, '#2a5a4a');
+                grad.addColorStop(1, '#1a3a2a');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Light rays
+                for (let i = 0; i < 4; i++) {
+                    const x = 50 + i * 160 + Math.sin(time * 0.005 + i) * 20;
+                    const grad2 = ctx.createLinearGradient(x, 0, x + 20, H);
+                    grad2.addColorStop(0, `rgba(200, 255, 200, ${0.01 + Math.sin(time * 0.01 + i) * 0.008})`);
+                    grad2.addColorStop(0.5, `rgba(200, 255, 200, ${0.005})`);
+                    grad2.addColorStop(1, 'rgba(200, 255, 200, 0)');
+                    ctx.fillStyle = grad2;
+                    ctx.fillRect(x, 0, 20, H);
+                }
+                
+                // Draw flowers
+                for (let f of flowers) {
+                    drawFlower(ctx, f);
+                }
+                
+                // Ambient particles
+                for (let i = 0; i < 15; i++) {
+                    const x = (i * 197 + 40) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 3) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const hue = (i * 30 + time * 5 + 120) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 60%, 70%, ${0.01 + Math.sin(time * 0.015 + i) * 0.008})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Draw Flower ----
+            function drawFlower(ctx, flower) {
+                const x = flower.x;
+                const y = flower.y;
+                const size = flower.size;
+                const hue = flower.hue;
+                const sat = flower.sat;
+                const light = flower.light;
+                const nectar = flower.nectar;
+                
+                ctx.save();
+                ctx.translate(x, y);
+                
+                // Nectar indicator glow
+                if (nectar > 0.5) {
+                    ctx.shadowColor = `hsl(${hue + 20}, 100%, 70%)`;
+                    ctx.shadowBlur = 20 * nectar;
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+                
+                // Petals
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i / 5) * Math.PI * 2 + Math.sin(time * 0.01 + flower.phase + i) * 0.05;
+                    const petalSize = size * (0.8 + Math.sin(time * 0.02 + flower.phase + i * 1.5) * 0.2);
+                    ctx.fillStyle = `hsla(${hue + i * 10}, ${sat + 10}%, ${light + Math.sin(time * 0.02 + i) * 10}%, 0.8)`;
+                    ctx.shadowBlur = nectar > 0.5 ? 15 * nectar : 0;
+                    ctx.shadowColor = `hsl(${hue + 20}, 100%, 70%)`;
+                    ctx.beginPath();
+                    ctx.ellipse(
+                        Math.cos(angle) * size * 0.7,
+                        Math.sin(angle) * size * 0.7,
+                        petalSize * 0.5,
+                        petalSize * 0.3,
+                        angle,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.fill();
+                }
+                
+                // Center
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = `hsla(${hue + 20}, 80%, ${light + 10}%, 0.9)`;
+                ctx.beginPath();
+                ctx.arc(0, 0, size * 0.25, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Nectar dots
+                if (nectar > 0.3) {
+                    for (let i = 0; i < 3; i++) {
+                        const angle = (i / 3) * Math.PI * 2 + time * 0.02;
+                        const dist = size * 0.1;
+                        ctx.fillStyle = `hsla(40, 100%, ${60 + nectar * 30}%, ${0.3 + nectar * 0.5})`;
+                        ctx.beginPath();
+                        ctx.arc(
+                            Math.cos(angle) * dist,
+                            Math.sin(angle) * dist,
+                            size * 0.05 * nectar,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Click handler ----
+            function handleCanvasClick(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                // Find nearest flower
+                let nearest = null;
+                let nearestDist = 50;
+                for (let f of flowers) {
+                    const dx = f.x - x;
+                    const dy = f.y - y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < nearestDist && f.nectar > 0.5) {
+                        nearestDist = dist;
+                        nearest = f;
+                    }
+                }
+                
+                if (nearest) {
+                    hummingbird.attractToFlower(nearest);
+                } else {
+                    // Move to click position
+                    hummingbird.targetX = Math.min(W - 20, Math.max(20, x));
+                    hummingbird.targetY = Math.min(H - 20, Math.max(20, y));
+                    hummingbird.isDarting = false;
+                    hummingbird.isFeeding = false;
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (hummingbird) {
+                    hummingbird.update();
+                    hummingbird.draw(ctx);
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetHummingbird() {
+                createFlowers();
+                createHummingbird();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetHummingbird);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', handleCanvasClick, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetHummingbird();
+                }
+            });
+
+            // ---- Initialize ----
+            createFlowers();
+            createHummingbird();
+            animate();
+
+            console.log('🐦 Hummingbird Hover · Click flowers to attract the hummingbird!');
+        })();
+    </script>
+</body>
+</html>

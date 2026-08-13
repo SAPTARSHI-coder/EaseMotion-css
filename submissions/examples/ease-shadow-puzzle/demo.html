@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shadow Puzzle · Arrange Shadows to Form Shape</title>
+    <meta name="description" content="Interactive shadow puzzle where you arrange shadow pieces to form a complete shape.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🌓 SHADOW PUZZLE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="shadowCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="info-text">
+                <span id="statusText">Drag pieces to form the shadow shape</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🌓 SHADOW PUZZLE</span>
+            <small>arrange · shadows · form shape</small>
+        </div>
+        <div class="hint">
+            <span>🧩 drag shadow pieces to complete the shape</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('shadowCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusText = document.getElementById('statusText');
+
+            let isAnimating = true;
+            let time = 0;
+            let dragPiece = null;
+            let dragOffsetX = 0, dragOffsetY = 0;
+
+            // ---- Shadow Pieces ----
+            let pieces = [];
+            let targetShape = [];
+            let isComplete = false;
+
+            // ---- Generate Target Shape ----
+            function generateTargetShape() {
+                targetShape = [];
+                const numPoints = 5 + Math.floor(Math.random() * 4);
+                const centerX = W / 2;
+                const centerY = H / 2;
+                const radius = 80 + Math.random() * 40;
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * Math.PI * 2 - Math.PI / 2;
+                    const r = radius * (0.6 + Math.random() * 0.4);
+                    targetShape.push({
+                        x: centerX + Math.cos(angle) * r,
+                        y: centerY + Math.sin(angle) * r
+                    });
+                }
+            }
+
+            // ---- Create Pieces ----
+            function createPieces() {
+                pieces = [];
+                isComplete = false;
+                statusText.textContent = 'Drag pieces to form the shadow shape';
+                statusText.style.color = '#88aacc';
+                
+                generateTargetShape();
+                
+                // Create 4-6 shadow pieces
+                const numPieces = 4 + Math.floor(Math.random() * 3);
+                const pieceColors = [
+                    'rgba(40, 50, 70, 0.7)',
+                    'rgba(50, 60, 80, 0.7)',
+                    'rgba(60, 70, 90, 0.7)',
+                    'rgba(45, 55, 75, 0.7)',
+                    'rgba(55, 65, 85, 0.7)',
+                    'rgba(35, 45, 65, 0.7)'
+                ];
+                
+                // Divide target shape into pieces
+                const pointsPerPiece = Math.floor(targetShape.length / numPieces);
+                const remainder = targetShape.length % numPieces;
+                
+                let startIndex = 0;
+                for (let i = 0; i < numPieces; i++) {
+                    const count = pointsPerPiece + (i < remainder ? 1 : 0);
+                    const endIndex = Math.min(startIndex + count, targetShape.length);
+                    
+                    // Get piece points from target shape
+                    const piecePoints = [];
+                    for (let j = startIndex; j < endIndex; j++) {
+                        piecePoints.push({ ...targetShape[j] });
+                    }
+                    
+                    // Add closing point to make it a closed shape
+                    if (piecePoints.length > 0) {
+                        piecePoints.push({ ...piecePoints[0] });
+                    }
+                    
+                    // Randomize position (scatter pieces)
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 150 + Math.random() * 100;
+                    const offsetX = Math.cos(angle) * dist;
+                    const offsetY = Math.sin(angle) * dist;
+                    
+                    // Calculate center of piece for rotation
+                    let cx = 0, cy = 0;
+                    for (let p of piecePoints) {
+                        cx += p.x;
+                        cy += p.y;
+                    }
+                    cx /= piecePoints.length;
+                    cy /= piecePoints.length;
+                    
+                    // Create piece with offset
+                    const piece = {
+                        points: piecePoints.map(p => ({
+                            x: p.x + offsetX,
+                            y: p.y + offsetY
+                        })),
+                        originalPoints: piecePoints.map(p => ({ ...p })),
+                        color: pieceColors[i % pieceColors.length],
+                        centerX: cx + offsetX,
+                        centerY: cy + offsetY,
+                        rotation: (Math.random() - 0.5) * 0.5,
+                        isPlaced: false,
+                        targetX: cx,
+                        targetY: cy,
+                        index: i
+                    };
+                    
+                    pieces.push(piece);
+                    startIndex = endIndex;
+                }
+            }
+
+            // ---- Check if piece is placed correctly ----
+            function checkPiecePlacement(piece) {
+                const threshold = 30;
+                const dx = piece.centerX - piece.targetX;
+                const dy = piece.centerY - piece.targetY;
+                return Math.sqrt(dx * dx + dy * dy) < threshold;
+            }
+
+            // ---- Check if puzzle is complete ----
+            function checkCompletion() {
+                let allPlaced = true;
+                for (let p of pieces) {
+                    if (!checkPiecePlacement(p)) {
+                        allPlaced = false;
+                        break;
+                    }
+                }
+                
+                if (allPlaced && pieces.length > 0) {
+                    isComplete = true;
+                    statusText.textContent = '🎉 Puzzle Complete! Click Reset for new puzzle';
+                    statusText.style.color = '#66ff88';
+                }
+                return allPlaced;
+            }
+
+            // ---- Draw Shadow Shape ----
+            function drawShadowShape(ctx, points, color, lineWidth) {
+                if (points.length < 2) return;
+                
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = color || 'rgba(40, 50, 70, 0.6)';
+                ctx.strokeStyle = color || 'rgba(60, 70, 90, 0.8)';
+                ctx.lineWidth = lineWidth || 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(points[0].x, points[0].y);
+                for (let i = 1; i < points.length; i++) {
+                    ctx.lineTo(points[i].x, points[i].y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                ctx.restore();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw target shape outline (ghost)
+                if (targetShape.length > 0) {
+                    ctx.save();
+                    ctx.setLineDash([6, 6]);
+                    ctx.strokeStyle = 'rgba(100, 200, 255, 0.15)';
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                    ctx.shadowBlur = 15;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(targetShape[0].x, targetShape[0].y);
+                    for (let i = 1; i < targetShape.length; i++) {
+                        ctx.lineTo(targetShape[i].x, targetShape[i].y);
+                    }
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+                
+                // Draw placed pieces (snapped to target)
+                for (let p of pieces) {
+                    if (checkPiecePlacement(p)) {
+                        drawShadowShape(ctx, p.originalPoints, p.color, 2);
+                    }
+                }
+                
+                // Draw draggable pieces
+                for (let p of pieces) {
+                    if (!checkPiecePlacement(p)) {
+                        drawShadowShape(ctx, p.points, p.color, 2);
+                    }
+                }
+                
+                // Draw snap indicators
+                for (let p of pieces) {
+                    if (checkPiecePlacement(p)) {
+                        const cx = p.targetX;
+                        const cy = p.targetY;
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(100, 255, 100, 0.1)';
+                        ctx.shadowBlur = 20;
+                        ctx.strokeStyle = 'rgba(100, 255, 100, 0.15)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+                
+                // Completion glow
+                if (isComplete) {
+                    const glowGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, 300);
+                    glowGrad.addColorStop(0, 'rgba(100, 255, 100, 0.05)');
+                    glowGrad.addColorStop(0.5, 'rgba(100, 255, 100, 0.02)');
+                    glowGrad.addColorStop(1, 'rgba(100, 255, 100, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(W/2, H/2, 300, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                
+                // Find piece to drag (reverse order to get topmost)
+                for (let i = pieces.length - 1; i >= 0; i--) {
+                    const p = pieces[i];
+                    if (checkPiecePlacement(p)) continue;
+                    
+                    // Check if click is inside piece
+                    const isInside = ctx.isPointInPath ? false : true;
+                    // Simple distance check
+                    let minDist = Infinity;
+                    for (let pt of p.points) {
+                        const dx = pt.x - pos.x;
+                        const dy = pt.y - pos.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < minDist) minDist = dist;
+                    }
+                    
+                    // Check if near any point of the piece
+                    let nearPiece = false;
+                    for (let pt of p.points) {
+                        const dx = pt.x - pos.x;
+                        const dy = pt.y - pos.y;
+                        if (Math.sqrt(dx * dx + dy * dy) < 40) {
+                            nearPiece = true;
+                            break;
+                        }
+                    }
+                    
+                    if (nearPiece) {
+                        dragPiece = p;
+                        dragOffsetX = pos.x - p.centerX;
+                        dragOffsetY = pos.y - p.centerY;
+                        break;
+                    }
+                }
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                
+                if (dragPiece) {
+                    // Move piece
+                    const dx = pos.x - dragOffsetX;
+                    const dy = pos.y - dragOffsetY;
+                    const offsetX = dx - dragPiece.targetX;
+                    const offsetY = dy - dragPiece.targetY;
+                    
+                    // Update all points
+                    for (let i = 0; i < dragPiece.points.length; i++) {
+                        dragPiece.points[i].x = dragPiece.originalPoints[i].x + offsetX;
+                        dragPiece.points[i].y = dragPiece.originalPoints[i].y + offsetY;
+                    }
+                    dragPiece.centerX = dx;
+                    dragPiece.centerY = dy;
+                    
+                    // Check if snapped
+                    if (checkPiecePlacement(dragPiece)) {
+                        // Snap to target
+                        for (let i = 0; i < dragPiece.points.length; i++) {
+                            dragPiece.points[i].x = dragPiece.originalPoints[i].x;
+                            dragPiece.points[i].y = dragPiece.originalPoints[i].y;
+                        }
+                        dragPiece.centerX = dragPiece.targetX;
+                        dragPiece.centerY = dragPiece.targetY;
+                        dragPiece = null;
+                        checkCompletion();
+                    }
+                }
+                
+                // Update cursor
+                canvas.style.cursor = dragPiece ? 'grabbing' : 'grab';
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                if (dragPiece) {
+                    // Snap to nearest target if close
+                    if (checkPiecePlacement(dragPiece)) {
+                        for (let i = 0; i < dragPiece.points.length; i++) {
+                            dragPiece.points[i].x = dragPiece.originalPoints[i].x;
+                            dragPiece.points[i].y = dragPiece.originalPoints[i].y;
+                        }
+                        dragPiece.centerX = dragPiece.targetX;
+                        dragPiece.centerY = dragPiece.targetY;
+                        checkCompletion();
+                    }
+                    dragPiece = null;
+                    canvas.style.cursor = 'grab';
+                }
+            }
+
+            // ---- Reset ----
+            function resetPuzzle() {
+                dragPiece = null;
+                createPieces();
+                canvas.style.cursor = 'grab';
+                render();
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetPuzzle);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetPuzzle();
+                }
+            });
+
+            // ---- Initialize ----
+            createPieces();
+            render();
+            animate();
+
+            console.log('🌓 Shadow Puzzle · Drag pieces to form the complete shadow shape!');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boomerang Throw · Returns on Throw</title>
+    <meta name="description" content="Interactive boomerang with realistic throwing and returning physics, curved flight path.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪃 BOOMERANG</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="boomerangCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="throw-btn" id="throwBtn">🪃 THROW</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Curve</label>
+                <input type="range" id="curveSlider" min="1" max="10" value="5">
+                <span id="curveLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🪃 BOOMERANG</span>
+            <small>throw · return · flight</small>
+        </div>
+        <div class="hint">
+            <span>🪃 click to throw the boomerang — it will return!</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('boomerangCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const throwBtn = document.getElementById('throwBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const curveSlider = document.getElementById('curveSlider');
+            const curveLabel = document.getElementById('curveLabel');
+
+            let isAnimating = true;
+            let time = 0;
+            
+            // ---- Boomerang State ----
+            let boomerang = {
+                x: W / 2,
+                y: H - 80,
+                angle: 0,
+                velocity: 0,
+                flightAngle: 0,
+                radius: 0,
+                isThrown: false,
+                isReturning: false,
+                progress: 0,
+                trail: [],
+                maxTrail: 30,
+                throwCount: 0,
+                size: 30
+            };
+
+            // ---- Throw Boomerang ----
+            function throwBoomerang() {
+                if (boomerang.isThrown) return;
+                
+                boomerang.isThrown = true;
+                boomerang.isReturning = false;
+                boomerang.progress = 0;
+                boomerang.radius = 0;
+                boomerang.throwCount++;
+                boomerang.trail = [];
+                
+                // Initial velocity and direction
+                const speed = parseInt(speedSlider.value) / 5;
+                const curve = parseInt(curveSlider.value) / 5;
+                boomerang.velocity = 2 + speed * 2;
+                boomerang.flightAngle = -0.3 - curve * 0.1;
+                boomerang.angle = 0;
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02;
+                const speed = parseInt(speedSlider.value) / 5;
+                const curve = parseInt(curveSlider.value) / 5;
+                
+                if (boomerang.isThrown) {
+                    // Update progress along flight path
+                    boomerang.progress += boomerang.velocity * dt * 0.02 * speed;
+                    
+                    // Calculate position on curved path
+                    const progress = boomerang.progress;
+                    const maxProgress = 8 + curve * 1.5;
+                    
+                    if (progress < maxProgress) {
+                        // Outward flight
+                        const t = progress / maxProgress;
+                        const angle = t * Math.PI * 0.8 + curve * 0.2;
+                        const radius = 100 + t * 200 + curve * 20;
+                        
+                        boomerang.x = W/2 + Math.cos(angle) * radius * 0.8;
+                        boomerang.y = H - 80 - Math.sin(angle) * radius * 0.6 - t * 50;
+                        boomerang.radius = radius;
+                        boomerang.angle += boomerang.velocity * dt * 3;
+                        
+                        // Add to trail
+                        if (boomerang.trail.length === 0 || 
+                            Math.hypot(boomerang.x - boomerang.trail[boomerang.trail.length-1].x,
+                                      boomerang.y - boomerang.trail[boomerang.trail.length-1].y) > 5) {
+                            boomerang.trail.push({ x: boomerang.x, y: boomerang.y });
+                            if (boomerang.trail.length > boomerang.maxTrail) {
+                                boomerang.trail.shift();
+                            }
+                        }
+                    } else {
+                        // Return flight
+                        const returnProgress = (progress - maxProgress) / maxProgress;
+                        const t = 1 - returnProgress;
+                        const angle = t * Math.PI * 0.8 + curve * 0.2;
+                        const radius = 100 + t * 200 + curve * 20;
+                        
+                        boomerang.x = W/2 + Math.cos(angle) * radius * 0.8;
+                        boomerang.y = H - 80 - Math.sin(angle) * radius * 0.6 - t * 50;
+                        boomerang.radius = radius;
+                        boomerang.angle += boomerang.velocity * dt * 3;
+                        
+                        // Add to trail
+                        if (boomerang.trail.length === 0 || 
+                            Math.hypot(boomerang.x - boomerang.trail[boomerang.trail.length-1].x,
+                                      boomerang.y - boomerang.trail[boomerang.trail.length-1].y) > 5) {
+                            boomerang.trail.push({ x: boomerang.x, y: boomerang.y });
+                            if (boomerang.trail.length > boomerang.maxTrail) {
+                                boomerang.trail.shift();
+                            }
+                        }
+                        
+                        // Check if returned to hand
+                        if (returnProgress > 0.95 && 
+                            Math.hypot(boomerang.x - W/2, boomerang.y - (H - 80)) < 50) {
+                            boomerang.isThrown = false;
+                            boomerang.x = W/2;
+                            boomerang.y = H - 80;
+                            boomerang.angle = 0;
+                            boomerang.trail = [];
+                        }
+                    }
+                }
+            }
+
+            // ---- Reset ----
+            function resetBoomerang() {
+                boomerang.x = W / 2;
+                boomerang.y = H - 80;
+                boomerang.angle = 0;
+                boomerang.isThrown = false;
+                boomerang.isReturning = false;
+                boomerang.progress = 0;
+                boomerang.trail = [];
+                boomerang.throwCount = 0;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw flight path preview (when not thrown)
+                if (!boomerang.isThrown) {
+                    ctx.save();
+                    ctx.setLineDash([4, 8]);
+                    ctx.strokeStyle = 'rgba(100, 200, 255, 0.05)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for (let i = 0; i <= 40; i++) {
+                        const t = i / 40;
+                        const angle = t * Math.PI * 0.8 + 0.5;
+                        const radius = 100 + t * 200;
+                        const x = W/2 + Math.cos(angle) * radius * 0.8;
+                        const y = H - 80 - Math.sin(angle) * radius * 0.6 - t * 50;
+                        if (i === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                }
+                
+                // Draw trail
+                if (boomerang.trail.length > 1) {
+                    ctx.save();
+                    for (let i = 0; i < boomerang.trail.length - 1; i++) {
+                        const alpha = (i / boomerang.trail.length) * 0.3;
+                        ctx.globalAlpha = alpha;
+                        ctx.strokeStyle = 'rgba(100, 200, 255, 0.3)';
+                        ctx.lineWidth = 1 + (i / boomerang.trail.length) * 2;
+                        ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                        ctx.shadowBlur = 5;
+                        ctx.beginPath();
+                        ctx.moveTo(boomerang.trail[i].x, boomerang.trail[i].y);
+                        ctx.lineTo(boomerang.trail[i+1].x, boomerang.trail[i+1].y);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                }
+                
+                // Hand
+                const handX = W/2;
+                const handY = H - 80;
+                ctx.save();
+                ctx.shadowColor = 'rgba(100, 200, 255, 0.05)';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.05)';
+                ctx.beginPath();
+                ctx.arc(handX, handY, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.15)';
+                ctx.font = '24px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✋', handX, handY);
+                ctx.restore();
+                
+                // Draw boomerang
+                const bx = boomerang.x;
+                const by = boomerang.y;
+                const size = boomerang.size;
+                const angle = boomerang.angle;
+                const isThrown = boomerang.isThrown;
+                
+                ctx.save();
+                ctx.translate(bx, by);
+                ctx.rotate(angle);
+                
+                // Glow
+                const glowIntensity = isThrown ? 0.6 : 0.2;
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.15})`;
+                ctx.shadowBlur = 20 * glowIntensity;
+                
+                // Boomerang body
+                const grad2 = ctx.createRadialGradient(
+                    -size * 0.1, -size * 0.1, 0,
+                    0, 0, size
+                );
+                grad2.addColorStop(0, '#e8e0d5');
+                grad2.addColorStop(0.3, '#d4c8b8');
+                grad2.addColorStop(0.6, '#b8a898');
+                grad2.addColorStop(0.8, '#9a8a7a');
+                grad2.addColorStop(1, '#7a6a5a');
+                
+                ctx.fillStyle = grad2;
+                ctx.shadowColor = `rgba(100, 200, 255, ${glowIntensity * 0.1})`;
+                ctx.shadowBlur = 15 * glowIntensity;
+                
+                // Boomerang shape
+                ctx.beginPath();
+                const arms = 2;
+                for (let i = 0; i <= 20; i++) {
+                    const t = i / 20;
+                    const a = t * Math.PI * 1.8;
+                    const r = size * (0.3 + t * 0.5 + Math.sin(t * 10) * 0.03);
+                    const x = Math.cos(a) * r;
+                    const y = Math.sin(a) * r * 0.6;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Inner detail
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(80, 70, 60, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                const innerR = size * 0.3;
+                ctx.arc(0, 0, innerR, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Highlight
+                ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.15, -size * 0.2, size * 0.2, size * 0.1, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Throws: ${boomerang.throwCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = boomerang.isThrown ? '🔄 FLYING' : '🪀 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            curveSlider.addEventListener('input', function() {
+                curveLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            throwBtn.addEventListener('click', throwBoomerang);
+            resetBtn.addEventListener('click', resetBoomerang);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    throwBoomerang();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBoomerang();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🪃 Boomerang · Click Throw or press Space to throw the boomerang!');
+        })();
+    </script>
+</body>
+</html>
