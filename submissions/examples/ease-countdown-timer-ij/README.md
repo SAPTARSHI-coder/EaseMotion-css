@@ -1,15 +1,20 @@
-# Countdown Timer
+# Ease Countdown Timer
 
-A circular countdown timer with an animated SVG ring. Progress via `--cd-progress` (0 to 1). CSS handles the ring stroke-dashoffset transition. JS controls the countdown logic.
+A lightweight demo component that expands with pulsing rings. Built with plain CSS keyframe
+animations and a couple of lines of vanilla JavaScript. No libraries, no
+build step.
 
-## Features
+## Files
 
-- Circular SVG countdown ring
-- Progress via --cd-progress CSS variable
-- Animated stroke-dashoffset transition
-- Start and Reset controls
-- Numeric seconds display
+- `demo.html` — the demo page and inline script
+- `style.css` — all styles and keyframes
+- `README.md` — this file
 
-## Usage
+## How to run
 
-Set `--cd-progress` (0 to 1) on `.cd-fill` circle to control the ring fill. CSS transitions `stroke-dashoffset` for smooth animation.
+Open `demo.html` in any modern browser, or serve this folder with a static
+file server such as `npx serve`.
+
+## Interactivity
+
+Press the **Pause / Play** button to pause or resume the animation.

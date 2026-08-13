@@ -1,15 +1,16 @@
-# Prefers Reduced Motion Support
+# Reduced Motion Accessibility Support
 
-This submission fixes Issue #38162 by adding `@media (prefers-reduced-motion: reduce)` support.  
-Users with motion sensitivity who enable "Reduce Motion" at the OS level will now see animations disabled or shortened.
+## Description
 
-## Usage
+This submission demonstrates support for the `prefers-reduced-motion` media query.
 
-```css
-@media (prefers-reduced-motion: reduce) {
-  .animated-box {
-    animation: none;
-    opacity: 1;
-    transform: none;
-  }
-}
+## Features
+
+- Respects user accessibility preferences
+- Reduces animations and transitions
+- Improves accessibility
+
+## Files
+
+- demo.html
+- style.css

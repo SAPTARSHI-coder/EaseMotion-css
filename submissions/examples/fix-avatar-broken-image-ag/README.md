@@ -14,4 +14,4 @@ that hides the broken img).
 
 ## Why is it useful?
 Broken avatar images look unprofessional and confuse users. A styled
-initials fallback provides a consistent, graceful degradation. Fixes: #35812
+initials fallback provides a consistent, graceful degradation. Fixes: #59815

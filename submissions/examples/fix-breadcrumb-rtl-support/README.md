@@ -8,4 +8,4 @@ Include the component as usual. If placed inside any HTML element with `dir="rtl
 
 ## Accessibility Compliance
 Ensures internationalization (i18n) best practices for users reading RTL languages.
-Fixes: #38045
+Fixes: #58750

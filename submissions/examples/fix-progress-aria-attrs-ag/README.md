@@ -18,4 +18,4 @@ and `aria-label` to `.ease-progress` so screen readers announce progress correct
 
 ## Why is it useful?
 Without the ARIA progressbar role and value attributes, screen readers
-cannot communicate loading state to blind users. Fixes: #35795
+cannot communicate loading state to blind users. Fixes: #59815

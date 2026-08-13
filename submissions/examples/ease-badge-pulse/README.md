@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ease-badge-pulse-sap demo</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f4f4f5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="badge-pulse">
+    NA
+    <span class="badge-dot"></span>
+  </div>
+
+</body>
+</html>

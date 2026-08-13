@@ -8,4 +8,4 @@ Include the component as usual. When the document is printed, the browser automa
 
 ## Performance & Accessibility Compliance
 Prevents ink waste and guarantees maximum contrast on physical paper.
-Fixes: #39295
+Fixes: #57174

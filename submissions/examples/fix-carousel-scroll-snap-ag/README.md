@@ -17,4 +17,4 @@ always snap cleanly to full-width positions.
 
 ## Why is it useful?
 Without scroll-snap, the carousel stops at arbitrary positions between
-slides, showing partial content from two slides simultaneously. Fixes: #35842
+slides, showing partial content from two slides simultaneously. Fixes: #59815

@@ -16,4 +16,4 @@ negative-margin + gap compounding.
 ## Why is it useful?
 Negative margins interact unpredictably with flex/grid `gap`, causing
 badges to offset further than intended. Absolute positioning solves this
-completely and is the recommended pattern for overlay badges. Fixes: #35792
+completely and is the recommended pattern for overlay badges. Fixes: #59815

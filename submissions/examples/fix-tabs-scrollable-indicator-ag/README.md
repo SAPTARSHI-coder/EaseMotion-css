@@ -16,4 +16,4 @@ horizontally scrollable tab bars on mobile.
 
 ## Why is it useful?
 Absolute-positioned indicators ignore the scroll container's bounds.
-An in-flow border naturally scrolls with its tab. Fixes: #35833
+An in-flow border naturally scrolls with its tab. Fixes: #59815

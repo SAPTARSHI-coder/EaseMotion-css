@@ -14,4 +14,4 @@ on a `::after` pseudo-element, making the animation fully GPU-composited
 ## Why is it useful?
 `transform` and `opacity` are the only CSS properties that can be animated
 entirely on the GPU compositor thread. `background-position` still triggers
-repaint. The fix eliminates jank on low-end devices. Fixes: #35801
+repaint. The fix eliminates jank on low-end devices. Fixes: #59815

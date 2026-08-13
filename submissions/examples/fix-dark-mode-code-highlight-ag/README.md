@@ -13,4 +13,4 @@ light accent color in dark mode.
 ## Why is it useful?
 In dark mode, the default light-gray background on inline code becomes
 nearly invisible against dark page backgrounds, breaking readability.
-Fixes: #35840
+Fixes: #59815

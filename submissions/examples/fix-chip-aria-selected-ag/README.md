@@ -14,4 +14,4 @@ announce the selected/deselected state when a chip is activated.
 
 ## Why is it useful?
 Without ARIA state, blind users activating a chip get no feedback that
-anything changed. `aria-pressed` maps the visual state to semantics. Fixes: #35819
+anything changed. `aria-pressed` maps the visual state to semantics. Fixes: #59815

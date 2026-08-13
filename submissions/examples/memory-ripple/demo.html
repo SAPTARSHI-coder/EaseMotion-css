@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Ripple</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="page">
+    <section class="header">
+      <span class="eyebrow">INTERACTIVE SURFACE</span>
+      <h1>Memory Ripple</h1>
+      <p>Every interaction leaves a temporary memory.</p>
+    </section>
+
+    <section class="ripple-card">
+      <canvas id="rippleCanvas"></canvas>
+
+      <div class="surface-overlay">
+        <div class="counter">
+          <span>RIPPLES</span>
+          <strong id="rippleCount">0</strong>
+        </div>
+
+        <div class="hint" id="hint">
+          Touch the surface
+        </div>
+      </div>
+    </section>
+
+    <div class="controls">
+      <button id="rippleBtn">Create Ripple</button>
+      <button id="resetBtn">Reset Memory</button>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("rippleCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const countEl = document.getElementById("rippleCount");
+    const hint = document.getElementById("hint");
+
+    let ripples = [];
+    let particles = [];
+    let totalRipples = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      createParticles(rect.width, rect.height);
+    }
+
+    function createParticles(width, height) {
+      particles = [];
+
+      for (let i = 0; i < 70; i++) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          size: Math.random() * 2 + 0.5,
+          phase: Math.random() * Math.PI * 2,
+          speed: Math.random() * 0.02 + 0.01
+        });
+      }
+    }
+
+    function createRipple(x, y) {
+      ripples.push({
+        x,
+        y,
+        radius: 2,
+        maxRadius: Math.random() * 130 + 160,
+        speed: Math.random() * 1.2 + 1.4,
+        life: 1,
+        strength: Math.random() * 0.3 + 0.7
+      });
+
+      totalRipples++;
+      countEl.textContent = totalRipples;
+
+      hint.textContent = "Surface remembers...";
+      setTimeout(() => {
+        if (ripples.length === 0) {
+          hint.textContent = "Touch the surface";
+        }
+      }, 600);
+    }
+
+    function drawParticles(time) {
+      particles.forEach(p => {
+        let offsetX = 0;
+        let offsetY = 0;
+
+        ripples.forEach(r => {
+          const dx = p.x - r.x;
+          const dy = p.y - r.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          const waveDistance = Math.abs(distance - r.radius);
+
+          if (waveDistance < 35) {
+            const force = (1 - waveDistance / 35) * r.life * 12;
+
+            if (distance > 0) {
+              offsetX += (dx / distance) * force;
+              offsetY += (dy / distance) * force;
+            }
+          }
+        });
+
+        const x = p.x + offsetX;
+        const y = p.y + offsetY + Math.sin(time * p.speed + p.phase) * 2;
+
+        ctx.beginPath();
+        ctx.arc(x, y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(220,245,255,${0.25 + p.size / 6})`;
+        ctx.fill();
+      });
+    }
+
+    function drawRipple(ripple) {
+      const opacity = ripple.life * 0.55;
+
+      const gradient = ctx.createRadialGradient(
+        ripple.x,
+        ripple.y,
+        0,
+        ripple.x,
+        ripple.y,
+        ripple.radius
+      );
+
+      gradient.addColorStop(0, `rgba(160,230,255,${opacity * 0.18})`);
+      gradient.addColorStop(0.7, `rgba(120,210,255,${opacity * 0.04})`);
+      gradient.addColorStop(1, "rgba(120,210,255,0)");
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(ripple.x, ripple.y, ripple.radius, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(190,240,255,${opacity})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    function animate(time) {
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = "#07141c";
+      ctx.fillRect(0, 0, width, height);
+
+      drawParticles(time);
+
+      ripples.forEach(r => {
+        r.radius += r.speed;
+        r.life = 1 - r.radius / r.maxRadius;
+
+        drawRipple(r);
+      });
+
+      ripples = ripples.filter(r => r.life > 0);
+
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const rect = canvas.getBoundingClientRect();
+
+      createRipple(
+        event.clientX - rect.left,
+        event.clientY - rect.top
+      );
+    });
+
+    document.getElementById("rippleBtn").addEventListener("click", () => {
+      createRipple(
+        canvas.clientWidth / 2,
+        canvas.clientHeight / 2
+      );
+    });
+
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      ripples = [];
+      totalRipples = 0;
+      countEl.textContent = "0";
+      hint.textContent = "Memory cleared";
+    });
+
+    window.addEventListener("resize", resize);
+
+    resize();
+    requestAnimationFrame(animate);
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stencil Art · Stencil Reveals Pattern</title>
+    <meta name="description" content="Interactive stencil art where patterns are revealed through spray paint stencil effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 STENCIL ART</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="stencilCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#ff6b6b">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="10" max="80" value="40">
+                <span id="sizeLabel">40</span>
+            </div>
+            <div class="button-group">
+                <button class="reveal-btn" id="revealBtn">🎭 REVEAL PATTERN</button>
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 STENCIL ART</span>
+            <small>spray reveals · pattern emerges · interactive</small>
+        </div>
+        <div class="hint">
+            <span>🖌️ drag to spray · stencil reveals hidden pattern</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('stencilCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const revealBtn = document.getElementById('revealBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isSpraying = false;
+            let currentColor = '#ff6b6b';
+            let spraySize = 40;
+            let revealedPixels = [];
+            let isRevealed = false;
+
+            // ---- Stencil Pattern ----
+            // 0 = empty, 1 = solid (will be revealed)
+            const PATTERN = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            ];
+
+            const GRID_COLS = 30;
+            const GRID_ROWS = 30;
+            const CELL_SIZE = 20;
+
+            // ---- Stencil Grid ----
+            let stencil = [];
+            let sprayMap = [];
+
+            function initStencil() {
+                stencil = [];
+                sprayMap = [];
+                for (let r = 0; r < GRID_ROWS; r++) {
+                    stencil[r] = [];
+                    sprayMap[r] = [];
+                    for (let c = 0; c < GRID_COLS; c++) {
+                        stencil[r][c] = PATTERN[r] && PATTERN[r][c] || 0;
+                        sprayMap[r][c] = 0;
+                    }
+                }
+                isRevealed = false;
+            }
+
+            // ---- Spray on stencil ----
+            function sprayStencil(x, y, color, size) {
+                const col = Math.floor(x / CELL_SIZE);
+                const row = Math.floor(y / CELL_SIZE);
+                const radius = Math.ceil(size / CELL_SIZE) + 1;
+                
+                for (let r = Math.max(0, row - radius); r < Math.min(GRID_ROWS, row + radius); r++) {
+                    for (let c = Math.max(0, col - radius); c < Math.min(GRID_COLS, col + radius); c++) {
+                        const dx = (c - col) * CELL_SIZE;
+                        const dy = (r - row) * CELL_SIZE;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < size) {
+                            const intensity = 1 - (dist / size);
+                            sprayMap[r][c] = Math.min(1, sprayMap[r][c] + intensity * 0.3);
+                            
+                            // Reveal pattern if stencil has pattern and spray is strong enough
+                            if (stencil[r][c] === 1 && sprayMap[r][c] > 0.3) {
+                                // Pattern revealed!
+                                revealedPixels.push({ row: r, col: c, color: color });
+                                stencil[r][c] = 2; // revealed
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Clear canvas with dark background
+                ctx.fillStyle = '#0a0a12';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw stencil pattern (visible as faint outline)
+                for (let r = 0; r < GRID_ROWS; r++) {
+                    for (let c = 0; c < GRID_COLS; c++) {
+                        const x = c * CELL_SIZE;
+                        const y = r * CELL_SIZE;
+                        
+                        if (stencil[r][c] === 1) {
+                            // Unrevealed pattern - faint outline
+                            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+                            ctx.lineWidth = 0.5;
+                            ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+                        } else if (stencil[r][c] === 2) {
+                            // Revealed pattern - show color
+                            const spray = sprayMap[r][c];
+                            const alpha = Math.min(1, spray * 1.5);
+                            const color = revealedPixels.find(p => p.row === r && p.col === c);
+                            if (color) {
+                                ctx.fillStyle = color.color;
+                                ctx.globalAlpha = alpha;
+                                ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                                ctx.globalAlpha = 1;
+                            }
+                        }
+                    }
+                }
+                
+                // Draw spray overlay (visible spray paint)
+                for (let r = 0; r < GRID_ROWS; r++) {
+                    for (let c = 0; c < GRID_COLS; c++) {
+                        if (sprayMap[r][c] > 0.05 && stencil[r][c] !== 2) {
+                            const x = c * CELL_SIZE;
+                            const y = r * CELL_SIZE;
+                            const alpha = sprayMap[r][c] * 0.3;
+                            ctx.fillStyle = currentColor;
+                            ctx.globalAlpha = alpha;
+                            ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                            ctx.globalAlpha = 1;
+                        }
+                    }
+                }
+            }
+
+            // ---- Reveal Pattern ----
+            function revealPattern() {
+                // Randomly reveal the entire pattern
+                for (let r = 0; r < GRID_ROWS; r++) {
+                    for (let c = 0; c < GRID_COLS; c++) {
+                        if (stencil[r][c] === 1) {
+                            stencil[r][c] = 2;
+                            sprayMap[r][c] = 1;
+                            revealedPixels.push({ row: r, col: c, color: currentColor });
+                        }
+                    }
+                }
+                isRevealed = true;
+                render();
+            }
+
+            // ---- Clear ----
+            function clearCanvas() {
+                revealedPixels = [];
+                for (let r = 0; r < GRID_ROWS; r++) {
+                    for (let c = 0; c < GRID_COLS; c++) {
+                        if (stencil[r][c] === 2) {
+                            stencil[r][c] = 1;
+                        }
+                        sprayMap[r][c] = 0;
+                    }
+                }
+                isRevealed = false;
+                render();
+            }
+
+            // ---- Reset ----
+            function resetCanvas() {
+                initStencil();
+                revealedPixels = [];
+                render();
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                isSpraying = true;
+                const pos = getPos(e);
+                sprayStencil(pos.x, pos.y, currentColor, spraySize);
+                render();
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                if (isSpraying) {
+                    sprayStencil(pos.x, pos.y, currentColor, spraySize);
+                    render();
+                }
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                isSpraying = false;
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Subtle animation: sparkle on revealed pixels
+                if (isRevealed) {
+                    // Random sparkle effect (handled in render if needed)
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Color Control ----
+            colorPicker.addEventListener('input', function() {
+                currentColor = this.value;
+            });
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                spraySize = parseInt(this.value);
+                sizeLabel.textContent = spraySize;
+            });
+
+            // ---- Event Listeners ----
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+            
+            revealBtn.addEventListener('click', revealPattern);
+            clearBtn.addEventListener('click', clearCanvas);
+            resetBtn.addEventListener('click', resetCanvas);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    revealPattern();
+                }
+                if (e.key === 'c' || e.key === 'C') {
+                    clearCanvas();
+                }
+                if (e.key === 'x' || e.key === 'X') {
+                    resetCanvas();
+                }
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initStencil();
+            render();
+            animate();
+
+            console.log('🎨 Stencil Art · Drag to spray · R to reveal pattern · C to clear');
+        })();
+    </script>
+</body>
+</html>
