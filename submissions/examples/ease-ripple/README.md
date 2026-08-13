@@ -1,74 +1,56 @@
-# EaseMotion — `ease-ripple`
+# Ease Ripple
 
-A composable click ripple effect for interactive elements. Add `.ease-ripple` to any button, card, or interactive element to get a circular wave animation on click/tap.
+A lightweight, pure CSS, JavaScript-free utility class for Material-style click ripples. Built for Issue #79582.
 
----
+## Description
+The `ease-ripple` utility provides a beautiful, expandable click effect that can be applied to buttons, links, cards, or any interactive element. It strictly uses CSS `:active` states and `@keyframes` animations to achieve the effect without requiring a single line of JavaScript.
 
 ## Features
+- **CSS-only:** No JavaScript required.
+- **`::after` pseudo-element:** The ripple is self-contained and doesn't clutter your HTML structure.
+- **`:active` triggered:** The animation runs naturally when the user clicks or presses the element.
+- **Custom ripple color:** Inherits `currentColor` by default, but can be easily overridden.
+- **Custom duration:** Control the animation speed.
+- **Responsive:** Scales perfectly on all devices.
+- **Reduced-motion support:** Respects system accessibility preferences by gracefully disabling the animation.
 
-- **Composable** — add `.ease-ripple` to any element (buttons, cards, list items, etc.)
-- **Pure CSS** — uses `::after` pseudo-element and `:active` state, no JavaScript
-- **`currentColor` by default** — ripple colour automatically matches the element's text colour
-- **Customisable** — override via `--ease-ripple-color` and `--ease-ripple-duration`
-- **Reduced motion** — disables ripple when `prefers-reduced-motion: reduce`
-
----
-
-## Usage
+## Basic Usage
+Add the `ease-ripple` class to any interactive element. 
 
 ```html
-<button class="ease-btn ease-ripple">Click me</button>
-
-<div class="ease-card ease-ripple">
-  Clickable card content
-</div>
-
-<li class="ease-ripple">Menu item</li>
+<button type="button" class="ease-ripple">Click Me</button>
 ```
+*Note: The utility works best on elements that have a defined shape and padding.*
 
-### Custom colour
+## Customization
 
+The utility is powered by two CSS custom properties:
+- `--ease-ripple-color`: Sets the background color of the ripple (defaults to `currentColor`).
+- `--ease-ripple-duration`: Sets how long the ripple animation lasts (defaults to `0.5s`).
+
+### Example
 ```html
-<button class="ease-ripple" style="--ease-ripple-color: rgba(34,197,94,0.5)">
-  Green ripple
+<button class="ease-ripple" style="--ease-ripple-color: rgba(255, 0, 255, 0.4); --ease-ripple-duration: 0.8s;">
+    Slow Magenta Ripple
 </button>
 ```
 
-### Custom duration
+## Supported Elements
+This utility can be applied to various structural and interactive elements, such as:
+- `<button>`
+- `<a>` (links)
+- `<li>` (list items)
+- `<div role="button">` (interactive cards)
 
-```html
-<button class="ease-ripple" style="--ease-ripple-duration: 0.3s">
-  Fast ripple
-</button>
-```
+*Requirement: The element will be forced to `position: relative` and `overflow: hidden` by the utility to contain the ripple.*
 
----
+## Accessibility
+- **Keyboard focus:** The utility explicitly preserves standard focus behavior and does not interfere with `:focus-visible` styling.
+- **Decorative:** The ripple uses `pointer-events: none` so it never blocks clicks or interactions with the content.
+- **Contrast:** Since the ripple has low opacity and fades out, it does not interfere with the contrast ratio of the text.
 
-## CSS Variables
+## Reduced Motion
+When a user enables `prefers-reduced-motion` in their OS settings, the ripple animation is safely disabled. The element will fallback to a subtle brightness shift on `:active` to ensure interactive feedback is preserved without triggering animations.
 
-| Variable                  | Default        | Description                     |
-|---------------------------|----------------|---------------------------------|
-| `--ease-ripple-color`     | `currentColor` | Colour of the ripple circle     |
-| `--ease-ripple-duration`  | `0.5s`         | Animation duration              |
-
----
-
-## Why does it fit EaseMotion CSS?
-
-Ripple click feedback is a widely adopted Material Design pattern that provides tactile feedback on interactive elements. EaseMotion already has hover effects (`ease-hover-glow`, `ease-hover-shimmer`, `ease-card-lift`) and press feedback (`ease-squish-button`), but was missing a composable click ripple — this fills that gap with a minimal, no-JS implementation.
-
----
-
-## Files
-
-1. **`style.css`** — component CSS with `.ease-ripple` utility and keyframes
-2. **`demo.html`** — interactive demo with buttons, cards, and customisation examples
-3. **`README.md`** — documentation and usage examples
-
----
-
-## Notes
-
-- The element must have `position: relative` (or equivalent) for `::after` to position correctly — `.ease-ripple` applies this automatically.
-- `overflow: hidden` clips the ripple to the element's border box.
-- The ripple always emanates from the centre of the element (`top: 50%; left: 50%`), not from the exact click point — this is a known trade-off for a pure CSS `:active` approach without JS pointer events.
+## Browser Usage
+This is a zero-dependency component. No external libraries, no NPM packages, and no JavaScript is required. Just drop `style.css` into your project and you are ready to go!
