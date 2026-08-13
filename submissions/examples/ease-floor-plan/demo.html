@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floor Plan · Floor Plan Unfolds</title>
+    <meta name="description" content="Interactive floor plan that unfolds with rooms, walls, and furniture appearing progressively.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🏠 FLOOR PLAN</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="floorplanCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="unfold-btn" id="unfoldBtn">📐 UNFOLD</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Detail</label>
+                <input type="range" id="detailSlider" min="1" max="10" value="5">
+                <span id="detailLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🏠 FLOOR PLAN</span>
+            <small>unfold · rooms · layout</small>
+        </div>
+        <div class="hint">
+            <span>📐 click to unfold the floor plan room by room</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('floorplanCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const unfoldBtn = document.getElementById('unfoldBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const detailSlider = document.getElementById('detailSlider');
+            const detailLabel = document.getElementById('detailLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let detail = 5;
+            let time = 0;
+            let unfoldProgress = 0;
+            let isUnfolding = false;
+            let isUnfolded = false;
+
+            // ---- Room Data ----
+            const rooms = [
+                { name: 'Living Room', x: 60, y: 60, w: 180, h: 160, color: '#4a7a9a' },
+                { name: 'Kitchen', x: 260, y: 60, w: 130, h: 130, color: '#5a8a5a' },
+                { name: 'Dining', x: 410, y: 60, w: 110, h: 110, color: '#8a7a4a' },
+                { name: 'Bedroom', x: 60, y: 240, w: 150, h: 130, color: '#7a5a8a' },
+                { name: 'Bathroom', x: 230, y: 210, w: 80, h: 80, color: '#4a8a8a' },
+                { name: 'Hallway', x: 330, y: 190, w: 100, h: 140, color: '#6a6a6a' },
+                { name: 'Study', x: 450, y: 190, w: 90, h: 120, color: '#8a6a4a' },
+                { name: 'Closet', x: 230, y: 310, w: 60, h: 50, color: '#5a5a5a' }
+            ];
+
+            // ---- Furniture ----
+            const furniture = [
+                { room: 0, x: 80, y: 80, w: 40, h: 20, label: 'Sofa', color: '#5a7a8a' },
+                { room: 0, x: 140, y: 80, w: 30, h: 30, label: 'Table', color: '#6a5a4a' },
+                { room: 0, x: 100, y: 160, w: 60, h: 15, label: 'TV', color: '#3a3a4a' },
+                { room: 1, x: 280, y: 80, w: 30, h: 30, label: 'Table', color: '#5a6a4a' },
+                { room: 1, x: 320, y: 100, w: 20, h: 40, label: 'Fridge', color: '#4a5a5a' },
+                { room: 2, x: 430, y: 80, w: 40, h: 20, label: 'Table', color: '#6a5a3a' },
+                { room: 3, x: 80, y: 260, w: 50, h: 40, label: 'Bed', color: '#5a4a6a' },
+                { room: 3, x: 140, y: 280, w: 30, h: 20, label: 'Dresser', color: '#6a5a5a' },
+                { room: 4, x: 250, y: 230, w: 20, h: 20, label: 'Sink', color: '#4a7a7a' },
+                { room: 4, x: 270, y: 250, w: 20, h: 20, label: 'Toilet', color: '#5a6a6a' },
+                { room: 6, x: 470, y: 210, w: 30, h: 20, label: 'Desk', color: '#6a4a3a' },
+                { room: 6, x: 480, y: 250, w: 20, h: 30, label: 'Chair', color: '#5a4a4a' }
+            ];
+
+            // ---- Doors ----
+            const doors = [
+                { x1: 60, y1: 220, x2: 90, y2: 220 },
+                { x1: 260, y1: 190, x2: 290, y2: 190 },
+                { x1: 330, y1: 190, x2: 360, y2: 190 },
+                { x1: 230, y1: 210, x2: 230, y2: 240 },
+                { x1: 330, y1: 330, x2: 360, y2: 330 }
+            ];
+
+            // ---- Unfold ----
+            function unfoldPlan() {
+                if (isUnfolding) return;
+                isUnfolding = true;
+                isUnfolded = false;
+                unfoldProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetPlan() {
+                isUnfolding = false;
+                isUnfolded = false;
+                unfoldProgress = 0;
+                render();
+            }
+
+            // ---- Draw Room ----
+            function drawRoom(ctx, room, progress, detail) {
+                const x = room.x;
+                const y = room.y;
+                const w = room.w;
+                const h = room.h;
+                const p = Math.min(1, progress * 1.2);
+                const alpha = Math.min(1, p * 1.5);
+                const scaleX = 0.3 + p * 0.7;
+                const scaleY = 0.3 + p * 0.7;
+                
+                const cx = x + w / 2;
+                const cy = y + h / 2;
+                const drawW = w * scaleX;
+                const drawH = h * scaleY;
+                const drawX = cx - drawW / 2;
+                const drawY = cy - drawH / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                
+                // Room shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                
+                // Room fill
+                ctx.fillStyle = room.color;
+                ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                ctx.shadowBlur = 5;
+                ctx.fillRect(drawX, drawY, drawW, drawH);
+                
+                // Room border
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = `rgba(255,255,255,${0.1 + p * 0.15})`;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(drawX, drawY, drawW, drawH);
+                
+                // Room label
+                if (p > 0.3) {
+                    ctx.fillStyle = `rgba(255,255,255,${0.2 + p * 0.2})`;
+                    ctx.font = `${Math.min(14, 10 + p * 4)}px monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(room.name, cx, cy + (1 - p) * 10);
+                }
+                
+                ctx.restore();
+                
+                return { drawX, drawY, drawW, drawH, p };
+            }
+
+            // ---- Draw Furniture ----
+            function drawFurniture(ctx, item, roomProgress) {
+                const p = Math.min(1, roomProgress * 1.5);
+                if (p < 0.2) return;
+                
+                const alpha = Math.min(1, (p - 0.2) * 2);
+                const scale = 0.3 + p * 0.7;
+                
+                const cx = item.x + item.w / 2;
+                const cy = item.y + item.h / 2;
+                const drawW = item.w * scale;
+                const drawH = item.h * scale;
+                const drawX = cx - drawW / 2;
+                const drawY = cy - drawH / 2;
+                
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.7;
+                
+                // Furniture shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                
+                ctx.fillStyle = item.color;
+                ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                ctx.shadowBlur = 3;
+                ctx.fillRect(drawX, drawY, drawW, drawH);
+                
+                // Furniture border
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = `rgba(255,255,255,${0.1 * alpha})`;
+                ctx.lineWidth = 0.5;
+                ctx.strokeRect(drawX, drawY, drawW, drawH);
+                
+                // Label
+                if (p > 0.5) {
+                    ctx.fillStyle = `rgba(255,255,255,${0.15 * alpha})`;
+                    ctx.font = '7px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(item.label, cx, cy);
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Doors ----
+            function drawDoor(ctx, door, progress) {
+                const p = Math.min(1, progress * 1.8);
+                if (p < 0.3) return;
+                
+                const alpha = Math.min(1, (p - 0.3) * 1.5);
+                
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.4;
+                ctx.strokeStyle = 'rgba(200, 200, 180, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(door.x1, door.y1);
+                ctx.lineTo(door.x2, door.y2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+            }
+
+            // ---- Draw Grid ----
+            function drawGrid() {
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                drawGrid();
+                
+                // Calculate which rooms to show
+                const totalRooms = rooms.length;
+                const revealedRooms = Math.floor(unfoldProgress * totalRooms);
+                const roomProgress = (unfoldProgress * totalRooms) % 1;
+                
+                // Draw rooms
+                for (let i = 0; i < rooms.length; i++) {
+                    const room = rooms[i];
+                    let progress = 0;
+                    if (i < revealedRooms) {
+                        progress = 1;
+                    } else if (i === revealedRooms) {
+                        progress = roomProgress;
+                    }
+                    
+                    const roomData = drawRoom(ctx, room, progress, detail);
+                    
+                    // Draw furniture for this room
+                    if (progress > 0.1) {
+                        for (let f of furniture) {
+                            if (f.room === i) {
+                                drawFurniture(ctx, f, progress);
+                            }
+                        }
+                    }
+                }
+                
+                // Draw doors
+                for (let door of doors) {
+                    drawDoor(ctx, door, unfoldProgress);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const revealed = Math.floor(unfoldProgress * rooms.length);
+                ctx.fillText(`Rooms: ${revealed}/${rooms.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isUnfolded ? '📐 UNFOLDED' : 
+                              isUnfolding ? '🔄 UNFOLDING...' : 
+                              '🏠 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                if (isUnfolding && unfoldProgress < 1) {
+                    unfoldProgress += 0.003 * (speed / 5);
+                    if (unfoldProgress > 1) {
+                        unfoldProgress = 1;
+                        isUnfolding = false;
+                        isUnfolded = true;
+                    }
+                }
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            detailSlider.addEventListener('input', function() {
+                detail = parseInt(this.value);
+                detailLabel.textContent = detail;
+            });
+
+            // ---- Event Listeners ----
+            unfoldBtn.addEventListener('click', unfoldPlan);
+            resetBtn.addEventListener('click', resetPlan);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isUnfolding && !isUnfolded) {
+                        unfoldPlan();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetPlan();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🏠 Floor Plan · Click Unfold to reveal the floor plan room by room!');
+        })();
+    </script>
+</body>
+</html>
