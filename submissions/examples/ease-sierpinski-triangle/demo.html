@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sierpinski Triangle · Fractal Grows Outward</title>
+    <meta name="description" content="Interactive Sierpinski triangle fractal that grows outward with recursive depth and vibrant colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🔺 SIERPINSKI TRIANGLE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="sierpinskiCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="grow-btn" id="growBtn">🌱 GROW</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Depth</label>
+                <input type="range" id="depthSlider" min="1" max="6" value="4">
+                <span id="depthLabel">4</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🔺 SIERPINSKI TRIANGLE</span>
+            <small>fractal · grow · recursion</small>
+        </div>
+        <div class="hint">
+            <span>🌱 click to grow the fractal outward</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('sierpinskiCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const growBtn = document.getElementById('growBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const depthSlider = document.getElementById('depthSlider');
+            const depthLabel = document.getElementById('depthLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let maxDepth = 4;
+            let time = 0;
+            let growProgress = 0;
+            let isGrowing = false;
+            let isGrown = false;
+            let currentDepth = 0;
+
+            // ---- Sierpinski Triangle ----
+            let triangles = [];
+            let targetTriangles = [];
+
+            // ---- Generate Sierpinski ----
+            function generateSierpinski(depth) {
+                const tris = [];
+                const cx = W / 2;
+                const cy = H / 2 + 50;
+                const size = 250;
+                
+                // Initial triangle
+                const p1 = { x: cx, y: cy - size * 0.6 };
+                const p2 = { x: cx - size * 0.5, y: cy + size * 0.3 };
+                const p3 = { x: cx + size * 0.5, y: cy + size * 0.3 };
+                
+                function divide(p1, p2, p3, d) {
+                    if (d === 0) {
+                        tris.push({ p1, p2, p3 });
+                        return;
+                    }
+                    
+                    const mid1 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+                    const mid2 = { x: (p2.x + p3.x) / 2, y: (p2.y + p3.y) / 2 };
+                    const mid3 = { x: (p1.x + p3.x) / 2, y: (p1.y + p3.y) / 2 };
+                    
+                    divide(p1, mid1, mid3, d - 1);
+                    divide(mid1, p2, mid2, d - 1);
+                    divide(mid3, mid2, p3, d - 1);
+                }
+                
+                divide(p1, p2, p3, depth);
+                return tris;
+            }
+
+            // ---- Generate with color ----
+            function generateColoredSierpinski(depth, phase) {
+                const tris = generateSierpinski(depth);
+                return tris.map((t, i) => {
+                    const hue = (i * 37 + phase * 50) % 360;
+                    const sat = 70 + 20 * Math.sin(i * 0.1 + phase);
+                    const light = 50 + 20 * Math.sin(i * 0.15 + phase * 0.5);
+                    return { ...t, color: { hue, sat, light } };
+                });
+            }
+
+            // ---- Initialize ----
+            function initSierpinski() {
+                currentDepth = 0;
+                triangles = generateColoredSierpinski(0, 0);
+                targetTriangles = generateColoredSierpinski(maxDepth, Math.random() * Math.PI * 2);
+                growProgress = 0;
+                isGrowing = false;
+                isGrown = false;
+                render();
+            }
+
+            // ---- Grow ----
+            function growFractal() {
+                if (isGrowing) return;
+                if (currentDepth >= maxDepth) {
+                    // Reset and grow again
+                    currentDepth = 0;
+                    triangles = generateColoredSierpinski(0, 0);
+                    targetTriangles = generateColoredSierpinski(maxDepth, Math.random() * Math.PI * 2);
+                    growProgress = 0;
+                    isGrowing = true;
+                    isGrown = false;
+                    return;
+                }
+                currentDepth++;
+                targetTriangles = generateColoredSierpinski(currentDepth, Math.random() * Math.PI * 2);
+                isGrowing = true;
+                isGrown = false;
+                growProgress = 0;
+            }
+
+            // ---- Reset ----
+            function resetSierpinski() {
+                isGrowing = false;
+                isGrown = false;
+                growProgress = 0;
+                currentDepth = 0;
+                triangles = generateColoredSierpinski(0, 0);
+                targetTriangles = generateColoredSierpinski(maxDepth, Math.random() * Math.PI * 2);
+                render();
+            }
+
+            // ---- Update Grow ----
+            function updateGrow() {
+                const dt = 0.02 * (speed / 5);
+                
+                if (isGrowing && growProgress < 1) {
+                    growProgress += 0.008 * (speed / 5);
+                    if (growProgress > 1) {
+                        growProgress = 1;
+                        isGrowing = false;
+                        isGrown = true;
+                        // Update triangles to target
+                        triangles = targetTriangles.map(t => ({ ...t }));
+                        // Generate new target for next growth
+                        if (currentDepth < maxDepth) {
+                            targetTriangles = generateColoredSierpinski(currentDepth + 1, Math.random() * Math.PI * 2);
+                        }
+                    }
+                    
+                    // Interpolate triangles
+                    const ease = 1 - Math.pow(1 - growProgress, 3);
+                    const srcCount = triangles.length;
+                    const tgtCount = targetTriangles.length;
+                    
+                    if (tgtCount > srcCount) {
+                        // Growing - add new triangles
+                        for (let i = srcCount; i < tgtCount; i++) {
+                            if (targetTriangles[i]) {
+                                const t = targetTriangles[i];
+                                triangles.push({
+                                    p1: { x: t.p1.x, y: t.p1.y },
+                                    p2: { x: t.p2.x, y: t.p2.y },
+                                    p3: { x: t.p3.x, y: t.p3.y },
+                                    color: { hue: t.color.hue, sat: t.color.sat, light: t.color.light }
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Interpolate existing triangles
+                    for (let i = 0; i < Math.min(triangles.length, tgtCount); i++) {
+                        const src = triangles[i];
+                        const tgt = targetTriangles[i];
+                        if (src && tgt) {
+                            src.p1.x += (tgt.p1.x - src.p1.x) * 0.12 * (speed / 5);
+                            src.p1.y += (tgt.p1.y - src.p1.y) * 0.12 * (speed / 5);
+                            src.p2.x += (tgt.p2.x - src.p2.x) * 0.12 * (speed / 5);
+                            src.p2.y += (tgt.p2.y - src.p2.y) * 0.12 * (speed / 5);
+                            src.p3.x += (tgt.p3.x - src.p3.x) * 0.12 * (speed / 5);
+                            src.p3.y += (tgt.p3.y - src.p3.y) * 0.12 * (speed / 5);
+                            src.color.hue += (tgt.color.hue - src.color.hue) * 0.08 * (speed / 5);
+                            src.color.sat += (tgt.color.sat - src.color.sat) * 0.08 * (speed / 5);
+                            src.color.light += (tgt.color.light - src.color.light) * 0.08 * (speed / 5);
+                        }
+                    }
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw triangles
+                for (let t of triangles) {
+                    if (!t.p1 || !t.p2 || !t.p3) continue;
+                    
+                    const hue = ((t.color.hue % 360) + 360) % 360;
+                    const sat = Math.min(100, Math.max(0, t.color.sat));
+                    const light = Math.min(100, Math.max(0, t.color.light));
+                    
+                    ctx.save();
+                    ctx.shadowColor = `hsla(${hue}, 100%, 70%, 0.05)`;
+                    ctx.shadowBlur = 10;
+                    ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, 0.85)`;
+                    ctx.strokeStyle = `hsla(${hue + 20}, ${sat}%, ${light + 20}%, 0.15)`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(t.p1.x, t.p1.y);
+                    ctx.lineTo(t.p2.x, t.p2.y);
+                    ctx.lineTo(t.p3.x, t.p3.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Triangles: ${triangles.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Depth: ${currentDepth}/${maxDepth}`, 20, H - 10);
+                
+                const status = isGrown ? '🌱 GROWN' : 
+                              isGrowing ? '🔄 GROWING...' : 
+                              '🔺 READY';
+                ctx.fillText(status, 20, H - 30);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updateGrow();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+            depthSlider.addEventListener('input', function() {
+                maxDepth = parseInt(this.value);
+                depthLabel.textContent = maxDepth;
+                if (!isGrowing && !isGrown) {
+                    initSierpinski();
+                } else {
+                    // Reset to apply new depth
+                    resetSierpinski();
+                    initSierpinski();
+                }
+            });
+
+            // ---- Event Listeners ----
+            growBtn.addEventListener('click', growFractal);
+            resetBtn.addEventListener('click', resetSierpinski);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    growFractal();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetSierpinski();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initSierpinski();
+            animate();
+
+            console.log('🔺 Sierpinski Triangle · Click Grow or press Space to grow the fractal!');
+        })();
+    </script>
+</body>
+</html>
