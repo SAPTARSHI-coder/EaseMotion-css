@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newton Cradle · Balls Click Back and Forth</title>
+    <meta name="description" content="Interactive Newton's cradle with realistic physics, swinging balls, and satisfying click sounds.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">⚡ NEWTON CRADLE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="cradleCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="swing-btn" id="swingBtn">🔴 SWING</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+                <label>Balls</label>
+                <input type="range" id="ballsSlider" min="3" max="7" value="5" step="2">
+                <span id="ballsLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>⚡ NEWTON CRADLE</span>
+            <small>pendulum · physics · click</small>
+        </div>
+        <div class="hint">
+            <span>🔴 click to swing the balls and watch the energy transfer</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('cradleCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const swingBtn = document.getElementById('swingBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const ballsSlider = document.getElementById('ballsSlider');
+            const ballsLabel = document.getElementById('ballsLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let numBalls = 5;
+            let balls = [];
+            let isSwinging = false;
+            let swingCount = 0;
+            let audioCtx = null;
+
+            // ---- Ball Class ----
+            class Ball {
+                constructor(index, total) {
+                    this.index = index;
+                    this.total = total;
+                    this.radius = 22;
+                    this.x = 0;
+                    this.y = 0;
+                    this.angle = 0;
+                    this.velocity = 0;
+                    this.gravity = 0.005;
+                    this.damping = 0.999;
+                    this.restLength = 200;
+                    
+                    // Position based on index
+                    const spacing = 50;
+                    const totalWidth = (total - 1) * spacing;
+                    this.pivotX = W / 2 - totalWidth / 2 + index * spacing;
+                    this.pivotY = 120;
+                    
+                    // Initial angle (slightly random for natural look)
+                    this.angle = 0;
+                    if (index === 0) this.angle = 0.05;
+                    else if (index === total - 1) this.angle = -0.05;
+                }
+
+                update(dt) {
+                    // Gravity torque
+                    const torque = -this.gravity * Math.sin(this.angle);
+                    this.velocity += torque * dt;
+                    this.velocity *= this.damping;
+                    this.angle += this.velocity * dt;
+                    
+                    // Calculate position
+                    this.x = this.pivotX + Math.sin(this.angle) * this.restLength;
+                    this.y = this.pivotY + Math.cos(this.angle) * this.restLength;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const r = this.radius;
+                    
+                    // String
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.2)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.pivotX, this.pivotY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    ctx.restore();
+                    
+                    // Ball shadow
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 4;
+                    
+                    // Ball glow
+                    const grad = ctx.createRadialGradient(
+                        x - r * 0.3, y - r * 0.3, 0,
+                        x, y, r
+                    );
+                    const hue = 200 + this.index * 15;
+                    grad.addColorStop(0, `hsl(${hue}, 80%, 75%)`);
+                    grad.addColorStop(0.4, `hsl(${hue}, 70%, 60%)`);
+                    grad.addColorStop(0.8, `hsl(${hue - 10}, 60%, 45%)`);
+                    grad.addColorStop(1, `hsl(${hue - 20}, 50%, 35%)`);
+                    
+                    ctx.fillStyle = grad;
+                    ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.2)`;
+                    ctx.shadowBlur = 20;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    // Highlight
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+                    ctx.beginPath();
+                    ctx.ellipse(x - r * 0.25, y - r * 0.3, r * 0.25, r * 0.15, -0.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                    
+                    // Small highlight
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(x + r * 0.15, y - r * 0.1, r * 0.1, r * 0.06, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                getSpeed() {
+                    return Math.abs(this.velocity);
+                }
+            }
+
+            // ---- Initialize Balls ----
+            function initBalls() {
+                balls = [];
+                for (let i = 0; i < numBalls; i++) {
+                    balls.push(new Ball(i, numBalls));
+                }
+                // Add slight randomness for visual interest
+                for (let b of balls) {
+                    b.angle += (Math.random() - 0.5) * 0.005;
+                }
+                swingCount = 0;
+                isSwinging = false;
+            }
+
+            // ---- Physics Update ----
+            function updatePhysics(dt) {
+                // Update each ball
+                for (let b of balls) {
+                    b.update(dt);
+                }
+                
+                // Collision detection between balls
+                for (let i = 0; i < balls.length - 1; i++) {
+                    const b1 = balls[i];
+                    const b2 = balls[i + 1];
+                    const dx = b1.x - b2.x;
+                    const dy = b1.y - b2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const minDist = b1.radius + b2.radius;
+                    
+                    if (dist < minDist && dist > 0) {
+                        // Collision! Transfer energy
+                        const overlap = (minDist - dist) * 0.5;
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        
+                        // Separate balls
+                        b1.x += nx * overlap;
+                        b1.y += ny * overlap;
+                        b2.x -= nx * overlap;
+                        b2.y -= ny * overlap;
+                        
+                        // Transfer velocity (elastic collision)
+                        const relV = (b1.velocity - b2.velocity) * 0.8;
+                        b1.velocity -= relV * 0.5;
+                        b2.velocity += relV * 0.5;
+                        
+                        // Play click sound
+                        if (Math.abs(relV) > 0.5) {
+                            playClick(Math.abs(relV));
+                        }
+                    }
+                }
+            }
+
+            // ---- Play Click Sound ----
+            function playClick(intensity) {
+                try {
+                    if (!audioCtx) {
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    
+                    const now = audioCtx.currentTime;
+                    const volume = Math.min(0.3, intensity * 0.04);
+                    
+                    // Main click
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800 + intensity * 200, now);
+                    osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+                    gain.gain.setValueAtTime(volume, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                    
+                    // Noise component (click)
+                    const bufferSize = audioCtx.sampleRate * 0.02;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gainNoise = audioCtx.createGain();
+                    gainNoise.gain.setValueAtTime(volume * 0.3, now);
+                    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+                    noise.connect(gainNoise);
+                    gainNoise.connect(audioCtx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.02);
+                    
+                } catch (e) {
+                    // Silently fail
+                }
+            }
+
+            // ---- Swing ----
+            function swing() {
+                if (isSwinging) return;
+                isSwinging = true;
+                swingCount++;
+                
+                // Pull the first ball back
+                const first = balls[0];
+                first.angle = -0.7;
+                first.velocity = 0;
+                
+                // Reset other balls
+                for (let i = 1; i < balls.length; i++) {
+                    balls[i].angle = 0;
+                    balls[i].velocity = 0;
+                }
+                
+                // Start the motion
+                setTimeout(() => {
+                    isSwinging = false;
+                }, 100);
+            }
+
+            // ---- Reset ----
+            function resetCradle() {
+                isSwinging = false;
+                initBalls();
+                // Reset audio context if exists
+                if (audioCtx) {
+                    audioCtx.close();
+                    audioCtx = null;
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1520');
+                grad.addColorStop(0.6, '#080e18');
+                grad.addColorStop(0.8, '#060a12');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(255,255,255,0.02)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 20; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i * 30, 0);
+                    ctx.lineTo(i * 30, H);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(0, i * 30);
+                    ctx.lineTo(W, i * 30);
+                    ctx.stroke();
+                }
+                
+                // Draw frame
+                ctx.save();
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.05)';
+                ctx.lineWidth = 2;
+                const frameY = 100;
+                ctx.beginPath();
+                ctx.moveTo(W/2 - 200, frameY);
+                ctx.lineTo(W/2 + 200, frameY);
+                ctx.stroke();
+                ctx.restore();
+                
+                // Draw balls
+                for (let b of balls) {
+                    b.draw(ctx);
+                }
+                
+                // Energy indicator
+                const totalEnergy = balls.reduce((sum, b) => sum + Math.abs(b.velocity), 0);
+                const maxEnergy = 5;
+                const energyRatio = Math.min(1, totalEnergy / maxEnergy);
+                
+                ctx.fillStyle = `rgba(100, 200, 255, ${0.05 + energyRatio * 0.1})`;
+                ctx.fillRect(0, 0, W * energyRatio, 3);
+                
+                // Status info
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`Swings: ${swingCount}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const avgSpeed = balls.reduce((sum, b) => sum + Math.abs(b.velocity), 0) / balls.length;
+                ctx.fillText(`Energy: ${(avgSpeed * 100).toFixed(1)}%`, 20, H - 10);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                const dt = 0.02 * (speed / 5);
+                
+                updatePhysics(dt);
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Update Ball Count ----
+            function updateBalls() {
+                numBalls = parseInt(ballsSlider.value);
+                ballsLabel.textContent = numBalls;
+                initBalls();
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Event Listeners ----
+            swingBtn.addEventListener('click', swing);
+            resetBtn.addEventListener('click', resetCradle);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+            ballsSlider.addEventListener('input', updateBalls);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    swing();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCradle();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initBalls();
+            render();
+            animate();
+
+            console.log('⚡ Newton Cradle · Click Swing or press Space to start the motion!');
+        })();
+    </script>
+</body>
+</html>

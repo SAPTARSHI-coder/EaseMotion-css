@@ -26,8 +26,7 @@ async function handleClaim({ github, context }) {
   const issueNumber = context.payload.issue.number;
   const commenter = context.payload.comment.user.login;
   const bodyText = context.payload.comment.body.trim();
-  const isAssign = bodyText.startsWith('/assign');
-  const programName = isAssign ? 'ECSoC26' : 'GSSoC-26';
+  const programName = 'GSSoC-26';
 
   // Fetch the latest issue state to prevent race conditions on closed issues
   const { data: issue } = await github.rest.issues.get({
@@ -121,25 +120,14 @@ async function handleClaim({ github, context }) {
     assignees: [commenter],
   });
 
-  // Label the issue with the correct program label if it is missing
-  if (isAssign) {
-    if (!issue.labels.some((l) => l.name === 'ECSoC26')) {
-      await github.rest.issues.addLabels({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        labels: ['ECSoC26'],
-      }).catch(() => {});
-    }
-  } else {
-    if (!issue.labels.some((l) => l.name === 'GSSoC-26')) {
-      await github.rest.issues.addLabels({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        labels: ['GSSoC-26', 'gssoc:approved'],
-      }).catch(() => {});
-    }
+  // Label the issue with GSSoC-26 if missing
+  if (!issue.labels.some((l) => l.name === 'GSSoC-26')) {
+    await github.rest.issues.addLabels({
+      owner,
+      repo,
+      issue_number: issueNumber,
+      labels: ['GSSoC-26', 'gssoc:approved'],
+    }).catch(() => {});
   }
 
   // comment message
