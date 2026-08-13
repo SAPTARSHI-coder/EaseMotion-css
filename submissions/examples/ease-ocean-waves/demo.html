@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🌊 Ocean Waves – Crashing Waves Sound and Visual</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🌊 Ocean Waves</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle waves">🔊 Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="crashBtn" title="Crash wave">🌊 Crash</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="oceanCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="oceanStatus">🌊 Crashing</span>
+                <span id="waveCount">🌊 0 waves</span>
+                <span id="intensityDisplay">💨 Intensity: 60%</span>
+            </div>
+            <div class="hint" id="hint">🌊 Listen to the ocean waves crash</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🌊 Wave Intensity</label>
+                <input type="range" id="intensitySlider" min="10" max="100" value="60" step="1" />
+                <span id="intensityLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>🎵 Wave Speed</label>
+                <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
+                <span id="speedLabel">50%</span>
+            </div>
+            <div class="slider-group">
+                <label>💧 Foam</label>
+                <input type="range" id="foamSlider" min="0" max="100" value="40" step="1" />
+                <span id="foamLabel">40%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Ocean Waves – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('oceanCanvas');
+            const ctx = canvas.getContext('2d');
+            const oceanStatus = document.getElementById('oceanStatus');
+            const waveCount = document.getElementById('waveCount');
+            const intensityDisplay = document.getElementById('intensityDisplay');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const crashBtn = document.getElementById('crashBtn');
+            const intensitySlider = document.getElementById('intensitySlider');
+            const intensityLabel = document.getElementById('intensityLabel');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const foamSlider = document.getElementById('foamSlider');
+            const foamLabel = document.getElementById('foamLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isActive = true;
+            let time = 0;
+            let animationId = null;
+            let waveTimer = 0;
+            let totalWaves = 0;
+
+            // --- Parameters ---
+            let intensity = 60; // 10-100
+            let speed = 50; // 10-100
+            let foamAmount = 40; // 0-100
+
+            // --- Waves ---
+            let waves = [];
+            let foamParticles = [];
+            let sprayParticles = [];
+
+            // --- Audio context ---
+            let audioCtx = null;
+            let isAudioReady = false;
+            let audioGain = null;
+            let noiseBuffer = null;
+
+            // --- Wave class ---
+            class Wave {
+                constructor() {
+                    this.x = -100 - Math.random() * 100;
+                    this.y = H / 2 + 50 + (Math.random() - 0.5) * 100;
+                    this.width = 200 + Math.random() * 300;
+                    this.height = 20 + Math.random() * 40 * (intensity / 100);
+                    this.speed = 0.5 + Math.random() * 1.5 * (speed / 50);
+                    this.opacity = 0.3 + Math.random() * 0.4;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.foamAmount = foamAmount / 100;
+                    this.color = `hsl(210, ${40 + Math.random() * 20}%, ${50 + Math.random() * 30}%)`;
+                    this.isCrashing = false;
+                    this.crashTimer = 0;
+                    this.crashDuration = 60 + Math.random() * 40;
+                    this.sprayCount = 0;
+                    this.alive = true;
+                }
+
+                update() {
+                    const speedFactor = speed / 50;
+                    this.x += this.speed * speedFactor;
+                    this.phase += 0.02 * speedFactor;
+                    
+                    // Wave oscillation
+                    const oscillation = Math.sin(this.phase) * 5;
+                    this.y += oscillation * 0.1;
+                    
+                    // Crash detection
+                    if (this.x > W / 2 - 50 && !this.isCrashing && Math.random() < 0.01 * (intensity / 100)) {
+                        this.isCrashing = true;
+                        this.crashTimer = 0;
+                        this.sprayCount = 20 + Math.floor(Math.random() * 30 * (intensity / 100));
+                        totalWaves++;
+                        createCrashEffect(this.x, this.y, this.height);
+                    }
+                    
+                    if (this.isCrashing) {
+                        this.crashTimer++;
+                        this.height += 5;
+                        this.width += 10;
+                        this.opacity *= 0.995;
+                        
+                        // Create spray particles
+                        if (this.crashTimer % 2 === 0 && this.sprayCount > 0) {
+                            this.sprayCount--;
+                            createSpray(this.x, this.y, this.height);
+                        }
+                        
+                        if (this.crashTimer > this.crashDuration) {
+                            this.alive = false;
+                        }
+                    }
+                    
+                    // Fade out at edges
+                    if (this.x > W + 100) {
+                        this.alive = false;
+                    }
+                    
+                    return this.alive;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const w = this.width;
+                    const h = this.height;
+                    const alpha = this.opacity * (this.isCrashing ? 1 : 0.7);
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+
+                    // Wave body
+                    const grad = ctx.createLinearGradient(x - w / 2, y - h, x + w / 2, y + h);
+                    grad.addColorStop(0, `rgba(100, 180, 255, ${0.1 * alpha})`);
+                    grad.addColorStop(0.3, `rgba(80, 160, 240, ${0.3 * alpha})`);
+                    grad.addColorStop(0.6, `rgba(60, 140, 220, ${0.5 * alpha})`);
+                    grad.addColorStop(0.8, `rgba(40, 120, 200, ${0.3 * alpha})`);
+                    grad.addColorStop(1, `rgba(20, 100, 180, 0)`);
+
+                    // Wave shape
+                    ctx.beginPath();
+                    ctx.moveTo(x - w / 2, y);
+                    for (let i = 0; i <= 20; i++) {
+                        const t = i / 20;
+                        const px = x - w / 2 + t * w;
+                        const py = y - h * Math.sin(t * Math.PI) * (1 + 0.3 * Math.sin(this.phase + t * 2));
+                        ctx.lineTo(px, py);
+                    }
+                    
+                    // Bottom curve
+                    const bottomY = y + h * 0.5;
+                    for (let i = 20; i >= 0; i--) {
+                        const t = i / 20;
+                        const px = x - w / 2 + t * w;
+                        const py = bottomY + h * 0.2 * Math.sin(t * Math.PI * 0.5 + this.phase);
+                        ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+
+                    // Wave edge highlight
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * alpha})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    for (let i = 0; i <= 20; i++) {
+                        const t = i / 20;
+                        const px = x - w / 2 + t * w;
+                        const py = y - h * Math.sin(t * Math.PI) * (1 + 0.3 * Math.sin(this.phase + t * 2));
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+
+                    // Foam on wave crest
+                    if (this.isCrashing || this.foamAmount > 0.2) {
+                        const foamAlpha = this.isCrashing ? 0.6 : this.foamAmount * 0.3;
+                        ctx.globalAlpha = foamAlpha * alpha;
+                        for (let i = 0; i < 10; i++) {
+                            const t = 0.2 + Math.random() * 0.6;
+                            const px = x - w / 2 + t * w + (Math.random() - 0.5) * 20;
+                            const py = y - h * Math.sin(t * Math.PI) * (1 + 0.3 * Math.sin(this.phase + t * 2)) - Math.random() * 10;
+                            const size = 3 + Math.random() * 8;
+                            ctx.fillStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.3})`;
+                            ctx.shadowBlur = 5;
+                            ctx.shadowColor = `rgba(255, 255, 255, 0.1)`;
+                            ctx.beginPath();
+                            ctx.arc(px, py, size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            // --- Spray particle class ---
+            class SprayParticle {
+                constructor(x, y, intensity) {
+                    this.x = x + (Math.random() - 0.5) * 20;
+                    this.y = y - Math.random() * 20;
+                    const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+                    const speed = 1 + Math.random() * 4 * (intensity / 100);
+                    this.vx = Math.cos(angle) * speed * 0.5;
+                    this.vy = Math.sin(angle) * speed - 0.5;
+                    this.size = 1 + Math.random() * 4;
+                    this.life = 0.5 + Math.random() * 0.5;
+                    this.maxLife = this.life;
+                    this.gravity = 0.02 + Math.random() * 0.03;
+                    this.opacity = 0.5 + Math.random() * 0.5;
+                    this.hue = 200 + Math.random() * 20;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.vx *= 0.99;
+                    this.life -= 0.008;
+                    this.size *= 0.995;
+                    return this.life > 0 && this.size > 0.1;
+                }
+
+                draw(ctx) {
+                    const alpha = (this.life / this.maxLife) * this.opacity * 0.6;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = `hsl(${this.hue}, 60%, 90%)`;
+                    ctx.shadowBlur = this.size * 2;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.1})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Foam particle class ---
+            class FoamParticle {
+                constructor(x, y) {
+                    this.x = x + (Math.random() - 0.5) * 60;
+                    this.y = y + (Math.random() - 0.5) * 20;
+                    this.size = 2 + Math.random() * 6;
+                    this.life = 1;
+                    this.decay = 0.005 + Math.random() * 0.01;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = -Math.random() * 0.2;
+                    this.opacity = 0.3 + Math.random() * 0.5;
+                    this.hue = 200 + Math.random() * 20;
+                }
+
+                update() {
+                    this.x += this.vx + Math.sin(this.life * 5) * 0.1;
+                    this.y += this.vy;
+                    this.life -= this.decay;
+                    this.size *= 0.999;
+                    return this.life > 0 && this.size > 0.2;
+                }
+
+                draw(ctx) {
+                    const alpha = this.life * this.opacity * 0.3;
+                    if (alpha < 0.01) return;
+
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = `hsl(${this.hue}, 40%, 95%)`;
+                    ctx.shadowBlur = this.size;
+                    ctx.shadowColor = `rgba(255, 255, 255, ${alpha * 0.1})`;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // --- Create crash effect ---
+            function createCrashEffect(x, y, height) {
+                const count = 10 + Math.floor(Math.random() * 20 * (intensity / 100));
+                for (let i = 0; i < count; i++) {
+                    const p = new FoamParticle(
+                        x + (Math.random() - 0.5) * 40,
+                        y - height * 0.5 + (Math.random() - 0.5) * 20
+                    );
+                    foamParticles.push(p);
+                }
+            }
+
+            // --- Create spray ---
+            function createSpray(x, y, height) {
+                const count = 2 + Math.floor(Math.random() * 4 * (intensity / 100));
+                for (let i = 0; i < count; i++) {
+                    const p = new SprayParticle(
+                        x + (Math.random() - 0.5) * 30,
+                        y - height * 0.3,
+                        intensity
+                    );
+                    sprayParticles.push(p);
+                }
+            }
+
+            // --- Audio functions ---
+            function initAudio() {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioGain = audioCtx.createGain();
+                    audioGain.gain.value = 0.3;
+                    audioGain.connect(audioCtx.destination);
+                    isAudioReady = true;
+                    generateNoiseBuffer();
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                }
+            }
+
+            function generateNoiseBuffer() {
+                if (!audioCtx) return;
+                const bufferSize = audioCtx.sampleRate * 2;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * 0.5;
+                }
+                noiseBuffer = buffer;
+            }
+
+            function playOceanSound() {
+                if (!isAudioReady || !audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    
+                    // Ocean noise (continuous)
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = noiseBuffer;
+                    noise.loop = true;
+                    
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.2 * (intensity / 100), now);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.15 * (intensity / 100), now + 0.5);
+                    
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 400 + intensity * 5;
+                    filter.Q.value = 0.5;
+                    
+                    noise.connect(filter);
+                    filter.connect(noiseGain);
+                    noiseGain.connect(audioGain);
+                    
+                    noise.start(now);
+                    
+                    // Wave crash sounds (periodic)
+                    scheduleCrashSounds(now);
+                    
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            function scheduleCrashSounds(startTime) {
+                if (!isActive) return;
+                const interval = 2 + (1 - intensity / 100) * 3;
+                for (let i = 0; i < 5; i++) {
+                    const time = startTime + i * interval + Math.random() * 0.5;
+                    setTimeout(() => {
+                        if (isActive) playCrashSound();
+                    }, (time - startTime) * 1000);
+                }
+            }
+
+            function playCrashSound() {
+                if (!isAudioReady || !audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    
+                    // Crash noise burst
+                    const burst = audioCtx.createBufferSource();
+                    const bufferSize = audioCtx.sampleRate * 0.3;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        const envelope = Math.sin(i / bufferSize * Math.PI);
+                        data[i] = (Math.random() * 2 - 1) * envelope * 0.8;
+                    }
+                    burst.buffer = buffer;
+                    
+                    const burstGain = audioCtx.createGain();
+                    burstGain.gain.setValueAtTime(0.3 * (intensity / 100), now);
+                    burstGain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                    
+                    const filter2 = audioCtx.createBiquadFilter();
+                    filter2.type = 'bandpass';
+                    filter2.frequency.value = 300 + Math.random() * 400;
+                    filter2.Q.value = 1;
+                    
+                    burst.connect(filter2);
+                    filter2.connect(burstGain);
+                    burstGain.connect(audioGain);
+                    
+                    burst.start(now);
+                    burst.stop(now + 0.3);
+                    
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Sky gradient
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+                const timeOfDay = 0.3 + 0.2 * Math.sin(time * 0.00005);
+                skyGrad.addColorStop(0, `rgb(${10 + timeOfDay * 20}, ${15 + timeOfDay * 30}, ${30 + timeOfDay * 40})`);
+                skyGrad.addColorStop(0.3, `rgb(${15 + timeOfDay * 30}, ${20 + timeOfDay * 40}, ${40 + timeOfDay * 50})`);
+                skyGrad.addColorStop(0.6, `rgb(${20 + timeOfDay * 40}, ${30 + timeOfDay * 50}, ${50 + timeOfDay * 60})`);
+                skyGrad.addColorStop(0.8, `rgb(${25 + timeOfDay * 50}, ${35 + timeOfDay * 60}, ${55 + timeOfDay * 70})`);
+                skyGrad.addColorStop(1, `rgb(${30 + timeOfDay * 60}, ${40 + timeOfDay * 70}, ${60 + timeOfDay * 80})`);
+
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Sun/moon
+                ctx.save();
+                const sunX = W - 100;
+                const sunY = 80;
+                const sunGrad = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 50);
+                sunGrad.addColorStop(0, 'rgba(255, 220, 180, 0.3)');
+                sunGrad.addColorStop(0.5, 'rgba(255, 200, 150, 0.15)');
+                sunGrad.addColorStop(1, 'rgba(255, 180, 120, 0)');
+                ctx.fillStyle = sunGrad;
+                ctx.beginPath();
+                ctx.arc(sunX, sunY, 50, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = 'rgba(255, 220, 180, 0.2)';
+                ctx.beginPath();
+                ctx.arc(sunX, sunY, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Distant horizon
+                ctx.save();
+                ctx.globalAlpha = 0.1;
+                ctx.fillStyle = 'rgba(40, 60, 80, 0.3)';
+                ctx.fillRect(0, H / 2 + 20, W, 10);
+                ctx.restore();
+
+                // Update status
+                oceanStatus.textContent = isActive ? '🌊 Crashing' : '🌊 Silent';
+                waveCount.textContent = `🌊 ${totalWaves} waves`;
+                intensityDisplay.textContent = `💨 Intensity: ${Math.round(intensity)}%`;
+            }
+
+            // --- Generate waves ---
+            function generateWave() {
+                if (!isActive) return;
+                const wave = new Wave();
+                waves.push(wave);
+                
+                // Occasionally play crash sound
+                if (Math.random() < 0.3 * (intensity / 100)) {
+                    playCrashSound();
+                }
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Generate waves based on intensity
+                if (isActive) {
+                    waveTimer++;
+                    const interval = Math.max(10, 60 - intensity * 0.5);
+                    if (waveTimer >= interval) {
+                        waveTimer = 0;
+                        generateWave();
+                    }
+                }
+
+                // Update waves
+                waves = waves.filter(w => w.update());
+
+                // Update particles
+                foamParticles = foamParticles.filter(p => p.update());
+                sprayParticles = sprayParticles.filter(p => p.update());
+
+                // Limit particles
+                if (foamParticles.length > 200) {
+                    foamParticles = foamParticles.slice(0, 200);
+                }
+                if (sprayParticles.length > 150) {
+                    sprayParticles = sprayParticles.slice(0, 150);
+                }
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw waves (back to front)
+                for (const wave of waves) {
+                    wave.draw(ctx);
+                }
+
+                // Draw foam particles
+                for (const p of foamParticles) {
+                    p.draw(ctx);
+                }
+
+                // Draw spray particles
+                for (const p of sprayParticles) {
+                    p.draw(ctx);
+                }
+
+                // Ocean surface shimmer
+                ctx.save();
+                ctx.globalAlpha = 0.02;
+                for (let i = 0; i < 20; i++) {
+                    const x = (i * 50 + time * 0.02 * speed) % W;
+                    const y = H / 2 + 50 + Math.sin(i * 0.5 + time * 0.001) * 20;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, 30, 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleWaves() {
+                isActive = !isActive;
+                toggleBtn.textContent = isActive ? '🔊 Toggle' : '🔇 Mute';
+                oceanStatus.textContent = isActive ? '🌊 Crashing' : '🌊 Silent';
+                hint.textContent = isActive ? '🌊 Waves crashing' : '🌊 Waves silent';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+                
+                if (isActive && !isAudioReady) {
+                    initAudio();
+                    setTimeout(() => playOceanSound(), 100);
+                }
+            }
+
+            function resetAll() {
+                waves = [];
+                foamParticles = [];
+                sprayParticles = [];
+                totalWaves = 0;
+                waveTimer = 0;
+                waveCount.textContent = '🌊 0 waves';
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+            }
+
+            function crashWave() {
+                if (!isActive) return;
+                // Create a big wave
+                const wave = new Wave();
+                wave.x = W / 2 - 100;
+                wave.y = H / 2 + 50;
+                wave.width = 400;
+                wave.height = 60 * (intensity / 100);
+                wave.isCrashing = true;
+                wave.crashTimer = 0;
+                wave.crashDuration = 80;
+                waves.push(wave);
+                createCrashEffect(wave.x, wave.y, wave.height);
+                playCrashSound();
+                totalWaves++;
+                hint.textContent = '🌊 CRASH!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 800);
+            }
+
+            // --- Slider handlers ---
+            intensitySlider.addEventListener('input', function() {
+                intensity = parseFloat(this.value);
+                intensityLabel.textContent = `${Math.round(intensity)}%`;
+                intensityDisplay.textContent = `💨 Intensity: ${Math.round(intensity)}%`;
+            });
+
+            speedSlider.addEventListener('input', function() {
+                speed = parseFloat(this.value);
+                speedLabel.textContent = `${Math.round(speed)}%`;
+            });
+
+            foamSlider.addEventListener('input', function() {
+                foamAmount = parseFloat(this.value);
+                foamLabel.textContent = `${Math.round(foamAmount)}%`;
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleWaves);
+            resetBtn.addEventListener('click', resetAll);
+            crashBtn.addEventListener('click', crashWave);
+
+            // --- Click canvas to crash ---
+            canvas.addEventListener('click', (e) => {
+                crashWave();
+            });
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    crashWave();
+                }
+                if (e.key === 't' || e.key === 'T') toggleWaves();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Intensity adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    intensity = Math.min(100, intensity + 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                    intensityDisplay.textContent = `💨 Intensity: ${Math.round(intensity)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    intensity = Math.max(10, intensity - 5);
+                    intensitySlider.value = intensity;
+                    intensityLabel.textContent = `${Math.round(intensity)}%`;
+                    intensityDisplay.textContent = `💨 Intensity: ${Math.round(intensity)}%`;
+                }
+            });
+
+            // --- Init ---
+            initAudio();
+            setTimeout(() => playOceanSound(), 100);
+            
+            // Seed initial waves
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => generateWave(), i * 200);
+            }
+            
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🌊 Ocean Waves ready!');
+            console.log('Controls: Click canvas (crash wave), Space (crash), T (toggle)');
+            console.log('          ↑/↓ (intensity), R (reset)');
+
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Collect · Spinning Coin with Chime</title>
+    <meta name="description" content="Interactive spinning coin with realistic 3D rotation, collect animation, and satisfying chime sound effect.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🪙 COIN COLLECT</h1>
+        <div class="coin-wrapper">
+            <div class="coin-container" id="coinContainer">
+                <div class="coin" id="coin">
+                    <div class="coin-front">
+                        <span class="coin-symbol">$</span>
+                        <span class="coin-value">1</span>
+                    </div>
+                    <div class="coin-back">
+                        <span class="coin-symbol">★</span>
+                        <span class="coin-value">⭐</span>
+                    </div>
+                </div>
+            </div>
+            <div class="coin-shadow"></div>
+        </div>
+        <div class="coin-stats">
+            <span class="coin-count" id="coinCount">🪙 0</span>
+            <span class="coin-total" id="coinTotal">💰 0</span>
+        </div>
+        <div class="button-group">
+            <button class="collect-btn" id="collectBtn">COLLECT COIN</button>
+            <button class="reset-btn" id="resetBtn">RESET</button>
+        </div>
+        <div class="info">
+            <span>🪙 SPINNING COIN</span>
+            <small>click to collect → chime sound</small>
+        </div>
+        <div class="hint">
+            <span>3D rotation · sparkle effect · satisfying chime</span>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const coin = document.getElementById('coin');
+            const coinContainer = document.getElementById('coinContainer');
+            const collectBtn = document.getElementById('collectBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const coinCountEl = document.getElementById('coinCount');
+            const coinTotalEl = document.getElementById('coinTotal');
+            
+            let coinCount = 0;
+            let totalCoins = 0;
+            let isSpinning = false;
+            let spinTimeout = null;
+
+            // ---- Audio Context for Chime Sound ----
+            let audioCtx = null;
+            
+            function initAudio() {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            function playChime() {
+                try {
+                    initAudio();
+                    
+                    // Create a rich chime sound using multiple oscillators
+                    const now = audioCtx.currentTime;
+                    
+                    // Main tone (high note)
+                    const osc1 = audioCtx.createOscillator();
+                    const gain1 = audioCtx.createGain();
+                    osc1.type = 'sine';
+                    osc1.frequency.setValueAtTime(880, now); // A5
+                    gain1.gain.setValueAtTime(0.3, now);
+                    gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+                    osc1.connect(gain1);
+                    gain1.connect(audioCtx.destination);
+                    osc1.start(now);
+                    osc1.stop(now + 0.6);
+                    
+                    // Second tone (harmony - fifth)
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(1320, now); // E6
+                    gain2.gain.setValueAtTime(0.2, now);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.start(now + 0.05);
+                    osc2.stop(now + 0.5);
+                    
+                    // Third tone (bell-like harmonic)
+                    const osc3 = audioCtx.createOscillator();
+                    const gain3 = audioCtx.createGain();
+                    osc3.type = 'sine';
+                    osc3.frequency.setValueAtTime(1760, now); // A6
+                    gain3.gain.setValueAtTime(0.1, now);
+                    gain3.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc3.connect(gain3);
+                    gain3.connect(audioCtx.destination);
+                    osc3.start(now + 0.02);
+                    osc3.stop(now + 0.35);
+                    
+                    // Add a soft noise for sparkle effect
+                    const bufferSize = audioCtx.sampleRate * 0.05;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / bufferSize * 3);
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gainNoise = audioCtx.createGain();
+                    gainNoise.gain.setValueAtTime(0.08, now);
+                    gainNoise.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    noise.connect(gainNoise);
+                    gainNoise.connect(audioCtx.destination);
+                    noise.start(now);
+                    noise.stop(now + 0.05);
+                    
+                } catch (e) {
+                    // Fallback: use Web Audio API or ignore if not available
+                    console.log('Audio not available');
+                }
+            }
+
+            // ---- Coin Spin Animation ----
+            function spinCoin(collect = true) {
+                if (isSpinning) return;
+                isSpinning = true;
+                
+                // Add spinning class
+                coin.classList.add('spinning');
+                
+                // Collect animation
+                if (collect) {
+                    coinContainer.classList.add('collecting');
+                    
+                    // Update counts after spin
+                    setTimeout(() => {
+                        coinCount++;
+                        totalCoins++;
+                        updateStats();
+                        playChime();
+                        
+                        // Sparkle effect
+                        createSparkles();
+                    }, 300);
+                }
+                
+                // Reset after animation
+                clearTimeout(spinTimeout);
+                spinTimeout = setTimeout(() => {
+                    coin.classList.remove('spinning');
+                    coinContainer.classList.remove('collecting');
+                    isSpinning = false;
+                }, 600);
+            }
+
+            // ---- Update Stats ----
+            function updateStats() {
+                coinCountEl.textContent = `🪙 ${coinCount}`;
+                coinTotalEl.textContent = `💰 ${totalCoins}`;
+                
+                // Pulse animation on count
+                coinCountEl.style.transform = 'scale(1.3)';
+                coinTotalEl.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    coinCountEl.style.transform = 'scale(1)';
+                    coinTotalEl.style.transform = 'scale(1)';
+                }, 200);
+            }
+
+            // ---- Create Sparkle Effect ----
+            function createSparkles() {
+                const container = document.querySelector('.container');
+                const rect = coinContainer.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+                
+                for (let i = 0; i < 12; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle-particle';
+                    const angle = (Math.PI * 2 * i) / 12 + Math.random() * 0.3;
+                    const distance = 40 + Math.random() * 60;
+                    const x = Math.cos(angle) * distance;
+                    const y = Math.sin(angle) * distance;
+                    
+                    sparkle.style.cssText = `
+                        position: fixed;
+                        width: ${4 + Math.random() * 6}px;
+                        height: ${4 + Math.random() * 6}px;
+                        background: #ffd700;
+                        border-radius: 50%;
+                        pointer-events: none;
+                        z-index: 9999;
+                        left: ${cx}px;
+                        top: ${cy}px;
+                        transform: translate(${x}px, ${y}px) scale(0);
+                        opacity: 0;
+                        box-shadow: 0 0 20px #ffd700, 0 0 40px #ffaa00;
+                        transition: all 0.6s ease-out;
+                    `;
+                    
+                    document.body.appendChild(sparkle);
+                    
+                    // Trigger animation
+                    requestAnimationFrame(() => {
+                        sparkle.style.transform = `translate(${x}px, ${y}px) scale(1)`;
+                        sparkle.style.opacity = '1';
+                    });
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        sparkle.style.opacity = '0';
+                        sparkle.style.transform = `translate(${x * 1.5}px, ${y * 1.5}px) scale(0)`;
+                        setTimeout(() => {
+                            if (sparkle.parentNode) sparkle.remove();
+                        }, 600);
+                    }, 600);
+                }
+            }
+
+            // ---- Collect Action ----
+            function collectCoin() {
+                initAudio();
+                spinCoin(true);
+            }
+
+            // ---- Reset ----
+            function resetGame() {
+                if (isSpinning) return;
+                coinCount = 0;
+                totalCoins = 0;
+                updateStats();
+                
+                // Reset coin rotation
+                coin.style.transition = 'transform 0.5s ease';
+                coin.style.transform = 'rotateY(0deg)';
+                setTimeout(() => {
+                    coin.style.transition = '';
+                }, 500);
+                
+                // Play reset sound (short descending tone)
+                try {
+                    initAudio();
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(300, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } catch (e) {}
+            }
+
+            // ---- Keyboard Shortcut ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    collectCoin();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetGame();
+                }
+            });
+
+            // ---- Event Listeners ----
+            collectBtn.addEventListener('click', collectCoin);
+            resetBtn.addEventListener('click', resetGame);
+            coinContainer.addEventListener('click', collectCoin);
+
+            // ---- Initial Stats ----
+            updateStats();
+
+            console.log('🪙 Coin Collect · click coin or press Space to collect · R to reset');
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ladybug Crawl · Ladybug Crawls Along Edge</title>
+    <meta name="description" content="Interactive ladybug crawling along edges with realistic movement, antennae, and spots.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🐞 LADYBUG CRAWL</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="ladybugCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🐞 LADYBUG CRAWL</span>
+            <small>crawls along edge · realistic movement</small>
+        </div>
+        <div class="hint">
+            <span>🍃 ladybug crawls along leaf edges · click to change direction</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('ladybugCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Ladybug Class ----
+            class Ladybug {
+                constructor() {
+                    this.x = 100;
+                    this.y = 100;
+                    this.size = 18;
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    this.speed = 0.8;
+                    
+                    // Leg animation
+                    this.legPhase = 0;
+                    this.legSpeed = 0.08;
+                    
+                    // Antennae
+                    this.antennaPhase = 0;
+                    this.antennaSpeed = 0.04;
+                    
+                    // Edge following
+                    this.pathIndex = 0;
+                    this.pathProgress = 0;
+                    this.pathPoints = [];
+                    this.currentSegment = 0;
+                    
+                    // Direction change timer
+                    this.directionTimer = 0;
+                    this.directionInterval = 100 + Math.random() * 200;
+                    
+                    // Generate path along edges
+                    this.generatePath();
+                }
+
+                generatePath() {
+                    const margin = 40;
+                    const points = [
+                        { x: margin, y: margin },
+                        { x: W - margin, y: margin },
+                        { x: W - margin, y: H - margin },
+                        { x: margin, y: H - margin },
+                        { x: margin, y: margin }
+                    ];
+                    
+                    // Add some variation to the path
+                    this.pathPoints = [];
+                    for (let i = 0; i < points.length - 1; i++) {
+                        const p1 = points[i];
+                        const p2 = points[i + 1];
+                        const segments = 20 + Math.floor(Math.random() * 15);
+                        for (let j = 0; j < segments; j++) {
+                            const t = j / segments;
+                            const x = p1.x + (p2.x - p1.x) * t + Math.sin(t * 10 + i * 2) * 5;
+                            const y = p1.y + (p2.y - p1.y) * t + Math.cos(t * 8 + i * 3) * 5;
+                            this.pathPoints.push({ x, y });
+                        }
+                    }
+                    
+                    // Add some decorative bumps along the path
+                    for (let i = 0; i < this.pathPoints.length; i++) {
+                        const p = this.pathPoints[i];
+                        const wave = Math.sin(i * 0.1) * 3;
+                        const wave2 = Math.cos(i * 0.07 + 1) * 3;
+                        p.x += wave;
+                        p.y += wave2;
+                    }
+                    
+                    this.x = this.pathPoints[0].x;
+                    this.y = this.pathPoints[0].y;
+                    this.currentSegment = 0;
+                    this.pathProgress = 0;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Leg animation
+                    this.legPhase += this.legSpeed * dt;
+                    
+                    // Antennae
+                    this.antennaPhase += this.antennaSpeed * dt;
+                    
+                    // Move along path
+                    if (this.pathPoints.length > 1) {
+                        // Determine target point
+                        const targetIndex = (this.currentSegment + 1) % this.pathPoints.length;
+                        const target = this.pathPoints[targetIndex];
+                        const current = this.pathPoints[this.currentSegment];
+                        
+                        // Calculate direction
+                        const dx = target.x - current.x;
+                        const dy = target.y - current.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        // Move along segment
+                        const step = this.speed * 0.5 * dt;
+                        this.pathProgress += step / (dist + 1);
+                        
+                        // Interpolate position
+                        const t = Math.min(1, this.pathProgress);
+                        this.x = current.x + dx * t;
+                        this.y = current.y + dy * t;
+                        
+                        // Update angle
+                        this.targetAngle = Math.atan2(dy, dx);
+                        
+                        // Check if reached end of segment
+                        if (this.pathProgress >= 1) {
+                            this.currentSegment = targetIndex;
+                            this.pathProgress = 0;
+                            
+                            // Random direction change at corners
+                            if (Math.random() < 0.2) {
+                                // Reverse direction
+                                this.currentSegment = (this.currentSegment - 1 + this.pathPoints.length) % this.pathPoints.length;
+                                this.pathProgress = 0;
+                            }
+                        }
+                    }
+                    
+                    // Smooth angle
+                    let angleDiff = this.targetAngle - this.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    this.angle += angleDiff * 0.1 * dt;
+                    
+                    // Direction change timer (for random reversals)
+                    this.directionTimer -= dt;
+                    if (this.directionTimer <= 0) {
+                        this.directionTimer = this.directionInterval;
+                        // Randomly reverse direction with small chance
+                        if (Math.random() < 0.15) {
+                            this.currentSegment = (this.currentSegment - 1 + this.pathPoints.length) % this.pathPoints.length;
+                            this.pathProgress = 0;
+                        }
+                    }
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    
+                    // ---- Shadow ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetY = 3;
+                    
+                    // ---- Body ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                    ctx.shadowBlur = 8;
+                    
+                    // Main body (oval)
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.2, -size * 0.2, 0,
+                        0, 0, size
+                    );
+                    bodyGrad.addColorStop(0, '#ff4444');
+                    bodyGrad.addColorStop(0.5, '#dd2222');
+                    bodyGrad.addColorStop(0.8, '#bb1111');
+                    bodyGrad.addColorStop(1, '#880000');
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size, size * 0.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Wing line ----
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -size * 0.7);
+                    ctx.lineTo(0, size * 0.7);
+                    ctx.stroke();
+                    
+                    // ---- Spots ----
+                    ctx.shadowBlur = 3;
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    const spots = [
+                        { x: -size * 0.25, y: -size * 0.3, r: size * 0.2 },
+                        { x: size * 0.25, y: -size * 0.3, r: size * 0.2 },
+                        { x: -size * 0.35, y: size * 0.1, r: size * 0.15 },
+                        { x: size * 0.35, y: size * 0.1, r: size * 0.15 },
+                        { x: -size * 0.2, y: size * 0.35, r: size * 0.12 },
+                        { x: size * 0.2, y: size * 0.35, r: size * 0.12 }
+                    ];
+                    
+                    for (let spot of spots) {
+                        ctx.fillStyle = '#1a1a1a';
+                        ctx.beginPath();
+                        ctx.arc(spot.x, spot.y, spot.r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 5;
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.65, 0, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Eyes ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.75, -size * 0.1, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.75, size * 0.1, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#0a0a12';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.78, -size * 0.08, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.78, size * 0.12, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Antennae ----
+                    ctx.shadowBlur = 2;
+                    ctx.strokeStyle = '#1a1a1a';
+                    ctx.lineWidth = 1.5;
+                    
+                    const antPhase = this.antennaPhase;
+                    for (let side = -1; side <= 1; side += 2) {
+                        const antX = size * 0.7;
+                        const antY = side * size * 0.05;
+                        ctx.beginPath();
+                        ctx.moveTo(antX, antY);
+                        ctx.quadraticCurveTo(
+                            antX + size * 0.3,
+                            antY - side * size * 0.2 + Math.sin(antPhase + side) * size * 0.05,
+                            antX + size * 0.5,
+                            antY - side * size * 0.3 + Math.sin(antPhase * 0.7 + side * 2) * size * 0.08
+                        );
+                        ctx.stroke();
+                        
+                        // Antenna tip
+                        ctx.fillStyle = '#1a1a1a';
+                        ctx.beginPath();
+                        ctx.arc(
+                            antX + size * 0.5,
+                            antY - side * size * 0.3 + Math.sin(antPhase * 0.7 + side * 2) * size * 0.08,
+                            size * 0.03,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Legs ----
+                    ctx.shadowBlur = 2;
+                    ctx.strokeStyle = '#1a1a1a';
+                    ctx.lineWidth = 2;
+                    
+                    const legPhase = this.legPhase;
+                    const legPositions = [
+                        { x: -size * 0.3, y: -size * 0.4, side: -1 },
+                        { x: -size * 0.3, y: size * 0.4, side: 1 },
+                        { x: size * 0.1, y: -size * 0.5, side: -1 },
+                        { x: size * 0.1, y: size * 0.5, side: 1 },
+                        { x: size * 0.4, y: -size * 0.4, side: -1 },
+                        { x: size * 0.4, y: size * 0.4, side: 1 }
+                    ];
+                    
+                    for (let leg of legPositions) {
+                        const legSway = Math.sin(legPhase + leg.x * 0.5) * 0.15;
+                        const legX = leg.x;
+                        const legY = leg.y + legSway * size * 0.3;
+                        const legLen = size * 0.5;
+                        const side = leg.side;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(legX, legY);
+                        ctx.quadraticCurveTo(
+                            legX - side * legLen * 0.3,
+                            legY + side * legLen * 0.3 + legSway * size * 0.2,
+                            legX - side * legLen * 0.6,
+                            legY + side * legLen * 0.6 + legSway * size * 0.3
+                        );
+                        ctx.stroke();
+                    }
+                    
+                    // ---- Shell highlight ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                    ctx.beginPath();
+                    ctx.ellipse(-size * 0.2, -size * 0.2, size * 0.3, size * 0.15, -0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+
+                reverseDirection() {
+                    this.currentSegment = (this.currentSegment - 1 + this.pathPoints.length) % this.pathPoints.length;
+                    this.pathProgress = 0;
+                }
+            }
+
+            // ---- Create Ladybug ----
+            let ladybug;
+
+            function createLadybug() {
+                ladybug = new Ladybug();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Leaf-like background
+                const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                grad.addColorStop(0, '#1a3a2a');
+                grad.addColorStop(0.3, '#0d2a1a');
+                grad.addColorStop(0.6, '#0a1a12');
+                grad.addColorStop(0.8, '#0d1a15');
+                grad.addColorStop(1, '#050a08');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Leaf vein pattern
+                ctx.save();
+                ctx.globalAlpha = 0.05;
+                ctx.strokeStyle = '#2a5a3a';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 8; i++) {
+                    const x = 50 + i * 70;
+                    const y = 50 + Math.sin(i * 0.7) * 20;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + 30, y + 40 + Math.sin(i) * 20, x + 60, y + 20 + Math.sin(i * 1.3) * 15);
+                    ctx.stroke();
+                }
+                ctx.restore();
+                
+                // Light rays
+                for (let i = 0; i < 4; i++) {
+                    const x = 50 + i * 160 + Math.sin(time * 0.005 + i) * 20;
+                    const grad2 = ctx.createLinearGradient(x, 0, x + 20, H);
+                    grad2.addColorStop(0, `rgba(200, 255, 200, ${0.01 + Math.sin(time * 0.01 + i) * 0.008})`);
+                    grad2.addColorStop(0.5, `rgba(200, 255, 200, ${0.005})`);
+                    grad2.addColorStop(1, 'rgba(200, 255, 200, 0)');
+                    ctx.fillStyle = grad2;
+                    ctx.fillRect(x, 0, 20, H);
+                }
+                
+                // Decorative leaves
+                for (let i = 0; i < 6; i++) {
+                    const x = 30 + i * 100 + Math.sin(i * 1.5) * 15;
+                    const y = 20 + i * 70 + Math.sin(i * 0.7) * 20;
+                    ctx.fillStyle = `hsla(${120 + i * 10}, 40%, ${20 + i * 3}%, 0.08)`;
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, 30 + i * 5, 15 + i * 3, i * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Click handler ----
+            function handleCanvasClick(e) {
+                if (ladybug) {
+                    ladybug.reverseDirection();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (ladybug) {
+                    ladybug.update();
+                    ladybug.draw(ctx);
+                }
+                
+                // Ambient particles (tiny specks)
+                for (let i = 0; i < 10; i++) {
+                    const x = (i * 197 + 40) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 3) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const hue = (i * 30 + time * 5 + 120) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 60%, 70%, ${0.008 + Math.sin(time * 0.015 + i) * 0.006})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetLadybug() {
+                createLadybug();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetLadybug);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                handleCanvasClick(e);
+            });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (ladybug) ladybug.reverseDirection();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetLadybug();
+                }
+            });
+
+            // ---- Initialize ----
+            createLadybug();
+            animate();
+
+            console.log('🐞 Ladybug Crawl · Click or press Space to change direction!');
+        })();
+    </script>
+</body>
+</html>

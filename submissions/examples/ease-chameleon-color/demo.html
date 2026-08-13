@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chameleon Color · Changes Color to Match Background</title>
+    <meta name="description" content="Interactive chameleon that changes color to match its background, with animated eyes, tongue, and smooth transitions.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🦎 CHAMELEON</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="chameleonCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🦎 CHAMELEON COLOR</span>
+            <small>changes color to match background</small>
+        </div>
+        <div class="hint">
+            <span>🎨 chameleon adapts to its surroundings</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('chameleonCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Chameleon Class ----
+            class Chameleon {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H / 2;
+                    this.size = 50;
+                    
+                    // Current and target colors
+                    this.currentColor = { r: 100, g: 180, b: 80 };
+                    this.targetColor = { r: 100, g: 180, b: 80 };
+                    this.colorSpeed = 0.03;
+                    
+                    // Position
+                    this.targetX = this.x;
+                    this.targetY = this.y;
+                    this.moveSpeed = 0.02;
+                    
+                    // Eye animation
+                    this.eyePhase = 0;
+                    this.eyeSpeed = 0.03;
+                    this.eyeDirection = 1;
+                    
+                    // Tongue
+                    this.tongueLength = 0;
+                    this.tongueTarget = 0;
+                    this.tonguePhase = 0;
+                    
+                    // Body sway
+                    this.swayPhase = 0;
+                    this.swaySpeed = 0.015;
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Move toward target
+                    this.x += (this.targetX - this.x) * this.moveSpeed * dt;
+                    this.y += (this.targetY - this.y) * this.moveSpeed * dt;
+                    
+                    // Smooth color transition
+                    this.currentColor.r += (this.targetColor.r - this.currentColor.r) * this.colorSpeed * dt;
+                    this.currentColor.g += (this.targetColor.g - this.currentColor.g) * this.colorSpeed * dt;
+                    this.currentColor.b += (this.targetColor.b - this.currentColor.b) * this.colorSpeed * dt;
+                    
+                    // Eye movement
+                    this.eyePhase += this.eyeSpeed * dt;
+                    this.eyeDirection = Math.sin(this.eyePhase) * 0.3 + 0.5;
+                    
+                    // Tongue
+                    this.tongueLength += (this.tongueTarget - this.tongueLength) * 0.08 * dt;
+                    
+                    // Sway
+                    this.swayPhase += this.swaySpeed * dt;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const c = this.currentColor;
+                    const color = `rgb(${Math.round(c.r)}, ${Math.round(c.g)}, ${Math.round(c.b)})`;
+                    const colorLight = `rgb(${Math.round(c.r + 40)}, ${Math.round(c.g + 40)}, ${Math.round(c.b + 40)})`;
+                    const colorDark = `rgb(${Math.round(c.r - 30)}, ${Math.round(c.g - 30)}, ${Math.round(c.b - 30)})`;
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    
+                    // Sway
+                    const sway = Math.sin(this.swayPhase) * 3;
+                    ctx.rotate(sway * 0.01);
+                    
+                    // ---- Glow ----
+                    const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 1.2);
+                    glowGrad.addColorStop(0, color + '20');
+                    glowGrad.addColorStop(0.5, color + '10');
+                    glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 1.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Body ----
+                    ctx.shadowColor = color + '30';
+                    ctx.shadowBlur = 20;
+                    
+                    // Main body (oval)
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.2, -size * 0.2, 0,
+                        0, 0, size
+                    );
+                    bodyGrad.addColorStop(0, colorLight);
+                    bodyGrad.addColorStop(0.5, color);
+                    bodyGrad.addColorStop(0.8, colorDark);
+                    bodyGrad.addColorStop(1, colorDark);
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size, size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Back ridge ----
+                    ctx.shadowBlur = 5;
+                    ctx.fillStyle = colorDark;
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.6, -size * 0.2);
+                    ctx.quadraticCurveTo(0, -size * 0.6, size * 0.6, -size * 0.2);
+                    ctx.quadraticCurveTo(0, -size * 0.2, -size * 0.6, -size * 0.2);
+                    ctx.fill();
+                    
+                    // Ridge bumps
+                    for (let i = -3; i <= 3; i++) {
+                        const bx = i * size * 0.15;
+                        const by = -size * 0.4 + Math.sin(i * 1.5) * size * 0.05;
+                        ctx.fillStyle = i % 2 === 0 ? colorLight : colorDark;
+                        ctx.beginPath();
+                        ctx.arc(bx, by, size * 0.06, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // ---- Tail (curled) ----
+                    ctx.shadowBlur = 10;
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = size * 0.12;
+                    ctx.lineCap = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.8, 0);
+                    const tailSegments = 12;
+                    for (let i = 0; i <= tailSegments; i++) {
+                        const t = i / tailSegments;
+                        const angle = t * Math.PI * 1.2 + Math.PI * 0.3;
+                        const radius = size * (0.15 + t * 0.25);
+                        const tx = -size * 0.8 - Math.cos(angle) * radius * 0.8;
+                        const ty = Math.sin(angle) * radius * 0.5 + t * size * 0.1;
+                        if (i === 0) ctx.moveTo(tx, ty);
+                        else ctx.lineTo(tx, ty);
+                    }
+                    ctx.stroke();
+                    
+                    // ---- Legs ----
+                    ctx.shadowBlur = 5;
+                    ctx.lineWidth = size * 0.07;
+                    ctx.strokeStyle = colorDark;
+                    
+                    // Front legs
+                    const legPositions = [
+                        { x: size * 0.5, y: -size * 0.3, side: -1 },
+                        { x: size * 0.5, y: size * 0.3, side: 1 },
+                        { x: -size * 0.3, y: -size * 0.3, side: -1 },
+                        { x: -size * 0.3, y: size * 0.3, side: 1 }
+                    ];
+                    
+                    for (let leg of legPositions) {
+                        const legSway = Math.sin(this.swayPhase + leg.side) * 5;
+                        ctx.beginPath();
+                        ctx.moveTo(leg.x, leg.y);
+                        ctx.quadraticCurveTo(
+                            leg.x + leg.side * size * 0.2 + legSway * 0.1,
+                            leg.y + leg.side * size * 0.25,
+                            leg.x + leg.side * size * 0.3 + legSway * 0.2,
+                            leg.y + leg.side * size * 0.4
+                        );
+                        ctx.stroke();
+                        
+                        // Foot
+                        ctx.lineWidth = size * 0.05;
+                        ctx.beginPath();
+                        ctx.moveTo(
+                            leg.x + leg.side * size * 0.3 + legSway * 0.2,
+                            leg.y + leg.side * size * 0.4
+                        );
+                        ctx.lineTo(
+                            leg.x + leg.side * size * 0.4 + legSway * 0.2,
+                            leg.y + leg.side * size * 0.45
+                        );
+                        ctx.stroke();
+                    }
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.65, -size * 0.05, size * 0.35, size * 0.3, 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Head highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = colorLight;
+                    ctx.globalAlpha = 0.3;
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.7, -size * 0.15, size * 0.15, size * 0.1, 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+                    
+                    // ---- Eye ----
+                    ctx.shadowBlur = 5;
+                    // Eye socket
+                    ctx.fillStyle = '#1a1a2e';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.7, -size * 0.05, size * 0.12, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eye white
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.7 + this.eyeDirection * size * 0.03, -size * 0.05, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Pupil
+                    ctx.fillStyle = '#0a0a12';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.72 + this.eyeDirection * size * 0.04, -size * 0.03, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eye highlight
+                    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.73 + this.eyeDirection * size * 0.04, -size * 0.05, size * 0.015, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Mouth ----
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = colorDark;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.85, 0, size * 0.08, 0.1, Math.PI * 0.8);
+                    ctx.stroke();
+                    
+                    // ---- Tongue ----
+                    if (this.tongueLength > 0.1) {
+                        ctx.shadowBlur = 5;
+                        ctx.strokeStyle = '#ff6b6b';
+                        ctx.lineWidth = size * 0.04;
+                        ctx.beginPath();
+                        ctx.moveTo(size * 0.85, 0.05);
+                        const tongueEnd = size * 0.85 + this.tongueLength * size * 0.8;
+                        ctx.quadraticCurveTo(
+                            size * 0.85 + this.tongueLength * size * 0.4,
+                            -this.tongueLength * size * 0.1,
+                            tongueEnd,
+                            Math.sin(this.tonguePhase + time * 0.05) * size * 0.02
+                        );
+                        ctx.stroke();
+                        
+                        // Tongue tip
+                        ctx.fillStyle = '#ff6b6b';
+                        ctx.beginPath();
+                        ctx.arc(
+                            tongueEnd,
+                            Math.sin(this.tonguePhase + time * 0.05) * size * 0.02,
+                            size * 0.025,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+
+                setTargetColor(r, g, b) {
+                    this.targetColor.r = r;
+                    this.targetColor.g = g;
+                    this.targetColor.b = b;
+                }
+
+                moveTo(x, y) {
+                    this.targetX = x;
+                    this.targetY = y;
+                }
+
+                shootTongue() {
+                    this.tongueTarget = 1;
+                    setTimeout(() => {
+                        this.tongueTarget = 0;
+                    }, 300 + Math.random() * 200);
+                }
+            }
+
+            // ---- Create Chameleon ----
+            let chameleon;
+
+            function createChameleon() {
+                chameleon = new Chameleon();
+                // Start with a green color
+                chameleon.setTargetColor(100, 180, 80);
+            }
+
+            // ---- Get color at position ----
+            function getColorAt(x, y) {
+                const imageData = ctx.getImageData(x, y, 1, 1);
+                if (imageData.data.length > 0) {
+                    return {
+                        r: imageData.data[0],
+                        g: imageData.data[1],
+                        b: imageData.data[2]
+                    };
+                }
+                return { r: 100, g: 180, b: 80 };
+            }
+
+            // ---- Draw Background with gradient ----
+            function drawBackground() {
+                // Create a colorful gradient background
+                const grad = ctx.createLinearGradient(0, 0, W, H);
+                grad.addColorStop(0, '#2a5a7a');
+                grad.addColorStop(0.2, '#3a8a6a');
+                grad.addColorStop(0.4, '#5a9a5a');
+                grad.addColorStop(0.6, '#7a8a4a');
+                grad.addColorStop(0.8, '#9a7a4a');
+                grad.addColorStop(1, '#8a5a3a');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Add some organic shapes (leaves, branches)
+                for (let i = 0; i < 8; i++) {
+                    const x = 50 + i * 70 + Math.sin(i * 1.5) * 20;
+                    const y = 50 + i * 45 + Math.cos(i * 0.7) * 30;
+                    const size = 30 + Math.sin(i * 0.5) * 15;
+                    const hue = 100 + i * 20;
+                    ctx.fillStyle = `hsla(${hue}, 60%, ${30 + i * 5}%, 0.3)`;
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, size, size * 0.6, i * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Add some branch lines
+                for (let i = 0; i < 5; i++) {
+                    const x = 20 + i * 140;
+                    const y = 100 + i * 60;
+                    ctx.strokeStyle = `hsla(30, 40%, ${20 + i * 5}%, 0.3)`;
+                    ctx.lineWidth = 3 + i * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + 50, y - 30 - i * 10, x + 120, y + 20 - i * 5);
+                    ctx.stroke();
+                }
+                
+                // Add some decorative dots
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % H;
+                    const size = 2 + (i % 5);
+                    const hue = (i * 30 + 60) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 60%, 60%, 0.15)`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Mouse/Touch tracking for chameleon movement ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                if (chameleon) {
+                    chameleon.moveTo(
+                        Math.min(W - 30, Math.max(30, x)),
+                        Math.min(H - 30, Math.max(30, y))
+                    );
+                    
+                    // Get color at position and set as target
+                    const color = getColorAt(
+                        Math.min(W - 1, Math.max(0, Math.round(x))),
+                        Math.min(H - 1, Math.max(0, Math.round(y)))
+                    );
+                    chameleon.setTargetColor(color.r, color.g, color.b);
+                }
+            }
+
+            // ---- Trigger tongue ----
+            function triggerTongue() {
+                if (chameleon) {
+                    chameleon.shootTongue();
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (chameleon) {
+                    chameleon.update();
+                    chameleon.draw(ctx);
+                }
+                
+                // Ambient particles
+                for (let i = 0; i < 10; i++) {
+                    const x = (i * 197 + 40) % W;
+                    const y = (i * 131 + time * (0.01 + i * 0.005) * 3) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const hue = (i * 40 + time * 5 + 60) % 360;
+                    ctx.fillStyle = `hsla(${hue}, 60%, 70%, ${0.01 + Math.sin(time * 0.015 + i) * 0.008})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetChameleon() {
+                createChameleon();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetChameleon);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+            canvas.addEventListener('click', triggerTongue);
+            canvas.addEventListener('touchstart', function(e) {
+                if (e.touches.length === 1) {
+                    triggerTongue();
+                }
+            }, { passive: true });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    triggerTongue();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetChameleon();
+                }
+            });
+
+            // ---- Initialize ----
+            createChameleon();
+            animate();
+
+            console.log('🦎 Chameleon · Move mouse to change color · Click to shoot tongue!');
+        })();
+    </script>
+</body>
+</html>

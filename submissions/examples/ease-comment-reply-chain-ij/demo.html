@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comment Reply Chain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Comment Reply Chain</h1>
+    <div id="comment-thread"></div>
+  </div>
+
+  <script>
+    const thread = document.getElementById('comment-thread');
+
+    const comments = [
+      {
+        id: 1, author: 'Alice', text: 'Great article! Really enjoyed the insights.',
+        replies: [
+          { id: 2, author: 'Bob', text: 'Totally agree, the examples helped a lot.',
+            replies: [
+              { id: 3, author: 'Carol', text: 'Thanks both! I found part 3 especially useful.' }
+            ]
+          },
+          { id: 4, author: 'Dave', text: 'I have a question about the second point though.' }
+        ]
+      },
+      {
+        id: 5, author: 'Eve', text: 'Has anyone tried implementing this in production?',
+        replies: [
+          { id: 6, author: 'Frank', text: 'Yes, we used it last quarter. Works great!' }
+        ]
+      }
+    ];
+
+    function escapeHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function createCommentEl(comment, depth = 0) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'comment-wrapper';
+
+      const el = document.createElement('div');
+      el.className = 'comment';
+      el.dataset.id = comment.id;
+      el.style.setProperty('--depth', depth);
+      el.innerHTML = `
+        <div class="comment-body">
+          <strong class="comment-author">${escapeHTML(comment.author)}</strong>
+          <p class="comment-text">${escapeHTML(comment.text)}</p>
+          <button class="reply-btn" data-id="${comment.id}">Reply</button>
+        </div>
+      `;
+
+      wrapper.appendChild(el);
+
+      if (comment.replies && comment.replies.length > 0) {
+        const repliesContainer = document.createElement('div');
+        repliesContainer.className = 'replies-container';
+        repliesContainer.id = `replies-${comment.id}`;
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'toggle-replies';
+        toggleBtn.textContent = `Show replies (${comment.replies.length})`;
+        toggleBtn.dataset.target = comment.id;
+
+        const repliesInner = document.createElement('div');
+        repliesInner.className = 'replies-inner';
+        repliesInner.id = `replies-inner-${comment.id}`;
+
+        comment.replies.forEach(r => {
+          repliesInner.appendChild(createCommentEl(r, depth + 1));
+        });
+
+        repliesContainer.appendChild(toggleBtn);
+        repliesContainer.appendChild(repliesInner);
+        wrapper.appendChild(repliesContainer);
+      }
+
+      return wrapper;
+    }
+
+    function renderThread() {
+      thread.innerHTML = '';
+      comments.forEach(c => {
+        thread.appendChild(createCommentEl(c, 0));
+      });
+    }
+
+    function showAllReplies(commentId) {
+      const inner = document.getElementById(`replies-inner-${commentId}`);
+      const toggle = document.querySelector(`.toggle-replies[data-target="${commentId}"]`);
+      if (!inner) return;
+      inner.classList.add('open');
+      if (toggle) toggle.textContent = 'Hide replies';
+    }
+
+    function hideAllReplies(commentId) {
+      const inner = document.getElementById(`replies-inner-${commentId}`);
+      const toggle = document.querySelector(`.toggle-replies[data-target="${commentId}"]`);
+      if (!inner) return;
+      inner.classList.remove('open');
+      if (toggle) toggle.textContent = `Show replies (${inner.children.length})`;
+    }
+
+    function addReply(parentId, author, text) {
+      const parent = findComment(comments, parentId);
+      if (!parent) return;
+      if (!parent.replies) parent.replies = [];
+      const newReply = {
+        id: Date.now(),
+        author: author || 'Anonymous',
+        text: text || 'No text'
+      };
+      parent.replies.push(newReply);
+      renderThread();
+
+      const inner = document.getElementById(`replies-inner-${parentId}`);
+      if (inner && !inner.classList.contains('open')) {
+        showAllReplies(parentId);
+      }
+      setTimeout(() => {
+        const allComments = document.querySelectorAll('.comment-wrapper');
+        if (allComments.length > 0) {
+          const last = allComments[allComments.length - 1];
+          const added = last.closest('.comment-wrapper');
+          if (added) {
+            added.classList.add('slide-in');
+            added.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      }, 50);
+    }
+
+    function findComment(arr, id) {
+      for (const c of arr) {
+        if (c.id === id) return c;
+        if (c.replies) {
+          const found = findComment(c.replies, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    }
+
+    thread.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.toggle-replies');
+      if (toggle) {
+        const id = Number(toggle.dataset.target);
+        const inner = document.getElementById(`replies-inner-${id}`);
+        if (inner && inner.classList.contains('open')) {
+          hideAllReplies(id);
+        } else {
+          showAllReplies(id);
+        }
+        e.preventDefault();
+        return;
+      }
+
+      const replyBtn = e.target.closest('.reply-btn');
+      if (replyBtn) {
+        const id = Number(replyBtn.dataset.id);
+        const author = prompt('Your name:') || 'Anonymous';
+        const text = prompt('Your reply:') || 'No text';
+        addReply(id, author, text);
+        e.preventDefault();
+        return;
+      }
+    });
+
+    renderThread();
+  </script>
+</body>
+</html>

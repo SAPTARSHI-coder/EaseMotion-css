@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic Tile · Tiles Flip to Reveal Image</title>
+    <meta name="description" content="Interactive mosaic where tiles flip to reveal a beautiful hidden image.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎨 MOSAIC TILE</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="mosaicCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="info-text">
+                <span id="statusText">Click tiles to flip and reveal the image</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🎨 MOSAIC TILE</span>
+            <small>flip · reveal · image</small>
+        </div>
+        <div class="hint">
+            <span>🔄 click tiles to flip them and reveal the hidden image</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('mosaicCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const statusText = document.getElementById('statusText');
+
+            let isAnimating = true;
+            let time = 0;
+            const COLS = 10;
+            const ROWS = 8;
+            const TILE_W = W / COLS;
+            const TILE_H = H / ROWS;
+            
+            // ---- Tile System ----
+            let tiles = [];
+            let imageData = null;
+            let isRevealed = false;
+            let flipProgress = 0;
+            let isFlipping = false;
+
+            // ---- Generate Image ----
+            function generateImage() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = W;
+                tempCanvas.height = H;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Create beautiful gradient pattern
+                const grad = tempCtx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W/2);
+                grad.addColorStop(0, '#ff6b6b');
+                grad.addColorStop(0.2, '#feca57');
+                grad.addColorStop(0.4, '#48dbfb');
+                grad.addColorStop(0.6, '#1dd1a1');
+                grad.addColorStop(0.8, '#b026ff');
+                grad.addColorStop(1, '#ff6bcd');
+                tempCtx.fillStyle = grad;
+                tempCtx.fillRect(0, 0, W, H);
+                
+                // Add some shapes
+                tempCtx.fillStyle = 'rgba(255,255,255,0.1)';
+                for (let i = 0; i < 5; i++) {
+                    const x = 50 + Math.random() * 500;
+                    const y = 50 + Math.random() * 350;
+                    const size = 40 + Math.random() * 80;
+                    tempCtx.beginPath();
+                    tempCtx.arc(x, y, size, 0, Math.PI * 2);
+                    tempCtx.fill();
+                }
+                
+                // Add lines
+                tempCtx.strokeStyle = 'rgba(255,255,255,0.05)';
+                tempCtx.lineWidth = 2;
+                for (let i = 0; i < 8; i++) {
+                    tempCtx.beginPath();
+                    tempCtx.moveTo(Math.random() * W, Math.random() * H);
+                    tempCtx.lineTo(Math.random() * W, Math.random() * H);
+                    tempCtx.stroke();
+                }
+                
+                return tempCtx.getImageData(0, 0, W, H);
+            }
+
+            // ---- Create Tiles ----
+            function createTiles() {
+                tiles = [];
+                imageData = generateImage();
+                isRevealed = false;
+                flipProgress = 0;
+                isFlipping = false;
+                statusText.textContent = 'Click tiles to flip and reveal the image';
+                statusText.style.color = '#88aacc';
+                
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const x = c * TILE_W;
+                        const y = r * TILE_H;
+                        
+                        // Sample color from image
+                        const cx = Math.floor(x + TILE_W / 2);
+                        const cy = Math.floor(y + TILE_H / 2);
+                        const idx = (cy * W + cx) * 4;
+                        const rColor = imageData.data[idx];
+                        const gColor = imageData.data[idx + 1];
+                        const bColor = imageData.data[idx + 2];
+                        const color = `rgb(${rColor}, ${gColor}, ${bColor})`;
+                        
+                        tiles.push({
+                            x: x,
+                            y: y,
+                            w: TILE_W,
+                            h: TILE_H,
+                            color: color,
+                            flipped: false,
+                            flipProgress: 0,
+                            targetFlip: 0,
+                            delay: Math.random() * 0.5
+                        });
+                    }
+                }
+            }
+
+            // ---- Flip Tile ----
+            function flipTile(index) {
+                if (isFlipping) return;
+                const tile = tiles[index];
+                if (tile.flipped) return;
+                
+                tile.flipped = true;
+                tile.targetFlip = 1;
+                isFlipping = true;
+                
+                // Check if all tiles are flipped
+                setTimeout(() => {
+                    let allFlipped = true;
+                    for (let t of tiles) {
+                        if (!t.flipped) {
+                            allFlipped = false;
+                            break;
+                        }
+                    }
+                    if (allFlipped) {
+                        isRevealed = true;
+                        statusText.textContent = '🎉 Image Revealed! Click Reset for new mosaic';
+                        statusText.style.color = '#66ff88';
+                    }
+                    isFlipping = false;
+                }, 300);
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                ctx.fillStyle = '#0a0a18';
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw tiles
+                for (let i = 0; i < tiles.length; i++) {
+                    const t = tiles[i];
+                    const x = t.x;
+                    const y = t.y;
+                    const w = t.w;
+                    const h = t.h;
+                    
+                    // Flip animation progress
+                    if (t.flipped && t.flipProgress < 1) {
+                        t.flipProgress += 0.04;
+                        if (t.flipProgress > 1) t.flipProgress = 1;
+                    }
+                    
+                    const progress = t.flipProgress;
+                    
+                    // Calculate scale for flip effect
+                    const scaleX = Math.abs(Math.cos(progress * Math.PI / 2));
+                    const scaleY = 1;
+                    
+                    // Draw tile back (unflipped side)
+                    if (progress < 0.95) {
+                        ctx.save();
+                        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                        ctx.shadowBlur = 5;
+                        ctx.shadowOffsetX = 1;
+                        ctx.shadowOffsetY = 1;
+                        
+                        // Tile back color (mosaic pattern)
+                        const hue = (i * 37 + 180) % 360;
+                        ctx.fillStyle = `hsl(${hue}, 40%, ${25 + (i % 3) * 8}%)`;
+                        ctx.fillRect(x, y, w, h);
+                        
+                        // Tile border
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, w, h);
+                        
+                        // Subtle texture
+                        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+                        for (let j = 0; j < 3; j++) {
+                            const tx = x + Math.random() * w;
+                            const ty = y + Math.random() * h;
+                            ctx.beginPath();
+                            ctx.arc(tx, ty, 2, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    // Draw tile front (flipped side) - reveal image
+                    if (progress > 0.05) {
+                        ctx.save();
+                        
+                        // Clip to tile bounds with flip effect
+                        ctx.beginPath();
+                        const cx = x + w / 2;
+                        const cy = y + h / 2;
+                        const drawW = w * scaleX;
+                        const drawX = cx - drawW / 2;
+                        
+                        // Only draw if visible
+                        if (drawW > 0) {
+                            ctx.rect(drawX, y, drawW, h);
+                            ctx.clip();
+                            
+                            // Draw image piece
+                            const imageDataPiece = ctx.createImageData(w, h);
+                            const srcData = imageData.data;
+                            const destData = imageDataPiece.data;
+                            
+                            // Copy image data for this tile
+                            for (let ry = 0; ry < h; ry++) {
+                                for (let rx = 0; rx < w; rx++) {
+                                    const srcX = Math.floor(x + rx);
+                                    const srcY = Math.floor(y + ry);
+                                    if (srcX < W && srcY < H) {
+                                        const srcIdx = (srcY * W + srcX) * 4;
+                                        const destIdx = (ry * w + rx) * 4;
+                                        destData[destIdx] = srcData[srcIdx];
+                                        destData[destIdx + 1] = srcData[srcIdx + 1];
+                                        destData[destIdx + 2] = srcData[srcIdx + 2];
+                                        destData[destIdx + 3] = srcData[srcIdx + 3];
+                                    }
+                                }
+                            }
+                            
+                            // Put image data
+                            const tempCanvas = document.createElement('canvas');
+                            tempCanvas.width = w;
+                            tempCanvas.height = h;
+                            const tempCtx = tempCanvas.getContext('2d');
+                            tempCtx.putImageData(imageDataPiece, 0, 0);
+                            
+                            // Draw with flip scaling
+                            ctx.drawImage(tempCanvas, drawX, y, drawW, h);
+                            
+                            // Glow on flipped tiles
+                            if (progress > 0.5) {
+                                const alpha = (progress - 0.5) * 0.3;
+                                ctx.shadowColor = `rgba(100, 200, 255, ${alpha * 0.2})`;
+                                ctx.shadowBlur = 10;
+                                ctx.fillStyle = `rgba(100, 200, 255, ${alpha * 0.05})`;
+                                ctx.fillRect(drawX, y, drawW, h);
+                            }
+                        }
+                        
+                        ctx.restore();
+                    }
+                    
+                    // Tile border (front)
+                    if (progress > 0.1) {
+                        ctx.save();
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = `rgba(255,255,255,${0.05 + progress * 0.05})`;
+                        ctx.lineWidth = 0.5;
+                        const cx = x + w / 2;
+                        const drawW = w * scaleX;
+                        const drawX = cx - drawW / 2;
+                        ctx.strokeRect(drawX, y, drawW, h);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            // ---- Handle Click ----
+            function handleCanvasClick(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                // Find which tile was clicked
+                const col = Math.floor(x / TILE_W);
+                const row = Math.floor(y / TILE_H);
+                const index = row * COLS + col;
+                
+                if (index >= 0 && index < tiles.length) {
+                    flipTile(index);
+                }
+            }
+
+            // ---- Reset ----
+            function resetMosaic() {
+                createTiles();
+                render();
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Event Listeners ----
+            resetBtn.addEventListener('click', resetMosaic);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchstart', handleCanvasClick, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetMosaic();
+                }
+            });
+
+            // ---- Initialize ----
+            createTiles();
+            render();
+            animate();
+
+            console.log('🎨 Mosaic Tile · Click tiles to flip and reveal the hidden image!');
+        })();
+    </script>
+</body>
+</html>

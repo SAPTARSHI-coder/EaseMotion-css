@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Thermal Veil</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="thermal-page">
+
+    <section class="thermal-shell">
+
+      <header class="thermal-header">
+
+        <div>
+          <span class="eyebrow">
+            ATMOSPHERIC FIELD SIMULATION
+          </span>
+
+          <h1>Thermal Veil</h1>
+
+          <p>
+            Move through the field to disturb the invisible currents.
+          </p>
+        </div>
+
+        <div class="thermal-readout">
+
+          <span>FIELD STATE</span>
+
+          <strong id="fieldState">
+            CALM
+          </strong>
+
+        </div>
+
+      </header>
+
+
+      <div class="simulation">
+
+        <canvas id="thermalCanvas"></canvas>
+
+        <div class="cursor-core"></div>
+
+        <div class="field-overlay">
+
+          <div class="readout-card">
+            <span>THERMAL INTENSITY</span>
+
+            <strong>
+              <span id="temperature">
+                21.4
+              </span>°
+            </strong>
+          </div>
+
+          <div class="readout-card">
+            <span>TURBULENCE</span>
+
+            <strong>
+              <span id="turbulence">
+                08
+              </span>%
+            </strong>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <footer class="thermal-footer">
+
+        <div class="source-status">
+
+          <span class="source-dot"></span>
+
+          <span id="sourceStatus">
+            No active heat source
+          </span>
+
+        </div>
+
+        <div class="controls">
+
+          <button id="burstButton">
+            + Heat Burst
+          </button>
+
+          <button id="calmButton">
+            ○ Calm Field
+          </button>
+
+        </div>
+
+      </footer>
+
+    </section>
+
+    <p class="hint">
+      Move your pointer through the atmosphere ·
+      Space to create heat · C to calm
+    </p>
+
+  </main>
+
+
+  <script>
+
+    const canvas =
+      document.getElementById("thermalCanvas");
+
+    const ctx =
+      canvas.getContext("2d");
+
+    const temperature =
+      document.getElementById("temperature");
+
+    const turbulence =
+      document.getElementById("turbulence");
+
+    const fieldState =
+      document.getElementById("fieldState");
+
+    const sourceStatus =
+      document.getElementById("sourceStatus");
+
+    const burstButton =
+      document.getElementById("burstButton");
+
+    const calmButton =
+      document.getElementById("calmButton");
+
+
+    const CONFIG = {
+
+      particleCount: 650,
+
+      flowStrength: 0.8,
+
+      heatRadius: 150,
+
+      heatIntensity: 1,
+
+      dissipation: 0.97,
+
+      particleLifetime: 180,
+
+      trailLength: 16
+
+    };
+
+
+    let width = 0;
+    let height = 0;
+
+    let particles = [];
+
+    let heatSources = [];
+
+    let pointer = {
+
+      x: 0,
+
+      y: 0,
+
+      active: false,
+
+      intensity: 0
+
+    };
+
+
+    function resizeCanvas() {
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+      const ratio =
+        window.devicePixelRatio || 1;
+
+      width = rect.width;
+      height = rect.height;
+
+      canvas.width =
+        width * ratio;
+
+      canvas.height =
+        height * ratio;
+
+      ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+      );
+
+      createParticles();
+
+    }
+
+
+    function createParticles() {
+
+      particles = [];
+
+      for (
+        let i = 0;
+        i < CONFIG.particleCount;
+        i++
+      ) {
+
+        const x =
+          Math.random() * width;
+
+        const y =
+          Math.random() * height;
+
+        particles.push({
+
+          x,
+
+          y,
+
+          previousX: x,
+
+          previousY: y,
+
+          speed:
+            0.25 +
+            Math.random() * 0.75,
+
+          size:
+            0.4 +
+            Math.random() * 1.4,
+
+          energy:
+            Math.random(),
+
+          life:
+            Math.random() *
+            CONFIG.particleLifetime,
+
+          seed:
+            Math.random() *
+            1000
+
+        });
+
+      }
+
+    }
+
+
+    function getFlow(x, y, time) {
+
+      let angle =
+
+        Math.sin(
+          x * 0.006 +
+          time * 0.00025
+        ) * 1.7
+
+        +
+
+        Math.cos(
+          y * 0.004 -
+          time * 0.00018
+        ) * 1.3
+
+        +
+
+        Math.sin(
+          (x + y) * 0.003
+        ) * 0.7;
+
+
+      let forceX =
+        Math.cos(angle);
+
+      let forceY =
+        Math.sin(angle);
+
+
+      for (
+        const source of heatSources
+      ) {
+
+        const dx =
+          x - source.x;
+
+        const dy =
+          y - source.y;
+
+        const distance =
+          Math.sqrt(
+            dx * dx +
+            dy * dy
+          );
+
+        if (
+          distance <
+          CONFIG.heatRadius
+        ) {
+
+          const influence =
+            1 -
+            distance /
+            CONFIG.heatRadius;
+
+          const swirl =
+            1.8 *
+            influence *
+            source.intensity;
+
+          forceX +=
+            (-dy / (distance + 1))
+            * swirl;
+
+          forceY +=
+            (dx / (distance + 1))
+            * swirl;
+
+        }
+
+      }
+
+
+      return {
+
+        x: forceX,
+
+        y: forceY
+
+      };
+
+    }
+
+
+    function updateParticle(
+      particle,
+      time
+    ) {
+
+      particle.previousX =
+        particle.x;
+
+      particle.previousY =
+        particle.y;
+
+
+      const flow =
+        getFlow(
+          particle.x,
+          particle.y,
+          time
+        );
+
+
+      particle.x +=
+        flow.x *
+        CONFIG.flowStrength *
+        particle.speed;
+
+      particle.y +=
+        flow.y *
+        CONFIG.flowStrength *
+        particle.speed;
+
+
+      particle.life += 1;
+
+
+      if (
+        particle.life >
+        CONFIG.particleLifetime
+      ) {
+
+        resetParticle(
+          particle
+        );
+
+      }
+
+
+      if (
+        particle.x < -20 ||
+        particle.x > width + 20 ||
+        particle.y < -20 ||
+        particle.y > height + 20
+      ) {
+
+        resetParticle(
+          particle
+        );
+
+      }
+
+    }
+
+
+    function resetParticle(
+      particle
+    ) {
+
+      const edge =
+        Math.floor(
+          Math.random() * 4
+        );
+
+
+      if (edge === 0) {
+
+        particle.x = -5;
+
+        particle.y =
+          Math.random() * height;
+
+      }
+
+      else if (edge === 1) {
+
+        particle.x =
+          width + 5;
+
+        particle.y =
+          Math.random() * height;
+
+      }
+
+      else if (edge === 2) {
+
+        particle.x =
+          Math.random() * width;
+
+        particle.y = -5;
+
+      }
+
+      else {
+
+        particle.x =
+          Math.random() * width;
+
+        particle.y =
+          height + 5;
+
+      }
+
+
+      particle.previousX =
+        particle.x;
+
+      particle.previousY =
+        particle.y;
+
+      particle.life = 0;
+
+    }
+
+
+    function drawParticles() {
+
+      for (
+        const particle of particles
+      ) {
+
+        const alpha =
+          0.12 +
+          particle.energy *
+          0.25;
+
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+          particle.previousX,
+          particle.previousY
+        );
+
+        ctx.lineTo(
+          particle.x,
+          particle.y
+        );
+
+
+        ctx.strokeStyle =
+          `rgba(
+            190,
+            225,
+            230,
+            ${alpha}
+          )`;
+
+
+        ctx.lineWidth =
+          particle.size;
+
+
+        ctx.stroke();
+
+      }
+
+    }
+
+
+    function drawHeatSources() {
+
+      for (
+        const source of heatSources
+      ) {
+
+        const gradient =
+          ctx.createRadialGradient(
+            source.x,
+            source.y,
+            0,
+            source.x,
+            source.y,
+            CONFIG.heatRadius
+          );
+
+
+        gradient.addColorStop(
+          0,
+          `rgba(
+            255,
+            210,
+            120,
+            ${0.12 * source.intensity}
+          )`
+        );
+
+
+        gradient.addColorStop(
+          0.4,
+          `rgba(
+            255,
+            170,
+            100,
+            ${0.05 * source.intensity}
+          )`
+        );
+
+
+        gradient.addColorStop(
+          1,
+          "rgba(255,150,80,0)"
+        );
+
+
+        ctx.fillStyle =
+          gradient;
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+          source.x,
+          source.y,
+          CONFIG.heatRadius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        source.intensity *=
+          CONFIG.dissipation;
+
+      }
+
+
+      heatSources =
+        heatSources.filter(
+          source =>
+            source.intensity > 0.025
+        );
+
+    }
+
+
+    function addHeat(
+      x,
+      y,
+      intensity = 1
+    ) {
+
+      heatSources.push({
+
+        x,
+
+        y,
+
+        intensity
+
+      });
+
+      sourceStatus.textContent =
+        "Heat source detected";
+
+    }
+
+
+    function createBurst() {
+
+      addHeat(
+
+        Math.random() * width,
+
+        Math.random() * height,
+
+        CONFIG.heatIntensity
+
+      );
+
+    }
+
+
+    function calmField() {
+
+      heatSources = [];
+
+      pointer.intensity = 0;
+
+      sourceStatus.textContent =
+        "No active heat source";
+
+    }
+
+
+    function updateReadouts() {
+
+      let totalIntensity = 0;
+
+      for (
+        const source of heatSources
+      ) {
+
+        totalIntensity +=
+          source.intensity;
+
+      }
+
+
+      const thermalValue =
+        21.4 +
+        totalIntensity * 4.8;
+
+
+      const turbulenceValue =
+        Math.min(
+          99,
+          Math.round(
+            totalIntensity * 22
+          )
+        );
+
+
+      temperature.textContent =
+        thermalValue.toFixed(1);
+
+      turbulence.textContent =
+        String(
+          turbulenceValue
+        ).padStart(2, "0");
+
+
+      if (
+        turbulenceValue < 15
+      ) {
+
+        fieldState.textContent =
+          "CALM";
+
+      }
+
+      else if (
+        turbulenceValue < 40
+      ) {
+
+        fieldState.textContent =
+          "WARM";
+
+      }
+
+      else if (
+        turbulenceValue < 70
+      ) {
+
+        fieldState.textContent =
+          "ACTIVE";
+
+      }
+
+      else {
+
+        fieldState.textContent =
+          "TURBULENT";
+
+      }
+
+
+      if (
+        heatSources.length === 0
+      ) {
+
+        sourceStatus.textContent =
+          "No active heat source";
+
+      }
+
+    }
+
+
+    function animate(time) {
+
+      ctx.fillStyle =
+        "rgba(4, 11, 16, 0.18)";
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+
+      for (
+        const particle of particles
+      ) {
+
+        updateParticle(
+          particle,
+          time
+        );
+
+      }
+
+
+      drawHeatSources();
+
+      drawParticles();
+
+      updateReadouts();
+
+
+      requestAnimationFrame(
+        animate
+      );
+
+    }
+
+
+    canvas.addEventListener(
+      "pointermove",
+      event => {
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        pointer.x =
+          event.clientX -
+          rect.left;
+
+        pointer.y =
+          event.clientY -
+          rect.top;
+
+        pointer.active = true;
+
+        pointer.intensity = 1;
+
+
+        if (
+          Math.random() < 0.16
+        ) {
+
+          addHeat(
+            pointer.x,
+            pointer.y,
+            0.18
+          );
+
+        }
+
+      }
+    );
+
+
+    canvas.addEventListener(
+      "pointerleave",
+      () => {
+
+        pointer.active = false;
+
+      }
+    );
+
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        addHeat(
+          event.clientX - rect.left,
+          event.clientY - rect.top,
+          1
+        );
+
+      }
+    );
+
+
+    burstButton.addEventListener(
+      "click",
+      createBurst
+    );
+
+
+    calmButton.addEventListener(
+      "click",
+      calmField
+    );
+
+
+    window.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.code === "Space"
+        ) {
+
+          event.preventDefault();
+
+          createBurst();
+
+        }
+
+
+        if (
+          event.key.toLowerCase() === "c"
+        ) {
+
+          calmField();
+
+        }
+
+      }
+    );
+
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+
+    resizeCanvas();
+
+    requestAnimationFrame(
+      animate
+    );
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponge Dab · Texture from Sponge Dabbing</title>
+    <meta name="description" content="Interactive sponge dabbing tool with realistic porous texture, paint absorption, and dabbing effects.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🧽 SPONGE DAB</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="spongeCanvas" width="600" height="450"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="color-controls">
+                <label>Color</label>
+                <input type="color" id="colorPicker" value="#ff6b6b">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="10" max="80" value="40">
+                <span id="sizeLabel">40</span>
+                <label>Density</label>
+                <input type="range" id="densitySlider" min="1" max="10" value="5">
+                <span id="densityLabel">5</span>
+            </div>
+            <div class="button-group">
+                <button class="clear-btn" id="clearBtn">🗑️ CLEAR</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            </div>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🧽 SPONGE DAB</span>
+            <small>porous · textured · dabbing</small>
+        </div>
+        <div class="hint">
+            <span>🧽 drag to dab with realistic sponge texture</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('spongeCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 450;
+            
+            const colorPicker = document.getElementById('colorPicker');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const densitySlider = document.getElementById('densitySlider');
+            const densityLabel = document.getElementById('densityLabel');
+            const clearBtn = document.getElementById('clearBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+            let isDabbing = false;
+            let currentColor = '#ff6b6b';
+            let spongeSize = 40;
+            let spongeDensity = 5;
+
+            // ---- Sponge Dab ----
+            let dabs = [];
+            let activeDab = null;
+
+            // ---- Sponge Dab Class ----
+            class SpongeDab {
+                constructor(x, y, color, size, density) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    this.size = size;
+                    this.density = density;
+                    this.time = 0;
+                    this.opacity = 1;
+                    this.pressure = 0.4 + Math.random() * 0.6;
+                    
+                    // Generate sponge pores
+                    this.pores = [];
+                    const numPores = 20 + density * 8;
+                    for (let i = 0; i < numPores; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const radius = Math.random() * size * 0.8;
+                        const dist = Math.sqrt(Math.random()) * radius;
+                        this.pores.push({
+                            x: Math.cos(angle) * dist,
+                            y: Math.sin(angle) * dist,
+                            size: 2 + Math.random() * (4 + density * 0.5),
+                            alpha: 0.3 + Math.random() * 0.4,
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    }
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const color = this.color;
+                    const colorObj = this.hexToRgb(color);
+                    
+                    // ---- Sponge shape (irregular circle) ----
+                    const points = 12;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    ctx.shadowBlur = 5;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+                    
+                    // Dab base
+                    ctx.globalAlpha = this.opacity * 0.7;
+                    ctx.fillStyle = `rgba(${colorObj.r}, ${colorObj.g}, ${colorObj.b}, 0.6)`;
+                    ctx.beginPath();
+                    for (let i = 0; i <= points; i++) {
+                        const angle = (i / points) * Math.PI * 2;
+                        const r = size * (0.6 + Math.sin(angle * 3 + this.time + i) * 0.2 + 0.2);
+                        const px = x + Math.cos(angle) * r;
+                        const py = y + Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // ---- Sponge pores ----
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                    
+                    for (let pore of this.pores) {
+                        const px = x + pore.x + Math.sin(pore.phase + this.time * 0.03) * 2;
+                        const py = y + pore.y + Math.cos(pore.phase * 0.7 + this.time * 0.02) * 2;
+                        const pSize = pore.size * (0.8 + Math.sin(pore.phase + this.time * 0.04) * 0.2);
+                        
+                        // Pore shadow (indent)
+                        ctx.globalAlpha = this.opacity * pore.alpha * 0.4;
+                        ctx.fillStyle = `rgba(0, 0, 0, 0.15)`;
+                        ctx.beginPath();
+                        ctx.arc(px + 1, py + 1, pSize * 0.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Pore highlight
+                        ctx.globalAlpha = this.opacity * pore.alpha * 0.3;
+                        ctx.fillStyle = `rgba(255, 255, 255, 0.2)`;
+                        ctx.beginPath();
+                        ctx.arc(px - 0.5, py - 0.5, pSize * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Pore color
+                        const r = Math.min(255, Math.max(0, colorObj.r + (Math.random() - 0.5) * 30));
+                        const g = Math.min(255, Math.max(0, colorObj.g + (Math.random() - 0.5) * 30));
+                        const b = Math.min(255, Math.max(0, colorObj.b + (Math.random() - 0.5) * 30));
+                        ctx.globalAlpha = this.opacity * pore.alpha * 0.8;
+                        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.6)`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, pSize * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // ---- Edge texture (sponge edge) ----
+                    ctx.globalAlpha = this.opacity * 0.3;
+                    for (let i = 0; i < 20; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const r = size * (0.7 + Math.random() * 0.3);
+                        const px = x + Math.cos(angle) * r;
+                        const py = y + Math.sin(angle) * r;
+                        const pSize = 1 + Math.random() * 4;
+                        ctx.fillStyle = `rgba(${colorObj.r}, ${colorObj.g}, ${colorObj.b}, 0.2)`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, pSize * 0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+
+                hexToRgb(hex) {
+                    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                    return result ? {
+                        r: parseInt(result[1], 16),
+                        g: parseInt(result[2], 16),
+                        b: parseInt(result[3], 16)
+                    } : { r: 255, g: 100, b: 100 };
+                }
+
+                update() {
+                    this.time += 0.02;
+                }
+            }
+
+            // ---- Dabbing functions ----
+            function dab(x, y) {
+                const numDabs = 1 + Math.floor(spongeDensity / 3);
+                for (let i = 0; i < numDabs; i++) {
+                    const offsetX = (Math.random() - 0.5) * spongeSize * 0.3;
+                    const offsetY = (Math.random() - 0.5) * spongeSize * 0.3;
+                    const dab = new SpongeDab(
+                        x + offsetX,
+                        y + offsetY,
+                        currentColor,
+                        spongeSize * (0.6 + Math.random() * 0.4),
+                        spongeDensity
+                    );
+                    dabs.push(dab);
+                }
+            }
+
+            function startDabbing(x, y) {
+                isDabbing = true;
+                dab(x, y);
+            }
+
+            function dabAt(x, y) {
+                if (!isDabbing) return;
+                dab(x, y);
+            }
+
+            function endDabbing() {
+                isDabbing = false;
+            }
+
+            // ---- Render ----
+            function render() {
+                // Semi-transparent clear for blending
+                ctx.fillStyle = 'rgba(245, 240, 235, 0.02)';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01 * (speed / 5);
+                
+                // Update dabs
+                for (let d of dabs) {
+                    d.update();
+                }
+                
+                render();
+                
+                // Draw all dabs
+                for (let d of dabs) {
+                    d.draw(ctx);
+                }
+                
+                // Limit dabs
+                if (dabs.length > 500) {
+                    dabs.splice(0, dabs.length - 500);
+                }
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Mouse/Touch handlers ----
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: Math.min(W - 5, Math.max(5, (clientX - rect.left) * scaleX)),
+                    y: Math.min(H - 5, Math.max(5, (clientY - rect.top) * scaleY))
+                };
+            }
+
+            function onPointerDown(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                startDabbing(pos.x, pos.y);
+            }
+
+            function onPointerMove(e) {
+                e.preventDefault();
+                const pos = getPos(e);
+                dabAt(pos.x, pos.y);
+            }
+
+            function onPointerUp(e) {
+                e.preventDefault();
+                endDabbing();
+            }
+
+            // ---- Clear ----
+            function clearCanvas() {
+                dabs = [];
+                ctx.fillStyle = '#f5f0eb';
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Reset ----
+            function resetCanvas() {
+                clearCanvas();
+                time = 0;
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Color Control ----
+            colorPicker.addEventListener('input', function() {
+                currentColor = this.value;
+            });
+
+            // ---- Size Control ----
+            sizeSlider.addEventListener('input', function() {
+                spongeSize = parseInt(this.value);
+                sizeLabel.textContent = spongeSize;
+            });
+
+            // ---- Density Control ----
+            densitySlider.addEventListener('input', function() {
+                spongeDensity = parseInt(this.value);
+                densityLabel.textContent = spongeDensity;
+            });
+
+            // ---- Event Listeners ----
+            canvas.addEventListener('mousedown', onPointerDown);
+            canvas.addEventListener('mousemove', onPointerMove);
+            canvas.addEventListener('mouseup', onPointerUp);
+            canvas.addEventListener('mouseleave', onPointerUp);
+            
+            canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+            canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+            canvas.addEventListener('touchend', onPointerUp, { passive: false });
+            
+            clearBtn.addEventListener('click', clearCanvas);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetCanvas);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'c' || e.key === 'C') {
+                    clearCanvas();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetCanvas();
+                }
+                if (e.key === ' ') {
+                    e.preventDefault();
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            ctx.fillStyle = '#f5f0eb';
+            ctx.fillRect(0, 0, W, H);
+            animate();
+
+            console.log('🧽 Sponge Dab · Drag to dab with realistic sponge texture!');
+        })();
+    </script>
+</body>
+</html>
