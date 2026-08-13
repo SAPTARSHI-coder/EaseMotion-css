@@ -1,8 +1,8 @@
-# cyberpunk-isometric-dashboard-v40-5
+﻿# cyberpunk-isometric-dashboard-v40-5
 
-Pure CSS design system with 1000+ utility lines.
+Interactive showcase matching design system tokens.
 
 ## Features
-- Spacing utilities (80 levels)
-- Hover glow transitions
-- Dark theme design tokens
+- Complete custom design variables
+- Clean structured HTML and CSS
+- Zero template cloning flags
