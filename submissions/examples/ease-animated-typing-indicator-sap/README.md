@@ -18,7 +18,7 @@ party is composing a message; remove/hide it once their message arrives.
   unlabeled bouncing dots.
 - `prefers-reduced-motion` disables the dot bounce and sets them to full,
   consistent opacity, so the "someone is typing" cue remains visible
-  without relying on motion.
+  without relying on motion..
 
 ## Notes
 
