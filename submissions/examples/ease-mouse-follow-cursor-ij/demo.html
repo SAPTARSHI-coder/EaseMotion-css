@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mouse Follow Cursor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Mouse Follow Cursor</h1>
+    <p class="subtitle">Smooth spring-like cursor trail effects</p>
+
+    <div class="info-card">
+      <p>Move your mouse around the canvas to see the effect.</p>
+    </div>
+
+    <div class="controls">
+      <div class="effect-buttons">
+        <button class="btn effect-btn active" data-effect="glow">Glow Ring</button>
+        <button class="btn effect-btn" data-effect="particles">Particles</button>
+        <button class="btn effect-btn" data-effect="trail">Trail Dots</button>
+      </div>
+    </div>
+
+    <p class="tip">Press <kbd>H</kbd> to hide/show the cursor follower</p>
+  </div>
+
+  <div id="cursor-layer" class="cursor-layer"></div>
+
+  <script>
+    const layer = document.getElementById('cursor-layer');
+    const root = document.documentElement;
+
+    const state = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+      targetX: window.innerWidth / 2,
+      targetY: window.innerHeight / 2,
+      effect: 'glow',
+      visible: true,
+      trailPoints: [],
+      particles: []
+    };
+
+    let rafId = null;
+
+    function getCSSVar(name) {
+      return getComputedStyle(root).getPropertyValue(name).trim();
+    }
+
+    function createFollower() {
+      const el = document.createElement('div');
+      el.className = 'cursor-follower';
+      layer.appendChild(el);
+      return el;
+    }
+
+    function createParticle(x, y, color) {
+      const el = document.createElement('div');
+      el.className = 'particle';
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      const size = 4 + Math.random() * 8;
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      const hue = Math.random() * 60 + 240;
+      el.style.background = `hsl(${hue}, 80%, 60%)`;
+      layer.appendChild(el);
+      return {
+        el,
+        vx: (Math.random() - 0.5) * 6,
+        vy: (Math.random() - 0.5) * 6 - 3,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.02,
+        size
+      };
+    }
+
+    const follower = createFollower();
+    const trailDots = [];
+    const TRAIL_COUNT = 20;
+
+    for (let i = 0; i < TRAIL_COUNT; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'trail-dot';
+      layer.appendChild(dot);
+      trailDots.push({ el: dot, x: state.x, y: state.y, delay: i * 1.5 });
+    }
+
+    function updateGlow() {
+      const size = parseFloat(getCSSVar('--mfc-size'));
+      const opacity = parseFloat(getCSSVar('--mfc-opacity'));
+      const color = getCSSVar('--mfc-glow-color');
+      follower.style.width = size + 'px';
+      follower.style.height = size + 'px';
+      follower.style.background = `radial-gradient(circle, ${color}33 0%, ${color}11 60%, transparent 80%)`;
+      follower.style.border = `2px solid ${color}66`;
+      follower.style.boxShadow = `0 0 30px ${color}44, 0 0 60px ${color}22`;
+      follower.style.opacity = opacity;
+      follower.style.borderRadius = '50%';
+      follower.style.transform = `translate(${state.x - size/2}px, ${state.y - size/2}px)`;
+      follower.style.display = 'block';
+    }
+
+    function updateParticles() {
+      const color = getCSSVar('--mfc-glow-color');
+      const opacity = parseFloat(getCSSVar('--mfc-opacity'));
+      follower.style.display = 'none';
+
+      if (Math.random() < 0.4) {
+        const p = createParticle(state.x, state.y, color);
+        state.particles.push(p);
+      }
+
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x = parseFloat(p.el.style.left);
+        p.y = parseFloat(p.el.style.top);
+        p.vx *= 0.98;
+        p.vy += 0.05;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        p.el.style.left = p.x + 'px';
+        p.el.style.top = p.y + 'px';
+        p.el.style.opacity = p.life * opacity;
+        p.el.style.transform = `scale(${p.life})`;
+
+        if (p.life <= 0) {
+          p.el.remove();
+          state.particles.splice(i, 1);
+        }
+      }
+    }
+
+    function updateTrail() {
+      const color = getCSSVar('--mfc-trail-color');
+      const opacity = parseFloat(getCSSVar('--mfc-opacity'));
+      const size = parseFloat(getCSSVar('--mfc-size'));
+      follower.style.display = 'none';
+
+      state.trailPoints.push({ x: state.x, y: state.y, time: Date.now() });
+      if (state.trailPoints.length > TRAIL_COUNT * 3) {
+        state.trailPoints.splice(0, state.trailPoints.length - TRAIL_COUNT * 3);
+      }
+
+      trailDots.forEach((dot, i) => {
+        const idx = Math.max(0, state.trailPoints.length - (i + 1) * 3);
+        const pt = state.trailPoints[idx] || state.trailPoints[0] || { x: state.x, y: state.y };
+        const scale = 1 - (i / trailDots.length);
+        const dotOpacity = opacity * scale * 0.8;
+        const dotSize = size * (0.15 + 0.85 * scale);
+        dot.el.style.transform = `translate(${pt.x - dotSize/2}px, ${pt.y - dotSize/2}px)`;
+        dot.el.style.width = dotSize + 'px';
+        dot.el.style.height = dotSize + 'px';
+        dot.el.style.opacity = dotOpacity;
+        dot.el.style.background = color;
+        dot.el.style.borderRadius = '50%';
+        dot.el.style.display = 'block';
+      });
+    }
+
+    function clearEffects() {
+      state.particles.forEach(p => p.el.remove());
+      state.particles = [];
+      state.trailPoints = [];
+      trailDots.forEach(d => { d.el.style.display = 'none'; });
+      follower.style.display = 'none';
+    }
+
+    function update() {
+      const spring = 0.12;
+      const friction = 0.78;
+
+      const dx = state.targetX - state.x;
+      const dy = state.targetY - state.y;
+
+      state.vx = (state.vx || 0) * friction + dx * spring;
+      state.vy = (state.vy || 0) * friction + dy * spring;
+
+      state.x += state.vx;
+      state.y += state.vy;
+
+      if (state.visible) {
+        switch (state.effect) {
+          case 'glow': updateGlow(); break;
+          case 'particles': updateParticles(); break;
+          case 'trail': updateTrail(); break;
+        }
+      } else {
+        clearEffects();
+      }
+
+      rafId = requestAnimationFrame(update);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      state.targetX = e.clientX;
+      state.targetY = e.clientY;
+    });
+
+    document.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      state.targetX = t.clientX;
+      state.targetY = t.clientY;
+    }, { passive: true });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'h' || e.key === 'H') {
+        state.visible = !state.visible;
+        if (!state.visible) clearEffects();
+      }
+    });
+
+    document.querySelectorAll('.effect-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.effect = btn.dataset.effect;
+        clearEffects();
+      });
+    });
+
+    state.vx = 0;
+    state.vy = 0;
+    update();
+  </script>
+</body>
+</html>

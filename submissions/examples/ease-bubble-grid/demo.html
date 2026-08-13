@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Grid · Grid of Bubbles Pop and Reform</title>
+    <meta name="description" content="Interactive grid of bubbles that pop and reform with satisfying animations and iridescent colors.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🫧 BUBBLE GRID</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="bubbleGridCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="pop-btn" id="popBtn">💥 POP</button>
+                <button class="reform-btn" id="reformBtn">🔄 REFORM</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Size</label>
+                <input type="range" id="sizeSlider" min="4" max="12" value="8">
+                <span id="sizeLabel">8</span>
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🫧 BUBBLE GRID</span>
+            <small>pop · reform · iridescent</small>
+        </div>
+        <div class="hint">
+            <span>💥 click to pop bubbles, then watch them reform</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('bubbleGridCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const popBtn = document.getElementById('popBtn');
+            const reformBtn = document.getElementById('reformBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const sizeLabel = document.getElementById('sizeLabel');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let bubbleSize = 8;
+            let time = 0;
+            let isPopping = false;
+            let isReforming = false;
+            let popProgress = 0;
+            let reformProgress = 0;
+
+            // ---- Bubble Grid ----
+            let bubbles = [];
+            const COLS = Math.floor(W / 8);
+            const ROWS = Math.floor(H / 8);
+
+            // ---- Bubble Class ----
+            class Bubble {
+                constructor(row, col) {
+                    this.row = row;
+                    this.col = col;
+                    this.x = col * bubbleSize + bubbleSize / 2;
+                    this.y = row * bubbleSize + bubbleSize / 2;
+                    this.size = bubbleSize * 0.4;
+                    this.maxSize = bubbleSize * 0.4;
+                    this.alive = true;
+                    this.popProgress = 0;
+                    this.reformProgress = 0;
+                    this.isPopping = false;
+                    this.isReforming = false;
+                    
+                    // Color
+                    this.hue = (row * 20 + col * 30 + 180) % 360;
+                    this.sat = 60 + Math.random() * 30;
+                    this.light = 50 + Math.random() * 20;
+                    
+                    // Animation
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobble = 0.02 + Math.random() * 0.03;
+                    this.delay = Math.random() * 0.5;
+                }
+
+                pop() {
+                    if (!this.alive || this.isPopping) return;
+                    this.isPopping = true;
+                    this.popProgress = 0;
+                }
+
+                reform() {
+                    if (this.alive || this.isReforming) return;
+                    this.isReforming = true;
+                    this.reformProgress = 0;
+                }
+
+                update() {
+                    const dt = 0.02 * (speed / 5);
+                    
+                    if (this.isPopping) {
+                        this.popProgress += 0.03 * (speed / 5);
+                        if (this.popProgress >= 1) {
+                            this.popProgress = 1;
+                            this.isPopping = false;
+                            this.alive = false;
+                            this.size = 0;
+                        } else {
+                            const ease = 1 - Math.pow(1 - this.popProgress, 3);
+                            this.size = this.maxSize * (1 - ease);
+                        }
+                    }
+                    
+                    if (this.isReforming) {
+                        this.reformProgress += 0.025 * (speed / 5);
+                        if (this.reformProgress >= 1) {
+                            this.reformProgress = 1;
+                            this.isReforming = false;
+                            this.alive = true;
+                            this.size = this.maxSize;
+                        } else {
+                            const ease = 1 - Math.pow(1 - this.reformProgress, 3);
+                            this.size = this.maxSize * ease;
+                        }
+                    }
+                    
+                    if (this.alive && !this.isPopping) {
+                        this.phase += this.wobble * dt;
+                        this.size = this.maxSize * (0.9 + Math.sin(this.phase) * 0.1);
+                    }
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const alpha = this.alive ? 1 : 0.3 + (1 - this.reformProgress) * 0.3;
+                    
+                    if (size < 0.5) return;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    
+                    // Glow
+                    const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 2);
+                    glowGrad.addColorStop(0, `hsla(${this.hue}, 80%, 80%, 0.05)`);
+                    glowGrad.addColorStop(0.5, `hsla(${this.hue + 30}, 70%, 70%, 0.02)`);
+                    glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Bubble body
+                    const grad = ctx.createRadialGradient(
+                        x - size * 0.3, y - size * 0.3, 0,
+                        x, y, size
+                    );
+                    const hue1 = (this.hue + time * 10) % 360;
+                    const hue2 = (this.hue + 40 + time * 15) % 360;
+                    grad.addColorStop(0, `hsla(${hue1}, ${this.sat + 20}%, ${this.light + 20}%, 0.3)`);
+                    grad.addColorStop(0.5, `hsla(${hue2}, ${this.sat}%, ${this.light}%, 0.2)`);
+                    grad.addColorStop(1, `hsla(${hue1 + 60}, ${this.sat - 20}%, ${this.light - 10}%, 0.1)`);
+                    
+                    ctx.shadowColor = `hsla(${this.hue}, 80%, 80%, 0.05)`;
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Highlight
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = `hsla(0, 0%, 100%, 0.15)`;
+                    ctx.beginPath();
+                    ctx.ellipse(x - size * 0.25, y - size * 0.3, size * 0.25, size * 0.12, -0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Iridescent shimmer
+                    for (let i = 0; i < 2; i++) {
+                        const angle = i * 2.5 + time * 0.02;
+                        const dist = size * 0.3;
+                        const sx = x + Math.cos(angle) * dist;
+                        const sy = y + Math.sin(angle) * dist * 0.6;
+                        const shue = (this.hue + i * 60 + time * 20) % 360;
+                        ctx.fillStyle = `hsla(${shue}, 100%, 80%, 0.05)`;
+                        ctx.beginPath();
+                        ctx.arc(sx, sy, size * 0.08, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // Border
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = `hsla(${this.hue + 20}, 80%, 80%, 0.05)`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.98, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Initialize Grid ----
+            function initGrid() {
+                bubbles = [];
+                const cols = Math.floor(W / bubbleSize);
+                const rows = Math.floor(H / bubbleSize);
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        bubbles.push(new Bubble(r, c));
+                    }
+                }
+                isPopping = false;
+                isReforming = false;
+                popProgress = 0;
+                reformProgress = 0;
+            }
+
+            // ---- Pop Bubbles ----
+            function popBubbles() {
+                if (isPopping) return;
+                isPopping = true;
+                popProgress = 0;
+                for (let b of bubbles) {
+                    if (b.alive) {
+                        b.pop();
+                    }
+                }
+            }
+
+            // ---- Reform Bubbles ----
+            function reformBubbles() {
+                if (isReforming) return;
+                isReforming = true;
+                reformProgress = 0;
+                for (let b of bubbles) {
+                    if (!b.alive) {
+                        b.reform();
+                    }
+                }
+            }
+
+            // ---- Reset ----
+            function resetGrid() {
+                isPopping = false;
+                isReforming = false;
+                popProgress = 0;
+                reformProgress = 0;
+                initGrid();
+            }
+
+            // ---- Update Size ----
+            function updateSize() {
+                bubbleSize = parseInt(sizeSlider.value);
+                sizeLabel.textContent = bubbleSize;
+                initGrid();
+            }
+
+            // ---- Render ----
+            function render() {
+                // Background
+                const bgGrad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W);
+                bgGrad.addColorStop(0, '#0d1a2a');
+                bgGrad.addColorStop(0.3, '#0a1520');
+                bgGrad.addColorStop(0.6, '#080e18');
+                bgGrad.addColorStop(0.8, '#060a12');
+                bgGrad.addColorStop(1, '#040608');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Draw bubbles
+                for (let b of bubbles) {
+                    b.update();
+                    b.draw(ctx);
+                }
+                
+                // Status info
+                ctx.save();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const aliveCount = bubbles.filter(b => b.alive).length;
+                ctx.fillText(`Bubbles: ${aliveCount}/${bubbles.length}`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                const status = isPopping ? '💥 POPPING...' : 
+                              isReforming ? '🔄 REFORMING...' : 
+                              '🫧 READY';
+                ctx.fillText(status, 20, H - 10);
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            popBtn.addEventListener('click', popBubbles);
+            reformBtn.addEventListener('click', reformBubbles);
+            resetBtn.addEventListener('click', resetGrid);
+            toggleBtn.addEventListener('click', toggleAnimation);
+            sizeSlider.addEventListener('input', updateSize);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    if (!isPopping && !isReforming) {
+                        popBubbles();
+                    }
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    if (!isReforming) {
+                        reformBubbles();
+                    }
+                }
+                if (e.key === 'x' || e.key === 'X') {
+                    resetGrid();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            initGrid();
+            render();
+            animate();
+
+            console.log('🫧 Bubble Grid · Click Pop or press Space to pop bubbles!');
+        })();
+    </script>
+</body>
+</html>

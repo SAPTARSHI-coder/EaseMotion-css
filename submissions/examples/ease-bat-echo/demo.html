@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bat Echo · Sonar Waves from Bat</title>
+    <meta name="description" content="Interactive bat with sonar waves, echo location pulses, and flapping wings.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🦇 BAT ECHO</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="batCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+            <div class="speed-control">
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🦇 BAT ECHO</span>
+            <small>sonar waves · echo location · pulse</small>
+        </div>
+        <div class="hint">
+            <span>📡 move mouse near bat → sonar pulses</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('batCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let time = 0;
+
+            // ---- Sonar Wave Class ----
+            class SonarWave {
+                constructor(x, y, angle) {
+                    this.x = x;
+                    this.y = y;
+                    this.angle = angle || 0;
+                    this.radius = 5;
+                    this.maxRadius = 120 + Math.random() * 60;
+                    this.speed = 2 + Math.random() * 1.5;
+                    this.life = 1;
+                    this.decay = 0.008 + Math.random() * 0.008;
+                    this.opacity = 0.7;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.frequency = 2 + Math.random() * 2;
+                }
+
+                update() {
+                    this.radius += this.speed;
+                    this.life -= this.decay;
+                    this.opacity = this.life * 0.7;
+                    return this.life > 0 && this.radius < this.maxRadius;
+                }
+
+                draw(ctx) {
+                    if (this.life <= 0) return;
+                    
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    
+                    // Main ring
+                    ctx.shadowColor = 'rgba(100, 200, 255, 0.3)';
+                    ctx.shadowBlur = 20 * this.life;
+                    ctx.strokeStyle = `hsla(200, 100%, 70%, ${this.opacity * 0.8})`;
+                    ctx.lineWidth = 1.5 + this.life * 1.5;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Inner ring
+                    ctx.shadowBlur = 10 * this.life;
+                    ctx.strokeStyle = `hsla(200, 100%, 80%, ${this.opacity * 0.4})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Outer glow ring
+                    ctx.shadowBlur = 30 * this.life;
+                    ctx.strokeStyle = `hsla(200, 80%, 60%, ${this.opacity * 0.2})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius * 1.1, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Directional pulses (sonar beams)
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2 + this.phase;
+                        const pulseRadius = this.radius * (0.8 + Math.sin(this.radius * 0.1 + this.phase + i) * 0.2);
+                        const x = this.x + Math.cos(angle) * pulseRadius;
+                        const y = this.y + Math.sin(angle) * pulseRadius;
+                        ctx.shadowBlur = 15 * this.life;
+                        ctx.fillStyle = `hsla(200, 100%, 80%, ${this.opacity * 0.15})`;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2 + this.life * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Bat Class ----
+            class Bat {
+                constructor() {
+                    this.x = W / 2;
+                    this.y = H / 2;
+                    this.size = 30;
+                    this.angle = 0;
+                    this.targetAngle = 0;
+                    
+                    // Wing flap
+                    this.wingPhase = 0;
+                    this.wingSpeed = 0.2;
+                    
+                    // Movement
+                    this.moveSpeed = 0.5;
+                    this.targetX = this.x;
+                    this.targetY = this.y;
+                    this.wanderTimer = 0;
+                    this.wanderInterval = 80 + Math.random() * 120;
+                    
+                    // Sonar
+                    this.sonarWaves = [];
+                    this.sonarTimer = 0;
+                    this.sonarInterval = 30 + Math.random() * 20;
+                    this.isPulsing = false;
+                    this.pulseTimer = 0;
+                    
+                    // Echo location mode
+                    this.echoMode = false;
+                    this.echoTargetX = 0;
+                    this.echoTargetY = 0;
+                    
+                    // Body sway
+                    this.swayPhase = 0;
+                    this.swaySpeed = 0.02;
+                    
+                    // Set initial target
+                    this.setRandomTarget();
+                }
+
+                setRandomTarget() {
+                    const margin = 60;
+                    this.targetX = margin + Math.random() * (W - margin * 2);
+                    this.targetY = margin + Math.random() * (H - margin * 2);
+                }
+
+                update() {
+                    const dt = speed / 5;
+                    time += 0.01 * dt;
+                    
+                    // Wing flap
+                    this.wingPhase += this.wingSpeed * dt;
+                    
+                    // Sway
+                    this.swayPhase += this.swaySpeed * dt;
+                    
+                    // Wander behavior
+                    this.wanderTimer -= dt;
+                    if (this.wanderTimer <= 0) {
+                        this.wanderTimer = this.wanderInterval;
+                        this.setRandomTarget();
+                    }
+                    
+                    // Move toward target with some randomness
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 5) {
+                        const moveSpeed = this.moveSpeed * 0.6 * dt;
+                        this.x += (dx / dist) * moveSpeed + Math.sin(time * 0.02) * 0.2;
+                        this.y += (dy / dist) * moveSpeed + Math.cos(time * 0.025) * 0.2;
+                        this.targetAngle = Math.atan2(dy, dx);
+                    } else {
+                        this.setRandomTarget();
+                    }
+                    
+                    // Smooth angle
+                    let angleDiff = this.targetAngle - this.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    this.angle += angleDiff * 0.06 * dt;
+                    
+                    // Sonar pulses
+                    this.sonarTimer -= dt;
+                    if (this.sonarTimer <= 0) {
+                        this.sonarTimer = this.sonarInterval * (0.5 + Math.random() * 0.5);
+                        this.emitSonar();
+                    }
+                    
+                    // Update sonar waves
+                    this.sonarWaves = this.sonarWaves.filter(w => w.update());
+                    
+                    // Echo mode pulse (when mouse is near)
+                    if (this.echoMode) {
+                        this.pulseTimer -= dt;
+                        if (this.pulseTimer <= 0) {
+                            this.pulseTimer = 5 + Math.random() * 8;
+                            this.emitSonar();
+                        }
+                    }
+                    
+                    // Keep in bounds
+                    this.x = Math.min(W - 20, Math.max(20, this.x));
+                    this.y = Math.min(H - 20, Math.max(20, this.y));
+                }
+
+                emitSonar() {
+                    const numWaves = 1 + Math.floor(Math.random() * 2);
+                    for (let i = 0; i < numWaves; i++) {
+                        const angle = (i / numWaves) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                        const wave = new SonarWave(this.x, this.y, angle);
+                        wave.maxRadius = 100 + Math.random() * 80;
+                        wave.speed = 1.5 + Math.random() * 2;
+                        this.sonarWaves.push(wave);
+                    }
+                }
+
+                activateEcho(x, y) {
+                    this.echoMode = true;
+                    this.echoTargetX = x;
+                    this.echoTargetY = y;
+                    this.pulseTimer = 0;
+                    
+                    // Emit immediate sonar burst
+                    for (let i = 0; i < 3; i++) {
+                        setTimeout(() => {
+                            if (this.echoMode) this.emitSonar();
+                        }, i * 80);
+                    }
+                }
+
+                deactivateEcho() {
+                    this.echoMode = false;
+                }
+
+                draw(ctx) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const angle = this.angle;
+                    const wingAngle = Math.sin(this.wingPhase);
+                    
+                    // ---- Draw sonar waves first (behind bat) ----
+                    for (let wave of this.sonarWaves) {
+                        wave.draw(ctx);
+                    }
+                    
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(angle);
+                    
+                    // ---- Shadow ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 10;
+                    ctx.shadowOffsetY = 3;
+                    
+                    // ---- Body ----
+                    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+                    ctx.shadowBlur = 5;
+                    
+                    const bodyGrad = ctx.createRadialGradient(
+                        -size * 0.05, -size * 0.05, 0,
+                        0, 0, size
+                    );
+                    bodyGrad.addColorStop(0, '#3a3a3a');
+                    bodyGrad.addColorStop(0.5, '#2a2a2a');
+                    bodyGrad.addColorStop(0.8, '#1a1a1a');
+                    bodyGrad.addColorStop(1, '#0a0a0a');
+                    ctx.fillStyle = bodyGrad;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, size * 0.5, size * 0.35, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Wings ----
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(0,0,0,0.05)';
+                    
+                    const wingSpan = size * 0.9;
+                    const wingFlap = wingAngle * size * 0.15;
+                    
+                    // Left wing
+                    ctx.fillStyle = '#2a2a2a';
+                    ctx.beginPath();
+                    ctx.moveTo(-size * 0.1, -size * 0.05);
+                    ctx.quadraticCurveTo(
+                        -wingSpan * 0.5,
+                        -size * 0.6 + wingFlap,
+                        -wingSpan * 0.8,
+                        -size * 0.3 + wingFlap * 1.5
+                    );
+                    ctx.quadraticCurveTo(
+                        -wingSpan * 0.6,
+                        -size * 0.1 + wingFlap * 0.5,
+                        -size * 0.1,
+                        size * 0.05
+                    );
+                    ctx.fill();
+                    
+                    // Right wing
+                    ctx.fillStyle = '#2a2a2a';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.1, -size * 0.05);
+                    ctx.quadraticCurveTo(
+                        wingSpan * 0.5,
+                        -size * 0.6 - wingFlap,
+                        wingSpan * 0.8,
+                        -size * 0.3 - wingFlap * 1.5
+                    );
+                    ctx.quadraticCurveTo(
+                        wingSpan * 0.6,
+                        -size * 0.1 - wingFlap * 0.5,
+                        size * 0.1,
+                        size * 0.05
+                    );
+                    ctx.fill();
+                    
+                    // Wing membrane detail
+                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(60, 60, 60, 0.3)';
+                    ctx.lineWidth = 0.5;
+                    for (let side = -1; side <= 1; side += 2) {
+                        const wx = side * size * 0.3;
+                        const wy = -size * 0.2 + side * wingFlap * 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(wx * 0.3, wy * 0.3);
+                        ctx.lineTo(wx * 0.8, wy * 1.5);
+                        ctx.stroke();
+                    }
+                    
+                    // ---- Head ----
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = '#2a2a2a';
+                    ctx.beginPath();
+                    ctx.ellipse(size * 0.4, -size * 0.02, size * 0.2, size * 0.18, 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Ears ----
+                    ctx.shadowBlur = 2;
+                    ctx.fillStyle = '#2a2a2a';
+                    for (let side = -1; side <= 1; side += 2) {
+                        ctx.beginPath();
+                        ctx.moveTo(size * 0.35 + side * size * 0.05, -size * 0.08);
+                        ctx.quadraticCurveTo(
+                            size * 0.4 + side * size * 0.12,
+                            -size * 0.3,
+                            size * 0.35 + side * size * 0.1,
+                            -size * 0.35
+                        );
+                        ctx.quadraticCurveTo(
+                            size * 0.25 + side * size * 0.05,
+                            -size * 0.2,
+                            size * 0.3 + side * size * 0.03,
+                            -size * 0.08
+                        );
+                        ctx.fill();
+                    }
+                    
+                    // ---- Eyes ----
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.45, -size * 0.05, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.45, size * 0.02, size * 0.04, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Eye highlight (tiny)
+                    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+                    ctx.beginPath();
+                    ctx.arc(size * 0.47, -size * 0.06, size * 0.015, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(size * 0.47, size * 0.01, size * 0.015, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // ---- Mouth ----
+                    ctx.strokeStyle = 'rgba(60, 60, 60, 0.3)';
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(size * 0.55, size * -0.01, size * 0.04, 0, Math.PI * 0.5);
+                    ctx.stroke();
+                    
+                    // ---- Feet ----
+                    ctx.shadowBlur = 2;
+                    ctx.fillStyle = '#1a1a1a';
+                    for (let side = -1; side <= 1; side += 2) {
+                        ctx.beginPath();
+                        ctx.ellipse(
+                            side * size * 0.15,
+                            size * 0.3,
+                            size * 0.04,
+                            size * 0.06,
+                            0,
+                            0,
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    }
+                    
+                    ctx.restore();
+                }
+            }
+
+            // ---- Create Bat ----
+            let bat;
+
+            function createBat() {
+                bat = new Bat();
+            }
+
+            // ---- Draw Background ----
+            function drawBackground() {
+                // Night sky gradient
+                const grad = ctx.createRadialGradient(W/2, H/3, 0, W/2, H/3, W);
+                grad.addColorStop(0, '#0d1a2a');
+                grad.addColorStop(0.3, '#0a1220');
+                grad.addColorStop(0.6, '#0d0a18');
+                grad.addColorStop(0.8, '#0a0a12');
+                grad.addColorStop(1, '#050a0a');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Moon
+                const moonX = W - 70;
+                const moonY = 50;
+                ctx.shadowColor = 'rgba(200, 220, 255, 0.03)';
+                ctx.shadowBlur = 40;
+                ctx.fillStyle = '#e8e0d5';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 25, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 60;
+                ctx.fillStyle = 'rgba(200, 220, 255, 0.02)';
+                ctx.beginPath();
+                ctx.arc(moonX, moonY, 50, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Stars
+                ctx.shadowBlur = 0;
+                for (let i = 0; i < 50; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.7);
+                    const size = 0.3 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.5})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Cave-like silhouettes at bottom
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(5, 8, 8, 0.3)';
+                for (let i = 0; i < 8; i++) {
+                    const cx = i * W / 8;
+                    const cy = H;
+                    const cw = W / 8 + 20;
+                    const ch = 30 + Math.sin(i * 1.5) * 20 + 20;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - cw/2, H);
+                    ctx.quadraticCurveTo(cx, H - ch, cx + cw/2, H);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Mouse/Touch tracking ----
+            function handleMove(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                    e.preventDefault();
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                const x = (clientX - rect.left) * scaleX;
+                const y = (clientY - rect.top) * scaleY;
+                
+                if (bat) {
+                    // Check if mouse is near bat
+                    const dx = x - bat.x;
+                    const dy = y - bat.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 150) {
+                        bat.activateEcho(x, y);
+                        // Move bat slightly toward mouse (curiosity)
+                        bat.targetX = x + (Math.random() - 0.5) * 40;
+                        bat.targetY = y + (Math.random() - 0.5) * 40;
+                        bat.wanderTimer = 30;
+                    } else {
+                        bat.deactivateEcho();
+                    }
+                }
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                drawBackground();
+                
+                if (bat) {
+                    bat.update();
+                    bat.draw(ctx);
+                }
+                
+                // Ambient particles
+                for (let i = 0; i < 6; i++) {
+                    const x = (i * 197 + 40 + Math.sin(time * 0.02 + i * 2) * 20) % W;
+                    const y = (i * 131 + time * (0.008 + i * 0.005) * 2) % H;
+                    const size = 0.5 + Math.sin(time * 0.02 + i * 3) * 0.5 + 0.5;
+                    const alpha = 0.03 + Math.sin(time * 0.015 + i * 1.5) * 0.02;
+                    ctx.fillStyle = `rgba(150, 200, 255, ${alpha})`;
+                    ctx.shadowColor = `rgba(150, 200, 255, ${alpha * 0.3})`;
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Reset ----
+            function resetBat() {
+                createBat();
+                time = 0;
+            }
+
+            // ---- Speed Control ----
+            speedSlider.addEventListener('input', function() {
+                speed = parseInt(this.value);
+                speedLabel.textContent = speed;
+            });
+
+            // ---- Event Listeners ----
+            toggleBtn.addEventListener('click', toggleAnimation);
+            resetBtn.addEventListener('click', resetBat);
+            canvas.addEventListener('mousemove', handleMove);
+            canvas.addEventListener('touchmove', handleMove, { passive: false });
+            canvas.addEventListener('touchstart', handleMove, { passive: false });
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'r' || e.key === 'R') {
+                    resetBat();
+                }
+            });
+
+            // ---- Initialize ----
+            createBat();
+            animate();
+
+            console.log('🦇 Bat Echo · Move mouse near bat to trigger sonar pulses!');
+        })();
+    </script>
+</body>
+</html>
