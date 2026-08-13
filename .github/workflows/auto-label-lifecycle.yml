@@ -73,9 +73,6 @@ jobs:
             // CLOSED
             if (action === 'closed') {
               if (isPR) {
-                // ALL closed PRs get full GSSoC credit - NEVER gssoc:invalid
-                await removeLabels(BAD_LABELS);
-                await addLabels([...MAX_LABELS, 'level:intermediate', 'type:feature']);
                 const isMerged = item.merged_at != null;
                 let userCount = 1;
                 let hoursLeft = 24 - new Date().getUTCHours();
@@ -85,10 +82,16 @@ jobs:
                   userCount = r.data.total_count || 1;
                 } catch(e) {}
                 const quotaMsg = `You have submitted **${userCount}/250** PRs today (resets in ${hoursLeft}h).`;
+
                 if (isMerged) {
+                  await removeLabels(BAD_LABELS);
+                  await addLabels([...MAX_LABELS, 'level:intermediate', 'type:feature']);
                   await addComment(`🎉 **PR Merged!** Thanks @${itemAuthor}! ${quotaMsg} GSSoC labels assigned. [Discord](https://discord.gg/hWSdGrccBU)`);
                 } else {
-                  await addComment(`✅ **PR Closed — Full GSSoC Credit Awarded.** Thanks @${itemAuthor}! ${quotaMsg} Labels: GSSoC-26, gssoc:approved, accepted, integrated, good-pr assigned.`);
+                  // UNMERGED closed PRs get NO credit / points
+                  await removeLabels(['gssoc:approved', 'accepted', 'integrated', 'good-pr']);
+                  await addLabels(['gssoc:invalid', 'invalid-submission']);
+                  await addComment(`🔒 **PR Closed (Unmerged).** This PR was closed without being merged. No GSSoC points or credit awarded.`);
                 }
               } else {
                 await removeLabels(BAD_LABELS);
@@ -117,30 +120,6 @@ jobs:
               if (textContent.includes('animation')) labels.push('animation');
               else if (textContent.includes('component')) labels.push('component');
               if (textContent.includes('feature') || textContent.includes('add')) labels.push('type:feature');
-
-              if (isPR) {
-                const closingPattern = /(?:close|closes|fix|fixes|resolve|resolves)s*#([0-9]+)/gi;
-                let match;
-                let isECSoC = false;
-                while ((match = closingPattern.exec(body)) !== null) {
-                  const num = parseInt(match[1], 10);
-                  try {
-                    const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: num });
-                    if (issue && issue.labels) {
-                      const iLabels = issue.labels.map(l => l.name.toLowerCase());
-                      if (iLabels.includes('ecsoc26')) isECSoC = true;
-                      const issueLevel = issue.labels.find(l => l.name.startsWith('level:'));
-                      if (issueLevel) {
-                        const w = { 'level:beginner': 1, 'level:intermediate': 2, 'level:advanced': 3 };
-                        if ((w[issueLevel.name] || 1) > (w[level] || 1)) level = issueLevel.name;
-                      }
-                    }
-                  } catch(e) {}
-                }
-                if (isECSoC) labels.push('ECSoC26', 'ECSoC26-L3');
-              } else {
-                labels.push('ECSoC26', 'ECSoC26-L3');
-              }
 
               await addLabels([...new Set(labels)]);
 
