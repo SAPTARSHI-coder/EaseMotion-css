@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stepper Next/Previous Validation Demo — Issue #82009</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 0.85rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: #1e2433;
+      border: 1px solid #2d3748;
+      border-radius: 1rem;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    /* ── Step indicators ── */
+    .steps-track {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 2rem;
+    }
+
+    .step-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .step-circle {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: 2px solid #374151;
+      background: #111827;
+      color: #6b7280;
+      transition: all 0.3s ease;
+    }
+
+    .step-circle.active {
+      background: linear-gradient(135deg, #60a5fa, #818cf8);
+      border-color: #818cf8;
+      color: #fff;
+      box-shadow: 0 0 16px rgba(129, 140, 248, 0.5);
+      transform: scale(1.15);
+    }
+
+    .step-circle.done {
+      background: #10b981;
+      border-color: #059669;
+      color: #fff;
+    }
+
+    .step-label {
+      font-size: 0.7rem;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+
+    .step-label.active { color: #818cf8; font-weight: 600; }
+    .step-label.done { color: #10b981; }
+
+    .connector {
+      flex: 1;
+      height: 2px;
+      background: #374151;
+      margin: 0 0.25rem;
+      margin-bottom: 1.5rem;
+      transition: background 0.3s ease;
+    }
+
+    .connector.done { background: #10b981; }
+
+    /* ── Status display ── */
+    .status-box {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+
+    .status-row { display: flex; justify-content: space-between; }
+    .label { color: #6b7280; }
+    .value { color: #60a5fa; font-weight: 600; }
+    .value.true { color: #10b981; }
+    .value.false { color: #f87171; }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-prev {
+      background: #1e3a5f;
+      color: #93c5fd;
+      border: 1px solid #1d4ed8;
+    }
+
+    .btn-prev:hover:not(:disabled) { background: #1d4ed8; color: #fff; transform: translateY(-1px); }
+    .btn-prev:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-next {
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+    }
+
+    .btn-next:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-next:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .btn-reset {
+      background: #1f2937;
+      color: #9ca3af;
+      border: 1px solid #374151;
+      flex: 0 0 auto;
+      padding: 0.65rem 0.9rem;
+    }
+
+    .btn-reset:hover { background: #374151; color: #e5e7eb; }
+
+    /* ── GoTo input ── */
+    .goto-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .goto-label { color: #6b7280; font-size: 0.82rem; white-space: nowrap; }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 0.4rem;
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus { border-color: #818cf8; }
+
+    .btn-goto {
+      background: #064e3b;
+      color: #34d399;
+      border: 1px solid #059669;
+      flex: 0 0 auto;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+    }
+
+    .btn-goto:hover { background: #059669; color: #fff; }
+
+    /* ── Log ── */
+    .log-title { color: #6b7280; font-size: 0.78rem; margin-bottom: 0.4rem; }
+
+    #log {
+      background: #0a0f1a;
+      border: 1px solid #1e2433;
+      border-radius: 0.4rem;
+      padding: 0.75rem;
+      height: 120px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+
+    .log-entry { color: #6b7280; }
+    .log-entry.ok { color: #34d399; }
+    .log-entry.warn { color: #fbbf24; }
+    .log-entry.err { color: #f87171; }
+
+    .issue-link {
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: #4b5563;
+      text-align: center;
+    }
+
+    .issue-link a { color: #818cf8; text-decoration: none; }
+    .issue-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<h1>Stepper Next/Previous Validation</h1>
+<p class="subtitle">Interactive demo — Issue #82009 | Edge case test coverage</p>
+
+<div class="card">
+
+  <!-- Step track -->
+  <div class="steps-track" id="stepsTrack"></div>
+
+  <!-- State display -->
+  <div class="status-box">
+    <div class="status-row">
+      <span class="label">currentStep:</span>
+      <span class="value" id="valCurrent">1</span>
+    </div>
+    <div class="status-row">
+      <span class="label">totalSteps:</span>
+      <span class="value" id="valTotal">5</span>
+    </div>
+    <div class="status-row">
+      <span class="label">isFirstStep():</span>
+      <span class="value" id="valFirst">true</span>
+    </div>
+    <div class="status-row">
+      <span class="label">isLastStep():</span>
+      <span class="value" id="valLast">false</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="btn-row">
+    <button class="btn-prev" id="btnPrev" onclick="prev()">← prevStep()</button>
+    <button class="btn-reset" onclick="reset()">↺</button>
+    <button class="btn-next" id="btnNext" onclick="next()">nextStep() →</button>
+  </div>
+
+  <!-- GoTo -->
+  <div class="goto-row">
+    <span class="goto-label">goToStep(</span>
+    <input type="text" id="gotoInput" placeholder="e.g. 3, null, -1, abc" />
+    <span class="goto-label">)</span>
+    <button class="btn-goto" onclick="gotoStep()">Go</button>
+  </div>
+
+  <!-- Log -->
+  <div class="log-title">▸ Action log</div>
+  <div id="log"></div>
+
+</div>
+
+<p class="issue-link">
+  Submission for <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/82009" target="_blank">#82009</a>
+  · GSSoC 2026
+</p>
+
+<script>
+  // ── Stepper logic (mirrors stepper-validation.test.js) ──────────────────
+  const TOTAL = 5;
+
+  function createStepper(totalSteps, initialStep = 1) {
+    const clamp = (n) => Math.min(Math.max(1, n), totalSteps);
+    let current = clamp(typeof initialStep === 'number' && Number.isFinite(initialStep)
+      ? Math.round(initialStep) : 1);
+
+    return {
+      nextStep()  { current = clamp(current + 1); return current; },
+      prevStep()  { current = clamp(current - 1); return current; },
+      goToStep(step) {
+        if (step === null || step === undefined || typeof step !== 'number' || !Number.isFinite(step))
+          return current;
+        current = clamp(Math.round(step));
+        return current;
+      },
+      getStep()    { return current; },
+      isFirstStep(){ return current === 1; },
+      isLastStep() { return current === totalSteps; },
+      reset(s = 1) { current = clamp(typeof s === 'number' && Number.isFinite(s) ? Math.round(s) : 1); return current; },
+    };
+  }
+
+  const stepper = createStepper(TOTAL);
+
+  // ── Render ───────────────────────────────────────────────────────────────
+  function buildTrack() {
+    const track = document.getElementById('stepsTrack');
+    track.innerHTML = '';
+    for (let i = 1; i <= TOTAL; i++) {
+      if (i > 1) {
+        const conn = document.createElement('div');
+        conn.className = 'connector' + (i - 1 < stepper.getStep() ? ' done' : '');
+        track.appendChild(conn);
+      }
+      const node = document.createElement('div');
+      node.className = 'step-node';
+      const circle = document.createElement('div');
+      const cur = stepper.getStep();
+      circle.className = 'step-circle' + (i === cur ? ' active' : i < cur ? ' done' : '');
+      circle.textContent = i < cur ? '✓' : i;
+      const lbl = document.createElement('div');
+      lbl.className = 'step-label' + (i === cur ? ' active' : i < cur ? ' done' : '');
+      lbl.textContent = `Step ${i}`;
+      node.appendChild(circle);
+      node.appendChild(lbl);
+      track.appendChild(node);
+    }
+  }
+
+  function updateStatus() {
+    const cur = stepper.getStep();
+    document.getElementById('valCurrent').textContent = cur;
+    document.getElementById('valTotal').textContent = TOTAL;
+    const first = stepper.isFirstStep();
+    const last = stepper.isLastStep();
+    const fEl = document.getElementById('valFirst');
+    const lEl = document.getElementById('valLast');
+    fEl.textContent = first;
+    fEl.className = 'value ' + first;
+    lEl.textContent = last;
+    lEl.className = 'value ' + last;
+    document.getElementById('btnPrev').disabled = first;
+    document.getElementById('btnNext').disabled = last;
+    buildTrack();
+  }
+
+  function addLog(msg, type = 'ok') {
+    const log = document.getElementById('log');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry ' + type;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    log.appendChild(entry);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  // ── Actions ──────────────────────────────────────────────────────────────
+  function next() {
+    const was = stepper.getStep();
+    const now = stepper.nextStep();
+    if (was === now) {
+      addLog(`nextStep() called at last step (${was}) → stayed at ${now}`, 'warn');
+    } else {
+      addLog(`nextStep() → ${now}`, 'ok');
+    }
+    updateStatus();
+  }
+
+  function prev() {
+    const was = stepper.getStep();
+    const now = stepper.prevStep();
+    if (was === now) {
+      addLog(`prevStep() called at step 1 → stayed at ${now}`, 'warn');
+    } else {
+      addLog(`prevStep() → ${now}`, 'ok');
+    }
+    updateStatus();
+  }
+
+  function reset() {
+    stepper.reset();
+    addLog('reset() → step 1', 'entry');
+    updateStatus();
+  }
+
+  function gotoStep() {
+    const raw = document.getElementById('gotoInput').value.trim();
+    let val;
+    if (raw === 'null') val = null;
+    else if (raw === 'undefined') val = undefined;
+    else if (raw === 'NaN') val = NaN;
+    else if (raw === 'Infinity') val = Infinity;
+    else { val = Number(raw); if (isNaN(val) && raw !== '') val = raw; }
+
+    const was = stepper.getStep();
+    const now = stepper.goToStep(val);
+
+    if (was === now && String(val) !== String(now)) {
+      addLog(`goToStep(${JSON.stringify(val ?? 'undefined')}) → no-op (invalid input), stayed at ${now}`, 'warn');
+    } else {
+      addLog(`goToStep(${JSON.stringify(val ?? 'undefined')}) → ${now}`, 'ok');
+    }
+    updateStatus();
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+  updateStatus();
+  addLog('Stepper initialized — totalSteps=5, currentStep=1', 'entry');
+</script>
+</body>
+</html>
