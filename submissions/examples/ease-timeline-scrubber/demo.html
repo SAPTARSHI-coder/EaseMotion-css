@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline Scrubber</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="container">
+        <h1>⏱️ Timeline Scrubber</h1>
+        <p class="subtitle">Interactive timeline with thumb and progress markers</p>
+
+        <div class="timeline-wrapper">
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <span class="time-display" id="currentTime">00:00</span>
+                    <span class="time-display" id="totalTime">03:30</span>
+                </div>
+
+                <div class="timeline-track" id="timelineTrack">
+                    <div class="timeline-progress" id="timelineProgress">
+                        <div class="timeline-thumb" id="timelineThumb"></div>
+                    </div>
+                    <div class="timeline-markers" id="timelineMarkers"></div>
+                    <div class="timeline-tooltip" id="timelineTooltip">00:00</div>
+                </div>
+
+                <div class="timeline-controls">
+                    <button id="playBtn">▶️ Play</button>
+                    <button id="resetBtn">⏹️ Reset</button>
+                    <button id="markerBtn">📍 Add Marker</button>
+                    <button id="clearBtn">🗑️ Clear Markers</button>
+                </div>
+
+                <div class="timeline-stats">
+                    <span id="markerCount">Markers: 0</span>
+                    <span id="fpsDisplay">FPS: 60</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DOM REFS =====
+        const track = document.getElementById('timelineTrack');
+        const progress = document.getElementById('timelineProgress');
+        const thumb = document.getElementById('timelineThumb');
+        const markers = document.getElementById('timelineMarkers');
+        const tooltip = document.getElementById('timelineTooltip');
+        const currentTime = document.getElementById('currentTime');
+        const totalTime = document.getElementById('totalTime');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const markerBtn = document.getElementById('markerBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const markerCount = document.getElementById('markerCount');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        // ===== STATE =====
+        let duration = 210; // 3:30 in seconds
+        let current = 0;
+        let isPlaying = false;
+        let isDragging = false;
+        let isHovering = false;
+        let markerList = [];
+        let frameCount = 0;
+        let lastFpsUpdate = 0;
+        let time = 0;
+        let animationId = null;
+        let dragStartX = 0;
+        let dragStartValue = 0;
+
+        // ===== FORMAT TIME =====
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // ===== UPDATE UI =====
+        function updateUI() {
+            const progressPercent = (current / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            currentTime.textContent = formatTime(current);
+            updateMarkers();
+        }
+
+        // ===== UPDATE MARKERS =====
+        function updateMarkers() {
+            markers.innerHTML = '';
+            for (const marker of markerList) {
+                const pos = (marker / duration) * 100;
+                const markerEl = document.createElement('div');
+                markerEl.className = 'timeline-marker';
+                markerEl.style.left = `${pos}%`;
+                markerEl.style.top = '50%';
+                markerEl.style.transform = 'translate(-50%, -50%)';
+                markerEl.style.width = '12px';
+                markerEl.style.height = '12px';
+                markerEl.style.background = '#ff6b6b';
+                markerEl.style.borderRadius = '50%';
+                markerEl.style.position = 'absolute';
+                markerEl.style.cursor = 'pointer';
+                markerEl.style.zIndex = '5';
+                markerEl.style.boxShadow = '0 0 15px rgba(255, 107, 107, 0.4)';
+                markerEl.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+                markerEl.style.transition = 'all 0.2s ease';
+                
+                // Tooltip for marker
+                const markerTooltip = document.createElement('div');
+                markerTooltip.className = 'marker-tooltip';
+                markerTooltip.textContent = formatTime(marker);
+                markerTooltip.style.cssText = `
+                    position: absolute;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                    font-size: 10px;
+                    white-space: nowrap;
+                    pointer-events: none;
+                    opacity: 0;
+                    transition: opacity 0.2s ease;
+                    font-family: monospace;
+                    letter-spacing: 0.5px;
+                `;
+                markerEl.appendChild(markerTooltip);
+                
+                markerEl.addEventListener('mouseenter', () => {
+                    markerTooltip.style.opacity = '1';
+                    markerEl.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                });
+                
+                markerEl.addEventListener('mouseleave', () => {
+                    markerTooltip.style.opacity = '0';
+                    markerEl.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+                
+                markerEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    jumpToMarker(marker);
+                });
+                
+                markers.appendChild(markerEl);
+            }
+            markerCount.textContent = `Markers: ${markerList.length}`;
+        }
+
+        // ===== JUMP TO MARKER =====
+        function jumpToMarker(time) {
+            current = Math.max(0, Math.min(duration, time));
+            updateUI();
+            if (isPlaying) {
+                isPlaying = false;
+                playBtn.textContent = '▶️ Play';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+
+        // ===== SEEK =====
+        function seek(value) {
+            current = Math.max(0, Math.min(duration, value));
+            updateUI();
+        }
+
+        // ===== PLAY/PAUSE =====
+        function togglePlay() {
+            if (current >= duration) {
+                current = 0;
+                updateUI();
+            }
+            
+            isPlaying = !isPlaying;
+            playBtn.textContent = isPlaying ? '⏸️ Pause' : '▶️ Play';
+            
+            if (isPlaying) {
+                lastPlayTime = performance.now();
+                if (!animationId) {
+                    playAnimation();
+                }
+            } else {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+        }
+
+        let lastPlayTime = 0;
+
+        function playAnimation() {
+            if (!isPlaying) {
+                animationId = null;
+                return;
+            }
+            
+            const now = performance.now();
+            const delta = (now - lastPlayTime) / 1000;
+            lastPlayTime = now;
+            
+            current = Math.min(duration, current + delta);
+            updateUI();
+            
+            if (current >= duration) {
+                isPlaying = false;
+                playBtn.textContent = '▶️ Play';
+                animationId = null;
+                return;
+            }
+            
+            animationId = requestAnimationFrame(playAnimation);
+        }
+
+        // ===== RESET =====
+        function resetTimeline() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            isPlaying = false;
+            playBtn.textContent = '▶️ Play';
+            current = 0;
+            updateUI();
+        }
+
+        // ===== ADD MARKER =====
+        function addMarker() {
+            // Avoid duplicate markers (within 0.5s)
+            const exists = markerList.some(m => Math.abs(m - current) < 0.5);
+            if (exists) return;
+            
+            markerList.push(current);
+            markerList.sort((a, b) => a - b);
+            updateMarkers();
+        }
+
+        // ===== CLEAR MARKERS =====
+        function clearMarkers() {
+            markerList = [];
+            updateMarkers();
+        }
+
+        // ===== MOUSE EVENTS =====
+        function getPositionFromEvent(e) {
+            const rect = track.getBoundingClientRect();
+            const x = (e.clientX || e.pageX) - rect.left;
+            const percent = Math.max(0, Math.min(1, x / rect.width));
+            return percent * duration;
+        }
+
+        track.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartValue = current;
+            
+            if (isPlaying) {
+                isPlaying = false;
+                playBtn.textContent = '▶️ Play';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+            
+            const value = getPositionFromEvent(e);
+            seek(value);
+            thumb.style.transform = 'scale(1.2)';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const value = getPositionFromEvent(e);
+                seek(value);
+                
+                // Update tooltip
+                const rect = track.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width * 100;
+                tooltip.style.left = `${x}%`;
+                tooltip.textContent = formatTime(current);
+                tooltip.style.opacity = '1';
+            } else {
+                // Hover tooltip
+                const rect = track.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width * 100;
+                if (x >= 0 && x <= 100) {
+                    const value = getPositionFromEvent(e);
+                    tooltip.style.left = `${x}%`;
+                    tooltip.textContent = formatTime(value);
+                    tooltip.style.opacity = '1';
+                    isHovering = true;
+                    thumb.style.transform = 'scale(1.15)';
+                } else {
+                    tooltip.style.opacity = '0';
+                    isHovering = false;
+                    if (!isDragging) {
+                        thumb.style.transform = 'scale(1)';
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                thumb.style.transform = isHovering ? 'scale(1.15)' : 'scale(1)';
+                tooltip.style.opacity = '0';
+            }
+        });
+
+        // Touch support
+        let touchId = null;
+
+        track.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchId = touch.identifier;
+            isDragging = true;
+            
+            if (isPlaying) {
+                isPlaying = false;
+                playBtn.textContent = '▶️ Play';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+            }
+            
+            const value = getPositionFromEvent(touch);
+            seek(value);
+            thumb.style.transform = 'scale(1.2)';
+        }, { passive: false });
+
+        track.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (isDragging) {
+                const touch = e.touches[0];
+                const value = getPositionFromEvent(touch);
+                seek(value);
+                
+                const rect = track.getBoundingClientRect();
+                const x = (touch.clientX - rect.left) / rect.width * 100;
+                tooltip.style.left = `${x}%`;
+                tooltip.textContent = formatTime(current);
+                tooltip.style.opacity = '1';
+            }
+        }, { passive: false });
+
+        track.addEventListener('touchend', (e) => {
+            isDragging = false;
+            thumb.style.transform = 'scale(1)';
+            tooltip.style.opacity = '0';
+            touchId = null;
+        });
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                seek(Math.min(duration, current + 1));
+            }
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                seek(Math.max(0, current - 1));
+            }
+            if (e.key === 'm' || e.key === 'M') {
+                addMarker();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                resetTimeline();
+            }
+            if (e.key === 'c' || e.key === 'C') {
+                clearMarkers();
+            }
+        });
+
+        // ===== CONTROLS =====
+        playBtn.addEventListener('click', togglePlay);
+        resetBtn.addEventListener('click', resetTimeline);
+        markerBtn.addEventListener('click', addMarker);
+        clearBtn.addEventListener('click', clearMarkers);
+
+        // ===== ANIMATION LOOP =====
+        function animate(timestamp) {
+            frameCount++;
+            if (timestamp - lastFpsUpdate > 1000) {
+                fpsDisplay.textContent = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFpsUpdate = timestamp;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // ===== INIT =====
+        totalTime.textContent = formatTime(duration);
+        updateUI();
+        lastFpsUpdate = performance.now();
+        animate(lastFpsUpdate);
+
+        // Add some sample markers
+        setTimeout(() => {
+            markerList = [30, 60, 90, 120, 150, 180];
+            updateMarkers();
+        }, 500);
+
+        console.log('⏱️ Timeline Scrubber loaded!');
+        console.log('💡 Click/drag on timeline to scrub');
+        console.log('💡 SPACE - Play/Pause');
+        console.log('💡 ← → - Step 1 second');
+        console.log('💡 M - Add marker');
+        console.log('💡 R - Reset');
+        console.log('💡 C - Clear markers');
+    </script>
+</body>
+</html>

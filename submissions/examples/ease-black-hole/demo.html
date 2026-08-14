@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Hole · pulls light into event horizon</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="blackhole-container">
+      <div class="blackhole-display" id="blackholeDisplay">
+        <!-- Canvas for black hole -->
+        <canvas id="blackholeCanvas"></canvas>
+        
+        <!-- Black Hole Info -->
+        <div class="blackhole-info">
+          <span class="info-label">🌀 Particles</span>
+          <span class="info-value" id="particleCount">0</span>
+        </div>
+
+        <!-- Black Hole Controls -->
+        <div class="blackhole-controls">
+          <div class="control-group">
+            <label class="control-label">⚫ Mass</label>
+            <input type="range" class="control-slider" id="massSlider" min="0" max="100" value="50">
+            <span class="control-value" id="massValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🌀 Spin</label>
+            <input type="range" class="control-slider" id="spinSlider" min="0" max="100" value="50">
+            <span class="control-value" id="spinValue">50%</span>
+          </div>
+        </div>
+
+        <!-- Black Hole Text -->
+        <div class="blackhole-text">
+          <span class="text-label">🌀 Black Hole</span>
+          <span class="text-message" id="blackholeMessage">Watch light and matter fall into the void</span>
+        </div>
+      </div>
+      
+      <div class="blackhole-status">
+        <span id="blackholeStatus">🌀 Click to send matter into the black hole</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-feed" id="feedBtn">💫 Feed</button>
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌀 black hole · event horizon · light bending</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('blackholeCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('blackholeDisplay');
+      const particleCount = document.getElementById('particleCount');
+      const blackholeStatus = document.getElementById('blackholeStatus');
+      const blackholeMessage = document.getElementById('blackholeMessage');
+      const feedBtn = document.getElementById('feedBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const massSlider = document.getElementById('massSlider');
+      const massValue = document.getElementById('massValue');
+      const spinSlider = document.getElementById('spinSlider');
+      const spinValue = document.getElementById('spinValue');
+
+      // State
+      let particles = [];
+      let photonRings = [];
+      let animationId = null;
+      let time = 0;
+      let totalParticles = 0;
+
+      // Particle class
+      class Particle {
+        constructor(x, y, size, color) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 50 + Math.random() * 150;
+          this.x = x || canvas.width / 2 + Math.cos(angle) * distance;
+          this.y = y || canvas.height / 2 + Math.sin(angle) * distance;
+          this.size = size || 2 + Math.random() * 4;
+          this.color = color || this.randomColor();
+          this.angle = Math.atan2(this.y - canvas.height/2, this.x - canvas.width/2);
+          this.distance = Math.sqrt(Math.pow(this.x - canvas.width/2, 2) + Math.pow(this.y - canvas.height/2, 2));
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.orbitSpeed = (0.5 + Math.random() * 1.5) * 0.02;
+          this.trail = [];
+          this.alive = true;
+          this.phase = Math.random() * Math.PI * 2;
+          this.wobble = 0.1 + Math.random() * 0.3;
+          this.glow = 0.3 + Math.random() * 0.4;
+        }
+
+        randomColor() {
+          const colors = [
+            '#ef4444', '#f97316', '#fbbf24', '#22c55e', 
+            '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6',
+            '#f472b6', '#60a5fa', '#34d399', '#f59e0b'
+          ];
+          return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        update(mass, spin, cx, cy) {
+          const massFactor = mass / 100;
+          const spinFactor = spin / 100;
+          
+          // Calculate distance from center
+          const dx = this.x - cx;
+          const dy = this.y - cy;
+          this.distance = Math.sqrt(dx * dx + dy * dy);
+          this.angle = Math.atan2(dy, dx);
+          
+          // Gravity pull - stronger as mass increases
+          const gravity = massFactor * 0.02;
+          const pull = gravity / (this.distance * 0.01 + 1);
+          
+          // Spiral effect
+          const spiral = spinFactor * 0.05;
+          
+          // Update position
+          this.angle += this.orbitSpeed * (1 + spinFactor * 0.5);
+          this.distance -= pull * (1 + spinFactor * 0.3);
+          
+          // Wobble
+          this.phase += 0.02;
+          const wobbleOffset = Math.sin(this.phase) * this.wobble * (1 - Math.min(this.distance / 100, 1));
+          
+          const newX = cx + Math.cos(this.angle + wobbleOffset) * this.distance;
+          const newY = cy + Math.sin(this.angle + wobbleOffset) * this.distance;
+          
+          // Trail
+          this.trail.push({ x: this.x, y: this.y, life: 1 });
+          if (this.trail.length > 20) {
+            this.trail.shift();
+          }
+          this.trail.forEach(t => t.life -= 0.03);
+          
+          this.x = newX;
+          this.y = newY;
+          
+          // Check if absorbed by black hole
+          if (this.distance < 20) {
+            this.alive = false;
+            // Create photon ring effect
+            createPhotonRing(cx, cy, this.color);
+            totalParticles++;
+            return false;
+          }
+          
+          // Check if escaped beyond boundaries
+          if (this.distance > canvas.width) {
+            this.alive = false;
+            return false;
+          }
+          
+          return true;
+        }
+
+        draw(ctx) {
+          // Trail
+          this.trail.forEach(t => {
+            if (t.life > 0) {
+              ctx.save();
+              ctx.globalAlpha = t.life * 0.2;
+              ctx.fillStyle = this.color;
+              ctx.shadowColor = this.color;
+              ctx.shadowBlur = 5;
+              ctx.beginPath();
+              ctx.arc(t.x, t.y, this.size * 0.3 * t.life, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          });
+          
+          // Glow
+          ctx.save();
+          const glowSize = this.size * 4 * this.glow;
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+          grad.addColorStop(0, this.color + '88');
+          grad.addColorStop(0.5, this.color + '44');
+          grad.addColorStop(1, 'transparent');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Core
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = this.color;
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Highlight
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(this.x - this.size * 0.2, this.y - this.size * 0.2, this.size * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Photon ring class
+      class PhotonRing {
+        constructor(x, y, color) {
+          this.x = x;
+          this.y = y;
+          this.color = color;
+          this.radius = 10;
+          this.maxRadius = 60 + Math.random() * 40;
+          this.life = 1;
+          this.speed = 0.02 + Math.random() * 0.02;
+          this.opacity = 0.6 + Math.random() * 0.3;
+          this.width = 2 + Math.random() * 3;
+        }
+
+        update() {
+          this.radius += (this.maxRadius - this.radius) * 0.05;
+          this.life -= this.speed;
+          return this.life > 0 && this.radius < this.maxRadius;
+        }
+
+        draw(ctx) {
+          ctx.save();
+          ctx.globalAlpha = this.life * this.opacity * 0.5;
+          ctx.strokeStyle = this.color;
+          ctx.lineWidth = this.width * this.life;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 15;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Inner ring
+          ctx.globalAlpha = this.life * this.opacity * 0.3;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = this.width * 0.5 * this.life;
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // Create photon ring
+      function createPhotonRing(x, y, color) {
+        photonRings.push(new PhotonRing(x, y, color));
+      }
+
+      // Draw black hole
+      function drawBlackHole(cx, cy, mass, spin) {
+        const massFactor = mass / 100;
+        const spinFactor = spin / 100;
+        const radius = 20 + massFactor * 30;
+        
+        // Event horizon glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 3);
+        grad.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+        grad.addColorStop(0.1, 'rgba(10, 10, 20, 0.8)');
+        grad.addColorStop(0.3, 'rgba(20, 0, 40, 0.4)');
+        grad.addColorStop(0.6, 'rgba(40, 0, 60, 0.15)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Accretion disk glow
+        const diskGrad = ctx.createRadialGradient(cx, cy, radius * 0.5, cx, cy, radius * 2.5);
+        diskGrad.addColorStop(0, 'rgba(100, 50, 150, 0)');
+        diskGrad.addColorStop(0.3, 'rgba(150, 80, 200, 0.05)');
+        diskGrad.addColorStop(0.6, 'rgba(200, 100, 150, 0.08)');
+        diskGrad.addColorStop(0.8, 'rgba(250, 150, 100, 0.06)');
+        diskGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = diskGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Accretion disk rings
+        for (let i = 0; i < 3; i++) {
+          const ringRadius = radius * (1.2 + i * 0.5);
+          const rotation = time * (0.02 + i * 0.01) * (1 + spinFactor);
+          ctx.save();
+          ctx.globalAlpha = 0.1 + i * 0.05;
+          ctx.translate(cx, cy);
+          ctx.rotate(rotation);
+          ctx.shadowColor = 'rgba(150, 80, 200, 0.1)';
+          ctx.shadowBlur = 20;
+          
+          // Disk ring
+          ctx.strokeStyle = `rgba(150, 80, 200, ${0.05 + i * 0.03})`;
+          ctx.lineWidth = 2 + i * 1;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, ringRadius, ringRadius * 0.2 * (1 + spinFactor * 0.5), 0, 0, Math.PI * 2);
+          ctx.stroke();
+          
+          // Inner disk glow
+          ctx.strokeStyle = `rgba(255, 200, 150, ${0.02 + i * 0.02})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, ringRadius * 0.7, ringRadius * 0.15 * (1 + spinFactor * 0.5), 0.2, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+        
+        // Event horizon
+        ctx.save();
+        const horizonGrad = ctx.createRadialGradient(cx - radius * 0.2, cy - radius * 0.2, 0, cx, cy, radius);
+        horizonGrad.addColorStop(0, '#1a0a2a');
+        horizonGrad.addColorStop(0.3, '#0a0a1a');
+        horizonGrad.addColorStop(0.7, '#050510');
+        horizonGrad.addColorStop(1, '#000000');
+        ctx.fillStyle = horizonGrad;
+        ctx.shadowColor = 'rgba(100, 50, 150, 0.2)';
+        ctx.shadowBlur = 30;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Event horizon glow ring
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = 'rgba(150, 80, 200, 0.15)';
+        ctx.strokeStyle = 'rgba(150, 80, 200, 0.1)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.05, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+        
+        // Gravitational lensing effect
+        ctx.save();
+        ctx.globalAlpha = 0.03;
+        const lensGrad = ctx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.8);
+        lensGrad.addColorStop(0, 'rgba(100, 50, 200, 0.1)');
+        lensGrad.addColorStop(0.5, 'rgba(200, 100, 150, 0.05)');
+        lensGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = lensGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        
+        return radius;
+      }
+
+      // Create particles
+      function createParticles(count) {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 50 + Math.random() * 200;
+          const x = cx + Math.cos(angle) * distance;
+          const y = cy + Math.sin(angle) * distance;
+          const particle = new Particle(x, y);
+          particles.push(particle);
+        }
+        particleCount.textContent = particles.length;
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Deep space
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.8);
+        grad.addColorStop(0, 'rgba(5, 0, 10, 0.6)');
+        grad.addColorStop(0.3, 'rgba(10, 5, 20, 0.5)');
+        grad.addColorStop(0.7, 'rgba(5, 0, 10, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 5, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Distant stars
+        for (let i = 0; i < 120; i++) {
+          const x = Math.random() * w;
+          const y = Math.random() * h;
+          const size = 0.5 + Math.random() * 1.5;
+          const alpha = 0.1 + Math.random() * 0.4;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#ffffff';
+          ctx.shadowBlur = 2;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        
+        // Background galaxy
+        for (let i = 0; i < 50; i++) {
+          const x = w * (0.1 + Math.random() * 0.8);
+          const y = h * (0.1 + Math.random() * 0.8);
+          const size = 1 + Math.random() * 3;
+          const alpha = 0.02 + Math.random() * 0.05;
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = '#8b5cf6';
+          ctx.shadowColor = '#8b5cf6';
+          ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(x, y, size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const mass = parseInt(massSlider.value);
+        const spin = parseInt(spinSlider.value);
+        
+        // Clear and draw background
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        
+        // Draw black hole
+        const horizonRadius = drawBlackHole(cx, cy, mass, spin);
+        
+        // Update and draw particles
+        particles = particles.filter(p => {
+          const alive = p.update(mass, spin, cx, cy);
+          if (alive) p.draw(ctx);
+          return alive;
+        });
+        
+        // Update and draw photon rings
+        photonRings = photonRings.filter(r => {
+          const alive = r.update();
+          if (alive) r.draw(ctx);
+          return alive;
+        });
+        
+        // Update particle count
+        particleCount.textContent = particles.length;
+        
+        // Update status
+        if (mass > 70) {
+          blackholeStatus.textContent = '🌀 Massive black hole devouring everything!';
+          blackholeStatus.style.color = '#fbbf24';
+        } else if (mass > 30) {
+          blackholeStatus.textContent = '🌀 Black hole pulling matter into its grasp...';
+          blackholeStatus.style.color = '#818cf8';
+        } else {
+          blackholeStatus.textContent = '🌀 Click to send matter into the black hole';
+          blackholeStatus.style.color = '#94a3b8';
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Feed the black hole
+      function feedBlackHole() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const count = 10 + Math.floor(Math.random() * 15);
+        createParticles(count);
+        blackholeStatus.textContent = `🌀 ${count} particles drawn into the void!`;
+        blackholeStatus.style.color = '#fbbf24';
+        setTimeout(() => {
+          blackholeStatus.textContent = '🌀 Click to send matter into the black hole';
+          blackholeStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Reset
+      function resetBlackHole() {
+        particles = [];
+        photonRings = [];
+        totalParticles = 0;
+        particleCount.textContent = '0';
+        blackholeStatus.textContent = '🔄 Reset complete';
+        blackholeStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          blackholeStatus.textContent = '🌀 Click to send matter into the black hole';
+          blackholeStatus.style.color = '#94a3b8';
+        }, 1000);
+        // Add a few initial particles
+        createParticles(5);
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        if (e.target === this || e.target === canvas) {
+          feedBlackHole();
+        }
+      });
+
+      if (feedBtn) {
+        feedBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          feedBlackHole();
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetBlackHole();
+        });
+      }
+
+      // Slider updates
+      massSlider.addEventListener('input', function() {
+        massValue.textContent = this.value + '%';
+      });
+
+      spinSlider.addEventListener('input', function() {
+        spinValue.textContent = this.value + '%';
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          feedBlackHole();
+        } else if (key === 'f' || key === 'F') {
+          e.preventDefault();
+          feedBlackHole();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetBlackHole();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      createParticles(8);
+      animate();
+      
+      console.log('🌀 Black Hole ready · shortcuts: [Space/F] Feed, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

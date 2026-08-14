@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Showcase: Scroll-Reveal Dynamic MutationObserver Fix</title>
+
+    <!-- Link the core framework stylesheet -->
+    <link rel="stylesheet" href="../../easemotion.css" />
+
+    <!-- Link our custom styles -->
+    <link rel="stylesheet" href="style.css" />
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: var(
+          --ease-font-sans,
+          system-ui,
+          -apple-system,
+          sans-serif
+        );
+        background-color: #0b1121;
+        color: #e2e8f0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
+      }
+
+      .container {
+        max-width: 600px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      header h1 {
+        font-size: 2.2rem;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      header p {
+        color: var(--ease-color-muted, #94a3b8);
+        margin: 0;
+      }
+
+      /* Fixed controller for adding items */
+      .controls {
+        position: sticky;
+        top: 1rem;
+        z-index: 100;
+        background: rgba(11, 17, 33, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 1rem;
+        border-radius: var(--ease-radius-md, 0.5rem);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--ease-shadow-lg);
+      }
+
+      .btn-add {
+        background: var(--ease-color-primary, #6c63ff);
+        color: #fff;
+        border: none;
+        padding: 0.6rem 1.25rem;
+        border-radius: var(--ease-radius-full, 9999px);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+      }
+
+      .btn-add:hover {
+        background: var(--ease-color-primary-dark, #4b44cc);
+      }
+
+      .btn-add:active {
+        transform: scale(0.95);
+      }
+
+      .status-text {
+        font-size: 0.85rem;
+        color: var(--ease-color-muted, #94a3b8);
+      }
+
+      /* Scrollable grid container */
+      .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        padding-bottom: 20vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container panel-dark">
+      <header>
+        <h1>Scroll-Reveal Dynamic Observer</h1>
+        <p>
+          Demonstrates automatic node-tracking of asynchronously inserted
+          elements using a MutationObserver.
+        </p>
+      </header>
+
+      <div class="controls">
+        <span class="status-text" id="status">Total elements: 3</span>
+        <button class="btn-add" id="addBtn">Add Dynamic Card</button>
+      </div>
+
+      <div class="grid" id="cardGrid">
+        <!-- Static items initial load -->
+        <div class="reveal-box">
+          <h3>Card #1 (Static Load)</h3>
+          <p>
+            This element is present in the DOM during initial page render and is
+            registered immediately.
+          </p>
+        </div>
+
+        <div class="reveal-box">
+          <h3>Card #2 (Static Load)</h3>
+          <p>
+            Scroll down or click the action button above to load new cards
+            dynamically.
+          </p>
+        </div>
+
+        <div class="reveal-box">
+          <h3>Card #3 (Static Load)</h3>
+          <p>
+            All newly inserted cards will automatically register themselves
+            without a page refresh.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // -------------------------------------------------------------
+      // Reference implementation of Scroll-Reveal with MutationObserver
+      // -------------------------------------------------------------
+      (function () {
+        var revealClass = "reveal-box";
+        var activeClass = "active";
+        var intersectionObserver = null;
+
+        function isCentered(el) {
+          var rect = el.getBoundingClientRect();
+          var vh = window.innerHeight;
+          return rect.top < vh * 0.85 && rect.bottom > 0;
+        }
+
+        if ("IntersectionObserver" in window) {
+          intersectionObserver = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add(activeClass);
+                  intersectionObserver.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.15 }
+          );
+        }
+
+        function initObserver() {
+          var els = document.querySelectorAll("." + revealClass);
+          els.forEach(function (el) {
+            if (isCentered(el)) {
+              el.classList.add(activeClass);
+            } else if (intersectionObserver) {
+              intersectionObserver.observe(el);
+            }
+          });
+        }
+
+        // Initial registration on page load
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initObserver);
+        } else {
+          initObserver();
+        }
+
+        // Live mutation tracking for dynamic elements
+        if ("MutationObserver" in window && intersectionObserver) {
+          var mutationObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+              mutation.addedNodes.forEach(function (node) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                  // If the node itself matches our target class
+                  if (node.classList.contains(revealClass)) {
+                    intersectionObserver.observe(node);
+                  }
+                  // Check children of added container nodes
+                  var children = node.querySelectorAll("." + revealClass);
+                  children.forEach(function (child) {
+                    intersectionObserver.observe(child);
+                  });
+                }
+              });
+            });
+          });
+          mutationObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+          });
+        }
+      })();
+
+      // -------------------------------------------------------------
+      // Setup event handlers for the Demo UI interaction
+      // -------------------------------------------------------------
+      var cardGrid = document.getElementById("cardGrid");
+      var addBtn = document.getElementById("addBtn");
+      var statusEl = document.getElementById("status");
+      var count = 3;
+
+      addBtn.addEventListener("click", function () {
+        count++;
+        var card = document.createElement("div");
+        card.className = "reveal-box";
+        card.innerHTML =
+          "<h3>Card #" +
+          count +
+          " (Dynamic Load)</h3><p>Automatically tracked and revealed by the MutationObserver as soon as you scroll to it.</p>";
+        cardGrid.appendChild(card);
+        statusEl.textContent = "Total elements: " + count;
+      });
+    </script>
+  </body>
+</html>

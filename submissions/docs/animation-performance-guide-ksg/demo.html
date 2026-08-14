@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animation Performance Best Practices — EaseMotion CSS</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+
+    <header class="pg-header">
+      <h1>Animation Performance Best Practices</h1>
+      <p>
+        A developer guide to writing smooth, efficient CSS animations —
+        the same principles EaseMotion CSS is built on.
+      </p>
+    </header>
+
+    <main class="pg-main">
+
+      <!-- ── SECTION 1: Compositor-only properties ──────────── -->
+      <section class="pg-section" aria-labelledby="s1-title">
+        <h2 class="pg-section-title" id="s1-title">
+          1. Use <code>transform</code> and <code>opacity</code> — the compositor-only pair
+        </h2>
+        <p class="pg-section-desc">
+          Only <strong>transform</strong> and <strong>opacity</strong> can animate entirely
+          on the GPU compositor thread, bypassing the browser's layout and paint steps.
+          Every other property (left, top, width, height, background-color…) forces the
+          main thread to recalculate layout or repaint pixels on every frame.
+        </p>
+
+        <!-- Property comparison table -->
+        <div class="pg-card">
+          <table class="pg-table" aria-label="Property rendering cost comparison">
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Triggers Layout?</th>
+                <th>Triggers Paint?</th>
+                <th>GPU Compositor?</th>
+                <th>Verdict</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="row-good">
+                <td><code>transform</code></td>
+                <td>No</td><td>No</td><td>✅ Yes</td>
+                <td>Use this</td>
+              </tr>
+              <tr class="row-good">
+                <td><code>opacity</code></td>
+                <td>No</td><td>No</td><td>✅ Yes</td>
+                <td>Use this</td>
+              </tr>
+              <tr class="row-bad">
+                <td><code>left / top / right / bottom</code></td>
+                <td>✗ Yes</td><td>✗ Yes</td><td>No</td>
+                <td>Avoid in animations</td>
+              </tr>
+              <tr class="row-bad">
+                <td><code>width / height</code></td>
+                <td>✗ Yes</td><td>✗ Yes</td><td>No</td>
+                <td>Avoid in animations</td>
+              </tr>
+              <tr class="row-bad">
+                <td><code>background-color</code></td>
+                <td>No</td><td>✗ Yes</td><td>No</td>
+                <td>Avoid in keyframes</td>
+              </tr>
+              <tr class="row-bad">
+                <td><code>box-shadow</code></td>
+                <td>No</td><td>✗ Yes</td><td>No</td>
+                <td>Use sparingly</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Live comparison -->
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ Good — transform: translateX()</p>
+          <div class="pg-stage">
+            <div class="perf-good-slide" id="demo-good-slide">Slides in with transform</div>
+            <button class="pg-btn" onclick="replay('demo-good-slide', 'perf-good-slide')">
+              Replay
+            </button>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* ✅ Compositor-only — no layout, no paint */</span>
+<span class="kw">@keyframes</span> slide-in {
+  from { <span class="good">opacity: 0; transform: translateX(-40px);</span> }
+  to   { <span class="good">opacity: 1; transform: translateX(0);</span>      }
+}
+.slide-in { animation: slide-in 600ms ease both; }</code></pre>
+        </div>
+
+        <div class="pg-card">
+          <p class="pg-card-label label-bad">❌ Bad — left (layout-triggering)</p>
+          <div class="pg-stage">
+            <div class="perf-bad-slide" id="demo-bad-slide">Slides in with left</div>
+            <button class="pg-btn" onclick="replay('demo-bad-slide', 'perf-bad-slide')">
+              Replay
+            </button>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* ❌ Triggers layout recalc every frame — jank risk */</span>
+<span class="kw">@keyframes</span> slide-in-bad {
+  from { <span class="bad">opacity: 0; left: -40px;</span> }
+  to   { <span class="bad">opacity: 1; left: 0;</span>      }
+}
+.slide-in-bad { position: relative; animation: slide-in-bad 600ms ease both; }</code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 2: opacity fade ─────────────────────────── -->
+      <section class="pg-section" aria-labelledby="s2-title">
+        <h2 class="pg-section-title" id="s2-title">2. Fading? Use opacity — not visibility or display</h2>
+        <p class="pg-section-desc">
+          <code>opacity</code> transitions on the compositor. <code>visibility</code>
+          and <code>display</code> are not animatable — they snap instantly. Use
+          <code>opacity</code> combined with <code>pointer-events: none</code>
+          when you need to hide and show elements.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ opacity fade-in</p>
+          <div class="pg-stage">
+            <div class="perf-fade" id="demo-fade">Fades in smoothly</div>
+            <button class="pg-btn" onclick="replay('demo-fade', 'perf-fade')">Replay</button>
+          </div>
+          <pre class="pg-code"><code><span class="kw">@keyframes</span> fade-in {
+  from { <span class="good">opacity: 0;</span> }
+  to   { <span class="good">opacity: 1;</span> }
+}
+.fade-in { animation: fade-in 500ms ease both; }</code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 3: width vs scaleX ──────────────────────── -->
+      <section class="pg-section" aria-labelledby="s3-title">
+        <h2 class="pg-section-title" id="s3-title">3. Progress bars — scaleX, not width</h2>
+        <p class="pg-section-desc">
+          Animating <code>width</code> from 0 → 100% forces the browser to recalculate
+          layout on every frame. Use <code>transform: scaleX()</code> with
+          <code>transform-origin: left center</code> instead — visually identical,
+          compositor-only.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ scaleX (compositor-only)</p>
+          <div class="pg-stage" style="flex-direction: column; align-items: flex-start; gap: 0.75rem;">
+            <div class="perf-progress-good" id="demo-pg-good" aria-label="Progress bar good">
+              <div class="perf-progress-good-bar"></div>
+            </div>
+            <button class="pg-btn" onclick="replayProgress('demo-pg-good', 'perf-progress-good-bar', 'perf-progress-good')">
+              Replay
+            </button>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* ✅ No layout recalc */</span>
+.bar { transform-origin: left center; }
+<span class="kw">@keyframes</span> progress { from { <span class="good">transform: scaleX(0);</span> } to { <span class="good">transform: scaleX(1);</span> } }</code></pre>
+        </div>
+
+        <div class="pg-card">
+          <p class="pg-card-label label-bad">❌ width animation (layout every frame)</p>
+          <div class="pg-stage" style="flex-direction: column; align-items: flex-start; gap: 0.75rem;">
+            <div class="perf-progress-bad" id="demo-pg-bad" aria-label="Progress bar bad">
+              <div class="perf-progress-bad-bar"></div>
+            </div>
+            <button class="pg-btn" onclick="replayProgress('demo-pg-bad', 'perf-progress-bad-bar', 'perf-progress-bad')">
+              Replay
+            </button>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* ❌ Layout recalc on every frame */</span>
+<span class="kw">@keyframes</span> progress-bad { from { <span class="bad">width: 0;</span> } to { <span class="bad">width: 100%;</span> } }</code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 4: will-change ───────────────────────────── -->
+      <section class="pg-section" aria-labelledby="s4-title">
+        <h2 class="pg-section-title" id="s4-title">4. will-change — hint early, scope tightly</h2>
+        <p class="pg-section-desc">
+          <code>will-change</code> tells the browser to promote the element to its own
+          GPU layer <em>before</em> the animation begins, eliminating the first-frame
+          promotion cost. Apply it only when needed and only for the properties that
+          will actually change. Never use <code>will-change: all</code>.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ will-change scoped to :hover</p>
+          <div class="pg-stage">
+            <div class="perf-will-change-card">Hover me — GPU layer on demand</div>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* ✅ Layer only active while hovering */</span>
+.card { transition: transform 300ms ease, box-shadow 300ms ease; }
+.card:hover {
+  <span class="good">will-change: transform, box-shadow;</span>
+  transform: translateY(-6px) scale(1.03);
+}
+
+<span class="cmt">/* ❌ Never do this — wastes GPU memory for the entire page lifetime */</span>
+<span class="bad">/* .card { will-change: all; } */</span></code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 5: GPU promotion ────────────────────────── -->
+      <section class="pg-section" aria-labelledby="s5-title">
+        <h2 class="pg-section-title" id="s5-title">5. GPU layer promotion with translateZ(0)</h2>
+        <p class="pg-section-desc">
+          A null 3D transform forces the browser to create a compositor layer.
+          Use it as a last resort when an element still jitters despite using
+          <code>transform</code>. Overusing it exhausts GPU memory and hurts
+          performance on low-end devices.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-tip">💡 Use sparingly</p>
+          <div class="pg-stage">
+            <div class="perf-gpu-promoted">Hover me — explicit GPU layer</div>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* Forces its own compositor layer from the start */</span>
+.element {
+  <span class="good">transform: translateZ(0);</span>   <span class="cmt">/* or translate3d(0,0,0) */</span>
+  will-change: transform;
+}
+
+<span class="cmt">/* Only if you observe jank after using transform + opacity */</span></code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 6: prefers-reduced-motion ──────────────── -->
+      <section class="pg-section" aria-labelledby="s6-title">
+        <h2 class="pg-section-title" id="s6-title">6. Always respect prefers-reduced-motion</h2>
+        <p class="pg-section-desc">
+          Users with vestibular disorders or motion sensitivity can enable "Reduce
+          motion" in their OS. EaseMotion CSS handles this globally in
+          <code>core/animations.css</code>. Your submissions must do the same.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ Accessible animation with motion guard</p>
+          <div class="pg-stage" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+            <div class="perf-accessible">Bouncing — stops if reduce-motion is on</div>
+            <p style="font-size: 0.82rem; color: #475569;">
+              Enable "Reduce motion" in your OS Accessibility settings to see the animation stop.
+            </p>
+          </div>
+          <pre class="pg-code"><code><span class="kw">@keyframes</span> bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+.animated { animation: bounce 1s ease-in-out infinite; }
+
+<span class="cmt">/* Always pair with a reduced-motion override */</span>
+<span class="good">@media (prefers-reduced-motion: reduce) {
+  .animated { animation: none; }
+}</span></code></pre>
+        </div>
+      </section>
+
+      <!-- ── SECTION 7: CSS containment ──────────────────────── -->
+      <section class="pg-section" aria-labelledby="s7-title">
+        <h2 class="pg-section-title" id="s7-title">7. CSS containment for independent subtrees</h2>
+        <p class="pg-section-desc">
+          <code>contain: layout style paint</code> tells the browser that changes inside
+          this element cannot affect anything outside it. This narrows the browser's
+          scope for recalculation, especially useful in list items, cards, or repeating
+          animated components.
+        </p>
+        <div class="pg-card">
+          <p class="pg-card-label label-good">✅ contain scopes browser recalculation</p>
+          <div class="pg-stage">
+            <div class="perf-contained">Contained element — hover me</div>
+          </div>
+          <pre class="pg-code"><code><span class="cmt">/* Scopes layout/paint recalculation to this element */</span>
+.card {
+  <span class="good">contain: layout style paint;</span>
+}
+
+<span class="cmt">/* For elements that also don't overflow their bounds: */</span>
+<span class="cmt">/* contain: strict; */</span></code></pre>
+        </div>
+      </section>
+
+      <!-- ── Summary cheatsheet ─────────────────────────────── -->
+      <section class="pg-summary" aria-labelledby="summary-title">
+        <h2 id="summary-title">Performance Cheatsheet</h2>
+        <ul>
+          <li>Animate only <code>transform</code> and <code>opacity</code> in keyframes</li>
+          <li>Replace <code>left/top</code> with <code>translateX/translateY</code></li>
+          <li>Replace <code>width</code> animations with <code>scaleX</code> + <code>transform-origin</code></li>
+          <li>Apply <code>will-change</code> only in <code>:hover</code> / <code>:focus</code> — not globally</li>
+          <li>Use <code>translateZ(0)</code> only as a last resort for stubborn jank</li>
+          <li>Always add a <code>@media (prefers-reduced-motion: reduce)</code> override</li>
+          <li>Use <code>contain: layout style paint</code> on independent animated components</li>
+          <li>Prefer <code>transition</code> over <code>@keyframes</code> for simple state changes</li>
+        </ul>
+      </section>
+
+    </main>
+
+    <footer class="pg-footer">
+      <p>
+        Submitted by <strong>karrisanthoshigayatri</strong> for
+        <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css" style="color: #6366f1;">EaseMotion CSS</a>
+        · Issue
+        <a href="https://github.com/SAPTARSHI-coder/EaseMotion-css/issues/38723" style="color: #6366f1;">#38723</a>
+      </p>
+    </footer>
+
+    <script>
+      /**
+       * Replay a CSS animation by removing and re-adding its class.
+       * @param {string} id - Element ID
+       * @param {string} cls - CSS class to re-trigger
+       */
+      function replay(id, cls) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove(cls);
+        // Force reflow so removing the class takes effect before re-adding
+        void el.offsetWidth;
+        el.classList.add(cls);
+      }
+
+      /**
+       * Replay a progress bar animation.
+       * @param {string} containerId - Parent container ID
+       * @param {string} barClass - Bar element's class
+       * @param {string} containerClass - Container's CSS class (unused, kept for parity)
+       */
+      function replayProgress(containerId, barClass, _containerClass) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const bar = container.querySelector('.' + barClass);
+        if (!bar) return;
+        const animName = window.getComputedStyle(bar).animationName;
+        bar.style.animationName = 'none';
+        void bar.offsetWidth;
+        bar.style.animationName = animName;
+      }
+    </script>
+
+  </body>
+</html>

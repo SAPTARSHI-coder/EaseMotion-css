@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading Button Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Loading Button</h1>
+        <p class="subtitle">Button turns into spinner on click, then resets</p>
+
+        <!-- LOADING BUTTON COMPONENT -->
+        <div class="loading-button-container">
+            <button class="loading-btn" id="loadingBtn" data-loading-text="Processing...">
+                <span class="btn-text">Submit</span>
+                <span class="btn-loader">
+                    <span class="loader-dot"></span>
+                    <span class="loader-dot"></span>
+                    <span class="loader-dot"></span>
+                </span>
+                <span class="btn-success">✓</span>
+                <span class="btn-error">✗</span>
+            </button>
+        </div>
+
+        <!-- Action Feedback -->
+        <div class="action-feedback" id="actionFeedback">
+            <!-- Dynamic content -->
+        </div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <button class="demo-btn" id="simulateSuccess">Simulate Success</button>
+            <button class="demo-btn" id="simulateError">Simulate Error</button>
+            <button class="demo-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <!-- Status Display -->
+        <div class="status-display">
+            <span class="status-label">State:</span>
+            <span class="status-value" id="statusValue">Idle</span>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const button = document.getElementById('loadingBtn');
+            const btnText = button.querySelector('.btn-text');
+            const btnLoader = button.querySelector('.btn-loader');
+            const btnSuccess = button.querySelector('.btn-success');
+            const btnError = button.querySelector('.btn-error');
+            const feedback = document.getElementById('actionFeedback');
+            const statusValue = document.getElementById('statusValue');
+            const simulateSuccess = document.getElementById('simulateSuccess');
+            const simulateError = document.getElementById('simulateError');
+            const resetBtn = document.getElementById('resetBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                loadingDuration: 2000, // ms
+                successDuration: 1500, // ms
+                errorDuration: 1500, // ms
+                onSuccess: function() {
+                    console.log('✅ Action completed successfully!');
+                    showFeedback('✅ Action completed successfully!', 'success');
+                },
+                onError: function() {
+                    console.log('❌ Action failed!');
+                    showFeedback('❌ Action failed! Please try again.', 'error');
+                },
+                onReset: function() {
+                    console.log('🔄 Button reset');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let state = 'idle'; // idle | loading | success | error
+            let timeoutId = null;
+            let isProcessing = false;
+
+            // ============================================
+            // HELPERS
+            // ============================================
+            function showFeedback(message, type) {
+                feedback.textContent = message;
+                feedback.className = 'action-feedback ' + type;
+                feedback.style.display = 'block';
+                clearTimeout(feedback._hideTimeout);
+                feedback._hideTimeout = setTimeout(() => {
+                    feedback.style.display = 'none';
+                    feedback.className = 'action-feedback';
+                }, 3000);
+            }
+
+            function updateStatus(text) {
+                statusValue.textContent = text;
+            }
+
+            function resetButton(keepState = false) {
+                // Clear any pending timeouts
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+
+                // Reset state
+                state = 'idle';
+                isProcessing = false;
+                
+                // Reset classes
+                button.classList.remove('loading', 'success', 'error');
+                
+                // Reset text visibility
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+                btnSuccess.style.display = 'none';
+                btnError.style.display = 'none';
+                
+                // Reset button text
+                btnText.textContent = button.getAttribute('data-original-text') || 'Submit';
+                button.disabled = false;
+                
+                updateStatus('Idle');
+                CONFIG.onReset();
+            }
+
+            // ============================================
+            // BUTTON STATE MANAGEMENT
+            // ============================================
+            function setLoading() {
+                if (isProcessing) return;
+                isProcessing = true;
+                state = 'loading';
+                
+                // Save original text
+                if (!button.getAttribute('data-original-text')) {
+                    button.setAttribute('data-original-text', btnText.textContent);
+                }
+                
+                // Update UI
+                button.classList.add('loading');
+                button.classList.remove('success', 'error');
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'flex';
+                btnSuccess.style.display = 'none';
+                btnError.style.display = 'none';
+                button.disabled = true;
+                
+                updateStatus('Loading...');
+                
+                // Auto-reset after loading duration (if not completed)
+                timeoutId = setTimeout(() => {
+                    if (state === 'loading') {
+                        setError('Loading timeout');
+                    }
+                }, CONFIG.loadingDuration + 5000);
+            }
+
+            function setSuccess() {
+                if (state === 'success') return;
+                
+                // Clear any pending timeout
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                
+                state = 'success';
+                isProcessing = false;
+                
+                // Update UI
+                button.classList.remove('loading');
+                button.classList.add('success');
+                button.classList.remove('error');
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'none';
+                btnSuccess.style.display = 'inline';
+                btnError.style.display = 'none';
+                button.disabled = true;
+                
+                updateStatus('Success!');
+                
+                // Trigger success callback
+                CONFIG.onSuccess();
+                
+                // Auto-reset after success duration
+                timeoutId = setTimeout(() => {
+                    resetButton();
+                }, CONFIG.successDuration);
+            }
+
+            function setError(message = 'Action failed') {
+                if (state === 'error') return;
+                
+                // Clear any pending timeout
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                
+                state = 'error';
+                isProcessing = false;
+                
+                // Update UI
+                button.classList.remove('loading');
+                button.classList.remove('success');
+                button.classList.add('error');
+                btnText.style.display = 'none';
+                btnLoader.style.display = 'none';
+                btnSuccess.style.display = 'none';
+                btnError.style.display = 'inline';
+                button.disabled = true;
+                
+                updateStatus('Error!');
+                
+                // Trigger error callback
+                CONFIG.onError();
+                
+                // Auto-reset after error duration
+                timeoutId = setTimeout(() => {
+                    resetButton();
+                }, CONFIG.errorDuration);
+            }
+
+            // ============================================
+            // MAIN ACTION HANDLER
+            // ============================================
+            function handleAction() {
+                // Prevent multiple clicks
+                if (isProcessing || state === 'loading') return;
+                
+                // Reset if in error/success state
+                if (state === 'success' || state === 'error') {
+                    resetButton();
+                    return;
+                }
+                
+                // Start loading
+                setLoading();
+                
+                // Simulate async action (replace with actual async operation)
+                // For demo purposes, we'll use setTimeout
+                // In real usage, you'd call this after your async operation completes
+                // For example:
+                // fetch('/api/submit')
+                //   .then(response => response.json())
+                //   .then(data => setSuccess())
+                //   .catch(error => setError(error.message));
+                
+                // NOTE: For the demo, we use the Simulate buttons below
+                // The button click will wait for manual completion via simulate buttons
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Main button click
+            button.addEventListener('click', handleAction);
+
+            // Simulate Success
+            simulateSuccess.addEventListener('click', () => {
+                if (state === 'loading') {
+                    setSuccess();
+                } else {
+                    showFeedback('⚠️ Button is not in loading state', 'info');
+                }
+            });
+
+            // Simulate Error
+            simulateError.addEventListener('click', () => {
+                if (state === 'loading') {
+                    setError('Simulated error occurred');
+                } else {
+                    showFeedback('⚠️ Button is not in loading state', 'info');
+                }
+            });
+
+            // Reset Button
+            resetBtn.addEventListener('click', () => {
+                if (state !== 'idle') {
+                    resetButton();
+                    showFeedback('🔄 Button reset', 'info');
+                } else {
+                    showFeedback('ℹ️ Button is already idle', 'info');
+                }
+            });
+
+            // ============================================
+            // KEYBOARD ACCESSIBILITY
+            // ============================================
+            button.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleAction();
+                }
+            });
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.LoadingButton = {
+                startLoading: setLoading,
+                setSuccess: setSuccess,
+                setError: setError,
+                reset: resetButton,
+                getState: () => state,
+                isProcessing: () => isProcessing,
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                },
+                // Convenience methods for async operations
+                wrap: async (asyncFn) => {
+                    try {
+                        setLoading();
+                        const result = await asyncFn();
+                        setSuccess();
+                        return result;
+                    } catch (error) {
+                        setError(error.message || 'Action failed');
+                        throw error;
+                    }
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            // Set initial state
+            resetButton();
+            
+            // Set button text
+            btnText.textContent = 'Submit';
+            
+            console.log('✅ Loading Button initialized!');
+            console.log('📖 API: window.LoadingButton');
+            console.log('📖 Usage:');
+            console.log('  - Click the button to start loading');
+            console.log('  - Use "Simulate Success" or "Simulate Error" buttons');
+            console.log('  - Or use API: window.LoadingButton.wrap(asyncFn)');
+
+        })();
+    </script>
+</body>
+</html>

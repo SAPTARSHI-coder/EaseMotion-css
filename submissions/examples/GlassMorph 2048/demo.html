@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GlassMorph 2048 | EaseMotion Edition</title>
+    <style>
+        /* =========================================
+           EaseMotion Variables & Setup
+        ========================================= */
+        :root {
+            --board-size: 400px;
+            --cell-size: 85px;
+            --cell-gap: 12px;
+            --transition-speed: 0.15s;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 450px) {
+            :root {
+                --board-size: 320px;
+                --cell-size: 67px;
+                --cell-gap: 10px;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0f0f1a 100%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none; /* Prevents pull-to-refresh on mobile */
+        }
+
+        /* =========================================
+           Animations (EaseMotion)
+        ========================================= */
+        @keyframes ease-pop {
+            0% { transform: scale(0); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes ease-bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes ease-fade-in {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           Glass UI Components
+        ========================================= */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .game-wrapper {
+            width: var(--board-size);
+            animation: ease-fade-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header Area */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .title-area h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 25px rgba(0, 242, 254, 0.3);
+            line-height: 1;
+        }
+
+        .title-area p {
+            font-size: 0.85rem;
+            color: #8892b0;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .score-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        .score-box {
+            padding: 10px 18px;
+            border-radius: 14px;
+            text-align: center;
+            min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .score-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #a0aec0;
+            margin-bottom: 4px;
+        }
+
+        .score-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(8px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* =========================================
+           Game Board Grid
+        ========================================= */
+        .board {
+            position: relative;
+            width: var(--board-size);
+            height: var(--board-size);
+            border-radius: 18px;
+            padding: var(--cell-gap);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: var(--cell-gap);
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-cell {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tiles */
+        .tiles-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .tile {
+            position: absolute;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: white;
+            transition: transform var(--transition-speed) ease-in-out;
+            backdrop-filter: blur(10px);
+            z-index: 5;
+        }
+
+        .tile-inner {
+            animation: ease-pop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tile.merged .tile-inner {
+            animation: ease-bounce 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        /* =========================================
+           Tile Themes (Neon Glows)
+        ========================================= */
+        .tile-2 { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+        .tile-4 { background: rgba(0, 200, 255, 0.15); border: 1px solid rgba(0,200,255,0.3); box-shadow: 0 0 20px rgba(0,200,255,0.2); }
+        .tile-8 { background: rgba(138, 43, 226, 0.3); border: 1px solid rgba(138,43,226,0.5); box-shadow: 0 0 25px rgba(138,43,226,0.4); }
+        .tile-16 { background: rgba(255, 20, 147, 0.4); border: 1px solid rgba(255,20,147,0.6); box-shadow: 0 0 30px rgba(255,20,147,0.5); }
+        .tile-32 { background: rgba(255, 69, 0, 0.5); border: 1px solid rgba(255,69,0,0.7); box-shadow: 0 0 35px rgba(255,69,0,0.6); }
+        .tile-64 { background: rgba(255, 215, 0, 0.6); border: 1px solid rgba(255,215,0,0.8); box-shadow: 0 0 40px rgba(255,215,0,0.7); color: #1a1a2e; }
+        .tile-128 { background: linear-gradient(135deg, #00c6ff, #0072ff); box-shadow: 0 0 45px #0072ff; color: #fff; font-size: 1.8rem; }
+        .tile-256 { background: linear-gradient(135deg, #f857a6, #ff5858); box-shadow: 0 0 50px #ff5858; font-size: 1.8rem; }
+        .tile-512 { background: linear-gradient(135deg, #8e2de2, #4a00e0); box-shadow: 0 0 55px #8e2de2; font-size: 1.8rem; }
+        .tile-1024 { background: linear-gradient(135deg, #ff0844, #ffb199); box-shadow: 0 0 60px #ff0844; font-size: 1.5rem; }
+        .tile-2048 { background: linear-gradient(135deg, #f9d423, #ff4e50); box-shadow: 0 0 70px #f9d423, inset 0 0 20px rgba(255,255,255,0.5); font-size: 1.5rem; text-shadow: 0 0 10px #fff; }
+        /* Super tiles */
+        .tile-4096 { background: linear-gradient(135deg, #000000, #434343); box-shadow: 0 0 80px #ffffff; border: 2px solid #fff; font-size: 1.4rem; }
+
+        /* =========================================
+           Modals (Game Over & Info)
+        ========================================= */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 15, 26, 0.7);
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 18px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+            z-index: 20;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            transform: translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #ff4b2b, #ff416c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-subtitle {
+            font-size: 1.2rem;
+            color: #cbd5e1;
+            margin-bottom: 30px;
+        }
+
+        /* Info Modal specific */
+        #info-modal .modal-title {
+            background: linear-gradient(to right, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.5rem;
+        }
+        
+        .instructions {
+            text-align: left;
+            margin-bottom: 25px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .instructions span {
+            color: #00f2fe;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-wrapper">
+        <!-- Header: Title and Scores -->
+        <header class="header">
+            <div class="title-area">
+                <h1>2048</h1>
+                <p>GlassMorph Edition</p>
+            </div>
+            <div class="score-container">
+                <div class="score-box glass">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="current-score">0</span>
+                </div>
+                <div class="score-box glass">
+                    <span class="score-label">Best</span>
+                    <span class="score-value" id="best-score">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Board Area -->
+        <main class="board glass" id="game-board">
+            <!-- Background Empty Grid -->
+            <div class="grid" id="grid-background">
+                <!-- Injected via JS -->
+            </div>
+            
+            <!-- Dynamic Tiles Container -->
+            <div class="tiles-layer" id="tiles-container">
+                <!-- Tiles injected here -->
+            </div>
+            
+            <!-- Game Over Modal -->
+            <div class="modal-overlay" id="game-over-modal">
+                <div class="modal-content">
+                    <div class="modal-title">Game Over!</div>
+                    <div class="modal-subtitle" id="final-score-display">No more moves left.</div>
+                    <button class="btn glass" onclick="game.restart()">
+                        <svg viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-10.05l5.67-5.67"/></svg>
+                        Try Again
+                    </button>
+                </div>
+            </div>
+
+            <!-- How to Play Modal -->
+            <div class="modal-overlay" id="info-modal">
+                <div class="modal-content">
+                    <div class="modal-title">How to Play</div>
+                    <div class="instructions">
+                        <p>Swipe or use <span>Arrow Keys</span> to move the tiles.</p><br>
+                        <p>Tiles with the same number merge into one when they touch.</p><br>
+                        <p>Add them up to reach <span>2048</span>!</p>
+                    </div>
+                    <button class="btn glass" onclick="game.toggleInfo()">
+                        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        Close
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Controls -->
+        <div class="controls">
+            <button class="btn glass" onclick="game.restart()">
+                <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Restart
+            </button>
+            <button class="btn glass" onclick="game.toggleInfo()">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                How to Play
+            </button>
+        </div>
+    </div>
+
+    <!-- Core Game Logic -->
+    <script>
+        class Glass2048 {
+            constructor() {
+                this.size = 4;
+                this.grid = [];
+                this.score = 0;
+                this.bestScore = localStorage.getItem('glass2048_bestscore') || 0;
+                
+                // DOM Elements
+                this.boardEl = document.getElementById('game-board');
+                this.tilesContainer = document.getElementById('tiles-container');
+                this.scoreEl = document.getElementById('current-score');
+                this.bestScoreEl = document.getElementById('best-score');
+                this.gameOverModal = document.getElementById('game-over-modal');
+                this.infoModal = document.getElementById('info-modal');
+                
+                // Touch variables
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+                
+                this.init();
+            }
+
+            init() {
+                this.buildBackgroundGrid();
+                this.bestScoreEl.textContent = this.bestScore;
+                this.setupInputHandlers();
+                this.restart();
+            }
+
+            buildBackgroundGrid() {
+                const bg = document.getElementById('grid-background');
+                bg.innerHTML = '';
+                for (let i = 0; i < this.size * this.size; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    bg.appendChild(cell);
+                }
+            }
+
+            restart() {
+                this.grid = Array.from({length: this.size}, () => Array(this.size).fill(0));
+                this.score = 0;
+                this.updateScores();
+                this.gameOverModal.classList.remove('active');
+                this.tilesContainer.innerHTML = '';
+                
+                // Spawn initial tiles
+                this.addRandomTile();
+                this.addRandomTile();
+                this.renderBoard();
+            }
+
+            addRandomTile() {
+                const emptyCells = [];
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c] === 0) emptyCells.push({r, c});
+                    }
+                }
+                
+                if (emptyCells.length > 0) {
+                    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    // 90% chance of a 2, 10% chance of a 4
+                    this.grid[randomCell.r][randomCell.c] = Math.random() < 0.9 ? 2 : 4;
+                }
+            }
+
+            // --- Input Handling (Keyboard & Touch) --- //
+            setupInputHandlers() {
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    if (this.gameOverModal.classList.contains('active') || this.infoModal.classList.contains('active')) return;
+                    
+                    const keyMap = {
+                        'ArrowUp': {x: -1, y: 0},
+                        'ArrowDown': {x: 1, y: 0},
+                        'ArrowLeft': {x: 0, y: -1},
+                        'ArrowRight': {x: 0, y: 1},
+                        'w': {x: -1, y: 0},
+                        's': {x: 1, y: 0},
+                        'a': {x: 0, y: -1},
+                        'd': {x: 0, y: 1}
+                    };
+                    
+                    if (keyMap[e.key]) {
+                        e.preventDefault(); // Stop page scrolling
+                        this.triggerMove(keyMap[e.key].x, keyMap[e.key].y);
+                    }
+                });
+
+                // Mobile Swipe
+                this.boardEl.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.touches[0].clientX;
+                    this.touchStartY = e.touches[0].clientY;
+                }, {passive: false});
+
+                this.boardEl.addEventListener('touchmove', (e) => {
+                    e.preventDefault(); // Prevent scrolling while playing
+                }, {passive: false});
+
+                this.boardEl.addEventListener('touchend', (e) => {
+                    if (this.gameOverModal.classList.contains('active') || this.infoModal.classList.contains('active')) return;
+                    
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    
+                    const dx = touchEndX - this.touchStartX;
+                    const dy = touchEndY - this.touchStartY;
+                    
+                    const absDx = Math.abs(dx);
+                    const absDy = Math.abs(dy);
+                    
+                    // Requires minimum swipe distance (threshold)
+                    if (Math.max(absDx, absDy) > 30) {
+                        if (absDx > absDy) {
+                            // Horizontal Swipe
+                            this.triggerMove(0, dx > 0 ? 1 : -1);
+                        } else {
+                            // Vertical Swipe
+                            this.triggerMove(dy > 0 ? 1 : -1, 0);
+                        }
+                    }
+                });
+            }
+
+            // --- Core Engine Math --- //
+            triggerMove(dx, dy) {
+                // dx: row change (-1 for up, 1 for down)
+                // dy: col change (-1 for left, 1 for right)
+                const isVertical = dx !== 0;
+                const isReverse = dx === 1 || dy === 1;
+                
+                let moved = false;
+                const newGrid = Array.from({length: this.size}, () => Array(this.size).fill(0));
+                const mergedPositions = []; // To track which tiles merged for the bounce animation
+
+                for (let i = 0; i < this.size; i++) {
+                    let line = [];
+                    // Extract line
+                    for (let j = 0; j < this.size; j++) {
+                        let r = isVertical ? j : i;
+                        let c = isVertical ? i : j;
+                        if (this.grid[r][c] !== 0) line.push(this.grid[r][c]);
+                    }
+
+                    if (isReverse) line.reverse();
+
+                    // Merge adjacent identical tiles
+                    let newLine = [];
+                    for (let k = 0; k < line.length; k++) {
+                        if (k < line.length - 1 && line[k] === line[k + 1]) {
+                            const mergedVal = line[k] * 2;
+                            newLine.push(mergedVal);
+                            this.score += mergedVal;
+                            
+                            // Track position of merged tile relative to the line direction
+                            mergedPositions.push({
+                                r: isVertical ? (isReverse ? this.size - 1 - newLine.length + 1 : newLine.length - 1) : i,
+                                c: isVertical ? i : (isReverse ? this.size - 1 - newLine.length + 1 : newLine.length - 1)
+                            });
+                            
+                            k++; // Skip next tile since it merged
+                        } else {
+                            newLine.push(line[k]);
+                        }
+                    }
+
+                    // Pad with zeros to maintain grid size
+                    while (newLine.length < this.size) newLine.push(0);
+                    if (isReverse) newLine.reverse();
+
+                    // Put back into grid & check if anything changed
+                    for (let j = 0; j < this.size; j++) {
+                        let r = isVertical ? j : i;
+                        let c = isVertical ? i : j;
+                        if (this.grid[r][c] !== newLine[j]) moved = true;
+                        newGrid[r][c] = newLine[j];
+                    }
+                }
+
+                if (moved) {
+                    this.grid = newGrid;
+                    this.updateScores();
+                    this.renderBoard(mergedPositions);
+                    
+                    // Wait for sliding animation to finish before spawning new tile
+                    setTimeout(() => {
+                        this.addRandomTile();
+                        this.renderBoard();
+                        
+                        if (this.checkGameOver()) {
+                            document.getElementById('final-score-display').textContent = `Final Score: ${this.score}`;
+                            this.gameOverModal.classList.add('active');
+                        }
+                    }, 150); // Matches var(--transition-speed)
+                }
+            }
+
+            updateScores() {
+                this.scoreEl.textContent = this.score;
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    this.bestScoreEl.textContent = this.bestScore;
+                    localStorage.setItem('glass2048_bestscore', this.bestScore);
+                }
+            }
+
+            checkGameOver() {
+                // Look for any empty cells
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.grid[r][c] === 0) return false;
+                        
+                        // Check right neighbor
+                        if (c < this.size - 1 && this.grid[r][c] === this.grid[r][c+1]) return false;
+                        
+                        // Check bottom neighbor
+                        if (r < this.size - 1 && this.grid[r][c] === this.grid[r+1][c]) return false;
+                    }
+                }
+                return true;
+            }
+
+            // --- Rendering logic --- //
+            renderBoard(mergedPositions = []) {
+                this.tilesContainer.innerHTML = '';
+                
+                // We calculate raw px coordinates so CSS transitions can handle the sliding
+                const rootStyles = getComputedStyle(document.documentElement);
+                const gap = parseInt(rootStyles.getPropertyValue('--cell-gap')) || 12;
+                
+                // Get dynamic cell size (important for mobile responsiveness)
+                // We measure a background cell to know exactly how big tiles should be
+                const sampleCell = document.querySelector('.grid-cell');
+                const cellSize = sampleCell ? sampleCell.offsetWidth : 85; 
+
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        const val = this.grid[r][c];
+                        if (val !== 0) {
+                            const tile = document.createElement('div');
+                            
+                            // Check if this specific tile was just merged
+                            const isMerged = mergedPositions.some(pos => pos.r === r && pos.c === c);
+                            
+                            tile.className = `tile tile-${val} ${isMerged ? 'merged' : ''}`;
+                            
+                            // Calculate position based on grid row/col
+                            const left = c * (cellSize + gap) + gap;
+                            const top = r * (cellSize + gap) + gap;
+                            
+                            // Apply inline transform for CSS sliding transition
+                            tile.style.transform = `translate(${left}px, ${top}px)`;
+                            tile.style.width = `${cellSize}px`;
+                            tile.style.height = `${cellSize}px`;
+                            
+                            const inner = document.createElement('div');
+                            inner.className = 'tile-inner';
+                            
+                            // Format very large numbers if necessary
+                            inner.textContent = val >= 10000 ? (val/1000).toFixed(1) + 'k' : val;
+                            
+                            tile.appendChild(inner);
+                            this.tilesContainer.appendChild(tile);
+                        }
+                    }
+                }
+            }
+
+            toggleInfo() {
+                this.infoModal.classList.toggle('active');
+            }
+        }
+
+        // Initialize the game
+        const game = new Glass2048();
+        
+        // Handle window resize to re-render grid correctly
+        window.addEventListener('resize', () => {
+            game.renderBoard();
+        });
+    </script>
+</body>
+</html>

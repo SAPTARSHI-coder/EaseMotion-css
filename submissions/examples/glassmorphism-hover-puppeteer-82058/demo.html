@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glassmorphism Hover FPS Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">PUPPETEER PERFORMANCE</span>
+      <h1>Glassmorphism Hover Benchmark</h1>
+      <p>
+        A repeatable rendering workload for measuring Glassmorphism
+        hover-effect performance.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark results">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Target: 50 FPS+</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Limit: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Limit: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run Benchmark</button>
+      <span id="message">Hover the cards to preview the effect.</span>
+    </div>
+
+    <section class="glass-grid" id="glassGrid">
+      <article class="glass-card">
+        <span>01</span>
+        <h2>Transparency</h2>
+        <p>Translucent surfaces create the core glass appearance.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>02</span>
+        <h2>Backdrop Blur</h2>
+        <p>Blurred backgrounds add depth and separation.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>03</span>
+        <h2>Hover Motion</h2>
+        <p>Smooth transforms provide an interactive response.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>04</span>
+        <h2>Rendering</h2>
+        <p>A consistent workload is used for frame measurements.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>05</span>
+        <h2>Performance</h2>
+        <p>Frame rendering is measured during the benchmark.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>06</span>
+        <h2>Validation</h2>
+        <p>Results are compared against performance budgets.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>07</span>
+        <h2>Responsive</h2>
+        <p>The layout adapts to different viewport sizes.</p>
+      </article>
+
+      <article class="glass-card">
+        <span>08</span>
+        <h2>Headless Chrome</h2>
+        <p>The workload can be executed through Puppeteer.</p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const grid = document.getElementById("glassGrid");
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering workload";
+      message.textContent = "Measuring animation frames...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const x = Math.sin(elapsed / 100) * 12;
+          const y = Math.cos(elapsed / 150) * 7;
+
+          grid.style.transform =
+            `translate3d(${x}px, ${y}px, 0)`;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure stylesheet:", error);
+      }
+
+      const fpsPassed = fps >= BUDGET.minimumFps;
+      const bundlePassed =
+        bundleBytes <= BUDGET.maximumBundleBytes;
+      const executionPassed =
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      const passed =
+        fpsPassed &&
+        bundlePassed &&
+        executionPassed;
+
+      fpsOutput.textContent = fps;
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent = passed
+        ? "All budgets passed"
+        : "Performance budget failed";
+
+      message.textContent = passed
+        ? "Benchmark completed successfully."
+        : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      grid.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

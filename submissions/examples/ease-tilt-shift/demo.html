@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tilt Shift · perspective tilt & shift</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="tilt-container">
+      <div class="tilt-display" id="tiltDisplay">
+        <!-- Tilt Content -->
+        <div class="tilt-content" id="tiltContent">
+          <div class="tilt-card">
+            <div class="tilt-icon">🌀</div>
+            <div class="tilt-title">Tilt Shift</div>
+            <div class="tilt-subtitle">Move your mouse or tilt your device</div>
+            <div class="tilt-grid">
+              <div class="tilt-grid-item" style="--delay: 0s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.1s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.2s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.3s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.4s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.5s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.6s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.7s">✦</div>
+              <div class="tilt-grid-item" style="--delay: 0.8s">✦</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tilt Indicators -->
+        <div class="tilt-indicators">
+          <div class="tilt-indicator">
+            <span class="indicator-label">Tilt X</span>
+            <div class="indicator-bar">
+              <div class="indicator-fill" id="tiltXFill"></div>
+            </div>
+            <span class="indicator-value" id="tiltXValue">0°</span>
+          </div>
+          <div class="tilt-indicator">
+            <span class="indicator-label">Tilt Y</span>
+            <div class="indicator-bar">
+              <div class="indicator-fill" id="tiltYFill"></div>
+            </div>
+            <span class="indicator-value" id="tiltYValue">0°</span>
+          </div>
+          <div class="tilt-indicator">
+            <span class="indicator-label">Shift</span>
+            <div class="indicator-bar">
+              <div class="indicator-fill" id="shiftFill"></div>
+            </div>
+            <span class="indicator-value" id="shiftValue">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="tilt-status">
+        <span id="tiltStatus">🌀 Move mouse or tilt device</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+      <button class="btn btn-mode" id="modeBtn">🔄 Toggle Sensitivity</button>
+      <button class="btn btn-animate" id="animateBtn">🎬 Auto Animate</button>
+    </div>
+    <div class="footer-note">
+      <span>🌀 tilt & shift perspective · 3D transforms · real-time tracking</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const tiltDisplay = document.getElementById('tiltDisplay');
+      const tiltContent = document.getElementById('tiltContent');
+      const tiltXFill = document.getElementById('tiltXFill');
+      const tiltYFill = document.getElementById('tiltYFill');
+      const shiftFill = document.getElementById('shiftFill');
+      const tiltXValue = document.getElementById('tiltXValue');
+      const tiltYValue = document.getElementById('tiltYValue');
+      const shiftValue = document.getElementById('shiftValue');
+      const tiltStatus = document.getElementById('tiltStatus');
+      const resetBtn = document.getElementById('resetBtn');
+      const modeBtn = document.getElementById('modeBtn');
+      const animateBtn = document.getElementById('animateBtn');
+
+      // State
+      let tiltX = 0;
+      let tiltY = 0;
+      let shift = 0;
+      let sensitivity = 1;
+      let isAnimating = false;
+      let animationId = null;
+      let isInteracting = false;
+
+      // Sensitivity modes
+      const sensitivities = [
+        { label: 'Low', multiplier: 0.5 },
+        { label: 'Medium', multiplier: 1 },
+        { label: 'High', multiplier: 1.8 },
+        { label: 'Extreme', multiplier: 3 }
+      ];
+      let sensitivityIndex = 1;
+
+      // Update tilt display
+      function updateTilt() {
+        const maxTilt = 25 * sensitivity;
+        const maxShift = 30 * sensitivity;
+
+        // Clamp values
+        const clampedTiltX = Math.max(-maxTilt, Math.min(maxTilt, tiltX));
+        const clampedTiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
+        const clampedShift = Math.max(-maxShift, Math.min(maxShift, shift));
+
+        // Apply 3D transform
+        tiltContent.style.transform = `
+          rotateX(${clampedTiltY}deg) 
+          rotateY(${clampedTiltX}deg) 
+          translateZ(${clampedShift}px)
+        `;
+
+        // Update indicators
+        const xPercent = ((clampedTiltX + maxTilt) / (maxTilt * 2)) * 100;
+        const yPercent = ((clampedTiltY + maxTilt) / (maxTilt * 2)) * 100;
+        const shiftPercent = ((clampedShift + maxShift) / (maxShift * 2)) * 100;
+
+        tiltXFill.style.width = xPercent + '%';
+        tiltYFill.style.width = yPercent + '%';
+        shiftFill.style.width = shiftPercent + '%';
+
+        tiltXValue.textContent = clampedTiltX.toFixed(1) + '°';
+        tiltYValue.textContent = clampedTiltY.toFixed(1) + '°';
+        shiftValue.textContent = clampedShift.toFixed(0) + '%';
+
+        // Update status
+        if (Math.abs(clampedTiltX) > 10 || Math.abs(clampedTiltY) > 10) {
+          tiltStatus.textContent = '🌀 Tilt active!';
+          tiltStatus.style.color = '#fbbf24';
+        } else if (Math.abs(clampedTiltX) > 3 || Math.abs(clampedTiltY) > 3) {
+          tiltStatus.textContent = '🌀 Tilting...';
+          tiltStatus.style.color = '#818cf8';
+        } else if (Math.abs(clampedShift) > 5) {
+          tiltStatus.textContent = '↕ Shifting...';
+          tiltStatus.style.color = '#a78bfa';
+        } else {
+          tiltStatus.textContent = '🌀 Move mouse or tilt device';
+          tiltStatus.style.color = '#94a3b8';
+        }
+
+        // Update glow based on tilt
+        const intensity = Math.min(1, (Math.abs(clampedTiltX) + Math.abs(clampedTiltY)) / (maxTilt * 2));
+        tiltDisplay.style.boxShadow = `0 0 ${40 + intensity * 60}px rgba(99, 102, 241, ${0.1 + intensity * 0.3})`;
+      }
+
+      // Handle mouse move
+      function handleMouseMove(e) {
+        const rect = tiltDisplay.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Calculate normalized position (-1 to 1)
+        const normalizedX = ((e.clientX - centerX) / (rect.width / 2));
+        const normalizedY = ((e.clientY - centerY) / (rect.height / 2));
+        
+        // Apply sensitivity
+        tiltX = normalizedX * 25 * sensitivity;
+        tiltY = normalizedY * 25 * sensitivity;
+        shift = (Math.abs(normalizedX) + Math.abs(normalizedY)) / 2 * 30 * sensitivity;
+        
+        isInteracting = true;
+        updateTilt();
+      }
+
+      // Handle mouse leave
+      function handleMouseLeave() {
+        if (!isAnimating) {
+          tiltX = 0;
+          tiltY = 0;
+          shift = 0;
+          isInteracting = false;
+          updateTilt();
+        }
+      }
+
+      // Handle device orientation
+      function handleDeviceOrientation(e) {
+        if (e.beta !== null && e.gamma !== null) {
+          // beta: front-back tilt (-180 to 180), gamma: left-right tilt (-90 to 90)
+          const beta = e.beta || 0;
+          const gamma = e.gamma || 0;
+          
+          // Normalize to -1 to 1 range
+          const normalizedX = Math.max(-1, Math.min(1, gamma / 45));
+          const normalizedY = Math.max(-1, Math.min(1, beta / 45));
+          
+          tiltX = normalizedX * 25 * sensitivity;
+          tiltY = normalizedY * 25 * sensitivity;
+          shift = (Math.abs(normalizedX) + Math.abs(normalizedY)) / 2 * 30 * sensitivity;
+          
+          isInteracting = true;
+          updateTilt();
+        }
+      }
+
+      // Reset tilt
+      function resetTilt() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+          animationId = null;
+        }
+        isAnimating = false;
+        tiltX = 0;
+        tiltY = 0;
+        shift = 0;
+        isInteracting = false;
+        updateTilt();
+        tiltStatus.textContent = '🔄 Reset complete';
+        tiltStatus.style.color = '#94a3b8';
+        setTimeout(() => {
+          tiltStatus.textContent = '🌀 Move mouse or tilt device';
+        }, 1000);
+      }
+
+      // Toggle sensitivity
+      function toggleSensitivity() {
+        sensitivityIndex = (sensitivityIndex + 1) % sensitivities.length;
+        sensitivity = sensitivities[sensitivityIndex].multiplier;
+        modeBtn.textContent = `🔄 ${sensitivities[sensitivityIndex].label} Sensitivity`;
+        
+        tiltStatus.textContent = `⚡ Sensitivity: ${sensitivities[sensitivityIndex].label}`;
+        tiltStatus.style.color = '#a78bfa';
+        setTimeout(() => {
+          if (!isInteracting && !isAnimating) {
+            tiltStatus.textContent = '🌀 Move mouse or tilt device';
+            tiltStatus.style.color = '#94a3b8';
+          }
+        }, 1500);
+      }
+
+      // Auto animate
+      function autoAnimate() {
+        if (isAnimating) {
+          // Stop animation
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          isAnimating = false;
+          animateBtn.textContent = '🎬 Auto Animate';
+          tiltX = 0;
+          tiltY = 0;
+          shift = 0;
+          updateTilt();
+          return;
+        }
+
+        isAnimating = true;
+        animateBtn.textContent = '⏹️ Stop';
+        let time = 0;
+
+        function animate() {
+          time += 0.02;
+          
+          // Sinusoidal motion for smooth animation
+          const angleX = Math.sin(time * 1.2) * 20 * sensitivity;
+          const angleY = Math.sin(time * 0.8 + 1) * 20 * sensitivity;
+          const shiftAmount = Math.sin(time * 0.6) * 15 * sensitivity;
+          
+          tiltX = angleX;
+          tiltY = angleY;
+          shift = shiftAmount + 10;
+          
+          updateTilt();
+          
+          animationId = requestAnimationFrame(animate);
+        }
+        
+        animate();
+      }
+
+      // Event listeners
+      tiltDisplay.addEventListener('mousemove', handleMouseMove);
+      tiltDisplay.addEventListener('mouseleave', handleMouseLeave);
+
+      // Device orientation
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', handleDeviceOrientation);
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetTilt();
+        });
+      }
+
+      if (modeBtn) {
+        modeBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          toggleSensitivity();
+        });
+      }
+
+      if (animateBtn) {
+        animateBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          autoAnimate();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetTilt();
+        } else if (key === 's' || key === 'S') {
+          e.preventDefault();
+          toggleSensitivity();
+        } else if (key === 'a' || key === 'A') {
+          e.preventDefault();
+          autoAnimate();
+        }
+      });
+
+      // Touch support
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      tiltDisplay.addEventListener('touchstart', function(e) {
+        const touch = e.touches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      });
+
+      tiltDisplay.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = tiltDisplay.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        const normalizedX = ((touch.clientX - centerX) / (rect.width / 2));
+        const normalizedY = ((touch.clientY - centerY) / (rect.height / 2));
+        
+        tiltX = normalizedX * 25 * sensitivity;
+        tiltY = normalizedY * 25 * sensitivity;
+        shift = (Math.abs(normalizedX) + Math.abs(normalizedY)) / 2 * 30 * sensitivity;
+        
+        isInteracting = true;
+        updateTilt();
+      });
+
+      tiltDisplay.addEventListener('touchend', function() {
+        if (!isAnimating) {
+          tiltX = 0;
+          tiltY = 0;
+          shift = 0;
+          isInteracting = false;
+          updateTilt();
+        }
+      });
+
+      // Initialize
+      updateTilt();
+      console.log('🌀 Tilt Shift ready · shortcuts: [R] Reset, [S] Sensitivity, [A] Auto Animate');
+    })();
+  </script>
+</body>
+</html>

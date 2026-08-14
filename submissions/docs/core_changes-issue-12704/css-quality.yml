@@ -1,0 +1,91 @@
+name: CSS Quality Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: CSS Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - name: Stylelint
+        run: npx stylelint "**/*.css" --config .stylelintrc.json --allow-empty-input
+
+  bundle-size:
+    name: Bundle Size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check bundle size
+        run: |
+          FILE="easemotion.min.css"
+          RAW_LIMIT=180000
+          if [ -f "$FILE" ]; then
+            if [ "$(uname)" = "Darwin" ]; then
+              SIZE=$(stat -f%z "$FILE")
+            else
+              SIZE=$(stat -c%s "$FILE")
+            fi
+            if [ "$SIZE" -gt "$RAW_LIMIT" ]; then
+              echo "❌ $FILE is $SIZE bytes (limit: $RAW_LIMIT)"
+              exit 1
+            else
+              echo "✅ $FILE is $SIZE bytes (limit: $RAW_LIMIT)"
+            fi
+          else
+            echo "⚠️ $FILE not found — skipping"
+          fi
+      - name: Check gzipped size
+        run: |
+          FILE="easemotion.min.css"
+          GZIP_LIMIT=30720
+          if [ -f "$FILE" ]; then
+            GZ_SIZE=$(gzip -c "$FILE" | wc -c | tr -d ' ')
+            if [ "$GZ_SIZE" -gt "$GZIP_LIMIT" ]; then
+              echo "❌ $FILE gzipped is $GZ_SIZE bytes (limit: $GZIP_LIMIT)"
+              exit 1
+            else
+              echo "✅ $FILE gzipped is $GZ_SIZE bytes (limit: $GZIP_LIMIT)"
+            fi
+          else
+            echo "⚠️ $FILE not found — skipping gzip check"
+          fi
+
+  validate-vars:
+    name: Custom Property Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check custom property references
+        run: |
+          if [ ! -f "core/variables.css" ]; then
+            echo "⚠️ core/variables.css not found — skipping"
+            exit 0
+          fi
+          DEFINED=$(grep -oP '--ease-[\w-]+(?=\s*:)' core/variables.css | sort -u)
+          ALL_CSS=$(find core components -name '*.css' ! -name 'variables.css' 2>/dev/null || true)
+          if [ -z "$ALL_CSS" ]; then
+            echo "✅ No CSS files found in core/components to check"
+            exit 0
+          fi
+          USED=$(echo "$ALL_CSS" | xargs grep -roP '--ease-[\w-]+' 2>/dev/null | grep -oP '--ease-[\w-]+' | sort -u || true)
+          MISSING=()
+          for var in $USED; do
+            if ! echo "$DEFINED" | grep -qF "$var"; then
+              MISSING+=("$var")
+            fi
+          done
+          if [ ${#MISSING[@]} -gt 0 ]; then
+            echo "❌ Undefined CSS variables:"
+            for v in "${MISSING[@]}"; do echo "  - $v"; done
+            exit 1
+          else
+            echo "✅ All custom properties are defined"
+          fi

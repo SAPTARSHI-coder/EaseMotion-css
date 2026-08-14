@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ Reaction Time Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="game-container">
+    <h1>⚡ Reaction Time Test</h1>
+    
+    <div class="game-stats">
+      <div class="stat-box">
+        <span class="stat-label">📊 Best</span>
+        <span class="stat-value" id="bestDisplay">—</span>
+        <span class="stat-unit">ms</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📈 Last</span>
+        <span class="stat-value" id="lastDisplay">—</span>
+        <span class="stat-unit">ms</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">📋 Total</span>
+        <span class="stat-value" id="totalDisplay">0</span>
+      </div>
+    </div>
+
+    <div class="test-area" id="testArea">
+      <div class="test-content" id="testContent">
+        <span class="instruction" id="instruction">Click or press Space to start</span>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <button class="control-btn" id="resetBtn">🔄 Reset Stats</button>
+    </div>
+
+    <div class="game-status" id="gameStatus">🟢 Ready — Click the box or press Space</div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- DOM Refs ----------
+      const testArea = document.getElementById('testArea');
+      const testContent = document.getElementById('testContent');
+      const instruction = document.getElementById('instruction');
+      const bestDisplay = document.getElementById('bestDisplay');
+      const lastDisplay = document.getElementById('lastDisplay');
+      const totalDisplay = document.getElementById('totalDisplay');
+      const resetBtn = document.getElementById('resetBtn');
+      const gameStatus = document.getElementById('gameStatus');
+
+      // ---------- Game State ----------
+      const STATE = {
+        IDLE: 'idle',           // Waiting to start
+        WAITING: 'waiting',     // Waiting for random delay
+        READY: 'ready',         // Color changed, waiting for click
+        RESULT: 'result'        // Showing result
+      };
+
+      let state = STATE.IDLE;
+      let timeoutId = null;
+      let startTime = 0;
+      let bestTime = Infinity;
+      let lastTime = 0;
+      let totalAttempts = 0;
+      let isWaitingForClick = false;
+      let canStart = true;
+
+      // ---------- Constants ----------
+      const MIN_DELAY = 1000;   // 1 second minimum wait
+      const MAX_DELAY = 5000;   // 5 seconds maximum wait
+      const COLORS = {
+        IDLE: '#1a2a3a',
+        WAITING: '#1a2a3a',
+        READY: '#4caf50',
+        RESULT_GOOD: '#2196f3',
+        RESULT_FAST: '#4caf50',
+        RESULT_SLOW: '#ff9800',
+        RESULT_BAD: '#f44336'
+      };
+
+      // ---------- High Score ----------
+      const savedBest = localStorage.getItem('reactionBest');
+      if (savedBest) {
+        bestTime = parseFloat(savedBest);
+        bestDisplay.textContent = bestTime.toFixed(0);
+      }
+
+      // ---------- Helper Functions ----------
+      function setStatus(message, isGood = true) {
+        gameStatus.textContent = message;
+        gameStatus.style.color = isGood ? '#a8d8ea' : '#ff7a7a';
+      }
+
+      function updateBestDisplay() {
+        if (bestTime === Infinity) {
+          bestDisplay.textContent = '—';
+        } else {
+          bestDisplay.textContent = bestTime.toFixed(0);
+        }
+      }
+
+      function updateLastDisplay() {
+        if (lastTime === 0) {
+          lastDisplay.textContent = '—';
+        } else {
+          lastDisplay.textContent = lastTime.toFixed(0);
+        }
+      }
+
+      function updateTotalDisplay() {
+        totalDisplay.textContent = totalAttempts;
+      }
+
+      function updateUI() {
+        updateBestDisplay();
+        updateLastDisplay();
+        updateTotalDisplay();
+      }
+
+      // ---------- Color Helpers ----------
+      function getRandomColor() {
+        const colors = [
+          '#e74c3c', '#e67e22', '#f1c40f', '#2ecc71', 
+          '#1abc9c', '#3498db', '#9b59b6', '#e84393',
+          '#00b894', '#0984e3', '#6c5ce7', '#fd79a8',
+          '#00cec9', '#fdcb6e', '#e17055', '#00b894'
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      function setBackgroundColor(color) {
+        testArea.style.backgroundColor = color;
+        testArea.style.borderColor = color;
+      }
+
+      // ---------- Game Logic ----------
+      function startTest() {
+        if (!canStart) return;
+        if (state === STATE.WAITING || state === STATE.READY) return;
+
+        // Reset for new attempt
+        state = STATE.WAITING;
+        canStart = false;
+        isWaitingForClick = false;
+        
+        // Set waiting state
+        setBackgroundColor(COLORS.WAITING);
+        instruction.textContent = '⏳ Wait for green...';
+        instruction.style.color = '#90a4ae';
+        setStatus('⏳ Waiting for random delay...', true);
+
+        // Clear any existing timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+
+        // Random delay between MIN_DELAY and MAX_DELAY
+        const delay = Math.floor(Math.random() * (MAX_DELAY - MIN_DELAY + 1)) + MIN_DELAY;
+        
+        timeoutId = setTimeout(() => {
+          // Color change! Ready for click
+          state = STATE.READY;
+          isWaitingForClick = true;
+          startTime = performance.now();
+          
+          // Random bright color
+          const color = getRandomColor();
+          setBackgroundColor(color);
+          instruction.textContent = '👆 CLICK NOW!';
+          instruction.style.color = '#ffffff';
+          instruction.style.textShadow = '0 0 20px rgba(255,255,255,0.5)';
+          setStatus('🟢 GO! Click now!', true);
+          
+          timeoutId = null;
+        }, delay);
+      }
+
+      function handleClick() {
+        if (state === STATE.IDLE) {
+          // Start the test
+          startTest();
+          return;
+        }
+
+        if (state === STATE.WAITING) {
+          // Clicked too early!
+          if (timeoutId) {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+          }
+          state = STATE.RESULT;
+          isWaitingForClick = false;
+          canStart = true;
+          
+          setBackgroundColor(COLORS.RESULT_BAD);
+          instruction.textContent = '❌ Too early! Click to try again';
+          instruction.style.color = '#ff6b6b';
+          setStatus('⚠️ Too early! Wait for the color change.', false);
+          
+          // Reset state after delay
+          setTimeout(() => {
+            state = STATE.IDLE;
+            setBackgroundColor(COLORS.IDLE);
+            instruction.textContent = 'Click to start';
+            instruction.style.color = '#b0bec5';
+            setStatus('🟢 Ready — Click to test your reaction!', true);
+            updateUI();
+          }, 1500);
+          return;
+        }
+
+        if (state === STATE.READY && isWaitingForClick) {
+          // Successful click!
+          const endTime = performance.now();
+          const reactionTime = endTime - startTime;
+          lastTime = reactionTime;
+          totalAttempts++;
+          
+          // Update best time
+          if (reactionTime < bestTime) {
+            bestTime = reactionTime;
+            localStorage.setItem('reactionBest', bestTime.toString());
+          }
+          
+          state = STATE.RESULT;
+          isWaitingForClick = false;
+          canStart = true;
+          
+          // Determine result quality
+          let resultColor, resultText, statusText;
+          if (reactionTime < 150) {
+            resultColor = COLORS.RESULT_FAST;
+            resultText = '⚡ Incredible!';
+            statusText = `⚡ ${reactionTime.toFixed(0)}ms — Lightning fast!`;
+          } else if (reactionTime < 200) {
+            resultColor = COLORS.RESULT_FAST;
+            resultText = '🔥 Fast!';
+            statusText = `🔥 ${reactionTime.toFixed(0)}ms — Great reaction!`;
+          } else if (reactionTime < 300) {
+            resultColor = COLORS.RESULT_GOOD;
+            resultText = '👍 Good!';
+            statusText = `👍 ${reactionTime.toFixed(0)}ms — Average reaction`;
+          } else if (reactionTime < 400) {
+            resultColor = COLORS.RESULT_SLOW;
+            resultText = '🐢 Slow...';
+            statusText = `🐢 ${reactionTime.toFixed(0)}ms — Could be faster`;
+          } else {
+            resultColor = COLORS.RESULT_BAD;
+            resultText = '😴 Too slow!';
+            statusText = `😴 ${reactionTime.toFixed(0)}ms — Need more focus!`;
+          }
+          
+          setBackgroundColor(resultColor);
+          instruction.textContent = `${resultText} ${reactionTime.toFixed(0)}ms`;
+          instruction.style.color = '#ffffff';
+          instruction.style.textShadow = '0 0 30px rgba(255,255,255,0.3)';
+          setStatus(statusText, true);
+          
+          updateUI();
+          
+          // Auto restart after delay
+          setTimeout(() => {
+            state = STATE.IDLE;
+            setBackgroundColor(COLORS.IDLE);
+            instruction.textContent = 'Click to start';
+            instruction.style.color = '#b0bec5';
+            instruction.style.textShadow = 'none';
+            setStatus('🟢 Ready — Click to test your reaction!', true);
+            canStart = true;
+            updateUI();
+          }, 2000);
+          return;
+        }
+
+        if (state === STATE.RESULT) {
+          // Click to restart
+          state = STATE.IDLE;
+          canStart = true;
+          setBackgroundColor(COLORS.IDLE);
+          instruction.textContent = 'Click to start';
+          instruction.style.color = '#b0bec5';
+          instruction.style.textShadow = 'none';
+          setStatus('🟢 Ready — Click to test your reaction!', true);
+          updateUI();
+          startTest();
+        }
+      }
+
+      // ---------- Reset ----------
+      function resetStats() {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        
+        bestTime = Infinity;
+        lastTime = 0;
+        totalAttempts = 0;
+        state = STATE.IDLE;
+        isWaitingForClick = false;
+        canStart = true;
+        
+        localStorage.removeItem('reactionBest');
+        
+        setBackgroundColor(COLORS.IDLE);
+        instruction.textContent = 'Click to start';
+        instruction.style.color = '#b0bec5';
+        instruction.style.textShadow = 'none';
+        setStatus('🔄 Stats reset. Click to test your reaction!', true);
+        updateUI();
+      }
+
+      // ---------- Keyboard Controls ----------
+      document.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          handleClick();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          resetStats();
+        }
+      });
+
+      // ---------- Event Listeners ----------
+      testArea.addEventListener('click', handleClick);
+
+      resetBtn.addEventListener('click', resetStats);
+
+      // ---------- Init ----------
+      function init() {
+        setBackgroundColor(COLORS.IDLE);
+        instruction.textContent = 'Click or press Space to start';
+        instruction.style.color = '#b0bec5';
+        instruction.style.textShadow = 'none';
+        setStatus('🟢 Ready — Click the box or press Space', true);
+        updateUI();
+        canStart = true;
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>

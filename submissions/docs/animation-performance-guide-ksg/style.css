@@ -1,0 +1,456 @@
+/* ============================================================
+   Animation Performance Best Practices — style.css
+   Self-contained demo styles. No external dependencies.
+
+   Topics covered:
+     1. Compositor-only properties (transform, opacity)
+     2. Layout-triggering properties to avoid
+     3. will-change — correct usage
+     4. GPU layer promotion
+     5. prefers-reduced-motion
+   ============================================================ */
+
+/* ── Reset & base ──────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #1e293b;
+  background: #f8fafc;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.pg-header {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 3rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.pg-header h1 {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 800;
+  color: #a5b4fc;
+  margin-bottom: 0.5rem;
+}
+
+.pg-header p {
+  font-size: 1rem;
+  color: #94a3b8;
+  max-width: 56ch;
+  margin: 0 auto;
+}
+
+.pg-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* ── Section & Card ───────────────────────────────────────── */
+.pg-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pg-section-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  border-left: 4px solid #6366f1;
+  padding-left: 0.75rem;
+}
+
+.pg-section-desc {
+  font-size: 0.95rem;
+  color: #475569;
+  max-width: 72ch;
+}
+
+.pg-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.pg-card-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.label-good { color: #16a34a; }
+.label-bad  { color: #dc2626; }
+.label-tip  { color: #7c3aed; }
+
+/* ── Demo stage ───────────────────────────────────────────── */
+.pg-stage {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  min-height: 90px;
+}
+
+.pg-btn {
+  padding: 0.5rem 1.1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: #6366f1;
+  color: #fff;
+  transition: background 150ms;
+}
+
+.pg-btn:hover { background: #4f46e5; }
+.pg-btn:focus-visible {
+  outline: 3px solid #818cf8;
+  outline-offset: 3px;
+}
+
+/* ── Code block ───────────────────────────────────────────── */
+.pg-code {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  font-family: "Fira Code", "Cascadia Code", Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  margin-top: 0.75rem;
+}
+
+.pg-code .good { color: #86efac; }
+.pg-code .bad  { color: #fca5a5; }
+.pg-code .cmt  { color: #64748b; }
+.pg-code .kw   { color: #c4b5fd; }
+.pg-code .val  { color: #fde68a; }
+
+/* ── Comparison table ─────────────────────────────────────── */
+.pg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-top: 0.5rem;
+}
+
+.pg-table th,
+.pg-table td {
+  padding: 0.55rem 0.9rem;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+}
+
+.pg-table thead th {
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #334155;
+}
+
+.pg-table .row-good td { background: #f0fdf4; color: #14532d; }
+.pg-table .row-bad  td { background: #fef2f2; color: #7f1d1d; }
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 1 — Compositor-only properties
+   ──────────────────────────────────────────────────────────
+   transform and opacity are the only two CSS properties that
+   can be animated entirely on the compositor thread (GPU),
+   without triggering layout or paint on the main thread.
+   ──────────────────────────────────────────────────────────*/
+
+/* ✅ GOOD: translateX stays on the compositor thread */
+@keyframes perf-slide-in-good {
+  from {
+    opacity: 0;
+    transform: translateX(-40px); /* compositor-only */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.perf-good-slide {
+  animation: perf-slide-in-good 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #dcfce7;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #14532d;
+}
+
+/* ❌ BAD: animating 'left' forces layout recalculation every frame */
+@keyframes perf-slide-in-bad {
+  from {
+    opacity: 0;
+    left: -40px; /* triggers layout — avoid */
+  }
+  to {
+    opacity: 1;
+    left: 0;
+  }
+}
+
+.perf-bad-slide {
+  position: relative; /* required for 'left' to work */
+  animation: perf-slide-in-bad 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #fee2e2;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #7f1d1d;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 2 — Opacity fade (compositor-only)
+   ──────────────────────────────────────────────────────────*/
+
+@keyframes perf-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.perf-fade {
+  animation: perf-fade-in 500ms ease both;
+  padding: 0.6rem 1.2rem;
+  background: #ede9fe;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #4c1d95;
+  display: inline-block;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 3 — Width vs scaleX
+   ──────────────────────────────────────────────────────────
+   Animating width/height triggers layout + paint every frame.
+   Animating scaleX/scaleY stays on the compositor.
+   ──────────────────────────────────────────────────────────*/
+
+/* ✅ GOOD: progress bar using scaleX (transform) */
+@keyframes perf-progress-good {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.perf-progress-good {
+  height: 10px;
+  width: 100%;
+  max-width: 280px;
+  background: #e0e7ff;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.perf-progress-good-bar {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 999px;
+  transform-origin: left center; /* scale from left */
+  animation: perf-progress-good 1.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ❌ BAD: progress bar using width — layout triggered every frame */
+@keyframes perf-progress-bad {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+.perf-progress-bad {
+  height: 10px;
+  width: 100%;
+  max-width: 280px;
+  background: #fee2e2;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.perf-progress-bad-bar {
+  height: 100%;
+  background: #ef4444;
+  border-radius: 999px;
+  animation: perf-progress-bad 1.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 4 — will-change
+   ──────────────────────────────────────────────────────────
+   Tells the browser to promote the element to its own GPU
+   layer *before* the animation starts, so the first frame
+   has no promotion cost. Only hint what will actually change.
+   Overusing will-change wastes GPU memory.
+   ──────────────────────────────────────────────────────────*/
+
+/* ✅ Scoped to hover state — GPU layer only active when needed */
+.perf-will-change-card {
+  padding: 1rem 1.5rem;
+  background: #fff;
+  border: 2px solid #6366f1;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #4338ca;
+  cursor: pointer;
+  /* No will-change here — added on :hover so it's scoped */
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perf-will-change-card:hover {
+  /* Hint applied exactly when the animation is about to start */
+  will-change: transform, box-shadow;
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.25);
+}
+
+/* ❌ BAD example class (shown in code only): blanket will-change */
+/* .bad-will-change { will-change: all; } — wastes GPU memory     */
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 5 — GPU layer promotion via translateZ(0)
+   ──────────────────────────────────────────────────────────
+   A null 3D transform forces the browser to create a
+   composite layer for the element. Useful as a last resort
+   for elements that still jank during transitions.
+   Use sparingly — too many layers exhaust GPU memory.
+   ──────────────────────────────────────────────────────────*/
+
+/* ✅ Explicit GPU promotion — use only when needed */
+.perf-gpu-promoted {
+  transform: translateZ(0); /* or translate3d(0,0,0) */
+  will-change: transform;
+  padding: 0.6rem 1.2rem;
+  background: #fef9c3;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #713f12;
+  display: inline-block;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.perf-gpu-promoted:hover {
+  transform: translateZ(0) scale(1.05);
+}
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 6 — prefers-reduced-motion
+   ──────────────────────────────────────────────────────────
+   Always provide a reduced-motion alternative. This mirrors
+   EaseMotion CSS's own pattern in core/animations.css.
+   ──────────────────────────────────────────────────────────*/
+
+@keyframes perf-bounce-accessible {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-14px); }
+}
+
+.perf-accessible {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #f0fdf4;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #14532d;
+  animation: perf-bounce-accessible 1s ease-in-out infinite;
+}
+
+/* Respects the user's OS-level "reduce motion" setting */
+@media (prefers-reduced-motion: reduce) {
+  .perf-accessible {
+    animation: none;
+    /* Provide a static alternative so content is still visible */
+    opacity: 0.85;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   SECTION 7 — contain: layout style paint
+   ──────────────────────────────────────────────────────────
+   CSS containment tells the browser that this subtree is
+   independent, so reflows inside it don't affect the rest
+   of the page — important for animating many items.
+   ──────────────────────────────────────────────────────────*/
+
+.perf-contained {
+  contain: layout style paint;
+  padding: 0.6rem 1.2rem;
+  background: #e0f2fe;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #0c4a6e;
+  display: inline-block;
+}
+
+/* ── Summary note ─────────────────────────────────────────── */
+.pg-summary {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 10px;
+  padding: 1.75rem;
+}
+
+.pg-summary h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  margin-bottom: 1rem;
+}
+
+.pg-summary ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pg-summary li::before {
+  content: "✅ ";
+}
+
+.pg-summary li {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.pg-footer {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* ──────────────────────────────────────────────────────────
+   Global reduced-motion guard — mirrors EaseMotion CSS core
+   ──────────────────────────────────────────────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dandelion Puff · seeds blow away on click</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="dandelion-container">
+      <div class="dandelion-display" id="dandelionDisplay">
+        <!-- Canvas for dandelion -->
+        <canvas id="dandelionCanvas"></canvas>
+        
+        <!-- Dandelion Info -->
+        <div class="dandelion-info">
+          <span class="info-label">🌱 Seeds</span>
+          <span class="info-value" id="seedCount">0</span>
+        </div>
+
+        <!-- Dandelion Controls -->
+        <div class="dandelion-controls">
+          <div class="control-group">
+            <label class="control-label">🌬️ Wind</label>
+            <input type="range" class="control-slider" id="windSlider" min="0" max="100" value="50">
+            <span class="control-value" id="windValue">50%</span>
+          </div>
+          <div class="control-group">
+            <label class="control-label">🎨 Color</label>
+            <div class="color-options">
+              <button class="color-btn active" data-color="white" title="White">⚪</button>
+              <button class="color-btn" data-color="pink" title="Pink">💗</button>
+              <button class="color-btn" data-color="gold" title="Gold">💛</button>
+              <button class="color-btn" data-color="purple" title="Purple">💜</button>
+              <button class="color-btn" data-color="blue" title="Blue">💙</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dandelion Text -->
+        <div class="dandelion-text">
+          <span class="text-label">🌱 Dandelion</span>
+          <span class="text-message" id="dandelionMessage">Click to blow the seeds away</span>
+        </div>
+      </div>
+      
+      <div class="dandelion-status">
+        <span id="dandelionStatus">🌱 Click the dandelion to release its seeds</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-reset" id="resetBtn">⟳ Reset</button>
+    </div>
+    <div class="footer-note">
+      <span>🌱 dandelion puff · 5 colors · wind control</span>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM refs
+      const canvas = document.getElementById('dandelionCanvas');
+      const ctx = canvas.getContext('2d');
+      const display = document.getElementById('dandelionDisplay');
+      const seedCount = document.getElementById('seedCount');
+      const dandelionStatus = document.getElementById('dandelionStatus');
+      const dandelionMessage = document.getElementById('dandelionMessage');
+      const resetBtn = document.getElementById('resetBtn');
+      const windSlider = document.getElementById('windSlider');
+      const windValue = document.getElementById('windValue');
+      const colorBtns = document.querySelectorAll('.color-btn');
+
+      // State
+      let seeds = [];
+      let animationId = null;
+      let time = 0;
+      let currentColor = 'white';
+      let isBlown = false;
+
+      // Color configurations
+      const colorConfigs = {
+        white: { main: '#f0f0f0', glow: 'rgba(255,255,255,0.2)', seed: '#e8e8e8' },
+        pink: { main: '#f472b6', glow: 'rgba(244,114,182,0.2)', seed: '#f9a8d4' },
+        gold: { main: '#fbbf24', glow: 'rgba(251,191,36,0.2)', seed: '#fcd34d' },
+        purple: { main: '#a78bfa', glow: 'rgba(167,139,250,0.2)', seed: '#c4b5fd' },
+        blue: { main: '#60a5fa', glow: 'rgba(96,165,250,0.2)', seed: '#93c5fd' }
+      };
+
+      // Seed class
+      class Seed {
+        constructor(x, y, angle, color) {
+          this.x = x || 0;
+          this.y = y || 0;
+          this.angle = angle || Math.random() * Math.PI * 2;
+          this.distance = 0;
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.color = color || currentColor;
+          this.size = 1 + Math.random() * 2;
+          this.wobble = 0.2 + Math.random() * 0.5;
+          this.life = 1;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+          this.glow = 0.3 + Math.random() * 0.4;
+          this.floating = false;
+          this.startX = x;
+          this.startY = y;
+        }
+
+        update(wind) {
+          const windForce = wind / 100;
+          this.distance += this.speed * (0.5 + windForce * 0.5);
+          this.phase += 0.02 + windForce * 0.01;
+          this.rotation += this.rotationSpeed;
+          
+          // Drift with wind
+          const drift = windForce * 0.3;
+          this.x = this.startX + Math.cos(this.angle) * this.distance + Math.sin(this.phase) * this.wobble * 2;
+          this.y = this.startY + Math.sin(this.angle) * this.distance * 0.3 + Math.cos(this.phase) * this.wobble * 1.5;
+          this.x += Math.sin(this.phase * 0.5) * drift * 5;
+          this.y += Math.cos(this.phase * 0.3) * drift * 2;
+          
+          // Upward float
+          this.y -= windForce * 0.1;
+          
+          this.life -= 0.001;
+          return this.life > 0;
+        }
+
+        draw(ctx) {
+          const colorData = colorConfigs[this.color];
+          const alpha = this.life * 0.8;
+          const size = this.size * (0.5 + this.life * 0.5);
+          
+          // Glow
+          ctx.save();
+          const glowSize = size * 4 * this.glow;
+          const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowSize);
+          grad.addColorStop(0, colorData.glow);
+          grad.addColorStop(0.3, colorData.glow);
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          ctx.fillStyle = grad;
+          ctx.shadowColor = colorData.main;
+          ctx.shadowBlur = 10;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Seed body
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = colorData.seed;
+          ctx.globalAlpha = alpha * 0.9;
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          
+          // Main seed shape
+          ctx.beginPath();
+          ctx.moveTo(0, -size * 2);
+          ctx.quadraticCurveTo(size * 1.2, -size * 1.2, size, -size * 0.3);
+          ctx.quadraticCurveTo(size * 0.8, size * 0.3, 0, size * 0.5);
+          ctx.quadraticCurveTo(-size * 0.8, size * 0.3, -size, -size * 0.3);
+          ctx.quadraticCurveTo(-size * 1.2, -size * 1.2, 0, -size * 2);
+          ctx.closePath();
+          ctx.fill();
+          
+          // Seed center
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = alpha * 0.3;
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.arc(0, -size * 0.5, size * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Seed lines
+          ctx.globalAlpha = alpha * 0.15;
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 0.3;
+          for (let i = 0; i < 4; i++) {
+            const angle = (i / 4) * Math.PI * 2 + Math.PI / 4;
+            const len = size * 1.2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * len, Math.sin(angle) * len);
+            ctx.stroke();
+          }
+          
+          ctx.restore();
+        }
+      }
+
+      // Generate dandelion seeds
+      function generateSeeds() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 - 20;
+        const count = 40 + Math.floor(Math.random() * 30);
+        
+        seeds = [];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 10 + Math.random() * 60;
+          const x = cx + Math.cos(angle) * distance;
+          const y = cy + Math.sin(angle) * distance * 0.5;
+          const seed = new Seed(x, y, angle, currentColor);
+          seed.distance = distance;
+          seed.startX = x;
+          seed.startY = y;
+          seed.speed = 0.3 + Math.random() * 0.5;
+          seeds.push(seed);
+        }
+        seedCount.textContent = seeds.length;
+        isBlown = false;
+      }
+
+      // Draw dandelion stem
+      function drawStem() {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2 + 20;
+        const colorData = colorConfigs[currentColor];
+        
+        ctx.save();
+        ctx.strokeStyle = '#2d5a3a';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = 'rgba(0,0,0,0.1)';
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy + 20);
+        ctx.quadraticCurveTo(cx - 5, cy + 10, cx - 2, cy);
+        ctx.stroke();
+        ctx.restore();
+        
+        // Center glow
+        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+        grad.addColorStop(0, colorData.glow);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw background
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        
+        // Sky gradient
+        const grad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.7);
+        grad.addColorStop(0, 'rgba(10, 15, 30, 0.3)');
+        grad.addColorStop(0.5, 'rgba(5, 10, 25, 0.4)');
+        grad.addColorStop(1, 'rgba(0, 0, 10, 0.6)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+        
+        // Ground
+        ctx.fillStyle = 'rgba(20, 40, 20, 0.15)';
+        ctx.beginPath();
+        ctx.moveTo(0, h);
+        for (let i = 0; i <= w; i += 10) {
+          const y = h - 5 + Math.sin(i * 0.02 + 1) * 3;
+          ctx.lineTo(i, y);
+        }
+        ctx.lineTo(w, h);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Grass blades
+        ctx.strokeStyle = 'rgba(30, 60, 30, 0.1)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 15; i++) {
+          const x = Math.random() * w;
+          const y = h - 5 + Math.sin(x * 0.02) * 3;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.quadraticCurveTo(x + (Math.random() - 0.5) * 10, y - 10 - Math.random() * 10, x + (Math.random() - 0.5) * 8, y - 5 - Math.random() * 15);
+          ctx.stroke();
+        }
+      }
+
+      // Blow seeds
+      function blowSeeds() {
+        if (isBlown) return;
+        isBlown = true;
+        
+        const wind = parseInt(windSlider.value);
+        seeds.forEach(seed => {
+          seed.floating = true;
+          seed.speed = 0.5 + Math.random() * 2 * (1 + wind / 100);
+          seed.angle += (Math.random() - 0.5) * 0.5;
+        });
+        
+        dandelionStatus.textContent = '🌬️ Seeds floating away! ✨';
+        dandelionStatus.style.color = '#fbbf24';
+        dandelionMessage.textContent = '🌸 Seeds carried by the wind';
+        dandelionMessage.style.color = '#fbbf24';
+        
+        setTimeout(() => {
+          dandelionStatus.textContent = '🌱 Click the dandelion to release its seeds';
+          dandelionStatus.style.color = '#94a3b8';
+          dandelionMessage.textContent = 'Click to blow the seeds away';
+          dandelionMessage.style.color = '#94a3b8';
+        }, 2000);
+      }
+
+      // Reset
+      function resetDandelion() {
+        generateSeeds();
+        dandelionStatus.textContent = '🔄 Reset complete';
+        dandelionStatus.style.color = '#94a3b8';
+        dandelionMessage.textContent = 'Click to blow the seeds away';
+        dandelionMessage.style.color = '#94a3b8';
+        setTimeout(() => {
+          dandelionStatus.textContent = '🌱 Click the dandelion to release its seeds';
+          dandelionStatus.style.color = '#94a3b8';
+        }, 1000);
+      }
+
+      // Set color
+      function setColor(color) {
+        currentColor = color;
+        colorBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.color === color);
+        });
+        const colorData = colorConfigs[color];
+        dandelionStatus.textContent = `🎨 Color: ${colorData.label}`;
+        dandelionStatus.style.color = colorData.main;
+        generateSeeds();
+        setTimeout(() => {
+          dandelionStatus.textContent = '🌱 Click the dandelion to release its seeds';
+          dandelionStatus.style.color = '#94a3b8';
+        }, 1500);
+      }
+
+      // Resize canvas
+      function resizeCanvas() {
+        const rect = display.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        generateSeeds();
+      }
+
+      // Animation loop
+      function animate() {
+        time += 0.02;
+        const wind = parseInt(windSlider.value);
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBackground();
+        drawStem();
+        
+        // Update and draw seeds
+        seeds = seeds.filter(seed => {
+          const alive = seed.update(wind);
+          if (alive) seed.draw(ctx);
+          return alive;
+        });
+        
+        // Update seed count
+        seedCount.textContent = seeds.length;
+        
+        // If all seeds are gone, regenerate after a delay
+        if (seeds.length === 0 && isBlown) {
+          setTimeout(() => {
+            if (seeds.length === 0) {
+              generateSeeds();
+              dandelionStatus.textContent = '🌱 Dandelion regenerated!';
+              dandelionStatus.style.color = '#4ade80';
+              setTimeout(() => {
+                dandelionStatus.textContent = '🌱 Click the dandelion to release its seeds';
+                dandelionStatus.style.color = '#94a3b8';
+              }, 1500);
+            }
+          }, 2000);
+        }
+        
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // Event listeners
+      display.addEventListener('click', function(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const dist = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
+        
+        // Click on dandelion or nearby
+        if (dist < 120) {
+          blowSeeds();
+        }
+      });
+
+      windSlider.addEventListener('input', function() {
+        windValue.textContent = this.value + '%';
+      });
+
+      colorBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          setColor(this.dataset.color);
+        });
+      });
+
+      if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          resetDandelion();
+        });
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key;
+        if (key === ' ' || key === 'Space') {
+          e.preventDefault();
+          blowSeeds();
+        } else if (key === 'r' || key === 'R') {
+          e.preventDefault();
+          resetDandelion();
+        }
+      });
+
+      // Resize
+      window.addEventListener('resize', resizeCanvas);
+
+      // Initialize
+      resizeCanvas();
+      animate();
+      
+      console.log('🌱 Dandelion Puff ready · shortcuts: [Space] Blow, [R] Reset');
+    })();
+  </script>
+</body>
+</html>

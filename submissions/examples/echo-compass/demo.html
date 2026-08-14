@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echo Compass</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main class="compass-app">
+
+    <section class="compass-card">
+
+      <div class="header">
+        <span class="eyebrow">NAVIGATION SYSTEM</span>
+        <h1>Echo Compass</h1>
+        <p>Navigate through animated directional waves.</p>
+      </div>
+
+      <div class="compass-wrap">
+
+        <canvas id="compassCanvas"></canvas>
+
+        <div class="compass">
+
+          <div class="direction direction-n" data-direction="N">N</div>
+          <div class="direction direction-ne" data-direction="NE">NE</div>
+          <div class="direction direction-e" data-direction="E">E</div>
+          <div class="direction direction-se" data-direction="SE">SE</div>
+          <div class="direction direction-s" data-direction="S">S</div>
+          <div class="direction direction-sw" data-direction="SW">SW</div>
+          <div class="direction direction-w" data-direction="W">W</div>
+          <div class="direction direction-nw" data-direction="NW">NW</div>
+
+          <div class="needle" id="needle">
+            <div class="needle-tip"></div>
+          </div>
+
+          <button class="core" id="pulseButton" aria-label="Emit pulse">
+            <span></span>
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="status">
+        <div>
+          <span class="status-label">HEADING</span>
+          <strong id="heading">NORTH</strong>
+        </div>
+
+        <div>
+          <span class="status-label">MODE</span>
+          <strong id="modeLabel">NORMAL</strong>
+        </div>
+
+        <div>
+          <span class="status-label">PULSES</span>
+          <strong id="pulseCount">0</strong>
+        </div>
+      </div>
+
+      <div class="controls">
+
+        <div class="control-row">
+          <label for="intensity">Wave Intensity</label>
+          <output id="intensityValue">60%</output>
+        </div>
+
+        <input
+          id="intensity"
+          type="range"
+          min="0"
+          max="100"
+          value="60"
+        >
+
+        <div class="mode-buttons">
+          <button data-mode="calm">Calm</button>
+          <button class="active" data-mode="normal">Normal</button>
+          <button data-mode="storm">Storm</button>
+        </div>
+
+        <button class="reset" id="resetButton">
+          Reset Compass
+        </button>
+
+      </div>
+
+      <p class="hint">
+        Click a direction · Space to pulse · R to reset
+      </p>
+
+    </section>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("compassCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const needle = document.getElementById("needle");
+    const heading = document.getElementById("heading");
+    const modeLabel = document.getElementById("modeLabel");
+    const pulseCount = document.getElementById("pulseCount");
+
+    const intensitySlider = document.getElementById("intensity");
+    const intensityValue = document.getElementById("intensityValue");
+
+    const directions = {
+      N: 0,
+      NE: 45,
+      E: 90,
+      SE: 135,
+      S: 180,
+      SW: 225,
+      W: 270,
+      NW: 315
+    };
+
+    const directionNames = {
+      N: "NORTH",
+      NE: "NORTHEAST",
+      E: "EAST",
+      SE: "SOUTHEAST",
+      S: "SOUTH",
+      SW: "SOUTHWEST",
+      W: "WEST",
+      NW: "NORTHWEST"
+    };
+
+    let currentAngle = 0;
+    let targetAngle = 0;
+    let pulses = [];
+    let count = 0;
+
+    let mode = "normal";
+
+    const modeSettings = {
+      calm: {
+        speed: 0.35,
+        lifetime: 140
+      },
+      normal: {
+        speed: 0.7,
+        lifetime: 110
+      },
+      storm: {
+        speed: 1.2,
+        lifetime: 80
+      }
+    };
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+
+      canvas.width = rect.width * devicePixelRatio;
+      canvas.height = rect.height * devicePixelRatio;
+
+      ctx.setTransform(
+        devicePixelRatio,
+        0,
+        0,
+        devicePixelRatio,
+        0,
+        0
+      );
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    function shortestAngle(current, target) {
+      let difference = target - current;
+
+      while (difference > 180) difference -= 360;
+      while (difference < -180) difference += 360;
+
+      return current + difference;
+    }
+
+    function setDirection(direction) {
+      const angle = directions[direction];
+
+      targetAngle = shortestAngle(currentAngle, angle);
+
+      heading.textContent = directionNames[direction];
+
+      document
+        .querySelectorAll(".direction")
+        .forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.direction === direction
+          );
+        });
+
+      createPulse();
+    }
+
+    function createPulse() {
+      pulses.push({
+        radius: 20,
+        opacity: 1,
+        angle: currentAngle,
+        progress: 0
+      });
+
+      count++;
+
+      pulseCount.textContent = count;
+    }
+
+    document.querySelectorAll(".direction").forEach(button => {
+      button.addEventListener("click", () => {
+        setDirection(button.dataset.direction);
+      });
+    });
+
+    document
+      .getElementById("pulseButton")
+      .addEventListener("click", createPulse);
+
+    intensitySlider.addEventListener("input", () => {
+      intensityValue.textContent =
+        intensitySlider.value + "%";
+    });
+
+    document.querySelectorAll(".mode-buttons button").forEach(button => {
+      button.addEventListener("click", () => {
+
+        document
+          .querySelectorAll(".mode-buttons button")
+          .forEach(btn => btn.classList.remove("active"));
+
+        button.classList.add("active");
+
+        mode = button.dataset.mode;
+
+        modeLabel.textContent = mode.toUpperCase();
+      });
+    });
+
+    document
+      .getElementById("resetButton")
+      .addEventListener("click", () => {
+
+        currentAngle = 0;
+        targetAngle = 0;
+
+        pulses = [];
+        count = 0;
+
+        pulseCount.textContent = "0";
+        heading.textContent = "NORTH";
+
+        document
+          .querySelectorAll(".direction")
+          .forEach(button => {
+            button.classList.toggle(
+              "active",
+              button.dataset.direction === "N"
+            );
+          });
+      });
+
+    document.addEventListener("keydown", event => {
+
+      if (event.code === "Space") {
+        event.preventDefault();
+        createPulse();
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        document.getElementById("resetButton").click();
+      }
+
+      const keyDirections = {
+        ArrowUp: "N",
+        ArrowRight: "E",
+        ArrowDown: "S",
+        ArrowLeft: "W"
+      };
+
+      if (keyDirections[event.key]) {
+        setDirection(keyDirections[event.key]);
+      }
+
+      const number = parseInt(event.key);
+
+      if (number >= 1 && number <= 8) {
+        const direction =
+          Object.keys(directions)[number - 1];
+
+        setDirection(direction);
+      }
+    });
+
+    function drawGrid(width, height) {
+
+      ctx.save();
+
+      ctx.strokeStyle = "rgba(120, 190, 255, 0.08)";
+      ctx.lineWidth = 1;
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      for (let radius = 50; radius < width; radius += 50) {
+
+        ctx.beginPath();
+        ctx.arc(
+          centerX,
+          centerY,
+          radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawPulses(width, height) {
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      pulses.forEach(pulse => {
+
+        const settings = modeSettings[mode];
+
+        pulse.radius += settings.speed;
+
+        pulse.progress =
+          pulse.radius / Math.min(width, height);
+
+        pulse.opacity =
+          Math.max(0, 1 - pulse.progress);
+
+        const radians =
+          pulse.angle * Math.PI / 180;
+
+        const distance = pulse.radius;
+
+        const x =
+          centerX + Math.sin(radians) * distance;
+
+        const y =
+          centerY - Math.cos(radians) * distance;
+
+        ctx.save();
+
+        ctx.globalAlpha =
+          pulse.opacity *
+          (0.3 + Number(intensitySlider.value) / 140);
+
+        ctx.beginPath();
+
+        ctx.arc(
+          x,
+          y,
+          5 + pulse.radius * 0.025,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.restore();
+      });
+
+      pulses = pulses.filter(
+        pulse =>
+          pulse.opacity > 0 &&
+          pulse.radius < Math.max(width, height)
+      );
+    }
+
+    function animate() {
+
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+
+      ctx.clearRect(0, 0, width, height);
+
+      currentAngle +=
+        (targetAngle - currentAngle) * 0.08;
+
+      needle.style.transform =
+        `translate(-50%, -50%) rotate(${currentAngle}deg)`;
+
+      drawGrid(width, height);
+      drawPulses(width, height);
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+
+</body>
+</html>

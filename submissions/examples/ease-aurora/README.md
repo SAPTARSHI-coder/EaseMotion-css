@@ -1,56 +1,36 @@
-# ease-aurora
+# Aurora Background Animation (`ease-aurora`)
 
-## What does this do?
+An intermediate, atmosphere-first background utility component that renders a living aurora borealis effect using layered radial gradients, GPU-composited motion, and slow hue rotation — all driven purely by CSS.
 
-Applies a smooth, looping Aurora Borealis / Northern Lights animated background using pure CSS gradient keyframes — no JavaScript, no SVG, no dependencies.
+## Technical Composition Breakdown
 
-## How is it used?
-Markup
-
-
-<!-- Basic aurora background -->
-<section class="ease-aurora">
-  <h1>Hero Section</h1>
-</section>
+- **Triple Radial Gradient Orbs:** Three independent gradient layers (`::before`, `::after`, and `.aurora-layer`) each carry two overlapping `radial-gradient` ellipses, producing five distinct color bands that blend via `mix-blend-mode: screen` to mimic the additive light behavior of real auroral emissions.
+- **Independent Drift Axes:** Each orb follows its own `translate` + `scale` keyframe path on a different duration multiplier (`1×`, `1.25×`, `1.5×`), ensuring the three layers never align or repeat in a visible pattern across the full cycle.
+- **Hue-Rotation Shift:** A separate `aurora-hue` animation slowly rotates the `filter: hue-rotate()` value on each orb layer at yet another independent speed, continuously cycling all five palette colors through the spectrum for the dreamy, ever-changing feel specified in the acceptance criteria.
+- **8–12s Dreamy Cycle:** The base `--aurora-duration` token defaults to `10s`, cleanly within the accepted range, and governs all three orb timings proportionally — change one value, everything scales together.
+- **Configurable Color System:** All five aurora band colors are exposed as CSS custom properties (`--aurora-1` through `--aurora-5`) on the element itself, enabling per-instance palette overrides with a single CSS block and no class conflicts.
+- **Compositor Native Operations:** Every moving property is limited to `transform`, `opacity`, and `filter` — zero layout or paint work — wrapped in `will-change` declarations for guaranteed 60fps on modern hardware.
+- **Opacity Breathe Layer:** A gentle `aurora-breathe` animation slowly pulses the overall opacity of the container on a `1.3×` cycle, preventing the background from ever feeling locked or frozen between gradient peaks.
+- **Reduced Motion Architecture:** Houses `@media (prefers-reduced-motion: reduce)` safeguards that strip all animations from every layer simultaneously, leaving a static gradient backdrop that still looks intentional.
 
-<!-- Speed variants -->
-<div class="ease-aurora ease-aurora-slow">Gentle, slow aurora</div>
-<div class="ease-aurora ease-aurora-fast">Energetic, fast aurora</div>
+## Palette Variants (Demo)
 
-<!-- Color theme variants -->
-<div class="ease-aurora ease-aurora-green">Green dominant</div>
-<div class="ease-aurora ease-aurora-purple">Purple dominant</div>
-<div class="ease-aurora ease-aurora-blue">Blue dominant</div>
+| Name | Character |
+|---|---|
+| Default | Classic polar green-violet |
+| Arctic | Cool teal and ice blue |
+| Solar Flare | Warm orange, gold, magenta |
+| Rosé | Pink, raspberry, deep violet |
+| Moonlit | Soft indigo and periwinkle |
 
-<!-- Works on images and any block element -->
-<img class="ease-aurora" src="photo.jpg" alt="Profile" 
-     style="width:120px; height:120px; border-radius:50%;" />
+## Workspace Tree Map
 
-### Class Reference
+```
+submissions/examples/ease-aurora/
+├── demo.html     # Live visual demo with hero section and palette swatches
+├── style.css     # Modular animation utility stylesheet
+└── README.md     # This file
+```
 
-|Class               |Description                             |
-|--------------------|----------------------------------------|
-|`ease-aurora`       |Base class — default 8s aurora animation|
-|`ease-aurora-slow`  |Gentle 16s animation                    |
-|`ease-aurora-fast`  |Energetic 4s animation                  |
-|`ease-aurora-green` |Green-dominant color theme              |
-|`ease-aurora-purple`|Purple-dominant color theme             |
-|`ease-aurora-blue`  |Blue-dominant color theme               |
-|`ease-aurora-pause` |Pauses animation on hover               |
-
-### CSS Custom Property
-CSS
-
-
-/* Override duration directly */
-.my-element {
-  --aurora-duration: 12s;
-}
-
-## Why is it useful?
-
-Aurora/northern-lights backgrounds are one of the most popular visual trends in modern UI — seen in hero sections, loading screens, and premium SaaS products. EaseMotion CSS currently has no ambient background animation utility.
-
-This fills that gap with a single readable class that produces a stunning, atmospheric visual using only background-size, background-position, and CSS @keyframes. It follows EaseMotion’s core philosophy: powerful visual result from one class, zero JavaScript, fully composable with existing utilities like ease-fade-in and ease-delay-*.
-
-Works on any block element: div, section, img, header.
+---
+Crafted with 💜 by **[pari-dubey1](https://github.com/pari-dubey1)**

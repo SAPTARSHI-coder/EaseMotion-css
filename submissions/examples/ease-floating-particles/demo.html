@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Floating Particles Component</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <!-- DEMO WRAPPER -->
+    <div class="demo-wrapper">
+        <h1>Floating Particles</h1>
+        <p class="subtitle">Interactive particle system following cursor</p>
+
+        <!-- FLOATING PARTICLES COMPONENT -->
+        <div class="particles-container">
+            <div class="particles-wrapper">
+                <div class="particles-canvas-wrapper">
+                    <canvas id="particlesCanvas"></canvas>
+                    <div class="particles-overlay">
+                        <h2>Move your cursor</h2>
+                        <p>Watch the particles follow your mouse</p>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="particles-controls">
+                    <div class="control-group">
+                        <label for="countSlider">Count:</label>
+                        <input type="range" id="countSlider" min="30" max="300" step="10" value="150" />
+                        <span id="countValue">150</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="speedSlider">Speed:</label>
+                        <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="0.8" />
+                        <span id="speedValue">0.8</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="sizeSlider">Size:</label>
+                        <input type="range" id="sizeSlider" min="1" max="6" step="0.5" value="3" />
+                        <span id="sizeValue">3</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="colorPicker">Color:</label>
+                        <input type="color" id="colorPicker" value="#4facfe" />
+                    </div>
+                </div>
+
+                <div class="particles-actions">
+                    <button class="particles-ctrl-btn" id="toggleParticlesBtn">⏸ Toggle Particles</button>
+                    <button class="particles-ctrl-btn" id="resetBtn">⟳ Reset</button>
+                    <button class="particles-ctrl-btn" id="randomizeBtn">🎲 Randomize</button>
+                    <button class="particles-ctrl-btn" id="explodeBtn">💥 Explode</button>
+                </div>
+
+                <div class="particles-status">
+                    <span class="status-label">Particles:</span>
+                    <span class="status-value" id="particleCount">0</span>
+                    <span class="status-label">FPS:</span>
+                    <span class="status-value" id="fpsDisplay">0</span>
+                    <span class="status-label">Status:</span>
+                    <span class="status-value" id="statusDisplay">Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variants -->
+        <div class="variants-section">
+            <h3>Variants</h3>
+            <div class="variants-grid">
+                <div class="variant-card" id="variant1">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #4facfe, #43e97b);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Aurora</span>
+                </div>
+                <div class="variant-card" id="variant2">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Sunset</span>
+                </div>
+                <div class="variant-card" id="variant3">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #f9d976, #f39c12);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Gold</span>
+                </div>
+                <div class="variant-card" id="variant4">
+                    <div class="variant-preview" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                        <span>✨</span>
+                    </div>
+                    <span class="variant-label">Dream</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+    EMBEDDED JAVASCRIPT
+    ============================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================
+            // DOM REFERENCES
+            // ============================================
+            const canvas = document.getElementById('particlesCanvas');
+            const ctx = canvas.getContext('2d');
+            const particleCount = document.getElementById('particleCount');
+            const fpsDisplay = document.getElementById('fpsDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+            const countSlider = document.getElementById('countSlider');
+            const speedSlider = document.getElementById('speedSlider');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const countValue = document.getElementById('countValue');
+            const speedValue = document.getElementById('speedValue');
+            const sizeValue = document.getElementById('sizeValue');
+            const toggleParticlesBtn = document.getElementById('toggleParticlesBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const randomizeBtn = document.getElementById('randomizeBtn');
+            const explodeBtn = document.getElementById('explodeBtn');
+
+            // ============================================
+            // CONFIGURATION
+            // ============================================
+            const CONFIG = {
+                particleCount: 150,
+                speed: 0.8,
+                size: 3,
+                color: '#4facfe',
+                interactionRadius: 150,
+                enabled: true,
+                onToggle: function(enabled) {
+                    console.log(`✨ Particles ${enabled ? 'enabled' : 'disabled'}`);
+                },
+                onExplode: function() {
+                    console.log('💥 Particles exploded!');
+                }
+            };
+
+            // ============================================
+            // STATE
+            // ============================================
+            let particles = [];
+            let mouseX = -9999;
+            let mouseY = -9999;
+            let isEnabled = CONFIG.enabled;
+            let animationId = null;
+            let frameCount = 0;
+            let lastFpsUpdate = 0;
+            let currentFps = 0;
+
+            // ============================================
+            // CANVAS SETUP
+            // ============================================
+            function setupCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                ctx.scale(dpr, dpr);
+                return { width: rect.width, height: rect.height };
+            }
+
+            // ============================================
+            // PARTICLE CLASS
+            // ============================================
+            class Particle {
+                constructor(x, y) {
+                    this.x = x || Math.random() * canvas.width;
+                    this.y = y || Math.random() * canvas.height;
+                    this.size = CONFIG.size * (0.5 + Math.random() * 0.5);
+                    this.speedX = (Math.random() - 0.5) * CONFIG.speed * 0.5;
+                    this.speedY = (Math.random() - 0.5) * CONFIG.speed * 0.5;
+                    this.opacity = 0.3 + Math.random() * 0.7;
+                    this.hue = Math.random() * 60 - 30;
+                    this.wobble = Math.random() * Math.PI * 2;
+                    this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                    this.wobbleAmount = 0.5 + Math.random() * 1.5;
+                    this.trail = [];
+                    this.maxTrail = 3;
+                    this.isExploding = false;
+                    this.explodeSpeed = 0;
+                    this.explodeAngle = 0;
+                }
+
+                update() {
+                    if (!isEnabled) return;
+
+                    // Wobble motion
+                    this.wobble += this.wobbleSpeed;
+                    const wobbleX = Math.sin(this.wobble) * this.wobbleAmount * 0.1;
+                    const wobbleY = Math.cos(this.wobble * 0.7) * this.wobbleAmount * 0.1;
+
+                    // Mouse interaction
+                    const dx = mouseX - this.x;
+                    const dy = mouseY - this.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = CONFIG.interactionRadius;
+
+                    if (distance < maxDist && mouseX > -100) {
+                        const force = (1 - distance / maxDist) * CONFIG.speed * 0.3;
+                        const angle = Math.atan2(dy, dx);
+                        this.speedX += Math.cos(angle) * force * 0.1;
+                        this.speedY += Math.sin(angle) * force * 0.1;
+                    }
+
+                    // Explosion effect
+                    if (this.isExploding) {
+                        this.speedX += Math.cos(this.explodeAngle) * this.explodeSpeed * 0.05;
+                        this.speedY += Math.sin(this.explodeAngle) * this.explodeSpeed * 0.05;
+                        this.explodeSpeed *= 0.98;
+                        if (this.explodeSpeed < 0.1) {
+                            this.isExploding = false;
+                        }
+                    }
+
+                    // Apply speed with wobble
+                    this.x += this.speedX * CONFIG.speed * 0.5 + wobbleX;
+                    this.y += this.speedY * CONFIG.speed * 0.5 + wobbleY;
+
+                    // Friction
+                    this.speedX *= 0.99;
+                    this.speedY *= 0.99;
+
+                    // Boundary check with soft bounce
+                    const margin = 10;
+                    if (this.x < margin) { this.x = margin; this.speedX = Math.abs(this.speedX) * 0.5; }
+                    if (this.x > canvas.width - margin) { this.x = canvas.width - margin; this.speedX = -Math.abs(this.speedX) * 0.5; }
+                    if (this.y < margin) { this.y = margin; this.speedY = Math.abs(this.speedY) * 0.5; }
+                    if (this.y > canvas.height - margin) { this.y = canvas.height - margin; this.speedY = -Math.abs(this.speedY) * 0.5; }
+
+                    // Trail
+                    this.trail.push({ x: this.x, y: this.y });
+                    if (this.trail.length > this.maxTrail) {
+                        this.trail.shift();
+                    }
+                }
+
+                draw(ctx) {
+                    const color = CONFIG.color;
+                    
+                    // Draw trail
+                    if (this.trail.length > 1) {
+                        for (let i = 1; i < this.trail.length; i++) {
+                            const alpha = (i / this.trail.length) * this.opacity * 0.3;
+                            const size = this.size * (i / this.trail.length) * 0.5;
+                            ctx.beginPath();
+                            ctx.arc(this.trail[i].x, this.trail[i].y, size, 0, Math.PI * 2);
+                            ctx.fillStyle = color + Math.floor(alpha * 80).toString(16).padStart(2, '0');
+                            ctx.fill();
+                        }
+                    }
+
+                    // Glow effect
+                    const gradient = ctx.createRadialGradient(
+                        this.x, this.y, 0,
+                        this.x, this.y, this.size * 3
+                    );
+                    gradient.addColorStop(0, color + 'cc');
+                    gradient.addColorStop(0.5, color + '44');
+                    gradient.addColorStop(1, color + '00');
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+
+                    // Main particle
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = color + Math.floor(this.opacity * 200).toString(16).padStart(2, '0');
+                    ctx.fill();
+
+                    // Highlight
+                    ctx.beginPath();
+                    ctx.arc(this.x - this.size * 0.25, this.y - this.size * 0.25, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fill();
+                }
+
+                explode(force) {
+                    this.isExploding = true;
+                    this.explodeSpeed = force * (0.5 + Math.random() * 0.5);
+                    this.explodeAngle = Math.random() * Math.PI * 2;
+                }
+            }
+
+            // ============================================
+            // PARTICLE SYSTEM
+            // ============================================
+            function initParticles(count) {
+                particles = [];
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle());
+                }
+                particleCount.textContent = particles.length;
+            }
+
+            function updateParticles() {
+                particles.forEach(p => p.update());
+            }
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw connections between nearby particles
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 100) {
+                            const alpha = (1 - distance / 100) * 0.15;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = CONFIG.color + Math.floor(alpha * 200).toString(16).padStart(2, '0');
+                            ctx.lineWidth = 0.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+
+                // Draw particles
+                particles.forEach(p => p.draw(ctx));
+            }
+
+            function animate(timestamp) {
+                // FPS tracking
+                frameCount++;
+                if (timestamp - lastFpsUpdate > 1000) {
+                    currentFps = frameCount;
+                    frameCount = 0;
+                    lastFpsUpdate = timestamp;
+                    fpsDisplay.textContent = currentFps;
+                }
+
+                updateParticles();
+                drawParticles();
+                animationId = requestAnimationFrame(animate);
+            }
+
+            // ============================================
+            // CONTROLS
+            // ============================================
+            function toggleParticles() {
+                isEnabled = !isEnabled;
+                statusDisplay.textContent = isEnabled ? 'Active' : 'Paused';
+                statusDisplay.style.color = isEnabled ? '#34c759' : '#ff3b30';
+                toggleParticlesBtn.textContent = isEnabled ? '⏸ Toggle Particles' : '▶ Toggle Particles';
+                CONFIG.onToggle(isEnabled);
+            }
+
+            function resetParticles() {
+                const count = parseInt(countSlider.value);
+                initParticles(count);
+                statusDisplay.textContent = 'Reset';
+                setTimeout(() => {
+                    statusDisplay.textContent = isEnabled ? 'Active' : 'Paused';
+                }, 1000);
+            }
+
+            function randomizeParticles() {
+                const colors = ['#4facfe', '#34c759', '#ff3b30', '#f59e0b', '#6c5ce7', '#fd79a8', '#00d2d3', '#ff9f43'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                const randomCount = Math.floor(Math.random() * 200) + 50;
+                const randomSpeed = (Math.random() * 1.5 + 0.3);
+                const randomSize = Math.random() * 4 + 1.5;
+
+                countSlider.value = randomCount;
+                speedSlider.value = randomSpeed;
+                sizeSlider.value = randomSize;
+                colorPicker.value = randomColor;
+
+                countValue.textContent = Math.round(randomCount);
+                speedValue.textContent = randomSpeed.toFixed(1);
+                sizeValue.textContent = randomSize.toFixed(1);
+                CONFIG.color = randomColor;
+
+                initParticles(Math.round(randomCount));
+                CONFIG.speed = randomSpeed;
+                CONFIG.size = randomSize;
+
+                statusDisplay.textContent = '🎲 Randomized!';
+                setTimeout(() => {
+                    statusDisplay.textContent = isEnabled ? 'Active' : 'Paused';
+                }, 1500);
+            }
+
+            function explodeParticles() {
+                const force = 5 + Math.random() * 5;
+                particles.forEach(p => p.explode(force));
+                CONFIG.onExplode();
+                statusDisplay.textContent = '💥 Exploded!';
+                setTimeout(() => {
+                    statusDisplay.textContent = isEnabled ? 'Active' : 'Paused';
+                }, 1500);
+            }
+
+            // ============================================
+            // EVENT LISTENERS
+            // ============================================
+            // Mouse tracking
+            canvas.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (e.clientX - rect.left) * scaleX;
+                mouseY = (e.clientY - rect.top) * scaleY;
+            });
+
+            canvas.addEventListener('mouseleave', function() {
+                mouseX = -9999;
+                mouseY = -9999;
+            });
+
+            // Touch support
+            canvas.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const rect = this.getBoundingClientRect();
+                const touch = e.touches[0];
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                mouseX = (touch.clientX - rect.left) * scaleX;
+                mouseY = (touch.clientY - rect.top) * scaleY;
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', function() {
+                mouseX = -9999;
+                mouseY = -9999;
+            });
+
+            // Controls
+            countSlider.addEventListener('input', function() {
+                const val = parseInt(this.value);
+                countValue.textContent = val;
+                initParticles(val);
+            });
+
+            speedSlider.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                speedValue.textContent = val.toFixed(1);
+                CONFIG.speed = val;
+            });
+
+            sizeSlider.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                sizeValue.textContent = val.toFixed(1);
+                CONFIG.size = val;
+                particles.forEach(p => p.size = val * (0.5 + Math.random() * 0.5));
+            });
+
+            colorPicker.addEventListener('input', function() {
+                CONFIG.color = this.value;
+            });
+
+            toggleParticlesBtn.addEventListener('click', toggleParticles);
+            resetBtn.addEventListener('click', resetParticles);
+            randomizeBtn.addEventListener('click', randomizeParticles);
+            explodeBtn.addEventListener('click', explodeParticles);
+
+            // ============================================
+            // KEYBOARD SHORTCUTS
+            // ============================================
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleParticles();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetParticles();
+                }
+                if (e.key === 'e' || e.key === 'E') {
+                    explodeParticles();
+                }
+            });
+
+            // ============================================
+            // VARIANTS
+            // ============================================
+            function initVariant(card) {
+                const colorMap = {
+                    'Aurora': ['#4facfe', '#43e97b'],
+                    'Sunset': ['#f093fb', '#f5576c'],
+                    'Gold': ['#f9d976', '#f39c12'],
+                    'Dream': ['#a18cd1', '#fbc2eb']
+                };
+                
+                const label = card.querySelector('.variant-label').textContent;
+                const colors = colorMap[label] || ['#4facfe', '#43e97b'];
+                
+                card.addEventListener('click', function() {
+                    const primary = colors[0];
+                    colorPicker.value = primary;
+                    CONFIG.color = primary;
+                    statusDisplay.textContent = `🎨 ${label}`;
+                    setTimeout(() => {
+                        statusDisplay.textContent = isEnabled ? 'Active' : 'Paused';
+                    }, 1500);
+                });
+            }
+
+            document.querySelectorAll('.variant-card').forEach(initVariant);
+
+            // ============================================
+            // CUSTOM API FOR PROGRAMMATIC CONTROL
+            // ============================================
+            window.FloatingParticles = {
+                toggle: toggleParticles,
+                reset: resetParticles,
+                randomize: randomizeParticles,
+                explode: explodeParticles,
+                setColor: (color) => {
+                    colorPicker.value = color;
+                    CONFIG.color = color;
+                },
+                setCount: (count) => {
+                    countSlider.value = count;
+                    countValue.textContent = count;
+                    initParticles(count);
+                },
+                setSpeed: (speed) => {
+                    speedSlider.value = speed;
+                    speedValue.textContent = speed.toFixed(1);
+                    CONFIG.speed = speed;
+                },
+                setSize: (size) => {
+                    sizeSlider.value = size;
+                    sizeValue.textContent = size.toFixed(1);
+                    CONFIG.size = size;
+                    particles.forEach(p => p.size = size * (0.5 + Math.random() * 0.5));
+                },
+                isEnabled: () => isEnabled,
+                getState: () => ({
+                    count: particles.length,
+                    speed: CONFIG.speed,
+                    size: CONFIG.size,
+                    color: CONFIG.color,
+                    enabled: isEnabled
+                }),
+                configure: (config) => {
+                    Object.assign(CONFIG, config);
+                    if (config.color) {
+                        colorPicker.value = config.color;
+                    }
+                    if (config.particleCount) {
+                        countSlider.value = config.particleCount;
+                        countValue.textContent = config.particleCount;
+                        initParticles(config.particleCount);
+                    }
+                    if (config.speed) {
+                        speedSlider.value = config.speed;
+                        speedValue.textContent = config.speed.toFixed(1);
+                    }
+                    if (config.size) {
+                        sizeSlider.value = config.size;
+                        sizeValue.textContent = config.size.toFixed(1);
+                    }
+                }
+            };
+
+            // ============================================
+            // INITIAL SETUP
+            // ============================================
+            setupCanvas();
+            initParticles(CONFIG.particleCount);
+            animate(0);
+
+            // Handle resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    setupCanvas();
+                }, 200);
+            });
+
+            console.log('✅ Floating Particles initialized!');
+            console.log('📖 API: window.FloatingParticles');
+            console.log('📖 Usage:');
+            console.log('  - Move your cursor to interact with particles');
+            console.log('  - Keyboard shortcuts: Space (toggle), R (reset), E (explode)');
+            console.log('  - Adjust count, speed, size, and color');
+
+        })();
+    </script>
+</body>
+</html>
