@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ink Reverie</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">INTERACTIVE CANVAS</p>
+        <h1>Ink Reverie</h1>
+        <p class="subtitle">
+          Drop pigment into the void and watch it become motion.
+        </p>
+      </div>
+
+      <div class="counter">
+        <span>ACTIVE INK</span>
+        <strong id="inkCount">0</strong>
+      </div>
+    </section>
+
+    <section class="ink-wrapper">
+
+      <canvas id="inkCanvas"></canvas>
+
+      <div class="canvas-hint">
+        <span>✦</span>
+        Click or drag anywhere
+      </div>
+
+      <div class="status" id="status">
+        Waiting for pigment...
+      </div>
+
+    </section>
+
+    <section class="controls">
+
+      <div class="control">
+
+        <div class="control-header">
+          <label for="intensity">Pigment Intensity</label>
+          <span id="intensityValue">50%</span>
+        </div>
+
+        <input
+          id="intensity"
+          type="range"
+          min="10"
+          max="100"
+          value="50"
+        >
+
+      </div>
+
+      <div class="control">
+
+        <div class="control-header">
+          <label for="turbulence">Turbulence</label>
+          <span id="turbulenceValue">35%</span>
+        </div>
+
+        <input
+          id="turbulence"
+          type="range"
+          min="0"
+          max="100"
+          value="35"
+        >
+
+      </div>
+
+      <div class="palette-control">
+
+        <span class="control-title">Palette</span>
+
+        <div class="palettes">
+
+          <button
+            class="palette active"
+            data-palette="ocean"
+            title="Ocean"
+          >
+            🌊
+          </button>
+
+          <button
+            class="palette"
+            data-palette="sunset"
+            title="Sunset"
+          >
+            🌅
+          </button>
+
+          <button
+            class="palette"
+            data-palette="forest"
+            title="Forest"
+          >
+            🌿
+          </button>
+
+          <button
+            class="palette"
+            data-palette="mono"
+            title="Monochrome"
+          >
+            ◐
+          </button>
+
+        </div>
+
+      </div>
+
+      <button class="reset-btn" id="resetBtn">
+        Reset Canvas
+      </button>
+
+    </section>
+
+    <p class="keyboard">
+      SPACE — ink burst &nbsp;&nbsp; R — reset
+    </p>
+
+  </main>
+
+  <script>
+    const canvas = document.getElementById("inkCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const inkCount = document.getElementById("inkCount");
+    const status = document.getElementById("status");
+
+    const intensitySlider = document.getElementById("intensity");
+    const turbulenceSlider = document.getElementById("turbulence");
+
+    const intensityValue =
+      document.getElementById("intensityValue");
+
+    const turbulenceValue =
+      document.getElementById("turbulenceValue");
+
+    const palettes = {
+      ocean: [
+        "rgba(70, 220, 255,",
+        "rgba(100, 120, 255,",
+        "rgba(190, 80, 255,"
+      ],
+
+      sunset: [
+        "rgba(255, 150, 60,",
+        "rgba(255, 80, 130,",
+        "rgba(170, 70, 255,"
+      ],
+
+      forest: [
+        "rgba(70, 220, 150,",
+        "rgba(30, 180, 180,",
+        "rgba(170, 230, 80,"
+      ],
+
+      mono: [
+        "rgba(255, 255, 255,",
+        "rgba(190, 200, 210,",
+        "rgba(120, 130, 145,"
+      ]
+    };
+
+    let currentPalette = "ocean";
+    let ink = [];
+    let particles = [];
+
+    let width = 0;
+    let height = 0;
+
+    let pointerDown = false;
+    let lastInjection = 0;
+
+    class InkBloom {
+
+      constructor(x, y, power) {
+
+        this.x = x;
+        this.y = y;
+
+        this.radius = 2;
+
+        this.targetRadius =
+          25 + power * 1.2 + Math.random() * 40;
+
+        this.alpha = 0.8;
+
+        this.angle =
+          Math.random() * Math.PI * 2;
+
+        this.speed =
+          0.3 + Math.random() * 0.7;
+
+        this.life = 1;
+
+        this.seed =
+          Math.random() * 1000;
+
+        this.color =
+          palettes[currentPalette][
+            Math.floor(Math.random() * 3)
+          ];
+
+        this.branches = [];
+
+        const branchCount =
+          Math.floor(Math.random() * 4);
+
+        for (let i = 0; i < branchCount; i++) {
+
+          this.branches.push({
+            angle:
+              this.angle +
+              (Math.random() - 0.5) * 2,
+            length:
+              15 + Math.random() * 40,
+            phase:
+              Math.random() * Math.PI * 2
+          });
+
+        }
+      }
+
+      update() {
+
+        const turbulence =
+          Number(turbulenceSlider.value) / 100;
+
+        this.radius +=
+          (this.targetRadius - this.radius) * 0.025;
+
+        this.angle +=
+          Math.sin(this.seed + this.radius * 0.02)
+          * 0.01
+          * turbulence;
+
+        this.x +=
+          Math.cos(this.angle) *
+          this.speed *
+          turbulence;
+
+        this.y +=
+          Math.sin(this.angle) *
+          this.speed *
+          turbulence;
+
+        this.life -= 0.0018;
+
+        if (this.life < 0.55) {
+          this.alpha *= 0.997;
+        }
+
+        return this.life > 0.01;
+      }
+
+      draw() {
+
+        const gradient =
+          ctx.createRadialGradient(
+            this.x,
+            this.y,
+            0,
+            this.x,
+            this.y,
+            this.radius
+          );
+
+        gradient.addColorStop(
+          0,
+          this.color + this.alpha + ")"
+        );
+
+        gradient.addColorStop(
+          0.55,
+          this.color + (this.alpha * 0.45) + ")"
+        );
+
+        gradient.addColorStop(
+          1,
+          this.color + "0)"
+        );
+
+        ctx.beginPath();
+
+        ctx.fillStyle = gradient;
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.radius,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+
+        this.branches.forEach(branch => {
+
+          const wave =
+            Math.sin(
+              performance.now() * 0.002 +
+              branch.phase
+            ) * 5;
+
+          const length =
+            branch.length + wave;
+
+          const endX =
+            this.x +
+            Math.cos(branch.angle) * length;
+
+          const endY =
+            this.y +
+            Math.sin(branch.angle) * length;
+
+          ctx.beginPath();
+
+          ctx.strokeStyle =
+            this.color +
+            (this.alpha * 0.35) +
+            ")";
+
+          ctx.lineWidth = 1.5;
+
+          ctx.moveTo(
+            this.x,
+            this.y
+          );
+
+          ctx.quadraticCurveTo(
+            this.x +
+              Math.cos(branch.angle + 0.5) *
+              length *
+              0.5,
+
+            this.y +
+              Math.sin(branch.angle + 0.5) *
+              length *
+              0.5,
+
+            endX,
+            endY
+          );
+
+          ctx.stroke();
+        });
+      }
+    }
+
+    class PigmentParticle {
+
+      constructor(x, y) {
+
+        this.x = x;
+        this.y = y;
+
+        this.angle =
+          Math.random() * Math.PI * 2;
+
+        this.speed =
+          0.5 + Math.random() * 1.5;
+
+        this.life = 1;
+
+        this.size =
+          1 + Math.random() * 2;
+
+        this.color =
+          palettes[currentPalette][
+            Math.floor(Math.random() * 3)
+          ];
+      }
+
+      update() {
+
+        this.x +=
+          Math.cos(this.angle) * this.speed;
+
+        this.y +=
+          Math.sin(this.angle) * this.speed;
+
+        this.life -= 0.012;
+
+        return this.life > 0;
+      }
+
+      draw() {
+
+        ctx.beginPath();
+
+        ctx.fillStyle =
+          this.color + this.life + ")";
+
+        ctx.arc(
+          this.x,
+          this.y,
+          this.size,
+          0,
+          Math.PI * 2
+        );
+
+        ctx.fill();
+      }
+    }
+
+    function resizeCanvas() {
+
+      const rect =
+        canvas.getBoundingClientRect();
+
+      width = rect.width;
+      height = rect.height;
+
+      const ratio =
+        window.devicePixelRatio || 1;
+
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+
+      ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+      );
+    }
+
+    function injectInk(x, y) {
+
+      const power =
+        Number(intensitySlider.value);
+
+      ink.push(
+        new InkBloom(
+          x,
+          y,
+          power
+        )
+      );
+
+      const particleCount =
+        Math.floor(power / 10);
+
+      for (
+        let i = 0;
+        i < particleCount;
+        i++
+      ) {
+
+        particles.push(
+          new PigmentParticle(x, y)
+        );
+      }
+
+      status.textContent =
+        "Pigment is drifting...";
+
+      updateCounter();
+    }
+
+    function clearCanvas() {
+
+      ink = [];
+      particles = [];
+
+      status.textContent =
+        "Canvas cleared.";
+
+      updateCounter();
+    }
+
+    function updateCounter() {
+
+      inkCount.textContent =
+        ink.length;
+    }
+
+    function animate() {
+
+      ctx.fillStyle =
+        "rgba(7, 10, 18, 0.09)";
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height
+      );
+
+      ink =
+        ink.filter(bloom => {
+
+          const alive =
+            bloom.update();
+
+          if (alive) {
+            bloom.draw();
+          }
+
+          return alive;
+        });
+
+      particles =
+        particles.filter(particle => {
+
+          const alive =
+            particle.update();
+
+          if (alive) {
+            particle.draw();
+          }
+
+          return alive;
+        });
+
+      updateCounter();
+
+      requestAnimationFrame(animate);
+    }
+
+    canvas.addEventListener(
+      "pointerdown",
+      event => {
+
+        pointerDown = true;
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        injectInk(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    canvas.addEventListener(
+      "pointermove",
+      event => {
+
+        if (!pointerDown) {
+          return;
+        }
+
+        const now =
+          performance.now();
+
+        if (
+          now - lastInjection < 80
+        ) {
+          return;
+        }
+
+        lastInjection = now;
+
+        const rect =
+          canvas.getBoundingClientRect();
+
+        injectInk(
+          event.clientX - rect.left,
+          event.clientY - rect.top
+        );
+      }
+    );
+
+    window.addEventListener(
+      "pointerup",
+      () => {
+        pointerDown = false;
+      }
+    );
+
+    intensitySlider.addEventListener(
+      "input",
+      () => {
+
+        intensityValue.textContent =
+          intensitySlider.value + "%";
+      }
+    );
+
+    turbulenceSlider.addEventListener(
+      "input",
+      () => {
+
+        turbulenceValue.textContent =
+          turbulenceSlider.value + "%";
+      }
+    );
+
+    document
+      .querySelectorAll(".palette")
+      .forEach(button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            document
+              .querySelectorAll(".palette")
+              .forEach(item =>
+                item.classList.remove("active")
+              );
+
+            button.classList.add("active");
+
+            currentPalette =
+              button.dataset.palette;
+
+            status.textContent =
+              "Palette changed.";
+          }
+        );
+      });
+
+    document
+      .getElementById("resetBtn")
+      .addEventListener(
+        "click",
+        clearCanvas
+      );
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.code === "Space"
+        ) {
+
+          event.preventDefault();
+
+          injectInk(
+            width / 2,
+            height / 2
+          );
+        }
+
+        if (
+          event.key.toLowerCase() === "r"
+        ) {
+
+          clearCanvas();
+        }
+      }
+    );
+
+    window.addEventListener(
+      "resize",
+      resizeCanvas
+    );
+
+    resizeCanvas();
+
+    ctx.fillStyle =
+      "#070a12";
+
+    ctx.fillRect(
+      0,
+      0,
+      width,
+      height
+    );
+
+    animate();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>🐝 Buzzing Bee – Bee Buzzes Around Element</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🐝 Buzzing Bee</h1>
+            <div class="controls">
+                <button class="control-btn" id="toggleBtn" title="Toggle bee">🔊 Toggle</button>
+                <button class="control-btn" id="resetBtn" title="Reset">🔄 Reset</button>
+                <button class="control-btn" id="flowerBtn" title="Add flower">🌸 Add Flower</button>
+            </div>
+        </header>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+            <canvas id="beeCanvas" width="800" height="600"></canvas>
+            <div class="stats-overlay" id="statsOverlay">
+                <span id="beeStatus">🐝 Buzzing</span>
+                <span id="beeCount">🐝 1 bee</span>
+                <span id="flowerCount">🌸 0 flowers</span>
+            </div>
+            <div class="hint" id="hint">🐝 Watch the bee buzz around</div>
+        </div>
+
+        <!-- Footer Controls -->
+        <footer class="footer">
+            <div class="slider-group">
+                <label>🐝 Speed</label>
+                <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
+                <span id="speedLabel">50%</span>
+            </div>
+            <div class="slider-group">
+                <label>🔄 Wobble</label>
+                <input type="range" id="wobbleSlider" min="10" max="100" value="60" step="1" />
+                <span id="wobbleLabel">60%</span>
+            </div>
+            <div class="slider-group">
+                <label>🔊 Volume</label>
+                <input type="range" id="volumeSlider" min="0" max="100" value="50" step="1" />
+                <span id="volumeLabel">50%</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // Buzzing Bee – Full JavaScript (embedded)
+        // ============================================================
+
+        (function() {
+            'use strict';
+
+            // --- DOM refs ---
+            const canvas = document.getElementById('beeCanvas');
+            const ctx = canvas.getContext('2d');
+            const beeStatus = document.getElementById('beeStatus');
+            const beeCount = document.getElementById('beeCount');
+            const flowerCount = document.getElementById('flowerCount');
+            const hint = document.getElementById('hint');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const flowerBtn = document.getElementById('flowerBtn');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+            const wobbleSlider = document.getElementById('wobbleSlider');
+            const wobbleLabel = document.getElementById('wobbleLabel');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeLabel = document.getElementById('volumeLabel');
+
+            // --- Canvas sizing ---
+            const W = 800,
+                H = 600;
+            canvas.width = W;
+            canvas.height = H;
+
+            // --- State ---
+            let isActive = true;
+            let time = 0;
+            let animationId = null;
+            let totalFlowers = 0;
+
+            // --- Parameters ---
+            let speed = 50; // 10-100
+            let wobble = 60; // 10-100
+            let volume = 50; // 0-100
+
+            // --- Audio context ---
+            let audioCtx = null;
+            let isAudioReady = false;
+            let audioGain = null;
+            let buzzOscillator = null;
+            let buzzGain = null;
+
+            // --- Bee ---
+            let bee = {
+                x: W / 2,
+                y: H / 2,
+                targetX: W / 2,
+                targetY: H / 2,
+                size: 20,
+                angle: 0,
+                wingAngle: 0,
+                wingSpeed: 0.2,
+                buzzPhase: 0,
+                trail: [],
+                maxTrail: 20
+            };
+
+            // --- Flowers ---
+            let flowers = [];
+
+            // --- Pollen particles ---
+            let pollenParticles = [];
+
+            // --- Bee trail particles ---
+            let trailParticles = [];
+
+            // --- Flower class ---
+            class Flower {
+                constructor(x, y) {
+                    this.x = x || 100 + Math.random() * (W - 200);
+                    this.y = y || 100 + Math.random() * (H - 200);
+                    this.size = 15 + Math.random() * 20;
+                    this.petalCount = 5 + Math.floor(Math.random() * 3);
+                    this.hue = Math.random() * 360;
+                    this.saturation = 60 + Math.random() * 30;
+                    this.lightness = 50 + Math.random() * 20;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.phase = Math.random() * Math.PI * 2;
+                    this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+                }
+
+                draw(ctx, time) {
+                    const x = this.x;
+                    const y = this.y;
+                    const size = this.size;
+                    const rot = this.rotation + Math.sin(time * this.wobbleSpeed + this.phase) * 0.05;
+
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(rot);
+
+                    // Petals
+                    for (let i = 0; i < this.petalCount; i++) {
+                        const angle = (i / this.petalCount) * Math.PI * 2;
+                        const petalSize = size * (0.6 + 0.4 * Math.sin(i * 2.3));
+                        ctx.save();
+                        ctx.rotate(angle);
+                        ctx.beginPath();
+                        ctx.ellipse(0, size * 0.3, petalSize * 0.5, petalSize * 0.7, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = `hsl(${this.hue + i * 20}, ${this.saturation}%, ${this.lightness + i * 5}%)`;
+                        ctx.shadowBlur = 5;
+                        ctx.shadowColor = `hsla(${this.hue + i * 20}, 80%, 70%, 0.1)`;
+                        ctx.fill();
+                        ctx.restore();
+                    }
+
+                    // Center
+                    ctx.shadowBlur = 0;
+                    const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 0.25);
+                    centerGrad.addColorStop(0, '#ffdd44');
+                    centerGrad.addColorStop(0.5, '#ffaa00');
+                    centerGrad.addColorStop(1, '#cc8800');
+                    ctx.fillStyle = centerGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 0.25, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Center dots
+                    ctx.fillStyle = 'rgba(100, 60, 20, 0.3)';
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const dist = size * 0.12;
+                        ctx.beginPath();
+                        ctx.arc(Math.cos(angle) * dist, Math.sin(angle) * dist, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
+                }
+
+                getPosition() {
+                    return { x: this.x, y: this.y };
+                }
+            }
+
+            // --- Bee drawing ---
+            function drawBee(ctx) {
+                const x = bee.x;
+                const y = bee.y;
+                const size = bee.size;
+                const angle = bee.angle;
+
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+
+                // Glow
+                if (isActive) {
+                    const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+                    const glowAlpha = 0.05 + Math.sin(time * 0.05) * 0.02;
+                    glowGrad.addColorStop(0, `rgba(255, 200, 50, ${glowAlpha * 0.5})`);
+                    glowGrad.addColorStop(0.5, `rgba(255, 200, 50, ${glowAlpha * 0.2})`);
+                    glowGrad.addColorStop(1, `rgba(255, 200, 50, 0)`);
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Shadow
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowOffsetY = 3;
+
+                // Body
+                const bodyGrad = ctx.createRadialGradient(
+                    -size * 0.1, -size * 0.1, size * 0.1,
+                    0, 0, size
+                );
+                bodyGrad.addColorStop(0, '#ffdd44');
+                bodyGrad.addColorStop(0.3, '#f0c030');
+                bodyGrad.addColorStop(0.6, '#d4a020');
+                bodyGrad.addColorStop(0.8, '#b08018');
+                bodyGrad.addColorStop(1, '#8a6010');
+
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowOffsetY = 2;
+
+                // Body ellipse
+                ctx.beginPath();
+                ctx.ellipse(0, 0, size * 0.7, size * 0.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = bodyGrad;
+                ctx.fill();
+
+                // Stripes
+                ctx.shadowBlur = 0;
+                for (let i = -2; i <= 2; i++) {
+                    const stripeX = i * size * 0.2;
+                    ctx.fillStyle = `rgba(40, 20, 10, ${0.15 + Math.abs(i) * 0.05})`;
+                    ctx.beginPath();
+                    ctx.ellipse(stripeX, 0, size * 0.05, size * 0.4, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Head
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.fillStyle = '#2a1a0a';
+                ctx.beginPath();
+                ctx.arc(size * 0.7, -size * 0.05, size * 0.25, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(size * 0.75, -size * 0.15, size * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(size * 0.75, size * 0.05, size * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#1a0a05';
+                ctx.beginPath();
+                ctx.arc(size * 0.78, -size * 0.12, size * 0.04, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(size * 0.78, size * 0.08, size * 0.04, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Antennae
+                ctx.strokeStyle = '#2a1a0a';
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.moveTo(size * 0.8, -size * 0.15);
+                ctx.quadraticCurveTo(size * 1.0, -size * 0.4, size * 1.1, -size * 0.3);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(size * 0.8, size * 0.05);
+                ctx.quadraticCurveTo(size * 1.0, size * 0.3, size * 1.1, size * 0.2);
+                ctx.stroke();
+
+                // Antennae tips
+                ctx.fillStyle = '#2a1a0a';
+                ctx.beginPath();
+                ctx.arc(size * 1.1, -size * 0.3, size * 0.04, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(size * 1.1, size * 0.2, size * 0.04, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Wings
+                const wingAngle = bee.wingAngle;
+                const wingSize = size * 0.6;
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'rgba(200, 220, 255, 0.1)';
+
+                // Left wing
+                ctx.fillStyle = `rgba(200, 220, 255, ${0.2 + 0.1 * Math.sin(wingAngle)})`;
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.2, -size * 0.4, wingSize, wingSize * 0.3, -0.3 + 0.1 * Math.sin(wingAngle), 0, Math.PI * 2);
+                ctx.fill();
+
+                // Right wing
+                ctx.fillStyle = `rgba(200, 220, 255, ${0.2 + 0.1 * Math.cos(wingAngle)})`;
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.2, size * 0.4, wingSize, wingSize * 0.3, 0.3 + 0.1 * Math.cos(wingAngle), 0, Math.PI * 2);
+                ctx.fill();
+
+                // Wing veins
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(150, 180, 210, 0.1)';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i < 3; i++) {
+                    const vx = -size * 0.2 + i * size * 0.15;
+                    ctx.beginPath();
+                    ctx.moveTo(vx, -size * 0.3);
+                    ctx.lineTo(vx, -size * 0.55);
+                    ctx.stroke();
+                }
+
+                // Stinger
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#1a0a05';
+                ctx.beginPath();
+                ctx.moveTo(-size * 0.75, 0);
+                ctx.lineTo(-size * 0.9, -size * 0.03);
+                ctx.lineTo(-size * 0.9, size * 0.03);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+
+                // Trail
+                if (bee.trail.length > 1) {
+                    ctx.save();
+                    for (let i = 0; i < bee.trail.length; i++) {
+                        const t = i / bee.trail.length;
+                        const alpha = t * 0.1;
+                        const trailSize = bee.size * t * 0.3;
+                        ctx.globalAlpha = alpha;
+                        ctx.fillStyle = `rgba(255, 200, 50, ${alpha * 0.3})`;
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(bee.trail[i].x, bee.trail[i].y, trailSize, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                }
+
+                // Create trail particles
+                if (isActive && Math.random() < 0.3) {
+                    const p = {
+                        x: bee.x + (Math.random() - 0.5) * 5,
+                        y: bee.y + (Math.random() - 0.5) * 5,
+                        size: 1 + Math.random() * 2,
+                        life: 0.5 + Math.random() * 0.5,
+                        maxLife: 1,
+                        vx: (Math.random() - 0.5) * 0.5,
+                        vy: (Math.random() - 0.5) * 0.5,
+                        hue: 40 + Math.random() * 20
+                    };
+                    trailParticles.push(p);
+                }
+            }
+
+            // --- Update bee position ---
+            function updateBee() {
+                const speedFactor = speed / 50;
+                const wobbleFactor = wobble / 100;
+
+                // Find nearest flower
+                let nearestFlower = null;
+                let nearestDist = Infinity;
+                for (const flower of flowers) {
+                    const dx = flower.x - bee.x;
+                    const dy = flower.y - bee.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < nearestDist) {
+                        nearestDist = dist;
+                        nearestFlower = flower;
+                    }
+                }
+
+                // Target selection
+                if (nearestFlower && nearestDist < 400) {
+                    // Head toward flower
+                    bee.targetX = nearestFlower.x + Math.sin(time * 0.02 + bee.buzzPhase) * 30;
+                    bee.targetY = nearestFlower.y + Math.cos(time * 0.015 + bee.buzzPhase * 0.7) * 30;
+                } else {
+                    // Random wandering
+                    if (Math.random() < 0.005 * speedFactor) {
+                        bee.targetX = 100 + Math.random() * (W - 200);
+                        bee.targetY = 100 + Math.random() * (H - 200);
+                    }
+                }
+
+                // Move toward target with wobble
+                const dx = bee.targetX - bee.x;
+                const dy = bee.targetY - bee.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > 1) {
+                    const moveSpeed = 0.02 * speedFactor;
+                    const wobbleX = Math.sin(time * 0.05 * speedFactor + bee.buzzPhase) * wobbleFactor * 0.5;
+                    const wobbleY = Math.cos(time * 0.07 * speedFactor + bee.buzzPhase * 0.8) * wobbleFactor * 0.5;
+
+                    bee.x += dx * moveSpeed + wobbleX;
+                    bee.y += dy * moveSpeed + wobbleY;
+
+                    // Angle
+                    const targetAngle = Math.atan2(dy, dx);
+                    let angleDiff = targetAngle - bee.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    bee.angle += angleDiff * 0.1;
+                }
+
+                // Buzz phase
+                bee.buzzPhase += 0.02 * speedFactor;
+
+                // Wings
+                bee.wingAngle += bee.wingSpeed * speedFactor * (0.8 + 0.2 * Math.sin(time * 0.01));
+
+                // Trail
+                if (isActive && time % 2 === 0) {
+                    bee.trail.push({ x: bee.x, y: bee.y });
+                    if (bee.trail.length > bee.maxTrail) {
+                        bee.trail.shift();
+                    }
+                }
+
+                // Boundary
+                bee.x = Math.max(20, Math.min(W - 20, bee.x));
+                bee.y = Math.max(20, Math.min(H - 20, bee.y));
+
+                // Pollen collection (when near flower)
+                if (nearestFlower && nearestDist < 30 && Math.random() < 0.01) {
+                    createPollenEffect(nearestFlower.x, nearestFlower.y);
+                }
+            }
+
+            // --- Pollen effect ---
+            function createPollenEffect(x, y) {
+                const count = 3 + Math.floor(Math.random() * 5);
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 0.5 + Math.random() * 1.5;
+                    const p = {
+                        x: x + (Math.random() - 0.5) * 10,
+                        y: y + (Math.random() - 0.5) * 10,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 0.5,
+                        size: 1 + Math.random() * 3,
+                        life: 0.5 + Math.random() * 0.5,
+                        maxLife: 1,
+                        hue: 40 + Math.random() * 20
+                    };
+                    pollenParticles.push(p);
+                }
+            }
+
+            // --- Render background ---
+            function renderBackground(ctx) {
+                // Sky gradient
+                const grad = ctx.createRadialGradient(
+                    W / 2, H / 2, 100,
+                    W / 2, H / 2, 500
+                );
+                grad.addColorStop(0, '#0a1520');
+                grad.addColorStop(0.3, '#080e18');
+                grad.addColorStop(0.6, '#060a12');
+                grad.addColorStop(0.8, '#04080e');
+                grad.addColorStop(1, '#020408');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+
+                // Subtle sun rays
+                ctx.save();
+                ctx.globalAlpha = 0.02;
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i / 12) * Math.PI * 2 + time * 0.0001;
+                    const len = 200 + Math.sin(i * 0.5) * 100;
+                    ctx.strokeStyle = '#ffdd88';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(W / 2, H / 2);
+                    ctx.lineTo(
+                        W / 2 + Math.cos(angle) * len,
+                        H / 2 + Math.sin(angle) * len * 0.5
+                    );
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Ground
+                ctx.save();
+                const groundGrad = ctx.createLinearGradient(0, H - 40, 0, H);
+                groundGrad.addColorStop(0, 'rgba(10, 20, 15, 0)');
+                groundGrad.addColorStop(0.5, 'rgba(15, 30, 20, 0.1)');
+                groundGrad.addColorStop(1, 'rgba(20, 40, 25, 0.2)');
+                ctx.fillStyle = groundGrad;
+                ctx.fillRect(0, H - 40, W, 40);
+
+                // Grass blades
+                ctx.globalAlpha = 0.03;
+                for (let i = 0; i < 50; i++) {
+                    const x = Math.random() * W;
+                    const y = H - 40 + Math.random() * 40;
+                    const h = 5 + Math.random() * 15;
+                    const sway = Math.sin(x * 0.05 + time * 0.001) * 2;
+                    ctx.strokeStyle = 'rgba(50, 100, 50, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.quadraticCurveTo(x + sway, y - h * 0.6, x + sway * 0.5, y - h);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                // Update counts
+                flowerCount.textContent = `🌸 ${flowers.length} flowers`;
+                beeCount.textContent = `🐝 ${isActive ? 1 : 0} bee`;
+            }
+
+            // --- Audio functions ---
+            function initAudio() {
+                try {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    audioGain = audioCtx.createGain();
+                    audioGain.gain.value = volume / 100 * 0.3;
+                    audioGain.connect(audioCtx.destination);
+                    isAudioReady = true;
+                    startBuzz();
+                } catch (e) {
+                    console.log('Web Audio not supported');
+                }
+            }
+
+            function startBuzz() {
+                if (!isAudioReady || !audioCtx) return;
+                try {
+                    // Main buzz oscillator
+                    buzzOscillator = audioCtx.createOscillator();
+                    buzzGain = audioCtx.createGain();
+
+                    const now = audioCtx.currentTime;
+                    buzzOscillator.type = 'sawtooth';
+                    buzzOscillator.frequency.setValueAtTime(150, now);
+                    buzzOscillator.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+
+                    // Modulation for buzzy sound
+                    const modulator = audioCtx.createOscillator();
+                    modulator.type = 'sine';
+                    modulator.frequency.value = 80;
+
+                    const modGain = audioCtx.createGain();
+                    modGain.gain.value = 30;
+
+                    modulator.connect(modGain);
+                    modGain.connect(buzzOscillator.frequency);
+
+                    buzzOscillator.connect(buzzGain);
+                    buzzGain.connect(audioGain);
+
+                    buzzOscillator.start(now);
+                    modulator.start(now);
+
+                    // Volume modulation for natural buzz
+                    const lfo = audioCtx.createOscillator();
+                    lfo.type = 'sine';
+                    lfo.frequency.value = 5 + Math.random() * 3;
+
+                    const lfoGain = audioCtx.createGain();
+                    lfoGain.gain.value = 0.1 * (volume / 100);
+
+                    lfo.connect(lfoGain);
+                    lfoGain.connect(buzzGain.gain);
+
+                    lfo.start(now);
+
+                    buzzOscillator._lfo = lfo;
+                    buzzOscillator._lfoGain = lfoGain;
+                    buzzOscillator._modulator = modulator;
+                    buzzOscillator._modGain = modGain;
+
+                } catch (e) {
+                    console.log('Audio error:', e);
+                }
+            }
+
+            function updateBuzzVolume() {
+                if (isAudioReady && audioGain) {
+                    audioGain.gain.value = (isActive ? 1 : 0) * (volume / 100) * 0.3;
+                }
+            }
+
+            function updateBuzzFrequency() {
+                if (!isAudioReady || !buzzOscillator) return;
+                try {
+                    const speedFactor = speed / 50;
+                    const freq = 150 + speedFactor * 80 + Math.sin(time * 0.02) * 20;
+                    buzzOscillator.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            function stopBuzz() {
+                if (!isAudioReady) return;
+                try {
+                    if (buzzOscillator) {
+                        buzzOscillator.stop();
+                        if (buzzOscillator._lfo) buzzOscillator._lfo.stop();
+                        if (buzzOscillator._modulator) buzzOscillator._modulator.stop();
+                    }
+                } catch (e) {
+                    // Silent fail
+                }
+            }
+
+            // --- Main render loop ---
+            function render() {
+                time++;
+
+                // Update bee
+                if (isActive) {
+                    updateBee();
+                    updateBuzzFrequency();
+                }
+
+                // Update trail particles
+                trailParticles = trailParticles.filter(p => {
+                    p.life -= 0.01;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.size *= 0.998;
+                    return p.life > 0 && p.size > 0.1;
+                });
+
+                // Update pollen particles
+                pollenParticles = pollenParticles.filter(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.02;
+                    p.life -= 0.01;
+                    p.size *= 0.998;
+                    return p.life > 0 && p.size > 0.1;
+                });
+
+                // Render
+                ctx.clearRect(0, 0, W, H);
+                renderBackground(ctx);
+
+                // Draw pollen particles
+                for (const p of pollenParticles) {
+                    const alpha = (p.life / p.maxLife) * 0.6;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = `hsl(${p.hue}, 80%, 70%)`;
+                    ctx.shadowBlur = p.size * 2;
+                    ctx.shadowColor = `hsla(${p.hue}, 80%, 70%, ${alpha * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Draw trail particles
+                for (const p of trailParticles) {
+                    const alpha = (p.life / p.maxLife) * 0.3;
+                    ctx.save();
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = `hsla(${p.hue}, 80%, 80%, ${alpha})`;
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Draw flowers
+                for (const flower of flowers) {
+                    flower.draw(ctx, time);
+                }
+
+                // Draw bee (on top)
+                if (isActive) {
+                    drawBee(ctx);
+                    beeStatus.textContent = '🐝 Buzzing';
+                } else {
+                    beeStatus.textContent = '🐝 Sleeping';
+                }
+
+                animationId = requestAnimationFrame(render);
+            }
+
+            // --- Controls ---
+            function toggleBee() {
+                isActive = !isActive;
+                toggleBtn.textContent = isActive ? '🔊 Toggle' : '🔇 Mute';
+                beeStatus.textContent = isActive ? '🐝 Buzzing' : '🐝 Sleeping';
+                hint.textContent = isActive ? '🐝 Bee buzzing' : '🐝 Bee sleeping';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+                
+                updateBuzzVolume();
+                if (isActive && !isAudioReady) {
+                    initAudio();
+                }
+                if (!isActive) {
+                    // Stop buzz temporarily
+                }
+            }
+
+            function resetAll() {
+                bee.x = W / 2;
+                bee.y = H / 2;
+                bee.targetX = W / 2;
+                bee.targetY = H / 2;
+                bee.trail = [];
+                flowers = [];
+                pollenParticles = [];
+                trailParticles = [];
+                totalFlowers = 0;
+                hint.textContent = '🔄 Reset!';
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+                flowerCount.textContent = '🌸 0 flowers';
+            }
+
+            function addFlower() {
+                const flower = new Flower();
+                flowers.push(flower);
+                totalFlowers++;
+                hint.textContent = `🌸 Added flower ${totalFlowers}`;
+                hint.classList.remove('hidden');
+                setTimeout(() => hint.classList.add('hidden'), 1500);
+                flowerCount.textContent = `🌸 ${flowers.length} flowers`;
+            }
+
+            // --- Slider handlers ---
+            speedSlider.addEventListener('input', function() {
+                speed = parseFloat(this.value);
+                speedLabel.textContent = `${Math.round(speed)}%`;
+            });
+
+            wobbleSlider.addEventListener('input', function() {
+                wobble = parseFloat(this.value);
+                wobbleLabel.textContent = `${Math.round(wobble)}%`;
+            });
+
+            volumeSlider.addEventListener('input', function() {
+                volume = parseFloat(this.value);
+                volumeLabel.textContent = `${Math.round(volume)}%`;
+                updateBuzzVolume();
+            });
+
+            // --- Button events ---
+            toggleBtn.addEventListener('click', toggleBee);
+            resetBtn.addEventListener('click', resetAll);
+            flowerBtn.addEventListener('click', addFlower);
+
+            // --- Keyboard shortcuts ---
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    toggleBee();
+                }
+                if (e.key === 'f' || e.key === 'F') addFlower();
+                if (e.key === 'r' || e.key === 'R') resetAll();
+
+                // Speed adjustments
+                if (e.key === 'ArrowUp' || e.key === '=') {
+                    e.preventDefault();
+                    speed = Math.min(100, speed + 5);
+                    speedSlider.value = speed;
+                    speedLabel.textContent = `${Math.round(speed)}%`;
+                }
+                if (e.key === 'ArrowDown' || e.key === '-') {
+                    e.preventDefault();
+                    speed = Math.max(10, speed - 5);
+                    speedSlider.value = speed;
+                    speedLabel.textContent = `${Math.round(speed)}%`;
+                }
+            });
+
+            // --- Init ---
+            // Add initial flowers
+            for (let i = 0; i < 5; i++) {
+                const flower = new Flower();
+                flowers.push(flower);
+                totalFlowers++;
+            }
+            flowerCount.textContent = `🌸 ${flowers.length} flowers`;
+
+            // Init audio
+            setTimeout(() => {
+                initAudio();
+            }, 100);
+
+            render();
+
+            // Hide hint after a few seconds
+            setTimeout(() => hint.classList.add('hidden'), 4000);
+
+            // --- Resize handling ---
+            function handleResize() {
+                // Canvas maintains aspect ratio via CSS
+            }
+            window.addEventListener('resize', handleResize);
+
+            console.log('🐝 Buzzing Bee ready!');
+            console.log('Controls: Space (toggle), F (add flower), R (reset)');
+            console.log('          ↑/↓ (speed), watch the bee buzz around!');
+
+        })();
+    </script>
+</body>
+</html>

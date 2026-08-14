@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion Timeline Visualizer — EaseMotion CSS</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="hero">
+    <p class="hero__eyebrow">EaseMotion CSS · Examples</p>
+    <h1 class="hero__title">Motion Timeline Visualizer</h1>
+    <p class="hero__lead">
+      See exactly when each animation starts, how long it runs, and where
+      it overlaps with the others — synchronized to a live preview and a
+      moving playhead, like an animation editor's timeline.
+    </p>
+  </header>
+
+  <main class="editor">
+
+    <section class="control-panel" aria-labelledby="controls-title">
+      <h2 id="controls-title" class="control-panel__title">Timeline Controls</h2>
+
+      <div class="control-field">
+        <label for="preset-select">Timeline Preset</label>
+        <select id="preset-select">
+          <option value="sequential">Sequential</option>
+          <option value="parallel">Parallel</option>
+          <option value="overlapping">Overlapping</option>
+          <option value="staggered" selected>Staggered</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label for="duration-range">Animation Duration</label>
+        <div class="control-field__row">
+          <input type="range" id="duration-range" min="200" max="1500" step="50" value="600">
+          <output for="duration-range" id="duration-output">600ms</output>
+        </div>
+      </div>
+
+      <div class="control-field">
+        <label for="delay-range">Initial Delay</label>
+        <div class="control-field__row">
+          <input type="range" id="delay-range" min="0" max="1000" step="50" value="0">
+          <output for="delay-range" id="delay-output">0ms</output>
+        </div>
+      </div>
+
+      <div class="control-field">
+        <label for="stagger-range">Stagger Interval</label>
+        <div class="control-field__row">
+          <input type="range" id="stagger-range" min="0" max="500" step="25" value="150">
+          <output for="stagger-range" id="stagger-output">150ms</output>
+        </div>
+        <p class="control-field__note">Used by the Staggered preset.</p>
+      </div>
+
+      <div class="control-field">
+        <label for="ease-select">Animation Easing</label>
+        <select id="ease-select">
+          <option value="ease">ease</option>
+          <option value="ease-in">ease-in</option>
+          <option value="ease-out" selected>ease-out</option>
+          <option value="ease-in-out">ease-in-out</option>
+          <option value="cubic-bezier(.34,1.56,.64,1)">elastic overshoot</option>
+        </select>
+      </div>
+
+      <div class="control-field">
+        <label for="count-range">Number of Elements</label>
+        <div class="control-field__row">
+          <input type="range" id="count-range" min="3" max="8" step="1" value="5">
+          <output for="count-range" id="count-output">5</output>
+        </div>
+      </div>
+
+      <div class="control-panel__actions">
+        <button type="button" class="action-button action-button--primary" id="play-button">Play</button>
+        <button type="button" class="action-button" id="pause-button" disabled>Pause</button>
+        <button type="button" class="action-button" id="replay-button">Replay</button>
+        <button type="button" class="action-button" id="reset-button">Reset</button>
+      </div>
+
+      <p class="control-panel__status" id="motion-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="stage-panel" aria-labelledby="preview-title">
+
+      <div class="preview-block">
+        <h2 id="preview-title" class="visually-hidden">Live Preview</h2>
+        <div class="preview-track" id="preview-track" aria-hidden="true"></div>
+      </div>
+
+      <div class="timeline-block">
+        <h2 class="timeline-block__title">Timeline</h2>
+        <div class="timeline" id="timeline" role="img" aria-label="Timeline visualization of each element's animation start, duration, and overlap">
+          <div class="timeline__playhead" id="playhead"></div>
+          <div class="timeline__rows" id="timeline-rows"></div>
+          <div class="timeline__ruler" id="timeline-ruler"></div>
+        </div>
+      </div>
+
+      <div class="playback-panel">
+        <h2 class="playback-panel__title">Playback</h2>
+        <dl class="playback-grid">
+          <div class="playback-item">
+            <dt>Preset</dt>
+            <dd id="playback-preset">Staggered</dd>
+          </div>
+          <div class="playback-item">
+            <dt>Duration</dt>
+            <dd id="playback-duration">600ms</dd>
+          </div>
+          <div class="playback-item">
+            <dt>Delay</dt>
+            <dd id="playback-delay">0ms</dd>
+          </div>
+          <div class="playback-item">
+            <dt>Stagger</dt>
+            <dd id="playback-stagger">150ms</dd>
+          </div>
+          <div class="playback-item">
+            <dt>Total Length</dt>
+            <dd id="playback-total">—</dd>
+          </div>
+          <div class="playback-item">
+            <dt>Progress</dt>
+            <dd id="playback-progress">0%</dd>
+          </div>
+        </dl>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="page-footer">
+    <p>Pure CSS-driven animation timing. Minimal JS computes start times and synchronizes the playhead.</p>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var presetSelect = document.getElementById("preset-select");
+      var durationRange = document.getElementById("duration-range");
+      var delayRange = document.getElementById("delay-range");
+      var staggerRange = document.getElementById("stagger-range");
+      var easeSelect = document.getElementById("ease-select");
+      var countRange = document.getElementById("count-range");
+
+      var durationOutput = document.getElementById("duration-output");
+      var delayOutput = document.getElementById("delay-output");
+      var staggerOutput = document.getElementById("stagger-output");
+      var countOutput = document.getElementById("count-output");
+
+      var playButton = document.getElementById("play-button");
+      var pauseButton = document.getElementById("pause-button");
+      var replayButton = document.getElementById("replay-button");
+      var resetButton = document.getElementById("reset-button");
+      var motionStatus = document.getElementById("motion-status");
+
+      var previewTrack = document.getElementById("preview-track");
+      var timelineRows = document.getElementById("timeline-rows");
+      var timelineRuler = document.getElementById("timeline-ruler");
+      var playhead = document.getElementById("playhead");
+
+      var playbackPreset = document.getElementById("playback-preset");
+      var playbackDuration = document.getElementById("playback-duration");
+      var playbackDelay = document.getElementById("playback-delay");
+      var playbackStagger = document.getElementById("playback-stagger");
+      var playbackTotal = document.getElementById("playback-total");
+      var playbackProgress = document.getElementById("playback-progress");
+
+      var DEFAULTS = {
+        preset: "staggered",
+        duration: 600,
+        delay: 0,
+        stagger: 150,
+        ease: "ease-out",
+        count: 5
+      };
+
+      var PRESET_LABELS = {
+        sequential: "Sequential",
+        parallel: "Parallel",
+        overlapping: "Overlapping",
+        staggered: "Staggered"
+      };
+
+      var startTimes = [];
+      var totalDuration = 1;
+      var previewItems = [];
+      var timelineBars = [];
+
+      var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      var state = {
+        playing: false,
+        startTimestamp: null,
+        elapsed: 0,
+        rafId: null
+      };
+
+      function computeStartTimes() {
+        var preset = presetSelect.value;
+        var duration = parseInt(durationRange.value, 10);
+        var delay = parseInt(delayRange.value, 10);
+        var stagger = parseInt(staggerRange.value, 10);
+        var count = parseInt(countRange.value, 10);
+
+        var times = [];
+        for (var i = 0; i < count; i++) {
+          var start;
+          switch (preset) {
+            case "parallel":
+              start = delay;
+              break;
+            case "overlapping":
+              start = delay + i * (duration * 0.5);
+              break;
+            case "staggered":
+              start = delay + i * stagger;
+              break;
+            case "sequential":
+            default:
+              start = delay + i * duration;
+              break;
+          }
+          times.push(start);
+        }
+
+        var maxEnd = 0;
+        times.forEach(function (start) {
+          maxEnd = Math.max(maxEnd, start + duration);
+        });
+
+        startTimes = times;
+        totalDuration = Math.max(maxEnd, 1);
+      }
+
+      function buildElements(count) {
+        previewTrack.innerHTML = "";
+        timelineRows.innerHTML = "";
+        previewItems = [];
+        timelineBars = [];
+
+        for (var i = 0; i < count; i++) {
+          var card = document.createElement("div");
+          card.className = "preview-item";
+          card.style.setProperty("--item-index", String(i));
+          card.textContent = String(i + 1);
+          previewTrack.appendChild(card);
+          previewItems.push(card);
+
+          var row = document.createElement("div");
+          row.className = "timeline-row";
+
+          var label = document.createElement("span");
+          label.className = "timeline-row__label";
+          label.textContent = "Element " + (i + 1);
+
+          var track = document.createElement("span");
+          track.className = "timeline-row__track";
+
+          var bar = document.createElement("span");
+          bar.className = "timeline-row__bar";
+          track.appendChild(bar);
+
+          row.appendChild(label);
+          row.appendChild(track);
+          timelineRows.appendChild(row);
+          timelineBars.push(bar);
+        }
+      }
+
+      function renderRuler() {
+        timelineRuler.innerHTML = "";
+        var steps = 5;
+        for (var i = 0; i <= steps; i++) {
+          var tick = document.createElement("span");
+          tick.className = "timeline-ruler__tick";
+          tick.style.left = (i / steps) * 100 + "%";
+          var ms = Math.round((totalDuration / steps) * i);
+          tick.textContent = ms + "ms";
+          timelineRuler.appendChild(tick);
+        }
+      }
+
+      function applyTimingToElements() {
+        var duration = parseInt(durationRange.value, 10);
+        var ease = easeSelect.value;
+
+        previewItems.forEach(function (item, index) {
+          item.style.setProperty("--item-delay", startTimes[index] + "ms");
+          item.style.setProperty("--item-duration", duration + "ms");
+          item.style.setProperty("--item-ease", ease);
+        });
+
+        timelineBars.forEach(function (bar, index) {
+          var leftPercent = (startTimes[index] / totalDuration) * 100;
+          var widthPercent = (duration / totalDuration) * 100;
+          bar.style.left = leftPercent + "%";
+          bar.style.width = widthPercent + "%";
+        });
+      }
+
+      function updatePlaybackPanel() {
+        playbackPreset.textContent = PRESET_LABELS[presetSelect.value];
+        playbackDuration.textContent = durationRange.value + "ms";
+        playbackDelay.textContent = delayRange.value + "ms";
+        playbackStagger.textContent = staggerRange.value + "ms";
+        playbackTotal.textContent = Math.round(totalDuration) + "ms";
+      }
+
+      function updateOutputs() {
+        durationOutput.textContent = durationRange.value + "ms";
+        delayOutput.textContent = delayRange.value + "ms";
+        staggerOutput.textContent = staggerRange.value + "ms";
+        countOutput.textContent = countRange.value;
+      }
+
+      function setPlayheadPosition(elapsed) {
+        var percent = Math.min(elapsed / totalDuration, 1) * 100;
+        playhead.style.left = percent + "%";
+        playbackProgress.textContent = Math.round(percent) + "%";
+
+        timelineBars.forEach(function (bar, index) {
+          var start = startTimes[index];
+          var duration = parseInt(durationRange.value, 10);
+          var isActive = elapsed >= start && elapsed <= start + duration;
+          bar.classList.toggle("is-active", isActive);
+        });
+      }
+
+      function restartPreviewAnimations() {
+        previewItems.forEach(function (item) {
+          item.style.animation = "none";
+          void item.offsetWidth;
+          item.style.animation = "";
+        });
+      }
+
+      function setPreviewPlayState(playState) {
+        previewItems.forEach(function (item) {
+          item.style.animationPlayState = playState;
+        });
+      }
+
+      function tick(now) {
+        if (!state.playing) return;
+
+        var elapsed = state.elapsed + (now - state.startTimestamp);
+
+        if (elapsed >= totalDuration) {
+          setPlayheadPosition(totalDuration);
+          stopPlaying();
+          state.elapsed = totalDuration;
+          return;
+        }
+
+        setPlayheadPosition(elapsed);
+        state.rafId = requestAnimationFrame(tick);
+      }
+
+      function stopPlaying() {
+        state.playing = false;
+        cancelAnimationFrame(state.rafId);
+        playButton.disabled = false;
+        pauseButton.disabled = true;
+      }
+
+      function play() {
+        if (state.playing) return;
+
+        if (state.elapsed >= totalDuration) {
+          state.elapsed = 0;
+          restartPreviewAnimations();
+        }
+
+        state.playing = true;
+        state.startTimestamp = performance.now();
+        setPreviewPlayState("running");
+        playButton.disabled = true;
+        pauseButton.disabled = false;
+        state.rafId = requestAnimationFrame(tick);
+      }
+
+      function pause() {
+        if (!state.playing) return;
+        state.elapsed += performance.now() - state.startTimestamp;
+        stopPlaying();
+        setPreviewPlayState("paused");
+      }
+
+      function replay() {
+        cancelAnimationFrame(state.rafId);
+        state.playing = false;
+        state.elapsed = 0;
+        setPlayheadPosition(0);
+        restartPreviewAnimations();
+        play();
+      }
+
+      function recalculate() {
+        computeStartTimes();
+        applyTimingToElements();
+        renderRuler();
+        updatePlaybackPanel();
+        updateOutputs();
+      }
+
+      function rebuildAndReplay() {
+        var count = parseInt(countRange.value, 10);
+        buildElements(count);
+        recalculate();
+        replay();
+      }
+
+      presetSelect.addEventListener("change", function () {
+        recalculate();
+        replay();
+      });
+
+      [durationRange, delayRange, staggerRange, easeSelect].forEach(function (control) {
+        control.addEventListener("input", function () {
+          recalculate();
+          replay();
+        });
+      });
+
+      countRange.addEventListener("input", rebuildAndReplay);
+
+      playButton.addEventListener("click", play);
+      pauseButton.addEventListener("click", pause);
+      replayButton.addEventListener("click", replay);
+
+      resetButton.addEventListener("click", function () {
+        presetSelect.value = DEFAULTS.preset;
+        durationRange.value = DEFAULTS.duration;
+        delayRange.value = DEFAULTS.delay;
+        staggerRange.value = DEFAULTS.stagger;
+        easeSelect.value = DEFAULTS.ease;
+        countRange.value = DEFAULTS.count;
+
+        rebuildAndReplay();
+      });
+
+      function updateMotionStatus() {
+        motionStatus.textContent = motionQuery.matches
+          ? "Reduced motion is enabled on your system. Preview elements fade only; the timeline and playhead still function."
+          : "";
+      }
+
+      updateMotionStatus();
+      if (motionQuery.addEventListener) {
+        motionQuery.addEventListener("change", updateMotionStatus);
+      }
+
+      buildElements(DEFAULTS.count);
+      recalculate();
+      setPlayheadPosition(0);
+    })();
+  </script>
+
+</body>
+</html>

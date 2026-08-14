@@ -1,0 +1,179 @@
+/// ==============================================================================
+/// EaseMotion SCSS Trigonometric 3D Isometric Cityscape Generator
+/// ==============================================================================
+/// Generates a complex 3D isometric city out of a single HTML div using mathematically
+/// calculated box-shadows. This bypasses the need for WebGL or Three.js for simple
+/// generative 3D background art.
+/// 
+/// Note: Since native Sass math modules (math.sin, math.cos) might not be available
+/// in all older environments, this file includes highly advanced Taylor Series 
+/// polynomial approximations to calculate Trigonometric functions purely in raw SCSS.
+/// ==============================================================================
+
+$pi: 3.14159265359;
+
+/// ----------------------------------------------------------------------------
+/// Helper: Exponent (Power)
+/// ----------------------------------------------------------------------------
+@function pow($number, $exp) {
+  $value: 1;
+  @if $exp > 0 {
+    @for $i from 1 through $exp {
+      $value: $value * $number;
+    }
+  }
+  @else if $exp < 0 {
+    @for $i from 1 through -$exp {
+      $value: $value / $number;
+    }
+  }
+  @return $value;
+}
+
+/// ----------------------------------------------------------------------------
+/// Helper: Factorial
+/// ----------------------------------------------------------------------------
+@function fact($number) {
+  $value: 1;
+  @if $number > 0 {
+    @for $i from 1 through $number {
+      $value: $value * $i;
+    }
+  }
+  @return $value;
+}
+
+/// ----------------------------------------------------------------------------
+/// Helper: Convert Degrees to Radians
+/// ----------------------------------------------------------------------------
+@function rad($angle) {
+  $unit: unit($angle);
+  $unitless: $angle / ($angle * 0 + 1);
+  // If the angle has 'deg' unit, convert to radians
+  @if $unit == 'deg' {
+    $unitless: $unitless / 180 * $pi;
+  }
+  @return $unitless;
+}
+
+/// ----------------------------------------------------------------------------
+/// Core: Sine (Taylor Series Approximation)
+/// ----------------------------------------------------------------------------
+@function sin($angle) {
+  $sin: 0;
+  $angle: rad($angle);
+  // Iterate 10 times for high precision
+  @for $i from 0 through 10 {
+    $sin: $sin + pow(-1, $i) * pow($angle, (2 * $i + 1)) / fact(2 * $i + 1);
+  }
+  @return $sin;
+}
+
+/// ----------------------------------------------------------------------------
+/// Core: Cosine (Taylor Series Approximation)
+/// ----------------------------------------------------------------------------
+@function cos($angle) {
+  $cos: 0;
+  $angle: rad($angle);
+  // Iterate 10 times for high precision
+  @for $i from 0 through 10 {
+    $cos: $cos + pow(-1, $i) * pow($angle, 2 * $i) / fact(2 * $i);
+  }
+  @return $cos;
+}
+
+/// ----------------------------------------------------------------------------
+/// Helper: Pseudo-Random Number Generator
+/// ----------------------------------------------------------------------------
+/// SCSS doesn't have a true random function that accepts seeds reliably across
+/// all compilers. This is a linear congruential generator for procedural generation.
+$seed: 42;
+@function rand($min: 0, $max: 100) {
+  $seed: ($seed * 1103515245 + 12345) % 2147483648 !global;
+  @return $min + ($seed % ($max - $min + 1));
+}
+
+/// ----------------------------------------------------------------------------
+/// The Main Isometric City Generator Mixin
+/// ----------------------------------------------------------------------------
+/// @param {Number} $grid-size - The number of blocks on one axis (e.g., 10 creates a 10x10 city)
+/// @param {Number} $block-size - The pixel size of each block base
+/// @param {Color} $base-color - The color of the blocks
+/// 
+/// How it works:
+/// 1. We start with a single 1x1 pixel element (the seed).
+/// 2. We use SCSS nested loops to iterate over an X and Y grid.
+/// 3. For every coordinate, we calculate an isometric projection (mapping 2D to 3D).
+/// 4. We calculate a random height for the "building".
+/// 5. We use a tertiary loop to create the "extrusion" (stacking box-shadows vertically).
+/// 6. We compile all these thousands of box-shadow strings into a single CSS property!
+@mixin generate-isometric-city(
+  $grid-size: 15,
+  $block-size: 20px,
+  $base-color: #3b82f6,
+  $angle-iso: 30deg
+) {
+  // Store the massive concatenated string of box shadows
+  $shadows: ();
+  
+  // Pre-calculate isometric projection angles
+  $iso-cos: cos($angle-iso);
+  $iso-sin: sin($angle-iso);
+  
+  // Center offset
+  $offset-x: -($grid-size * $block-size) / 2;
+  $offset-y: -($grid-size * $block-size) / 2;
+
+  // X-Axis Loop
+  @for $x from 0 through $grid-size {
+    // Y-Axis Loop
+    @for $y from 0 through $grid-size {
+      
+      // Calculate true isometric 2D coordinates on the screen
+      // Cartesian to Isometric Projection Math
+      $cart-x: ($x * $block-size) + $offset-x;
+      $cart-y: ($y * $block-size) + $offset-y;
+      
+      $screen-x: ($cart-x - $cart-y) * $iso-cos;
+      $screen-y: ($cart-x + $cart-y) * $iso-sin;
+      
+      // Procedurally generate a height for this building (1 to 15 blocks tall)
+      $building-height: rand(1, 15);
+      
+      // If we are at the edge of the grid, let's keep buildings short
+      @if $x < 2 or $x > $grid-size - 2 or $y < 2 or $y > $grid-size - 2 {
+        $building-height: rand(1, 3);
+      }
+      
+      // Extrusion Loop
+      // We must stack box-shadows 1 pixel at a time on the Y axis to create a solid 3D side
+      @for $z from 0 through ($building-height * 5) {
+        
+        // Calculate lighting based on height (darker at the bottom, lighter at the top)
+        $light-factor: 1 - ($z / ($building-height * 5));
+        $color: darken($base-color, $light-factor * 30%);
+        
+        // The top face should be significantly lighter to simulate a light source
+        @if $z == ($building-height * 5) {
+          $color: lighten($base-color, 20%);
+        }
+        
+        // Append this specific pixel shadow to our massive list
+        // Note: The Y coordinate is offset by $z to create vertical height
+        $shadow: #{round($screen-x)}px #{round($screen-y - $z)}px 0 $color;
+        $shadows: append($shadows, $shadow, comma);
+      }
+    }
+  }
+
+  // Finally, output the massive calculated property!
+  // We use a single 1x1 pixel div, and the box-shadows draw the entire city around it.
+  width: $block-size;
+  height: $block-size;
+  background-color: transparent; // Hide the seed div itself
+  box-shadow: $shadows;
+  
+  // Transform the base to match the isometric angle
+  transform: rotateX(60deg) rotateZ(45deg);
+  transform-style: preserve-3d;
+}

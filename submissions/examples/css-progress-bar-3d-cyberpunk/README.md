@@ -1,0 +1,2 @@
+# 3D Progress Bar (Cyberpunk)
+A purely CSS-driven 3D isometric progress bar utilizing `perspective`, `transform-style: preserve-3d`, and extruded side panels via pseudo-elements to create a holographic cyberpunk gauge.

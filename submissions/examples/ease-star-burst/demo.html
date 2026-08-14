@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Star Burst – Star Explodes Outward Like Supernova</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>💥 Star Burst</h1>
+    <p class="subtitle">Star explodes outward like a supernova</p>
+
+    <div class="starburst-container">
+      <div class="starburst-stage" id="starburstStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="burst-status" id="burstStatus">⭐ Idle</span>
+          <span class="particle-count" id="particleCount">✦ 0 particles</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn burst" id="burstBtn">💥 Burst</button>
+      <button class="ctrl-btn clear" id="clearBtn">🗑️ Clear</button>
+      <button class="ctrl-btn toggle" id="toggleBtn">⏸ Pause</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Particle Count</span>
+      <input type="range" id="countSlider" min="50" max="500" value="200" step="10" />
+      <span class="slider-value" id="countValue">200</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Explosion Force</span>
+      <input type="range" id="forceSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="forceValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Particle Size</span>
+      <input type="range" id="sizeSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="sizeValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Color Temp</span>
+      <input type="range" id="colorSlider" min="0" max="100" value="50" />
+      <span class="slider-value" id="colorValue">Neutral</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">⭐ Click Burst to create a supernova explosion</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>B</kbd> Burst · <kbd>C</kbd> Clear · <kbd>Space</kbd> Pause · <kbd>R</kbd> Reset
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const burstStatus = document.getElementById('burstStatus');
+      const particleCount = document.getElementById('particleCount');
+      const burstBtn = document.getElementById('burstBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const status = document.getElementById('status');
+      const countSlider = document.getElementById('countSlider');
+      const countValue = document.getElementById('countValue');
+      const forceSlider = document.getElementById('forceSlider');
+      const forceValue = document.getElementById('forceValue');
+      const sizeSlider = document.getElementById('sizeSlider');
+      const sizeValue = document.getElementById('sizeValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let particles = [];
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let isBursting = false;
+      let burstTimer = null;
+
+      // Color temperature names
+      const COLOR_NAMES = ['Cool', 'Neutral', 'Warm'];
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Particle class -----
+      class Particle {
+        constructor(x, y, angle, force, size, color) {
+          const speed = force * (0.5 + Math.random() * 1.5);
+          this.x = x;
+          this.y = y;
+          this.vx = Math.cos(angle) * speed;
+          this.vy = Math.sin(angle) * speed;
+          this.size = size * (0.3 + Math.random() * 0.7);
+          this.originalSize = this.size;
+          this.color = color;
+          this.opacity = 0.8 + Math.random() * 0.2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.maxLife = this.life;
+          this.gravity = 0.01 + Math.random() * 0.02;
+          this.friction = 0.98 + Math.random() * 0.015;
+          this.rotation = Math.random() * Math.PI * 2;
+          this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+          this.trail = [];
+          this.trailLength = 5 + Math.floor(Math.random() * 10);
+          this.wobble = 0;
+          this.wobbleSpeed = 0.02 + Math.random() * 0.04;
+          this.wobbleAmount = 0.2 + Math.random() * 0.8;
+          this.hue = color + (Math.random() - 0.5) * 20;
+          this.saturation = 80 + Math.random() * 20;
+          this.lightness = 50 + Math.random() * 30;
+          this.alive = true;
+          this.type = Math.random() > 0.3 ? 'core' : 'trail';
+          this.glowSize = this.size * 4;
+        }
+
+        update() {
+          // Physics
+          this.vy += this.gravity;
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          
+          // Wobble
+          this.wobble += this.wobbleSpeed;
+          this.vx += Math.sin(this.wobble + this.rotation) * this.wobbleAmount * 0.02;
+          this.vy += Math.cos(this.wobble * 0.7 + this.rotation) * this.wobbleAmount * 0.02;
+
+          // Update position
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // Rotation
+          this.rotation += this.rotationSpeed;
+
+          // Life decay
+          this.life -= 0.003;
+          this.size *= 0.9995;
+
+          // Trail
+          this.trail.push({ x: this.x, y: this.y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+
+          // Fade based on life
+          this.opacity = Math.min(1, this.life / this.maxLife * 2) * (0.3 + 0.7 * (this.life / this.maxLife));
+
+          // Check if alive
+          if (this.life <= 0 || this.size < 0.1) {
+            this.alive = false;
+          }
+        }
+
+        draw(ctx, sizeMult) {
+          const size = this.size * sizeMult;
+          const alpha = this.opacity * (0.5 + 0.5 * (this.life / this.maxLife));
+
+          // Draw trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.2;
+              const trailSize = size * t * 0.3;
+              const hue = this.hue + t * 30;
+              ctx.fillStyle = `hsla(${hue}, 100%, 80%, ${trailAlpha})`;
+              ctx.beginPath();
+              ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const glowSize = size * 5;
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          const glowAlpha = alpha * 0.15;
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${glowAlpha})`);
+          gradient.addColorStop(0.5, `hsla(${this.hue + 10}, 100%, 70%, ${glowAlpha * 0.5})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 50%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Particle body
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(this.rotation);
+          ctx.globalAlpha = alpha;
+
+          // Shadow/glow
+          ctx.shadowColor = `hsla(${this.hue + 20}, 100%, 70%, ${alpha * 0.2})`;
+          ctx.shadowBlur = 15;
+
+          // Core with gradient
+          const grad = ctx.createRadialGradient(
+            -size * 0.2, -size * 0.2, 0,
+            0, 0, size
+          );
+          const lightness = 60 + 30 * (this.life / this.maxLife);
+          grad.addColorStop(0, `hsla(45, 100%, 95%, ${alpha})`);
+          grad.addColorStop(0.3, `hsla(${this.hue + 20}, 100%, ${lightness + 20}%, ${alpha * 0.9})`);
+          grad.addColorStop(0.7, `hsla(${this.hue}, 100%, ${lightness}%, ${alpha * 0.7})`);
+          grad.addColorStop(1, `hsla(${this.hue - 10}, 100%, ${lightness - 20}%, ${alpha * 0.4})`);
+
+          ctx.fillStyle = grad;
+
+          // Irregular particle shape (star-like)
+          const segments = 4 + Math.floor(Math.random() * 4);
+          ctx.beginPath();
+          for (let i = 0; i <= segments; i++) {
+            const angle = (i / segments) * Math.PI * 2;
+            const bump = 1 + 0.2 * Math.sin(angle * 3 + time * 0.3 + this.rotation);
+            const r = size * bump;
+            const x = Math.cos(angle) * r;
+            const y = Math.sin(angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.shadowBlur = 0;
+
+          // Highlight
+          if (this.life > this.maxLife * 0.5) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.15})`;
+            ctx.beginPath();
+            ctx.arc(-size * 0.15, -size * 0.2, size * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          ctx.restore();
+        }
+      }
+
+      // ----- Create supernova burst -----
+      function createSupernova(x, y) {
+        const count = parseInt(countSlider.value);
+        const force = parseInt(forceSlider.value);
+        const size = parseInt(sizeSlider.value);
+        const colorTemp = parseInt(colorSlider.value);
+        const cx = x || canvas.width / 2;
+        const cy = y || canvas.height / 2;
+
+        // Determine color temperature
+        const temp = colorTemp / 100;
+        const hue = 200 - temp * 200; // 200 (cool) to 0 (warm)
+
+        // Clear existing particles
+        particles = [];
+        isBursting = true;
+
+        // Create particles
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const colorVariation = (Math.random() - 0.5) * 40;
+          const particle = new Particle(cx, cy, angle, force, size, hue + colorVariation);
+          // Add some initial spread
+          particle.x += (Math.random() - 0.5) * 10;
+          particle.y += (Math.random() - 0.5) * 10;
+          particles.push(particle);
+        }
+
+        // Add some large slow particles (debris)
+        for (let i = 0; i < Math.floor(count * 0.1); i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const particle = new Particle(cx, cy, angle, force * 0.3, size * 1.5, hue);
+          particle.size = size * (0.8 + Math.random() * 0.8);
+          particle.life = 0.8 + Math.random() * 0.2;
+          particle.speed = particle.vx * 0.3;
+          particle.vx *= 0.3;
+          particle.vy *= 0.3;
+          particles.push(particle);
+        }
+
+        // Add some tiny fast particles (sparks)
+        for (let i = 0; i < Math.floor(count * 0.3); i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const particle = new Particle(cx, cy, angle, force * 1.5, size * 0.3, hue + 30);
+          particle.size = size * (0.2 + Math.random() * 0.3);
+          particle.life = 0.2 + Math.random() * 0.3;
+          particles.push(particle);
+        }
+
+        particleCount.textContent = `✦ ${particles.length} particles`;
+        burstStatus.textContent = '💥 Bursting!';
+        status.textContent = `💥 Supernova! ${particles.length} particles!`;
+        isBursting = true;
+
+        setTimeout(() => {
+          if (particles.length > 0) {
+            burstStatus.textContent = '⭐ Expanding';
+          }
+        }, 1000);
+
+        setTimeout(() => {
+          isBursting = false;
+          if (particles.length === 0) {
+            burstStatus.textContent = '⭐ Idle';
+          }
+        }, 3000);
+      }
+
+      // ----- Random burst -----
+      function randomBurst() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        createSupernova(cx, cy);
+      }
+
+      // ----- Clear particles -----
+      function clearParticles() {
+        particles = [];
+        particleCount.textContent = '✦ 0 particles';
+        burstStatus.textContent = '⭐ Idle';
+        status.textContent = '🗑️ Cleared';
+        isBursting = false;
+        setTimeout(() => {
+          status.textContent = '⭐ Click Burst to create a supernova explosion';
+        }, 1000);
+      }
+
+      // ----- Toggle pause -----
+      function togglePause() {
+        isPaused = !isPaused;
+        toggleBtn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        status.textContent = isPaused ? '⏸ Paused' : '▶ Resumed';
+        burstStatus.textContent = isPaused ? '⏸ Paused' : (isBursting ? '💥 Bursting!' : '⭐ Idle');
+      }
+
+      // ----- Reset -----
+      function resetBurst() {
+        particles = [];
+        isPaused = false;
+        isBursting = false;
+        toggleBtn.textContent = '⏸ Pause';
+        burstStatus.textContent = '⭐ Idle';
+        particleCount.textContent = '✦ 0 particles';
+        countSlider.value = 200;
+        countValue.textContent = '200';
+        forceSlider.value = 5;
+        forceValue.textContent = '5×';
+        sizeSlider.value = 5;
+        sizeValue.textContent = '5×';
+        colorSlider.value = 50;
+        colorValue.textContent = 'Neutral';
+        status.textContent = '↺ Reset';
+        setTimeout(() => {
+          status.textContent = '⭐ Click Burst to create a supernova explosion';
+        }, 500);
+      }
+
+      // ----- Draw background -----
+      function drawBackground() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+
+        // Deep space background
+        const bgGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.8);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Stars
+        for (let i = 0; i < 50; i++) {
+          const seed = i * 137.508;
+          const x = (seed * 0.618) % w;
+          const y = (seed * 0.381) % h;
+          const size = 0.5 + (seed % 3) * 0.5;
+          const alpha = 0.1 + (seed % 100) / 100 * 0.3;
+          const twinkle = 0.5 + 0.5 * Math.sin(time * 0.5 + seed);
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * twinkle})`;
+          ctx.beginPath();
+          ctx.arc(x, y, size * twinkle, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Draw -----
+      function draw() {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        drawBackground();
+
+        // Update particles
+        if (!isPaused) {
+          particles = particles.filter(p => p.alive);
+          particles.forEach(p => p.update());
+        }
+
+        // Draw particles (sorted by size for depth)
+        const sizeMult = parseInt(sizeSlider.value) / 5;
+        const sortedParticles = [...particles].sort((a, b) => a.size - b.size);
+        sortedParticles.forEach(p => p.draw(ctx, sizeMult));
+
+        // Update count
+        particleCount.textContent = `✦ ${particles.length} particles`;
+        if (particles.length === 0 && !isPaused && !isBursting) {
+          burstStatus.textContent = '⭐ Idle';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        draw();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Event Listeners -----
+      burstBtn.addEventListener('click', randomBurst);
+      clearBtn.addEventListener('click', clearParticles);
+      toggleBtn.addEventListener('click', togglePause);
+      resetBtn.addEventListener('click', resetBurst);
+
+      countSlider.addEventListener('input', (e) => {
+        countValue.textContent = e.target.value;
+      });
+
+      forceSlider.addEventListener('input', (e) => {
+        forceValue.textContent = e.target.value + '×';
+      });
+
+      sizeSlider.addEventListener('input', (e) => {
+        sizeValue.textContent = e.target.value + '×';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        const names = ['❄️ Cool', '⚪ Neutral', '🔥 Warm'];
+        const idx = val < 33 ? 0 : (val < 66 ? 1 : 2);
+        colorValue.textContent = names[idx];
+      });
+
+      // Click canvas to burst
+      canvas.addEventListener('click', randomBurst);
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'b' || e.key === 'B') {
+          e.preventDefault();
+          randomBurst();
+        }
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          clearParticles();
+        }
+        if (e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          togglePause();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetBurst();
+        }
+      });
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        startAnimation();
+        status.textContent = '⭐ Click Burst to create a supernova explosion!';
+        // Create initial burst after a moment
+        setTimeout(() => {
+          const w = canvas.width;
+          const h = canvas.height;
+          const cx = w / 2;
+          const cy = h / 2;
+          createSupernova(cx, cy);
+        }, 500);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

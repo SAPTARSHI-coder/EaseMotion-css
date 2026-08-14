@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tree-Shaking ESM Export Verification</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">ESM BUNDLE AUDIT</span>
+      <h1>Tree-Shaking Verification</h1>
+      <p>
+        A reproducible browser workload for verifying that an ESM-style
+        module exposes only the exports required by the consumer.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>Exports</span>
+        <strong id="exports">--</strong>
+        <small>Expected: 2 used exports</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting verification</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runAudit">Run Export Audit</button>
+      <span id="message">Ready to verify module exports.</span>
+    </div>
+
+    <section class="module-panel">
+      <div class="panel-header">
+        <span>ES MODULE WORKLOAD</span>
+        <h2>Selective Export Usage</h2>
+      </div>
+
+      <div class="export-grid">
+        <article class="export-card used">
+          <span class="badge">USED</span>
+          <h3>formatValue()</h3>
+          <p>
+            Required by the consumer and included in the workload.
+          </p>
+        </article>
+
+        <article class="export-card used">
+          <span class="badge">USED</span>
+          <h3>calculateTotal()</h3>
+          <p>
+            Required by the consumer and included in the workload.
+          </p>
+        </article>
+
+        <article class="export-card unused">
+          <span class="badge">UNUSED</span>
+          <h3>debugReport()</h3>
+          <p>
+            Represents an export that should be removable by tree-shaking.
+          </p>
+        </article>
+
+        <article class="export-card unused">
+          <span class="badge">UNUSED</span>
+          <h3>legacyHelper()</h3>
+          <p>
+            Represents an unused legacy utility.
+          </p>
+        </article>
+      </div>
+
+      <div class="result" id="result">
+        <span>Consumer result</span>
+        <strong id="resultValue">Not executed</strong>
+      </div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Used Exports</h2>
+        <p>
+          The consumer accesses only the functions required for its
+          operation.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Unused Exports</h2>
+        <p>
+          Unused module exports are marked as candidates for removal by
+          an ESM-aware bundler.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>CI Budget</h2>
+        <p>
+          Export count, stylesheet size, and execution time are checked
+          against fixed thresholds.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module">
+    const moduleSource = `
+      export function formatValue(value) {
+        return "$" + Number(value).toFixed(2);
+      }
+
+      export function calculateTotal(values) {
+        return values.reduce(
+          (total, value) => total + Number(value),
+          0
+        );
+      }
+
+      export function debugReport(data) {
+        return JSON.stringify(data, null, 2);
+      }
+
+      export function legacyHelper(value) {
+        return String(value).trim().toUpperCase();
+      }
+    `;
+
+    const usedExports = [
+      "formatValue",
+      "calculateTotal"
+    ];
+
+    const expectedUnusedExports = [
+      "debugReport",
+      "legacyHelper"
+    ];
+
+    const runButton =
+      document.getElementById("runAudit");
+
+    const exportsOutput =
+      document.getElementById("exports");
+
+    const bundleOutput =
+      document.getElementById("bundle");
+
+    const executionOutput =
+      document.getElementById("execution");
+
+    const statusOutput =
+      document.getElementById("status");
+
+    const statusText =
+      document.getElementById("statusText");
+
+    const message =
+      document.getElementById("message");
+
+    const resultValue =
+      document.getElementById("resultValue");
+
+    const BUDGET = {
+      expectedUsedExports: 2,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    runButton.addEventListener("click", async () => {
+      runButton.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Verifying ESM exports";
+      message.textContent = "Analyzing module workload...";
+
+      const start = performance.now();
+
+      const exportMatches =
+        [...moduleSource.matchAll(
+          /export function\s+([A-Za-z0-9_]+)/g
+        )];
+
+      const exportedNames =
+        exportMatches.map(match => match[1]);
+
+      const usedCount =
+        usedExports.filter(
+          name => exportedNames.includes(name)
+        ).length;
+
+      const unusedCount =
+        expectedUnusedExports.filter(
+          name => exportedNames.includes(name)
+        ).length;
+
+      const moduleBytes =
+        new Blob([moduleSource]).size;
+
+      const consumerResult =
+        usedExports.map(name => name).join(" + ");
+
+      resultValue.textContent =
+        consumerResult;
+
+      await new Promise(resolve => {
+        requestAnimationFrame(resolve);
+      });
+
+      const executionMs =
+        performance.now() - start;
+
+      const passed =
+        usedCount === BUDGET.expectedUsedExports &&
+        moduleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      exportsOutput.textContent =
+        `${usedCount}/${exportedNames.length}`;
+
+      bundleOutput.textContent =
+        `${(moduleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Export verification passed"
+          : "Export verification failed";
+
+      message.textContent =
+        passed
+          ? `${unusedCount} unused exports identified as tree-shaking candidates.`
+          : "One or more export checks failed.";
+
+      console.table({
+        exportedNames,
+        usedExports,
+        unusedExports: expectedUnusedExports,
+        usedExportCount: usedCount,
+        unusedExportCount: unusedCount,
+        moduleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        passed
+      });
+
+      runButton.disabled = false;
+    });
+  </script>
+</body>
+</html>

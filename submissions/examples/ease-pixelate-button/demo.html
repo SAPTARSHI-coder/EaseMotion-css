@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pixelate Button · Dissolves into Pixels</title>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <div class="card">
+        <h2>🎨 Pixelate Button</h2>
+        <p class="sub">dissolves into pixels on hover</p>
+
+        <!-- === PIXELATE BUTTON === -->
+        <button class="pixelate-btn" id="pixelateBtn">
+            <span class="pixelate-content">
+                <i class="fas fa-cubes"></i>
+                <span>Pixelate</span>
+            </span>
+            <canvas class="pixelate-canvas" id="pixelCanvas"></canvas>
+        </button>
+
+        <p style="margin-top: 2rem; font-size: 0.85rem; color: #64748b;">
+            Hover · watch the button dissolve into pixels
+        </p>
+    </div>
+
+    <!-- Embedded JavaScript -->
+    <script>
+        (function() {
+            'use strict';
+
+            const btn = document.getElementById('pixelateBtn');
+            const canvas = document.getElementById('pixelCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let pixelSize = 8;
+            let isPixelated = false;
+            let animationId = null;
+            let pixels = [];
+
+            // --- Get button colors ---
+            function getButtonColors() {
+                const style = getComputedStyle(btn);
+                const bg = style.background || '#1a2f4f';
+                const color = style.color || '#ffffff';
+                return { bg, color };
+            }
+
+            // --- Create pixel grid ---
+            function createPixels() {
+                const rect = btn.getBoundingClientRect();
+                const width = rect.width;
+                const height = rect.height;
+
+                canvas.width = width * 2; // 2x for retina
+                canvas.height = height * 2;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+
+                ctx.scale(2, 2);
+
+                const cols = Math.ceil(width / pixelSize);
+                const rows = Math.ceil(height / pixelSize);
+
+                // Get the button background color
+                const bgColor = getComputedStyle(btn).backgroundColor || 'rgba(26, 47, 79, 0.9)';
+                const textColor = getComputedStyle(btn).color || '#ffffff';
+
+                pixels = [];
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = col * pixelSize;
+                        const y = row * pixelSize;
+
+                        // Determine if this pixel should be part of the text/icon
+                        // Simple approximation: check if it's within the content area
+                        const isContent = (
+                            x > width * 0.2 && x < width * 0.8 &&
+                            y > height * 0.2 && y < height * 0.8
+                        );
+
+                        // Random offset for pixelation effect
+                        const offsetX = (Math.random() - 0.5) * 0;
+                        const offsetY = (Math.random() - 0.5) * 0;
+
+                        // Random delay for animation
+                        const delay = Math.random() * 0.5;
+
+                        // Random color variation
+                        const colorVariation = Math.random() * 30 - 15;
+
+                        // Determine pixel color
+                        let color;
+                        if (isContent) {
+                            // Use a mix of the text color and random colors
+                            const hue = 210 + Math.random() * 30;
+                            color = `hsl(${hue}, 80%, ${60 + Math.random() * 30}%)`;
+                        } else {
+                            // Background color with slight variation
+                            const r = 26 + Math.random() * 20;
+                            const g = 47 + Math.random() * 20;
+                            const b = 79 + Math.random() * 20;
+                            color = `rgb(${r}, ${g}, ${b})`;
+                        }
+
+                        pixels.push({
+                            x: x,
+                            y: y,
+                            targetX: x,
+                            targetY: y,
+                            offsetX: (Math.random() - 0.5) * 40,
+                            offsetY: (Math.random() - 0.5) * 40,
+                            size: pixelSize,
+                            color: color,
+                            delay: delay,
+                            progress: 0,
+                            speed: 0.02 + Math.random() * 0.03,
+                            isContent: isContent,
+                            originalColor: color,
+                        });
+                    }
+                }
+            }
+
+            // --- Draw pixels ---
+            function drawPixels(progress) {
+                ctx.clearRect(0, 0, canvas.width / 2, canvas.height / 2);
+
+                pixels.forEach(p => {
+                    const px = p.x + p.offsetX * progress;
+                    const py = p.y + p.offsetY * progress;
+                    const size = p.size * (1 + progress * 0.3);
+
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(px - size / 2, py - size / 2, size, size);
+
+                    // Add a subtle glow
+                    if (p.isContent && progress > 0.3) {
+                        ctx.shadowColor = 'rgba(79, 172, 254, 0.3)';
+                        ctx.shadowBlur = 10;
+                        ctx.fillRect(px - size / 2, py - size / 2, size, size);
+                        ctx.shadowBlur = 0;
+                    }
+                });
+            }
+
+            // --- Animate pixelation ---
+            function animatePixelation(targetProgress) {
+                const startTime = performance.now();
+                const duration = 800;
+
+                function animate(time) {
+                    const elapsed = time - startTime;
+                    const t = Math.min(elapsed / duration, 1);
+                    // Ease in-out cubic
+                    const eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+                    const progress = targetProgress * eased;
+
+                    drawPixels(progress);
+
+                    if (t < 1) {
+                        animationId = requestAnimationFrame(animate);
+                    } else {
+                        drawPixels(targetProgress);
+                        animationId = null;
+                    }
+                }
+
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                    animationId = null;
+                }
+
+                animate(performance.now());
+            }
+
+            // --- Pixelate ---
+            function pixelate() {
+                if (isPixelated) return;
+                isPixelated = true;
+                btn.classList.add('pixelating');
+                createPixels();
+                canvas.style.display = 'block';
+                animatePixelation(1);
+                console.log('🎨 Pixelating...');
+            }
+
+            // --- Depixelate ---
+            function depixelate() {
+                if (!isPixelated) return;
+                isPixelated = false;
+                btn.classList.remove('pixelating');
+                animatePixelation(0);
+                setTimeout(() => {
+                    canvas.style.display = 'none';
+                }, 900);
+                console.log('🎨 Depixelating...');
+            }
+
+            // --- Event Listeners ---
+            btn.addEventListener('mouseenter', pixelate);
+            btn.addEventListener('mouseleave', depixelate);
+
+            // Click feedback
+            btn.addEventListener('click', function(e) {
+                this.classList.add('click-pulse');
+                setTimeout(() => {
+                    this.classList.remove('click-pulse');
+                }, 300);
+                console.log('🎨 Pixelate button clicked!');
+            });
+
+            // Keyboard accessibility
+            btn.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
+            });
+
+            // --- Resize ---
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (isPixelated) {
+                        createPixels();
+                        drawPixels(1);
+                    }
+                }, 300);
+            });
+
+            // --- Initial setup ---
+            canvas.style.display = 'none';
+
+            console.log('🎨 Pixelate button initialized!');
+
+        })();
+    </script>
+
+</body>
+</html>

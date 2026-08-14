@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Drop-Shadow CI Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">CI GPU PERFORMANCE</span>
+      <h1>SVG Drop-Shadow Filter</h1>
+      <p>
+        A repeatable SVG filter rendering workload for Headless Chrome
+        performance validation.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run CI Benchmark</button>
+      <span id="message">Ready for rendering validation.</span>
+    </div>
+
+    <section class="stage" id="stage">
+      <svg
+        class="scene"
+        viewBox="0 0 800 420"
+        role="img"
+        aria-label="SVG drop-shadow benchmark scene"
+      >
+        <defs>
+          <filter
+            id="shadow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feDropShadow
+              dx="0"
+              dy="12"
+              stdDeviation="12"
+              flood-opacity="0.55"
+            />
+          </filter>
+        </defs>
+
+        <g id="objects">
+          <rect
+            x="80"
+            y="75"
+            width="180"
+            height="125"
+            rx="24"
+            filter="url(#shadow)"
+          />
+
+          <circle
+            cx="400"
+            cy="140"
+            r="72"
+            filter="url(#shadow)"
+          />
+
+          <rect
+            x="540"
+            y="75"
+            width="180"
+            height="125"
+            rx="24"
+            filter="url(#shadow)"
+          />
+
+          <circle
+            cx="235"
+            cy="310"
+            r="58"
+            filter="url(#shadow)"
+          />
+
+          <circle
+            cx="565"
+            cy="310"
+            r="58"
+            filter="url(#shadow)"
+          />
+        </g>
+      </svg>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>SVG Filter</h2>
+        <p>
+          Multiple vector elements use the same
+          <code>feDropShadow</code> filter.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Frame Measurement</h2>
+        <p>
+          A one-second animation workload counts rendered frames with
+          requestAnimationFrame.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>CI Validation</h2>
+        <p>
+          Metrics can be compared against fixed performance budgets by
+          an automated CI runner.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const stage = document.getElementById("stage");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering SVG filter";
+      message.textContent = "Collecting performance metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const x = Math.sin(elapsed / 120) * 10;
+          const y = Math.cos(elapsed / 160) * 6;
+          const rotation = Math.sin(elapsed / 500) * 1.5;
+
+          stage.style.transform =
+            `translate3d(${x}px, ${y}px, 0) rotate(${rotation}deg)`;
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent = passed
+        ? "All performance budgets passed"
+        : "Performance budget failed";
+
+      message.textContent = passed
+        ? "CI benchmark completed successfully."
+        : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      stage.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

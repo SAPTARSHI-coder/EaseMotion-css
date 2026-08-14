@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subgrid & Container Query Repaint Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">LAYOUT REPAINT BENCHMARK</span>
+      <h1>Subgrid & Container Queries</h1>
+      <p>
+        A reproducible browser workload for measuring layout repaint
+        performance with CSS Subgrid and Container Queries.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run Layout Benchmark</button>
+      <span id="message">Ready to measure repaint performance.</span>
+    </div>
+
+    <section class="workload" id="workload">
+      <div class="workload-header">
+        <span>CSS WORKLOAD</span>
+        <h2>Responsive Product Grid</h2>
+        <p>
+          Cards use a shared Subgrid structure while Container Queries
+          adapt their internal layout to available space.
+        </p>
+      </div>
+
+      <div class="product-grid">
+        <article class="product-card">
+          <div class="product-visual">01</div>
+          <div class="product-content">
+            <h3>Analytics</h3>
+            <p>Container-aware card layout.</p>
+            <strong>$48</strong>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-visual">02</div>
+          <div class="product-content">
+            <h3>Dashboard</h3>
+            <p>Shared row alignment.</p>
+            <strong>$62</strong>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-visual">03</div>
+          <div class="product-content">
+            <h3>Reports</h3>
+            <p>Responsive container rules.</p>
+            <strong>$35</strong>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-visual">04</div>
+          <div class="product-content">
+            <h3>Metrics</h3>
+            <p>Subgrid-aligned content.</p>
+            <strong>$74</strong>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-visual">05</div>
+          <div class="product-content">
+            <h3>Projects</h3>
+            <p>Adaptive component sizing.</p>
+            <strong>$51</strong>
+          </div>
+        </article>
+
+        <article class="product-card">
+          <div class="product-visual">06</div>
+          <div class="product-content">
+            <h3>Activity</h3>
+            <p>Controlled layout repaint.</p>
+            <strong>$43</strong>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Subgrid</h2>
+        <p>
+          Nested cards participate in the parent grid's row structure.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Container Query</h2>
+        <p>
+          Card internals respond to their own available container width.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Repaint Test</h2>
+        <p>
+          An animation workload measures frame throughput during layout
+          updates.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const workload = document.getElementById("workload");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Measuring layout repaint";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const x = Math.sin(elapsed / 140) * 8;
+          const y = Math.cos(elapsed / 180) * 5;
+
+          workload.style.transform =
+            `translate3d(${x}px, ${y}px, 0)`;
+
+          /*
+           * Changing the custom property forces container-query
+           * dependent styles to be recalculated during the workload.
+           */
+          workload.style.setProperty(
+            "--query-progress",
+            `${(elapsed % 1000) / 1000}`
+          );
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs = performance.now() - start;
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Unable to measure CSS bundle:", error);
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budget passed"
+          : "Performance budget failed";
+
+      message.textContent =
+        passed
+          ? "Layout repaint benchmark completed."
+          : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      workload.style.transform = "";
+      workload.style.removeProperty("--query-progress");
+
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

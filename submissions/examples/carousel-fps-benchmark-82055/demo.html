@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carousel FPS Rendering Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="page">
+    <header class="hero">
+      <span class="eyebrow">RENDERING PERFORMANCE BENCHMARK</span>
+      <h1>Carousel FPS Audit</h1>
+      <p>
+        A reproducible carousel rendering workload designed for
+        Headless Chrome and mobile-oriented performance testing.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Awaiting benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run FPS Benchmark</button>
+      <span id="message">Ready to measure carousel rendering.</span>
+    </div>
+
+    <section class="carousel-shell">
+      <div class="carousel" id="carousel">
+        <article class="slide active">
+          <div class="slide-number">01</div>
+          <h2>Performance</h2>
+          <p>Measure smooth carousel animation and frame throughput.</p>
+        </article>
+
+        <article class="slide">
+          <div class="slide-number">02</div>
+          <h2>Responsive</h2>
+          <p>Test the same rendering workload across viewport sizes.</p>
+        </article>
+
+        <article class="slide">
+          <div class="slide-number">03</div>
+          <h2>Headless Chrome</h2>
+          <p>Use a fixed Puppeteer viewport for reproducible results.</p>
+        </article>
+
+        <article class="slide">
+          <div class="slide-number">04</div>
+          <h2>CI Ready</h2>
+          <p>Fail validation when the rendering budget is exceeded.</p>
+        </article>
+      </div>
+
+      <div class="carousel-controls">
+        <button class="arrow" id="previous" aria-label="Previous slide">
+          ←
+        </button>
+
+        <div class="dots" id="dots"></div>
+
+        <button class="arrow" id="next" aria-label="Next slide">
+          →
+        </button>
+      </div>
+    </section>
+
+    <section class="info">
+      <article>
+        <span>01</span>
+        <h2>Frame Rate</h2>
+        <p>
+          Counts requestAnimationFrame callbacks during the benchmark
+          interval.
+        </p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h2>Workload</h2>
+        <p>
+          Multiple carousel cards are animated using GPU-friendly
+          transforms.
+        </p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h2>Budget</h2>
+        <p>
+          FPS, stylesheet size, and execution time are evaluated against
+          fixed thresholds.
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const carousel = document.getElementById("carousel");
+    const slides = [...document.querySelectorAll(".slide")];
+    const dotsContainer = document.getElementById("dots");
+
+    const previous = document.getElementById("previous");
+    const next = document.getElementById("next");
+    const runButton = document.getElementById("runBenchmark");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    let currentSlide = 0;
+
+    slides.forEach((slide, index) => {
+      const dot = document.createElement("button");
+
+      dot.className = index === 0 ? "dot active" : "dot";
+      dot.setAttribute("aria-label", `Go to slide ${index + 1}`);
+
+      dot.addEventListener("click", () => {
+        currentSlide = index;
+        updateCarousel();
+      });
+
+      dotsContainer.appendChild(dot);
+    });
+
+    function updateCarousel() {
+      slides.forEach((slide, index) => {
+        slide.classList.toggle(
+          "active",
+          index === currentSlide
+        );
+      });
+
+      document.querySelectorAll(".dot").forEach((dot, index) => {
+        dot.classList.toggle(
+          "active",
+          index === currentSlide
+        );
+      });
+    }
+
+    previous.addEventListener("click", () => {
+      currentSlide =
+        (currentSlide - 1 + slides.length) % slides.length;
+
+      updateCarousel();
+    });
+
+    next.addEventListener("click", () => {
+      currentSlide =
+        (currentSlide + 1) % slides.length;
+
+      updateCarousel();
+    });
+
+    runButton.addEventListener("click", async () => {
+      runButton.disabled = true;
+      previous.disabled = true;
+      next.disabled = true;
+
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering carousel workload";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const duration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function render(time) {
+          frames++;
+
+          const elapsed =
+            time - animationStart;
+
+          const progress =
+            (elapsed % 1600) / 1600;
+
+          const offset =
+            Math.sin(progress * Math.PI * 2) * 160;
+
+          carousel.style.transform =
+            `translate3d(${offset}px, 0, 0)`;
+
+          slides.forEach((slide, index) => {
+            const depth =
+              Math.cos(
+                progress * Math.PI * 2 +
+                index * 0.8
+              );
+
+            slide.style.transform =
+              `translate3d(0, 0, 0) scale(${0.92 + depth * 0.04})`;
+          });
+
+          if (elapsed < duration) {
+            requestAnimationFrame(render);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(render);
+      });
+
+      const executionMs =
+        performance.now() - start;
+
+      const fps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+
+        bundleBytes =
+          new Blob([css]).size;
+      } catch (error) {
+        console.warn(
+          "Unable to measure CSS bundle:",
+          error
+        );
+      }
+
+      const passed =
+        fps >= BUDGET.minimumFps &&
+        bundleBytes <= BUDGET.maximumBundleBytes &&
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      fpsOutput.textContent = fps;
+
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent =
+        passed
+          ? "Performance budget passed"
+          : "Performance budget failed";
+
+      message.textContent =
+        passed
+          ? "Carousel benchmark completed."
+          : "One or more thresholds were exceeded.";
+
+      console.table({
+        fps,
+        bundleSizeBytes: bundleBytes,
+        executionMs:
+          Number(executionMs.toFixed(2)),
+        minimumFps:
+          BUDGET.minimumFps,
+        maximumBundleBytes:
+          BUDGET.maximumBundleBytes,
+        maximumExecutionMs:
+          BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      carousel.style.transform = "";
+
+      slides.forEach((slide) => {
+        slide.style.transform = "";
+      });
+
+      runButton.disabled = false;
+      previous.disabled = false;
+      next.disabled = false;
+    });
+
+    updateCarousel();
+  </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed Modifiers & Favorite Presets — EaseMotion CSS</title>
+  <link rel="stylesheet" href="../../easemotion.css" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      padding: 2.5rem 2rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    h1 { font-weight: 300; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+    .subtitle { color: #888; font-size: 0.9rem; margin-bottom: 2rem; }
+    h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin: 2rem 0 0.75rem; }
+    .preview-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
+    }
+    .box {
+      width: 50px;
+      height: 50px;
+      background: #6c63ff;
+      border-radius: 10px;
+    }
+    select {
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.85rem;
+    }
+    button.replay {
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    #presetList { margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+    .empty-state { color: #555; font-size: 0.85rem; font-style: italic; }
+  </style>
+</head>
+<body>
+  <h1>Speed Modifiers & Favorite Presets</h1>
+  <p class="subtitle">Pick an animation + speed, preview it, then save it as a favorite for quick reuse.</p>
+
+  <h2>Live Preview</h2>
+  <div class="preview-row">
+    <div class="box" id="previewBox"></div>
+
+    <select id="animationSelect">
+      <option value="ease-fade-in">Fade In</option>
+      <option value="ease-slide-up">Slide Up</option>
+      <option value="ease-bounce">Bounce</option>
+      <option value="ease-rotate">Rotate</option>
+    </select>
+
+    <select id="speedSelect">
+      <option value="ease-fast">Fast</option>
+      <option value="ease-normal" selected>Normal</option>
+      <option value="ease-slow">Slow</option>
+      <option value="ease-slower">Slower</option>
+    </select>
+
+    <button class="replay" id="replayBtn">▶ Preview</button>
+    <button class="star-btn" id="favoriteBtn" title="Save as favorite">☆</button>
+  </div>
+
+  <h2>Saved Favorites</h2>
+  <div id="presetList">
+    <p class="empty-state" id="emptyState">No favorites saved yet — preview a combo above and click ☆ to save it.</p>
+  </div>
+
+  <script>
+    const previewBox = document.getElementById('previewBox');
+    const animationSelect = document.getElementById('animationSelect');
+    const speedSelect = document.getElementById('speedSelect');
+    const replayBtn = document.getElementById('replayBtn');
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    const presetList = document.getElementById('presetList');
+    const emptyState = document.getElementById('emptyState');
+
+    const STORAGE_KEY = 'easemotion-favorite-presets';
+
+    function playPreview() {
+      const animClass = animationSelect.value;
+      const speedClass = speedSelect.value;
+
+      // Reset classes, force reflow, then reapply to restart the animation
+      previewBox.className = 'box';
+      void previewBox.offsetWidth;
+      previewBox.classList.add(animClass, speedClass);
+    }
+
+    function getPresets() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function savePresets(presets) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(presets));
+    }
+
+    function labelFor(animClass, speedClass) {
+      const animLabel = animationSelect.querySelector(`option[value="${animClass}"]`)?.textContent || animClass;
+      const speedLabel = speedSelect.querySelector(`option[value="${speedClass}"]`)?.textContent || speedClass;
+      return `${animLabel} + ${speedLabel}`;
+    }
+
+    function renderPresets() {
+      const presets = getPresets();
+      presetList.innerHTML = '';
+
+      if (presets.length === 0) {
+        presetList.appendChild(emptyState);
+        return;
+      }
+
+      presets.forEach((preset, idx) => {
+        const card = document.createElement('div');
+        card.className = 'preset-card';
+        card.innerHTML = `
+          <span>⭐ ${labelFor(preset.animation, preset.speed)}</span>
+          <div style="display:flex; gap:0.5rem;">
+            <button class="replay" data-idx="${idx}">▶ Play</button>
+            <button class="star-btn active" data-remove="${idx}" title="Remove">✕</button>
+          </div>
+        `;
+        presetList.appendChild(card);
+      });
+    }
+
+    replayBtn.addEventListener('click', playPreview);
+
+    favoriteBtn.addEventListener('click', () => {
+      const presets = getPresets();
+      const newPreset = { animation: animationSelect.value, speed: speedSelect.value };
+
+      const alreadyExists = presets.some(
+        (p) => p.animation === newPreset.animation && p.speed === newPreset.speed
+      );
+      if (!alreadyExists) {
+        presets.push(newPreset);
+        savePresets(presets);
+        renderPresets();
+      }
+    });
+
+    presetList.addEventListener('click', (e) => {
+      if (e.target.dataset.idx !== undefined) {
+        const presets = getPresets();
+        const preset = presets[e.target.dataset.idx];
+        animationSelect.value = preset.animation;
+        speedSelect.value = preset.speed;
+        playPreview();
+      }
+      if (e.target.dataset.remove !== undefined) {
+        const presets = getPresets();
+        presets.splice(e.target.dataset.remove, 1);
+        savePresets(presets);
+        renderPresets();
+      }
+    });
+
+    // Initial render
+    renderPresets();
+  </script>
+</body>
+</html>

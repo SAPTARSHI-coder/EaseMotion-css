@@ -1,0 +1,1025 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Ninja Stars · ⭐</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-header">
+            <h1>⭐ Ninja Stars</h1>
+            <div class="game-stats">
+                <div class="stat">
+                    <span class="label">🏆 Score</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🔥 Combo</span>
+                    <span id="comboDisplay">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">🎯 Hits</span>
+                    <span id="hitCount">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">⭐ Multiplier</span>
+                    <span id="multiplierDisplay">1x</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="900" height="600"></canvas>
+            
+            <!-- Aim Indicator -->
+            <div id="aimIndicator" class="aim-indicator">
+                <span>🎯 Aim & Release</span>
+            </div>
+
+            <!-- Combo Display -->
+            <div id="comboOverlay" class="combo-overlay" style="display:none">
+                <span id="comboText">🔥 5x Combo!</span>
+            </div>
+
+            <div class="controls-hint">
+                <span>🖱️ Click & drag to aim • Release to throw • Deflect projectiles for bonus!</span>
+            </div>
+
+            <!-- Start Overlay -->
+            <div id="startOverlay" class="overlay">
+                <div class="overlay-content">
+                    <h2>⭐ Ninja Stars</h2>
+                    <p>Throw shurikens at moving targets!</p>
+                    <p class="sub-text">Aim • Release • Combo • Deflect</p>
+                    <button id="startBtn" class="btn-primary">⚔️ Start Training</button>
+                </div>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameOverOverlay" class="overlay" style="display:none">
+                <div class="overlay-content">
+                    <h2>💥 Mission Complete!</h2>
+                    <div class="final-stats">
+                        <p>🏆 Score: <span id="finalScore">0</span></p>
+                        <p>🔥 Best Combo: <span id="finalCombo">0</span></p>
+                        <p>🎯 Hits: <span id="finalHits">0</span></p>
+                        <p>⭐ Max Multiplier: <span id="finalMultiplier">1x</span></p>
+                    </div>
+                    <button id="restartBtn" class="btn-primary">🔄 Train Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== NINJA STARS GAME ==========
+        class NinjaStars {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.W = 900;
+                this.H = 600;
+                
+                // Game state
+                this.state = 'start';
+                this.score = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.hits = 0;
+                this.multiplier = 1;
+                this.maxMultiplier = 1;
+                this.frame = 0;
+                this.difficulty = 1;
+                
+                // Player (ninja)
+                this.player = {
+                    x: 100,
+                    y: this.H / 2,
+                    width: 40,
+                    height: 50,
+                    angle: 0
+                };
+                
+                // Aiming
+                this.aiming = false;
+                this.aimStartX = 0;
+                this.aimStartY = 0;
+                this.aimEndX = 0;
+                this.aimEndY = 0;
+                this.aimAngle = 0;
+                this.aimPower = 0;
+                
+                // Shurikens
+                this.shurikens = [];
+                this.shurikenId = 0;
+                
+                // Targets
+                this.targets = [];
+                this.targetId = 0;
+                
+                // Enemy projectiles
+                this.projectiles = [];
+                this.projectileId = 0;
+                
+                // Particles
+                this.particles = [];
+                
+                // Stars (collectibles)
+                this.stars = [];
+                this.starId = 0;
+                
+                // Controls
+                this.mouseX = 0;
+                this.mouseY = 0;
+                this.isDragging = false;
+                this.isTouching = false;
+                
+                // Spawn timers
+                this.targetSpawnTimer = 0;
+                this.projectileSpawnTimer = 0;
+                this.starSpawnTimer = 0;
+                
+                // Background decorations
+                this.bgElements = [];
+                for (let i = 0; i < 30; i++) {
+                    this.bgElements.push({
+                        x: Math.random() * this.W,
+                        y: Math.random() * this.H,
+                        size: 1 + Math.random() * 3,
+                        twinkle: Math.random() * Math.PI * 2,
+                        speed: 0.01 + Math.random() * 0.02
+                    });
+                }
+                
+                this.init();
+                this.setupEventListeners();
+                this.gameLoop();
+            }
+            
+            init() {
+                this.state = 'start';
+                this.score = 0;
+                this.combo = 0;
+                this.bestCombo = 0;
+                this.hits = 0;
+                this.multiplier = 1;
+                this.maxMultiplier = 1;
+                this.frame = 0;
+                this.shurikens = [];
+                this.targets = [];
+                this.projectiles = [];
+                this.particles = [];
+                this.stars = [];
+                this.aiming = false;
+                
+                this.player.x = 100;
+                this.player.y = this.H / 2;
+                
+                document.getElementById('startOverlay').style.display = 'flex';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                document.getElementById('comboOverlay').style.display = 'none';
+                document.getElementById('aimIndicator').style.display = 'none';
+                this.updateUI();
+            }
+            
+            startGame() {
+                this.state = 'playing';
+                this.score = 0;
+                this.combo = 0;
+                this.hits = 0;
+                this.multiplier = 1;
+                this.shurikens = [];
+                this.targets = [];
+                this.projectiles = [];
+                this.particles = [];
+                this.stars = [];
+                
+                // Spawn initial targets
+                for (let i = 0; i < 5; i++) {
+                    this.spawnTarget();
+                }
+                
+                document.getElementById('startOverlay').style.display = 'none';
+                document.getElementById('gameOverOverlay').style.display = 'none';
+                document.getElementById('aimIndicator').style.display = 'block';
+                this.updateUI();
+            }
+            
+            spawnTarget() {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const x = side === 'left' ? -50 : this.W + 50;
+                const y = 50 + Math.random() * (this.H - 100);
+                const size = 25 + Math.random() * 20;
+                const speed = 1 + Math.random() * 2 + this.difficulty * 0.5;
+                const direction = side === 'left' ? 1 : -1;
+                const type = Math.random() > 0.7 ? 'boss' : 'normal';
+                
+                this.targets.push({
+                    id: this.targetId++,
+                    x: x,
+                    y: y,
+                    size: size,
+                    speed: speed,
+                    direction: direction,
+                    type: type,
+                    health: type === 'boss' ? 3 : 1,
+                    maxHealth: type === 'boss' ? 3 : 1,
+                    angle: 0,
+                    hitTimer: 0,
+                    color: type === 'boss' ? '#ff6b6b' : '#ffd93d',
+                    alive: true
+                });
+            }
+            
+            spawnProjectile() {
+                const side = Math.random() > 0.5 ? 'left' : 'right';
+                const x = side === 'left' ? -30 : this.W + 30;
+                const y = 50 + Math.random() * (this.H - 100);
+                const speed = 2 + Math.random() * 3 + this.difficulty * 0.3;
+                const direction = side === 'left' ? 1 : -1;
+                const angle = direction > 0 ? 
+                    -Math.PI/4 + Math.random() * Math.PI/2 : 
+                    Math.PI/4 + Math.random() * Math.PI/2;
+                
+                this.projectiles.push({
+                    id: this.projectileId++,
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed * direction,
+                    vy: Math.sin(angle) * speed,
+                    size: 10 + Math.random() * 8,
+                    angle: Math.atan2(Math.sin(angle) * speed, Math.cos(angle) * speed * direction),
+                    color: '#ff6b6b',
+                    alive: true
+                });
+            }
+            
+            spawnStar() {
+                const x = 100 + Math.random() * (this.W - 200);
+                const y = 50 + Math.random() * (this.H - 100);
+                this.stars.push({
+                    id: this.starId++,
+                    x: x,
+                    y: y,
+                    size: 15,
+                    glow: 0,
+                    collected: false
+                });
+            }
+            
+            throwShuriken() {
+                if (!this.aiming) return;
+                
+                const dx = this.aimEndX - this.aimStartX;
+                const dy = this.aimEndY - this.aimStartY;
+                const power = Math.min(1, Math.sqrt(dx*dx + dy*dy) / 300);
+                const angle = Math.atan2(dy, dx);
+                
+                if (power < 0.1) {
+                    this.aiming = false;
+                    return;
+                }
+                
+                const speed = 5 + power * 10;
+                this.shurikens.push({
+                    id: this.shurikenId++,
+                    x: this.player.x + 20,
+                    y: this.player.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 12,
+                    angle: angle,
+                    rotation: 0,
+                    trail: [],
+                    alive: true
+                });
+                
+                this.spawnParticles(this.player.x + 20, this.player.y, 8, '#4ecdc4', 3);
+                this.aiming = false;
+                document.getElementById('aimIndicator').style.display = 'block';
+                this.updateUI();
+            }
+            
+            spawnParticles(x, y, count, color, spread) {
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 1 + Math.random() * (spread || 5);
+                    this.particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 1,
+                        life: 1,
+                        decay: 0.015 + Math.random() * 0.02,
+                        size: 2 + Math.random() * 4,
+                        color: color || '#ffd93d'
+                    });
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('scoreDisplay').textContent = Math.floor(this.score);
+                document.getElementById('comboDisplay').textContent = this.combo;
+                document.getElementById('hitCount').textContent = this.hits;
+                document.getElementById('multiplierDisplay').textContent = this.multiplier + 'x';
+            }
+            
+            update() {
+                if (this.state !== 'playing') return;
+                this.frame++;
+                
+                // Difficulty scaling
+                this.difficulty = 1 + Math.floor(this.score / 500) * 0.5;
+                
+                // ---- Player ----
+                this.player.y += (this.mouseY - this.player.y) * 0.1;
+                this.player.y = Math.max(30, Math.min(this.H - 30, this.player.y));
+                this.player.angle = Math.atan2(this.mouseY - this.player.y, 1);
+                
+                // ---- Aiming ----
+                if (this.isDragging || this.isTouching) {
+                    this.aiming = true;
+                    document.getElementById('aimIndicator').style.display = 'none';
+                }
+                
+                // ---- Update shurikens ----
+                for (let i = this.shurikens.length - 1; i >= 0; i--) {
+                    const sh = this.shurikens[i];
+                    sh.x += sh.vx;
+                    sh.y += sh.vy;
+                    sh.rotation += 0.2;
+                    
+                    // Trail
+                    if (this.frame % 2 === 0) {
+                        sh.trail.push({ x: sh.x, y: sh.y, life: 1 });
+                        if (sh.trail.length > 20) sh.trail.shift();
+                    }
+                    for (let j = sh.trail.length - 1; j >= 0; j--) {
+                        sh.trail[j].life -= 0.05;
+                        if (sh.trail[j].life <= 0) sh.trail.splice(j, 1);
+                    }
+                    
+                    // Check collision with targets
+                    for (const target of this.targets) {
+                        if (!target.alive) continue;
+                        const dx = sh.x - target.x;
+                        const dy = sh.y - target.y;
+                        if (Math.sqrt(dx*dx + dy*dy) < target.size + sh.size) {
+                            // Hit!
+                            target.health--;
+                            sh.alive = false;
+                            this.hits++;
+                            this.combo++;
+                            this.multiplier = 1 + Math.floor(this.combo / 5);
+                            if (this.multiplier > this.maxMultiplier) {
+                                this.maxMultiplier = this.multiplier;
+                            }
+                            
+                            const points = 10 * this.multiplier;
+                            this.score += points;
+                            this.spawnParticles(target.x, target.y, 20, target.color, 6);
+                            
+                            // Combo notification
+                            if (this.combo > 0 && this.combo % 5 === 0) {
+                                this.showCombo(this.combo);
+                            }
+                            
+                            if (target.health <= 0) {
+                                target.alive = false;
+                                if (target.type === 'boss') {
+                                    this.spawnParticles(target.x, target.y, 40, '#ffd93d', 10);
+                                    this.score += 50 * this.multiplier;
+                                }
+                                this.spawnStar();
+                            }
+                            
+                            this.shurikens.splice(i, 1);
+                            this.updateUI();
+                            break;
+                        }
+                    }
+                    
+                    // Check deflection of projectiles
+                    if (sh.alive) {
+                        for (const proj of this.projectiles) {
+                            if (!proj.alive) continue;
+                            const dx = sh.x - proj.x;
+                            const dy = sh.y - proj.y;
+                            if (Math.sqrt(dx*dx + dy*dy) < proj.size + sh.size) {
+                                // Deflect!
+                                proj.alive = false;
+                                sh.alive = false;
+                                this.combo += 2;
+                                this.multiplier = 1 + Math.floor(this.combo / 5);
+                                this.score += 20 * this.multiplier;
+                                this.spawnParticles(proj.x, proj.y, 25, '#4ecdc4', 8);
+                                
+                                if (this.combo > 0 && this.combo % 5 === 0) {
+                                    this.showCombo(this.combo);
+                                }
+                                
+                                this.shurikens.splice(i, 1);
+                                this.updateUI();
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Remove if off screen
+                    if (sh.x > this.W + 50 || sh.x < -50 || sh.y > this.H + 50 || sh.y < -50) {
+                        this.shurikens.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update targets ----
+                for (let i = this.targets.length - 1; i >= 0; i--) {
+                    const target = this.targets[i];
+                    target.x += target.speed * target.direction;
+                    target.angle += 0.02;
+                    target.y += Math.sin(target.angle) * 0.5;
+                    
+                    if (!target.alive || target.x < -80 || target.x > this.W + 80) {
+                        this.targets.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update projectiles ----
+                for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                    const proj = this.projectiles[i];
+                    proj.x += proj.vx;
+                    proj.y += proj.vy;
+                    proj.angle += 0.05;
+                    
+                    // Check collision with player (game over if hit)
+                    const dx = this.player.x - proj.x;
+                    const dy = this.player.y - proj.y;
+                    if (Math.sqrt(dx*dx + dy*dy) < proj.size + 20) {
+                        this.gameOver();
+                        return;
+                    }
+                    
+                    if (proj.x < -50 || proj.x > this.W + 50 || proj.y < -50 || proj.y > this.H + 50) {
+                        this.projectiles.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update stars ----
+                for (let i = this.stars.length - 1; i >= 0; i--) {
+                    const star = this.stars[i];
+                    star.glow += 0.05;
+                    
+                    // Check collection
+                    const dx = this.player.x - star.x;
+                    const dy = this.player.y - star.y;
+                    if (Math.sqrt(dx*dx + dy*dy) < 30 && !star.collected) {
+                        star.collected = true;
+                        this.score += 30;
+                        this.spawnParticles(star.x, star.y, 15, '#ffd93d', 5);
+                        this.stars.splice(i, 1);
+                        this.updateUI();
+                    }
+                }
+                
+                // ---- Spawn objects ----
+                this.targetSpawnTimer++;
+                if (this.targetSpawnTimer > Math.max(60, 180 - this.difficulty * 20)) {
+                    this.spawnTarget();
+                    this.targetSpawnTimer = 0;
+                }
+                
+                this.projectileSpawnTimer++;
+                if (this.projectileSpawnTimer > Math.max(120, 300 - this.difficulty * 30)) {
+                    this.spawnProjectile();
+                    this.projectileSpawnTimer = 0;
+                }
+                
+                this.starSpawnTimer++;
+                if (this.starSpawnTimer > 400) {
+                    this.spawnStar();
+                    this.starSpawnTimer = 0;
+                }
+                
+                // ---- Update particles ----
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.05;
+                    p.life -= p.decay;
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+                
+                // ---- Update background ----
+                for (const bg of this.bgElements) {
+                    bg.twinkle += bg.speed;
+                }
+                
+                this.updateUI();
+            }
+            
+            showCombo(combo) {
+                const overlay = document.getElementById('comboOverlay');
+                const text = document.getElementById('comboText');
+                text.textContent = `🔥 ${combo}x Combo! ⭐ ${this.multiplier}x Multiplier`;
+                overlay.style.display = 'block';
+                
+                // Spawn celebration particles
+                for (let i = 0; i < 30; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 5;
+                    this.particles.push({
+                        x: this.W / 2 + (Math.random() - 0.5) * 200,
+                        y: this.H / 2 + (Math.random() - 0.5) * 100,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed - 3,
+                        life: 1,
+                        decay: 0.01 + Math.random() * 0.015,
+                        size: 3 + Math.random() * 5,
+                        color: ['#ffd93d', '#ff6b6b', '#4ecdc4', '#6c5ce7'][Math.floor(Math.random() * 4)]
+                    });
+                }
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1500);
+            }
+            
+            gameOver() {
+                this.state = 'gameover';
+                document.getElementById('finalScore').textContent = Math.floor(this.score);
+                document.getElementById('finalCombo').textContent = this.bestCombo || this.combo;
+                document.getElementById('finalHits').textContent = this.hits;
+                document.getElementById('finalMultiplier').textContent = this.maxMultiplier + 'x';
+                document.getElementById('gameOverOverlay').style.display = 'flex';
+                document.getElementById('aimIndicator').style.display = 'none';
+                this.spawnParticles(this.player.x, this.player.y, 40, '#ff6b6b', 8);
+            }
+            
+            render() {
+                const ctx = this.ctx;
+                const W = this.W, H = this.H;
+                
+                // Background
+                const grad = ctx.createRadialGradient(W/2, H/2, 100, W/2, H/2, 500);
+                grad.addColorStop(0, '#0d0d3a');
+                grad.addColorStop(0.5, '#0a0a2a');
+                grad.addColorStop(1, '#050510');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+                
+                // Grid
+                ctx.strokeStyle = 'rgba(78, 205, 196, 0.03)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < W; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, H);
+                    ctx.stroke();
+                }
+                for (let i = 0; i < H; i += 50) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(W, i);
+                    ctx.stroke();
+                }
+                
+                // Background elements
+                for (const bg of this.bgElements) {
+                    const brightness = 0.3 + 0.3 * Math.sin(bg.twinkle);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
+                    ctx.beginPath();
+                    ctx.arc(bg.x, bg.y, bg.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw stars (collectibles)
+                for (const star of this.stars) {
+                    const glow = 0.7 + 0.3 * Math.sin(star.glow);
+                    ctx.save();
+                    ctx.shadowColor = '#ffd93d';
+                    ctx.shadowBlur = 30 * glow;
+                    ctx.fillStyle = '#ffd93d';
+                    // Star shape
+                    const s = star.size;
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i / 5) * Math.PI * 2 - Math.PI/2;
+                        const outerR = s;
+                        const innerR = s * 0.4;
+                        if (i === 0) {
+                            ctx.moveTo(star.x + Math.cos(angle) * outerR, star.y + Math.sin(angle) * outerR);
+                        } else {
+                            ctx.lineTo(star.x + Math.cos(angle) * outerR, star.y + Math.sin(angle) * outerR);
+                        }
+                        const innerAngle = angle + Math.PI / 5;
+                        ctx.lineTo(star.x + Math.cos(innerAngle) * innerR, star.y + Math.sin(innerAngle) * innerR);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Draw enemy projectiles
+                for (const proj of this.projectiles) {
+                    if (!proj.alive) continue;
+                    ctx.save();
+                    ctx.translate(proj.x, proj.y);
+                    ctx.rotate(proj.angle);
+                    
+                    ctx.shadowColor = '#ff6b6b';
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#ff6b6b';
+                    ctx.beginPath();
+                    ctx.arc(0, 0, proj.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Inner glow
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(-proj.size*0.3, -proj.size*0.3, proj.size*0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // Draw targets
+                for (const target of this.targets) {
+                    if (!target.alive) continue;
+                    ctx.save();
+                    ctx.translate(target.x, target.y);
+                    
+                    // Glow
+                    ctx.shadowColor = target.color;
+                    ctx.shadowBlur = 30;
+                    
+                    // Target body
+                    const rings = target.type === 'boss' ? 3 : 2;
+                    for (let i = rings; i > 0; i--) {
+                        const radius = (target.size / rings) * i;
+                        ctx.strokeStyle = target.color;
+                        ctx.lineWidth = 3;
+                        ctx.shadowBlur = 20 - i * 5;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    
+                    // Center
+                    ctx.shadowBlur = 30;
+                    ctx.fillStyle = target.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Health bar for bosses
+                    if (target.type === 'boss') {
+                        ctx.shadowBlur = 0;
+                        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+                        ctx.fillRect(-target.size, -target.size - 15, target.size * 2, 6);
+                        ctx.fillStyle = target.color;
+                        const healthPercent = target.health / target.maxHealth;
+                        ctx.fillRect(-target.size, -target.size - 15, target.size * 2 * healthPercent, 6);
+                    }
+                    
+                    ctx.restore();
+                }
+                
+                // Draw shurikens
+                for (const sh of this.shurikens) {
+                    // Trail
+                    for (const t of sh.trail) {
+                        ctx.globalAlpha = t.life * 0.3;
+                        ctx.fillStyle = '#4ecdc4';
+                        ctx.shadowColor = '#4ecdc4';
+                        ctx.shadowBlur = 5;
+                        ctx.beginPath();
+                        ctx.arc(t.x, t.y, sh.size * t.life * 0.4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                    ctx.shadowBlur = 0;
+                    
+                    // Shuriken
+                    ctx.save();
+                    ctx.translate(sh.x, sh.y);
+                    ctx.rotate(sh.rotation);
+                    
+                    ctx.shadowColor = '#4ecdc4';
+                    ctx.shadowBlur = 20;
+                    ctx.fillStyle = '#4ecdc4';
+                    for (let i = 0; i < 4; i++) {
+                        ctx.save();
+                        ctx.rotate(i * Math.PI / 2);
+                        ctx.beginPath();
+                        ctx.moveTo(0, -sh.size);
+                        ctx.lineTo(-4, -sh.size * 0.6);
+                        ctx.lineTo(0, 0);
+                        ctx.lineTo(4, -sh.size * 0.6);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // Draw player (ninja)
+                this.drawPlayer(ctx);
+                
+                // Draw aiming line
+                if (this.aiming) {
+                    ctx.save();
+                    ctx.setLineDash([8, 8]);
+                    ctx.strokeStyle = 'rgba(78, 205, 196, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.shadowColor = '#4ecdc4';
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.moveTo(this.player.x + 20, this.player.y);
+                    const dx = this.aimEndX - this.aimStartX;
+                    const dy = this.aimEndY - this.aimStartY;
+                    const power = Math.min(1, Math.sqrt(dx*dx + dy*dy) / 300);
+                    const angle = Math.atan2(dy, dx);
+                    const length = 50 + power * 200;
+                    ctx.lineTo(
+                        this.player.x + 20 + Math.cos(angle) * length,
+                        this.player.y + Math.sin(angle) * length
+                    );
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    
+                    // Power indicator
+                    const powerColor = power > 0.7 ? '#ff6b6b' : power > 0.4 ? '#ffd93d' : '#4ecdc4';
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = powerColor;
+                    ctx.beginPath();
+                    ctx.arc(
+                        this.player.x + 20 + Math.cos(angle) * (30 + power * 100),
+                        this.player.y + Math.sin(angle) * (30 + power * 100),
+                        5 + power * 10,
+                        0, Math.PI * 2
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                }
+                
+                // Draw particles
+                for (const p of this.particles) {
+                    ctx.globalAlpha = p.life;
+                    ctx.fillStyle = p.color;
+                    ctx.shadowColor = p.color;
+                    ctx.shadowBlur = 10;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
+                
+                // Score display on canvas
+                ctx.fillStyle = 'rgba(255,255,255,0.05)';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Difficulty: ${this.difficulty.toFixed(1)}x`, 15, 25);
+            }
+            
+            drawPlayer(ctx) {
+                const p = this.player;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.angle * 0.1);
+                
+                // Shadow
+                ctx.shadowColor = 'rgba(78, 205, 196, 0.2)';
+                ctx.shadowBlur = 30;
+                
+                // Body
+                ctx.fillStyle = '#2d2d44';
+                ctx.fillRect(-12, -20, 24, 40);
+                
+                // Ninja suit lines
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 1.5;
+                ctx.shadowBlur = 10;
+                ctx.strokeRect(-12, -20, 24, 40);
+                
+                // Head
+                ctx.fillStyle = '#1a1a2e';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.arc(0, -25, 16, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Headband
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ff6b6b';
+                ctx.fillRect(-18, -28, 36, 5);
+                
+                // Headband tails
+                ctx.fillRect(-22, -28, 6, 15);
+                ctx.fillRect(16, -28, 6, 15);
+                
+                // Eyes (ninja slits)
+                ctx.fillStyle = '#4ecdc4';
+                ctx.shadowColor = '#4ecdc4';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(-8, -26, 5, 2);
+                ctx.fillRect(3, -26, 5, 2);
+                
+                // Scarf
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#4ecdc4';
+                ctx.fillRect(-14, -2, 28, 4);
+                ctx.fillRect(-18, 2, 8, 12);
+                ctx.fillRect(10, 2, 8, 12);
+                
+                // Arms
+                ctx.fillStyle = '#2d2d44';
+                ctx.strokeStyle = '#4ecdc4';
+                ctx.lineWidth = 1;
+                const armAngle = Math.sin(this.frame * 0.05) * 0.2;
+                ctx.fillRect(-20, -5 + armAngle * 5, 6, 15);
+                ctx.strokeRect(-20, -5 + armAngle * 5, 6, 15);
+                ctx.fillRect(14, -5 - armAngle * 5, 6, 15);
+                ctx.strokeRect(14, -5 - armAngle * 5, 6, 15);
+                
+                // Hands
+                ctx.fillStyle = '#3d3d5a';
+                ctx.beginPath();
+                ctx.arc(-17, 12 + armAngle * 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(17, 12 - armAngle * 5, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Shuriken in hand (idle animation)
+                ctx.shadowColor = '#ffd93d';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#ffd93d';
+                for (let i = 0; i < 4; i++) {
+                    ctx.save();
+                    ctx.rotate(i * Math.PI / 2 + this.frame * 0.05);
+                    ctx.beginPath();
+                    ctx.moveTo(22, -4);
+                    ctx.lineTo(20, -2);
+                    ctx.lineTo(22, 0);
+                    ctx.lineTo(24, -2);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+                ctx.beginPath();
+                ctx.arc(22, 0, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Legs
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#1a1a2e';
+                const legOffset = Math.sin(this.frame * 0.08) * 2;
+                ctx.fillRect(-8, 20 + legOffset, 6, 15);
+                ctx.fillRect(2, 20 - legOffset, 6, 15);
+                
+                // Feet
+                ctx.fillStyle = '#2d2d44';
+                ctx.fillRect(-10, 33 + legOffset, 10, 4);
+                ctx.fillRect(0, 33 - legOffset, 10, 4);
+                
+                ctx.restore();
+            }
+            
+            setupEventListeners() {
+                // Start button
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    this.startGame();
+                });
+                
+                // Restart button
+                document.getElementById('restartBtn').addEventListener('click', () => {
+                    this.init();
+                    this.startGame();
+                });
+                
+                // Mouse controls
+                this.canvas.addEventListener('mousedown', (e) => {
+                    if (this.state !== 'playing') return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.aimStartX = (e.clientX - rect.left) * scaleX;
+                    this.aimStartY = (e.clientY - rect.top) * scaleY;
+                    this.aimEndX = this.aimStartX;
+                    this.aimEndY = this.aimStartY;
+                    this.isDragging = true;
+                    this.aiming = true;
+                    document.getElementById('aimIndicator').style.display = 'none';
+                });
+                
+                this.canvas.addEventListener('mousemove', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.mouseX = (e.clientX - rect.left) * scaleX;
+                    this.mouseY = (e.clientY - rect.top) * scaleY;
+                    
+                    if (this.isDragging) {
+                        this.aimEndX = this.mouseX;
+                        this.aimEndY = this.mouseY;
+                    }
+                });
+                
+                this.canvas.addEventListener('mouseup', (e) => {
+                    if (this.isDragging && this.state === 'playing') {
+                        this.throwShuriken();
+                    }
+                    this.isDragging = false;
+                });
+                
+                // Touch controls
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    if (this.state !== 'playing') return;
+                    const touch = e.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.aimStartX = (touch.clientX - rect.left) * scaleX;
+                    this.aimStartY = (touch.clientY - rect.top) * scaleY;
+                    this.aimEndX = this.aimStartX;
+                    this.aimEndY = this.aimStartY;
+                    this.isTouching = true;
+                    this.aiming = true;
+                    document.getElementById('aimIndicator').style.display = 'none';
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (this.state !== 'playing') return;
+                    const touch = e.touches[0];
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    this.mouseX = (touch.clientX - rect.left) * scaleX;
+                    this.mouseY = (touch.clientY - rect.top) * scaleY;
+                    
+                    if (this.isTouching) {
+                        this.aimEndX = this.mouseX;
+                        this.aimEndY = this.mouseY;
+                    }
+                }, { passive: false });
+                
+                this.canvas.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    if (this.isTouching && this.state === 'playing') {
+                        this.throwShuriken();
+                    }
+                    this.isTouching = false;
+                }, { passive: false });
+                
+                // Keyboard
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        if (this.state === 'start') {
+                            this.startGame();
+                        } else if (this.state === 'gameover') {
+                            this.init();
+                            this.startGame();
+                        } else if (this.state === 'playing' && this.aiming) {
+                            this.throwShuriken();
+                        }
+                    }
+                    if (e.key === 'r' || e.key === 'R') {
+                        if (this.state === 'gameover') {
+                            this.init();
+                            this.startGame();
+                        }
+                    }
+                });
+            }
+            
+            gameLoop() {
+                this.update();
+                this.render();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+        
+        // Initialize game
+        window.addEventListener('DOMContentLoaded', () => {
+            new NinjaStars();
+        });
+    </script>
+</body>
+</html>

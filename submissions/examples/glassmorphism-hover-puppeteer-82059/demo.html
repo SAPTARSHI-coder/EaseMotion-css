@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glassmorphism Hover FPS Benchmark</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">CI PERFORMANCE BENCHMARK</p>
+      <h1>Glassmorphism Hover Effects</h1>
+      <p>
+        Responsive glass cards designed to measure hover rendering
+        performance in a browser or Headless Chrome environment.
+      </p>
+    </header>
+
+    <section class="metrics" aria-label="Benchmark metrics">
+      <article class="metric">
+        <span>FPS</span>
+        <strong id="fps">--</strong>
+        <small>Minimum: 50 FPS</small>
+      </article>
+
+      <article class="metric">
+        <span>Bundle</span>
+        <strong id="bundle">--</strong>
+        <small>Maximum: 50 KB</small>
+      </article>
+
+      <article class="metric">
+        <span>Execution</span>
+        <strong id="execution">--</strong>
+        <small>Maximum: 2000 ms</small>
+      </article>
+
+      <article class="metric">
+        <span>Status</span>
+        <strong id="status">READY</strong>
+        <small id="statusText">Waiting for benchmark</small>
+      </article>
+    </section>
+
+    <div class="controls">
+      <button id="runBenchmark">Run Benchmark</button>
+      <span id="message">Move over the cards or run the benchmark.</span>
+    </div>
+
+    <section class="glass-grid" id="glassGrid">
+      <article class="glass-card">
+        <span class="number">01</span>
+        <h2>Transparency</h2>
+        <p>Layered translucent surfaces create the glass effect.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">02</span>
+        <h2>Blur</h2>
+        <p>Backdrop filtering provides depth behind each surface.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">03</span>
+        <h2>Hover</h2>
+        <p>Pointer movement triggers smooth visual transitions.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">04</span>
+        <h2>Rendering</h2>
+        <p>The cards provide a repeatable rendering workload.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">05</span>
+        <h2>Performance</h2>
+        <p>Frame timing is collected during the benchmark.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">06</span>
+        <h2>Validation</h2>
+        <p>Metrics are compared against defined CI budgets.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">07</span>
+        <h2>Responsive</h2>
+        <p>The component adapts to smaller screen sizes.</p>
+      </article>
+
+      <article class="glass-card">
+        <span class="number">08</span>
+        <h2>Headless Chrome</h2>
+        <p>The same workload can be measured using Puppeteer.</p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const button = document.getElementById("runBenchmark");
+    const grid = document.getElementById("glassGrid");
+
+    const fpsOutput = document.getElementById("fps");
+    const bundleOutput = document.getElementById("bundle");
+    const executionOutput = document.getElementById("execution");
+    const statusOutput = document.getElementById("status");
+    const statusText = document.getElementById("statusText");
+    const message = document.getElementById("message");
+
+    const BUDGET = {
+      minimumFps: 50,
+      maximumBundleBytes: 50 * 1024,
+      maximumExecutionMs: 2000
+    };
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      statusOutput.textContent = "RUNNING";
+      statusText.textContent = "Rendering hover workload";
+      message.textContent = "Collecting frame metrics...";
+
+      const start = performance.now();
+      const benchmarkDuration = 1000;
+      let frames = 0;
+
+      await new Promise((resolve) => {
+        const animationStart = performance.now();
+
+        function frame(time) {
+          frames++;
+
+          const elapsed = time - animationStart;
+          const x = Math.sin(elapsed / 120) * 14;
+          const y = Math.cos(elapsed / 180) * 8;
+
+          grid.style.transform =
+            `translate3d(${x}px, ${y}px, 0)`;
+
+          document.documentElement.style.setProperty(
+            "--benchmark-x",
+            `${x}px`
+          );
+
+          if (elapsed < benchmarkDuration) {
+            requestAnimationFrame(frame);
+          } else {
+            resolve();
+          }
+        }
+
+        requestAnimationFrame(frame);
+      });
+
+      const executionMs = performance.now() - start;
+      const measuredFps = Math.round(frames);
+
+      let bundleBytes = 0;
+
+      try {
+        const response = await fetch("style.css", {
+          cache: "no-store"
+        });
+
+        const css = await response.text();
+        bundleBytes = new Blob([css]).size;
+      } catch (error) {
+        console.warn("Bundle measurement unavailable:", error);
+      }
+
+      const fpsPassed =
+        measuredFps >= BUDGET.minimumFps;
+
+      const bundlePassed =
+        bundleBytes <= BUDGET.maximumBundleBytes;
+
+      const executionPassed =
+        executionMs <= BUDGET.maximumExecutionMs;
+
+      const passed =
+        fpsPassed &&
+        bundlePassed &&
+        executionPassed;
+
+      fpsOutput.textContent = measuredFps;
+      bundleOutput.textContent =
+        `${(bundleBytes / 1024).toFixed(2)} KB`;
+      executionOutput.textContent =
+        `${Math.round(executionMs)} ms`;
+
+      statusOutput.textContent =
+        passed ? "PASS" : "FAIL";
+
+      statusText.textContent = passed
+        ? "All performance budgets passed"
+        : "Performance budget exceeded";
+
+      message.textContent = passed
+        ? "Benchmark completed successfully."
+        : "One or more performance budgets failed.";
+
+      console.table({
+        fps: measuredFps,
+        bundleSizeBytes: bundleBytes,
+        executionMs: Number(executionMs.toFixed(2)),
+        minimumFps: BUDGET.minimumFps,
+        maximumBundleBytes: BUDGET.maximumBundleBytes,
+        maximumExecutionMs: BUDGET.maximumExecutionMs,
+        passed
+      });
+
+      grid.style.transform = "";
+      button.disabled = false;
+    });
+  </script>
+</body>
+</html>

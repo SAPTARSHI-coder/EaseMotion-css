@@ -1,0 +1,396 @@
+/* ==========================================================================
+   Micro Shake Modal — Creative Portfolio
+   --------------------------------------------------------------------------
+   Pure CSS "quick view" modal for portfolio sites, driven entirely by the
+   :target selector. The dialog behaves like a print being placed on a
+   table: it drops in and settles, then gives a micro shake — a tiny
+   decaying ROTATIONAL wobble (fractions of a degree) rather than a
+   side-to-side nudge. That hand-placed wobble is what makes it feel
+   crafted instead of mechanical.
+
+   Both animations are gated behind :target, so the drop + wobble replay
+   from scratch on every open. Zero JavaScript.
+
+   Issue: #34021
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Tokens — motion first, then the studio skin
+   -------------------------------------------------------------------------- */
+:root {
+  /* Micro shake (rotational wobble) */
+  --pf-shake-angle: 0.8deg;                        /* max tilt, decays from here */
+  --pf-shake-duration: 460ms;                      /* whole wobble gesture       */
+  --pf-drop-duration: 320ms;                       /* entrance drop/settle       */
+  --pf-drop-distance: -18px;                       /* starts above, settles down */
+  --pf-ease: cubic-bezier(0.3, 1.25, 0.45, 1);     /* settle with soft landing   */
+  --pf-exit-duration: 150ms;                       /* dismissal time             */
+
+  /* Studio skin — dark editorial */
+  --pf-canvas: #141311;
+  --pf-card: #1e1c19;
+  --pf-edge: #322f29;
+  --pf-heading: #f2ede4;
+  --pf-body: #a39c8e;
+  --pf-accent: #e8b64c;
+  --pf-accent-ink: #241c07;
+  --pf-overlay-tint: rgba(10, 9, 8, 0.72);
+
+  --pf-modal-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   2. Demo stage — a slice of a portfolio index
+   -------------------------------------------------------------------------- */
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 34px 16px;
+  box-sizing: border-box;
+  background: var(--pf-canvas);
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--pf-body);
+}
+
+.pf-index {
+  width: 100%;
+  max-width: 560px;
+}
+
+.pf-index-title {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--pf-heading);
+}
+
+.pf-index-sub {
+  margin: 0 0 20px;
+  font-size: 0.8rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* Work grid — two tiles across, one column on phones */
+.pf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.pf-tile {
+  border: 1px solid var(--pf-edge);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--pf-card);
+}
+
+/* CSS-generated cover art — no image files needed */
+.pf-cover {
+  height: 120px;
+  background:
+    radial-gradient(circle at 75% 20%, rgba(232, 182, 76, 0.5), transparent 55%),
+    linear-gradient(160deg, #3d2f4f 0%, #1c2a3a 60%, #12100d 100%);
+}
+
+.pf-cover.is-alt {
+  background:
+    radial-gradient(circle at 20% 80%, rgba(232, 182, 76, 0.4), transparent 50%),
+    linear-gradient(20deg, #4f2f2f 0%, #3a2a1c 55%, #12100d 100%);
+}
+
+.pf-tile-body {
+  padding: 12px 14px 14px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.pf-tile-name {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 0.95rem;
+  color: var(--pf-heading);
+  margin-bottom: 2px;
+}
+
+.pf-tile-kind {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Quick-view trigger — a real link, keyboard operable by default */
+.pf-view {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 14px;
+  border: 1px solid var(--pf-accent);
+  border-radius: 2px;
+  color: var(--pf-accent);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.pf-view:hover {
+  background: var(--pf-accent);
+  color: var(--pf-accent-ink);
+}
+
+.pf-view:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Overlay — the studio dims while the modal is the :target
+   -------------------------------------------------------------------------- */
+.pf-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: var(--pf-overlay-tint);
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity var(--pf-exit-duration) ease,
+    visibility 0s linear var(--pf-exit-duration);
+}
+
+.pf-modal:target {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity var(--pf-drop-duration) var(--pf-ease);
+}
+
+/* Click-away close — an invisible link covering the backdrop */
+.pf-scrim {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   4. Dialog — drops in like a print, then wobbles to rest
+   --------------------------------------------------------------------------
+   The drop animates translateY/opacity; the wobble then rotates around
+   the center with decaying amplitude. The wobble carries NO fill mode on
+   purpose: a backwards fill would pin transform during its delay and
+   cancel the drop, since later animations in a comma list win shared
+   properties. */
+.pf-dialog {
+  position: relative;
+  width: min(430px, 100%);
+  background: var(--pf-card);
+  border: 1px solid var(--pf-edge);
+  border-radius: 6px;
+  box-shadow: var(--pf-modal-shadow);
+  padding: 0 0 18px;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  opacity: 0;
+  transform: translateY(var(--pf-drop-distance));
+  transition:
+    opacity var(--pf-exit-duration) ease,
+    transform var(--pf-exit-duration) ease;
+}
+
+.pf-modal:target .pf-dialog {
+  opacity: 1;
+  transform: translateY(0);
+  transition: none;
+  animation:
+    pf-drop var(--pf-drop-duration) var(--pf-ease) both,
+    pf-wobble var(--pf-shake-duration) ease-in-out var(--pf-drop-duration);
+}
+
+@keyframes pf-drop {
+  from {
+    opacity: 0;
+    transform: translateY(var(--pf-drop-distance));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A print settling on the table: tilt, counter-tilt, come to rest */
+@keyframes pf-wobble {
+  0%   { transform: rotate(0deg); }
+  18%  { transform: rotate(calc(var(--pf-shake-angle) * -1)); }
+  38%  { transform: rotate(var(--pf-shake-angle)); }
+  58%  { transform: rotate(calc(var(--pf-shake-angle) * -0.45)); }
+  78%  { transform: rotate(calc(var(--pf-shake-angle) * 0.2)); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Full-bleed cover art across the dialog's top */
+.pf-dialog-cover {
+  height: 150px;
+  background:
+    radial-gradient(circle at 75% 20%, rgba(232, 182, 76, 0.5), transparent 55%),
+    linear-gradient(160deg, #3d2f4f 0%, #1c2a3a 60%, #12100d 100%);
+}
+
+.pf-dialog-inner {
+  padding: 16px 20px 0;
+}
+
+.pf-dialog-title {
+  margin: 0 0 2px;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--pf-heading);
+}
+
+.pf-dialog-sub {
+  margin: 0 0 14px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.76rem;
+}
+
+/* Close (✕) — a link back to the index anchor, sitting on the cover */
+.pf-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 3px;
+  background: rgba(20, 19, 17, 0.55);
+  color: var(--pf-heading);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  transition: background-color 140ms ease;
+}
+
+.pf-close:hover {
+  background: rgba(20, 19, 17, 0.85);
+}
+
+.pf-close:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 1px;
+}
+
+/* Project meta — role / year / tools */
+.pf-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 0 0 14px;
+  padding: 12px 0;
+  border-top: 1px solid var(--pf-edge);
+  border-bottom: 1px solid var(--pf-edge);
+  list-style: none;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.72rem;
+}
+
+.pf-meta strong {
+  display: block;
+  color: var(--pf-heading);
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 1px;
+}
+
+.pf-blurb {
+  margin: 0 0 16px;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+/* Dialog actions */
+.pf-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.pf-btn {
+  flex: 1 1 150px;
+  padding: 11px 14px;
+  border-radius: 2px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.pf-btn.is-primary {
+  background: var(--pf-accent);
+  color: var(--pf-accent-ink);
+}
+
+.pf-btn.is-primary:hover {
+  background: #f0c66b;
+}
+
+.pf-btn.is-ghost {
+  border: 1px solid var(--pf-edge);
+  color: var(--pf-heading);
+}
+
+.pf-btn.is-ghost:hover {
+  background: rgba(163, 156, 142, 0.1);
+}
+
+.pf-btn:focus-visible {
+  outline: 2px solid var(--pf-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   5. Small screens — dialog hugs the viewport, actions stack
+   -------------------------------------------------------------------------- */
+@media (max-width: 420px) {
+  .pf-modal { padding: 14px; }
+  .pf-dialog-inner { padding: 14px 14px 0; }
+  .pf-actions .pf-btn { flex-basis: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   6. Reduced motion — no drop, no wobble; the modal simply appears
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .pf-modal,
+  .pf-modal:target,
+  .pf-dialog,
+  .pf-view {
+    transition: none;
+  }
+
+  .pf-dialog {
+    transform: none;
+  }
+
+  .pf-modal:target .pf-dialog {
+    animation: none;
+    opacity: 1;
+  }
+}

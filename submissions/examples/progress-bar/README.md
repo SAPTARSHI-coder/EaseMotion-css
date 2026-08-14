@@ -1,30 +1,31 @@
-# Progress Bar Component
 
-Animated progress bars with striped fill, gradient colors, circular/radial variant, and indeterminate loading state. Pure CSS.
+---
 
-## Demo
+## 🚀 Usage
+1. Clone or copy the files into your project.
+2. Open `demo.html` in your browser.
+3. The progress bar will display with a glowing Material Design style.
 
-Open `demo.html` in any modern browser.
+---
 
-## Features
+## 🛠️ Customization
+- **Progress value** → Adjust `width` in `.progress-bar` inline style (e.g., `width:70%`).
+- **Colors** → Change gradient colors in `.progress-bar`.
+- **Glow intensity** → Modify `box-shadow` values.
 
-- ✅ **Pure CSS** — zero JavaScript
-- ✅ **CSS variables** — `--progress` controls fill amount
-- ✅ **Striped fill** — diagonal stripe pattern
-- ✅ **Animated stripes** — moving stripe animation
-- ✅ **Gradient** — animated rainbow gradient
-- ✅ **Contextual colors** — success, warning, error
-- ✅ **Circular/radial** — SVG-based circle progress
-- ✅ **Indeterminate** — infinite loading animation
-- ✅ **Multi-step** — step indicator for wizards
-- ✅ **Dark theme** — included `.progress-bar--dark`
-- ✅ **Accessible** — proper ARIA attributes
+---
 
-## Usage
+## 📖 Accessibility
+- Uses `role="progressbar"` with `aria-valuemin`, `aria-valuemax`, and `aria-valuenow`.
+- Screen readers can announce progress state.
 
-### Basic
+---
 
-```html
-&lt;div class="progress-bar" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"&gt;
-  &lt;div class="progress-bar__fill" style="--progress: 75%;"&gt;&lt;/div&gt;
-&lt;/div&gt;
+## 🧩 License
+MIT License — free to use and modify.
+
+---
+
+## 🙌 Credits
+Created for **EaseMotion CSS Demo Styles**.  
+Author: [SAPTARSHI-coder](https://github.com/SAPTARSHI-coder)

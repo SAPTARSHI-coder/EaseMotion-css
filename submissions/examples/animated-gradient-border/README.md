@@ -1,27 +1,16 @@
-# Animated Gradient Border
+# Animated Gradient Border using CSS `@property`
 
-## What it does
+This submission introduces a glowing, animated gradient border component entirely driven by CSS, without any JavaScript.
 
-Creates a rotating gradient border around any element. The gradient continuously moves around the border.
+## Features
 
-## How to use it
+- **CSS `@property` Magic**: By explicitly defining the `--em-gradient-angle` custom property using the new CSS `@property` rule, the browser can smoothly interpolate the angle in `@keyframes`.
+- **Conic Gradient**: Uses `conic-gradient` to create a continuous, multi-color border.
+- **Glowing Effect**: Uses a blurred pseudo-element behind the main content to create a neon glowing effect that spins along with the border.
+- **Accessibility-first**: Uses `@media (prefers-reduced-motion: reduce)` to stop the spinning animation if the user prefers reduced motion, preventing vestibular discomfort.
 
-<div class="ease-gradient-border">
-    <div class="ease-gradient-border-inner">Your content</div>
-</div>
+## Usage
 
-## Variants
-
-- ease-gradient-fast - 1.5s rotation
-- ease-gradient-slow - 6s rotation
-- ease-gradient-rainbow - Multi-color rainbow
-- ease-gradient-fire - Orange/red fire colors
-- ease-gradient-ocean - Blue/teal ocean colors
-- ease-gradient-border-static - No animation (static gradient)
-
-## Why it fits EaseMotion CSS
-
-- Pure CSS, zero JavaScript
-- GPU-accelerated background-position
-- Multiple color schemes
-- Respects prefers-reduced-motion
+1. Include `style.css` in your project.
+2. Apply the `.em-animated-border` class to any card or container.
+3. Ensure the inner container uses `background-color` (inherited via `--em-bg-color`) to mask the center of the gradient, revealing only the border.

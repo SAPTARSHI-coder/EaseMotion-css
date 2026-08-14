@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candle Flicker – Candle Flame Flickers and Dances</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="wrapper">
+    <h1>🕯️ Candle Flicker</h1>
+    <p class="subtitle">Candle flame flickers and dances</p>
+
+    <div class="candle-container">
+      <div class="candle-stage" id="candleStage">
+        <canvas id="canvas"></canvas>
+        
+        <!-- Info overlay -->
+        <div class="info-overlay">
+          <span class="candle-status" id="candleStatus">🕯️ Burning</span>
+          <span class="flame-height" id="flameHeight">Height: 100%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn toggle" id="toggleBtn">💡 Toggle</button>
+      <button class="ctrl-btn reset" id="resetBtn">↺ Reset</button>
+      <button class="ctrl-btn blow" id="blowBtn">💨 Blow</button>
+    </div>
+
+    <!-- Sliders -->
+    <div class="slider-container">
+      <span class="slider-label">Flame Height</span>
+      <input type="range" id="heightSlider" min="20" max="100" value="80" />
+      <span class="slider-value" id="heightValue">80%</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Flicker Speed</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" />
+      <span class="slider-value" id="speedValue">5×</span>
+    </div>
+
+    <div class="slider-container">
+      <span class="slider-label">Flame Color</span>
+      <input type="range" id="colorSlider" min="0" max="360" value="30" />
+      <span class="slider-value" id="colorValue">30°</span>
+    </div>
+
+    <!-- Status -->
+    <div class="status" id="status">🕯️ Candle flame flickering warmly</div>
+
+    <!-- Keyboard shortcuts -->
+    <div class="shortcuts">
+      <kbd>T</kbd> Toggle · <kbd>R</kbd> Reset · <kbd>B</kbd> Blow
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      "use strict";
+
+      // DOM elements
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const candleStatus = document.getElementById('candleStatus');
+      const flameHeight = document.getElementById('flameHeight');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const blowBtn = document.getElementById('blowBtn');
+      const status = document.getElementById('status');
+      const heightSlider = document.getElementById('heightSlider');
+      const heightValue = document.getElementById('heightValue');
+      const speedSlider = document.getElementById('speedSlider');
+      const speedValue = document.getElementById('speedValue');
+      const colorSlider = document.getElementById('colorSlider');
+      const colorValue = document.getElementById('colorValue');
+
+      // State
+      let isActive = true;
+      let isPaused = false;
+      let animationId = null;
+      let time = 0;
+      let flameParticles = [];
+      let embers = [];
+      let glowParticles = [];
+      let isBlowing = false;
+      let blowTimer = null;
+      let blowStrength = 0;
+
+      // ----- Canvas setup -----
+      function setupCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const size = Math.min(rect.width - 40, 600);
+        canvas.width = size;
+        canvas.height = size;
+        canvas.style.width = size + 'px';
+        canvas.style.height = size + 'px';
+      }
+
+      // ----- Flame particle class -----
+      class FlameParticle {
+        constructor(x, y, size) {
+          this.x = x;
+          this.y = y;
+          this.baseX = x;
+          this.baseY = y;
+          this.size = size;
+          this.height = size * (0.5 + Math.random() * 0.5);
+          this.width = size * (0.3 + Math.random() * 0.3);
+          this.speed = 0.5 + Math.random() * 1.5;
+          this.phase = Math.random() * Math.PI * 2;
+          this.life = 0.5 + Math.random() * 0.5;
+          this.opacity = 0.3 + Math.random() * 0.5;
+          this.hue = parseInt(colorSlider.value) + (Math.random() - 0.5) * 20;
+          this.saturation = 80 + Math.random() * 20;
+          this.lightness = 50 + Math.random() * 30;
+          this.alive = true;
+          this.wobbleAmount = 0.5 + Math.random() * 1.5;
+          this.trail = [];
+          this.trailLength = 3 + Math.floor(Math.random() * 5);
+          this.isEmber = false;
+        }
+
+        update(speedMult, heightMult, blow) {
+          const flameHeight = heightMult / 100;
+          const blowEffect = blow * 2;
+
+          // Life decay
+          this.life -= 0.002 * speedMult;
+          if (this.life < 0) {
+            this.alive = false;
+            return;
+          }
+
+          // Flicker
+          const flicker = Math.sin(time * this.speed * 2 + this.phase) * 2;
+          const flicker2 = Math.cos(time * this.speed * 1.3 + this.phase * 1.7) * 1.5;
+          
+          // Height variation
+          const heightVar = 0.5 + 0.5 * Math.sin(time * this.speed * 0.5 + this.phase);
+          this.height = this.size * (0.3 + 0.7 * heightVar) * flameHeight * (0.5 + 0.5 * this.life);
+          
+          // Width variation
+          this.width = this.size * (0.2 + 0.3 * (0.5 + 0.5 * Math.sin(time * this.speed * 0.7 + this.phase)));
+
+          // Movement with wind/blow
+          const windX = blowEffect * 0.3 + Math.sin(time * 0.3 + this.phase) * 0.2;
+          const windY = -0.5 - Math.sin(time * this.speed * 0.5 + this.phase) * 0.2;
+          
+          this.x += windX * speedMult * 0.5;
+          this.y += windY * speedMult * 0.5 + (Math.random() - 0.5) * 0.1;
+
+          // Oscillation
+          this.x += Math.sin(time * this.speed + this.phase) * this.wobbleAmount * 0.05;
+
+          // Trail
+          this.trail.push({ x: this.x, y: this.y });
+          if (this.trail.length > this.trailLength) {
+            this.trail.shift();
+          }
+
+          // Opacity
+          this.opacity = (0.2 + 0.6 * this.life) * (0.5 + 0.5 * heightVar);
+        }
+
+        draw(ctx, intensity) {
+          if (this.opacity < 0.01) return;
+
+          const alpha = this.opacity * intensity;
+          const size = this.size * this.life;
+          const height = this.height * this.life;
+          const width = this.width * this.life;
+
+          // Trail
+          if (this.trail.length > 1) {
+            for (let i = 0; i < this.trail.length - 1; i++) {
+              const t = i / this.trail.length;
+              const trailAlpha = alpha * t * 0.15;
+              const trailSize = size * t * 0.2;
+              ctx.fillStyle = `hsla(${this.hue + 10}, 100%, 70%, ${trailAlpha})`;
+              ctx.beginPath();
+              ctx.arc(this.trail[i].x, this.trail[i].y, trailSize, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Glow
+          const glowSize = width * 4;
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, glowSize
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 80%, ${alpha * 0.2})`);
+          gradient.addColorStop(0.5, `hsla(${this.hue + 10}, 100%, 60%, ${alpha * 0.1})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 100%, 40%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Flame body
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.rotate(Math.sin(time * 0.2 + this.phase) * 0.05);
+
+          const grad = ctx.createRadialGradient(
+            -width * 0.2, -height * 0.3, 0,
+            0, 0, width
+          );
+          grad.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.9})`);
+          grad.addColorStop(0.3, `hsla(${this.hue + 10}, 100%, 80%, ${alpha * 0.8})`);
+          grad.addColorStop(0.6, `hsla(${this.hue}, 100%, 65%, ${alpha * 0.6})`);
+          grad.addColorStop(1, `hsla(${this.hue - 10}, 100%, 45%, ${alpha * 0.3})`);
+
+          ctx.shadowColor = `hsla(${this.hue}, 100%, 60%, ${alpha * 0.15})`;
+          ctx.shadowBlur = 15;
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.moveTo(0, -height);
+          ctx.quadraticCurveTo(width * 0.4, -height * 0.5, width * 0.5, -height * 0.1);
+          ctx.quadraticCurveTo(width * 0.4, height * 0.1, width * 0.2, height * 0.3);
+          ctx.quadraticCurveTo(0, height * 0.4, -width * 0.2, height * 0.3);
+          ctx.quadraticCurveTo(-width * 0.4, height * 0.1, -width * 0.5, -height * 0.1);
+          ctx.quadraticCurveTo(-width * 0.4, -height * 0.5, 0, -height);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.shadowBlur = 0;
+
+          // Inner glow
+          const innerGrad = ctx.createRadialGradient(
+            -width * 0.1, -height * 0.2, 0,
+            0, -height * 0.1, width * 0.3
+          );
+          innerGrad.addColorStop(0, `hsla(45, 100%, 95%, ${alpha * 0.2})`);
+          innerGrad.addColorStop(1, `hsla(45, 100%, 80%, 0)`);
+          ctx.fillStyle = innerGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, -height * 0.2, width * 0.2, height * 0.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+
+        isAlive() {
+          return this.alive && this.life > 0.01 && this.opacity > 0.01;
+        }
+      }
+
+      // ----- Ember class -----
+      class Ember {
+        constructor(x, y) {
+          this.x = x + (Math.random() - 0.5) * 10;
+          this.y = y;
+          this.size = 0.5 + Math.random() * 2;
+          this.speedX = (Math.random() - 0.5) * 0.5;
+          this.speedY = -(0.3 + Math.random() * 0.8);
+          this.life = 1;
+          this.decay = 0.005 + Math.random() * 0.015;
+          this.hue = parseInt(colorSlider.value) + (Math.random() - 0.5) * 20;
+          this.opacity = 0.3 + Math.random() * 0.5;
+        }
+
+        update(speedMult, blow) {
+          const blowEffect = blow * 0.5;
+          this.x += this.speedX + blowEffect * 0.2;
+          this.y += this.speedY;
+          this.speedX *= 0.99;
+          this.life -= this.decay * speedMult;
+          this.size *= 0.998;
+          return this.life > 0 && this.size > 0.1;
+        }
+
+        draw(ctx) {
+          const alpha = this.life * this.opacity;
+          const size = this.size * this.life;
+
+          // Glow
+          const gradient = ctx.createRadialGradient(
+            this.x, this.y, 0,
+            this.x, this.y, size * 3
+          );
+          gradient.addColorStop(0, `hsla(${this.hue + 20}, 100%, 90%, ${alpha * 0.3})`);
+          gradient.addColorStop(1, `hsla(${this.hue + 20}, 100%, 60%, 0)`);
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size * 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core
+          ctx.fillStyle = `hsla(${this.hue + 30}, 100%, 95%, ${alpha * 0.9})`;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // ----- Generate flame -----
+      function generateFlame() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.72;
+        const heightMult = parseInt(heightSlider.value) / 100;
+        const intensity = 1;
+
+        // Clear particles
+        flameParticles = [];
+        embers = [];
+
+        // Generate flame particles
+        const count = 15 + Math.floor(heightMult * 25);
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.random() - 0.5) * 0.6;
+          const radius = Math.random() * 15;
+          const x = cx + Math.cos(angle) * radius;
+          const y = cy + Math.sin(angle) * radius - 5;
+          const size = 8 + Math.random() * 15 * heightMult;
+          const particle = new FlameParticle(x, y, size);
+          particle.life = 0.3 + Math.random() * 0.7;
+          particle.opacity = 0.3 + Math.random() * 0.5;
+          flameParticles.push(particle);
+        }
+
+        // Generate embers
+        for (let i = 0; i < 10; i++) {
+          const x = cx + (Math.random() - 0.5) * 20;
+          const y = cy - 10 - Math.random() * 10;
+          embers.push(new Ember(x, y));
+        }
+      }
+
+      // ----- Draw candle -----
+      function drawCandle() {
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.72;
+        const heightMult = parseInt(heightSlider.value) / 100;
+        const speedMult = parseInt(speedSlider.value) / 5;
+        const intensity = 1;
+        const hue = parseInt(colorSlider.value);
+
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+
+        // Background
+        const bgGradient = ctx.createRadialGradient(cx, cy * 0.6, 0, cx, cy * 0.6, w * 0.7);
+        bgGradient.addColorStop(0, '#0a0a1a');
+        bgGradient.addColorStop(0.5, '#060612');
+        bgGradient.addColorStop(1, '#020208');
+        ctx.fillStyle = bgGradient;
+        ctx.fillRect(0, 0, w, h);
+
+        if (!isActive) {
+          candleStatus.textContent = '🌑 Extinguished';
+          status.textContent = '🌑 Candle is out';
+          return;
+        }
+
+        // Draw candle body
+        const candleWidth = 16;
+        const candleHeight = 20;
+        const candleY = cy + 10;
+
+        // Candle shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.2)';
+        ctx.shadowBlur = 10;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        const candleGrad = ctx.createLinearGradient(cx - candleWidth/2, 0, cx + candleWidth/2, 0);
+        candleGrad.addColorStop(0, '#e8d5b0');
+        candleGrad.addColorStop(0.3, '#f5e6c8');
+        candleGrad.addColorStop(0.7, '#e8d5b0');
+        candleGrad.addColorStop(1, '#d4b896');
+        ctx.fillStyle = candleGrad;
+        ctx.beginPath();
+        ctx.roundRect(cx - candleWidth/2, candleY, candleWidth, candleHeight, 2);
+        ctx.fill();
+
+        // Candle top
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#f0dcc0';
+        ctx.beginPath();
+        ctx.ellipse(cx, candleY, candleWidth/2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Wick
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#2a1a0a';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, candleY);
+        ctx.quadraticCurveTo(cx + 1, candleY - 5, cx + 0.5, candleY - 8);
+        ctx.stroke();
+
+        // Glow on candle
+        const glowGrad = ctx.createRadialGradient(cx, candleY, 0, cx, candleY, 25);
+        glowGrad.addColorStop(0, `hsla(${hue + 20}, 100%, 70%, ${0.1 * heightMult})`);
+        glowGrad.addColorStop(1, `hsla(${hue + 20}, 100%, 50%, 0)`);
+        ctx.fillStyle = glowGrad;
+        ctx.beginPath();
+        ctx.arc(cx, candleY, 25, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Update flame
+        if (!isPaused) {
+          // Spawn new flame particles
+          if (flameParticles.length < 50) {
+            const angle = (Math.random() - 0.5) * 0.5;
+            const radius = Math.random() * 12;
+            const x = cx + Math.cos(angle) * radius;
+            const y = candleY - 5 + Math.sin(angle) * radius * 0.3;
+            const size = 6 + Math.random() * 12 * heightMult;
+            const particle = new FlameParticle(x, y, size);
+            particle.life = 0.3 + Math.random() * 0.7;
+            particle.opacity = 0.3 + Math.random() * 0.5;
+            flameParticles.push(particle);
+          }
+
+          // Spawn embers
+          if (Math.random() < 0.05 * heightMult) {
+            const x = cx + (Math.random() - 0.5) * 15;
+            const y = candleY - 5 - Math.random() * 10;
+            embers.push(new Ember(x, y));
+          }
+
+          // Update particles
+          flameParticles = flameParticles.filter(p => p.isAlive());
+          flameParticles.forEach(p => p.update(speedMult, heightMult, blowStrength));
+          embers = embers.filter(e => e.update(speedMult, blowStrength));
+        }
+
+        // Draw flame particles (sorted by size for depth)
+        const sortedFlames = [...flameParticles].sort((a, b) => a.size - b.size);
+        sortedFlames.forEach(p => p.draw(ctx, intensity));
+
+        // Draw embers
+        embers.forEach(e => e.draw(ctx));
+
+        // Draw ambient glow
+        const ambientGlow = ctx.createRadialGradient(cx, cy - 10, 0, cx, cy - 10, 60 * heightMult);
+        ambientGlow.addColorStop(0, `hsla(${hue + 20}, 100%, 60%, ${0.03 * heightMult})`);
+        ambientGlow.addColorStop(0.5, `hsla(${hue + 10}, 100%, 40%, ${0.02 * heightMult})`);
+        ambientGlow.addColorStop(1, `hsla(${hue}, 100%, 20%, 0)`);
+        ctx.fillStyle = ambientGlow;
+        ctx.beginPath();
+        ctx.arc(cx, cy - 10, 60 * heightMult, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Update status
+        candleStatus.textContent = isActive ? '🕯️ Burning' : '🌑 Extinguished';
+        flameHeight.textContent = `Height: ${Math.round(heightMult * 100)}%`;
+        if (isBlowing) {
+          status.textContent = '💨 Blowing the candle!';
+        } else if (isActive) {
+          status.textContent = '🕯️ Candle flame flickering warmly';
+        }
+      }
+
+      // ----- Animation loop -----
+      function animate() {
+        time += 0.016;
+        drawCandle();
+        animationId = requestAnimationFrame(animate);
+      }
+
+      // ----- Start animation -----
+      function startAnimation() {
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+        animate();
+      }
+
+      // ----- Toggle -----
+      function toggleCandle() {
+        isActive = !isActive;
+        toggleBtn.textContent = isActive ? '💡 Toggle' : '💡 Off';
+        status.textContent = isActive ? '🕯️ Candle lit' : '🌑 Candle extinguished';
+        candleStatus.textContent = isActive ? '🕯️ Burning' : '🌑 Extinguished';
+        if (isActive) {
+          generateFlame();
+        } else {
+          flameParticles = [];
+          embers = [];
+        }
+      }
+
+      // ----- Reset -----
+      function resetCandle() {
+        isActive = true;
+        isPaused = false;
+        isBlowing = false;
+        blowStrength = 0;
+        toggleBtn.textContent = '💡 Toggle';
+        heightSlider.value = 80;
+        heightValue.textContent = '80%';
+        speedSlider.value = 5;
+        speedValue.textContent = '5×';
+        colorSlider.value = 30;
+        colorValue.textContent = '30°';
+        generateFlame();
+        status.textContent = '↺ Reset';
+        candleStatus.textContent = '🕯️ Burning';
+        setTimeout(() => {
+          status.textContent = '🕯️ Candle flame flickering warmly';
+        }, 500);
+      }
+
+      // ----- Blow effect -----
+      function blowCandle() {
+        if (!isActive) return;
+        
+        isBlowing = true;
+        blowStrength = 1;
+        status.textContent = '💨 Blowing!';
+        
+        // Create blow particles
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h * 0.72;
+        for (let i = 0; i < 30; i++) {
+          const angle = (Math.random() - 0.5) * 0.8;
+          const speed = 1 + Math.random() * 3;
+          const x = cx + (Math.random() - 0.5) * 20;
+          const y = cy - 10 - Math.random() * 20;
+          const p = new FlameParticle(x, y, 3 + Math.random() * 8);
+          p.speed = speed;
+          p.life = 0.2 + Math.random() * 0.3;
+          p.opacity = 0.5 + Math.random() * 0.5;
+          p.hue = parseInt(colorSlider.value) + (Math.random() - 0.5) * 20;
+          flameParticles.push(p);
+        }
+        
+        // Reduce flame
+        setTimeout(() => {
+          blowStrength = 0.5;
+        }, 200);
+        
+        setTimeout(() => {
+          blowStrength = 0;
+          isBlowing = false;
+          status.textContent = '🕯️ Candle flame flickering warmly';
+        }, 600);
+      }
+
+      // ----- Event Listeners -----
+      toggleBtn.addEventListener('click', toggleCandle);
+      resetBtn.addEventListener('click', resetCandle);
+      blowBtn.addEventListener('click', blowCandle);
+
+      heightSlider.addEventListener('input', (e) => {
+        heightValue.textContent = e.target.value + '%';
+        if (isActive) {
+          generateFlame();
+        }
+      });
+
+      speedSlider.addEventListener('input', (e) => {
+        speedValue.textContent = e.target.value + '×';
+      });
+
+      colorSlider.addEventListener('input', (e) => {
+        colorValue.textContent = e.target.value + '°';
+        if (isActive) {
+          generateFlame();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 't' || e.key === 'T') {
+          e.preventDefault();
+          toggleCandle();
+        }
+        if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          resetCandle();
+        }
+        if (e.key === 'b' || e.key === 'B') {
+          e.preventDefault();
+          blowCandle();
+        }
+      });
+
+      // Click canvas to blow
+      canvas.addEventListener('click', blowCandle);
+
+      // ----- Resize handler -----
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          setupCanvas();
+          if (isActive) {
+            generateFlame();
+          }
+        }, 200);
+      });
+
+      // ----- Init -----
+      function init() {
+        setupCanvas();
+        generateFlame();
+        startAnimation();
+        status.textContent = '🕯️ Candle flame flickering warmly!';
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skyscraper Tilt · Leaning Tower Effect</title>
+    <meta name="description" content="Interactive skyscraper that tilts like the Leaning Tower of Pisa with physics-based leaning.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🏗️ SKYSCRAPER TILT</h1>
+        
+        <div class="canvas-wrapper">
+            <canvas id="tiltCanvas" width="600" height="500"></canvas>
+            <div class="glow-overlay"></div>
+        </div>
+
+        <div class="controls">
+            <div class="button-group">
+                <button class="tilt-btn" id="tiltBtn">📐 TILT</button>
+                <button class="reset-btn" id="resetBtn">⟳ RESET</button>
+                <button class="toggle-btn" id="toggleBtn">⏸️ PAUSE</button>
+            </div>
+            <div class="speed-control">
+                <label>Angle</label>
+                <input type="range" id="angleSlider" min="1" max="10" value="5">
+                <span id="angleLabel">5</span>
+                <label>Speed</label>
+                <input type="range" id="speedSlider" min="1" max="10" value="5">
+                <span id="speedLabel">5</span>
+            </div>
+        </div>
+
+        <div class="info">
+            <span>🏗️ SKYSCRAPER TILT</span>
+            <small>lean · physics · tower</small>
+        </div>
+        <div class="hint">
+            <span>📐 click to make the skyscraper tilt like the Leaning Tower</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('tiltCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = 600, H = 500;
+            
+            const tiltBtn = document.getElementById('tiltBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const angleSlider = document.getElementById('angleSlider');
+            const angleLabel = document.getElementById('angleLabel');
+            const speedSlider = document.getElementById('speedSlider');
+            const speedLabel = document.getElementById('speedLabel');
+
+            let isAnimating = true;
+            let speed = 5;
+            let targetAngle = 5;
+            let time = 0;
+            let currentAngle = 0;
+            let tiltVelocity = 0;
+            let isTilted = false;
+            let tiltCount = 0;
+
+            // ---- Building Details ----
+            const building = {
+                x: W / 2,
+                y: 80,
+                width: 80,
+                height: 350,
+                floors: 20,
+                floorHeight: 16,
+                windowRows: 8,
+                windowCols: 4
+            };
+
+            // ---- Tilt Building ----
+            function tiltBuilding() {
+                const maxAngle = parseInt(angleSlider.value) / 10 * 0.15;
+                const newAngle = maxAngle * (0.8 + Math.random() * 0.4);
+                tiltVelocity = newAngle * 0.1;
+                isTilted = true;
+                tiltCount++;
+            }
+
+            // ---- Reset ----
+            function resetTilt() {
+                currentAngle = 0;
+                tiltVelocity = 0;
+                isTilted = false;
+                tiltCount = 0;
+            }
+
+            // ---- Update Physics ----
+            function updatePhysics() {
+                const dt = 0.02 * (speed / 5);
+                const damping = 0.995;
+                const gravity = 0.0001;
+                
+                if (isTilted) {
+                    // Physics-based tilt with damping
+                    currentAngle += tiltVelocity * dt * 5;
+                    tiltVelocity *= damping;
+                    
+                    // Small gravity effect (pulls back slightly)
+                    tiltVelocity -= gravity * Math.sign(currentAngle) * 5;
+                    
+                    // Stop if nearly still
+                    if (Math.abs(tiltVelocity) < 0.0005 && Math.abs(currentAngle) < 0.001) {
+                        tiltVelocity = 0;
+                    }
+                }
+            }
+
+            // ---- Draw Building ----
+            function drawBuilding(ctx, angle) {
+                const x = building.x;
+                const y = building.y;
+                const w = building.width;
+                const h = building.height;
+                const floors = building.floors;
+                const floorH = building.floorHeight;
+                
+                ctx.save();
+                ctx.translate(x, y + h);
+                ctx.rotate(angle);
+                ctx.translate(0, -h);
+                
+                // Shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.15)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = 5;
+                
+                // Building body
+                const bodyGrad = ctx.createLinearGradient(0, 0, w, 0);
+                bodyGrad.addColorStop(0, '#2a3a4a');
+                bodyGrad.addColorStop(0.3, '#3a4a5a');
+                bodyGrad.addColorStop(0.7, '#3a4a5a');
+                bodyGrad.addColorStop(1, '#2a3a4a');
+                ctx.fillStyle = bodyGrad;
+                ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(0, 0, w, h);
+                
+                // Building outline
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(200, 220, 240, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(0, 0, w, h);
+                
+                // Windows
+                const windowW = 8;
+                const windowH = 10;
+                const spacingX = 4;
+                const spacingY = 3;
+                const cols = 4;
+                const rows = Math.floor(floors / 1.5);
+                const totalW = cols * (windowW + spacingX) - spacingX;
+                const offsetX = (w - totalW) / 2;
+                
+                for (let f = 0; f < rows; f++) {
+                    const floorY = f * floorH * 1.5 + 8;
+                    for (let c = 0; c < cols; c++) {
+                        const wx = offsetX + c * (windowW + spacingX);
+                        const wy = floorY;
+                        
+                        // Random window state
+                        const lit = (f + c) % 3 === 0 || Math.random() < 0.3;
+                        const brightness = lit ? 0.3 + Math.random() * 0.4 : 0;
+                        
+                        // Window glow
+                        if (lit) {
+                            ctx.shadowColor = `rgba(255, 200, 100, ${brightness * 0.1})`;
+                            ctx.shadowBlur = 8;
+                        }
+                        
+                        ctx.fillStyle = lit ? 
+                            `rgba(255, 220, 150, ${0.1 + brightness * 0.3})` :
+                            `rgba(20, 30, 40, 0.3)`;
+                        ctx.shadowBlur = lit ? 5 : 0;
+                        ctx.fillRect(wx, wy, windowW, windowH);
+                        
+                        // Window border
+                        ctx.shadowBlur = 0;
+                        ctx.strokeStyle = `rgba(200, 220, 240, ${0.03 + (lit ? 0.05 : 0)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(wx, wy, windowW, windowH);
+                    }
+                }
+                
+                // Floor lines
+                ctx.shadowBlur = 0;
+                for (let f = 0; f < floors; f++) {
+                    const fy = f * floorH + 4;
+                    ctx.strokeStyle = 'rgba(200, 220, 240, 0.02)';
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(5, fy);
+                    ctx.lineTo(w - 5, fy);
+                    ctx.stroke();
+                }
+                
+                // Roof
+                ctx.fillStyle = 'rgba(40, 50, 60, 0.5)';
+                ctx.fillRect(-2, -8, w + 4, 8);
+                
+                // Antenna
+                ctx.fillStyle = 'rgba(50, 60, 70, 0.3)';
+                ctx.fillRect(w/2 - 2, -25, 4, 17);
+                ctx.fillRect(w/2 - 6, -28, 12, 3);
+                
+                // Glow at top (when tilted)
+                if (Math.abs(angle) > 0.02) {
+                    const glowIntensity = Math.min(1, Math.abs(angle) * 4);
+                    const glowGrad = ctx.createRadialGradient(
+                        w/2, -10, 0,
+                        w/2, -10, w * 0.6
+                    );
+                    glowGrad.addColorStop(0, `rgba(100, 200, 255, ${glowIntensity * 0.05})`);
+                    glowGrad.addColorStop(0.5, `rgba(100, 200, 255, ${glowIntensity * 0.02})`);
+                    glowGrad.addColorStop(1, 'rgba(100, 200, 255, 0)');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(w/2, -10, w * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            }
+
+            // ---- Draw Ground ----
+            function drawGround() {
+                const grad = ctx.createLinearGradient(0, H - 30, 0, H);
+                grad.addColorStop(0, 'rgba(20, 30, 40, 0)');
+                grad.addColorStop(0.3, 'rgba(20, 30, 40, 0.2)');
+                grad.addColorStop(0.7, 'rgba(20, 30, 40, 0.4)');
+                grad.addColorStop(1, 'rgba(20, 30, 40, 0.6)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, H - 30, W, 30);
+                
+                ctx.strokeStyle = 'rgba(100, 200, 255, 0.03)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, H - 30);
+                ctx.lineTo(W, H - 30);
+                ctx.stroke();
+            }
+
+            // ---- Draw Sky ----
+            function drawSky() {
+                const grad = ctx.createRadialGradient(W/2, 0, 0, W/2, 0, H);
+                grad.addColorStop(0, '#0a1a2a');
+                grad.addColorStop(0.3, '#0d1a25');
+                grad.addColorStop(0.6, '#0a1520');
+                grad.addColorStop(0.8, '#080e18');
+                grad.addColorStop(1, '#040608');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+
+            // ---- Draw Stars ----
+            function drawStars() {
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 137 + 20) % W;
+                    const y = (i * 97 + 30) % (H * 0.6);
+                    const size = 0.5 + (i % 3) * 0.5;
+                    const twinkle = 0.3 + Math.sin(time * 0.015 + i * 2.5) * 0.3 + 0.3;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${twinkle * 0.4})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // ---- Render ----
+            function render() {
+                drawSky();
+                drawStars();
+                drawGround();
+                
+                // Draw building with current angle
+                drawBuilding(ctx, currentAngle);
+                
+                // Status info
+                ctx.save();
+                ctx.fillStyle = 'rgba(200, 220, 240, 0.2)';
+                ctx.font = '13px monospace';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'bottom';
+                const angleDeg = (currentAngle * 180 / Math.PI).toFixed(2);
+                ctx.fillText(`Angle: ${angleDeg}°`, W - 20, H - 10);
+                
+                ctx.textAlign = 'left';
+                ctx.fillText(`Tilts: ${tiltCount}`, 20, H - 10);
+                
+                if (Math.abs(currentAngle) > 0.01) {
+                    ctx.fillStyle = 'rgba(100, 200, 255, 0.2)';
+                    ctx.font = '14px monospace';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'top';
+                    ctx.fillText('🏗️ LEANING', W/2, 20);
+                }
+                ctx.restore();
+            }
+
+            // ---- Animation Loop ----
+            function animate() {
+                if (!isAnimating) {
+                    requestAnimationFrame(animate);
+                    return;
+                }
+                
+                time += 0.01;
+                
+                updatePhysics();
+                render();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // ---- Toggle Animation ----
+            function toggleAnimation() {
+                isAnimating = !isAnimating;
+                toggleBtn.textContent = isAnimating ? '⏸️ PAUSE' : '▶️ PLAY';
+            }
+
+            // ---- Update Labels ----
+            angleSlider.addEventListener('input', function() {
+                angleLabel.textContent = this.value;
+            });
+            speedSlider.addEventListener('input', function() {
+                speedLabel.textContent = this.value;
+            });
+
+            // ---- Event Listeners ----
+            tiltBtn.addEventListener('click', tiltBuilding);
+            resetBtn.addEventListener('click', resetTilt);
+            toggleBtn.addEventListener('click', toggleAnimation);
+
+            // ---- Keyboard Shortcuts ----
+            document.addEventListener('keydown', function(e) {
+                if (e.key === ' ' || e.key === 'Space') {
+                    e.preventDefault();
+                    tiltBuilding();
+                }
+                if (e.key === 'r' || e.key === 'R') {
+                    resetTilt();
+                }
+                if (e.key === 'p' || e.key === 'P') {
+                    toggleAnimation();
+                }
+            });
+
+            // ---- Initialize ----
+            render();
+            animate();
+
+            console.log('🏗️ Skyscraper Tilt · Click Tilt or press Space to make it lean!');
+        })();
+    </script>
+</body>
+</html>
