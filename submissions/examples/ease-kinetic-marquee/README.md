@@ -1,19 +1,23 @@
 # Kinetic Typography Marquee
 
-**What does this do?**
-Creates a massive, outline-only kinetic typography effect that smoothly and infinitely scrolls across the background without relying on JavaScript.
+Outline-only kinetic typography that smoothly scrolls across a section background, pure CSS marquee with -webkit-text-stroke.
 
-**How is it used?**
-Wrap your text inside `.marquee-container` and `.marquee-content`, then duplicate the `.marquee-text` element to ensure a seamless looping animation:
+## Files
+- `demo.html` — fully self-contained working component
+- `style.css` — styles (pure CSS where possible; minimal vanilla JS only where interaction requires it)
+- `README.md` — this guide
 
+
+## Usage
 ```html
-<div class="marquee-container">
-    <div class="marquee-content">
-        <span class="marquee-text">KINETIC TYPOGRAPHY KINETIC TYPOGRAPHY KINETIC TYPOGRAPHY </span>
-        <span class="marquee-text">KINETIC TYPOGRAPHY KINETIC TYPOGRAPHY KINETIC TYPOGRAPHY </span>
-    </div>
-</div>
+<link rel="stylesheet" href="./style.css" />
+<section class="ease-kinetic-marquee" aria-hidden="true"><div class="ease-kinetic-marquee__track"><span class="ease-kinetic-marquee__text">CREATIVE STUDIO</span><span class="ease-kinetic-marquee__text">CREATIVE STUDIO</span></div></section>
 ```
 
-**Why is it useful?**
-It provides a premium agency-style background scrolling text effect purely through CSS using `-webkit-text-stroke` and `@keyframes` transform, entirely bypassing heavy JS loopers, resulting in optimal performance and avoiding layout thrashing.
+
+## Accessibility
+- Decorative animation elements marked `aria-hidden="true"`.
+- Interactive controls use native elements with `:focus-visible` outlines.
+- `@media (prefers-reduced-motion: reduce)` disables animations.
+
+Closes #74240
