@@ -1,0 +1,39 @@
+/* Patch for #79354: ease-zoom-in causes brief scrollbar flicker in Chrome
+ *
+ * When .ease-zoom-in animates scale() from 0.85 -> 1 on a width:100vw hero,
+ * the scaled content momentarily extends beyond the viewport, triggering a
+ * transient scrollbar in Chrome during the first ~200ms.
+ *
+ * Fix: contain the transform paint region with contain: layout paint, add
+ * will-change: transform for a compositor layer, and set overflow: clip on the
+ * animated element's nearest scroll container so the scaling never reaches the
+ * viewport edge. A @starting-style-free approach is used for broad support.
+ */
+.ease-zoom-in {
+  contain: layout paint;          /* prevent the scaled box from causing layout/scroll in the viewport */
+  will-change: transform;         /* promote to a compositor layer so scaling does not reflow the page */
+  transform-origin: center center;
+}
+
+/* The flicker source is the scaled box exceeding the viewport edge. Clipping
+ * the element's own overflow ensures the scaled content is painted within its
+ * box, and contain-intrinsic-size keeps layout stable before first paint. */
+.ease-zoom-in,
+.ease-zoom-in-host {
+  overflow: clip;
+  contain-intrinsic-size: 1px;   /* minimal hint; avoids layout shift jumps */
+}
+
+/* Hero-specific guard: ensure full-bleed heroes cannot push scrollbars during zoom. */
+@media (prefers-reduced-motion: no-preference) {
+  .ease-zoom-in.is-hero,
+  .is-hero .ease-zoom-in {
+    width: 100%;
+    max-width: 100%;
+    overflow: clip;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ease-zoom-in { will-change: auto; contain: none; }
+}
