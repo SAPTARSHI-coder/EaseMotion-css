@@ -1,0 +1,2 @@
+# Animated Tooltip (Dark Mode)
+A deeply styled, high-contrast dark tooltip. It utilizes a bouncy `cubic-bezier` transform (scaling up and sliding into position) on hover. Complete with a meticulously layered CSS triangle caret mimicking a tiny arrow.
