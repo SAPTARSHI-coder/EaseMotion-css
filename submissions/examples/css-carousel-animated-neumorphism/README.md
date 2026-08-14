@@ -1,0 +1,2 @@
+# Animated Carousel (Neumorphism)
+A soft-UI physical dial carousel. The slider window acts as a deeply inset circular recess, while the radio indicators physically press into the surface when activated to reveal a blue accent.
