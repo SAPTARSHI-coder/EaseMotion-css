@@ -1,0 +1,1 @@
+# Enhancement: Introduce Custom Easing Variables (CSS Custom Properties)\n\nThis is a placeholder for the implementation of Enhancement: Introduce Custom Easing Variables (CSS Custom Properties).
